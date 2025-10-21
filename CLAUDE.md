@@ -1,0 +1,189 @@
+# CountScore - Project Instructions for Claude Code
+
+## Project Overview
+**CountScore** is a Flutter application for score tracking and management.
+
+**Tech Stack:**
+- Flutter SDK: ^3.9.2
+- State Management: Provider (^6.1.2)
+- Database: SQLite (sqflite ^2.4.1)
+- Storage: path_provider, shared_preferences
+- UI: Material Design, flex_color_picker
+- Features: Wakelock support, internationalization (intl)
+
+## Project Structure
+```
+countscore/
+├── lib/                    # Application source code
+├── android/                # Android platform code
+├── ios/                    # iOS platform code
+├── test/                   # Unit and widget tests
+├── build/                  # Build artifacts (generated)
+└── pubspec.yaml           # Dependencies and configuration
+```
+
+## Development Guidelines
+
+### Flutter-Specific Rules
+1. **State Management**: Use Provider pattern for state management
+2. **Database Operations**: All SQLite operations should be async and handle errors
+3. **Material Design**: Follow Material Design 3 guidelines for UI consistency
+4. **Null Safety**: Project uses Dart null safety - handle nulls appropriately
+5. **Internationalization**: Use intl package for date/time formatting and localization
+
+### Code Style
+- Follow Dart style guide and analysis_options.yaml rules
+- Use meaningful widget names (e.g., `ScoreListWidget`, `GameSettingsScreen`)
+- Prefer const constructors for immutable widgets
+- Extract complex widgets into separate files
+- Keep build methods clean and readable
+
+### File Organization
+- **Screens**: `lib/screens/` - Full screen widgets
+- **Widgets**: `lib/widgets/` - Reusable UI components
+- **Models**: `lib/models/` - Data models and business logic
+- **Services**: `lib/services/` - Database, storage, external services
+- **Providers**: `lib/providers/` - Provider state management classes
+- **Utils**: `lib/utils/` - Helper functions and constants
+
+### Testing Requirements
+- Write widget tests for complex UI components
+- Write unit tests for business logic and data models
+- Test database operations with mock data
+- Run tests before committing: `flutter test`
+
+### Build and Run Commands
+```bash
+# Development
+flutter run                           # Run on connected device
+flutter run --release                 # Release mode
+flutter build apk                     # Build Android APK
+flutter build ios                     # Build iOS app
+
+# Quality checks
+flutter analyze                       # Static analysis
+flutter test                          # Run tests
+flutter test --coverage              # Generate coverage report
+
+# Dependencies
+flutter pub get                       # Install dependencies
+flutter pub upgrade                   # Upgrade dependencies
+flutter pub outdated                 # Check outdated packages
+```
+
+### Performance Guidelines
+1. **Widget Rebuilds**: Minimize unnecessary rebuilds using const constructors
+2. **Database**: Use batch operations for multiple inserts/updates
+3. **Memory**: Dispose controllers and listeners properly
+4. **Async Operations**: Use FutureBuilder or async/await appropriately
+5. **Wakelock**: Use wakelock_plus only when actively needed (game in progress)
+
+### Database Schema Guidelines
+- Use sqflite for local data persistence
+- Define clear migration paths for schema changes
+- Handle database errors gracefully
+- Consider using transactions for related operations
+- Close database connections when not in use
+
+### UI/UX Considerations
+1. **Responsive Design**: Support various screen sizes and orientations
+2. **Color Themes**: Utilize flex_color_picker for customizable themes
+3. **Accessibility**: Provide semantic labels for screen readers
+4. **Loading States**: Show progress indicators for async operations
+5. **Error Messages**: Display user-friendly error messages
+
+### Common Patterns
+```dart
+// Provider pattern
+class ScoreProvider extends ChangeNotifier {
+  // State management
+  void updateScore() {
+    // Update logic
+    notifyListeners();
+  }
+}
+
+// Database operations
+class DatabaseService {
+  Future<Database> get database async {
+    // Database initialization
+  }
+
+  Future<void> insertScore(Score score) async {
+    final db = await database;
+    await db.insert('scores', score.toMap());
+  }
+}
+
+// Widget structure
+class GameScreen extends StatelessWidget {
+  const GameScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ScoreProvider>(
+      builder: (context, provider, child) {
+        // UI implementation
+      },
+    );
+  }
+}
+```
+
+### Git Workflow
+- Always work on feature branches
+- Commit messages: `feat: description`, `fix: description`, `refactor: description`
+- Run `flutter analyze && flutter test` before committing
+- Don't commit build artifacts or generated files
+
+### Dependencies Management
+**Before adding new dependencies:**
+1. Check if functionality exists in current dependencies
+2. Verify package quality (pub.dev score, recent updates)
+3. Consider bundle size impact
+4. Update pubspec.yaml with specific version constraints
+5. Run `flutter pub get` after adding
+
+**Current Key Dependencies:**
+- `provider`: State management - use for all state handling
+- `sqflite`: Database - use for persistent data storage
+- `path_provider`: File system access
+- `shared_preferences`: Simple key-value storage
+- `flex_color_picker`: Color selection UI
+- `wakelock_plus`: Prevent screen sleep during active games
+- `intl`: Date/time formatting and localization
+
+### Common Issues and Solutions
+
+**Issue: Hot reload not working**
+- Solution: Try hot restart (`R` in terminal) or full restart
+
+**Issue: Database version conflicts**
+- Solution: Increment database version and implement migration
+
+**Issue: Provider not updating UI**
+- Solution: Ensure `notifyListeners()` is called after state changes
+
+**Issue: Build failures after dependency updates**
+- Solution: `flutter clean && flutter pub get && flutter run`
+
+### Quality Checklist
+Before marking any feature complete:
+- [ ] Code follows Dart style guidelines
+- [ ] No analyzer warnings: `flutter analyze`
+- [ ] Tests pass: `flutter test`
+- [ ] UI tested on different screen sizes
+- [ ] Database operations handle errors
+- [ ] State management properly implements Provider pattern
+- [ ] Async operations have loading indicators
+- [ ] Navigation flows work correctly
+- [ ] Colors work in both light and dark themes (if applicable)
+
+### Contact and Resources
+- [Flutter Documentation](https://docs.flutter.dev/)
+- [Dart Language Tour](https://dart.dev/guides/language/language-tour)
+- [Provider Package](https://pub.dev/packages/provider)
+- [SQLite Guide](https://pub.dev/packages/sqflite)
+
+---
+**Note**: This file provides project-specific context for Claude Code. Update as the project evolves.
