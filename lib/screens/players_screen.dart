@@ -104,14 +104,32 @@ class _PlayersScreenState extends State<PlayersScreen> {
                             subtitle: Text(
                               '$gamesPlayed partie${gamesPlayed > 1 ? 's' : ''} • $wins victoire${wins > 1 ? 's' : ''}',
                             ),
-                            trailing: Icon(Icons.palette, color: playerColor),
-                            onTap: () async {
-                              final newColor = await _showColorPicker(context, playerColor);
-                              if (newColor != null) {
-                                await _db.updatePlayerColor(playerName, newColor.value);
-                                setState(() {}); // Refresh UI
-                              }
-                            },
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: Icon(Icons.palette, color: playerColor),
+                                  onPressed: () async {
+                                    final newColor = await _showColorPicker(context, playerColor);
+                                    if (newColor != null) {
+                                      await _db.updatePlayerColor(playerName, newColor.value);
+                                      setState(() {}); // Refresh UI
+                                    }
+                                  },
+                                  tooltip: 'Changer la couleur',
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: () => _showRenameDialog(context, playerName),
+                                  tooltip: 'Renommer',
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () => _showDeleteDialog(context, playerName),
+                                  tooltip: 'Supprimer',
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },
@@ -175,5 +193,100 @@ class _PlayersScreenState extends State<PlayersScreen> {
         );
       },
     );
+  }
+
+  Future<void> _showRenameDialog(BuildContext context, String playerName) async {
+    final controller = TextEditingController(text: playerName);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final gameProvider = context.read<GameProvider>();
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Renommer le joueur'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(
+              labelText: 'Nouveau nom',
+              border: OutlineInputBorder(),
+            ),
+            autofocus: true,
+            onSubmitted: (value) {
+              if (value.trim().isNotEmpty) {
+                Navigator.pop(context, value.trim());
+              }
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () {
+                final newName = controller.text.trim();
+                if (newName.isNotEmpty && newName != playerName) {
+                  Navigator.pop(context, newName);
+                }
+              },
+              child: const Text('Renommer'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result != null && result != playerName) {
+      await gameProvider.renamePlayer(playerName, result);
+      await _loadPlayers();
+      if (mounted) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text('Joueur renommé en "$result"')),
+        );
+      }
+    }
+  }
+
+  Future<void> _showDeleteDialog(BuildContext context, String playerName) async {
+    final gameProvider = context.read<GameProvider>();
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    final stats = await gameProvider.getPlayerStats(playerName);
+    final gamesPlayed = stats['gamesPlayed'] as int;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Supprimer le joueur'),
+          content: Text(
+            'Voulez-vous vraiment supprimer "$playerName" ?\n\n'
+            'Ce joueur sera supprimé de toutes les $gamesPlayed partie${gamesPlayed > 1 ? 's' : ''}.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Supprimer'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      await gameProvider.deletePlayerByName(playerName);
+      await _loadPlayers();
+      if (mounted) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text('Joueur "$playerName" supprimé')),
+        );
+      }
+    }
   }
 }

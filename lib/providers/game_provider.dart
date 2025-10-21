@@ -241,4 +241,30 @@ class GameProvider with ChangeNotifier {
   Future<Map<String, dynamic>> getPlayerStats(String playerName) async {
     return await _db.getPlayerStats(playerName);
   }
+
+  // Renommer un joueur dans toutes les parties
+  Future<void> renamePlayer(String oldName, String newName) async {
+    await _db.renamePlayer(oldName, newName);
+
+    // Recharger les données si nécessaire
+    await loadGames();
+    if (_currentGame != null) {
+      await loadGame(_currentGame!.id!);
+    }
+
+    notifyListeners();
+  }
+
+  // Supprimer un joueur par nom dans toutes les parties
+  Future<void> deletePlayerByName(String playerName) async {
+    await _db.deletePlayerByName(playerName);
+
+    // Recharger les données
+    await loadGames();
+    if (_currentGame != null) {
+      await loadGame(_currentGame!.id!);
+    }
+
+    notifyListeners();
+  }
 }

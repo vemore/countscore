@@ -590,4 +590,25 @@ class DatabaseService {
     final dbPath = await getDatabasesPath();
     return join(dbPath, 'countscore.db');
   }
+
+  // Renommer un joueur dans toutes les parties
+  Future<int> renamePlayer(String oldName, String newName) async {
+    final db = await database;
+    return await db.update(
+      'players',
+      {'name': newName},
+      where: 'name = ?',
+      whereArgs: [oldName],
+    );
+  }
+
+  // Supprimer un joueur par nom dans toutes les parties
+  Future<int> deletePlayerByName(String playerName) async {
+    final db = await database;
+    return await db.delete(
+      'players',
+      where: 'name = ?',
+      whereArgs: [playerName],
+    );
+  }
 }

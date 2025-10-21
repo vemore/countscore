@@ -29,14 +29,14 @@ class AboutScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Version 1.0.0',
+                'Version 1.0.1',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).textTheme.bodySmall?.color,
                     ),
               ),
               const SizedBox(height: 32),
               const Text(
-                'Application de gestion de scores pour vos parties de jeux',
+                'Application de gestion de scores pour vos parties de jeux par Vincent Moreau',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 16),
               ),

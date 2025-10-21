@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../models/game_type.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
+import '../widgets/player_picker_dialog.dart';
 import 'game_board_screen.dart';
 
 class CreateGameScreen extends StatefulWidget {
@@ -17,46 +18,74 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
   final _gameNameController = TextEditingController();
   int? _selectedGameTypeId;
   bool _isLowestScoreWins = true;
-  final List<TextEditingController> _playerControllers = [];
+  final List<String> _selectedPlayerNames = [];
   List<String> _availablePlayerNames = [];
 
   @override
   void initState() {
     super.initState();
-    _addPlayerField();
-    _addPlayerField();
+    _selectedPlayerNames.add('');
+    _selectedPlayerNames.add('');
     _loadData();
   }
 
   Future<void> _loadData() async {
-    final names = await context.read<GameProvider>().getAllPlayerNames();
-    await context.read<GameTypeProvider>().loadGameTypes();
+    final gameProvider = context.read<GameProvider>();
+    final gameTypeProvider = context.read<GameTypeProvider>();
 
-    final gameTypes = context.read<GameTypeProvider>().gameTypes;
-    if (gameTypes.isNotEmpty && _selectedGameTypeId == null) {
-      setState(() {
-        _availablePlayerNames = names;
-        _selectedGameTypeId = gameTypes.first.id;
-        _isLowestScoreWins = gameTypes.first.isLowestScoreWins;
-      });
-    } else {
-      setState(() {
-        _availablePlayerNames = names;
-      });
+    final names = await gameProvider.getAllPlayerNames();
+    await gameProvider.loadGames();
+    final games = gameProvider.games;
+    await gameTypeProvider.loadGameTypes();
+
+    final gameTypes = gameTypeProvider.gameTypes;
+
+    // Trouver le type de jeu ZapZap par défaut
+    final zapzapType = gameTypes.firstWhere(
+      (type) => type.name.toLowerCase() == 'zapzap',
+      orElse: () => gameTypes.first,
+    );
+
+    // Générer le nom de partie par défaut
+    String defaultGameName = 'Partie 1';
+    if (games.isNotEmpty) {
+      defaultGameName = _incrementGameName(games.first.name);
     }
-  }
 
-  void _addPlayerField() {
     setState(() {
-      _playerControllers.add(TextEditingController());
+      _availablePlayerNames = names;
+      _selectedGameTypeId = zapzapType.id;
+      _isLowestScoreWins = zapzapType.isLowestScoreWins;
+      _gameNameController.text = defaultGameName;
     });
   }
 
-  void _removePlayerField(int index) {
-    if (_playerControllers.length > 2) {
+  String _incrementGameName(String lastName) {
+    // Extraire les chiffres de fin avec RegExp
+    final regex = RegExp(r'(\d+)$');
+    final match = regex.firstMatch(lastName);
+
+    if (match != null) {
+      // Il y a des chiffres à la fin
+      final number = int.parse(match.group(1)!);
+      final prefix = lastName.substring(0, match.start);
+      return '$prefix${number + 1}';
+    } else {
+      // Pas de chiffres à la fin, ajouter " 1"
+      return '$lastName 1';
+    }
+  }
+
+  void _addPlayerSlot() {
+    setState(() {
+      _selectedPlayerNames.add('');
+    });
+  }
+
+  void _removePlayerSlot(int index) {
+    if (_selectedPlayerNames.length > 2) {
       setState(() {
-        _playerControllers[index].dispose();
-        _playerControllers.removeAt(index);
+        _selectedPlayerNames.removeAt(index);
       });
     }
   }
@@ -64,17 +93,13 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
   @override
   void dispose() {
     _gameNameController.dispose();
-    for (var controller in _playerControllers) {
-      controller.dispose();
-    }
     super.dispose();
   }
 
   Future<void> _createGame() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final playerNames = _playerControllers
-        .map((c) => c.text.trim())
+    final playerNames = _selectedPlayerNames
         .where((name) => name.isNotEmpty)
         .toList();
 
@@ -105,6 +130,27 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
           builder: (context) => const GameBoardScreen(),
         ),
       );
+    }
+  }
+
+  Future<void> _showPlayerPicker(int index) async {
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => PlayerPickerDialog(
+        availablePlayers: _availablePlayerNames,
+        selectedPlayers: _selectedPlayerNames,
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _selectedPlayerNames[index] = result;
+        // Rafraîchir la liste si un nouveau joueur a été créé
+        if (!_availablePlayerNames.contains(result)) {
+          _availablePlayerNames.add(result);
+          _availablePlayerNames.sort();
+        }
+      });
     }
   }
 
@@ -180,46 +226,61 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
 
             const SizedBox(height: 24),
 
-            // Règle de victoire
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Règle de victoire',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    RadioListTile<bool>(
-                      title: const Text('Plus petit score gagne'),
-                      subtitle: const Text('Ex: Golf, Hearts'),
-                      value: true,
-                      groupValue: _isLowestScoreWins,
-                      onChanged: (value) {
-                        setState(() {
-                          _isLowestScoreWins = value!;
-                        });
-                      },
-                    ),
-                    RadioListTile<bool>(
-                      title: const Text('Plus grand score gagne'),
-                      subtitle: const Text('Ex: Rami, Belote'),
-                      value: false,
-                      groupValue: _isLowestScoreWins,
-                      onChanged: (value) {
-                        setState(() {
-                          _isLowestScoreWins = value!;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            // Règle de victoire (affichée seulement si "Autre" est sélectionné)
+            Consumer<GameTypeProvider>(
+              builder: (context, gameTypeProvider, child) {
+                final selectedType = gameTypeProvider.gameTypes
+                    .firstWhere((t) => t.id == _selectedGameTypeId,
+                        orElse: () => gameTypeProvider.gameTypes.first);
 
-            const SizedBox(height: 24),
+                if (selectedType.name.toLowerCase() != 'autre') {
+                  return const SizedBox.shrink();
+                }
+
+                return Column(
+                  children: [
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Règle de victoire',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            const SizedBox(height: 8),
+                            RadioListTile<bool>(
+                              title: const Text('Plus petit score gagne'),
+                              subtitle: const Text('Ex: Golf, Hearts'),
+                              value: true,
+                              groupValue: _isLowestScoreWins,
+                              onChanged: (value) {
+                                setState(() {
+                                  _isLowestScoreWins = value!;
+                                });
+                              },
+                            ),
+                            RadioListTile<bool>(
+                              title: const Text('Plus grand score gagne'),
+                              subtitle: const Text('Ex: Rami, Belote'),
+                              value: false,
+                              groupValue: _isLowestScoreWins,
+                              onChanged: (value) {
+                                setState(() {
+                                  _isLowestScoreWins = value!;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                );
+              },
+            ),
 
             // Joueurs
             Row(
@@ -230,7 +291,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 TextButton.icon(
-                  onPressed: _addPlayerField,
+                  onPressed: _addPlayerSlot,
                   icon: const Icon(Icons.add),
                   label: const Text('Ajouter'),
                 ),
@@ -239,58 +300,51 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
 
             const SizedBox(height: 8),
 
-            // Champs de joueurs avec autocomplétion
-            ...List.generate(_playerControllers.length, (index) {
+            // Boutons de sélection de joueurs
+            ...List.generate(_selectedPlayerNames.length, (index) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: Autocomplete<String>(
-                  optionsBuilder: (TextEditingValue textEditingValue) {
-                    if (textEditingValue.text.isEmpty) {
-                      return const Iterable<String>.empty();
-                    }
-                    return _availablePlayerNames.where((String option) {
-                      return option
-                          .toLowerCase()
-                          .contains(textEditingValue.text.toLowerCase());
-                    });
-                  },
-                  onSelected: (String selection) {
-                    _playerControllers[index].text = selection;
-                  },
-                  fieldViewBuilder: (
-                    BuildContext context,
-                    TextEditingController fieldController,
-                    FocusNode focusNode,
-                    VoidCallback onFieldSubmitted,
-                  ) {
-                    // Synchroniser les contrôleurs
-                    fieldController.text = _playerControllers[index].text;
-                    fieldController.addListener(() {
-                      _playerControllers[index].text = fieldController.text;
-                    });
-
-                    return TextFormField(
-                      controller: fieldController,
-                      focusNode: focusNode,
-                      decoration: InputDecoration(
-                        labelText: 'Joueur ${index + 1}',
-                        border: const OutlineInputBorder(),
-                        prefixIcon: const Icon(Icons.person),
-                        suffixIcon: _playerControllers.length > 2
-                            ? IconButton(
-                                icon: const Icon(Icons.remove_circle_outline),
-                                onPressed: () => _removePlayerField(index),
-                              )
+                child: InkWell(
+                  onTap: () => _showPlayerPicker(index),
+                  borderRadius: BorderRadius.circular(4),
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      labelText: 'Joueur ${index + 1}',
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.person),
+                      suffixIcon: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_selectedPlayerNames[index].isNotEmpty)
+                            IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                setState(() {
+                                  _selectedPlayerNames[index] = '';
+                                });
+                              },
+                              tooltip: 'Effacer',
+                            ),
+                          if (_selectedPlayerNames.length > 2)
+                            IconButton(
+                              icon: const Icon(Icons.remove_circle_outline),
+                              onPressed: () => _removePlayerSlot(index),
+                              tooltip: 'Retirer',
+                            ),
+                        ],
+                      ),
+                    ),
+                    child: Text(
+                      _selectedPlayerNames[index].isEmpty
+                          ? 'Sélectionner un joueur...'
+                          : _selectedPlayerNames[index],
+                      style: TextStyle(
+                        color: _selectedPlayerNames[index].isEmpty
+                            ? Theme.of(context).hintColor
                             : null,
                       ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Nom requis';
-                        }
-                        return null;
-                      },
-                    );
-                  },
+                    ),
+                  ),
                 ),
               );
             }),

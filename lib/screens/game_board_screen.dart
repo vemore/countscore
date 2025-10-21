@@ -90,7 +90,7 @@ class GameBoardScreen extends StatelessWidget {
                   scrollDirection: Axis.horizontal,
                   child: SingleChildScrollView(
                     child: DataTable(
-                      columnSpacing: 40,
+                      columnSpacing: 16,
                       headingRowHeight: 56,
                       dataRowMinHeight: 48,
                       dataRowMaxHeight: 48,
@@ -114,7 +114,7 @@ class GameBoardScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Total: ${gameProvider.getPlayerTotal(player.id!)}',
+                                  '${gameProvider.getPlayerTotal(player.id!)}',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Theme.of(context)
