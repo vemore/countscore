@@ -6,6 +6,7 @@ import '../providers/game_type_provider.dart';
 import '../providers/theme_provider.dart';
 import '../models/game.dart';
 import '../models/game_type.dart';
+import '../services/database_service.dart';
 import 'about_screen.dart';
 import 'create_game_screen.dart';
 import 'game_board_screen.dart';
@@ -269,7 +270,6 @@ class _HomeScreenState extends State<HomeScreen> {
       future: _getGamePlayers(gameProvider, game.id!),
       builder: (context, snapshot) {
         final players = snapshot.data ?? [];
-        final playerCount = players.length;
 
         return Card(
           color: cardColor.withOpacity(0.1),
@@ -380,10 +380,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<List<String>> _getGamePlayers(GameProvider provider, int gameId) async {
-    final db = provider.getAllPlayerNames();
-    // En fait, on doit charger les joueurs de cette partie spécifique
-    // Pour l'instant on retourne une liste vide, mais on pourrait améliorer
-    return [];
+    final db = DatabaseService.instance;
+    final players = await db.getPlayersByGame(gameId);
+    return players.map((player) => player.name).toList();
   }
 
   Future<void> _handleGameMenuAction(
