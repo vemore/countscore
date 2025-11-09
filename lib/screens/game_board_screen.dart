@@ -2,10 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/game_provider.dart';
+import '../providers/game_type_provider.dart';
 import 'ranking_screen.dart';
 
-class GameBoardScreen extends StatelessWidget {
+class GameBoardScreen extends StatefulWidget {
   const GameBoardScreen({super.key});
+
+  @override
+  State<GameBoardScreen> createState() => _GameBoardScreenState();
+}
+
+class _GameBoardScreenState extends State<GameBoardScreen> {
+  // Track players who exceeded 100 to play sound only once
+  final Set<int> _playersOver100 = {};
 
   @override
   Widget build(BuildContext context) {
@@ -71,10 +80,14 @@ class GameBoardScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Consumer<GameProvider>(
-        builder: (context, gameProvider, child) {
+      body: Consumer2<GameProvider, GameTypeProvider>(
+        builder: (context, gameProvider, gameTypeProvider, child) {
           final players = gameProvider.currentPlayers;
           final rounds = gameProvider.currentRounds;
+          final gameType = gameProvider.currentGame?.gameTypeId != null
+              ? gameTypeProvider.getGameTypeById(gameProvider.currentGame!.gameTypeId!)
+              : null;
+          final isZapZap = gameType?.name.toLowerCase() == 'zapzap';
 
           if (players.isEmpty) {
             return const Center(
@@ -102,19 +115,31 @@ class GameBoardScreen extends StatelessWidget {
                           ),
                         ),
                         ...players.map((player) {
+                          final playerTotal = gameProvider.getPlayerTotal(player.id!);
+                          final isOver100 = isZapZap && playerTotal > 100;
+
                           return DataColumn(
                             label: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
                                   player.name,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.bold,
+                                    decoration: isOver100
+                                        ? TextDecoration.lineThrough
+                                        : null,
+                                    decorationColor: isOver100
+                                        ? Colors.red
+                                        : null,
+                                    decorationThickness: isOver100
+                                        ? 2.0
+                                        : null,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  '${gameProvider.getPlayerTotal(player.id!)}',
+                                  '$playerTotal',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Theme.of(context)
@@ -144,21 +169,20 @@ class GameBoardScreen extends StatelessWidget {
                                 player.id!,
                                 round.id!,
                               );
+                              final isZeroScore = isZapZap && score == 0;
+                              final cellColor = gameType?.cardColor ?? Theme.of(context).colorScheme.primaryContainer;
+
                               return DataCell(
                                 InkWell(
                                   onTap: () {
                                     _showScoreDialog(
                                       context,
-                                      player.name,
+                                      gameProvider,
+                                      gameType,
+                                      player,
                                       round.roundNumber,
+                                      round.id!,
                                       score ?? 0,
-                                      (newScore) {
-                                        gameProvider.updateScore(
-                                          player.id!,
-                                          round.id!,
-                                          newScore,
-                                        );
-                                      },
                                     );
                                   },
                                   child: Container(
@@ -168,10 +192,7 @@ class GameBoardScreen extends StatelessWidget {
                                     ),
                                     decoration: BoxDecoration(
                                       color: score != null
-                                          ? Theme.of(context)
-                                              .colorScheme
-                                              .primaryContainer
-                                              .withOpacity(0.3)
+                                          ? cellColor.withOpacity(0.3)
                                           : null,
                                       borderRadius: BorderRadius.circular(4),
                                     ),
@@ -181,6 +202,15 @@ class GameBoardScreen extends StatelessWidget {
                                         fontWeight: score != null
                                             ? FontWeight.bold
                                             : FontWeight.normal,
+                                        decoration: isZeroScore
+                                            ? TextDecoration.underline
+                                            : null,
+                                        decorationColor: isZeroScore
+                                            ? cellColor
+                                            : null,
+                                        decorationThickness: isZeroScore
+                                            ? 2.0
+                                            : null,
                                       ),
                                     ),
                                   ),
@@ -218,19 +248,48 @@ class GameBoardScreen extends StatelessWidget {
 
   void _showScoreDialog(
     BuildContext context,
-    String playerName,
+    GameProvider gameProvider,
+    dynamic gameType,
+    dynamic player,
     int roundNumber,
+    int roundId,
     int currentScore,
-    Function(int) onScoreUpdated,
   ) {
     final controller = TextEditingController(
       text: currentScore == 0 ? '' : currentScore.toString(),
     );
 
+    final isZapZap = gameType?.name.toLowerCase() == 'zapzap';
+
+    void handleScoreUpdate(int newScore) async {
+      final oldTotal = gameProvider.getPlayerTotal(player.id!);
+
+      await gameProvider.updateScore(
+        player.id!,
+        roundId,
+        newScore,
+      );
+
+      // Check if player just exceeded 100 for ZapZap
+      if (isZapZap) {
+        final newTotal = gameProvider.getPlayerTotal(player.id!);
+        if (oldTotal <= 100 && newTotal > 100 && !_playersOver100.contains(player.id!)) {
+          setState(() {
+            _playersOver100.add(player.id!);
+          });
+          SystemSound.play(SystemSoundType.alert);
+        } else if (newTotal <= 100 && _playersOver100.contains(player.id!)) {
+          setState(() {
+            _playersOver100.remove(player.id!);
+          });
+        }
+      }
+    }
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('$playerName - Tour $roundNumber'),
+        title: Text('${player.name} - Tour $roundNumber'),
         content: TextField(
           controller: controller,
           keyboardType: const TextInputType.numberWithOptions(
@@ -249,7 +308,7 @@ class GameBoardScreen extends StatelessWidget {
           onSubmitted: (value) {
             if (value.isNotEmpty) {
               final score = int.tryParse(value) ?? 0;
-              onScoreUpdated(score);
+              handleScoreUpdate(score);
               Navigator.pop(context);
             }
           },
@@ -264,9 +323,9 @@ class GameBoardScreen extends StatelessWidget {
               final value = controller.text.trim();
               if (value.isNotEmpty) {
                 final score = int.tryParse(value) ?? 0;
-                onScoreUpdated(score);
+                handleScoreUpdate(score);
               } else {
-                onScoreUpdated(0);
+                handleScoreUpdate(0);
               }
               Navigator.pop(context);
             },
