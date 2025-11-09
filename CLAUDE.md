@@ -57,8 +57,15 @@ countscore/
 # Development
 flutter run                           # Run on connected device
 flutter run --release                 # Release mode
-flutter build apk                     # Build Android APK
-flutter build ios                     # Build iOS app
+
+# Production builds
+flutter build apk --no-tree-shake-icons                     # Build Android APK (required due to dynamic IconData in GameType)
+flutter build apk --release --no-tree-shake-icons          # Build release APK
+flutter build ios --no-tree-shake-icons                     # Build iOS app
+
+# Note: --no-tree-shake-icons is required because GameType uses dynamic IconData
+# created from database values (game_type.dart:20). This adds ~200KB to APK size
+# but is necessary for the database-driven icon system.
 
 # Quality checks
 flutter analyze                       # Static analysis
