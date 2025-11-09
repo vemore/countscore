@@ -1,0 +1,37 @@
+🎉 Lancement Initial de CountScore v1.0.0
+
+Bienvenue dans CountScore - votre nouveau compagnon de suivi de scores !
+
+✨ Fonctionnalités de Lancement :
+
+🎮 Gestion Multi-Jeux
+• Suivez les scores pour n'importe quel type de jeu
+• Types de jeux personnalisables avec couleurs et icônes
+• Prise en charge de plusieurs jeux simultanés
+
+👥 Gestion des Joueurs
+• Ajoutez un nombre illimité de joueurs
+• Profils avec couleurs personnalisées
+• Statistiques complètes des joueurs
+
+📊 Suivi des Scores
+• Interface de saisie rapide et intuitive
+• Historique complet des parties
+• Visualisation claire des classements
+
+🔒 Confidentialité & Sécurité
+• Aucune collecte de données
+• Stockage 100% local
+• Pas de publicités ni de tracking
+• Open source (licence MIT)
+
+💡 Conçu pour Vous
+• Interface Material Design 3 moderne
+• Mode verrouillage d'écran pendant les parties
+• Fonctionne entièrement hors ligne
+• Gratuit pour toujours
+
+Téléchargez maintenant et ne perdez plus jamais trace d'un score !
+
+Pour les questions ou le support : scribio.ai@gmail.com
+Code source : https://github.com/vemore/countscore

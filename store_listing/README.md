@@ -11,6 +11,11 @@ store_listing/
 │   ├── short_description.txt       # Short description (80 chars max)
 │   ├── full_description.txt        # Full description (4000 chars max)
 │   └── release_notes_v1.0.0.txt   # Release notes for v1.0.0
+├── fr-FR/                          # French (France) listing
+│   ├── title.txt                   # App name (50 chars max)
+│   ├── short_description.txt       # Short description (80 chars max)
+│   ├── full_description.txt        # Full description (4000 chars max)
+│   └── release_notes_v1.0.0.txt   # Release notes for v1.0.0
 ├── assets/                         # Visual assets (create these)
 │   ├── icon_512.png               # App icon 512×512 (REQUIRED)
 │   ├── feature_graphic.png        # Feature graphic 1024×500 (REQUIRED)
@@ -25,10 +30,11 @@ store_listing/
 
 ### Store Listing Copy ✅
 
-All text content is ready to use:
+All text content is ready to use in **2 languages**:
 
-1. **title.txt** - "CountScore - Score Tracker"
-2. **short_description.txt** - 79 character engaging description
+**English (en-US)** and **French (fr-FR)**:
+1. **title.txt** - "CountScore - Score Tracker" / "CountScore - Suivi de Score"
+2. **short_description.txt** - Engaging description (under 80 chars)
 3. **full_description.txt** - 3,500+ character comprehensive description with:
    - Feature highlights
    - Use cases
@@ -107,16 +113,26 @@ In Google Play Console:
 **Production > Releases**:
 1. Release notes: Copy from `release_notes_v1.0.0.txt`
 
-## Localization (Future)
+## Localization
+
+### Available Languages ✅
+
+CountScore store listing is currently available in:
+- 🇺🇸 **en-US** - English (United States)
+- 🇫🇷 **fr-FR** - French (France)
+
+### Adding More Languages
 
 To add support for additional languages, create new directories:
 
 ```
 store_listing/
-├── en-US/           # English (United States)
+├── en-US/           # English (United States) ✅
+├── fr-FR/           # French (France) ✅
 ├── es-ES/           # Spanish (Spain)
-├── fr-FR/           # French (France)
 ├── de-DE/           # German (Germany)
+├── it-IT/           # Italian (Italy)
+├── pt-BR/           # Portuguese (Brazil)
 └── ...
 ```
 

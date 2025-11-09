@@ -1,0 +1,93 @@
+🎯 COUNTSCORE - SUIVI DE SCORE SIMPLE ET PUISSANT
+
+Gardez les scores de tous vos jeux et activités en un seul endroit. Idéal pour les soirées jeux, tournois et ligues sportives.
+
+✨ FONCTIONNALITÉS PRINCIPALES
+
+🎮 GESTION MULTI-JEUX
+• Suivez n'importe quel type de jeu
+• Jeux de plateau, cartes, sports, activités personnalisées
+• Gérez plusieurs jeux simultanément
+• Types personnalisables avec couleurs et icônes
+
+👥 GESTION DES JOUEURS
+• Nombre illimité de joueurs
+• Historique complet
+• Couleurs personnalisées
+• Profils avec statistiques
+
+📊 SUIVI DES SCORES
+• Saisie rapide et intuitive
+• Historique des parties
+• Statistiques des joueurs
+• Classements clairs
+
+🎨 PERSONNALISATION
+• Types de jeux personnalisés
+• Sélecteur de couleurs
+• Icônes Material Design
+• Thèmes clair et sombre
+
+📱 PRATIQUE
+• Interface Material Design 3
+• Mode verrouillage d'écran
+• Fonctionne hors ligne
+• Base de données locale
+
+🔒 CONFIDENTIALITÉ D'ABORD
+• AUCUNE collecte de données
+• AUCUN suivi ni analyse
+• AUCUNE publicité
+• AUCUN compte requis
+• Données 100% locales
+• Open source (licence MIT)
+
+💡 PARFAIT POUR
+
+🎲 Soirées Jeux - Uno, Scrabble, Monopoly, Risk, jeux de société
+🃏 Tournois de Cartes - Poker, bridge, rami
+⚽ Ligues Sportives - Football, basketball, tennis
+🎯 Activités Personnalisées - Systèmes de scoring sur mesure
+
+📈 POURQUOI COUNTSCORE ?
+
+✅ Simple à Utiliser - Interface intuitive, aucune courbe d'apprentissage
+✅ Rapide et Fiable - Base de données SQLite performante
+✅ Pas de Distractions - Aucune pub ni interruption
+✅ Vie Privée Respectée - Vos données restent sur votre appareil
+✅ Gratuit - Open source, pas d'achats ni abonnements
+✅ Actif - Mises à jour régulières
+
+🛠️ TECHNIQUE
+
+• Flutter pour performances natives
+• SQLite local
+• Fonctionne hors ligne
+• Material Design 3
+• Tablettes et téléphones
+• Application légère
+
+📖 OPEN SOURCE
+
+CountScore est open source (licence MIT). Code complet sur GitHub.
+https://github.com/vemore/countscore
+
+🌟 DÉMARREZ AUJOURD'HUI
+
+Téléchargez CountScore et ne perdez plus jamais trace d'un score. Simple, puissant et respectueux de votre vie privée.
+
+📧 SUPPORT
+
+Email : scribio.ai@gmail.com
+GitHub : https://github.com/vemore/countscore
+
+🔐 CONFIDENTIALITÉ
+
+CountScore ne collecte AUCUNE donnée. Tout est stocké localement. Politique complète :
+https://raw.githubusercontent.com/vemore/countscore/main/privacy_policy.md
+
+---
+
+🎮 Transformez vos soirées jeux avec CountScore !
+
+#SuiviDeScore #JeuxDeSociété #JeuxDeCartes #SportsScore #SansPublicité #ViePrivée #OpenSource
