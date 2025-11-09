@@ -129,18 +129,20 @@ flutter build appbundle --release --no-tree-shake-icons
 
 **Already configured** ✅:
 - Release signing: `android/app/build.gradle.kts`
-- ProGuard/R8 optimization: enabled
-- Code shrinking: enabled
-- Resource shrinking: enabled
+- ProGuard/R8: **Disabled** (open-source app, no obfuscation needed)
 - App name: "CountScore"
+
+**Why ProGuard/R8 is disabled**:
+- CountScore is open-source (MIT license) - source code is public on GitHub
+- Code obfuscation provides no security benefit
+- Simpler builds with readable crash reports
+- Faster build times
+- APK size difference is negligible (~10-15 MB larger)
 
 **Check current configuration**:
 ```bash
 # View build.gradle.kts signing config
 cat android/app/build.gradle.kts | grep -A 20 "signingConfigs"
-
-# View ProGuard rules
-cat android/app/proguard-rules.pro | head -20
 ```
 
 ### 3.2 Version Management

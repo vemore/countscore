@@ -1,0 +1,47 @@
+🎉 CountScore 1.0.0 - Initial Release
+
+Welcome to CountScore! We're excited to bring you simple, powerful score tracking for all your games and activities.
+
+✨ Features in this release:
+
+📊 SCORE TRACKING
+• Track scores for multiple game types
+• Support for lowest-wins and highest-wins scoring
+• Easy score entry and management
+
+🎮 GAME TYPES
+• Pre-configured games (Uno, Scrabble, and more)
+• Create custom game types
+• Personalized colors and icons
+
+👥 PLAYER MANAGEMENT
+• Add and manage unlimited players
+• Track players across different games
+• Easy player organization
+
+📈 GAME HISTORY
+• Full score history for all games
+• Review past game results
+• Track progress over time
+
+🎨 CUSTOMIZATION
+• Custom colors for each game type
+• Material Design 3 interface
+• Clean, intuitive design
+
+🔒 PRIVACY FOCUSED
+• All data stored locally on your device
+• No data collection or tracking
+• No ads or third-party services
+• Open-source and auditable
+
+📴 WORKS OFFLINE
+• No internet connection required
+• Perfect for any location
+• Lightweight and fast
+
+Thank you for downloading CountScore! We hope you enjoy tracking your game scores.
+
+Have feedback or suggestions? Contact us at [YOUR_EMAIL_HERE]
+
+Happy gaming! 🎲

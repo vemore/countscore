@@ -122,6 +122,29 @@ CountScore uses several open-source packages. All dependencies use permissive li
 
 You can also view dependency licenses in the app through the built-in Flutter license viewer.
 
+## Privacy
+
+**CountScore respects your privacy.**
+
+- ✅ **No data collection**: All data is stored locally on your device
+- ✅ **No analytics or tracking**: We don't track how you use the app
+- ✅ **No ads**: Completely ad-free experience
+- ✅ **No third-party services**: No external services integrated
+- ✅ **Open source**: Code is publicly auditable
+
+**What data is stored locally**:
+- Game types and settings
+- Player names
+- Game scores and history
+- App preferences
+
+**Your data, your control**:
+- Delete individual games or players anytime
+- Clear all data through Android settings
+- Uninstall removes all data permanently
+
+**Privacy Policy**: See [privacy_policy.md](privacy_policy.md) for complete details.
+
 ## Resources
 
 - [Flutter Documentation](https://docs.flutter.dev/)

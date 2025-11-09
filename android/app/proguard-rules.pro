@@ -1,7 +1,27 @@
 # CountScore - ProGuard Rules for Release Builds
 #
-# This file contains ProGuard/R8 rules for code shrinking and obfuscation.
-# These rules ensure the app works correctly after minification.
+# ⚠️ NOTE: ProGuard/R8 is currently DISABLED for CountScore
+#
+# Since CountScore is an open-source MIT-licensed application, code obfuscation
+# provides no security benefit (source code is publicly available on GitHub).
+#
+# ProGuard/R8 is disabled in android/app/build.gradle.kts:
+#   isMinifyEnabled = false
+#   isShrinkResources = false
+#
+# This file is kept for reference if you want to enable shrinking in the future.
+#
+# Benefits of keeping it disabled:
+# - Simpler builds (no configuration issues)
+# - Readable crash reports and stack traces
+# - Faster build times
+# - Easier debugging
+#
+# To enable ProGuard/R8 in the future:
+# 1. Edit android/app/build.gradle.kts
+# 2. Set isMinifyEnabled = true and isShrinkResources = true
+# 3. Uncomment proguardFiles configuration
+# 4. Test thoroughly and fix any issues with these rules
 #
 # Official Documentation:
 # - Flutter: https://docs.flutter.dev/deployment/android#shrinking-your-code-with-r8
@@ -153,6 +173,10 @@
 -dontwarn org.conscrypt.**
 -dontwarn org.bouncycastle.**
 -dontwarn org.openjsse.**
+
+# Suppress warnings for Google Play Core (optional Flutter deferred components feature)
+# These classes are referenced by Flutter but not used in this app
+-dontwarn com.google.android.play.core.**
 
 # ============================================================================
 # OPTIMIZATION

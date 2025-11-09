@@ -205,7 +205,7 @@ flutter build appbundle --release --no-tree-shake-icons
 
 **Security Configuration**:
 - ✅ Release signing configured in `android/app/build.gradle.kts`
-- ✅ ProGuard/R8 code shrinking enabled
+- ✅ ProGuard/R8 disabled (open-source app, no obfuscation needed)
 - ✅ Keystore files excluded from version control
 - ✅ App name: "CountScore" (production-ready)
 
