@@ -186,11 +186,49 @@ Before marking any feature complete:
 - [ ] Navigation flows work correctly
 - [ ] Colors work in both light and dark themes (if applicable)
 
+### Play Store Publishing
+
+**Status**: Configured for Play Store release
+
+**Prerequisites**:
+1. Generate upload keystore: `./scripts/generate_keystore.sh`
+2. Create `android/key.properties` from `android/key.properties.template`
+3. Never commit keystore or key.properties files
+
+**Build for Production**:
+```bash
+# Build Android App Bundle (required for Play Store)
+flutter build appbundle --release --no-tree-shake-icons
+
+# Output: build/app/outputs/bundle/release/app-release.aab
+```
+
+**Security Configuration**:
+- ✅ Release signing configured in `android/app/build.gradle.kts`
+- ✅ ProGuard/R8 code shrinking enabled
+- ✅ Keystore files excluded from version control
+- ✅ App name: "CountScore" (production-ready)
+
+**Publishing Checklist**:
+See [PUBLISHING.md](PUBLISHING.md) for complete step-by-step guide including:
+- App signing setup
+- Privacy policy requirements
+- Store listing assets
+- Play Console configuration
+- Testing procedures
+
+**Important Notes**:
+- `--no-tree-shake-icons` flag is required (see game_type.dart:20)
+- Backup your keystore securely - losing it means you can't update the app
+- Test release builds thoroughly before submission
+- Target API level 35 (Android 15) for 2025 compliance
+
 ### Contact and Resources
 - [Flutter Documentation](https://docs.flutter.dev/)
 - [Dart Language Tour](https://dart.dev/guides/language/language-tour)
 - [Provider Package](https://pub.dev/packages/provider)
 - [SQLite Guide](https://pub.dev/packages/sqflite)
+- [Play Store Publishing](https://docs.flutter.dev/deployment/android)
 
 ---
 **Note**: This file provides project-specific context for Claude Code. Update as the project evolves.

@@ -1,0 +1,80 @@
+# key.properties - Android App Signing Configuration
+#
+# 🔐 SECURITY WARNING: This file contains sensitive credentials!
+#
+# CRITICAL INSTRUCTIONS:
+# 1. Copy this file to: android/key.properties
+# 2. Fill in your actual keystore credentials below
+# 3. NEVER commit key.properties to version control
+# 4. Verify key.properties is in .gitignore
+# 5. Store passwords securely in a password manager
+#
+# Official Documentation:
+# https://docs.flutter.dev/deployment/android#reference-the-keystore-from-the-app
+
+# Keystore file location (absolute path recommended)
+# Example: /home/username/countscore-upload-keystore.jks
+# Or relative: ../countscore-upload-keystore.jks
+storeFile=/home/vemore/countscore-upload-keystore.jks
+
+# Keystore password (set during keystore generation)
+storePassword=YOUR_STORE_PASSWORD_HERE
+
+# Key alias (default: countscore-upload)
+keyAlias=countscore-upload
+
+# Key password (set during keystore generation, often same as storePassword)
+keyPassword=YOUR_KEY_PASSWORD_HERE
+
+# ============================================================================
+# SETUP INSTRUCTIONS:
+# ============================================================================
+#
+# 1. Generate keystore (if not done):
+#    ./scripts/generate_keystore.sh
+#
+# 2. Copy this template:
+#    cp android/key.properties.template android/key.properties
+#
+# 3. Edit android/key.properties with your actual credentials
+#
+# 4. Verify .gitignore contains:
+#    - android/key.properties
+#    - *.jks
+#    - *.keystore
+#
+# 5. Test release build:
+#    flutter build appbundle --release
+#
+# ============================================================================
+# TROUBLESHOOTING:
+# ============================================================================
+#
+# Error: "Keystore file not found"
+#   - Check storeFile path is absolute and correct
+#   - Verify keystore file exists at specified location
+#
+# Error: "Keystore was tampered with, or password was incorrect"
+#   - Verify storePassword and keyPassword are correct
+#   - Check for extra spaces or quotes in passwords
+#
+# Error: "Key with alias 'countscore-upload' does not exist"
+#   - Verify keyAlias matches the alias used during keystore generation
+#   - Default alias from generate_keystore.sh is "countscore-upload"
+#
+# ============================================================================
+# BACKUP REMINDER:
+# ============================================================================
+#
+# CRITICAL: Backup your keystore file securely!
+#
+# Recommended backup locations:
+# - Password manager (1Password, LastPass, Bitwarden)
+# - Encrypted cloud storage (Google Drive, Dropbox with encryption)
+# - Encrypted USB drive (store offline in safe place)
+# - Company secure storage (if applicable)
+#
+# Losing the keystore means you CANNOT update your app on Play Store.
+# You would have to publish as a completely new application with new package name.
+#
+# ============================================================================
