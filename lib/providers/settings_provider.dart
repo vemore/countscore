@@ -59,9 +59,10 @@ class SettingsProvider with ChangeNotifier {
   Future<bool> importDatabase() async {
     try {
       // Demander à l'utilisateur de sélectionner un fichier
+      // Using FileType.any because .db extension may not be recognized on all Android devices
       FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['db'],
+        type: FileType.any,
+        allowMultiple: false,
       );
 
       if (result == null || result.files.single.path == null) {

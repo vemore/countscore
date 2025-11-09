@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/theme_provider.dart';
@@ -168,25 +169,36 @@ class SettingsScreen extends StatelessWidget {
                         try {
                           final success = await settingsProvider.importDatabase();
                           if (success && context.mounted) {
+                            // Afficher le message de succès
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Base de données importée avec succès'),
                                 backgroundColor: Colors.green,
+                                duration: Duration(seconds: 2),
                               ),
                             );
-                            // Redémarrer l'application pour recharger les données
+
+                            // Afficher un dialog et fermer l'application après un délai
                             if (context.mounted) {
-                              showDialog(
+                              await showDialog(
                                 context: context,
+                                barrierDismissible: false,
                                 builder: (context) => AlertDialog(
                                   title: const Text('Import réussi'),
                                   content: const Text(
-                                    'La base de données a été importée. '
-                                    'Veuillez redémarrer l\'application pour voir les changements.',
+                                    'La base de données a été importée avec succès.\n\n'
+                                    'L\'application va maintenant se fermer. '
+                                    'Veuillez la rouvrir pour voir les nouvelles données.',
                                   ),
                                   actions: [
                                     TextButton(
-                                      onPressed: () => Navigator.of(context).pop(),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        // Fermer l'application après une courte pause
+                                        Future.delayed(const Duration(milliseconds: 500), () {
+                                          SystemNavigator.pop();
+                                        });
+                                      },
                                       child: const Text('OK'),
                                     ),
                                   ],
