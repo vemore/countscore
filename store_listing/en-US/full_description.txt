@@ -121,8 +121,8 @@ CountScore is open-source software under the MIT License. The source code is pub
 
 Need help or have suggestions? We're here to help!
 
-Contact: [YOUR_EMAIL_HERE]
-GitHub: [YOUR_GITHUB_URL]
+Contact: scribio.ai@gmail.com
+GitHub: https://github.com/vemore/countscore
 
 We typically respond within 48 hours and welcome your feedback.
 
