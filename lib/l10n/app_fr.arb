@@ -1,0 +1,659 @@
+{
+  "@@locale": "fr",
+
+  "appTitle": "CountScore",
+  "@appTitle": {
+    "description": "The application title"
+  },
+
+  "homeTitle": "Accueil",
+  "@homeTitle": {
+    "description": "Home screen title"
+  },
+
+  "playersListTitle": "Liste des joueurs",
+  "@playersListTitle": {
+    "description": "Players list screen title"
+  },
+
+  "gameTypesTitle": "Types de jeux",
+  "@gameTypesTitle": {
+    "description": "Game types screen title"
+  },
+
+  "settingsTitle": "Paramètres",
+  "@settingsTitle": {
+    "description": "Settings screen title"
+  },
+
+  "aboutTitle": "À propos",
+  "@aboutTitle": {
+    "description": "About screen title"
+  },
+
+  "newGame": "Nouvelle partie",
+  "@newGame": {
+    "description": "New game button text"
+  },
+
+  "noGames": "Aucune partie",
+  "@noGames": {
+    "description": "Message when no games exist"
+  },
+
+  "noGamesOfThisType": "Aucune partie de ce type",
+  "@noGamesOfThisType": {
+    "description": "Message when no games of a specific type exist"
+  },
+
+  "createFirstGame": "Créez votre première partie",
+  "@createFirstGame": {
+    "description": "Message prompting user to create first game"
+  },
+
+  "createdOn": "Créé le",
+  "@createdOn": {
+    "description": "Label for creation date"
+  },
+
+  "newWithSamePlayers": "Nouvelle avec mêmes joueurs",
+  "@newWithSamePlayers": {
+    "description": "Menu option to create new game with same players"
+  },
+
+  "rename": "Renommer",
+  "@rename": {
+    "description": "Menu option to rename"
+  },
+
+  "delete": "Supprimer",
+  "@delete": {
+    "description": "Menu option to delete"
+  },
+
+  "confirmDeletion": "Confirmer la suppression",
+  "@confirmDeletion": {
+    "description": "Title for deletion confirmation dialog"
+  },
+
+  "confirmDeleteGame": "Voulez-vous vraiment supprimer la partie \"{name}\" ?",
+  "@confirmDeleteGame": {
+    "description": "Confirmation message for game deletion",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Partie de cartes"
+      }
+    }
+  },
+
+  "cancel": "Annuler",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+
+  "renameGame": "Renommer la partie",
+  "@renameGame": {
+    "description": "Dialog title for renaming a game"
+  },
+
+  "gameName": "Nom de la partie",
+  "@gameName": {
+    "description": "Label for game name input field"
+  },
+
+  "save": "Enregistrer",
+  "@save": {
+    "description": "Save button text"
+  },
+
+  "filterByGameType": "Filtrer par type de jeu",
+  "@filterByGameType": {
+    "description": "Label for game type filter"
+  },
+
+  "allGames": "Tous les jeux",
+  "@allGames": {
+    "description": "Option to show all games (no filter)"
+  },
+
+  "gameType": "Type de jeu",
+  "@gameType": {
+    "description": "Label for game type"
+  },
+
+  "loadingGameTypes": "Chargement des types de jeux...",
+  "@loadingGameTypes": {
+    "description": "Loading message for game types"
+  },
+
+  "winRule": "Règle de victoire",
+  "@winRule": {
+    "description": "Label for win rule selection"
+  },
+
+  "lowestScoreWins": "Plus petit score gagne",
+  "@lowestScoreWins": {
+    "description": "Win rule option: lowest score wins"
+  },
+
+  "highestScoreWins": "Plus grand score gagne",
+  "@highestScoreWins": {
+    "description": "Win rule option: highest score wins"
+  },
+
+  "lowestScoreExample": "Ex: Golf, Hearts",
+  "@lowestScoreExample": {
+    "description": "Examples of games with lowest score wins"
+  },
+
+  "highestScoreExample": "Ex: Rami, Belote",
+  "@highestScoreExample": {
+    "description": "Examples of games with highest score wins"
+  },
+
+  "players": "Joueurs",
+  "@players": {
+    "description": "Label for players section"
+  },
+
+  "add": "Ajouter",
+  "@add": {
+    "description": "Add button text"
+  },
+
+  "pleaseEnterName": "Veuillez entrer un nom",
+  "@pleaseEnterName": {
+    "description": "Validation message for empty name"
+  },
+
+  "atLeast2PlayersRequired": "Au moins 2 joueurs sont requis",
+  "@atLeast2PlayersRequired": {
+    "description": "Validation message for minimum players"
+  },
+
+  "playerNumber": "Joueur {index}",
+  "@playerNumber": {
+    "description": "Label for player number",
+    "placeholders": {
+      "index": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+
+  "selectPlayer": "Sélectionner un joueur...",
+  "@selectPlayer": {
+    "description": "Placeholder for player selection"
+  },
+
+  "clear": "Effacer",
+  "@clear": {
+    "description": "Clear button text"
+  },
+
+  "remove": "Retirer",
+  "@remove": {
+    "description": "Remove button text"
+  },
+
+  "createGame": "Créer la partie",
+  "@createGame": {
+    "description": "Create game button text"
+  },
+
+  "game": "Partie",
+  "@game": {
+    "description": "Generic game label (fallback)"
+  },
+
+  "deleteLastRound": "Supprimer dernier tour",
+  "@deleteLastRound": {
+    "description": "Menu option to delete last round"
+  },
+
+  "confirm": "Confirmer",
+  "@confirm": {
+    "description": "Confirm button text"
+  },
+
+  "confirmDeleteLastRound": "Supprimer le dernier tour ?",
+  "@confirmDeleteLastRound": {
+    "description": "Confirmation message for deleting last round"
+  },
+
+  "noPlayersInGame": "Aucun joueur dans cette partie",
+  "@noPlayersInGame": {
+    "description": "Message when game has no players"
+  },
+
+  "round": "Tour",
+  "@round": {
+    "description": "Label for round"
+  },
+
+  "addRound": "Ajouter un tour",
+  "@addRound": {
+    "description": "Button text to add a round"
+  },
+
+  "score": "Score",
+  "@score": {
+    "description": "Label for score"
+  },
+
+  "enterScore": "Entrez le score",
+  "@enterScore": {
+    "description": "Placeholder for score input"
+  },
+
+  "appearance": "Apparence",
+  "@appearance": {
+    "description": "Settings section for appearance"
+  },
+
+  "light": "Clair",
+  "@light": {
+    "description": "Light theme option"
+  },
+
+  "dark": "Sombre",
+  "@dark": {
+    "description": "Dark theme option"
+  },
+
+  "system": "Système",
+  "@system": {
+    "description": "System theme option"
+  },
+
+  "screen": "Écran",
+  "@screen": {
+    "description": "Settings section for screen"
+  },
+
+  "keepScreenAwake": "Garder l'écran allumé",
+  "@keepScreenAwake": {
+    "description": "Setting to keep screen awake"
+  },
+
+  "keepScreenAwakeDescription": "Empêche l'écran de se mettre en veille pendant une partie",
+  "@keepScreenAwakeDescription": {
+    "description": "Description for keep screen awake setting"
+  },
+
+  "backup": "Sauvegarde",
+  "@backup": {
+    "description": "Settings section for backup"
+  },
+
+  "exportDatabase": "Exporter la base de données",
+  "@exportDatabase": {
+    "description": "Option to export database"
+  },
+
+  "exportDatabaseDescription": "Sauvegarder toutes vos parties dans un fichier",
+  "@exportDatabaseDescription": {
+    "description": "Description for export database option"
+  },
+
+  "databaseExportedTo": "Base de données exportée vers:",
+  "@databaseExportedTo": {
+    "description": "Success message for database export"
+  },
+
+  "errorDuringExport": "Erreur lors de l'export:",
+  "@errorDuringExport": {
+    "description": "Error message prefix for export failure"
+  },
+
+  "importDatabase": "Importer une base de données",
+  "@importDatabase": {
+    "description": "Option to import database"
+  },
+
+  "importDatabaseDescription": "Restaurer vos parties depuis un fichier de sauvegarde",
+  "@importDatabaseDescription": {
+    "description": "Description for import database option"
+  },
+
+  "confirmation": "Confirmation",
+  "@confirmation": {
+    "description": "Confirmation dialog title"
+  },
+
+  "importWarning": "L'importation remplacera toutes vos données actuelles. Une sauvegarde automatique sera créée avant l'import.\n\nVoulez-vous continuer ?",
+  "@importWarning": {
+    "description": "Warning message before importing database"
+  },
+
+  "import": "Importer",
+  "@import": {
+    "description": "Import button text"
+  },
+
+  "databaseImportedSuccessfully": "Base de données importée avec succès",
+  "@databaseImportedSuccessfully": {
+    "description": "Success title for database import"
+  },
+
+  "importSuccessful": "Import réussi",
+  "@importSuccessful": {
+    "description": "Import successful title"
+  },
+
+  "importSuccessMessage": "La base de données a été importée avec succès.\n\nL'application va maintenant se fermer. Veuillez la rouvrir pour voir les nouvelles données.",
+  "@importSuccessMessage": {
+    "description": "Success message for database import"
+  },
+
+  "ok": "OK",
+  "@ok": {
+    "description": "OK button text"
+  },
+
+  "errorDuringImport": "Erreur lors de l'import:",
+  "@errorDuringImport": {
+    "description": "Error message prefix for import failure"
+  },
+
+  "noPlayers": "Aucun joueur",
+  "@noPlayers": {
+    "description": "Message when no players exist"
+  },
+
+  "playersAppearMessage": "Les joueurs apparaîtront ici une fois\nque vous aurez créé des parties",
+  "@playersAppearMessage": {
+    "description": "Message explaining when players will appear"
+  },
+
+  "gamesCount": "{count, plural, =0{0 partie} =1{1 partie} other{{count} parties}}",
+  "@gamesCount": {
+    "description": "Games count with plural forms",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+
+  "winsCount": "{count, plural, =0{0 victoire} =1{1 victoire} other{{count} victoires}}",
+  "@winsCount": {
+    "description": "Wins count with plural forms",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+
+  "changeColor": "Changer la couleur",
+  "@changeColor": {
+    "description": "Option to change color"
+  },
+
+  "renamePlayer": "Renommer le joueur",
+  "@renamePlayer": {
+    "description": "Dialog title for renaming a player"
+  },
+
+  "newName": "Nouveau nom",
+  "@newName": {
+    "description": "Label for new name input"
+  },
+
+  "playerRenamedTo": "Joueur renommé en \"{name}\"",
+  "@playerRenamedTo": {
+    "description": "Success message for player rename",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Alice"
+      }
+    }
+  },
+
+  "deletePlayer": "Supprimer le joueur",
+  "@deletePlayer": {
+    "description": "Dialog title for deleting a player"
+  },
+
+  "confirmDeletePlayer": "Voulez-vous vraiment supprimer \"{name}\" ?\n\nCe joueur sera supprimé de toutes les {count} partie(s).",
+  "@confirmDeletePlayer": {
+    "description": "Confirmation message for player deletion",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Alice"
+      },
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+
+  "playerDeleted": "Joueur \"{name}\" supprimé",
+  "@playerDeleted": {
+    "description": "Success message for player deletion",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Alice"
+      }
+    }
+  },
+
+  "chooseColor": "Choisir une couleur",
+  "@chooseColor": {
+    "description": "Dialog title for color picker"
+  },
+
+  "noGameTypes": "Aucun type de jeu",
+  "@noGameTypes": {
+    "description": "Message when no game types exist"
+  },
+
+  "predefined": "Prédéfini",
+  "@predefined": {
+    "description": "Label for predefined/default game types"
+  },
+
+  "edit": "Modifier",
+  "@edit": {
+    "description": "Edit button text"
+  },
+
+  "newType": "Nouveau type",
+  "@newType": {
+    "description": "Button text to create new type"
+  },
+
+  "editType": "Modifier le type",
+  "@editType": {
+    "description": "Dialog title for editing game type"
+  },
+
+  "newGameType": "Nouveau type de jeu",
+  "@newGameType": {
+    "description": "Dialog title for creating new game type"
+  },
+
+  "gameTypeName": "Nom du type de jeu",
+  "@gameTypeName": {
+    "description": "Label for game type name input"
+  },
+
+  "icon": "Icône:",
+  "@icon": {
+    "description": "Label for icon selection"
+  },
+
+  "color": "Couleur:",
+  "@color": {
+    "description": "Label for color selection"
+  },
+
+  "chooseIcon": "Choisir une icône",
+  "@chooseIcon": {
+    "description": "Dialog title for icon picker"
+  },
+
+  "nameIsRequired": "Le nom est requis",
+  "@nameIsRequired": {
+    "description": "Validation message for required name"
+  },
+
+  "create": "Créer",
+  "@create": {
+    "description": "Create button text"
+  },
+
+  "ranking": "Classement",
+  "@ranking": {
+    "description": "Ranking screen title"
+  },
+
+  "noCurrentGame": "Aucune partie en cours",
+  "@noCurrentGame": {
+    "description": "Message when no current game exists"
+  },
+
+  "noScoresRecorded": "Aucun score enregistré",
+  "@noScoresRecorded": {
+    "description": "Message when no scores are recorded"
+  },
+
+  "playerStatistics": "Statistiques des joueurs",
+  "@playerStatistics": {
+    "description": "Player statistics screen title"
+  },
+
+  "noStatisticsAvailable": "Aucune statistique disponible",
+  "@noStatisticsAvailable": {
+    "description": "Message when no statistics are available"
+  },
+
+  "gamesPlayed": "Parties jouées",
+  "@gamesPlayed": {
+    "description": "Label for games played"
+  },
+
+  "wins": "Victoires",
+  "@wins": {
+    "description": "Label for wins"
+  },
+
+  "winRate": "Taux de victoire",
+  "@winRate": {
+    "description": "Label for win rate"
+  },
+
+  "overallStatistics": "Statistiques globales",
+  "@overallStatistics": {
+    "description": "Title for overall statistics section"
+  },
+
+  "byGameType": "Par type de jeu",
+  "@byGameType": {
+    "description": "Title for by-game-type statistics section"
+  },
+
+  "rate": "Taux",
+  "@rate": {
+    "description": "Label for rate"
+  },
+
+  "version": "Version 1.0.1",
+  "@version": {
+    "description": "Application version"
+  },
+
+  "appDescription": "Application de gestion de scores pour vos parties de jeux par Vincent Moreau",
+  "@appDescription": {
+    "description": "Application description"
+  },
+
+  "features": "Fonctionnalités",
+  "@features": {
+    "description": "Features section title"
+  },
+
+  "featureDifferentGameTypes": "Différents types de jeux",
+  "@featureDifferentGameTypes": {
+    "description": "Feature: different game types"
+  },
+
+  "featurePlayerManagement": "Gestion des joueurs",
+  "@featurePlayerManagement": {
+    "description": "Feature: player management"
+  },
+
+  "featureDetailedStatistics": "Statistiques détaillées",
+  "@featureDetailedStatistics": {
+    "description": "Feature: detailed statistics"
+  },
+
+  "featureCustomization": "Personnalisation",
+  "@featureCustomization": {
+    "description": "Feature: customization"
+  },
+
+  "featureDarkLightTheme": "Thème sombre/clair",
+  "@featureDarkLightTheme": {
+    "description": "Feature: dark/light theme"
+  },
+
+  "credits": "Crédits",
+  "@credits": {
+    "description": "Credits section title"
+  },
+
+  "appIconCredit": "Icône de l'application",
+  "@appIconCredit": {
+    "description": "App icon credit label"
+  },
+
+  "artistName": "efendi.sign",
+  "@artistName": {
+    "description": "Artist name for app icon"
+  },
+
+  "selectPlayerDialogTitle": "Sélectionner un joueur",
+  "@selectPlayerDialogTitle": {
+    "description": "Title for player selection dialog"
+  },
+
+  "search": "Rechercher",
+  "@search": {
+    "description": "Search input label"
+  },
+
+  "createNewPlayer": "Créer un nouveau joueur",
+  "@createNewPlayer": {
+    "description": "Button text to create new player"
+  },
+
+  "newPlayerName": "Nom du nouveau joueur",
+  "@newPlayerName": {
+    "description": "Label for new player name input"
+  },
+
+  "noPlayersFound": "Aucun joueur trouvé",
+  "@noPlayersFound": {
+    "description": "Message when search returns no players"
+  },
+
+  "allPlayersSelected": "Tous les joueurs ont été sélectionnés",
+  "@allPlayersSelected": {
+    "description": "Message when all available players are selected"
+  },
+
+  "close": "Fermer",
+  "@close": {
+    "description": "Close button text"
+  }
+}

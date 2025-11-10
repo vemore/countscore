@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/game_provider.dart';
 
 class PlayerStatsScreen extends StatefulWidget {
@@ -42,15 +43,16 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Statistiques des joueurs'),
+        title: Text(l10n.playerStatistics),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _playerNames.isEmpty
-              ? const Center(
-                  child: Text('Aucune statistique disponible'),
+              ? Center(
+                  child: Text(l10n.noStatisticsAvailable),
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(8),
@@ -85,7 +87,7 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
                             fontSize: 18,
                           ),
                         ),
-                        subtitle: Text('$gamesPlayed parties jouées'),
+                        subtitle: Text(l10n.gamesCount(gamesPlayed)),
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(16),
@@ -93,7 +95,7 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Statistiques globales',
+                                  l10n.overallStatistics,
                                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -101,14 +103,14 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
                                 const SizedBox(height: 12),
                                 _buildStatRow(
                                   context,
-                                  'Parties jouées',
+                                  l10n.gamesPlayed,
                                   gamesPlayed.toString(),
                                   Icons.casino,
                                 ),
                                 const SizedBox(height: 12),
                                 _buildStatRow(
                                   context,
-                                  'Victoires',
+                                  l10n.wins,
                                   wins.toString(),
                                   Icons.emoji_events,
                                   color: Colors.amber,
@@ -116,7 +118,7 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
                                 const SizedBox(height: 12),
                                 _buildStatRow(
                                   context,
-                                  'Taux de victoire',
+                                  l10n.winRate,
                                   '$winRate%',
                                   Icons.percent,
                                   color: Colors.green,
@@ -126,7 +128,7 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
                                   const Divider(),
                                   const SizedBox(height: 12),
                                   Text(
-                                    'Par type de jeu',
+                                    l10n.byGameType,
                                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -188,6 +190,7 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
   }
 
   List<Widget> _buildGameTypeStats(BuildContext context, Map<String, Map<String, int>> statsByType) {
+    final l10n = AppLocalizations.of(context)!;
     final widgets = <Widget>[];
 
     for (final entry in statsByType.entries) {
@@ -231,9 +234,9 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildMiniStat(context, 'Parties', gamesPlayed.toString()),
-                  _buildMiniStat(context, 'Victoires', wins.toString()),
-                  _buildMiniStat(context, 'Taux', '$winRate%'),
+                  _buildMiniStat(context, l10n.gamesPlayed, gamesPlayed.toString()),
+                  _buildMiniStat(context, l10n.wins, wins.toString()),
+                  _buildMiniStat(context, l10n.rate, '$winRate%'),
                 ],
               ),
             ],

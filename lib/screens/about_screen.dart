@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('À propos'),
+        title: Text(l10n.aboutTitle),
       ),
       body: Center(
         child: Padding(
@@ -25,23 +27,23 @@ class AboutScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                'CountScore',
+                l10n.appTitle,
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Version 1.0.1',
+                l10n.version,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(context).textTheme.bodySmall?.color,
                     ),
               ),
               const SizedBox(height: 32),
-              const Text(
-                'Application de gestion de scores pour vos parties de jeux par Vincent Moreau',
+              Text(
+                l10n.appDescription,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 16),
               ),
               const SizedBox(height: 48),
               Card(
@@ -49,14 +51,14 @@ class AboutScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.info_outline),
-                          SizedBox(width: 12),
+                          const Icon(Icons.info_outline),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Fonctionnalités',
-                              style: TextStyle(
+                              l10n.features,
+                              style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -65,11 +67,11 @@ class AboutScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      _buildFeature(Icons.games, 'Différents types de jeux'),
-                      _buildFeature(Icons.people, 'Gestion des joueurs'),
-                      _buildFeature(Icons.analytics, 'Statistiques détaillées'),
-                      _buildFeature(Icons.palette, 'Personnalisation'),
-                      _buildFeature(Icons.dark_mode, 'Thème sombre/clair'),
+                      _buildFeature(Icons.games, l10n.featureDifferentGameTypes),
+                      _buildFeature(Icons.people, l10n.featurePlayerManagement),
+                      _buildFeature(Icons.analytics, l10n.featureDetailedStatistics),
+                      _buildFeature(Icons.palette, l10n.featureCustomization),
+                      _buildFeature(Icons.dark_mode, l10n.featureDarkLightTheme),
                     ],
                   ),
                 ),
@@ -80,14 +82,14 @@ class AboutScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.copyright),
-                          SizedBox(width: 12),
+                          const Icon(Icons.copyright),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Crédits',
-                              style: TextStyle(
+                              l10n.credits,
+                              style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -96,7 +98,7 @@ class AboutScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      _buildCredit('Icône de l\'application', 'efendi.sign'),
+                      _buildCredit(l10n.appIconCredit, l10n.artistName),
                     ],
                   ),
                 ),

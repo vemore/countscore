@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/settings_provider.dart';
 import '../providers/theme_provider.dart';
 
@@ -9,18 +10,19 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Paramètres'),
+        title: Text(l10n.settingsTitle),
       ),
       body: ListView(
         children: [
           // Section Thème
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Text(
-              'Apparence',
-              style: TextStyle(
+              l10n.appearance,
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.deepPurple,
@@ -32,7 +34,7 @@ class SettingsScreen extends StatelessWidget {
               return Column(
                 children: [
                   RadioListTile<ThemeMode>(
-                    title: const Text('Clair'),
+                    title: Text(l10n.light),
                     value: ThemeMode.light,
                     groupValue: themeProvider.themeMode,
                     onChanged: (value) {
@@ -40,7 +42,7 @@ class SettingsScreen extends StatelessWidget {
                     },
                   ),
                   RadioListTile<ThemeMode>(
-                    title: const Text('Sombre'),
+                    title: Text(l10n.dark),
                     value: ThemeMode.dark,
                     groupValue: themeProvider.themeMode,
                     onChanged: (value) {
@@ -48,7 +50,7 @@ class SettingsScreen extends StatelessWidget {
                     },
                   ),
                   RadioListTile<ThemeMode>(
-                    title: const Text('Système'),
+                    title: Text(l10n.system),
                     value: ThemeMode.system,
                     groupValue: themeProvider.themeMode,
                     onChanged: (value) {
@@ -62,11 +64,11 @@ class SettingsScreen extends StatelessWidget {
           const Divider(),
 
           // Section Écran
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Text(
-              'Écran',
-              style: TextStyle(
+              l10n.screen,
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.deepPurple,
@@ -76,10 +78,8 @@ class SettingsScreen extends StatelessWidget {
           Consumer<SettingsProvider>(
             builder: (context, settingsProvider, child) {
               return SwitchListTile(
-                title: const Text('Garder l\'écran allumé'),
-                subtitle: const Text(
-                  'Empêche l\'écran de se mettre en veille pendant une partie',
-                ),
+                title: Text(l10n.keepScreenAwake),
+                subtitle: Text(l10n.keepScreenAwakeDescription),
                 value: settingsProvider.keepScreenAwake,
                 onChanged: (value) {
                   settingsProvider.toggleKeepScreenAwake();
@@ -90,11 +90,11 @@ class SettingsScreen extends StatelessWidget {
           const Divider(),
 
           // Section Sauvegarde
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Text(
-              'Sauvegarde',
-              style: TextStyle(
+              l10n.backup,
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.deepPurple,
@@ -107,17 +107,15 @@ class SettingsScreen extends StatelessWidget {
                 children: [
                   ListTile(
                     leading: const Icon(Icons.file_upload),
-                    title: const Text('Exporter la base de données'),
-                    subtitle: const Text(
-                      'Sauvegarder toutes vos parties dans un fichier',
-                    ),
+                    title: Text(l10n.exportDatabase),
+                    subtitle: Text(l10n.exportDatabaseDescription),
                     onTap: () async {
                       try {
                         final exportedPath = await settingsProvider.exportDatabase();
                         if (exportedPath != null && context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Base de données exportée vers:\n$exportedPath'),
+                              content: Text('${l10n.databaseExportedTo}\n$exportedPath'),
                               duration: const Duration(seconds: 4),
                               backgroundColor: Colors.green,
                             ),
@@ -127,7 +125,7 @@ class SettingsScreen extends StatelessWidget {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Erreur lors de l\'export: $e'),
+                              content: Text('${l10n.errorDuringExport} $e'),
                               backgroundColor: Colors.red,
                             ),
                           );
@@ -137,29 +135,23 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   ListTile(
                     leading: const Icon(Icons.file_download),
-                    title: const Text('Importer une base de données'),
-                    subtitle: const Text(
-                      'Restaurer vos parties depuis un fichier de sauvegarde',
-                    ),
+                    title: Text(l10n.importDatabase),
+                    subtitle: Text(l10n.importDatabaseDescription),
                     onTap: () async {
                       // Afficher une boîte de dialogue de confirmation
                       final confirmed = await showDialog<bool>(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: const Text('Confirmation'),
-                          content: const Text(
-                            'L\'importation remplacera toutes vos données actuelles. '
-                            'Une sauvegarde automatique sera créée avant l\'import.\n\n'
-                            'Voulez-vous continuer ?',
-                          ),
+                          title: Text(l10n.confirmation),
+                          content: Text(l10n.importWarning),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(false),
-                              child: const Text('Annuler'),
+                              child: Text(l10n.cancel),
                             ),
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(true),
-                              child: const Text('Importer'),
+                              child: Text(l10n.import),
                             ),
                           ],
                         ),
@@ -171,10 +163,10 @@ class SettingsScreen extends StatelessWidget {
                           if (success && context.mounted) {
                             // Afficher le message de succès
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Base de données importée avec succès'),
+                              SnackBar(
+                                content: Text(l10n.databaseImportedSuccessfully),
                                 backgroundColor: Colors.green,
-                                duration: Duration(seconds: 2),
+                                duration: const Duration(seconds: 2),
                               ),
                             );
 
@@ -184,12 +176,8 @@ class SettingsScreen extends StatelessWidget {
                                 context: context,
                                 barrierDismissible: false,
                                 builder: (context) => AlertDialog(
-                                  title: const Text('Import réussi'),
-                                  content: const Text(
-                                    'La base de données a été importée avec succès.\n\n'
-                                    'L\'application va maintenant se fermer. '
-                                    'Veuillez la rouvrir pour voir les nouvelles données.',
-                                  ),
+                                  title: Text(l10n.importSuccessful),
+                                  content: Text(l10n.importSuccessMessage),
                                   actions: [
                                     TextButton(
                                       onPressed: () {
@@ -199,7 +187,7 @@ class SettingsScreen extends StatelessWidget {
                                           SystemNavigator.pop();
                                         });
                                       },
-                                      child: const Text('OK'),
+                                      child: Text(l10n.ok),
                                     ),
                                   ],
                                 ),
@@ -210,7 +198,7 @@ class SettingsScreen extends StatelessWidget {
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('Erreur lors de l\'import: $e'),
+                                content: Text('${l10n.errorDuringImport} $e'),
                                 backgroundColor: Colors.red,
                               ),
                             );

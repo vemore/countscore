@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/game_provider.dart';
 
 class RankingScreen extends StatelessWidget {
@@ -7,24 +8,25 @@ class RankingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Classement'),
+        title: Text(l10n.ranking),
       ),
       body: Consumer<GameProvider>(
         builder: (context, gameProvider, child) {
           final game = gameProvider.currentGame;
           if (game == null) {
-            return const Center(
-              child: Text('Aucune partie en cours'),
+            return Center(
+              child: Text(l10n.noCurrentGame),
             );
           }
 
           final ranking = gameProvider.getRanking();
 
           if (ranking.isEmpty) {
-            return const Center(
-              child: Text('Aucun score enregistré'),
+            return Center(
+              child: Text(l10n.noScoresRecorded),
             );
           }
 
@@ -47,8 +49,8 @@ class RankingScreen extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       game.isLowestScoreWins
-                          ? 'Plus petit score gagne'
-                          : 'Plus grand score gagne',
+                          ? l10n.lowestScoreWins
+                          : l10n.highestScoreWins,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

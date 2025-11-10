@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
-import '../providers/theme_provider.dart';
 import '../models/game.dart';
 import '../models/game_type.dart';
 import '../services/database_service.dart';
@@ -36,9 +36,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CountScore'),
+        title: Text(l10n.appTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.bar_chart),
@@ -70,12 +71,13 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         },
         icon: const Icon(Icons.add),
-        label: const Text('Nouvelle partie'),
+        label: Text(l10n.newGame),
       ),
     );
   }
 
   Widget _buildDrawer() {
+    final l10n = AppLocalizations.of(context)!;
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -110,12 +112,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.home),
-            title: const Text('Accueil'),
+            title: Text(l10n.homeTitle),
             onTap: () => Navigator.pop(context),
           ),
           ListTile(
             leading: const Icon(Icons.people),
-            title: const Text('Liste des joueurs'),
+            title: Text(l10n.playersListTitle),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -128,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.games),
-            title: const Text('Types de jeux'),
+            title: Text(l10n.gameTypesTitle),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -142,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const Divider(),
           ListTile(
             leading: const Icon(Icons.settings),
-            title: const Text('Paramètres'),
+            title: Text(l10n.settingsTitle),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -155,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           ListTile(
             leading: const Icon(Icons.info),
-            title: const Text('À propos'),
+            title: Text(l10n.aboutTitle),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -172,6 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildGameTypeFilter() {
+    final l10n = AppLocalizations.of(context)!;
     return Consumer<GameTypeProvider>(
       builder: (context, gameTypeProvider, child) {
         final gameTypes = gameTypeProvider.gameTypes;
@@ -180,15 +183,15 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: DropdownButtonFormField<int?>(
             value: _selectedGameTypeId,
-            decoration: const InputDecoration(
-              labelText: 'Filtrer par type de jeu',
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: InputDecoration(
+              labelText: l10n.filterByGameType,
+              border: const OutlineInputBorder(),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             ),
             items: [
-              const DropdownMenuItem<int?>(
+              DropdownMenuItem<int?>(
                 value: null,
-                child: Text('Tous les jeux'),
+                child: Text(l10n.allGames),
               ),
               ...gameTypes.map((gameType) {
                 return DropdownMenuItem<int?>(
@@ -215,6 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildGameList() {
+    final l10n = AppLocalizations.of(context)!;
     return Consumer2<GameProvider, GameTypeProvider>(
       builder: (context, gameProvider, gameTypeProvider, child) {
         var games = gameProvider.games;
@@ -236,12 +240,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  _selectedGameTypeId == null ? 'Aucune partie' : 'Aucune partie de ce type',
+                  _selectedGameTypeId == null ? l10n.noGames : l10n.noGamesOfThisType,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Créez votre première partie',
+                  l10n.createFirstGame,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).textTheme.bodySmall?.color,
                       ),
@@ -266,6 +270,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildGameCard(BuildContext context, Game game, GameType? gameType, GameProvider gameProvider) {
+    final l10n = AppLocalizations.of(context)!;
     final cardColor = gameType?.cardColor ?? Colors.deepPurple;
     final gameIcon = gameType?.icon ?? Icons.sports_esports;
 
@@ -292,7 +297,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 const SizedBox(height: 4),
                 Text(
-                  'Créé le ${_formatDate(game.createdAt)}',
+                  '${l10n.createdOn} ${_formatDate(game.createdAt)}',
                   style: TextStyle(
                     fontSize: 12,
                     color: Theme.of(context).textTheme.bodySmall?.color,
@@ -304,33 +309,33 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             trailing: PopupMenuButton(
               itemBuilder: (context) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'new_same',
                   child: Row(
                     children: [
-                      Icon(Icons.add_circle_outline),
-                      SizedBox(width: 8),
-                      Text('Nouvelle avec mêmes joueurs'),
+                      const Icon(Icons.add_circle_outline),
+                      const SizedBox(width: 8),
+                      Text(l10n.newWithSamePlayers),
                     ],
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'rename',
                   child: Row(
                     children: [
-                      Icon(Icons.edit),
-                      SizedBox(width: 8),
-                      Text('Renommer'),
+                      const Icon(Icons.edit),
+                      const SizedBox(width: 8),
+                      Text(l10n.rename),
                     ],
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(Icons.delete, color: Colors.red),
-                      SizedBox(width: 8),
-                      Text('Supprimer', style: TextStyle(color: Colors.red)),
+                      const Icon(Icons.delete, color: Colors.red),
+                      const SizedBox(width: 8),
+                      Text(l10n.delete, style: const TextStyle(color: Colors.red)),
                     ],
                   ),
                 ),
@@ -355,8 +360,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPlayersList(List<dynamic> players) {
+    final l10n = AppLocalizations.of(context)!;
     if (players.isEmpty) {
-      return const Text('Aucun joueur', style: TextStyle(fontSize: 12));
+      return Text(l10n.noPlayers, style: const TextStyle(fontSize: 12));
     }
 
     if (players.length <= 4) {
@@ -394,6 +400,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Game game,
     GameProvider gameProvider,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     if (value == 'new_same') {
       await gameProvider.loadGame(game.id!);
       final playerNames = gameProvider.currentPlayers.map((p) => p.name).toList();
@@ -418,16 +425,16 @@ class _HomeScreenState extends State<HomeScreen> {
       final confirm = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Confirmer la suppression'),
-          content: Text('Voulez-vous vraiment supprimer la partie "${game.name}" ?'),
+          title: Text(l10n.confirmDeletion),
+          content: Text(l10n.confirmDeleteGame(game.name)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Annuler'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
+              child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
             ),
           ],
         ),
@@ -441,20 +448,20 @@ class _HomeScreenState extends State<HomeScreen> {
       final newName = await showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Renommer la partie'),
+          title: Text(l10n.renameGame),
           content: TextField(
             controller: controller,
-            decoration: const InputDecoration(labelText: 'Nom de la partie'),
+            decoration: InputDecoration(labelText: l10n.gameName),
             autofocus: true,
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Annuler'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, controller.text),
-              child: const Text('Enregistrer'),
+              child: Text(l10n.save),
             ),
           ],
         ),

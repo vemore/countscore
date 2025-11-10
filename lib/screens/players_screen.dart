@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/game_provider.dart';
 import '../services/database_service.dart';
 
@@ -30,26 +31,29 @@ class _PlayersScreenState extends State<PlayersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Liste des joueurs'),
-      ),
+      appBar: AppBar(title: Text(l10n.playersListTitle)),
       body: _playerNames.isEmpty
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.people_outline, size: 80, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text(
-                    'Aucun joueur',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  const Icon(
+                    Icons.people_outline,
+                    size: 80,
+                    color: Colors.grey,
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 16),
                   Text(
-                    'Les joueurs apparaîtront ici une fois\nque vous aurez créé des parties',
+                    l10n.noPlayers,
+                    style: const TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.playersAppearMessage,
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ],
               ),
@@ -60,13 +64,20 @@ class _PlayersScreenState extends State<PlayersScreen> {
               itemBuilder: (context, index) {
                 final playerName = _playerNames[index];
                 return FutureBuilder<Map<String, dynamic>>(
-                  future: context.read<GameProvider>().getPlayerStats(playerName),
+                  future: context.read<GameProvider>().getPlayerStats(
+                    playerName,
+                  ),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
                       return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                        margin: const EdgeInsets.symmetric(
+                          vertical: 4,
+                          horizontal: 8,
+                        ),
                         child: ListTile(
-                          leading: const CircleAvatar(child: Icon(Icons.person)),
+                          leading: const CircleAvatar(
+                            child: Icon(Icons.person),
+                          ),
                           title: Text(playerName),
                         ),
                       );
@@ -82,27 +93,41 @@ class _PlayersScreenState extends State<PlayersScreen> {
                         final playerColor = colorSnapshot.data ?? Colors.blue;
 
                         return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                          margin: const EdgeInsets.symmetric(
+                            vertical: 4,
+                            horizontal: 8,
+                          ),
                           child: ListTile(
                             leading: GestureDetector(
                               onTap: () async {
-                                final newColor = await _showColorPicker(context, playerColor);
+                                final newColor = await _showColorPicker(
+                                  context,
+                                  playerColor,
+                                );
                                 if (newColor != null) {
-                                  await _db.updatePlayerColor(playerName, newColor.value);
+                                  await _db.updatePlayerColor(
+                                    playerName,
+                                    newColor.value,
+                                  );
                                   setState(() {}); // Refresh UI
                                 }
                               },
                               child: CircleAvatar(
                                 backgroundColor: playerColor,
-                                child: const Icon(Icons.person, color: Colors.white),
+                                child: const Icon(
+                                  Icons.person,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                             title: Text(
                               playerName,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             subtitle: Text(
-                              '$gamesPlayed partie${gamesPlayed > 1 ? 's' : ''} • $wins victoire${wins > 1 ? 's' : ''}',
+                              '${l10n.gamesCount(gamesPlayed)}\n${l10n.winsCount(wins)}',
                             ),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -110,23 +135,31 @@ class _PlayersScreenState extends State<PlayersScreen> {
                                 IconButton(
                                   icon: Icon(Icons.palette, color: playerColor),
                                   onPressed: () async {
-                                    final newColor = await _showColorPicker(context, playerColor);
+                                    final newColor = await _showColorPicker(
+                                      context,
+                                      playerColor,
+                                    );
                                     if (newColor != null) {
-                                      await _db.updatePlayerColor(playerName, newColor.value);
+                                      await _db.updatePlayerColor(
+                                        playerName,
+                                        newColor.value,
+                                      );
                                       setState(() {}); // Refresh UI
                                     }
                                   },
-                                  tooltip: 'Changer la couleur',
+                                  tooltip: l10n.changeColor,
                                 ),
                                 IconButton(
                                   icon: const Icon(Icons.edit),
-                                  onPressed: () => _showRenameDialog(context, playerName),
-                                  tooltip: 'Renommer',
+                                  onPressed: () =>
+                                      _showRenameDialog(context, playerName),
+                                  tooltip: l10n.rename,
                                 ),
                                 IconButton(
                                   icon: const Icon(Icons.delete),
-                                  onPressed: () => _showDeleteDialog(context, playerName),
-                                  tooltip: 'Supprimer',
+                                  onPressed: () =>
+                                      _showDeleteDialog(context, playerName),
+                                  tooltip: l10n.delete,
                                 ),
                               ],
                             ),
@@ -159,13 +192,17 @@ class _PlayersScreenState extends State<PlayersScreen> {
     return Colors.blue; // Couleur par défaut
   }
 
-  Future<Color?> _showColorPicker(BuildContext context, Color currentColor) async {
+  Future<Color?> _showColorPicker(
+    BuildContext context,
+    Color currentColor,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
     Color pickedColor = currentColor;
     return showDialog<Color>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Choisir une couleur'),
+          title: Text(l10n.chooseColor),
           content: SingleChildScrollView(
             child: ColorPicker(
               color: currentColor,
@@ -183,11 +220,11 @@ class _PlayersScreenState extends State<PlayersScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Annuler'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, pickedColor),
-              child: const Text('OK'),
+              child: Text(l10n.ok),
             ),
           ],
         );
@@ -195,7 +232,11 @@ class _PlayersScreenState extends State<PlayersScreen> {
     );
   }
 
-  Future<void> _showRenameDialog(BuildContext context, String playerName) async {
+  Future<void> _showRenameDialog(
+    BuildContext context,
+    String playerName,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: playerName);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final gameProvider = context.read<GameProvider>();
@@ -204,12 +245,12 @@ class _PlayersScreenState extends State<PlayersScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Renommer le joueur'),
+          title: Text(l10n.renamePlayer),
           content: TextField(
             controller: controller,
-            decoration: const InputDecoration(
-              labelText: 'Nouveau nom',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l10n.newName,
+              border: const OutlineInputBorder(),
             ),
             autofocus: true,
             onSubmitted: (value) {
@@ -221,7 +262,7 @@ class _PlayersScreenState extends State<PlayersScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Annuler'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () {
@@ -230,7 +271,7 @@ class _PlayersScreenState extends State<PlayersScreen> {
                   Navigator.pop(context, newName);
                 }
               },
-              child: const Text('Renommer'),
+              child: Text(l10n.rename),
             ),
           ],
         );
@@ -242,13 +283,17 @@ class _PlayersScreenState extends State<PlayersScreen> {
       await _loadPlayers();
       if (mounted) {
         scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text('Joueur renommé en "$result"')),
+          SnackBar(content: Text(l10n.playerRenamedTo(result))),
         );
       }
     }
   }
 
-  Future<void> _showDeleteDialog(BuildContext context, String playerName) async {
+  Future<void> _showDeleteDialog(
+    BuildContext context,
+    String playerName,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
     final gameProvider = context.read<GameProvider>();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
@@ -259,20 +304,17 @@ class _PlayersScreenState extends State<PlayersScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Supprimer le joueur'),
-          content: Text(
-            'Voulez-vous vraiment supprimer "$playerName" ?\n\n'
-            'Ce joueur sera supprimé de toutes les $gamesPlayed partie${gamesPlayed > 1 ? 's' : ''}.',
-          ),
+          title: Text(l10n.deletePlayer),
+          content: Text(l10n.confirmDeletePlayer(playerName, gamesPlayed)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Annuler'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
               style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Supprimer'),
+              child: Text(l10n.delete),
             ),
           ],
         );
@@ -284,7 +326,7 @@ class _PlayersScreenState extends State<PlayersScreen> {
       await _loadPlayers();
       if (mounted) {
         scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text('Joueur "$playerName" supprimé')),
+          SnackBar(content: Text(l10n.playerDeleted(playerName))),
         );
       }
     }

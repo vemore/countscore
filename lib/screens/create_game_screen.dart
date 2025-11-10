@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../models/game_type.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
@@ -97,6 +98,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
   }
 
   Future<void> _createGame() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
 
     final playerNames = _selectedPlayerNames
@@ -105,8 +107,8 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
 
     if (playerNames.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Au moins 2 joueurs sont requis'),
+        SnackBar(
+          content: Text(l10n.atLeast2PlayersRequired),
           backgroundColor: Colors.red,
         ),
       );
@@ -156,9 +158,10 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nouvelle partie'),
+        title: Text(l10n.newGame),
       ),
       body: Form(
         key: _formKey,
@@ -168,14 +171,14 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
             // Nom de la partie
             TextFormField(
               controller: _gameNameController,
-              decoration: const InputDecoration(
-                labelText: 'Nom de la partie',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.style),
+              decoration: InputDecoration(
+                labelText: l10n.gameName,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.style),
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Veuillez entrer un nom';
+                  return l10n.pleaseEnterName;
                 }
                 return null;
               },
@@ -189,15 +192,15 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                 final gameTypes = gameTypeProvider.gameTypes;
 
                 if (gameTypes.isEmpty) {
-                  return const Text('Chargement des types de jeux...');
+                  return Text(l10n.loadingGameTypes);
                 }
 
                 return DropdownButtonFormField<int>(
                   value: _selectedGameTypeId,
-                  decoration: const InputDecoration(
-                    labelText: 'Type de jeu',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.casino),
+                  decoration: InputDecoration(
+                    labelText: l10n.gameType,
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.casino),
                   ),
                   items: gameTypes.map((GameType type) {
                     return DropdownMenuItem<int>(
@@ -246,13 +249,13 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Règle de victoire',
+                              l10n.winRule,
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
                             const SizedBox(height: 8),
                             RadioListTile<bool>(
-                              title: const Text('Plus petit score gagne'),
-                              subtitle: const Text('Ex: Golf, Hearts'),
+                              title: Text(l10n.lowestScoreWins),
+                              subtitle: Text(l10n.lowestScoreExample),
                               value: true,
                               groupValue: _isLowestScoreWins,
                               onChanged: (value) {
@@ -262,8 +265,8 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                               },
                             ),
                             RadioListTile<bool>(
-                              title: const Text('Plus grand score gagne'),
-                              subtitle: const Text('Ex: Rami, Belote'),
+                              title: Text(l10n.highestScoreWins),
+                              subtitle: Text(l10n.highestScoreExample),
                               value: false,
                               groupValue: _isLowestScoreWins,
                               onChanged: (value) {
@@ -287,13 +290,13 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Joueurs',
+                  l10n.players,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 TextButton.icon(
                   onPressed: _addPlayerSlot,
                   icon: const Icon(Icons.add),
-                  label: const Text('Ajouter'),
+                  label: Text(l10n.add),
                 ),
               ],
             ),
@@ -309,7 +312,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                   borderRadius: BorderRadius.circular(4),
                   child: InputDecorator(
                     decoration: InputDecoration(
-                      labelText: 'Joueur ${index + 1}',
+                      labelText: l10n.playerNumber(index + 1),
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.person),
                       suffixIcon: Row(
@@ -323,20 +326,20 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                                   _selectedPlayerNames[index] = '';
                                 });
                               },
-                              tooltip: 'Effacer',
+                              tooltip: l10n.clear,
                             ),
                           if (_selectedPlayerNames.length > 2)
                             IconButton(
                               icon: const Icon(Icons.remove_circle_outline),
                               onPressed: () => _removePlayerSlot(index),
-                              tooltip: 'Retirer',
+                              tooltip: l10n.remove,
                             ),
                         ],
                       ),
                     ),
                     child: Text(
                       _selectedPlayerNames[index].isEmpty
-                          ? 'Sélectionner un joueur...'
+                          ? l10n.selectPlayer
                           : _selectedPlayerNames[index],
                       style: TextStyle(
                         color: _selectedPlayerNames[index].isEmpty
@@ -355,7 +358,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
             FilledButton.icon(
               onPressed: _createGame,
               icon: const Icon(Icons.check),
-              label: const Text('Créer la partie'),
+              label: Text(l10n.createGame),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.all(16),
               ),

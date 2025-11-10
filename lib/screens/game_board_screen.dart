@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
 import 'ranking_screen.dart';
@@ -18,11 +19,12 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         title: Consumer<GameProvider>(
           builder: (context, gameProvider, child) {
-            return Text(gameProvider.currentGame?.name ?? 'Partie');
+            return Text(gameProvider.currentGame?.name ?? l10n.game);
           },
         ),
         actions: [
@@ -39,13 +41,13 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
           ),
           PopupMenuButton(
             itemBuilder: (context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'delete_round',
                 child: Row(
                   children: [
-                    Icon(Icons.delete_outline),
-                    SizedBox(width: 8),
-                    Text('Supprimer dernier tour'),
+                    const Icon(Icons.delete_outline),
+                    const SizedBox(width: 8),
+                    Text(l10n.deleteLastRound),
                   ],
                 ),
               ),
@@ -56,16 +58,16 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: const Text('Confirmer'),
-                    content: const Text('Supprimer le dernier tour ?'),
+                    title: Text(l10n.confirm),
+                    content: Text(l10n.confirmDeleteLastRound),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Annuler'),
+                        child: Text(l10n.cancel),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Supprimer'),
+                        child: Text(l10n.delete),
                       ),
                     ],
                   ),
@@ -90,8 +92,8 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
           final isZapZap = gameType?.name.toLowerCase() == 'zapzap';
 
           if (players.isEmpty) {
-            return const Center(
-              child: Text('Aucun joueur dans cette partie'),
+            return Center(
+              child: Text(l10n.noPlayersInGame),
             );
           }
 
@@ -108,10 +110,10 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                       dataRowMinHeight: 48,
                       dataRowMaxHeight: 48,
                       columns: [
-                        const DataColumn(
+                        DataColumn(
                           label: Text(
-                            'Tour',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            l10n.round,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                         ...players.map((player) {
@@ -235,7 +237,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                       await gameProvider.addRound();
                     },
                     icon: const Icon(Icons.add),
-                    label: const Text('Ajouter un tour'),
+                    label: Text(l10n.addRound),
                   ),
                 ),
               ),
@@ -255,6 +257,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     int roundId,
     int currentScore,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController(
       text: currentScore == 0 ? '' : currentScore.toString(),
     );
@@ -289,7 +292,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('${player.name} - Tour $roundNumber'),
+        title: Text('${player.name} - ${l10n.round} $roundNumber'),
         content: TextField(
           controller: controller,
           keyboardType: const TextInputType.numberWithOptions(
@@ -299,10 +302,10 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
           inputFormatters: [
             FilteringTextInputFormatter.allow(RegExp(r'^-?\d*')),
           ],
-          decoration: const InputDecoration(
-            labelText: 'Score',
-            border: OutlineInputBorder(),
-            hintText: 'Entrez le score',
+          decoration: InputDecoration(
+            labelText: l10n.score,
+            border: const OutlineInputBorder(),
+            hintText: l10n.enterScore,
           ),
           autofocus: true,
           onSubmitted: (value) {
@@ -316,7 +319,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
@@ -329,7 +332,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
               }
               Navigator.pop(context);
             },
-            child: const Text('Enregistrer'),
+            child: Text(l10n.save),
           ),
         ],
       ),

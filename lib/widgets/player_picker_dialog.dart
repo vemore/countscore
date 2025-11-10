@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 class PlayerPickerDialog extends StatefulWidget {
   final List<String> availablePlayers;
@@ -45,6 +46,7 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Dialog(
       child: Container(
         constraints: const BoxConstraints(maxWidth: 400, maxHeight: 600),
@@ -69,7 +71,7 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Sélectionner un joueur',
+                    l10n.selectPlayerDialogTitle,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: Theme.of(context).colorScheme.onPrimaryContainer,
                         ),
@@ -84,7 +86,7 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  labelText: 'Rechercher',
+                  labelText: l10n.search,
                   prefixIcon: const Icon(Icons.search),
                   border: const OutlineInputBorder(),
                   suffixIcon: _searchQuery.isNotEmpty
@@ -119,10 +121,10 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
                           children: [
                             TextField(
                               controller: _newPlayerController,
-                              decoration: const InputDecoration(
-                                labelText: 'Nom du nouveau joueur',
-                                border: OutlineInputBorder(),
-                                prefixIcon: Icon(Icons.person),
+                              decoration: InputDecoration(
+                                labelText: l10n.newPlayerName,
+                                border: const OutlineInputBorder(),
+                                prefixIcon: const Icon(Icons.person),
                               ),
                               autofocus: true,
                               onSubmitted: (value) {
@@ -142,7 +144,7 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
                                       _newPlayerController.clear();
                                     });
                                   },
-                                  child: const Text('Annuler'),
+                                  child: Text(l10n.cancel),
                                 ),
                                 FilledButton.icon(
                                   onPressed: () {
@@ -152,7 +154,7 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
                                     }
                                   },
                                   icon: const Icon(Icons.add),
-                                  label: const Text('Créer'),
+                                  label: Text(l10n.create),
                                 ),
                               ],
                             ),
@@ -169,7 +171,7 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
                           });
                         },
                         icon: const Icon(Icons.add_circle_outline),
-                        label: const Text('Créer un nouveau joueur'),
+                        label: Text(l10n.createNewPlayer),
                       ),
                     ),
             ),
@@ -191,8 +193,8 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
                           const SizedBox(height: 16),
                           Text(
                             _searchQuery.isNotEmpty
-                                ? 'Aucun joueur trouvé'
-                                : 'Tous les joueurs ont été sélectionnés',
+                                ? l10n.noPlayersFound
+                                : l10n.allPlayersSelected,
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.outline,
                             ),
@@ -227,7 +229,7 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
                 width: double.infinity,
                 child: TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Fermer'),
+                  child: Text(l10n.close),
                 ),
               ),
             ),

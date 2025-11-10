@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
+import '../l10n/app_localizations.dart';
 import '../models/game_type.dart';
 import '../providers/game_type_provider.dart';
 
@@ -22,17 +23,18 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Types de jeux'),
+        title: Text(l10n.gameTypesTitle),
       ),
       body: Consumer<GameTypeProvider>(
         builder: (context, gameTypeProvider, child) {
           final gameTypes = gameTypeProvider.gameTypes;
 
           if (gameTypes.isEmpty) {
-            return const Center(
-              child: Text('Aucun type de jeu'),
+            return Center(
+              child: Text(l10n.noGameTypes),
             );
           }
 
@@ -56,33 +58,33 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
                   ),
                   subtitle: Text(
                     gameType.isLowestScoreWins
-                        ? 'Plus petit score gagne'
-                        : 'Plus grand score gagne',
+                        ? l10n.lowestScoreWins
+                        : l10n.highestScoreWins,
                   ),
                   trailing: gameType.isDefault
-                      ? const Chip(
-                          label: Text('Prédéfini', style: TextStyle(fontSize: 10)),
-                          padding: EdgeInsets.symmetric(horizontal: 6),
+                      ? Chip(
+                          label: Text(l10n.predefined, style: const TextStyle(fontSize: 10)),
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
                         )
                       : PopupMenuButton(
                           itemBuilder: (context) => [
-                            const PopupMenuItem(
+                            PopupMenuItem(
                               value: 'edit',
                               child: Row(
                                 children: [
-                                  Icon(Icons.edit),
-                                  SizedBox(width: 8),
-                                  Text('Modifier'),
+                                  const Icon(Icons.edit),
+                                  const SizedBox(width: 8),
+                                  Text(l10n.edit),
                                 ],
                               ),
                             ),
-                            const PopupMenuItem(
+                            PopupMenuItem(
                               value: 'delete',
                               child: Row(
                                 children: [
-                                  Icon(Icons.delete, color: Colors.red),
-                                  SizedBox(width: 8),
-                                  Text('Supprimer', style: TextStyle(color: Colors.red)),
+                                  const Icon(Icons.delete, color: Colors.red),
+                                  const SizedBox(width: 8),
+                                  Text(l10n.delete, style: const TextStyle(color: Colors.red)),
                                 ],
                               ),
                             ),
@@ -104,12 +106,13 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showGameTypeDialog(context, null),
         icon: const Icon(Icons.add),
-        label: const Text('Nouveau type'),
+        label: Text(l10n.newType),
       ),
     );
   }
 
   void _showGameTypeDialog(BuildContext context, GameType? existingGameType) {
+    final l10n = AppLocalizations.of(context)!;
     final isEditing = existingGameType != null;
 
     final nameController = TextEditingController(text: existingGameType?.name ?? '');
@@ -123,21 +126,21 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: Text(isEditing ? 'Modifier le type' : 'Nouveau type de jeu'),
+              title: Text(isEditing ? l10n.editType : l10n.newGameType),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextField(
                       controller: nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Nom du type de jeu',
+                      decoration: InputDecoration(
+                        labelText: l10n.gameTypeName,
                       ),
                     ),
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        const Text('Icône: '),
+                        Text(l10n.icon),
                         const SizedBox(width: 12),
                         IconButton(
                           icon: Icon(selectedIcon, size: 32),
@@ -154,7 +157,7 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        const Text('Couleur: '),
+                        Text(l10n.color),
                         const SizedBox(width: 12),
                         GestureDetector(
                           onTap: () async {
@@ -179,7 +182,7 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
                     ),
                     const SizedBox(height: 16),
                     SwitchListTile(
-                      title: const Text('Plus petit score gagne'),
+                      title: Text(l10n.lowestScoreWins),
                       value: isLowestScoreWins,
                       onChanged: (value) {
                         setState(() {
@@ -193,13 +196,13 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Annuler'),
+                  child: Text(l10n.cancel),
                 ),
                 TextButton(
                   onPressed: () async {
                     if (nameController.text.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Le nom est requis')),
+                        SnackBar(content: Text(l10n.nameIsRequired)),
                       );
                       return;
                     }
@@ -222,7 +225,7 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
                       Navigator.pop(context);
                     }
                   },
-                  child: Text(isEditing ? 'Modifier' : 'Créer'),
+                  child: Text(isEditing ? l10n.edit : l10n.create),
                 ),
               ],
             );
@@ -233,19 +236,20 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
   }
 
   Future<void> _deleteGameType(BuildContext context, GameType gameType) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirmer la suppression'),
-        content: Text('Voulez-vous vraiment supprimer "${gameType.name}" ?'),
+        title: Text(l10n.confirmDeletion),
+        content: Text(l10n.confirmDeleteGame(gameType.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Annuler'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.delete, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -257,7 +261,7 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erreur: ${e.toString()}')),
+            SnackBar(content: Text('${l10n.errorDuringExport} ${e.toString()}')),
           );
         }
       }
@@ -265,6 +269,7 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
   }
 
   void _showIconPicker(BuildContext context, Function(IconData) onIconSelected) {
+    final l10n = AppLocalizations.of(context)!;
     final icons = [
       Icons.sports_esports,
       Icons.casino,
@@ -288,7 +293,7 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Choisir une icône'),
+          title: Text(l10n.chooseIcon),
           content: SizedBox(
             width: double.maxFinite,
             child: GridView.builder(
@@ -316,12 +321,13 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
   }
 
   Future<Color?> _showColorPicker(BuildContext context, Color currentColor) async {
+    final l10n = AppLocalizations.of(context)!;
     Color pickedColor = currentColor;
     return showDialog<Color>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Choisir une couleur'),
+          title: Text(l10n.chooseColor),
           content: SingleChildScrollView(
             child: ColorPicker(
               color: currentColor,
@@ -339,11 +345,11 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Annuler'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, pickedColor),
-              child: const Text('OK'),
+              child: Text(l10n.ok),
             ),
           ],
         );

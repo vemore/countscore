@@ -1,0 +1,247 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "CountScore",
+
+  "homeTitle": "Home",
+
+  "playersListTitle": "Players List",
+
+  "gameTypesTitle": "Game Types",
+
+  "settingsTitle": "Settings",
+
+  "aboutTitle": "About",
+
+  "newGame": "New Game",
+
+  "noGames": "No games",
+
+  "noGamesOfThisType": "No games of this type",
+
+  "createFirstGame": "Create your first game",
+
+  "createdOn": "Created on",
+
+  "newWithSamePlayers": "New with same players",
+
+  "rename": "Rename",
+
+  "delete": "Delete",
+
+  "confirmDeletion": "Confirm deletion",
+
+  "confirmDeleteGame": "Do you really want to delete the game \"{name}\"?",
+
+  "cancel": "Cancel",
+
+  "renameGame": "Rename game",
+
+  "gameName": "Game name",
+
+  "save": "Save",
+
+  "filterByGameType": "Filter by game type",
+
+  "allGames": "All games",
+
+  "gameType": "Game type",
+
+  "loadingGameTypes": "Loading game types...",
+
+  "winRule": "Win rule",
+
+  "lowestScoreWins": "Lowest score wins",
+
+  "highestScoreWins": "Highest score wins",
+
+  "lowestScoreExample": "Ex: Golf, Hearts",
+
+  "highestScoreExample": "Ex: Rummy, Bridge",
+
+  "players": "Players",
+
+  "add": "Add",
+
+  "pleaseEnterName": "Please enter a name",
+
+  "atLeast2PlayersRequired": "At least 2 players are required",
+
+  "playerNumber": "Player {index}",
+
+  "selectPlayer": "Select a player...",
+
+  "clear": "Clear",
+
+  "remove": "Remove",
+
+  "createGame": "Create game",
+
+  "game": "Game",
+
+  "deleteLastRound": "Delete last round",
+
+  "confirm": "Confirm",
+
+  "confirmDeleteLastRound": "Delete the last round?",
+
+  "noPlayersInGame": "No players in this game",
+
+  "round": "Round",
+
+  "addRound": "Add round",
+
+  "score": "Score",
+
+  "enterScore": "Enter score",
+
+  "appearance": "Appearance",
+
+  "light": "Light",
+
+  "dark": "Dark",
+
+  "system": "System",
+
+  "screen": "Screen",
+
+  "keepScreenAwake": "Keep screen awake",
+
+  "keepScreenAwakeDescription": "Prevents the screen from sleeping during a game",
+
+  "backup": "Backup",
+
+  "exportDatabase": "Export database",
+
+  "exportDatabaseDescription": "Save all your games to a file",
+
+  "databaseExportedTo": "Database exported to:",
+
+  "errorDuringExport": "Error during export:",
+
+  "importDatabase": "Import database",
+
+  "importDatabaseDescription": "Restore your games from a backup file",
+
+  "confirmation": "Confirmation",
+
+  "importWarning": "Importing will replace all your current data. An automatic backup will be created before import.\n\nDo you want to continue?",
+
+  "import": "Import",
+
+  "databaseImportedSuccessfully": "Database imported successfully",
+
+  "importSuccessful": "Import successful",
+
+  "importSuccessMessage": "The database has been imported successfully.\n\nThe application will now close. Please reopen it to see the new data.",
+
+  "ok": "OK",
+
+  "errorDuringImport": "Error during import:",
+
+  "noPlayers": "No players",
+
+  "playersAppearMessage": "Players will appear here once\nyou have created games",
+
+  "gamesCount": "{count, plural, =0{0 games} =1{1 game} other{{count} games}}",
+
+  "winsCount": "{count, plural, =0{0 wins} =1{1 win} other{{count} wins}}",
+
+  "changeColor": "Change color",
+
+  "renamePlayer": "Rename player",
+
+  "newName": "New name",
+
+  "playerRenamedTo": "Player renamed to \"{name}\"",
+
+  "deletePlayer": "Delete player",
+
+  "confirmDeletePlayer": "Do you really want to delete \"{name}\"?\n\nThis player will be removed from all {count} game(s).",
+
+  "playerDeleted": "Player \"{name}\" deleted",
+
+  "chooseColor": "Choose a color",
+
+  "noGameTypes": "No game types",
+
+  "predefined": "Default",
+
+  "edit": "Edit",
+
+  "newType": "New type",
+
+  "editType": "Edit type",
+
+  "newGameType": "New game type",
+
+  "gameTypeName": "Game type name",
+
+  "icon": "Icon:",
+
+  "color": "Color:",
+
+  "chooseIcon": "Choose an icon",
+
+  "nameIsRequired": "Name is required",
+
+  "create": "Create",
+
+  "ranking": "Ranking",
+
+  "noCurrentGame": "No current game",
+
+  "noScoresRecorded": "No scores recorded",
+
+  "playerStatistics": "Player Statistics",
+
+  "noStatisticsAvailable": "No statistics available",
+
+  "gamesPlayed": "Games played",
+
+  "wins": "Wins",
+
+  "winRate": "Win rate",
+
+  "overallStatistics": "Overall Statistics",
+
+  "byGameType": "By game type",
+
+  "rate": "Rate",
+
+  "version": "Version 1.0.1",
+
+  "appDescription": "Score management application for your game sessions by Vincent Moreau",
+
+  "features": "Features",
+
+  "featureDifferentGameTypes": "Different game types",
+
+  "featurePlayerManagement": "Player management",
+
+  "featureDetailedStatistics": "Detailed statistics",
+
+  "featureCustomization": "Customization",
+
+  "featureDarkLightTheme": "Dark/light theme",
+
+  "credits": "Credits",
+
+  "appIconCredit": "App icon",
+
+  "artistName": "efendi.sign",
+
+  "selectPlayerDialogTitle": "Select a player",
+
+  "search": "Search",
+
+  "createNewPlayer": "Create new player",
+
+  "newPlayerName": "New player name",
+
+  "noPlayersFound": "No players found",
+
+  "allPlayersSelected": "All players have been selected",
+
+  "close": "Close"
+}

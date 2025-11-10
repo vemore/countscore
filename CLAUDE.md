@@ -29,7 +29,106 @@ countscore/
 2. **Database Operations**: All SQLite operations should be async and handle errors
 3. **Material Design**: Follow Material Design 3 guidelines for UI consistency
 4. **Null Safety**: Project uses Dart null safety - handle nulls appropriately
-5. **Internationalization**: Use intl package for date/time formatting and localization
+5. **Internationalization**: ALWAYS use AppLocalizations for user-facing text - NEVER hardcode strings
+
+### Internationalization (i18n)
+
+**Current Setup:**
+- **Languages Supported**: French (fr), English (en)
+- **Default Behavior**: Automatically follows device system language
+- **Fallback**: English for unsupported languages
+- **Translation Files**: `lib/l10n/app_fr.arb` (template), `lib/l10n/app_en.arb`
+- **Generated Code**: `lib/l10n/app_localizations.dart` (auto-generated, don't edit)
+
+**Adding User-Facing Text:**
+1. **Add to ARB files** (both app_fr.arb and app_en.arb):
+   ```json
+   "myNewString": "Mon texte",
+   "@myNewString": {
+     "description": "Description for translators"
+   }
+   ```
+
+2. **For strings with parameters:**
+   ```json
+   "welcomeUser": "Bienvenue {userName}",
+   "@welcomeUser": {
+     "description": "Welcome message with user name",
+     "placeholders": {
+       "userName": {
+         "type": "String",
+         "example": "Alice"
+       }
+     }
+   }
+   ```
+
+3. **For plurals:**
+   ```json
+   "itemCount": "{count, plural, =0{0 items} =1{1 item} other{{count} items}}",
+   "@itemCount": {
+     "description": "Item count with plural forms",
+     "placeholders": {
+       "count": {
+         "type": "int",
+         "example": "5"
+       }
+     }
+   }
+   ```
+
+4. **Regenerate localization code:**
+   ```bash
+   flutter gen-l10n
+   ```
+
+5. **Use in code:**
+   ```dart
+   import '../l10n/app_localizations.dart';
+
+   // In build method:
+   final l10n = AppLocalizations.of(context)!;
+   Text(l10n.myNewString)
+   Text(l10n.welcomeUser('Alice'))
+   Text(l10n.itemCount(5))
+   ```
+
+**Important Rules:**
+- ❌ NEVER hardcode user-facing strings (e.g., `Text('Bonjour')`)
+- ✅ ALWAYS use AppLocalizations (e.g., `Text(l10n.hello)`)
+- ❌ NEVER hardcode plurals (e.g., `'${n} item${n > 1 ? 's' : ''}'`)
+- ✅ ALWAYS use ICU plural forms in ARB files
+- ✅ Keep date/time formatting with intl's DateFormat (already locale-aware)
+- ✅ User-generated content (names, scores) stays as-is, don't translate
+
+**Adding a New Language:**
+1. Create `lib/l10n/app_XX.arb` (where XX is the language code)
+2. Copy content from app_en.arb and translate all strings
+3. Add locale to `main.dart` supportedLocales:
+   ```dart
+   supportedLocales: const [
+     Locale('fr', ''),
+     Locale('en', ''),
+     Locale('es', ''),  // Spanish
+   ],
+   ```
+4. Run `flutter gen-l10n`
+
+**File Structure:**
+```
+lib/
+├── l10n/
+│   ├── app_fr.arb              # French (template)
+│   ├── app_en.arb              # English
+│   ├── app_localizations.dart  # Generated - DO NOT EDIT
+│   ├── app_localizations_fr.dart  # Generated - DO NOT EDIT
+│   └── app_localizations_en.dart  # Generated - DO NOT EDIT
+└── [screens/widgets using AppLocalizations]
+```
+
+**Configuration Files:**
+- `l10n.yaml` - Localization generation config
+- `pubspec.yaml` - Contains `generate: true` and `flutter_localizations` dependency
 
 ### Code Style
 - Follow Dart style guide and analysis_options.yaml rules
