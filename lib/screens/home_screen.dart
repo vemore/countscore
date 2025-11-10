@@ -88,10 +88,13 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Icon(
-                  Icons.score,
-                  size: 48,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.asset(
+                    'store_listing/assets/icon_512.png',
+                    width: 48,
+                    height: 48,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(

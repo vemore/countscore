@@ -15,10 +15,13 @@ class AboutScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.score,
-                size: 100,
-                color: Theme.of(context).colorScheme.primary,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset(
+                  'store_listing/assets/icon_512.png',
+                  width: 100,
+                  height: 100,
+                ),
               ),
               const SizedBox(height: 24),
               Text(
@@ -71,6 +74,33 @@ class AboutScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 24),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.copyright),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Crédits',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      _buildCredit('Icône de l\'application', 'efendi.sign'),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -86,6 +116,26 @@ class AboutScreen extends StatelessWidget {
           Icon(icon, size: 20),
           const SizedBox(width: 12),
           Text(text),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCredit(String label, String author) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+            ),
+          ),
+          Text(
+            author,
+            style: const TextStyle(fontStyle: FontStyle.italic),
+          ),
         ],
       ),
     );

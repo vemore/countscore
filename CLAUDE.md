@@ -160,6 +160,9 @@ class GameScreen extends StatelessWidget {
 - `wakelock_plus`: Prevent screen sleep during active games
 - `intl`: Date/time formatting and localization
 
+**Dev Dependencies:**
+- `flutter_launcher_icons`: Generates app launcher icons from 512×512 source image
+
 ### Common Issues and Solutions
 
 **Issue: Hot reload not working**
@@ -208,6 +211,13 @@ flutter build appbundle --release --no-tree-shake-icons
 - ✅ ProGuard/R8 disabled (open-source app, no obfuscation needed)
 - ✅ Keystore files excluded from version control
 - ✅ App name: "CountScore" (production-ready)
+
+**App Icon Configuration**:
+- ✅ App icon integrated using `flutter_launcher_icons` package
+- ✅ Source icon: `store_listing/assets/icon_512.png` (512×512 PNG)
+- ✅ Android launcher icons automatically generated in all densities
+- ✅ Adaptive icon support with white background (#FFFFFF)
+- ✅ To update icon: Modify `icon_512.png` and run `flutter pub run flutter_launcher_icons`
 
 **Publishing Checklist**:
 See [PUBLISHING.md](PUBLISHING.md) for complete step-by-step guide including:

@@ -58,6 +58,9 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
 
+  # Flutter launcher icons - generates app icons for all platforms
+  flutter_launcher_icons: ^0.14.1
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -69,10 +72,9 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  # App assets
+  assets:
+    - store_listing/assets/icon_512.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -99,3 +101,13 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Flutter Launcher Icons Configuration
+# Generates app icons for Android from the 512x512 source icon
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "store_listing/assets/icon_512.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "store_listing/assets/icon_512.png"
+  remove_alpha_ios: true
