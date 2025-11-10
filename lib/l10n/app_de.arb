@@ -1,0 +1,247 @@
+{
+  "@@locale": "de",
+
+  "appTitle": "CountScore",
+
+  "homeTitle": "Startseite",
+
+  "playersListTitle": "Spielerliste",
+
+  "gameTypesTitle": "Spieltypen",
+
+  "settingsTitle": "Einstellungen",
+
+  "aboutTitle": "Über",
+
+  "newGame": "Neues Spiel",
+
+  "noGames": "Keine Spiele",
+
+  "noGamesOfThisType": "Keine Spiele dieses Typs",
+
+  "createFirstGame": "Erstellen Sie Ihr erstes Spiel",
+
+  "createdOn": "Erstellt am",
+
+  "newWithSamePlayers": "Neu mit denselben Spielern",
+
+  "rename": "Umbenennen",
+
+  "delete": "Löschen",
+
+  "confirmDeletion": "Löschen bestätigen",
+
+  "confirmDeleteGame": "Möchten Sie das Spiel \"{name}\" wirklich löschen?",
+
+  "cancel": "Abbrechen",
+
+  "renameGame": "Spiel umbenennen",
+
+  "gameName": "Spielname",
+
+  "save": "Speichern",
+
+  "filterByGameType": "Nach Spieltyp filtern",
+
+  "allGames": "Alle Spiele",
+
+  "gameType": "Spieltyp",
+
+  "loadingGameTypes": "Lade Spieltypen...",
+
+  "winRule": "Siegesregel",
+
+  "lowestScoreWins": "Niedrigste Punktzahl gewinnt",
+
+  "highestScoreWins": "Höchste Punktzahl gewinnt",
+
+  "lowestScoreExample": "Z.B.: Golf, Herz",
+
+  "highestScoreExample": "Z.B.: Rommé, Bridge",
+
+  "players": "Spieler",
+
+  "add": "Hinzufügen",
+
+  "pleaseEnterName": "Bitte geben Sie einen Namen ein",
+
+  "atLeast2PlayersRequired": "Mindestens 2 Spieler erforderlich",
+
+  "playerNumber": "Spieler {index}",
+
+  "selectPlayer": "Spieler auswählen...",
+
+  "clear": "Leeren",
+
+  "remove": "Entfernen",
+
+  "createGame": "Spiel erstellen",
+
+  "game": "Spiel",
+
+  "deleteLastRound": "Letzte Runde löschen",
+
+  "confirm": "Bestätigen",
+
+  "confirmDeleteLastRound": "Letzte Runde löschen?",
+
+  "noPlayersInGame": "Keine Spieler in diesem Spiel",
+
+  "round": "Runde",
+
+  "addRound": "Runde hinzufügen",
+
+  "score": "Punktzahl",
+
+  "enterScore": "Punktzahl eingeben",
+
+  "appearance": "Erscheinungsbild",
+
+  "light": "Hell",
+
+  "dark": "Dunkel",
+
+  "system": "System",
+
+  "screen": "Bildschirm",
+
+  "keepScreenAwake": "Bildschirm aktiv halten",
+
+  "keepScreenAwakeDescription": "Verhindert, dass der Bildschirm während eines Spiels ausgeht",
+
+  "backup": "Sicherung",
+
+  "exportDatabase": "Datenbank exportieren",
+
+  "exportDatabaseDescription": "Speichern Sie alle Ihre Spiele in einer Datei",
+
+  "databaseExportedTo": "Datenbank exportiert nach:",
+
+  "errorDuringExport": "Fehler beim Exportieren:",
+
+  "importDatabase": "Datenbank importieren",
+
+  "importDatabaseDescription": "Stellen Sie Ihre Spiele aus einer Sicherungsdatei wieder her",
+
+  "confirmation": "Bestätigung",
+
+  "importWarning": "Der Import wird alle Ihre aktuellen Daten ersetzen. Vor dem Import wird automatisch eine Sicherung erstellt.\n\nMöchten Sie fortfahren?",
+
+  "import": "Importieren",
+
+  "databaseImportedSuccessfully": "Datenbank erfolgreich importiert",
+
+  "importSuccessful": "Import erfolgreich",
+
+  "importSuccessMessage": "Die Datenbank wurde erfolgreich importiert.\n\nDie Anwendung wird jetzt geschlossen. Bitte öffnen Sie sie erneut, um die neuen Daten zu sehen.",
+
+  "ok": "OK",
+
+  "errorDuringImport": "Fehler beim Importieren:",
+
+  "noPlayers": "Keine Spieler",
+
+  "playersAppearMessage": "Spieler erscheinen hier, sobald\nSie Spiele erstellt haben",
+
+  "gamesCount": "{count, plural, =0{0 Spiele} =1{1 Spiel} other{{count} Spiele}}",
+
+  "winsCount": "{count, plural, =0{0 Siege} =1{1 Sieg} other{{count} Siege}}",
+
+  "changeColor": "Farbe ändern",
+
+  "renamePlayer": "Spieler umbenennen",
+
+  "newName": "Neuer Name",
+
+  "playerRenamedTo": "Spieler umbenannt in \"{name}\"",
+
+  "deletePlayer": "Spieler löschen",
+
+  "confirmDeletePlayer": "Möchten Sie \"{name}\" wirklich löschen?\n\nDieser Spieler wird aus allen {count} Spiel(en) entfernt.",
+
+  "playerDeleted": "Spieler \"{name}\" gelöscht",
+
+  "chooseColor": "Farbe wählen",
+
+  "noGameTypes": "Keine Spieltypen",
+
+  "predefined": "Standard",
+
+  "edit": "Bearbeiten",
+
+  "newType": "Neuer Typ",
+
+  "editType": "Typ bearbeiten",
+
+  "newGameType": "Neuer Spieltyp",
+
+  "gameTypeName": "Name des Spieltyps",
+
+  "icon": "Symbol:",
+
+  "color": "Farbe:",
+
+  "chooseIcon": "Symbol wählen",
+
+  "nameIsRequired": "Name ist erforderlich",
+
+  "create": "Erstellen",
+
+  "ranking": "Rangliste",
+
+  "noCurrentGame": "Kein aktuelles Spiel",
+
+  "noScoresRecorded": "Keine Punktzahlen erfasst",
+
+  "playerStatistics": "Spielerstatistik",
+
+  "noStatisticsAvailable": "Keine Statistiken verfügbar",
+
+  "gamesPlayed": "Gespielte Spiele",
+
+  "wins": "Siege",
+
+  "winRate": "Siegesrate",
+
+  "overallStatistics": "Gesamtstatistik",
+
+  "byGameType": "Nach Spieltyp",
+
+  "rate": "Rate",
+
+  "version": "Version 1.0.1",
+
+  "appDescription": "Punkteverwaltungsanwendung für Ihre Spielsitzungen von Vincent Moreau",
+
+  "features": "Funktionen",
+
+  "featureDifferentGameTypes": "Verschiedene Spieltypen",
+
+  "featurePlayerManagement": "Spielerverwaltung",
+
+  "featureDetailedStatistics": "Detaillierte Statistiken",
+
+  "featureCustomization": "Anpassung",
+
+  "featureDarkLightTheme": "Dunkles/helles Design",
+
+  "credits": "Danksagungen",
+
+  "appIconCredit": "App-Symbol",
+
+  "artistName": "efendi.sign",
+
+  "selectPlayerDialogTitle": "Spieler auswählen",
+
+  "search": "Suchen",
+
+  "createNewPlayer": "Neuen Spieler erstellen",
+
+  "newPlayerName": "Name des neuen Spielers",
+
+  "noPlayersFound": "Keine Spieler gefunden",
+
+  "allPlayersSelected": "Alle Spieler wurden ausgewählt",
+
+  "close": "Schließen"
+}

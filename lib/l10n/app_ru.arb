@@ -1,0 +1,247 @@
+{
+  "@@locale": "ru",
+
+  "appTitle": "CountScore",
+
+  "homeTitle": "Главная",
+
+  "playersListTitle": "Список игроков",
+
+  "gameTypesTitle": "Типы игр",
+
+  "settingsTitle": "Настройки",
+
+  "aboutTitle": "О приложении",
+
+  "newGame": "Новая игра",
+
+  "noGames": "Нет игр",
+
+  "noGamesOfThisType": "Нет игр этого типа",
+
+  "createFirstGame": "Создайте свою первую игру",
+
+  "createdOn": "Создано",
+
+  "newWithSamePlayers": "Новая с теми же игроками",
+
+  "rename": "Переименовать",
+
+  "delete": "Удалить",
+
+  "confirmDeletion": "Подтвердите удаление",
+
+  "confirmDeleteGame": "Вы действительно хотите удалить игру \"{name}\"?",
+
+  "cancel": "Отмена",
+
+  "renameGame": "Переименовать игру",
+
+  "gameName": "Название игры",
+
+  "save": "Сохранить",
+
+  "filterByGameType": "Фильтр по типу игры",
+
+  "allGames": "Все игры",
+
+  "gameType": "Тип игры",
+
+  "loadingGameTypes": "Загрузка типов игр...",
+
+  "winRule": "Правило победы",
+
+  "lowestScoreWins": "Выигрывает меньший счёт",
+
+  "highestScoreWins": "Выигрывает больший счёт",
+
+  "lowestScoreExample": "Напр: Гольф, Червы",
+
+  "highestScoreExample": "Напр: Рамми, Бридж",
+
+  "players": "Игроки",
+
+  "add": "Добавить",
+
+  "pleaseEnterName": "Пожалуйста, введите имя",
+
+  "atLeast2PlayersRequired": "Требуется минимум 2 игрока",
+
+  "playerNumber": "Игрок {index}",
+
+  "selectPlayer": "Выберите игрока...",
+
+  "clear": "Очистить",
+
+  "remove": "Удалить",
+
+  "createGame": "Создать игру",
+
+  "game": "Игра",
+
+  "deleteLastRound": "Удалить последний раунд",
+
+  "confirm": "Подтвердить",
+
+  "confirmDeleteLastRound": "Удалить последний раунд?",
+
+  "noPlayersInGame": "В этой игре нет игроков",
+
+  "round": "Раунд",
+
+  "addRound": "Добавить раунд",
+
+  "score": "Счёт",
+
+  "enterScore": "Введите счёт",
+
+  "appearance": "Внешний вид",
+
+  "light": "Светлая",
+
+  "dark": "Тёмная",
+
+  "system": "Системная",
+
+  "screen": "Экран",
+
+  "keepScreenAwake": "Не выключать экран",
+
+  "keepScreenAwakeDescription": "Предотвращает выключение экрана во время игры",
+
+  "backup": "Резервная копия",
+
+  "exportDatabase": "Экспорт базы данных",
+
+  "exportDatabaseDescription": "Сохраните все ваши игры в файл",
+
+  "databaseExportedTo": "База данных экспортирована в:",
+
+  "errorDuringExport": "Ошибка при экспорте:",
+
+  "importDatabase": "Импорт базы данных",
+
+  "importDatabaseDescription": "Восстановите ваши игры из файла резервной копии",
+
+  "confirmation": "Подтверждение",
+
+  "importWarning": "Импорт заменит все ваши текущие данные. Автоматическая резервная копия будет создана перед импортом.\n\nПродолжить?",
+
+  "import": "Импортировать",
+
+  "databaseImportedSuccessfully": "База данных успешно импортирована",
+
+  "importSuccessful": "Импорт выполнен",
+
+  "importSuccessMessage": "База данных была успешно импортирована.\n\nПриложение сейчас закроется. Пожалуйста, откройте его снова, чтобы увидеть новые данные.",
+
+  "ok": "ОК",
+
+  "errorDuringImport": "Ошибка при импорте:",
+
+  "noPlayers": "Нет игроков",
+
+  "playersAppearMessage": "Игроки появятся здесь, когда\nвы создадите игры",
+
+  "gamesCount": "{count, plural, =0{0 игр} =1{1 игра} few{{count} игры} other{{count} игр}}",
+
+  "winsCount": "{count, plural, =0{0 побед} =1{1 победа} few{{count} победы} other{{count} побед}}",
+
+  "changeColor": "Изменить цвет",
+
+  "renamePlayer": "Переименовать игрока",
+
+  "newName": "Новое имя",
+
+  "playerRenamedTo": "Игрок переименован в \"{name}\"",
+
+  "deletePlayer": "Удалить игрока",
+
+  "confirmDeletePlayer": "Вы действительно хотите удалить \"{name}\"?\n\nЭтот игрок будет удалён из всех {count} игр(ы).",
+
+  "playerDeleted": "Игрок \"{name}\" удалён",
+
+  "chooseColor": "Выберите цвет",
+
+  "noGameTypes": "Нет типов игр",
+
+  "predefined": "По умолчанию",
+
+  "edit": "Редактировать",
+
+  "newType": "Новый тип",
+
+  "editType": "Редактировать тип",
+
+  "newGameType": "Новый тип игры",
+
+  "gameTypeName": "Название типа игры",
+
+  "icon": "Значок:",
+
+  "color": "Цвет:",
+
+  "chooseIcon": "Выберите значок",
+
+  "nameIsRequired": "Необходимо ввести название",
+
+  "create": "Создать",
+
+  "ranking": "Рейтинг",
+
+  "noCurrentGame": "Нет текущей игры",
+
+  "noScoresRecorded": "Нет записанных результатов",
+
+  "playerStatistics": "Статистика игрока",
+
+  "noStatisticsAvailable": "Статистика недоступна",
+
+  "gamesPlayed": "Сыграно игр",
+
+  "wins": "Победы",
+
+  "winRate": "Процент побед",
+
+  "overallStatistics": "Общая статистика",
+
+  "byGameType": "По типу игры",
+
+  "rate": "Процент",
+
+  "version": "Версия 1.0.1",
+
+  "appDescription": "Приложение для управления счётом ваших игровых сессий от Vincent Moreau",
+
+  "features": "Возможности",
+
+  "featureDifferentGameTypes": "Разные типы игр",
+
+  "featurePlayerManagement": "Управление игроками",
+
+  "featureDetailedStatistics": "Подробная статистика",
+
+  "featureCustomization": "Настройка",
+
+  "featureDarkLightTheme": "Тёмная/светлая тема",
+
+  "credits": "Авторы",
+
+  "appIconCredit": "Значок приложения",
+
+  "artistName": "efendi.sign",
+
+  "selectPlayerDialogTitle": "Выберите игрока",
+
+  "search": "Поиск",
+
+  "createNewPlayer": "Создать нового игрока",
+
+  "newPlayerName": "Имя нового игрока",
+
+  "noPlayersFound": "Игроки не найдены",
+
+  "allPlayersSelected": "Все игроки выбраны",
+
+  "close": "Закрыть"
+}

@@ -1,0 +1,247 @@
+{
+  "@@locale": "ar",
+
+  "appTitle": "CountScore",
+
+  "homeTitle": "الرئيسية",
+
+  "playersListTitle": "قائمة اللاعبين",
+
+  "gameTypesTitle": "أنواع الألعاب",
+
+  "settingsTitle": "الإعدادات",
+
+  "aboutTitle": "حول",
+
+  "newGame": "لعبة جديدة",
+
+  "noGames": "لا توجد ألعاب",
+
+  "noGamesOfThisType": "لا توجد ألعاب من هذا النوع",
+
+  "createFirstGame": "أنشئ لعبتك الأولى",
+
+  "createdOn": "أنشئت في",
+
+  "newWithSamePlayers": "جديدة بنفس اللاعبين",
+
+  "rename": "إعادة تسمية",
+
+  "delete": "حذف",
+
+  "confirmDeletion": "تأكيد الحذف",
+
+  "confirmDeleteGame": "هل تريد حقاً حذف اللعبة \"{name}\"؟",
+
+  "cancel": "إلغاء",
+
+  "renameGame": "إعادة تسمية اللعبة",
+
+  "gameName": "اسم اللعبة",
+
+  "save": "حفظ",
+
+  "filterByGameType": "تصفية حسب نوع اللعبة",
+
+  "allGames": "جميع الألعاب",
+
+  "gameType": "نوع اللعبة",
+
+  "loadingGameTypes": "جاري تحميل أنواع الألعاب...",
+
+  "winRule": "قاعدة الفوز",
+
+  "lowestScoreWins": "أقل نتيجة تفوز",
+
+  "highestScoreWins": "أعلى نتيجة تفوز",
+
+  "lowestScoreExample": "مثال: الغولف، القلوب",
+
+  "highestScoreExample": "مثال: الرمي، البريدج",
+
+  "players": "اللاعبون",
+
+  "add": "إضافة",
+
+  "pleaseEnterName": "الرجاء إدخال اسم",
+
+  "atLeast2PlayersRequired": "يلزم لاعبان على الأقل",
+
+  "playerNumber": "اللاعب {index}",
+
+  "selectPlayer": "اختر لاعباً...",
+
+  "clear": "مسح",
+
+  "remove": "إزالة",
+
+  "createGame": "إنشاء لعبة",
+
+  "game": "اللعبة",
+
+  "deleteLastRound": "حذف الجولة الأخيرة",
+
+  "confirm": "تأكيد",
+
+  "confirmDeleteLastRound": "حذف الجولة الأخيرة؟",
+
+  "noPlayersInGame": "لا يوجد لاعبون في هذه اللعبة",
+
+  "round": "الجولة",
+
+  "addRound": "إضافة جولة",
+
+  "score": "النتيجة",
+
+  "enterScore": "أدخل النتيجة",
+
+  "appearance": "المظهر",
+
+  "light": "فاتح",
+
+  "dark": "داكن",
+
+  "system": "النظام",
+
+  "screen": "الشاشة",
+
+  "keepScreenAwake": "إبقاء الشاشة مضاءة",
+
+  "keepScreenAwakeDescription": "يمنع الشاشة من الإطفاء أثناء اللعبة",
+
+  "backup": "النسخ الاحتياطي",
+
+  "exportDatabase": "تصدير قاعدة البيانات",
+
+  "exportDatabaseDescription": "احفظ جميع ألعابك في ملف",
+
+  "databaseExportedTo": "تم تصدير قاعدة البيانات إلى:",
+
+  "errorDuringExport": "خطأ أثناء التصدير:",
+
+  "importDatabase": "استيراد قاعدة البيانات",
+
+  "importDatabaseDescription": "استعد ألعابك من ملف نسخة احتياطية",
+
+  "confirmation": "التأكيد",
+
+  "importWarning": "سيؤدي الاستيراد إلى استبدال جميع بياناتك الحالية. سيتم إنشاء نسخة احتياطية تلقائية قبل الاستيراد.\n\nهل تريد المتابعة؟",
+
+  "import": "استيراد",
+
+  "databaseImportedSuccessfully": "تم استيراد قاعدة البيانات بنجاح",
+
+  "importSuccessful": "نجح الاستيراد",
+
+  "importSuccessMessage": "تم استيراد قاعدة البيانات بنجاح.\n\nسيتم إغلاق التطبيق الآن. يرجى فتحه مرة أخرى لرؤية البيانات الجديدة.",
+
+  "ok": "موافق",
+
+  "errorDuringImport": "خطأ أثناء الاستيراد:",
+
+  "noPlayers": "لا يوجد لاعبون",
+
+  "playersAppearMessage": "سيظهر اللاعبون هنا بمجرد\nإنشاء الألعاب",
+
+  "gamesCount": "{count, plural, =0{0 لعبة} =1{لعبة واحدة} =2{لعبتان} other{{count} لعبة}}",
+
+  "winsCount": "{count, plural, =0{0 فوز} =1{فوز واحد} =2{فوزان} other{{count} فوز}}",
+
+  "changeColor": "تغيير اللون",
+
+  "renamePlayer": "إعادة تسمية اللاعب",
+
+  "newName": "الاسم الجديد",
+
+  "playerRenamedTo": "تمت إعادة تسمية اللاعب إلى \"{name}\"",
+
+  "deletePlayer": "حذف اللاعب",
+
+  "confirmDeletePlayer": "هل تريد حقاً حذف \"{name}\"؟\n\nسيتم إزالة هذا اللاعب من جميع {count} لعبة (ألعاب).",
+
+  "playerDeleted": "تم حذف اللاعب \"{name}\"",
+
+  "chooseColor": "اختر لوناً",
+
+  "noGameTypes": "لا توجد أنواع ألعاب",
+
+  "predefined": "افتراضي",
+
+  "edit": "تعديل",
+
+  "newType": "نوع جديد",
+
+  "editType": "تعديل النوع",
+
+  "newGameType": "نوع لعبة جديد",
+
+  "gameTypeName": "اسم نوع اللعبة",
+
+  "icon": "الأيقونة:",
+
+  "color": "اللون:",
+
+  "chooseIcon": "اختر أيقونة",
+
+  "nameIsRequired": "الاسم مطلوب",
+
+  "create": "إنشاء",
+
+  "ranking": "الترتيب",
+
+  "noCurrentGame": "لا توجد لعبة حالية",
+
+  "noScoresRecorded": "لم يتم تسجيل نتائج",
+
+  "playerStatistics": "إحصائيات اللاعب",
+
+  "noStatisticsAvailable": "لا توجد إحصائيات متاحة",
+
+  "gamesPlayed": "الألعاب الملعوبة",
+
+  "wins": "الانتصارات",
+
+  "winRate": "معدل الفوز",
+
+  "overallStatistics": "الإحصائيات العامة",
+
+  "byGameType": "حسب نوع اللعبة",
+
+  "rate": "المعدل",
+
+  "version": "الإصدار 1.0.1",
+
+  "appDescription": "تطبيق إدارة النتائج لجلسات الألعاب الخاصة بك من Vincent Moreau",
+
+  "features": "الميزات",
+
+  "featureDifferentGameTypes": "أنواع ألعاب مختلفة",
+
+  "featurePlayerManagement": "إدارة اللاعبين",
+
+  "featureDetailedStatistics": "إحصائيات تفصيلية",
+
+  "featureCustomization": "التخصيص",
+
+  "featureDarkLightTheme": "الوضع الداكن/الفاتح",
+
+  "credits": "الاعتمادات",
+
+  "appIconCredit": "أيقونة التطبيق",
+
+  "artistName": "efendi.sign",
+
+  "selectPlayerDialogTitle": "اختر لاعباً",
+
+  "search": "بحث",
+
+  "createNewPlayer": "إنشاء لاعب جديد",
+
+  "newPlayerName": "اسم اللاعب الجديد",
+
+  "noPlayersFound": "لم يتم العثور على لاعبين",
+
+  "allPlayersSelected": "تم اختيار جميع اللاعبين",
+
+  "close": "إغلاق"
+}

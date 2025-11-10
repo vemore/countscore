@@ -1,0 +1,247 @@
+{
+  "@@locale": "zh",
+
+  "appTitle": "CountScore",
+
+  "homeTitle": "主页",
+
+  "playersListTitle": "玩家列表",
+
+  "gameTypesTitle": "游戏类型",
+
+  "settingsTitle": "设置",
+
+  "aboutTitle": "关于",
+
+  "newGame": "新游戏",
+
+  "noGames": "没有游戏",
+
+  "noGamesOfThisType": "没有此类型的游戏",
+
+  "createFirstGame": "创建您的第一个游戏",
+
+  "createdOn": "创建于",
+
+  "newWithSamePlayers": "使用相同玩家创建新游戏",
+
+  "rename": "重命名",
+
+  "delete": "删除",
+
+  "confirmDeletion": "确认删除",
+
+  "confirmDeleteGame": "您确定要删除游戏 {name} 吗?",
+
+  "cancel": "取消",
+
+  "renameGame": "重命名游戏",
+
+  "gameName": "游戏名称",
+
+  "save": "保存",
+
+  "filterByGameType": "按游戏类型筛选",
+
+  "allGames": "所有游戏",
+
+  "gameType": "游戏类型",
+
+  "loadingGameTypes": "正在加载游戏类型...",
+
+  "winRule": "胜利规则",
+
+  "lowestScoreWins": "最低分获胜",
+
+  "highestScoreWins": "最高分获胜",
+
+  "lowestScoreExample": "例如:高尔夫、红心大战",
+
+  "highestScoreExample": "例如:拉米、桥牌",
+
+  "players": "玩家",
+
+  "add": "添加",
+
+  "pleaseEnterName": "请输入名称",
+
+  "atLeast2PlayersRequired": "至少需要2名玩家",
+
+  "playerNumber": "玩家{index}",
+
+  "selectPlayer": "选择玩家...",
+
+  "clear": "清除",
+
+  "remove": "移除",
+
+  "createGame": "创建游戏",
+
+  "game": "游戏",
+
+  "deleteLastRound": "删除最后一轮",
+
+  "confirm": "确认",
+
+  "confirmDeleteLastRound": "删除最后一轮?",
+
+  "noPlayersInGame": "此游戏中没有玩家",
+
+  "round": "轮次",
+
+  "addRound": "添加轮次",
+
+  "score": "分数",
+
+  "enterScore": "输入分数",
+
+  "appearance": "外观",
+
+  "light": "浅色",
+
+  "dark": "深色",
+
+  "system": "系统",
+
+  "screen": "屏幕",
+
+  "keepScreenAwake": "保持屏幕常亮",
+
+  "keepScreenAwakeDescription": "防止游戏期间屏幕休眠",
+
+  "backup": "备份",
+
+  "exportDatabase": "导出数据库",
+
+  "exportDatabaseDescription": "将所有游戏保存到文件",
+
+  "databaseExportedTo": "数据库已导出至:",
+
+  "errorDuringExport": "导出时出错:",
+
+  "importDatabase": "导入数据库",
+
+  "importDatabaseDescription": "从备份文件恢复您的游戏",
+
+  "confirmation": "确认",
+
+  "importWarning": "导入将替换所有当前数据。导入前会自动创建备份。\n\n您要继续吗?",
+
+  "import": "导入",
+
+  "databaseImportedSuccessfully": "数据库导入成功",
+
+  "importSuccessful": "导入成功",
+
+  "importSuccessMessage": "数据库已成功导入。\n\n应用程序现在将关闭。请重新打开以查看新数据。",
+
+  "ok": "确定",
+
+  "errorDuringImport": "导入时出错:",
+
+  "noPlayers": "没有玩家",
+
+  "playersAppearMessage": "创建游戏后\n玩家将显示在此处",
+
+  "gamesCount": "{count, plural, =0{0场游戏} other{{count}场游戏}}",
+
+  "winsCount": "{count, plural, =0{0次胜利} other{{count}次胜利}}",
+
+  "changeColor": "更改颜色",
+
+  "renamePlayer": "重命名玩家",
+
+  "newName": "新名称",
+
+  "playerRenamedTo": "玩家已重命名为 {name}",
+
+  "deletePlayer": "删除玩家",
+
+  "confirmDeletePlayer": "您确定要删除 {name} 吗?\n\n此玩家将从所有 {count} 个游戏中删除。",
+
+  "playerDeleted": "玩家 {name} 已删除",
+
+  "chooseColor": "选择颜色",
+
+  "noGameTypes": "没有游戏类型",
+
+  "predefined": "默认",
+
+  "edit": "编辑",
+
+  "newType": "新类型",
+
+  "editType": "编辑类型",
+
+  "newGameType": "新游戏类型",
+
+  "gameTypeName": "游戏类型名称",
+
+  "icon": "图标:",
+
+  "color": "颜色:",
+
+  "chooseIcon": "选择图标",
+
+  "nameIsRequired": "名称为必填项",
+
+  "create": "创建",
+
+  "ranking": "排名",
+
+  "noCurrentGame": "没有当前游戏",
+
+  "noScoresRecorded": "没有记录的分数",
+
+  "playerStatistics": "玩家统计",
+
+  "noStatisticsAvailable": "没有可用的统计数据",
+
+  "gamesPlayed": "已玩游戏",
+
+  "wins": "胜利",
+
+  "winRate": "胜率",
+
+  "overallStatistics": "总体统计",
+
+  "byGameType": "按游戏类型",
+
+  "rate": "比率",
+
+  "version": "版本 1.0.1",
+
+  "appDescription": "由Vincent Moreau开发的游戏会话分数管理应用",
+
+  "features": "功能",
+
+  "featureDifferentGameTypes": "不同的游戏类型",
+
+  "featurePlayerManagement": "玩家管理",
+
+  "featureDetailedStatistics": "详细统计",
+
+  "featureCustomization": "自定义",
+
+  "featureDarkLightTheme": "深色/浅色主题",
+
+  "credits": "致谢",
+
+  "appIconCredit": "应用图标",
+
+  "artistName": "efendi.sign",
+
+  "selectPlayerDialogTitle": "选择玩家",
+
+  "search": "搜索",
+
+  "createNewPlayer": "创建新玩家",
+
+  "newPlayerName": "新玩家名称",
+
+  "noPlayersFound": "未找到玩家",
+
+  "allPlayersSelected": "所有玩家已被选择",
+
+  "close": "关闭"
+}

@@ -34,11 +34,21 @@ countscore/
 ### Internationalization (i18n)
 
 **Current Setup:**
-- **Languages Supported**: French (fr), English (en)
+- **Languages Supported**: 10 languages
+  - English (en) - Default fallback
+  - French (fr) - Template language
+  - Spanish (es)
+  - Chinese Simplified (zh)
+  - Hindi (hi)
+  - Arabic (ar) - RTL support
+  - Portuguese (pt) - Brazilian Portuguese
+  - Russian (ru)
+  - Japanese (ja)
+  - German (de)
 - **Default Behavior**: Automatically follows device system language
 - **Fallback**: English for unsupported languages
-- **Translation Files**: `lib/l10n/app_fr.arb` (template), `lib/l10n/app_en.arb`
-- **Generated Code**: `lib/l10n/app_localizations.dart` (auto-generated, don't edit)
+- **Translation Files**: `lib/l10n/app_*.arb` (one file per language)
+- **Generated Code**: `lib/l10n/app_localizations*.dart` (auto-generated, don't edit)
 
 **Adding User-Facing Text:**
 1. **Add to ARB files** (both app_fr.arb and app_en.arb):
@@ -103,26 +113,34 @@ countscore/
 
 **Adding a New Language:**
 1. Create `lib/l10n/app_XX.arb` (where XX is the language code)
-2. Copy content from app_en.arb and translate all strings
-3. Add locale to `main.dart` supportedLocales:
-   ```dart
-   supportedLocales: const [
-     Locale('fr', ''),
-     Locale('en', ''),
-     Locale('es', ''),  // Spanish
-   ],
-   ```
-4. Run `flutter gen-l10n`
+2. Copy content from app_en.arb and translate all 103 strings
+3. Handle plural forms according to the language's grammar rules
+4. Add locale to `main.dart` supportedLocales list
+5. Run `flutter gen-l10n` to generate the code
+
+**Current Language Coverage:**
+The app currently supports the 10 most widely used languages globally, covering approximately 5 billion native and secondary speakers worldwide. This includes:
+- **Western languages**: English, Spanish, Portuguese, French, German
+- **Asian languages**: Chinese (Simplified), Hindi, Japanese
+- **Middle Eastern**: Arabic (with RTL support)
+- **Cyrillic**: Russian
 
 **File Structure:**
 ```
 lib/
 ├── l10n/
-│   ├── app_fr.arb              # French (template)
-│   ├── app_en.arb              # English
-│   ├── app_localizations.dart  # Generated - DO NOT EDIT
-│   ├── app_localizations_fr.dart  # Generated - DO NOT EDIT
-│   └── app_localizations_en.dart  # Generated - DO NOT EDIT
+│   ├── app_fr.arb                # French (template) - source
+│   ├── app_en.arb                # English
+│   ├── app_es.arb                # Spanish
+│   ├── app_zh.arb                # Chinese (Simplified)
+│   ├── app_hi.arb                # Hindi
+│   ├── app_ar.arb                # Arabic
+│   ├── app_pt.arb                # Portuguese
+│   ├── app_ru.arb                # Russian
+│   ├── app_ja.arb                # Japanese
+│   ├── app_de.arb                # German
+│   ├── app_localizations.dart    # Generated - DO NOT EDIT
+│   └── app_localizations_*.dart  # Generated for each language - DO NOT EDIT
 └── [screens/widgets using AppLocalizations]
 ```
 

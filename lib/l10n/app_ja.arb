@@ -1,0 +1,247 @@
+{
+  "@@locale": "ja",
+
+  "appTitle": "CountScore",
+
+  "homeTitle": "ホーム",
+
+  "playersListTitle": "プレイヤー一覧",
+
+  "gameTypesTitle": "ゲームタイプ",
+
+  "settingsTitle": "設定",
+
+  "aboutTitle": "アプリについて",
+
+  "newGame": "新しいゲーム",
+
+  "noGames": "ゲームがありません",
+
+  "noGamesOfThisType": "このタイプのゲームはありません",
+
+  "createFirstGame": "最初のゲームを作成",
+
+  "createdOn": "作成日",
+
+  "newWithSamePlayers": "同じプレイヤーで新規作成",
+
+  "rename": "名前を変更",
+
+  "delete": "削除",
+
+  "confirmDeletion": "削除の確認",
+
+  "confirmDeleteGame": "ゲーム「{name}」を本当に削除しますか？",
+
+  "cancel": "キャンセル",
+
+  "renameGame": "ゲーム名を変更",
+
+  "gameName": "ゲーム名",
+
+  "save": "保存",
+
+  "filterByGameType": "ゲームタイプで絞り込み",
+
+  "allGames": "すべてのゲーム",
+
+  "gameType": "ゲームタイプ",
+
+  "loadingGameTypes": "ゲームタイプを読み込み中...",
+
+  "winRule": "勝利ルール",
+
+  "lowestScoreWins": "最低スコアが勝ち",
+
+  "highestScoreWins": "最高スコアが勝ち",
+
+  "lowestScoreExample": "例：ゴルフ、ハーツ",
+
+  "highestScoreExample": "例：ラミー、ブリッジ",
+
+  "players": "プレイヤー",
+
+  "add": "追加",
+
+  "pleaseEnterName": "名前を入力してください",
+
+  "atLeast2PlayersRequired": "最低2人のプレイヤーが必要です",
+
+  "playerNumber": "プレイヤー{index}",
+
+  "selectPlayer": "プレイヤーを選択...",
+
+  "clear": "クリア",
+
+  "remove": "削除",
+
+  "createGame": "ゲームを作成",
+
+  "game": "ゲーム",
+
+  "deleteLastRound": "最後のラウンドを削除",
+
+  "confirm": "確認",
+
+  "confirmDeleteLastRound": "最後のラウンドを削除しますか？",
+
+  "noPlayersInGame": "このゲームにプレイヤーがいません",
+
+  "round": "ラウンド",
+
+  "addRound": "ラウンドを追加",
+
+  "score": "スコア",
+
+  "enterScore": "スコアを入力",
+
+  "appearance": "外観",
+
+  "light": "ライト",
+
+  "dark": "ダーク",
+
+  "system": "システム",
+
+  "screen": "画面",
+
+  "keepScreenAwake": "画面をオンに保つ",
+
+  "keepScreenAwakeDescription": "ゲーム中に画面がスリープするのを防ぎます",
+
+  "backup": "バックアップ",
+
+  "exportDatabase": "データベースをエクスポート",
+
+  "exportDatabaseDescription": "すべてのゲームをファイルに保存",
+
+  "databaseExportedTo": "データベースをエクスポートしました：",
+
+  "errorDuringExport": "エクスポート中にエラー：",
+
+  "importDatabase": "データベースをインポート",
+
+  "importDatabaseDescription": "バックアップファイルからゲームを復元",
+
+  "confirmation": "確認",
+
+  "importWarning": "インポートすると現在のすべてのデータが置き換えられます。インポート前に自動バックアップが作成されます。\n\n続行しますか？",
+
+  "import": "インポート",
+
+  "databaseImportedSuccessfully": "データベースのインポートに成功しました",
+
+  "importSuccessful": "インポート成功",
+
+  "importSuccessMessage": "データベースのインポートに成功しました。\n\nアプリを一度終了します。新しいデータを確認するには再度開いてください。",
+
+  "ok": "OK",
+
+  "errorDuringImport": "インポート中にエラー：",
+
+  "noPlayers": "プレイヤーがいません",
+
+  "playersAppearMessage": "ゲームを作成すると\nプレイヤーがここに表示されます",
+
+  "gamesCount": "{count, plural, =0{0ゲーム} other{{count}ゲーム}}",
+
+  "winsCount": "{count, plural, =0{0勝} other{{count}勝}}",
+
+  "changeColor": "色を変更",
+
+  "renamePlayer": "プレイヤー名を変更",
+
+  "newName": "新しい名前",
+
+  "playerRenamedTo": "プレイヤー名を「{name}」に変更しました",
+
+  "deletePlayer": "プレイヤーを削除",
+
+  "confirmDeletePlayer": "本当に「{name}」を削除しますか？\n\nこのプレイヤーは{count}つのゲームから削除されます。",
+
+  "playerDeleted": "プレイヤー「{name}」を削除しました",
+
+  "chooseColor": "色を選択",
+
+  "noGameTypes": "ゲームタイプがありません",
+
+  "predefined": "デフォルト",
+
+  "edit": "編集",
+
+  "newType": "新しいタイプ",
+
+  "editType": "タイプを編集",
+
+  "newGameType": "新しいゲームタイプ",
+
+  "gameTypeName": "ゲームタイプ名",
+
+  "icon": "アイコン：",
+
+  "color": "色：",
+
+  "chooseIcon": "アイコンを選択",
+
+  "nameIsRequired": "名前は必須です",
+
+  "create": "作成",
+
+  "ranking": "ランキング",
+
+  "noCurrentGame": "現在のゲームがありません",
+
+  "noScoresRecorded": "記録されたスコアがありません",
+
+  "playerStatistics": "プレイヤー統計",
+
+  "noStatisticsAvailable": "統計情報がありません",
+
+  "gamesPlayed": "プレイしたゲーム",
+
+  "wins": "勝利",
+
+  "winRate": "勝率",
+
+  "overallStatistics": "全体統計",
+
+  "byGameType": "ゲームタイプ別",
+
+  "rate": "率",
+
+  "version": "バージョン 1.0.1",
+
+  "appDescription": "Vincent Moreauによるゲームセッション用のスコア管理アプリ",
+
+  "features": "機能",
+
+  "featureDifferentGameTypes": "さまざまなゲームタイプ",
+
+  "featurePlayerManagement": "プレイヤー管理",
+
+  "featureDetailedStatistics": "詳細な統計",
+
+  "featureCustomization": "カスタマイズ",
+
+  "featureDarkLightTheme": "ダーク/ライトテーマ",
+
+  "credits": "クレジット",
+
+  "appIconCredit": "アプリアイコン",
+
+  "artistName": "efendi.sign",
+
+  "selectPlayerDialogTitle": "プレイヤーを選択",
+
+  "search": "検索",
+
+  "createNewPlayer": "新しいプレイヤーを作成",
+
+  "newPlayerName": "新しいプレイヤー名",
+
+  "noPlayersFound": "プレイヤーが見つかりません",
+
+  "allPlayersSelected": "すべてのプレイヤーが選択されています",
+
+  "close": "閉じる"
+}

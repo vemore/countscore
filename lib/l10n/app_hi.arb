@@ -1,0 +1,247 @@
+{
+  "@@locale": "hi",
+
+  "appTitle": "CountScore",
+
+  "homeTitle": "होम",
+
+  "playersListTitle": "खिलाड़ियों की सूची",
+
+  "gameTypesTitle": "खेल के प्रकार",
+
+  "settingsTitle": "सेटिंग्स",
+
+  "aboutTitle": "के बारे में",
+
+  "newGame": "नया खेल",
+
+  "noGames": "कोई खेल नहीं",
+
+  "noGamesOfThisType": "इस प्रकार का कोई खेल नहीं",
+
+  "createFirstGame": "अपना पहला खेल बनाएं",
+
+  "createdOn": "बनाया गया",
+
+  "newWithSamePlayers": "उन्हीं खिलाड़ियों के साथ नया",
+
+  "rename": "नाम बदलें",
+
+  "delete": "हटाएं",
+
+  "confirmDeletion": "हटाने की पुष्टि करें",
+
+  "confirmDeleteGame": "क्या आप वाकई \"{name}\" खेल को हटाना चाहते हैं?",
+
+  "cancel": "रद्द करें",
+
+  "renameGame": "खेल का नाम बदलें",
+
+  "gameName": "खेल का नाम",
+
+  "save": "सहेजें",
+
+  "filterByGameType": "खेल के प्रकार से फ़िल्टर करें",
+
+  "allGames": "सभी खेल",
+
+  "gameType": "खेल का प्रकार",
+
+  "loadingGameTypes": "खेल के प्रकार लोड हो रहे हैं...",
+
+  "winRule": "जीत का नियम",
+
+  "lowestScoreWins": "सबसे कम स्कोर जीतता है",
+
+  "highestScoreWins": "सबसे अधिक स्कोर जीतता है",
+
+  "lowestScoreExample": "उदा: गोल्फ, हार्ट्स",
+
+  "highestScoreExample": "उदा: रम्मी, ब्रिज",
+
+  "players": "खिलाड़ी",
+
+  "add": "जोड़ें",
+
+  "pleaseEnterName": "कृपया नाम दर्ज करें",
+
+  "atLeast2PlayersRequired": "कम से कम 2 खिलाड़ी आवश्यक हैं",
+
+  "playerNumber": "खिलाड़ी {index}",
+
+  "selectPlayer": "एक खिलाड़ी चुनें...",
+
+  "clear": "साफ़ करें",
+
+  "remove": "हटाएं",
+
+  "createGame": "खेल बनाएं",
+
+  "game": "खेल",
+
+  "deleteLastRound": "अंतिम राउंड हटाएं",
+
+  "confirm": "पुष्टि करें",
+
+  "confirmDeleteLastRound": "अंतिम राउंड हटाएं?",
+
+  "noPlayersInGame": "इस खेल में कोई खिलाड़ी नहीं",
+
+  "round": "राउंड",
+
+  "addRound": "राउंड जोड़ें",
+
+  "score": "स्कोर",
+
+  "enterScore": "स्कोर दर्ज करें",
+
+  "appearance": "रूप-रंग",
+
+  "light": "हल्का",
+
+  "dark": "गहरा",
+
+  "system": "सिस्टम",
+
+  "screen": "स्क्रीन",
+
+  "keepScreenAwake": "स्क्रीन को जगाए रखें",
+
+  "keepScreenAwakeDescription": "खेल के दौरान स्क्रीन को स्लीप से रोकता है",
+
+  "backup": "बैकअप",
+
+  "exportDatabase": "डेटाबेस निर्यात करें",
+
+  "exportDatabaseDescription": "अपने सभी खेलों को एक फ़ाइल में सहेजें",
+
+  "databaseExportedTo": "डेटाबेस यहां निर्यात किया गया:",
+
+  "errorDuringExport": "निर्यात के दौरान त्रुटि:",
+
+  "importDatabase": "डेटाबेस आयात करें",
+
+  "importDatabaseDescription": "बैकअप फ़ाइल से अपने खेलों को पुनर्स्थापित करें",
+
+  "confirmation": "पुष्टि",
+
+  "importWarning": "आयात करने से आपका सभी वर्तमान डेटा बदल जाएगा। आयात से पहले एक स्वचालित बैकअप बनाया जाएगा।\n\nक्या आप जारी रखना चाहते हैं?",
+
+  "import": "आयात करें",
+
+  "databaseImportedSuccessfully": "डेटाबेस सफलतापूर्वक आयात किया गया",
+
+  "importSuccessful": "आयात सफल",
+
+  "importSuccessMessage": "डेटाबेस सफलतापूर्वक आयात किया गया है।\n\nएप्लिकेशन अब बंद हो जाएगी। नया डेटा देखने के लिए कृपया इसे फिर से खोलें।",
+
+  "ok": "ठीक है",
+
+  "errorDuringImport": "आयात के दौरान त्रुटि:",
+
+  "noPlayers": "कोई खिलाड़ी नहीं",
+
+  "playersAppearMessage": "जब आप खेल बनाएंगे\nतो खिलाड़ी यहां दिखाई देंगे",
+
+  "gamesCount": "{count, plural, =0{0 खेल} =1{1 खेल} other{{count} खेल}}",
+
+  "winsCount": "{count, plural, =0{0 जीत} =1{1 जीत} other{{count} जीत}}",
+
+  "changeColor": "रंग बदलें",
+
+  "renamePlayer": "खिलाड़ी का नाम बदलें",
+
+  "newName": "नया नाम",
+
+  "playerRenamedTo": "खिलाड़ी का नाम \"{name}\" रखा गया",
+
+  "deletePlayer": "खिलाड़ी हटाएं",
+
+  "confirmDeletePlayer": "क्या आप वाकई \"{name}\" को हटाना चाहते हैं?\n\nयह खिलाड़ी सभी {count} खेल(खेलों) से हटा दिया जाएगा।",
+
+  "playerDeleted": "खिलाड़ी \"{name}\" हटाया गया",
+
+  "chooseColor": "रंग चुनें",
+
+  "noGameTypes": "कोई खेल प्रकार नहीं",
+
+  "predefined": "डिफ़ॉल्ट",
+
+  "edit": "संपादित करें",
+
+  "newType": "नया प्रकार",
+
+  "editType": "प्रकार संपादित करें",
+
+  "newGameType": "नया खेल प्रकार",
+
+  "gameTypeName": "खेल प्रकार का नाम",
+
+  "icon": "आइकन:",
+
+  "color": "रंग:",
+
+  "chooseIcon": "आइकन चुनें",
+
+  "nameIsRequired": "नाम आवश्यक है",
+
+  "create": "बनाएं",
+
+  "ranking": "रैंकिंग",
+
+  "noCurrentGame": "कोई वर्तमान खेल नहीं",
+
+  "noScoresRecorded": "कोई स्कोर रिकॉर्ड नहीं किया गया",
+
+  "playerStatistics": "खिलाड़ी सांख्यिकी",
+
+  "noStatisticsAvailable": "कोई सांख्यिकी उपलब्ध नहीं",
+
+  "gamesPlayed": "खेले गए खेल",
+
+  "wins": "जीत",
+
+  "winRate": "जीत दर",
+
+  "overallStatistics": "समग्र सांख्यिकी",
+
+  "byGameType": "खेल प्रकार के अनुसार",
+
+  "rate": "दर",
+
+  "version": "संस्करण 1.0.1",
+
+  "appDescription": "Vincent Moreau द्वारा आपके गेम सत्रों के लिए स्कोर प्रबंधन एप्लिकेशन",
+
+  "features": "विशेषताएं",
+
+  "featureDifferentGameTypes": "विभिन्न खेल प्रकार",
+
+  "featurePlayerManagement": "खिलाड़ी प्रबंधन",
+
+  "featureDetailedStatistics": "विस्तृत सांख्यिकी",
+
+  "featureCustomization": "अनुकूलन",
+
+  "featureDarkLightTheme": "गहरा/हल्का थीम",
+
+  "credits": "श्रेय",
+
+  "appIconCredit": "ऐप आइकन",
+
+  "artistName": "efendi.sign",
+
+  "selectPlayerDialogTitle": "एक खिलाड़ी चुनें",
+
+  "search": "खोजें",
+
+  "createNewPlayer": "नया खिलाड़ी बनाएं",
+
+  "newPlayerName": "नए खिलाड़ी का नाम",
+
+  "noPlayersFound": "कोई खिलाड़ी नहीं मिला",
+
+  "allPlayersSelected": "सभी खिलाड़ी चुने जा चुके हैं",
+
+  "close": "बंद करें"
+}
