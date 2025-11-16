@@ -392,7 +392,6 @@ class DatabaseService {
         bool hasWon = false;
         if (allTotals.isNotEmpty) {
           final bestTotal = allTotals.first['total'] as int;
-          final winnerId = allTotals.first['id'] as int;
 
           // Le joueur a gagné seulement s'il a le meilleur score ET est la première place
           // En cas d'égalité, on compte les deux comme gagnants
@@ -421,7 +420,7 @@ class DatabaseService {
         'byGameType': statsByGameType,
       };
     } catch (e) {
-      print('Error loading player stats: $e');
+      // Return empty stats on error
       return {
         'gamesPlayed': 0,
         'wins': 0,

@@ -44,7 +44,7 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
             itemBuilder: (context, index) {
               final gameType = gameTypes[index];
               return Card(
-                color: gameType.cardColor.withOpacity(0.1),
+                color: gameType.cardColor.withValues(alpha: 0.1),
                 margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                 child: ListTile(
                   leading: Icon(
@@ -211,7 +211,7 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
                       id: existingGameType?.id,
                       name: nameController.text,
                       iconCodePoint: selectedIcon.codePoint,
-                      cardColorValue: selectedColor.value,
+                      cardColorValue: selectedColor.toARGB32(),
                       isLowestScoreWins: isLowestScoreWins,
                     );
 

@@ -196,7 +196,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                 }
 
                 return DropdownButtonFormField<int>(
-                  value: _selectedGameTypeId,
+                  initialValue: _selectedGameTypeId,
                   decoration: InputDecoration(
                     labelText: l10n.gameType,
                     border: const OutlineInputBorder(),
@@ -253,27 +253,27 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
                             const SizedBox(height: 8),
-                            RadioListTile<bool>(
-                              title: Text(l10n.lowestScoreWins),
-                              subtitle: Text(l10n.lowestScoreExample),
-                              value: true,
+                            RadioGroup<bool>(
                               groupValue: _isLowestScoreWins,
                               onChanged: (value) {
                                 setState(() {
                                   _isLowestScoreWins = value!;
                                 });
                               },
-                            ),
-                            RadioListTile<bool>(
-                              title: Text(l10n.highestScoreWins),
-                              subtitle: Text(l10n.highestScoreExample),
-                              value: false,
-                              groupValue: _isLowestScoreWins,
-                              onChanged: (value) {
-                                setState(() {
-                                  _isLowestScoreWins = value!;
-                                });
-                              },
+                              child: Column(
+                                children: [
+                                  RadioListTile<bool>(
+                                    title: Text(l10n.lowestScoreWins),
+                                    subtitle: Text(l10n.lowestScoreExample),
+                                    value: true,
+                                  ),
+                                  RadioListTile<bool>(
+                                    title: Text(l10n.highestScoreWins),
+                                    subtitle: Text(l10n.highestScoreExample),
+                                    value: false,
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),

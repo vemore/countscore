@@ -12,7 +12,7 @@ class GameProvider with ChangeNotifier {
   Game? _currentGame;
   List<Player> _currentPlayers = [];
   List<Round> _currentRounds = [];
-  Map<String, Score> _scores = {}; // Key: "playerId_roundId"
+  final Map<String, Score> _scores = {}; // Key: "playerId_roundId"
 
   List<Game> get games => _games;
   Game? get currentGame => _currentGame;
@@ -121,7 +121,7 @@ class GameProvider with ChangeNotifier {
     // Recharger le score depuis la DB pour avoir l'ID
     final updatedScore = await _db.getScore(playerId, roundId);
     if (updatedScore != null) {
-      _scores['${playerId}_${roundId}'] = updatedScore;
+      _scores['${playerId}_$roundId'] = updatedScore;
     }
 
     // Mettre à jour la date de modification
@@ -134,7 +134,7 @@ class GameProvider with ChangeNotifier {
 
   // Obtenir le score pour un joueur et un tour
   int? getScore(int playerId, int roundId) {
-    return _scores['${playerId}_${roundId}']?.value;
+    return _scores['${playerId}_$roundId']?.value;
   }
 
   // Calculer le total d'un joueur

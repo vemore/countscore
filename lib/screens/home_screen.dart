@@ -182,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: DropdownButtonFormField<int?>(
-            value: _selectedGameTypeId,
+            initialValue: _selectedGameTypeId,
             decoration: InputDecoration(
               labelText: l10n.filterByGameType,
               border: const OutlineInputBorder(),
@@ -236,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Icon(
                   Icons.style,
                   size: 80,
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -280,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final players = snapshot.data ?? [];
 
         return Card(
-          color: cardColor.withOpacity(0.1),
+          color: cardColor.withValues(alpha: 0.1),
           margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
           child: ListTile(
             leading: Icon(

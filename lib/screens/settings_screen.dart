@@ -31,33 +31,27 @@ class SettingsScreen extends StatelessWidget {
           ),
           Consumer<ThemeProvider>(
             builder: (context, themeProvider, child) {
-              return Column(
-                children: [
-                  RadioListTile<ThemeMode>(
-                    title: Text(l10n.light),
-                    value: ThemeMode.light,
-                    groupValue: themeProvider.themeMode,
-                    onChanged: (value) {
-                      themeProvider.setThemeMode(value!);
-                    },
-                  ),
-                  RadioListTile<ThemeMode>(
-                    title: Text(l10n.dark),
-                    value: ThemeMode.dark,
-                    groupValue: themeProvider.themeMode,
-                    onChanged: (value) {
-                      themeProvider.setThemeMode(value!);
-                    },
-                  ),
-                  RadioListTile<ThemeMode>(
-                    title: Text(l10n.system),
-                    value: ThemeMode.system,
-                    groupValue: themeProvider.themeMode,
-                    onChanged: (value) {
-                      themeProvider.setThemeMode(value!);
-                    },
-                  ),
-                ],
+              return RadioGroup<ThemeMode>(
+                groupValue: themeProvider.themeMode,
+                onChanged: (value) {
+                  themeProvider.setThemeMode(value!);
+                },
+                child: Column(
+                  children: [
+                    RadioListTile<ThemeMode>(
+                      title: Text(l10n.light),
+                      value: ThemeMode.light,
+                    ),
+                    RadioListTile<ThemeMode>(
+                      title: Text(l10n.dark),
+                      value: ThemeMode.dark,
+                    ),
+                    RadioListTile<ThemeMode>(
+                      title: Text(l10n.system),
+                      value: ThemeMode.system,
+                    ),
+                  ],
+                ),
               );
             },
           ),

@@ -64,7 +64,7 @@ class GameType {
   static GameType zapzap() => GameType(
         name: 'ZapZap',
         iconCodePoint: Icons.flash_on.codePoint,
-        cardColorValue: Colors.amber.value,
+        cardColorValue: Colors.amber.toARGB32(),
         isLowestScoreWins: true,
         isDefault: true,
       );
@@ -72,7 +72,7 @@ class GameType {
   static GameType uno() => GameType(
         name: 'Uno',
         iconCodePoint: Icons.style.codePoint,
-        cardColorValue: Colors.red.value,
+        cardColorValue: Colors.red.toARGB32(),
         isLowestScoreWins: true,
         isDefault: true,
       );
@@ -80,7 +80,7 @@ class GameType {
   static GameType scrabble() => GameType(
         name: 'Scrabble',
         iconCodePoint: Icons.grid_on.codePoint,
-        cardColorValue: Colors.green.value,
+        cardColorValue: Colors.green.toARGB32(),
         isLowestScoreWins: false,
         isDefault: true,
       );
@@ -88,7 +88,7 @@ class GameType {
   static GameType autre() => GameType(
         name: 'Autre',
         iconCodePoint: Icons.sports_esports.codePoint,
-        cardColorValue: Colors.deepPurple.value,
+        cardColorValue: Colors.deepPurple.toARGB32(),
         isLowestScoreWins: false,
         isDefault: true,
       );

@@ -194,7 +194,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                                     ),
                                     decoration: BoxDecoration(
                                       color: score != null
-                                          ? cellColor.withOpacity(0.3)
+                                          ? cellColor.withValues(alpha: 0.3)
                                           : null,
                                       borderRadius: BorderRadius.circular(4),
                                     ),

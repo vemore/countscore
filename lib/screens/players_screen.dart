@@ -107,7 +107,7 @@ class _PlayersScreenState extends State<PlayersScreen> {
                                 if (newColor != null) {
                                   await _db.updatePlayerColor(
                                     playerName,
-                                    newColor.value,
+                                    newColor.toARGB32(),
                                   );
                                   setState(() {}); // Refresh UI
                                 }
@@ -142,7 +142,7 @@ class _PlayersScreenState extends State<PlayersScreen> {
                                     if (newColor != null) {
                                       await _db.updatePlayerColor(
                                         playerName,
-                                        newColor.value,
+                                        newColor.toARGB32(),
                                       );
                                       setState(() {}); // Refresh UI
                                     }
@@ -299,6 +299,8 @@ class _PlayersScreenState extends State<PlayersScreen> {
 
     final stats = await gameProvider.getPlayerStats(playerName);
     final gamesPlayed = stats['gamesPlayed'] as int;
+
+    if (!context.mounted) return;
 
     final confirm = await showDialog<bool>(
       context: context,

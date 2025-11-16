@@ -82,7 +82,7 @@ class RankingScreen extends StatelessWidget {
                         color: Colors.amber,
                         size: 40,
                       );
-                      cardColor = Colors.amber.withOpacity(0.1);
+                      cardColor = Colors.amber.withValues(alpha: 0.1);
                     } else {
                       leadingIcon = CircleAvatar(
                         child: Text('$position'),
