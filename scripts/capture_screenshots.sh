@@ -64,9 +64,9 @@ if [ "$DEVICE_COUNT" -gt 1 ]; then
     echo "This script will use the first device."
     echo "To specify a device, use: adb -s DEVICE_ID"
     echo ""
-    read -p "Continue? (y/n): " -n 1 -r
+    read -p "Continue? (y/n): " confirm
     echo ""
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    if [[ ! $confirm =~ ^[Yy]$ ]]; then
         exit 1
     fi
 fi
@@ -128,7 +128,7 @@ capture_screenshot() {
         echo "  2. Check that UI looks clean and professional"
         echo "  3. Press ENTER when ready to capture"
         echo ""
-        read -p "Ready? Press ENTER to capture (or 's' to skip): " -n 1 -r
+        read -p "Ready? Press ENTER to capture (or 's' to skip): " -r
         echo ""
 
         if [[ $REPLY =~ ^[Ss]$ ]]; then
@@ -159,10 +159,10 @@ capture_screenshot() {
             echo "  [v] View screenshot (if viewer available)"
             echo "  [s] Skip this screenshot"
             echo ""
-            read -p "Choose option [k/r/v/s]: " -n 1 -r
+            read -p "Choose option [k/r/v/s]: " choice
             echo ""
 
-            case $REPLY in
+            case $choice in
                 [Kk])
                     mv "$temp_file" "$final_file"
                     echo -e "${GREEN}✅ Saved as: $final_file${NC}"
@@ -212,7 +212,7 @@ for screenshot in "${SCREENSHOTS[@]}"; do
     IFS='|' read -r filename title description <<< "$screenshot"
     capture_screenshot "$filename" "$title" "$description"
     if [ -f "$SCREENSHOT_DIR/${filename}.png" ]; then
-        ((CAPTURED_COUNT++))
+        CAPTURED_COUNT=$((CAPTURED_COUNT + 1))
     fi
 done
 

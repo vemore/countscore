@@ -1,4 +1,4 @@
-Keep track of scores for all your favorite games and activities with CountScore – the simple, powerful, and privacy-focused score tracking app. Whether it's board games with family, card games with friends, or sports activities, CountScore makes score management easy and organized.
+Keep track of scores for all your favorite games with CountScore – the simple, powerful, and privacy-focused score tracking app.
 
 ✨ KEY FEATURES
 
@@ -8,142 +8,84 @@ Keep track of scores for all your favorite games and activities with CountScore 
 • Flexible scoring systems for any game
 
 🎯 Flexible Scoring
-• Support for both lowest-wins and highest-wins scoring systems
-• Perfect for card games, board games, and sports
+• Support for both lowest-wins and highest-wins scoring
 • Easy score entry and adjustment
 
 👥 Player Management
 • Add and manage unlimited players
-• Track individual player statistics across games
-• Organize players by game type
+• Track individual statistics across games
 
 📈 Complete Game History
 • Full score history for every game
-• Review past games and results
-• Track progress over time
+• Review past games and track progress
 
 🎨 Customization
-• Custom colors for each game type
-• Personalized icons for easy identification
+• Custom colors and icons for each game type
 • Clean, Material Design 3 interface
 
-📴 Offline First
+📴 Offline First & Privacy Focused
 • All data stored locally on your device
-• No internet connection required
-• Works anywhere, anytime
-
-🔒 Privacy Focused
-• No data collection or tracking
-• No analytics or advertising
-• No third-party services
-• Open-source and auditable
+• No internet required – works anywhere
+• No data collection, tracking, or analytics
+• No third-party services or advertising
+• Open-source and auditable (MIT License)
 
 🎯 PERFECT FOR
-
-• Family game nights and board games
-• Card game tournaments (Uno, Poker, Rummy)
-• Board game sessions (Scrabble, Monopoly, Risk)
-• Sports score keeping (Basketball, Tennis, Golf)
-• Classroom activities and competitions
-• Party games and social gatherings
-• Any activity where you need to track scores
+• Family game nights 
+• Card tournaments 
+• Board game sessions 
+• Sports scorekeeping 
+• Classroom activities 
+• Party games 
+• Any activity requiring score tracking
 
 🌟 WHY CHOOSE COUNTSCORE?
 
 SIMPLE & INTUITIVE
-Clean, modern interface designed for ease of use. Start tracking scores in seconds without complicated setup.
-
-POWERFUL & FLEXIBLE
-Customize game types, scoring rules, and player management to fit your needs. Handles any type of scoring system.
-
-PRIVACY FIRST
-Your data stays on your device. No accounts, no cloud, no tracking. Just pure score tracking.
+Start tracking scores in seconds with a clean, modern interface.
 
 COMPLETELY FREE
-No ads, no in-app purchases, no hidden costs. CountScore is free forever and open source.
+No ads, no in-app purchases, no hidden costs. Free forever and open source.
 
-OFFLINE CAPABLE
-No internet required. Track scores anywhere – at home, outdoors, or while traveling.
+PRIVACY FIRST
+Your data stays on your device. No accounts, no cloud, no tracking.
 
 LIGHTWEIGHT & FAST
-Small app size, quick load times, and smooth performance even on older devices.
+Small app size with smooth performance even on older devices.
 
 📱 HOW IT WORKS
-
-1. CREATE OR SELECT A GAME TYPE
-Choose from pre-configured games or create your own custom game type.
-
-2. ADD PLAYERS
-Enter player names for your game session. Manage players easily between games.
-
-3. TRACK SCORES
-Record scores as you play. Simple interface makes score entry quick and easy.
-
-4. VIEW HISTORY
-Review past games, check statistics, and track progress over time.
+• Create or select a game type
+• Add players
+• Track scores as you play
+• View history and statistics
 
 💡 USE CASES
-
-FAMILY GAME NIGHTS
-Keep track of scores for multiple games throughout the evening. See who's winning overall!
-
-CARD TOURNAMENTS
-Run poker nights, Uno tournaments, or any card game competition with organized score tracking.
-
-BOARD GAME SESSIONS
-Perfect for Scrabble, Monopoly, Settlers of Catan, or any board game that requires score tracking.
-
-SPORTS & RECREATION
-Track scores for basketball, tennis, golf, darts, or any sport with multiple rounds.
-
-CLASSROOM ACTIVITIES
-Teachers can use CountScore for educational games, quiz competitions, and team activities.
+• Family game nights with multiple games
+• Card tournaments (poker, Uno, etc.)
+• Board games (Scrabble, Monopoly, Settlers of Catan)
+• Sports (basketball, tennis, golf, darts)
+• Classroom competitions and educational games
 
 🔐 PRIVACY & SECURITY
-
-CountScore is built with privacy as a core principle:
-
-• ✅ All data stored locally on your device
-• ✅ No user accounts or registration required
-• ✅ No personal information collected
-• ✅ No analytics or tracking
-• ✅ No third-party services or integrations
-• ✅ Open-source code (MIT License)
-• ✅ Completely ad-free
-
-Your game data, player names, and scores never leave your device. Delete data anytime through the app or your device settings.
-
-🌍 OPEN SOURCE
-
-CountScore is open-source software under the MIT License. The source code is publicly available for review, ensuring transparency and trust.
+✅ All data stored locally
+✅ No registration required
+✅ No personal information collected
+✅ No analytics or tracking
+✅ Open-source code (MIT License)
+✅ Completely ad-free
+Your data never leaves your device. Delete anytime through app or device settings.
 
 📧 SUPPORT
-
-Need help or have suggestions? We're here to help!
-
 Contact: scribio.ai@gmail.com
 GitHub: https://github.com/vemore/countscore
 
-We typically respond within 48 hours and welcome your feedback.
+💾 REQUIREMENTS
+• Android 5.0 or higher
+• ~50 MB storage
+• No internet required
 
-⭐ WHAT USERS SAY
-
-"Simple, clean, and exactly what I needed for game nights!"
-"Finally, a score tracker that doesn't spam me with ads"
-"Love that my data stays private and local"
-
-💾 DEVICE REQUIREMENTS
-
-• Android 5.0 (Lollipop) or higher
-• ~50 MB storage space
-• No internet connection required
-
-🎮 START TRACKING SCORES TODAY
-
-Download CountScore now and simplify your game score management. Whether you're hosting a game night, running a tournament, or just keeping score casually, CountScore has you covered.
-
----
+🎮 START TODAY
+Download CountScore and simplify your score management for game nights, tournaments, or casual play.
 
 CountScore – Simple Score Tracking. No Ads. No Tracking. Just Games.
-
 Made with ❤️ using Flutter | Open Source | Free Forever
