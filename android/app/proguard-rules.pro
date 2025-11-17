@@ -175,6 +175,11 @@
 # These classes are referenced by Flutter but not used in this app
 -dontwarn com.google.android.play.core.**
 
+# Suppress warnings for Apache Tika (file_picker dependency)
+# XMLStreamException is part of javax.xml.stream which may not be available on all Android versions
+-dontwarn javax.xml.stream.XMLStreamException
+-dontwarn org.apache.tika.**
+
 # ============================================================================
 # OPTIMIZATION
 # ============================================================================
