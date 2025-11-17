@@ -857,6 +857,96 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Fermer'**
   String get close;
+
+  /// Label for player elimination condition section
+  ///
+  /// In fr, this message translates to:
+  /// **'Condition d\'élimination du joueur'**
+  String get playerEliminationCondition;
+
+  /// Label for game over condition section
+  ///
+  /// In fr, this message translates to:
+  /// **'Condition de fin de partie'**
+  String get gameOverCondition;
+
+  /// Option for no condition
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune'**
+  String get none;
+
+  /// Player dead condition: over threshold
+  ///
+  /// In fr, this message translates to:
+  /// **'Au-dessus du seuil'**
+  String get overThreshold;
+
+  /// Player dead condition: under threshold
+  ///
+  /// In fr, this message translates to:
+  /// **'En dessous du seuil'**
+  String get underThreshold;
+
+  /// Game over when first player goes over threshold
+  ///
+  /// In fr, this message translates to:
+  /// **'Premier joueur au-dessus'**
+  String get firstPlayerOver;
+
+  /// Game over when first player goes under threshold
+  ///
+  /// In fr, this message translates to:
+  /// **'Premier joueur en dessous'**
+  String get firstPlayerUnder;
+
+  /// Game over when last player goes over threshold
+  ///
+  /// In fr, this message translates to:
+  /// **'Dernier joueur au-dessus'**
+  String get lastPlayerOver;
+
+  /// Game over when last player goes under threshold
+  ///
+  /// In fr, this message translates to:
+  /// **'Dernier joueur en dessous'**
+  String get lastPlayerUnder;
+
+  /// Label for threshold value input
+  ///
+  /// In fr, this message translates to:
+  /// **'Seuil'**
+  String get threshold;
+
+  /// Label for condition type dropdown
+  ///
+  /// In fr, this message translates to:
+  /// **'Type de condition'**
+  String get conditionType;
+
+  /// Title for game over dialog
+  ///
+  /// In fr, this message translates to:
+  /// **'Fin de partie !'**
+  String get gameOverTitle;
+
+  /// Message in game over dialog
+  ///
+  /// In fr, this message translates to:
+  /// **'La condition de fin de partie est atteinte. Terminer la partie maintenant ?'**
+  String get gameOverMessage;
+
+  /// Button to continue playing despite game over
+  ///
+  /// In fr, this message translates to:
+  /// **'Continuer à jouer'**
+  String get continuePlay;
+
+  /// Button to end the game
+  ///
+  /// In fr, this message translates to:
+  /// **'Terminer la partie'**
+  String get endGame;
 }
 
 class _AppLocalizationsDelegate

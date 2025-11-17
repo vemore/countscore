@@ -675,5 +675,80 @@
   "close": "Fermer",
   "@close": {
     "description": "Close button text"
+  },
+
+  "playerEliminationCondition": "Condition d'élimination du joueur",
+  "@playerEliminationCondition": {
+    "description": "Label for player elimination condition section"
+  },
+
+  "gameOverCondition": "Condition de fin de partie",
+  "@gameOverCondition": {
+    "description": "Label for game over condition section"
+  },
+
+  "none": "Aucune",
+  "@none": {
+    "description": "Option for no condition"
+  },
+
+  "overThreshold": "Au-dessus du seuil",
+  "@overThreshold": {
+    "description": "Player dead condition: over threshold"
+  },
+
+  "underThreshold": "En dessous du seuil",
+  "@underThreshold": {
+    "description": "Player dead condition: under threshold"
+  },
+
+  "firstPlayerOver": "Premier joueur au-dessus",
+  "@firstPlayerOver": {
+    "description": "Game over when first player goes over threshold"
+  },
+
+  "firstPlayerUnder": "Premier joueur en dessous",
+  "@firstPlayerUnder": {
+    "description": "Game over when first player goes under threshold"
+  },
+
+  "lastPlayerOver": "Dernier joueur au-dessus",
+  "@lastPlayerOver": {
+    "description": "Game over when last player goes over threshold"
+  },
+
+  "lastPlayerUnder": "Dernier joueur en dessous",
+  "@lastPlayerUnder": {
+    "description": "Game over when last player goes under threshold"
+  },
+
+  "threshold": "Seuil",
+  "@threshold": {
+    "description": "Label for threshold value input"
+  },
+
+  "conditionType": "Type de condition",
+  "@conditionType": {
+    "description": "Label for condition type dropdown"
+  },
+
+  "gameOverTitle": "Fin de partie !",
+  "@gameOverTitle": {
+    "description": "Title for game over dialog"
+  },
+
+  "gameOverMessage": "La condition de fin de partie est atteinte. Terminer la partie maintenant ?",
+  "@gameOverMessage": {
+    "description": "Message in game over dialog"
+  },
+
+  "continuePlay": "Continuer à jouer",
+  "@continuePlay": {
+    "description": "Button to continue playing despite game over"
+  },
+
+  "endGame": "Terminer la partie",
+  "@endGame": {
+    "description": "Button to end the game"
   }
 }

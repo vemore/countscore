@@ -247,5 +247,21 @@
 
   "allPlayersSelected": "すべてのプレイヤーが選択されています",
 
-  "close": "閉じる"
+  "close": "閉じる",
+
+  "playerEliminationCondition": "Player Elimination Condition",
+  "gameOverCondition": "Game Over Condition",
+  "none": "None",
+  "overThreshold": "Over threshold",
+  "underThreshold": "Under threshold",
+  "firstPlayerOver": "First player over",
+  "firstPlayerUnder": "First player under",
+  "lastPlayerOver": "Last player over",
+  "lastPlayerUnder": "Last player under",
+  "threshold": "Threshold",
+  "conditionType": "Condition Type",
+  "gameOverTitle": "Game Over!",
+  "gameOverMessage": "Game over condition reached. End game now?",
+  "continuePlay": "Continue Playing",
+  "endGame": "End Game"
 }

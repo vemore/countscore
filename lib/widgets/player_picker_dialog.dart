@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
+import '../services/database_service.dart';
 
 class PlayerPickerDialog extends StatefulWidget {
   final List<String> availablePlayers;
@@ -20,6 +21,7 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
   final TextEditingController _newPlayerController = TextEditingController();
   String _searchQuery = '';
   bool _showNewPlayerField = false;
+  Map<String, Color> _playerColors = {};
 
   List<String> get _filteredPlayers {
     // Filtrer les joueurs non sélectionnés
@@ -35,6 +37,39 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
     return unselectedPlayers
         .where((name) => name.toLowerCase().contains(_searchQuery.toLowerCase()))
         .toList();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlayerColors();
+  }
+
+  Future<void> _loadPlayerColors() async {
+    final db = await DatabaseService.instance.database;
+    final colors = <String, Color>{};
+
+    for (final playerName in widget.availablePlayers) {
+      final result = await db.query(
+        'players',
+        columns: ['colorValue'],
+        where: 'name = ?',
+        whereArgs: [playerName],
+        limit: 1,
+      );
+
+      if (result.isNotEmpty && result.first['colorValue'] != null) {
+        colors[playerName] = Color(result.first['colorValue'] as int);
+      } else {
+        colors[playerName] = Colors.blue;
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _playerColors = colors;
+      });
+    }
   }
 
   @override
@@ -208,6 +243,7 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
                         final playerName = _filteredPlayers[index];
                         return ListTile(
                           leading: CircleAvatar(
+                            backgroundColor: _playerColors[playerName] ?? Colors.blue,
                             child: Text(
                               playerName[0].toUpperCase(),
                               style: const TextStyle(fontWeight: FontWeight.bold),

@@ -247,5 +247,21 @@
 
   "allPlayersSelected": "Alle Spieler wurden ausgewählt",
 
-  "close": "Schließen"
+  "close": "Schließen",
+
+  "playerEliminationCondition": "Spielerausschlussbedingung",
+  "gameOverCondition": "Spielende-Bedingung",
+  "none": "Keine",
+  "overThreshold": "Über Schwellenwert",
+  "underThreshold": "Unter Schwellenwert",
+  "firstPlayerOver": "Erster Spieler über",
+  "firstPlayerUnder": "Erster Spieler unter",
+  "lastPlayerOver": "Letzter Spieler über",
+  "lastPlayerUnder": "Letzter Spieler unter",
+  "threshold": "Schwellenwert",
+  "conditionType": "Bedingungstyp",
+  "gameOverTitle": "Spiel beendet!",
+  "gameOverMessage": "Spielende-Bedingung erreicht. Jetzt beenden?",
+  "continuePlay": "Weiterspielen",
+  "endGame": "Spiel beenden"
 }

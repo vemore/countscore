@@ -415,4 +415,49 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get close => '閉じる';
+
+  @override
+  String get playerEliminationCondition => 'Player Elimination Condition';
+
+  @override
+  String get gameOverCondition => 'Game Over Condition';
+
+  @override
+  String get none => 'None';
+
+  @override
+  String get overThreshold => 'Over threshold';
+
+  @override
+  String get underThreshold => 'Under threshold';
+
+  @override
+  String get firstPlayerOver => 'First player over';
+
+  @override
+  String get firstPlayerUnder => 'First player under';
+
+  @override
+  String get lastPlayerOver => 'Last player over';
+
+  @override
+  String get lastPlayerUnder => 'Last player under';
+
+  @override
+  String get threshold => 'Threshold';
+
+  @override
+  String get conditionType => 'Condition Type';
+
+  @override
+  String get gameOverTitle => 'Game Over!';
+
+  @override
+  String get gameOverMessage => 'Game over condition reached. End game now?';
+
+  @override
+  String get continuePlay => 'Continue Playing';
+
+  @override
+  String get endGame => 'End Game';
 }

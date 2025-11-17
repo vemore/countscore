@@ -424,4 +424,50 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get close => 'Fermer';
+
+  @override
+  String get playerEliminationCondition => 'Condition d\'élimination du joueur';
+
+  @override
+  String get gameOverCondition => 'Condition de fin de partie';
+
+  @override
+  String get none => 'Aucune';
+
+  @override
+  String get overThreshold => 'Au-dessus du seuil';
+
+  @override
+  String get underThreshold => 'En dessous du seuil';
+
+  @override
+  String get firstPlayerOver => 'Premier joueur au-dessus';
+
+  @override
+  String get firstPlayerUnder => 'Premier joueur en dessous';
+
+  @override
+  String get lastPlayerOver => 'Dernier joueur au-dessus';
+
+  @override
+  String get lastPlayerUnder => 'Dernier joueur en dessous';
+
+  @override
+  String get threshold => 'Seuil';
+
+  @override
+  String get conditionType => 'Type de condition';
+
+  @override
+  String get gameOverTitle => 'Fin de partie !';
+
+  @override
+  String get gameOverMessage =>
+      'La condition de fin de partie est atteinte. Terminer la partie maintenant ?';
+
+  @override
+  String get continuePlay => 'Continuer à jouer';
+
+  @override
+  String get endGame => 'Terminer la partie';
 }

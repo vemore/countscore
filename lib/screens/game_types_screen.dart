@@ -61,42 +61,37 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
                         ? l10n.lowestScoreWins
                         : l10n.highestScoreWins,
                   ),
-                  trailing: gameType.isDefault
-                      ? Chip(
-                          label: Text(l10n.predefined, style: const TextStyle(fontSize: 10)),
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                        )
-                      : PopupMenuButton(
-                          itemBuilder: (context) => [
-                            PopupMenuItem(
-                              value: 'edit',
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.edit),
-                                  const SizedBox(width: 8),
-                                  Text(l10n.edit),
-                                ],
-                              ),
-                            ),
-                            PopupMenuItem(
-                              value: 'delete',
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.delete, color: Colors.red),
-                                  const SizedBox(width: 8),
-                                  Text(l10n.delete, style: const TextStyle(color: Colors.red)),
-                                ],
-                              ),
-                            ),
+                  trailing: PopupMenuButton(
+                    itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            const Icon(Icons.edit),
+                            const SizedBox(width: 8),
+                            Text(l10n.edit),
                           ],
-                          onSelected: (value) async {
-                            if (value == 'edit') {
-                              _showGameTypeDialog(context, gameType);
-                            } else if (value == 'delete') {
-                              _deleteGameType(context, gameType);
-                            }
-                          },
                         ),
+                      ),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            const Icon(Icons.delete, color: Colors.red),
+                            const SizedBox(width: 8),
+                            Text(l10n.delete, style: const TextStyle(color: Colors.red)),
+                          ],
+                        ),
+                      ),
+                    ],
+                    onSelected: (value) async {
+                      if (value == 'edit') {
+                        _showGameTypeDialog(context, gameType);
+                      } else if (value == 'delete') {
+                        _deleteGameType(context, gameType);
+                      }
+                    },
+                  ),
                 ),
               );
             },
@@ -116,9 +111,17 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
     final isEditing = existingGameType != null;
 
     final nameController = TextEditingController(text: existingGameType?.name ?? '');
+    final playerDeadThresholdController = TextEditingController(
+      text: existingGameType?.playerDeadThreshold?.toString() ?? '',
+    );
+    final gameOverThresholdController = TextEditingController(
+      text: existingGameType?.gameOverThreshold?.toString() ?? '',
+    );
     IconData selectedIcon = existingGameType?.icon ?? Icons.sports_esports;
     Color selectedColor = existingGameType?.cardColor ?? Colors.deepPurple;
     bool isLowestScoreWins = existingGameType?.isLowestScoreWins ?? false;
+    PlayerDeadConditionType? playerDeadConditionType = existingGameType?.playerDeadConditionType;
+    GameOverConditionType? gameOverConditionType = existingGameType?.gameOverConditionType;
 
     showDialog(
       context: context,
@@ -190,6 +193,110 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
                         });
                       },
                     ),
+                    const SizedBox(height: 24),
+                    const Divider(),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.playerEliminationCondition,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<PlayerDeadConditionType?>(
+                      initialValue: playerDeadConditionType,
+                      decoration: InputDecoration(
+                        labelText: l10n.conditionType,
+                        border: const OutlineInputBorder(),
+                      ),
+                      items: [
+                        DropdownMenuItem(
+                          value: null,
+                          child: Text(l10n.none),
+                        ),
+                        DropdownMenuItem(
+                          value: PlayerDeadConditionType.over,
+                          child: Text(l10n.overThreshold),
+                        ),
+                        DropdownMenuItem(
+                          value: PlayerDeadConditionType.under,
+                          child: Text(l10n.underThreshold),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          playerDeadConditionType = value;
+                          if (value == null) {
+                            playerDeadThresholdController.clear();
+                          }
+                        });
+                      },
+                    ),
+                    if (playerDeadConditionType != null) ...[
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: playerDeadThresholdController,
+                        decoration: InputDecoration(
+                          labelText: l10n.threshold,
+                          border: const OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ],
+                    const SizedBox(height: 24),
+                    const Divider(),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.gameOverCondition,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<GameOverConditionType?>(
+                      initialValue: gameOverConditionType,
+                      decoration: InputDecoration(
+                        labelText: l10n.conditionType,
+                        border: const OutlineInputBorder(),
+                      ),
+                      items: [
+                        DropdownMenuItem(
+                          value: null,
+                          child: Text(l10n.none),
+                        ),
+                        DropdownMenuItem(
+                          value: GameOverConditionType.firstPlayerOver,
+                          child: Text(l10n.firstPlayerOver),
+                        ),
+                        DropdownMenuItem(
+                          value: GameOverConditionType.firstPlayerUnder,
+                          child: Text(l10n.firstPlayerUnder),
+                        ),
+                        DropdownMenuItem(
+                          value: GameOverConditionType.lastPlayerOver,
+                          child: Text(l10n.lastPlayerOver),
+                        ),
+                        DropdownMenuItem(
+                          value: GameOverConditionType.lastPlayerUnder,
+                          child: Text(l10n.lastPlayerUnder),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          gameOverConditionType = value;
+                          if (value == null) {
+                            gameOverThresholdController.clear();
+                          }
+                        });
+                      },
+                    ),
+                    if (gameOverConditionType != null) ...[
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: gameOverThresholdController,
+                        decoration: InputDecoration(
+                          labelText: l10n.threshold,
+                          border: const OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -213,6 +320,14 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
                       iconCodePoint: selectedIcon.codePoint,
                       cardColorValue: selectedColor.toARGB32(),
                       isLowestScoreWins: isLowestScoreWins,
+                      playerDeadConditionType: playerDeadConditionType,
+                      playerDeadThreshold: playerDeadThresholdController.text.isEmpty
+                          ? null
+                          : int.tryParse(playerDeadThresholdController.text),
+                      gameOverConditionType: gameOverConditionType,
+                      gameOverThreshold: gameOverThresholdController.text.isEmpty
+                          ? null
+                          : int.tryParse(gameOverThresholdController.text),
                     );
 
                     if (isEditing) {
@@ -287,6 +402,23 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
       Icons.sports_basketball,
       Icons.deck,
       Icons.celebration,
+      // Additional 16 icons
+      Icons.casino_outlined,
+      Icons.sports_tennis,
+      Icons.sports_baseball,
+      Icons.diamond,
+      Icons.workspace_premium,
+      Icons.auto_awesome,
+      Icons.account_tree,
+      Icons.extension,
+      Icons.local_fire_department,
+      Icons.offline_bolt,
+      Icons.shield,
+      Icons.emoji_objects,
+      Icons.music_note,
+      Icons.palette,
+      Icons.school,
+      Icons.sports_kabaddi,
     ];
 
     showDialog(

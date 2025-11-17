@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
+import '../models/game_type.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
 import 'ranking_screen.dart';
@@ -14,8 +15,8 @@ class GameBoardScreen extends StatefulWidget {
 }
 
 class _GameBoardScreenState extends State<GameBoardScreen> {
-  // Track players who exceeded 100 to play sound only once
-  final Set<int> _playersOver100 = {};
+  // Track eliminated players to play sound only once
+  final Set<int> _eliminatedPlayers = {};
 
   @override
   Widget build(BuildContext context) {
@@ -91,6 +92,19 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
               : null;
           final isZapZap = gameType?.name.toLowerCase() == 'zapzap';
 
+          // Helper function to check if player is eliminated based on game type conditions
+          bool isPlayerEliminated(int playerTotal) {
+            if (gameType?.playerDeadConditionType == null || gameType?.playerDeadThreshold == null) {
+              return false;
+            }
+            switch (gameType!.playerDeadConditionType!) {
+              case PlayerDeadConditionType.over:
+                return playerTotal > gameType.playerDeadThreshold!;
+              case PlayerDeadConditionType.under:
+                return playerTotal < gameType.playerDeadThreshold!;
+            }
+          }
+
           if (players.isEmpty) {
             return Center(
               child: Text(l10n.noPlayersInGame),
@@ -118,7 +132,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                         ),
                         ...players.map((player) {
                           final playerTotal = gameProvider.getPlayerTotal(player.id!);
-                          final isOver100 = isZapZap && playerTotal > 100;
+                          final isEliminated = isPlayerEliminated(playerTotal);
 
                           return DataColumn(
                             label: Column(
@@ -128,13 +142,13 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                                   player.name,
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    decoration: isOver100
+                                    decoration: isEliminated
                                         ? TextDecoration.lineThrough
                                         : null,
-                                    decorationColor: isOver100
+                                    decorationColor: isEliminated
                                         ? Colors.red
                                         : null,
-                                    decorationThickness: isOver100
+                                    decorationThickness: isEliminated
                                         ? 2.0
                                         : null,
                                   ),
@@ -248,6 +262,67 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     );
   }
 
+  bool _isPlayerEliminatedByTotal(int playerTotal, GameType gameType) {
+    if (gameType.playerDeadConditionType == null || gameType.playerDeadThreshold == null) {
+      return false;
+    }
+    switch (gameType.playerDeadConditionType!) {
+      case PlayerDeadConditionType.over:
+        return playerTotal > gameType.playerDeadThreshold!;
+      case PlayerDeadConditionType.under:
+        return playerTotal < gameType.playerDeadThreshold!;
+    }
+  }
+
+  bool _checkGameOverCondition(GameProvider gameProvider, GameType? gameType) {
+    if (gameType?.gameOverConditionType == null || gameType?.gameOverThreshold == null) {
+      return false;
+    }
+
+    final players = gameProvider.currentPlayers;
+    final playerTotals = players.map((p) => gameProvider.getPlayerTotal(p.id!)).toList();
+
+    switch (gameType!.gameOverConditionType!) {
+      case GameOverConditionType.firstPlayerOver:
+        return playerTotals.any((total) => total > gameType.gameOverThreshold!);
+      case GameOverConditionType.firstPlayerUnder:
+        return playerTotals.any((total) => total < gameType.gameOverThreshold!);
+      case GameOverConditionType.lastPlayerOver:
+        // All players over threshold
+        return playerTotals.every((total) => total > gameType.gameOverThreshold!);
+      case GameOverConditionType.lastPlayerUnder:
+        // All players under threshold
+        return playerTotals.every((total) => total < gameType.gameOverThreshold!);
+    }
+  }
+
+  void _showGameOverDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.gameOverTitle),
+        content: Text(l10n.gameOverMessage),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+            },
+            child: Text(l10n.continuePlay),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              Navigator.pop(context); // Return to game list
+            },
+            child: Text(l10n.endGame),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showScoreDialog(
     BuildContext context,
     GameProvider gameProvider,
@@ -262,8 +337,6 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
       text: currentScore == 0 ? '' : currentScore.toString(),
     );
 
-    final isZapZap = gameType?.name.toLowerCase() == 'zapzap';
-
     void handleScoreUpdate(int newScore) async {
       final oldTotal = gameProvider.getPlayerTotal(player.id!);
 
@@ -273,19 +346,32 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
         newScore,
       );
 
-      // Check if player just exceeded 100 for ZapZap
-      if (isZapZap) {
+      // Check if player just got eliminated
+      if (gameType?.playerDeadConditionType != null && gameType?.playerDeadThreshold != null) {
         final newTotal = gameProvider.getPlayerTotal(player.id!);
-        if (oldTotal <= 100 && newTotal > 100 && !_playersOver100.contains(player.id!)) {
+        final wasEliminated = _isPlayerEliminatedByTotal(oldTotal, gameType!);
+        final isNowEliminated = _isPlayerEliminatedByTotal(newTotal, gameType);
+
+        if (!wasEliminated && isNowEliminated && !_eliminatedPlayers.contains(player.id!)) {
           setState(() {
-            _playersOver100.add(player.id!);
+            _eliminatedPlayers.add(player.id!);
           });
           SystemSound.play(SystemSoundType.alert);
-        } else if (newTotal <= 100 && _playersOver100.contains(player.id!)) {
+        } else if (wasEliminated && !isNowEliminated && _eliminatedPlayers.contains(player.id!)) {
           setState(() {
-            _playersOver100.remove(player.id!);
+            _eliminatedPlayers.remove(player.id!);
           });
         }
+      }
+
+      // Check if game over condition is met
+      if (_checkGameOverCondition(gameProvider, gameType)) {
+        // Use a slight delay to ensure UI updates before showing dialog
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (context.mounted) {
+            _showGameOverDialog(context);
+          }
+        });
       }
     }
 

@@ -247,5 +247,21 @@
 
   "allPlayersSelected": "Todos os jogadores foram selecionados",
 
-  "close": "Fechar"
+  "close": "Fechar",
+
+  "playerEliminationCondition": "Condição de Eliminação do Jogador",
+  "gameOverCondition": "Condição de Fim de Jogo",
+  "none": "Nenhuma",
+  "overThreshold": "Acima do limite",
+  "underThreshold": "Abaixo do limite",
+  "firstPlayerOver": "Primeiro jogador acima",
+  "firstPlayerUnder": "Primeiro jogador abaixo",
+  "lastPlayerOver": "Último jogador acima",
+  "lastPlayerUnder": "Último jogador abaixo",
+  "threshold": "Limite",
+  "conditionType": "Tipo de Condição",
+  "gameOverTitle": "Fim de Jogo!",
+  "gameOverMessage": "Condição de fim de jogo atingida. Terminar agora?",
+  "continuePlay": "Continuar Jogando",
+  "endGame": "Terminar Jogo"
 }

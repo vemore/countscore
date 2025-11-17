@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
+import '../models/game_type.dart';
 import '../providers/game_provider.dart';
+import '../providers/game_type_provider.dart';
+import '../services/database_service.dart';
 
 class PlayerStatsScreen extends StatefulWidget {
   const PlayerStatsScreen({super.key});
@@ -13,6 +16,8 @@ class PlayerStatsScreen extends StatefulWidget {
 class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
   List<String> _playerNames = [];
   Map<String, Map<String, dynamic>> _stats = {};
+  Map<String, Color> _playerColors = {};
+  Map<String, GameType> _gameTypesByName = {};
   bool _isLoading = true;
 
   @override
@@ -27,18 +32,50 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
     });
 
     final gameProvider = context.read<GameProvider>();
+    final gameTypeProvider = context.read<GameTypeProvider>();
+
+    // Load game types
+    await gameTypeProvider.loadGameTypes();
+    final gameTypes = gameTypeProvider.gameTypes;
+    final gameTypesByName = <String, GameType>{};
+    for (final gameType in gameTypes) {
+      gameTypesByName[gameType.name] = gameType;
+    }
+
     final names = await gameProvider.getAllPlayerNames();
 
     final stats = <String, Map<String, dynamic>>{};
+    final colors = <String, Color>{};
     for (final name in names) {
       stats[name] = await gameProvider.getPlayerStats(name);
+      colors[name] = await _loadPlayerColor(name);
     }
 
     setState(() {
       _playerNames = names;
       _stats = stats;
+      _playerColors = colors;
+      _gameTypesByName = gameTypesByName;
       _isLoading = false;
     });
+  }
+
+  Future<Color> _loadPlayerColor(String playerName) async {
+    final db = await DatabaseService.instance.database;
+
+    final result = await db.query(
+      'players',
+      columns: ['colorValue'],
+      where: 'name = ?',
+      whereArgs: [playerName],
+      limit: 1,
+    );
+
+    if (result.isNotEmpty && result.first['colorValue'] != null) {
+      return Color(result.first['colorValue'] as int);
+    }
+
+    return Colors.blue; // Default color
   }
 
   @override
@@ -73,6 +110,7 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
                       ),
                       child: ExpansionTile(
                         leading: CircleAvatar(
+                          backgroundColor: _playerColors[name] ?? Colors.blue,
                           child: Text(
                             name[0].toUpperCase(),
                             style: const TextStyle(
@@ -194,13 +232,18 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
     final widgets = <Widget>[];
 
     for (final entry in statsByType.entries) {
-      final gameType = entry.key;
+      final gameTypeName = entry.key;
       final stats = entry.value;
       final gamesPlayed = stats['gamesPlayed'] ?? 0;
       final wins = stats['wins'] ?? 0;
       final winRate = gamesPlayed > 0
           ? (wins / gamesPlayed * 100).toStringAsFixed(1)
           : '0.0';
+
+      // Get game type info for icon and color
+      final gameType = _gameTypesByName[gameTypeName];
+      final iconData = gameType?.icon ?? Icons.casino;
+      final iconColor = gameType?.cardColor ?? Theme.of(context).colorScheme.primary;
 
       widgets.add(
         Container(
@@ -216,13 +259,13 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
               Row(
                 children: [
                   Icon(
-                    Icons.casino,
+                    iconData,
                     size: 20,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: iconColor,
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    gameType,
+                    gameTypeName,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,

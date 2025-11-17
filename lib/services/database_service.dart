@@ -25,7 +25,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -44,7 +44,11 @@ class DatabaseService {
         iconCodePoint $intType,
         cardColorValue $intType,
         isLowestScoreWins $intType,
-        isDefault INTEGER NOT NULL DEFAULT 0
+        isDefault INTEGER NOT NULL DEFAULT 0,
+        playerDeadConditionType TEXT,
+        playerDeadThreshold INTEGER,
+        gameOverConditionType TEXT,
+        gameOverThreshold INTEGER
       )
     ''');
 
@@ -162,6 +166,82 @@ class DatabaseService {
             }
           }
         }
+      }
+    }
+
+    if (oldVersion < 5) {
+      // Add new columns for player elimination and game over conditions
+      await db.execute('ALTER TABLE game_types ADD COLUMN playerDeadConditionType TEXT');
+      await db.execute('ALTER TABLE game_types ADD COLUMN playerDeadThreshold INTEGER');
+      await db.execute('ALTER TABLE game_types ADD COLUMN gameOverConditionType TEXT');
+      await db.execute('ALTER TABLE game_types ADD COLUMN gameOverThreshold INTEGER');
+
+      // Update existing game types with appropriate conditions
+      // ZapZap: player dead over 100
+      await db.execute('''
+        UPDATE game_types
+        SET playerDeadConditionType = 'over', playerDeadThreshold = 100
+        WHERE name = 'ZapZap'
+      ''');
+
+      // Skyjo: game over when first player over 100
+      final skyjoExists = await db.query('game_types', where: 'name = ?', whereArgs: ['Skyjo']);
+      if (skyjoExists.isEmpty) {
+        await db.insert('game_types', GameType.skyjo().toMap());
+      } else {
+        await db.execute('''
+          UPDATE game_types
+          SET gameOverConditionType = 'firstPlayerOver', gameOverThreshold = 100
+          WHERE name = 'Skyjo'
+        ''');
+      }
+
+      // Président: game over when first player over 11
+      final presidentExists = await db.query('game_types', where: 'name = ?', whereArgs: ['Président']);
+      if (presidentExists.isEmpty) {
+        await db.insert('game_types', GameType.president().toMap());
+      } else {
+        await db.execute('''
+          UPDATE game_types
+          SET gameOverConditionType = 'firstPlayerOver', gameOverThreshold = 11
+          WHERE name = 'Président'
+        ''');
+      }
+
+      // Belote: game over when first player over 1000
+      final beloteExists = await db.query('game_types', where: 'name = ?', whereArgs: ['Belote']);
+      if (beloteExists.isEmpty) {
+        await db.insert('game_types', GameType.belote().toMap());
+      } else {
+        await db.execute('''
+          UPDATE game_types
+          SET gameOverConditionType = 'firstPlayerOver', gameOverThreshold = 1000
+          WHERE name = 'Belote'
+        ''');
+      }
+
+      // Tarot: no conditions
+      final tarotExists = await db.query('game_types', where: 'name = ?', whereArgs: ['Tarot']);
+      if (tarotExists.isEmpty) {
+        await db.insert('game_types', GameType.tarot().toMap());
+      }
+
+      // Bridge: no conditions
+      final bridgeExists = await db.query('game_types', where: 'name = ?', whereArgs: ['Bridge']);
+      if (bridgeExists.isEmpty) {
+        await db.insert('game_types', GameType.bridge().toMap());
+      }
+
+      // Rami: player dead over 100
+      final ramiExists = await db.query('game_types', where: 'name = ?', whereArgs: ['Rami']);
+      if (ramiExists.isEmpty) {
+        await db.insert('game_types', GameType.rami().toMap());
+      } else {
+        await db.execute('''
+          UPDATE game_types
+          SET playerDeadConditionType = 'over', playerDeadThreshold = 100
+          WHERE name = 'Rami'
+        ''');
       }
     }
   }
@@ -347,25 +427,27 @@ class DatabaseService {
     final db = await database;
 
     try {
-      // Nombre total de parties jouées
+      // Nombre total de parties jouées (doit correspondre à la somme par type de jeu)
       final totalGamesPlayed = await db.rawQuery('''
-        SELECT COUNT(DISTINCT gameId) as count
-        FROM players
-        WHERE name = ?
+        SELECT COUNT(DISTINCT g.id) as count
+        FROM games g
+        JOIN players p ON p.gameId = g.id
+        WHERE p.name = ?
       ''', [playerName]);
 
       // Récupérer toutes les parties du joueur avec leurs scores
       final playerGames = await db.rawQuery('''
         SELECT
           g.id as gameId,
-          g.gameType,
+          COALESCE(gt.name, 'Unknown') as gameType,
           g.isLowestScoreWins,
           COALESCE(SUM(s.value), 0) as playerTotal
         FROM games g
         JOIN players p ON p.gameId = g.id
+        LEFT JOIN game_types gt ON g.gameTypeId = gt.id
         LEFT JOIN scores s ON s.playerId = p.id
         WHERE p.name = ?
-        GROUP BY g.id, g.gameType, g.isLowestScoreWins
+        GROUP BY g.id, gt.name, g.isLowestScoreWins
       ''', [playerName]);
 
       int totalWins = 0;
@@ -479,7 +561,7 @@ class DatabaseService {
 
     return await db.delete(
       'game_types',
-      where: 'id = ? AND isDefault = 0',
+      where: 'id = ?',
       whereArgs: [id],
     );
   }
