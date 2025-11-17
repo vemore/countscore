@@ -1,15 +1,12 @@
 # CountScore - ProGuard Rules for Release Builds
 #
-# ⚠️ NOTE: ProGuard/R8 is currently DISABLED for CountScore
+# ✅ NOTE: ProGuard/R8 is ENABLED for CountScore release builds
 #
-# Since CountScore is an open-source MIT-licensed application, code obfuscation
-# provides no security benefit (source code is publicly available on GitHub).
+# R8 is enabled in android/app/build.gradle.kts for code shrinking and optimization:
+#   isMinifyEnabled = true
+#   isShrinkResources = true
 #
-# ProGuard/R8 is disabled in android/app/build.gradle.kts:
-#   isMinifyEnabled = false
-#   isShrinkResources = false
-#
-# This file is kept for reference if you want to enable shrinking in the future.
+# This significantly reduces APK/AAB size while maintaining app functionality.
 #
 # Benefits of keeping it disabled:
 # - Simpler builds (no configuration issues)

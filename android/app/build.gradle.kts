@@ -54,19 +54,16 @@ android {
             // Use release signing config
             signingConfig = signingConfigs.getByName("release")
 
-            // ProGuard/R8 disabled for open-source app
-            // No obfuscation needed since source code is publicly available
-            // This simplifies builds and makes crash reports more readable
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // Enable R8/ProGuard for code shrinking and optimization
+            // This reduces APK/AAB size significantly
+            isMinifyEnabled = true
+            isShrinkResources = true
 
-            // Note: If you want to enable shrinking in the future for smaller APK size:
-            // isMinifyEnabled = true
-            // isShrinkResources = true
-            // proguardFiles(
-            //     getDefaultProguardFile("proguard-android-optimize.txt"),
-            //     "proguard-rules.pro"
-            // )
+            // ProGuard rules for Flutter apps
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }
