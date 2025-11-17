@@ -369,7 +369,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rate => 'Rate';
 
   @override
-  String get version => 'Version 1.0.1';
+  String get version => 'Version 1.0.0';
 
   @override
   String get appDescription =>

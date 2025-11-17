@@ -371,7 +371,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get rate => 'दर';
 
   @override
-  String get version => 'संस्करण 1.0.1';
+  String get version => 'संस्करण 1.0.0';
 
   @override
   String get appDescription =>

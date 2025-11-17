@@ -371,7 +371,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rate => 'Tasa';
 
   @override
-  String get version => 'Versión 1.0.1';
+  String get version => 'Versión 1.0.0';
 
   @override
   String get appDescription =>

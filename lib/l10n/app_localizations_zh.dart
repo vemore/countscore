@@ -362,7 +362,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rate => '比率';
 
   @override
-  String get version => '版本 1.0.1';
+  String get version => '版本 1.0.0';
 
   @override
   String get appDescription => '由Vincent Moreau开发的游戏会话分数管理应用';

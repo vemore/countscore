@@ -753,7 +753,7 @@ abstract class AppLocalizations {
   /// Application version
   ///
   /// In fr, this message translates to:
-  /// **'Version 1.0.1'**
+  /// **'Version 1.0.0'**
   String get version;
 
   /// Application description

@@ -160,7 +160,7 @@ version: 1.0.0+1  # Format: MAJOR.MINOR.PATCH+BUILD_NUMBER
 - `+1` = Version code (incremental, Play Store requirement)
 
 **For future updates**:
-- Bug fixes: `1.0.1+2`, `1.0.2+3`
+- Bug fixes: `1.0.0+2`, `1.0.2+3`
 - New features: `1.1.0+4`, `1.2.0+5`
 - Major changes: `2.0.0+6`
 
@@ -657,7 +657,7 @@ Testers should verify:
 
 If issues are found:
 1. Fix bugs in code
-2. Increment version: `1.0.0+2` → `1.0.1+2` or `1.0.0+3`
+2. Increment version: `1.0.0+2` → `1.0.0+2` or `1.0.0+3`
 3. Rebuild: `flutter build appbundle --release --no-tree-shake-icons`
 4. Upload new AAB to internal testing
 5. Retest

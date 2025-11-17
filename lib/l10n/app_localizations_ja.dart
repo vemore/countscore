@@ -363,7 +363,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rate => '率';
 
   @override
-  String get version => 'バージョン 1.0.1';
+  String get version => 'バージョン 1.0.0';
 
   @override
   String get appDescription => 'Vincent Moreauによるゲームセッション用のスコア管理アプリ';

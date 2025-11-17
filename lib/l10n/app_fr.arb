@@ -587,7 +587,7 @@
     "description": "Label for rate"
   },
 
-  "version": "Version 1.0.1",
+  "version": "Version 1.0.0",
   "@version": {
     "description": "Application version"
   },

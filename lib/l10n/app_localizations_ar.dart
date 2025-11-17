@@ -370,7 +370,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get rate => 'المعدل';
 
   @override
-  String get version => 'الإصدار 1.0.1';
+  String get version => 'الإصدار 1.0.0';
 
   @override
   String get appDescription =>

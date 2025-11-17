@@ -373,7 +373,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get rate => 'Процент';
 
   @override
-  String get version => 'Версия 1.0.1';
+  String get version => 'Версия 1.0.0';
 
   @override
   String get appDescription =>

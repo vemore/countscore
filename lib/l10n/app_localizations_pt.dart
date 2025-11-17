@@ -372,7 +372,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get rate => 'Taxa';
 
   @override
-  String get version => 'Versão 1.0.1';
+  String get version => 'Versão 1.0.0';
 
   @override
   String get appDescription =>
