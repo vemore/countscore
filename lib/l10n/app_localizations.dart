@@ -186,6 +186,12 @@ abstract class AppLocalizations {
   /// **'Nouvelle avec mêmes joueurs'**
   String get newWithSamePlayers;
 
+  /// Suffix added to game name when creating a copy
+  ///
+  /// In fr, this message translates to:
+  /// **'(nouvelle)'**
+  String get newGameSuffix;
+
   /// Menu option to rename
   ///
   /// In fr, this message translates to:
@@ -533,6 +539,12 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Aucun joueur'**
   String get noPlayers;
+
+  /// Players list summary with count and names
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucun joueur} =1{1 joueur: {names}} other{{count} joueurs: {names}}}'**
+  String playersListSummary(int count, String names);
 
   /// Message explaining when players will appear
   ///

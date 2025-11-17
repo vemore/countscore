@@ -61,6 +61,11 @@
     "description": "Menu option to create new game with same players"
   },
 
+  "newGameSuffix": "(nouvelle)",
+  "@newGameSuffix": {
+    "description": "Suffix added to game name when creating a copy"
+  },
+
   "rename": "Renommer",
   "@rename": {
     "description": "Menu option to rename"
@@ -361,6 +366,21 @@
   "noPlayers": "Aucun joueur",
   "@noPlayers": {
     "description": "Message when no players exist"
+  },
+
+  "playersListSummary": "{count, plural, =0{Aucun joueur} =1{1 joueur: {names}} other{{count} joueurs: {names}}}",
+  "@playersListSummary": {
+    "description": "Players list summary with count and names",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      },
+      "names": {
+        "type": "String",
+        "example": "Alice, Bob, Charlie"
+      }
+    }
   },
 
   "playersAppearMessage": "Les joueurs apparaîtront ici une fois\nque vous aurez créé des parties",

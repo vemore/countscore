@@ -25,6 +25,8 @@
 
   "newWithSamePlayers": "使用相同玩家创建新游戏",
 
+  "newGameSuffix": "(新)",
+
   "rename": "重命名",
 
   "delete": "删除",
@@ -140,6 +142,8 @@
   "errorDuringImport": "导入时出错:",
 
   "noPlayers": "没有玩家",
+
+  "playersListSummary": "{count, plural, =0{没有玩家} =1{1位玩家: {names}} other{{count}位玩家: {names}}}",
 
   "playersAppearMessage": "创建游戏后\n玩家将显示在此处",
 

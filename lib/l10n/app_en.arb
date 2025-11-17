@@ -25,6 +25,8 @@
 
   "newWithSamePlayers": "New with same players",
 
+  "newGameSuffix": "(new)",
+
   "rename": "Rename",
 
   "delete": "Delete",
@@ -140,6 +142,8 @@
   "errorDuringImport": "Error during import:",
 
   "noPlayers": "No players",
+
+  "playersListSummary": "{count, plural, =0{No players} =1{1 player: {names}} other{{count} players: {names}}}",
 
   "playersAppearMessage": "Players will appear here once\nyou have created games",
 

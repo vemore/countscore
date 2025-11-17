@@ -361,26 +361,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildPlayersList(List<dynamic> players) {
     final l10n = AppLocalizations.of(context)!;
+
     if (players.isEmpty) {
       return Text(l10n.noPlayers, style: const TextStyle(fontSize: 12));
     }
 
-    if (players.length <= 4) {
-      return Wrap(
-        spacing: 4,
-        children: players.map((name) {
-          return Chip(
-            label: Text(name, style: const TextStyle(fontSize: 11)),
-            padding: const EdgeInsets.all(2),
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          );
-        }).toList(),
-      );
-    }
+    final names = players.join(', ');
+    final displayText = l10n.playersListSummary(players.length, names);
 
     return Text(
-      '${players.length} joueurs',
-      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+      displayText,
+      style: const TextStyle(fontSize: 12),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
   }
 
@@ -406,7 +399,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final playerNames = gameProvider.currentPlayers.map((p) => p.name).toList();
 
       final newGameId = await gameProvider.createGame(
-        '${game.name} (nouvelle)',
+        '${game.name} ${l10n.newGameSuffix}',
         game.gameTypeId,
         game.isLowestScoreWins,
         playerNames,

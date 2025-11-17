@@ -45,6 +45,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get newWithSamePlayers => 'Nuevo con los mismos jugadores';
 
   @override
+  String get newGameSuffix => '(nuevo)';
+
+  @override
   String get rename => 'Renombrar';
 
   @override
@@ -227,6 +230,18 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noPlayers => 'Sin jugadores';
+
+  @override
+  String playersListSummary(int count, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count jugadores: $names',
+      one: '1 jugador: $names',
+      zero: 'Sin jugadores',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get playersAppearMessage =>

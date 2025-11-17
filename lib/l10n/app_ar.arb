@@ -25,6 +25,8 @@
 
   "newWithSamePlayers": "جديدة بنفس اللاعبين",
 
+  "newGameSuffix": "(جديدة)",
+
   "rename": "إعادة تسمية",
 
   "delete": "حذف",
@@ -140,6 +142,8 @@
   "errorDuringImport": "خطأ أثناء الاستيراد:",
 
   "noPlayers": "لا يوجد لاعبون",
+
+  "playersListSummary": "{count, plural, =0{لا يوجد لاعبون} =1{لاعب واحد: {names}} =2{لاعبان: {names}} other{{count} لاعبون: {names}}}",
 
   "playersAppearMessage": "سيظهر اللاعبون هنا بمجرد\nإنشاء الألعاب",
 

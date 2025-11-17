@@ -45,6 +45,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get newWithSamePlayers => '同じプレイヤーで新規作成';
 
   @override
+  String get newGameSuffix => '(新規)';
+
+  @override
   String get rename => '名前を変更';
 
   @override
@@ -223,6 +226,17 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get noPlayers => 'プレイヤーがいません';
+
+  @override
+  String playersListSummary(int count, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count人のプレイヤー: $names',
+      zero: 'プレイヤーがいません',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get playersAppearMessage => 'ゲームを作成すると\nプレイヤーがここに表示されます';

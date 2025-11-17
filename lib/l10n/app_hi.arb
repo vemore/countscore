@@ -25,6 +25,8 @@
 
   "newWithSamePlayers": "उन्हीं खिलाड़ियों के साथ नया",
 
+  "newGameSuffix": "(नया)",
+
   "rename": "नाम बदलें",
 
   "delete": "हटाएं",
@@ -140,6 +142,8 @@
   "errorDuringImport": "आयात के दौरान त्रुटि:",
 
   "noPlayers": "कोई खिलाड़ी नहीं",
+
+  "playersListSummary": "{count, plural, =0{कोई खिलाड़ी नहीं} =1{1 खिलाड़ी: {names}} other{{count} खिलाड़ी: {names}}}",
 
   "playersAppearMessage": "जब आप खेल बनाएंगे\nतो खिलाड़ी यहां दिखाई देंगे",
 

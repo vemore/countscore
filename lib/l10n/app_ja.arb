@@ -25,6 +25,8 @@
 
   "newWithSamePlayers": "同じプレイヤーで新規作成",
 
+  "newGameSuffix": "(新規)",
+
   "rename": "名前を変更",
 
   "delete": "削除",
@@ -140,6 +142,8 @@
   "errorDuringImport": "インポート中にエラー：",
 
   "noPlayers": "プレイヤーがいません",
+
+  "playersListSummary": "{count, plural, =0{プレイヤーがいません} other{{count}人のプレイヤー: {names}}}",
 
   "playersAppearMessage": "ゲームを作成すると\nプレイヤーがここに表示されます",
 

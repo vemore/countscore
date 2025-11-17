@@ -25,6 +25,8 @@
 
   "newWithSamePlayers": "Новая с теми же игроками",
 
+  "newGameSuffix": "(новая)",
+
   "rename": "Переименовать",
 
   "delete": "Удалить",
@@ -140,6 +142,8 @@
   "errorDuringImport": "Ошибка при импорте:",
 
   "noPlayers": "Нет игроков",
+
+  "playersListSummary": "{count, plural, =0{Нет игроков} =1{1 игрок: {names}} few{{count} игрока: {names}} other{{count} игроков: {names}}}",
 
   "playersAppearMessage": "Игроки появятся здесь, когда\nвы создадите игры",
 

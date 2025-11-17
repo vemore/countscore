@@ -45,6 +45,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get newWithSamePlayers => '使用相同玩家创建新游戏';
 
   @override
+  String get newGameSuffix => '(新)';
+
+  @override
   String get rename => '重命名';
 
   @override
@@ -221,6 +224,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get noPlayers => '没有玩家';
+
+  @override
+  String playersListSummary(int count, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count位玩家: $names',
+      one: '1位玩家: $names',
+      zero: '没有玩家',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get playersAppearMessage => '创建游戏后\n玩家将显示在此处';
