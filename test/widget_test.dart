@@ -102,11 +102,17 @@ void main() {
 
     test('GameType default game types list', () {
       final defaultTypes = GameType.defaultGameTypes();
-      expect(defaultTypes.length, 4);
+      expect(defaultTypes.length, 10);
       expect(defaultTypes[0].name, 'ZapZap');
       expect(defaultTypes[1].name, 'Uno');
       expect(defaultTypes[2].name, 'Scrabble');
       expect(defaultTypes[3].name, 'Autre');
+      expect(defaultTypes[4].name, 'Skyjo');
+      expect(defaultTypes[5].name, 'Président');
+      expect(defaultTypes[6].name, 'Belote');
+      expect(defaultTypes[7].name, 'Tarot');
+      expect(defaultTypes[8].name, 'Bridge');
+      expect(defaultTypes[9].name, 'Rami');
     });
 
     test('Game copyWith method', () {
