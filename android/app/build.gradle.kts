@@ -1,15 +1,11 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
-}
-
-// Load keystore properties for release signing
-val keystorePropertiesFile = rootProject.file("key.properties")
-val keystoreProperties = java.util.Properties()
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(java.io.FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -34,6 +30,13 @@ android {
         versionName = flutter.versionName
     }
 
+    // Load keystore properties for release signing
+    val keystorePropertiesFile = rootProject.file("key.properties")
+    val keystoreProperties = Properties()
+    if (keystorePropertiesFile.exists()) {
+        FileInputStream(keystorePropertiesFile).use { keystoreProperties.load(it) }
+    }
+
     // Signing configurations for release builds
     signingConfigs {
         create("release") {
@@ -48,15 +51,8 @@ android {
 
     buildTypes {
         release {
-            // Use release signing config if key.properties exists, otherwise fall back to debug
-            signingConfig = if (keystorePropertiesFile.exists()) {
-                signingConfigs.getByName("release")
-            } else {
-                println("⚠️  WARNING: key.properties not found. Using debug signing.")
-                println("   Create android/key.properties for production releases.")
-                println("   See: android/key.properties.template")
-                signingConfigs.getByName("debug")
-            }
+            // Use release signing config
+            signingConfig = signingConfigs.getByName("release")
 
             // ProGuard/R8 disabled for open-source app
             // No obfuscation needed since source code is publicly available
