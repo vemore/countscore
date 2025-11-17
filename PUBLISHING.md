@@ -617,11 +617,20 @@ ls -lh build/app/outputs/bundle/release/app-release.aab
 3. Upload `app-release.aab`
 4. Add release notes:
    ```
+<fr-FR>
+Version initiale (v1.0.0)
+   - Suivi des scores pour plusieurs types de jeux
+   - Gestion des joueurs
+   - Stockage de base de données locale
+   - Interface Material Design 3
+</fr-FR>
+<en-US>
    Initial release (v1.0.0)
    - Score tracking for multiple game types
    - Player management
    - Local database storage
    - Material Design 3 interface
+</en-US>
    ```
 5. Click **Next**
 6. Add internal testers:
