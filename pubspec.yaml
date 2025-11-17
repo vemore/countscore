@@ -22,7 +22,7 @@ license: MIT
 version: 1.0.1+2
 
 environment:
-  sdk: ^3.9.2
+  sdk: ^3.10.0
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -46,7 +46,7 @@ dependencies:
   flex_color_picker: ^3.5.1
   shared_preferences: ^2.3.3
   intl: ^0.20.2
-  file_picker: ^8.1.6
+  file_picker: ^10.3.6
   path: ^1.9.0
 
 dev_dependencies:
@@ -58,7 +58,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
   # Flutter launcher icons - generates app icons for all platforms
   flutter_launcher_icons: ^0.14.1
