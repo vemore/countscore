@@ -252,6 +252,30 @@ abstract class AppLocalizations {
   /// **'Tous les jeux'**
   String get allGames;
 
+  /// Title for filter bottom sheet
+  ///
+  /// In fr, this message translates to:
+  /// **'Filtrer les parties'**
+  String get filterGames;
+
+  /// Button to apply filter
+  ///
+  /// In fr, this message translates to:
+  /// **'Appliquer'**
+  String get applyFilter;
+
+  /// Button to reset filter
+  ///
+  /// In fr, this message translates to:
+  /// **'Réinitialiser'**
+  String get resetFilter;
+
+  /// Instruction text in filter bottom sheet
+  ///
+  /// In fr, this message translates to:
+  /// **'Sélectionnez un type de jeu'**
+  String get selectGameType;
+
   /// Label for game type
   ///
   /// In fr, this message translates to:
@@ -353,6 +377,54 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Partie'**
   String get game;
+
+  /// Menu option to edit the current game
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier la partie'**
+  String get editGame;
+
+  /// Title for edit game dialog
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier la partie'**
+  String get editGameDialogTitle;
+
+  /// Section title for game settings
+  ///
+  /// In fr, this message translates to:
+  /// **'Paramètres de la partie'**
+  String get gameSettings;
+
+  /// Button to remove a player from the game
+  ///
+  /// In fr, this message translates to:
+  /// **'Retirer le joueur'**
+  String get removePlayer;
+
+  /// Button to add a player to the game
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter un joueur'**
+  String get addPlayerToGame;
+
+  /// Warning message when removing a player
+  ///
+  /// In fr, this message translates to:
+  /// **'Attention ! Retirer ce joueur supprimera tous ses scores de cette partie. Cette action est irréversible.'**
+  String get warningRemovePlayer;
+
+  /// Confirmation message for removing a player
+  ///
+  /// In fr, this message translates to:
+  /// **'Voulez-vous vraiment retirer {playerName} de cette partie ?'**
+  String confirmRemovePlayer(String playerName);
+
+  /// Success message after removing a player
+  ///
+  /// In fr, this message translates to:
+  /// **'Joueur retiré de la partie'**
+  String get playerRemoved;
 
   /// Menu option to delete last round
   ///

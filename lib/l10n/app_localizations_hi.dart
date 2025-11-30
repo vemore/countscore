@@ -80,6 +80,18 @@ class AppLocalizationsHi extends AppLocalizations {
   String get allGames => 'सभी खेल';
 
   @override
+  String get filterGames => 'गेम फ़िल्टर करें';
+
+  @override
+  String get applyFilter => 'लागू करें';
+
+  @override
+  String get resetFilter => 'रीसेट करें';
+
+  @override
+  String get selectGameType => 'एक गेम प्रकार चुनें';
+
+  @override
   String get gameType => 'खेल का प्रकार';
 
   @override
@@ -131,6 +143,33 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get game => 'खेल';
+
+  @override
+  String get editGame => 'गेम संपादित करें';
+
+  @override
+  String get editGameDialogTitle => 'गेम संपादित करें';
+
+  @override
+  String get gameSettings => 'गेम सेटिंग्स';
+
+  @override
+  String get removePlayer => 'खिलाड़ी हटाएं';
+
+  @override
+  String get addPlayerToGame => 'खिलाड़ी जोड़ें';
+
+  @override
+  String get warningRemovePlayer =>
+      'चेतावनी! इस खिलाड़ी को हटाने से इस गेम से उनके सभी स्कोर हट जाएंगे। यह क्रिया अपरिवर्तनीय है।';
+
+  @override
+  String confirmRemovePlayer(String playerName) {
+    return 'क्या आप वाकई इस गेम से $playerName को हटाना चाहते हैं?';
+  }
+
+  @override
+  String get playerRemoved => 'खिलाड़ी गेम से हटा दिया गया';
 
   @override
   String get deleteLastRound => 'अंतिम राउंड हटाएं';

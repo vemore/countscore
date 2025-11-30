@@ -47,6 +47,14 @@
 
   "allGames": "सभी खेल",
 
+  "filterGames": "गेम फ़िल्टर करें",
+
+  "applyFilter": "लागू करें",
+
+  "resetFilter": "रीसेट करें",
+
+  "selectGameType": "एक गेम प्रकार चुनें",
+
   "gameType": "खेल का प्रकार",
 
   "loadingGameTypes": "खेल के प्रकार लोड हो रहे हैं...",
@@ -80,6 +88,22 @@
   "createGame": "खेल बनाएं",
 
   "game": "खेल",
+
+  "editGame": "गेम संपादित करें",
+
+  "editGameDialogTitle": "गेम संपादित करें",
+
+  "gameSettings": "गेम सेटिंग्स",
+
+  "removePlayer": "खिलाड़ी हटाएं",
+
+  "addPlayerToGame": "खिलाड़ी जोड़ें",
+
+  "warningRemovePlayer": "चेतावनी! इस खिलाड़ी को हटाने से इस गेम से उनके सभी स्कोर हट जाएंगे। यह क्रिया अपरिवर्तनीय है।",
+
+  "confirmRemovePlayer": "क्या आप वाकई इस गेम से {playerName} को हटाना चाहते हैं?",
+
+  "playerRemoved": "खिलाड़ी गेम से हटा दिया गया",
 
   "deleteLastRound": "अंतिम राउंड हटाएं",
 

@@ -80,6 +80,18 @@ class AppLocalizationsRu extends AppLocalizations {
   String get allGames => 'Все игры';
 
   @override
+  String get filterGames => 'Фильтр игр';
+
+  @override
+  String get applyFilter => 'Применить';
+
+  @override
+  String get resetFilter => 'Сбросить';
+
+  @override
+  String get selectGameType => 'Выберите тип игры';
+
+  @override
   String get gameType => 'Тип игры';
 
   @override
@@ -131,6 +143,33 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get game => 'Игра';
+
+  @override
+  String get editGame => 'Редактировать игру';
+
+  @override
+  String get editGameDialogTitle => 'Редактировать игру';
+
+  @override
+  String get gameSettings => 'Настройки игры';
+
+  @override
+  String get removePlayer => 'Удалить игрока';
+
+  @override
+  String get addPlayerToGame => 'Добавить игрока';
+
+  @override
+  String get warningRemovePlayer =>
+      'Внимание! Удаление этого игрока удалит все его очки из этой игры. Это действие необратимо.';
+
+  @override
+  String confirmRemovePlayer(String playerName) {
+    return 'Вы действительно хотите удалить $playerName из этой игры?';
+  }
+
+  @override
+  String get playerRemoved => 'Игрок удален из игры';
 
   @override
   String get deleteLastRound => 'Удалить последний раунд';

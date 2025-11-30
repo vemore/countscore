@@ -47,6 +47,14 @@
 
   "allGames": "Todos os jogos",
 
+  "filterGames": "Filtrar partidas",
+
+  "applyFilter": "Aplicar",
+
+  "resetFilter": "Redefinir",
+
+  "selectGameType": "Selecione um tipo de jogo",
+
   "gameType": "Tipo de jogo",
 
   "loadingGameTypes": "Carregando tipos de jogo...",
@@ -80,6 +88,22 @@
   "createGame": "Criar jogo",
 
   "game": "Jogo",
+
+  "editGame": "Editar partida",
+
+  "editGameDialogTitle": "Editar partida",
+
+  "gameSettings": "Configurações da partida",
+
+  "removePlayer": "Remover jogador",
+
+  "addPlayerToGame": "Adicionar jogador",
+
+  "warningRemovePlayer": "Atenção! Remover este jogador excluirá todas as suas pontuações desta partida. Esta ação é irreversível.",
+
+  "confirmRemovePlayer": "Você realmente deseja remover {playerName} desta partida?",
+
+  "playerRemoved": "Jogador removido da partida",
 
   "deleteLastRound": "Excluir última rodada",
 

@@ -80,6 +80,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get allGames => 'All games';
 
   @override
+  String get filterGames => 'Filter games';
+
+  @override
+  String get applyFilter => 'Apply';
+
+  @override
+  String get resetFilter => 'Reset';
+
+  @override
+  String get selectGameType => 'Select a game type';
+
+  @override
   String get gameType => 'Game type';
 
   @override
@@ -131,6 +143,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get game => 'Game';
+
+  @override
+  String get editGame => 'Edit game';
+
+  @override
+  String get editGameDialogTitle => 'Edit game';
+
+  @override
+  String get gameSettings => 'Game settings';
+
+  @override
+  String get removePlayer => 'Remove player';
+
+  @override
+  String get addPlayerToGame => 'Add player';
+
+  @override
+  String get warningRemovePlayer =>
+      'Warning! Removing this player will delete all their scores from this game. This action is irreversible.';
+
+  @override
+  String confirmRemovePlayer(String playerName) {
+    return 'Do you really want to remove $playerName from this game?';
+  }
+
+  @override
+  String get playerRemoved => 'Player removed from game';
 
   @override
   String get deleteLastRound => 'Delete last round';

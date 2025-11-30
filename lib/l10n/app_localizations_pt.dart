@@ -80,6 +80,18 @@ class AppLocalizationsPt extends AppLocalizations {
   String get allGames => 'Todos os jogos';
 
   @override
+  String get filterGames => 'Filtrar partidas';
+
+  @override
+  String get applyFilter => 'Aplicar';
+
+  @override
+  String get resetFilter => 'Redefinir';
+
+  @override
+  String get selectGameType => 'Selecione um tipo de jogo';
+
+  @override
   String get gameType => 'Tipo de jogo';
 
   @override
@@ -132,6 +144,33 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get game => 'Jogo';
+
+  @override
+  String get editGame => 'Editar partida';
+
+  @override
+  String get editGameDialogTitle => 'Editar partida';
+
+  @override
+  String get gameSettings => 'Configurações da partida';
+
+  @override
+  String get removePlayer => 'Remover jogador';
+
+  @override
+  String get addPlayerToGame => 'Adicionar jogador';
+
+  @override
+  String get warningRemovePlayer =>
+      'Atenção! Remover este jogador excluirá todas as suas pontuações desta partida. Esta ação é irreversível.';
+
+  @override
+  String confirmRemovePlayer(String playerName) {
+    return 'Você realmente deseja remover $playerName desta partida?';
+  }
+
+  @override
+  String get playerRemoved => 'Jogador removido da partida';
 
   @override
   String get deleteLastRound => 'Excluir última rodada';

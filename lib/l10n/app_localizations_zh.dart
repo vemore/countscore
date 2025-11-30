@@ -80,6 +80,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get allGames => '所有游戏';
 
   @override
+  String get filterGames => '筛选游戏';
+
+  @override
+  String get applyFilter => '应用';
+
+  @override
+  String get resetFilter => '重置';
+
+  @override
+  String get selectGameType => '选择游戏类型';
+
+  @override
   String get gameType => '游戏类型';
 
   @override
@@ -131,6 +143,32 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get game => '游戏';
+
+  @override
+  String get editGame => '编辑游戏';
+
+  @override
+  String get editGameDialogTitle => '编辑游戏';
+
+  @override
+  String get gameSettings => '游戏设置';
+
+  @override
+  String get removePlayer => '移除玩家';
+
+  @override
+  String get addPlayerToGame => '添加玩家';
+
+  @override
+  String get warningRemovePlayer => '警告！移除此玩家将删除该玩家在此游戏中的所有分数。此操作不可撤销。';
+
+  @override
+  String confirmRemovePlayer(String playerName) {
+    return '您确定要从此游戏中移除 $playerName 吗？';
+  }
+
+  @override
+  String get playerRemoved => '玩家已从游戏中移除';
 
   @override
   String get deleteLastRound => '删除最后一轮';

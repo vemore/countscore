@@ -80,6 +80,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get allGames => 'جميع الألعاب';
 
   @override
+  String get filterGames => 'تصفية الألعاب';
+
+  @override
+  String get applyFilter => 'تطبيق';
+
+  @override
+  String get resetFilter => 'إعادة تعيين';
+
+  @override
+  String get selectGameType => 'اختر نوع اللعبة';
+
+  @override
   String get gameType => 'نوع اللعبة';
 
   @override
@@ -131,6 +143,33 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get game => 'اللعبة';
+
+  @override
+  String get editGame => 'تعديل اللعبة';
+
+  @override
+  String get editGameDialogTitle => 'تعديل اللعبة';
+
+  @override
+  String get gameSettings => 'إعدادات اللعبة';
+
+  @override
+  String get removePlayer => 'إزالة اللاعب';
+
+  @override
+  String get addPlayerToGame => 'إضافة لاعب';
+
+  @override
+  String get warningRemovePlayer =>
+      'تحذير! إزالة هذا اللاعب ستحذف جميع نقاطه من هذه اللعبة. هذا الإجراء لا رجعة فيه.';
+
+  @override
+  String confirmRemovePlayer(String playerName) {
+    return 'هل تريد حقاً إزالة $playerName من هذه اللعبة؟';
+  }
+
+  @override
+  String get playerRemoved => 'تمت إزالة اللاعب من اللعبة';
 
   @override
   String get deleteLastRound => 'حذف الجولة الأخيرة';

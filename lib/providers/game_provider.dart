@@ -200,6 +200,19 @@ class GameProvider with ChangeNotifier {
     }
   }
 
+  // Mettre à jour le type de jeu de la partie
+  Future<void> updateGameType(int gameId, int? gameTypeId) async {
+    final game = await _db.getGame(gameId);
+    if (game != null) {
+      await _db.updateGame(game.copyWith(gameTypeId: gameTypeId));
+      await loadGames();
+
+      if (_currentGame?.id == gameId) {
+        await loadGame(gameId); // Recharger complètement pour rafraîchir l'UI
+      }
+    }
+  }
+
   // Ajouter un joueur à la partie
   Future<void> addPlayer(String name) async {
     if (_currentGame == null) return;

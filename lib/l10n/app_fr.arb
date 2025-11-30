@@ -122,6 +122,26 @@
     "description": "Option to show all games (no filter)"
   },
 
+  "filterGames": "Filtrer les parties",
+  "@filterGames": {
+    "description": "Title for filter bottom sheet"
+  },
+
+  "applyFilter": "Appliquer",
+  "@applyFilter": {
+    "description": "Button to apply filter"
+  },
+
+  "resetFilter": "Réinitialiser",
+  "@resetFilter": {
+    "description": "Button to reset filter"
+  },
+
+  "selectGameType": "Sélectionnez un type de jeu",
+  "@selectGameType": {
+    "description": "Instruction text in filter bottom sheet"
+  },
+
   "gameType": "Type de jeu",
   "@gameType": {
     "description": "Label for game type"
@@ -211,6 +231,52 @@
   "game": "Partie",
   "@game": {
     "description": "Generic game label (fallback)"
+  },
+
+  "editGame": "Modifier la partie",
+  "@editGame": {
+    "description": "Menu option to edit the current game"
+  },
+
+  "editGameDialogTitle": "Modifier la partie",
+  "@editGameDialogTitle": {
+    "description": "Title for edit game dialog"
+  },
+
+  "gameSettings": "Paramètres de la partie",
+  "@gameSettings": {
+    "description": "Section title for game settings"
+  },
+
+  "removePlayer": "Retirer le joueur",
+  "@removePlayer": {
+    "description": "Button to remove a player from the game"
+  },
+
+  "addPlayerToGame": "Ajouter un joueur",
+  "@addPlayerToGame": {
+    "description": "Button to add a player to the game"
+  },
+
+  "warningRemovePlayer": "Attention ! Retirer ce joueur supprimera tous ses scores de cette partie. Cette action est irréversible.",
+  "@warningRemovePlayer": {
+    "description": "Warning message when removing a player"
+  },
+
+  "confirmRemovePlayer": "Voulez-vous vraiment retirer {playerName} de cette partie ?",
+  "@confirmRemovePlayer": {
+    "description": "Confirmation message for removing a player",
+    "placeholders": {
+      "playerName": {
+        "type": "String",
+        "example": "Alice"
+      }
+    }
+  },
+
+  "playerRemoved": "Joueur retiré de la partie",
+  "@playerRemoved": {
+    "description": "Success message after removing a player"
   },
 
   "deleteLastRound": "Supprimer dernier tour",

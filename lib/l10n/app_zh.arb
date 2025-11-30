@@ -47,6 +47,14 @@
 
   "allGames": "所有游戏",
 
+  "filterGames": "筛选游戏",
+
+  "applyFilter": "应用",
+
+  "resetFilter": "重置",
+
+  "selectGameType": "选择游戏类型",
+
   "gameType": "游戏类型",
 
   "loadingGameTypes": "正在加载游戏类型...",
@@ -80,6 +88,22 @@
   "createGame": "创建游戏",
 
   "game": "游戏",
+
+  "editGame": "编辑游戏",
+
+  "editGameDialogTitle": "编辑游戏",
+
+  "gameSettings": "游戏设置",
+
+  "removePlayer": "移除玩家",
+
+  "addPlayerToGame": "添加玩家",
+
+  "warningRemovePlayer": "警告！移除此玩家将删除该玩家在此游戏中的所有分数。此操作不可撤销。",
+
+  "confirmRemovePlayer": "您确定要从此游戏中移除 {playerName} 吗？",
+
+  "playerRemoved": "玩家已从游戏中移除",
 
   "deleteLastRound": "删除最后一轮",
 

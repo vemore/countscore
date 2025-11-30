@@ -47,6 +47,14 @@
 
   "allGames": "All games",
 
+  "filterGames": "Filter games",
+
+  "applyFilter": "Apply",
+
+  "resetFilter": "Reset",
+
+  "selectGameType": "Select a game type",
+
   "gameType": "Game type",
 
   "loadingGameTypes": "Loading game types...",
@@ -80,6 +88,22 @@
   "createGame": "Create game",
 
   "game": "Game",
+
+  "editGame": "Edit game",
+
+  "editGameDialogTitle": "Edit game",
+
+  "gameSettings": "Game settings",
+
+  "removePlayer": "Remove player",
+
+  "addPlayerToGame": "Add player",
+
+  "warningRemovePlayer": "Warning! Removing this player will delete all their scores from this game. This action is irreversible.",
+
+  "confirmRemovePlayer": "Do you really want to remove {playerName} from this game?",
+
+  "playerRemoved": "Player removed from game",
 
   "deleteLastRound": "Delete last round",
 

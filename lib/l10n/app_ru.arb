@@ -47,6 +47,14 @@
 
   "allGames": "Все игры",
 
+  "filterGames": "Фильтр игр",
+
+  "applyFilter": "Применить",
+
+  "resetFilter": "Сбросить",
+
+  "selectGameType": "Выберите тип игры",
+
   "gameType": "Тип игры",
 
   "loadingGameTypes": "Загрузка типов игр...",
@@ -80,6 +88,22 @@
   "createGame": "Создать игру",
 
   "game": "Игра",
+
+  "editGame": "Редактировать игру",
+
+  "editGameDialogTitle": "Редактировать игру",
+
+  "gameSettings": "Настройки игры",
+
+  "removePlayer": "Удалить игрока",
+
+  "addPlayerToGame": "Добавить игрока",
+
+  "warningRemovePlayer": "Внимание! Удаление этого игрока удалит все его очки из этой игры. Это действие необратимо.",
+
+  "confirmRemovePlayer": "Вы действительно хотите удалить {playerName} из этой игры?",
+
+  "playerRemoved": "Игрок удален из игры",
 
   "deleteLastRound": "Удалить последний раунд",
 

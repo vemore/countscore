@@ -47,6 +47,14 @@
 
   "allGames": "جميع الألعاب",
 
+  "filterGames": "تصفية الألعاب",
+
+  "applyFilter": "تطبيق",
+
+  "resetFilter": "إعادة تعيين",
+
+  "selectGameType": "اختر نوع اللعبة",
+
   "gameType": "نوع اللعبة",
 
   "loadingGameTypes": "جاري تحميل أنواع الألعاب...",
@@ -80,6 +88,22 @@
   "createGame": "إنشاء لعبة",
 
   "game": "اللعبة",
+
+  "editGame": "تعديل اللعبة",
+
+  "editGameDialogTitle": "تعديل اللعبة",
+
+  "gameSettings": "إعدادات اللعبة",
+
+  "removePlayer": "إزالة اللاعب",
+
+  "addPlayerToGame": "إضافة لاعب",
+
+  "warningRemovePlayer": "تحذير! إزالة هذا اللاعب ستحذف جميع نقاطه من هذه اللعبة. هذا الإجراء لا رجعة فيه.",
+
+  "confirmRemovePlayer": "هل تريد حقاً إزالة {playerName} من هذه اللعبة؟",
+
+  "playerRemoved": "تمت إزالة اللاعب من اللعبة",
 
   "deleteLastRound": "حذف الجولة الأخيرة",
 

@@ -80,6 +80,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get allGames => 'すべてのゲーム';
 
   @override
+  String get filterGames => 'ゲームを絞り込む';
+
+  @override
+  String get applyFilter => '適用';
+
+  @override
+  String get resetFilter => 'リセット';
+
+  @override
+  String get selectGameType => 'ゲームタイプを選択';
+
+  @override
   String get gameType => 'ゲームタイプ';
 
   @override
@@ -131,6 +143,33 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get game => 'ゲーム';
+
+  @override
+  String get editGame => 'ゲームを編集';
+
+  @override
+  String get editGameDialogTitle => 'ゲームを編集';
+
+  @override
+  String get gameSettings => 'ゲーム設定';
+
+  @override
+  String get removePlayer => 'プレイヤーを削除';
+
+  @override
+  String get addPlayerToGame => 'プレイヤーを追加';
+
+  @override
+  String get warningRemovePlayer =>
+      '警告！このプレイヤーを削除すると、このゲームからすべてのスコアが削除されます。この操作は元に戻せません。';
+
+  @override
+  String confirmRemovePlayer(String playerName) {
+    return '本当に$playerNameをこのゲームから削除しますか？';
+  }
+
+  @override
+  String get playerRemoved => 'プレイヤーがゲームから削除されました';
 
   @override
   String get deleteLastRound => '最後のラウンドを削除';

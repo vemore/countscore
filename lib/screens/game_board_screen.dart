@@ -43,6 +43,16 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
           PopupMenuButton(
             itemBuilder: (context) => [
               PopupMenuItem(
+                value: 'edit_game',
+                child: Row(
+                  children: [
+                    const Icon(Icons.edit),
+                    const SizedBox(width: 8),
+                    Text(l10n.editGame),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
                 value: 'delete_round',
                 child: Row(
                   children: [
@@ -55,7 +65,9 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
             ],
             onSelected: (value) async {
               final gameProvider = context.read<GameProvider>();
-              if (value == 'delete_round' && gameProvider.currentRounds.isNotEmpty) {
+              if (value == 'edit_game') {
+                _showEditGameDialog();
+              } else if (value == 'delete_round' && gameProvider.currentRounds.isNotEmpty) {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
@@ -294,6 +306,244 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
         // All players under threshold
         return playerTotals.every((total) => total < gameType.gameOverThreshold!);
     }
+  }
+
+  void _showEditGameDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    final gameProvider = context.read<GameProvider>();
+    final gameTypeProvider = context.read<GameTypeProvider>();
+
+    if (gameProvider.currentGame == null) return;
+
+    final gameNameController = TextEditingController(text: gameProvider.currentGame!.name);
+    int? selectedGameTypeId = gameProvider.currentGame!.gameTypeId;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: Text(l10n.editGameDialogTitle),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Section: Nom de la partie
+                    Text(
+                      l10n.gameName,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: gameNameController,
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        hintText: l10n.gameName,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Section: Type de jeu
+                    Text(
+                      l10n.gameType,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<int?>(
+                      initialValue: selectedGameTypeId,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                      ),
+                      items: [
+                        DropdownMenuItem<int?>(
+                          value: null,
+                          child: Text(l10n.none),
+                        ),
+                        ...gameTypeProvider.gameTypes.map((gameType) {
+                          return DropdownMenuItem<int?>(
+                            value: gameType.id,
+                            child: Row(
+                              children: [
+                                Icon(gameType.icon, size: 20, color: gameType.cardColor),
+                                const SizedBox(width: 8),
+                                Text(gameType.name),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                      onChanged: (value) {
+                        setDialogState(() {
+                          selectedGameTypeId = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Section: Joueurs
+                    Text(
+                      l10n.players,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    ...gameProvider.currentPlayers.map((player) {
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: player.colorValue != null
+                                ? Color(player.colorValue!)
+                                : Colors.grey,
+                            child: Text(
+                              player.name[0].toUpperCase(),
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
+                          title: Text(player.name),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                            onPressed: () async {
+                              final confirmRemove = await showDialog<bool>(
+                                context: dialogContext,
+                                builder: (confirmContext) => AlertDialog(
+                                  title: Text(l10n.removePlayer),
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(l10n.warningRemovePlayer),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        l10n.confirmRemovePlayer(player.name),
+                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(confirmContext, false),
+                                      child: Text(l10n.cancel),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(confirmContext, true),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: Colors.red,
+                                      ),
+                                      child: Text(l10n.removePlayer),
+                                    ),
+                                  ],
+                                ),
+                              );
+
+                              if (confirmRemove == true && dialogContext.mounted) {
+                                await gameProvider.deletePlayer(player.id!);
+                                if (dialogContext.mounted) {
+                                  ScaffoldMessenger.of(dialogContext).showSnackBar(
+                                    SnackBar(content: Text(l10n.playerRemoved)),
+                                  );
+                                  setDialogState(() {}); // Refresh dialog
+                                }
+                              }
+                            },
+                          ),
+                        ),
+                      );
+                    }),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          final playerName = await _showAddPlayerDialog(dialogContext);
+                          if (playerName != null && playerName.isNotEmpty) {
+                            await gameProvider.addPlayer(playerName);
+                            setDialogState(() {}); // Refresh dialog
+                          }
+                        },
+                        icon: const Icon(Icons.add),
+                        label: Text(l10n.addPlayerToGame),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Text(l10n.cancel),
+                ),
+                FilledButton(
+                  onPressed: () async {
+                    // Sauvegarder les modifications
+                    final newName = gameNameController.text.trim();
+                    if (newName.isNotEmpty && newName != gameProvider.currentGame!.name) {
+                      await gameProvider.updateGameName(
+                        gameProvider.currentGame!.id!,
+                        newName,
+                      );
+                    }
+
+                    if (selectedGameTypeId != gameProvider.currentGame!.gameTypeId) {
+                      await gameProvider.updateGameType(
+                        gameProvider.currentGame!.id!,
+                        selectedGameTypeId,
+                      );
+                    }
+
+                    if (dialogContext.mounted) {
+                      Navigator.pop(dialogContext);
+                    }
+                  },
+                  child: Text(l10n.save),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<String?> _showAddPlayerDialog(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final nameController = TextEditingController();
+
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.addPlayerToGame),
+        content: TextField(
+          controller: nameController,
+          decoration: InputDecoration(
+            labelText: l10n.newPlayerName,
+            border: const OutlineInputBorder(),
+          ),
+          autofocus: true,
+          onSubmitted: (value) {
+            if (value.trim().isNotEmpty) {
+              Navigator.pop(context, value.trim());
+            }
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              final name = nameController.text.trim();
+              if (name.isNotEmpty) {
+                Navigator.pop(context, name);
+              }
+            },
+            child: Text(l10n.add),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showGameOverDialog(BuildContext context) {

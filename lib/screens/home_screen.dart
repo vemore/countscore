@@ -41,6 +41,15 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(l10n.appTitle),
         actions: [
+          Badge(
+            isLabelVisible: _selectedGameTypeId != null,
+            offset: const Offset(-4, 4),
+            child: IconButton(
+              icon: const Icon(Icons.filter_alt),
+              tooltip: l10n.filterGames,
+              onPressed: _showFilterBottomSheet,
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.bar_chart),
             onPressed: () {
@@ -55,12 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       drawer: _buildDrawer(),
-      body: Column(
-        children: [
-          _buildGameTypeFilter(),
-          Expanded(child: _buildGameList()),
-        ],
-      ),
+      body: _buildGameList(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
@@ -173,45 +177,117 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildGameTypeFilter() {
+  void _showFilterBottomSheet() {
     final l10n = AppLocalizations.of(context)!;
-    return Consumer<GameTypeProvider>(
-      builder: (context, gameTypeProvider, child) {
-        final gameTypes = gameTypeProvider.gameTypes;
+    int? tempSelectedGameTypeId = _selectedGameTypeId;
 
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: DropdownButtonFormField<int?>(
-            initialValue: _selectedGameTypeId,
-            decoration: InputDecoration(
-              labelText: l10n.filterByGameType,
-              border: const OutlineInputBorder(),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            ),
-            items: [
-              DropdownMenuItem<int?>(
-                value: null,
-                child: Text(l10n.allGames),
-              ),
-              ...gameTypes.map((gameType) {
-                return DropdownMenuItem<int?>(
-                  value: gameType.id,
-                  child: Row(
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Consumer<GameTypeProvider>(
+              builder: (context, gameTypeProvider, child) {
+                final gameTypes = gameTypeProvider.gameTypes;
+
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Icon(gameType.icon, size: 20, color: gameType.cardColor),
-                      const SizedBox(width: 8),
-                      Text(gameType.name),
+                      Text(
+                        l10n.filterGames,
+                        style: Theme.of(context).textTheme.titleLarge,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.selectGameType,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      Flexible(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              RadioListTile<int?>(
+                                title: Text(l10n.allGames),
+                                value: null,
+                                groupValue: tempSelectedGameTypeId,
+                                onChanged: (value) {
+                                  setModalState(() {
+                                    tempSelectedGameTypeId = value;
+                                  });
+                                },
+                              ),
+                              ...gameTypes.map((gameType) {
+                                return RadioListTile<int?>(
+                                  title: Row(
+                                    children: [
+                                      Icon(
+                                        gameType.icon,
+                                        size: 24,
+                                        color: gameType.cardColor,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(gameType.name),
+                                    ],
+                                  ),
+                                  value: gameType.id,
+                                  groupValue: tempSelectedGameTypeId,
+                                  onChanged: (value) {
+                                    setModalState(() {
+                                      tempSelectedGameTypeId = value;
+                                    });
+                                  },
+                                );
+                              }),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _selectedGameTypeId = null;
+                                });
+                                Navigator.pop(context);
+                              },
+                              child: Text(l10n.resetFilter),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: FilledButton(
+                              onPressed: () {
+                                setState(() {
+                                  _selectedGameTypeId = tempSelectedGameTypeId;
+                                });
+                                Navigator.pop(context);
+                              },
+                              child: Text(l10n.applyFilter),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: MediaQuery.of(context).viewInsets.bottom),
                     ],
                   ),
                 );
-              }),
-            ],
-            onChanged: (value) {
-              setState(() {
-                _selectedGameTypeId = value;
-              });
-            },
-          ),
+              },
+            );
+          },
         );
       },
     );

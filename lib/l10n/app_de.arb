@@ -47,6 +47,14 @@
 
   "allGames": "Alle Spiele",
 
+  "filterGames": "Spiele filtern",
+
+  "applyFilter": "Anwenden",
+
+  "resetFilter": "Zurücksetzen",
+
+  "selectGameType": "Wählen Sie einen Spieltyp",
+
   "gameType": "Spieltyp",
 
   "loadingGameTypes": "Lade Spieltypen...",
@@ -80,6 +88,22 @@
   "createGame": "Spiel erstellen",
 
   "game": "Spiel",
+
+  "editGame": "Spiel bearbeiten",
+
+  "editGameDialogTitle": "Spiel bearbeiten",
+
+  "gameSettings": "Spieleinstellungen",
+
+  "removePlayer": "Spieler entfernen",
+
+  "addPlayerToGame": "Spieler hinzufügen",
+
+  "warningRemovePlayer": "Warnung! Das Entfernen dieses Spielers löscht alle seine Punkte aus diesem Spiel. Diese Aktion kann nicht rückgängig gemacht werden.",
+
+  "confirmRemovePlayer": "Möchten Sie {playerName} wirklich aus diesem Spiel entfernen?",
+
+  "playerRemoved": "Spieler aus dem Spiel entfernt",
 
   "deleteLastRound": "Letzte Runde löschen",
 
