@@ -204,7 +204,20 @@ class GameProvider with ChangeNotifier {
   Future<void> updateGameType(int gameId, int? gameTypeId) async {
     final game = await _db.getGame(gameId);
     if (game != null) {
-      await _db.updateGame(game.copyWith(gameTypeId: gameTypeId));
+      // Synchroniser isLowestScoreWins avec le GameType sélectionné
+      bool isLowestScoreWins = game.isLowestScoreWins; // Valeur par défaut
+
+      if (gameTypeId != null) {
+        final gameType = await _db.getGameType(gameTypeId);
+        if (gameType != null) {
+          isLowestScoreWins = gameType.isLowestScoreWins;
+        }
+      }
+
+      await _db.updateGame(game.copyWith(
+        gameTypeId: gameTypeId,
+        isLowestScoreWins: isLowestScoreWins,
+      ));
       await loadGames();
 
       if (_currentGame?.id == gameId) {

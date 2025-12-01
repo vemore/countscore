@@ -202,7 +202,7 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<PlayerDeadConditionType?>(
-                      initialValue: playerDeadConditionType,
+                      value: playerDeadConditionType,
                       decoration: InputDecoration(
                         labelText: l10n.conditionType,
                         border: const OutlineInputBorder(),
@@ -250,7 +250,7 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<GameOverConditionType?>(
-                      initialValue: gameOverConditionType,
+                      value: gameOverConditionType,
                       decoration: InputDecoration(
                         labelText: l10n.conditionType,
                         border: const OutlineInputBorder(),

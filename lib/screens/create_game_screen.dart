@@ -196,7 +196,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                 }
 
                 return DropdownButtonFormField<int>(
-                  initialValue: _selectedGameTypeId,
+                  value: _selectedGameTypeId,
                   decoration: InputDecoration(
                     labelText: l10n.gameType,
                     border: const OutlineInputBorder(),
