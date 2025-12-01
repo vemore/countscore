@@ -214,41 +214,37 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 16),
                       Flexible(
                         child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              RadioListTile<int?>(
-                                title: Text(l10n.allGames),
-                                value: null,
-                                groupValue: tempSelectedGameTypeId,
-                                onChanged: (value) {
-                                  setModalState(() {
-                                    tempSelectedGameTypeId = value;
-                                  });
-                                },
-                              ),
-                              ...gameTypes.map((gameType) {
-                                return RadioListTile<int?>(
-                                  title: Row(
-                                    children: [
-                                      Icon(
-                                        gameType.icon,
-                                        size: 24,
-                                        color: gameType.cardColor,
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Text(gameType.name),
-                                    ],
-                                  ),
-                                  value: gameType.id,
-                                  groupValue: tempSelectedGameTypeId,
-                                  onChanged: (value) {
-                                    setModalState(() {
-                                      tempSelectedGameTypeId = value;
-                                    });
-                                  },
-                                );
-                              }),
-                            ],
+                          child: RadioGroup<int?>(
+                            groupValue: tempSelectedGameTypeId,
+                            onChanged: (value) {
+                              setModalState(() {
+                                tempSelectedGameTypeId = value;
+                              });
+                            },
+                            child: Column(
+                              children: [
+                                RadioListTile<int?>(
+                                  title: Text(l10n.allGames),
+                                  value: null,
+                                ),
+                                ...gameTypes.map((gameType) {
+                                  return RadioListTile<int?>(
+                                    title: Row(
+                                      children: [
+                                        Icon(
+                                          gameType.icon,
+                                          size: 24,
+                                          color: gameType.cardColor,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Text(gameType.name),
+                                      ],
+                                    ),
+                                    value: gameType.id,
+                                  );
+                                }),
+                              ],
+                            ),
                           ),
                         ),
                       ),
