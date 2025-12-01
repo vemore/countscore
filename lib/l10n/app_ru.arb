@@ -265,6 +265,11 @@
 
   "createNewPlayer": "Создать нового игрока",
 
+
+  "searchOrCreate": "Искать / Создать",
+  "@searchOrCreate": {
+    "description": "Search or create player input label"
+  },
   "newPlayerName": "Имя нового игрока",
 
   "noPlayersFound": "Игроки не найдены",

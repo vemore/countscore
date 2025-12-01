@@ -900,6 +900,12 @@ abstract class AppLocalizations {
   /// **'Rechercher'**
   String get search;
 
+  /// Search or create player input label
+  ///
+  /// In fr, this message translates to:
+  /// **'Rechercher / Créer'**
+  String get searchOrCreate;
+
   /// Button text to create new player
   ///
   /// In fr, this message translates to:

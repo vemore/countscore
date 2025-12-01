@@ -450,6 +450,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get search => 'खोजें';
 
   @override
+  String get searchOrCreate => 'खोजें / बनाएं';
+
+  @override
   String get createNewPlayer => 'नया खिलाड़ी बनाएं';
 
   @override

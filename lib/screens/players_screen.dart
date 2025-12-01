@@ -175,13 +175,14 @@ class _PlayersScreenState extends State<PlayersScreen> {
   }
 
   Future<Color> _getPlayerColor(String playerName) async {
-    // Récupérer la couleur depuis la base de données
+    // Récupérer la couleur depuis la base de données (dernier joueur avec ce nom)
     final db = await _db.database;
     final result = await db.query(
       'players',
       columns: ['colorValue'],
       where: 'name = ?',
       whereArgs: [playerName],
+      orderBy: 'id DESC',
       limit: 1,
     );
 

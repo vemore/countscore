@@ -265,6 +265,11 @@
 
   "createNewPlayer": "नया खिलाड़ी बनाएं",
 
+
+  "searchOrCreate": "खोजें / बनाएं",
+  "@searchOrCreate": {
+    "description": "Search or create player input label"
+  },
   "newPlayerName": "नए खिलाड़ी का नाम",
 
   "noPlayersFound": "कोई खिलाड़ी नहीं मिला",

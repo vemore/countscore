@@ -470,11 +470,18 @@ class _HomeScreenState extends State<HomeScreen> {
       await gameProvider.loadGame(game.id!);
       final playerNames = gameProvider.currentPlayers.map((p) => p.name).toList();
 
+      // Récupérer les couleurs des joueurs actuels
+      final playerColorsMap = <String, int?>{};
+      for (final player in gameProvider.currentPlayers) {
+        playerColorsMap[player.name] = player.colorValue;
+      }
+
       final newGameId = await gameProvider.createGame(
         '${game.name} ${l10n.newGameSuffix}',
         game.gameTypeId,
         game.isLowestScoreWins,
         playerNames,
+        playerColorsMap,
       );
 
       await gameProvider.loadGame(newGameId);

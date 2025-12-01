@@ -4,7 +4,8 @@
 **CountScore** is a Flutter application for score tracking and management.
 
 **Tech Stack:**
-- Flutter SDK: ^3.9.2
+- Flutter SDK: 3.38.3 (stable channel)
+- Dart SDK: 3.10.1
 - State Management: Provider (^6.1.2)
 - Database: SQLite (sqflite ^2.4.1)
 - Storage: path_provider, shared_preferences

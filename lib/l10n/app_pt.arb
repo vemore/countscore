@@ -265,6 +265,11 @@
 
   "createNewPlayer": "Criar novo jogador",
 
+
+  "searchOrCreate": "Pesquisar / Criar",
+  "@searchOrCreate": {
+    "description": "Search or create player input label"
+  },
   "newPlayerName": "Nome do novo jogador",
 
   "noPlayersFound": "Nenhum jogador encontrado",

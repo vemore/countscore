@@ -439,6 +439,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get search => '搜索';
 
   @override
+  String get searchOrCreate => '搜索 / 创建';
+
+  @override
   String get createNewPlayer => '创建新玩家';
 
   @override

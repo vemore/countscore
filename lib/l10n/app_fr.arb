@@ -718,6 +718,11 @@
     "description": "Search input label"
   },
 
+  "searchOrCreate": "Rechercher / Créer",
+  "@searchOrCreate": {
+    "description": "Search or create player input label"
+  },
+
   "createNewPlayer": "Créer un nouveau joueur",
   "@createNewPlayer": {
     "description": "Button text to create new player"

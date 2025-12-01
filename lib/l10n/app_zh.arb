@@ -265,6 +265,11 @@
 
   "createNewPlayer": "创建新玩家",
 
+
+  "searchOrCreate": "搜索 / 创建",
+  "@searchOrCreate": {
+    "description": "Search or create player input label"
+  },
   "newPlayerName": "新玩家名称",
 
   "noPlayersFound": "未找到玩家",

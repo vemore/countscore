@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../services/database_service.dart';
 
+class PlayerSelection {
+  final String name;
+  final int? colorValue;
+
+  PlayerSelection(this.name, this.colorValue);
+}
+
 class PlayerPickerDialog extends StatefulWidget {
   final List<String> availablePlayers;
   final List<String> selectedPlayers;
@@ -18,9 +25,7 @@ class PlayerPickerDialog extends StatefulWidget {
 
 class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
   final TextEditingController _searchController = TextEditingController();
-  final TextEditingController _newPlayerController = TextEditingController();
   String _searchQuery = '';
-  bool _showNewPlayerField = false;
   Map<String, Color> _playerColors = {};
 
   List<String> get _filteredPlayers {
@@ -39,6 +44,56 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
         .toList();
   }
 
+  bool get _canCreatePlayer {
+    final trimmedQuery = _searchQuery.trim();
+    if (trimmedQuery.isEmpty) return false;
+
+    // Vérifier si le nom existe déjà (insensible à la casse)
+    return !widget.availablePlayers.any(
+      (name) => name.toLowerCase() == trimmedQuery.toLowerCase(),
+    );
+  }
+
+  Color _generateRandomColor() {
+    // Liste de couleurs vives et variées
+    final availableColors = [
+      Colors.red,
+      Colors.pink,
+      Colors.purple,
+      Colors.deepPurple,
+      Colors.indigo,
+      Colors.blue,
+      Colors.lightBlue,
+      Colors.cyan,
+      Colors.teal,
+      Colors.green,
+      Colors.lightGreen,
+      Colors.lime,
+      Colors.yellow,
+      Colors.amber,
+      Colors.orange,
+      Colors.deepOrange,
+      Colors.brown,
+      Colors.blueGrey,
+    ];
+
+    // Récupérer les valeurs ARGB des couleurs déjà utilisées
+    final usedColorValues = _playerColors.values.map((c) => c.toARGB32()).toSet();
+
+    // Filtrer les couleurs non utilisées (en comparant les valeurs ARGB)
+    final unusedColors = availableColors
+        .where((color) => !usedColorValues.contains(color.toARGB32()))
+        .toList();
+
+    // Si toutes les couleurs sont utilisées, choisir une couleur aléatoire
+    if (unusedColors.isEmpty) {
+      return availableColors[DateTime.now().millisecondsSinceEpoch % availableColors.length];
+    }
+
+    // Choisir une couleur aléatoire parmi les couleurs non utilisées
+    return unusedColors[DateTime.now().millisecondsSinceEpoch % unusedColors.length];
+  }
+
   @override
   void initState() {
     super.initState();
@@ -55,6 +110,7 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
         columns: ['colorValue'],
         where: 'name = ?',
         whereArgs: [playerName],
+        orderBy: 'id DESC',
         limit: 1,
       );
 
@@ -72,10 +128,25 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
     }
   }
 
+  void _createNewPlayer() {
+    final playerName = _searchQuery.trim();
+    if (!_canCreatePlayer) return;
+
+    // Générer une couleur aléatoire
+    final color = _generateRandomColor();
+
+    // Ajouter la couleur à la liste locale pour éviter les doublons dans la même session
+    setState(() {
+      _playerColors[playerName] = color;
+    });
+
+    // Fermer le dialog et retourner le joueur avec sa couleur
+    Navigator.pop(context, PlayerSelection(playerName, color.toARGB32()));
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
-    _newPlayerController.dispose();
     super.dispose();
   }
 
@@ -121,7 +192,7 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  labelText: l10n.search,
+                  labelText: l10n.searchOrCreate,
                   prefixIcon: const Icon(Icons.search),
                   border: const OutlineInputBorder(),
                   suffixIcon: _searchQuery.isNotEmpty
@@ -147,68 +218,14 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
             // Bouton créer nouveau joueur
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _showNewPlayerField
-                  ? Card(
-                      color: Theme.of(context).colorScheme.secondaryContainer,
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          children: [
-                            TextField(
-                              controller: _newPlayerController,
-                              decoration: InputDecoration(
-                                labelText: l10n.newPlayerName,
-                                border: const OutlineInputBorder(),
-                                prefixIcon: const Icon(Icons.person),
-                              ),
-                              autofocus: true,
-                              onSubmitted: (value) {
-                                if (value.trim().isNotEmpty) {
-                                  Navigator.pop(context, value.trim());
-                                }
-                              },
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _showNewPlayerField = false;
-                                      _newPlayerController.clear();
-                                    });
-                                  },
-                                  child: Text(l10n.cancel),
-                                ),
-                                FilledButton.icon(
-                                  onPressed: () {
-                                    final name = _newPlayerController.text.trim();
-                                    if (name.isNotEmpty) {
-                                      Navigator.pop(context, name);
-                                    }
-                                  },
-                                  icon: const Icon(Icons.add),
-                                  label: Text(l10n.create),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  : SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          setState(() {
-                            _showNewPlayerField = true;
-                          });
-                        },
-                        icon: const Icon(Icons.add_circle_outline),
-                        label: Text(l10n.createNewPlayer),
-                      ),
-                    ),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _canCreatePlayer ? _createNewPlayer : null,
+                  icon: const Icon(Icons.add_circle_outline),
+                  label: Text(l10n.createNewPlayer),
+                ),
+              ),
             ),
 
             const Divider(height: 24),
@@ -241,9 +258,10 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
                       itemCount: _filteredPlayers.length,
                       itemBuilder: (context, index) {
                         final playerName = _filteredPlayers[index];
+                        final playerColor = _playerColors[playerName];
                         return ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: _playerColors[playerName] ?? Colors.blue,
+                            backgroundColor: playerColor ?? Colors.blue,
                             child: Text(
                               playerName[0].toUpperCase(),
                               style: const TextStyle(fontWeight: FontWeight.bold),
@@ -251,7 +269,13 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
                           ),
                           title: Text(playerName),
                           onTap: () {
-                            Navigator.pop(context, playerName);
+                            Navigator.pop(
+                              context,
+                              PlayerSelection(
+                                playerName,
+                                playerColor?.toARGB32(),
+                              ),
+                            );
                           },
                         );
                       },

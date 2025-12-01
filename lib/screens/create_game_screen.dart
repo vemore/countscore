@@ -7,6 +7,8 @@ import '../providers/game_type_provider.dart';
 import '../widgets/player_picker_dialog.dart';
 import 'game_board_screen.dart';
 
+export '../widgets/player_picker_dialog.dart' show PlayerSelection;
+
 class CreateGameScreen extends StatefulWidget {
   const CreateGameScreen({super.key});
 
@@ -14,19 +16,25 @@ class CreateGameScreen extends StatefulWidget {
   State<CreateGameScreen> createState() => _CreateGameScreenState();
 }
 
+class _SelectedPlayer {
+  final String name;
+  final int? colorValue;
+
+  _SelectedPlayer(this.name, this.colorValue);
+}
+
 class _CreateGameScreenState extends State<CreateGameScreen> {
   final _formKey = GlobalKey<FormState>();
   final _gameNameController = TextEditingController();
   int? _selectedGameTypeId;
   bool _isLowestScoreWins = true;
-  final List<String> _selectedPlayerNames = [];
+  final List<_SelectedPlayer> _selectedPlayers = [];
   List<String> _availablePlayerNames = [];
+  Map<String, int?> _playerColors = {};
 
   @override
   void initState() {
     super.initState();
-    _selectedPlayerNames.add('');
-    _selectedPlayerNames.add('');
     _loadData();
   }
 
@@ -35,17 +43,31 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
     final gameTypeProvider = context.read<GameTypeProvider>();
 
     final names = await gameProvider.getAllPlayerNames();
+    final colors = await gameProvider.getPlayerColors();
     await gameProvider.loadGames();
     final games = gameProvider.games;
     await gameTypeProvider.loadGameTypes();
 
     final gameTypes = gameTypeProvider.gameTypes;
 
-    // Trouver le type de jeu ZapZap par défaut
-    final zapzapType = gameTypes.firstWhere(
-      (type) => type.name.toLowerCase() == 'zapzap',
-      orElse: () => gameTypes.first,
-    );
+    // Déterminer le type de jeu par défaut
+    GameType defaultGameType;
+    if (games.isNotEmpty) {
+      // Utiliser le type de jeu de la dernière partie créée
+      defaultGameType = gameTypes.firstWhere(
+        (type) => type.id == games.first.gameTypeId,
+        orElse: () => gameTypes.firstWhere(
+          (type) => type.name.toLowerCase() == 'zapzap',
+          orElse: () => gameTypes.first,
+        ),
+      );
+    } else {
+      // Si aucune partie n'existe, utiliser ZapZap par défaut
+      defaultGameType = gameTypes.firstWhere(
+        (type) => type.name.toLowerCase() == 'zapzap',
+        orElse: () => gameTypes.first,
+      );
+    }
 
     // Générer le nom de partie par défaut
     String defaultGameName = 'Partie 1';
@@ -55,8 +77,9 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
 
     setState(() {
       _availablePlayerNames = names;
-      _selectedGameTypeId = zapzapType.id;
-      _isLowestScoreWins = zapzapType.isLowestScoreWins;
+      _playerColors = colors;
+      _selectedGameTypeId = defaultGameType.id;
+      _isLowestScoreWins = defaultGameType.isLowestScoreWins;
       _gameNameController.text = defaultGameName;
     });
   }
@@ -77,18 +100,34 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
     }
   }
 
-  void _addPlayerSlot() {
-    setState(() {
-      _selectedPlayerNames.add('');
-    });
-  }
+  Future<void> _addPlayer() async {
+    final result = await showDialog<PlayerSelection>(
+      context: context,
+      builder: (context) => PlayerPickerDialog(
+        availablePlayers: _availablePlayerNames,
+        selectedPlayers: _selectedPlayers.map((p) => p.name).toList(),
+      ),
+    );
 
-  void _removePlayerSlot(int index) {
-    if (_selectedPlayerNames.length > 2) {
+    if (result != null && mounted) {
+      // Si c'est un nouveau joueur, l'ajouter à la liste
+      if (!_availablePlayerNames.contains(result.name)) {
+        _availablePlayerNames.add(result.name);
+        _availablePlayerNames.sort();
+      }
+
       setState(() {
-        _selectedPlayerNames.removeAt(index);
+        // Mettre à jour ou ajouter la couleur du joueur
+        _playerColors[result.name] = result.colorValue;
+        _selectedPlayers.add(_SelectedPlayer(result.name, result.colorValue));
       });
     }
+  }
+
+  void _removePlayer(int index) {
+    setState(() {
+      _selectedPlayers.removeAt(index);
+    });
   }
 
   @override
@@ -101,11 +140,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
     final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
 
-    final playerNames = _selectedPlayerNames
-        .where((name) => name.isNotEmpty)
-        .toList();
-
-    if (playerNames.length < 2) {
+    if (_selectedPlayers.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.atLeast2PlayersRequired),
@@ -116,11 +151,20 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
     }
 
     final gameProvider = context.read<GameProvider>();
+    final playerNames = _selectedPlayers.map((p) => p.name).toList();
+
+    // Créer un map des couleurs des joueurs
+    final playerColorsMap = <String, int?>{};
+    for (final player in _selectedPlayers) {
+      playerColorsMap[player.name] = player.colorValue;
+    }
+
     final gameId = await gameProvider.createGame(
       _gameNameController.text.trim(),
       _selectedGameTypeId,
       _isLowestScoreWins,
       playerNames,
+      playerColorsMap,
     );
 
     await gameProvider.loadGame(gameId);
@@ -135,26 +179,6 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
     }
   }
 
-  Future<void> _showPlayerPicker(int index) async {
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) => PlayerPickerDialog(
-        availablePlayers: _availablePlayerNames,
-        selectedPlayers: _selectedPlayerNames,
-      ),
-    );
-
-    if (result != null) {
-      setState(() {
-        _selectedPlayerNames[index] = result;
-        // Rafraîchir la liste si un nouveau joueur a été créé
-        if (!_availablePlayerNames.contains(result)) {
-          _availablePlayerNames.add(result);
-          _availablePlayerNames.sort();
-        }
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -196,7 +220,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                 }
 
                 return DropdownButtonFormField<int>(
-                  value: _selectedGameTypeId,
+                  initialValue: _selectedGameTypeId,
                   decoration: InputDecoration(
                     labelText: l10n.gameType,
                     border: const OutlineInputBorder(),
@@ -286,77 +310,57 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
             ),
 
             // Joueurs
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  l10n.players,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                TextButton.icon(
-                  onPressed: _addPlayerSlot,
-                  icon: const Icon(Icons.add),
-                  label: Text(l10n.add),
-                ),
-              ],
+            Text(
+              l10n.players,
+              style: Theme.of(context).textTheme.titleMedium,
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
 
-            // Boutons de sélection de joueurs
-            ...List.generate(_selectedPlayerNames.length, (index) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: InkWell(
-                  onTap: () => _showPlayerPicker(index),
-                  borderRadius: BorderRadius.circular(4),
-                  child: InputDecorator(
-                    decoration: InputDecoration(
-                      labelText: l10n.playerNumber(index + 1),
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(Icons.person),
-                      suffixIcon: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (_selectedPlayerNames[index].isNotEmpty)
-                            IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                setState(() {
-                                  _selectedPlayerNames[index] = '';
-                                });
-                              },
-                              tooltip: l10n.clear,
-                            ),
-                          if (_selectedPlayerNames.length > 2)
-                            IconButton(
-                              icon: const Icon(Icons.remove_circle_outline),
-                              onPressed: () => _removePlayerSlot(index),
-                              tooltip: l10n.remove,
-                            ),
-                        ],
+            // Bouton d'ajout de joueur
+            OutlinedButton.icon(
+              onPressed: _addPlayer,
+              icon: const Icon(Icons.add),
+              label: Text(l10n.add),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.all(16),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Liste des joueurs sélectionnés
+            if (_selectedPlayers.isNotEmpty)
+              ...List.generate(_selectedPlayers.length, (index) {
+                final player = _selectedPlayers[index];
+                final playerColor = player.colorValue != null
+                    ? Color(player.colorValue!)
+                    : Colors.blue;
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Card(
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: playerColor,
+                        child: const Icon(Icons.person, color: Colors.white),
                       ),
-                    ),
-                    child: Text(
-                      _selectedPlayerNames[index].isEmpty
-                          ? l10n.selectPlayer
-                          : _selectedPlayerNames[index],
-                      style: TextStyle(
-                        color: _selectedPlayerNames[index].isEmpty
-                            ? Theme.of(context).hintColor
-                            : null,
+                      title: Text(player.name),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () => _removePlayer(index),
+                        tooltip: l10n.remove,
                       ),
                     ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
 
             const SizedBox(height: 24),
 
             // Bouton de création
             FilledButton.icon(
-              onPressed: _createGame,
+              onPressed: _selectedPlayers.isNotEmpty ? _createGame : null,
               icon: const Icon(Icons.check),
               label: Text(l10n.createGame),
               style: FilledButton.styleFrom(

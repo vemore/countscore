@@ -27,7 +27,13 @@ class GameProvider with ChangeNotifier {
   }
 
   // Créer une nouvelle partie
-  Future<int> createGame(String name, int? gameTypeId, bool isLowestScoreWins, List<String> playerNames) async {
+  Future<int> createGame(
+    String name,
+    int? gameTypeId,
+    bool isLowestScoreWins,
+    List<String> playerNames,
+    Map<String, int?>? playerColors,
+  ) async {
     final game = Game(
       name: name,
       gameTypeId: gameTypeId,
@@ -36,12 +42,14 @@ class GameProvider with ChangeNotifier {
 
     final gameId = await _db.createGame(game);
 
-    // Ajouter les joueurs
+    // Ajouter les joueurs avec leurs couleurs
     for (int i = 0; i < playerNames.length; i++) {
+      final playerName = playerNames[i];
       await _db.createPlayer(Player(
         gameId: gameId,
-        name: playerNames[i],
+        name: playerName,
         orderIndex: i,
+        colorValue: playerColors?[playerName],
       ));
     }
 
@@ -261,6 +269,11 @@ class GameProvider with ChangeNotifier {
   // Obtenir tous les noms de joueurs
   Future<List<String>> getAllPlayerNames() async {
     return await _db.getAllPlayerNames();
+  }
+
+  // Obtenir les couleurs des joueurs
+  Future<Map<String, int?>> getPlayerColors() async {
+    return await _db.getPlayerColors();
   }
 
   // Obtenir les statistiques d'un joueur

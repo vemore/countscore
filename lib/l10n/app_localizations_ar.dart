@@ -449,6 +449,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get search => 'بحث';
 
   @override
+  String get searchOrCreate => 'بحث / إنشاء';
+
+  @override
   String get createNewPlayer => 'إنشاء لاعب جديد';
 
   @override

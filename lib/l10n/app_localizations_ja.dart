@@ -441,6 +441,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get search => '検索';
 
   @override
+  String get searchOrCreate => '検索 / 作成';
+
+  @override
   String get createNewPlayer => '新しいプレイヤーを作成';
 
   @override

@@ -422,6 +422,27 @@ class DatabaseService {
     return result.map((row) => row['name'] as String).toList();
   }
 
+  // Récupérer les couleurs des joueurs (dernière couleur utilisée par chaque joueur)
+  Future<Map<String, int?>> getPlayerColors() async {
+    final db = await database;
+    final result = await db.rawQuery('''
+      SELECT p1.name, p1.colorValue
+      FROM players p1
+      INNER JOIN (
+        SELECT name, MAX(id) as maxId
+        FROM players
+        GROUP BY name
+      ) p2 ON p1.name = p2.name AND p1.id = p2.maxId
+      ORDER BY p1.name ASC
+    ''');
+
+    final Map<String, int?> playerColors = {};
+    for (final row in result) {
+      playerColors[row['name'] as String] = row['colorValue'] as int?;
+    }
+    return playerColors;
+  }
+
   // Statistiques par joueur et par type de jeu
   Future<Map<String, dynamic>> getPlayerStats(String playerName) async {
     final db = await database;

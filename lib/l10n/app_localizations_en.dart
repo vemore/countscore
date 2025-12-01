@@ -448,6 +448,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get search => 'Search';
 
   @override
+  String get searchOrCreate => 'Search / Create';
+
+  @override
   String get createNewPlayer => 'Create new player';
 
   @override

@@ -452,6 +452,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get search => 'Поиск';
 
   @override
+  String get searchOrCreate => 'Искать / Создать';
+
+  @override
   String get createNewPlayer => 'Создать нового игрока';
 
   @override

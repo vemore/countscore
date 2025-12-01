@@ -450,6 +450,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get search => 'Buscar';
 
   @override
+  String get searchOrCreate => 'Buscar / Crear';
+
+  @override
   String get createNewPlayer => 'Crear nuevo jugador';
 
   @override

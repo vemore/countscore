@@ -451,6 +451,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get search => 'Pesquisar';
 
   @override
+  String get searchOrCreate => 'Pesquisar / Criar';
+
+  @override
   String get createNewPlayer => 'Criar novo jogador';
 
   @override
