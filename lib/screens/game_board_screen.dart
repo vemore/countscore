@@ -254,16 +254,19 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
               ),
 
               // Bouton ajouter tour
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () async {
-                      await gameProvider.addRound();
-                    },
-                    icon: const Icon(Icons.add),
-                    label: Text(l10n.addRound),
+              SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () async {
+                        await gameProvider.addRound();
+                      },
+                      icon: const Icon(Icons.add),
+                      label: Text(l10n.addRound),
+                    ),
                   ),
                 ),
               ),
