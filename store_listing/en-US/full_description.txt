@@ -1,91 +1,44 @@
-Keep track of scores for all your favorite games with CountScore – the simple, powerful, and privacy-focused score tracking app.
+Keep track of scores for all your favorite games with CountScore – a simple, privacy-focused score tracking app.
 
-✨ KEY FEATURES
+KEY FEATURES
 
-📊 Multiple Game Types
-• Pre-configured support for popular games (Uno, Scrabble, and more)
-• Create custom game types with personalized names and colors
-• Flexible scoring systems for any game
+Multiple Game Types
+CountScore comes with pre-configured support for popular games like Uno and Scrabble. You can also create custom game types with personalized names, colors, and icons to match any game you play.
 
-🎯 Flexible Scoring
-• Support for both lowest-wins and highest-wins scoring
-• Easy score entry and adjustment
+Flexible Scoring
+Whether your game rewards the highest or lowest score, CountScore adapts. Easily enter and adjust scores as you play.
 
-👥 Player Management
-• Add and manage unlimited players
-• Track individual statistics across games
+Player Management
+Add unlimited players and track their individual statistics across multiple games and sessions.
 
-📈 Complete Game History
-• Full score history for every game
-• Review past games and track progress
+Complete Game History
+Review the full score history for every game. Track progress over time and settle those "who won last time?" debates.
 
-🎨 Customization
-• Custom colors and icons for each game type
-• Clean, Material Design 3 interface
+Works Offline
+All data is stored locally on your device. No internet connection required – perfect for camping trips, flights, or anywhere you play.
 
-📴 Offline First & Privacy Focused
-• All data stored locally on your device
-• No internet required – works anywhere
-• No data collection, tracking, or analytics
-• No third-party services or advertising
-• Open-source and auditable (MIT License)
+HOW IT WORKS
 
-🎯 PERFECT FOR
-• Family game nights 
-• Card tournaments 
-• Board game sessions 
-• Sports scorekeeping 
-• Classroom activities 
-• Party games 
-• Any activity requiring score tracking
+1. Create or select a game type
+2. Add your players
+3. Track scores as you play
+4. View history and statistics anytime
 
-🌟 WHY CHOOSE COUNTSCORE?
+PERFECT FOR
 
-SIMPLE & INTUITIVE
-Start tracking scores in seconds with a clean, modern interface.
+Family game nights, card tournaments, board game sessions, sports scorekeeping, classroom activities, and party games. If it needs a score, CountScore handles it.
+
+PRIVACY
+
+Your data stays on your device. There are no accounts to create, no cloud sync, and no data collection. CountScore is open-source (MIT License) so you can verify this yourself.
 
 COMPLETELY FREE
-No ads, no in-app purchases, no hidden costs. Free forever and open source.
 
-PRIVACY FIRST
-Your data stays on your device. No accounts, no cloud, no tracking.
+No ads, no in-app purchases, no hidden costs. CountScore is free forever.
 
-LIGHTWEIGHT & FAST
-Small app size with smooth performance even on older devices.
+SUPPORT
 
-📱 HOW IT WORKS
-• Create or select a game type
-• Add players
-• Track scores as you play
-• View history and statistics
+Email: scribio.ai@gmail.com
+Source code: github.com/vemore/countscore
 
-💡 USE CASES
-• Family game nights with multiple games
-• Card tournaments (poker, Uno, etc.)
-• Board games (Scrabble, Monopoly, Settlers of Catan)
-• Sports (basketball, tennis, golf, darts)
-• Classroom competitions and educational games
-
-🔐 PRIVACY & SECURITY
-✅ All data stored locally
-✅ No registration required
-✅ No personal information collected
-✅ No analytics or tracking
-✅ Open-source code (MIT License)
-✅ Completely ad-free
-Your data never leaves your device. Delete anytime through app or device settings.
-
-📧 SUPPORT
-Contact: scribio.ai@gmail.com
-GitHub: https://github.com/vemore/countscore
-
-💾 REQUIREMENTS
-• Android 5.0 or higher
-• ~50 MB storage
-• No internet required
-
-🎮 START TODAY
-Download CountScore and simplify your score management for game nights, tournaments, or casual play.
-
-CountScore – Simple Score Tracking. No Ads. No Tracking. Just Games.
-Made with ❤️ using Flutter | Open Source | Free Forever
+Requires Android 5.0 or higher.
