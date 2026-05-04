@@ -509,4 +509,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get endGame => 'End Game';
+
+  @override
+  String get comment => 'Comment';
+
+  @override
+  String get enterComment => 'Enter a comment';
 }

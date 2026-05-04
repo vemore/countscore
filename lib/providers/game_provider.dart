@@ -116,6 +116,32 @@ class GameProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Mettre à jour le commentaire d'un tour
+  Future<void> updateRoundComment(int roundId, String? comment) async {
+    final normalized = (comment == null || comment.trim().isEmpty)
+        ? null
+        : comment.trim();
+
+    await _db.updateRoundComment(roundId, normalized);
+
+    final index = _currentRounds.indexWhere((r) => r.id == roundId);
+    if (index != -1) {
+      final r = _currentRounds[index];
+      _currentRounds[index] = Round(
+        id: r.id,
+        gameId: r.gameId,
+        roundNumber: r.roundNumber,
+        comment: normalized,
+      );
+    }
+
+    if (_currentGame != null) {
+      await _db.updateGame(_currentGame!);
+    }
+
+    notifyListeners();
+  }
+
   // Mettre à jour un score
   Future<void> updateScore(int playerId, int roundId, int value) async {
     final score = Score(

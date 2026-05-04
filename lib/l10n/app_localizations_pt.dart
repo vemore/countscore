@@ -513,4 +513,10 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get endGame => 'Terminar Jogo';
+
+  @override
+  String get comment => 'Comentário';
+
+  @override
+  String get enterComment => 'Escrever um comentário';
 }

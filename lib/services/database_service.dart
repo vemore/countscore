@@ -25,7 +25,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -80,6 +80,7 @@ class DatabaseService {
         id $idType,
         gameId $intType,
         roundNumber $intType,
+        comment TEXT,
         FOREIGN KEY (gameId) REFERENCES games (id) ON DELETE CASCADE
       )
     ''');
@@ -244,6 +245,10 @@ class DatabaseService {
         ''');
       }
     }
+
+    if (oldVersion < 6) {
+      await db.execute('ALTER TABLE rounds ADD COLUMN comment TEXT');
+    }
   }
 
   // CRUD pour Game
@@ -361,6 +366,16 @@ class DatabaseService {
       'rounds',
       where: 'id = ?',
       whereArgs: [id],
+    );
+  }
+
+  Future<int> updateRoundComment(int roundId, String? comment) async {
+    final db = await database;
+    return await db.update(
+      'rounds',
+      {'comment': comment},
+      where: 'id = ?',
+      whereArgs: [roundId],
     );
   }
 

@@ -1025,6 +1025,18 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Terminer la partie'**
   String get endGame;
+
+  /// No description provided for @comment.
+  ///
+  /// In fr, this message translates to:
+  /// **'Commentaire'**
+  String get comment;
+
+  /// No description provided for @enterComment.
+  ///
+  /// In fr, this message translates to:
+  /// **'Saisir un commentaire'**
+  String get enterComment;
 }
 
 class _AppLocalizationsDelegate

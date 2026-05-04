@@ -292,5 +292,7 @@
   "gameOverTitle": "¡Fin del juego!",
   "gameOverMessage": "Se alcanzó la condición de fin del juego. ¿Terminar ahora?",
   "continuePlay": "Continuar jugando",
-  "endGame": "Terminar juego"
+  "endGame": "Terminar juego",
+  "comment": "Comentario",
+  "enterComment": "Escribir un comentario"
 }

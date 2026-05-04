@@ -292,5 +292,7 @@
   "gameOverTitle": "Spiel beendet!",
   "gameOverMessage": "Spielende-Bedingung erreicht. Jetzt beenden?",
   "continuePlay": "Weiterspielen",
-  "endGame": "Spiel beenden"
+  "endGame": "Spiel beenden",
+  "comment": "Kommentar",
+  "enterComment": "Kommentar eingeben"
 }
