@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/game.dart';
@@ -25,7 +26,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -36,7 +37,10 @@ class DatabaseService {
     const textType = 'TEXT NOT NULL';
     const intType = 'INTEGER NOT NULL';
 
-    // Table game_types
+    // Schema v6 — sync-ready (see ARCHITECTURE.md §4.1)
+    // Every entity has: uuid (logical key for sync), created_at, updated_at,
+    // deleted_at (soft delete), group_id (NULL = local-only, non-NULL = shared).
+
     await db.execute('''
       CREATE TABLE game_types (
         id $idType,
@@ -48,7 +52,12 @@ class DatabaseService {
         playerDeadConditionType TEXT,
         playerDeadThreshold INTEGER,
         gameOverConditionType TEXT,
-        gameOverThreshold INTEGER
+        gameOverThreshold INTEGER,
+        uuid TEXT NOT NULL UNIQUE,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER,
+        group_id TEXT
       )
     ''');
 
@@ -60,6 +69,11 @@ class DatabaseService {
         isLowestScoreWins $intType,
         createdAt $textType,
         lastModified TEXT,
+        uuid TEXT NOT NULL UNIQUE,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER,
+        group_id TEXT,
         FOREIGN KEY (gameTypeId) REFERENCES game_types (id) ON DELETE SET NULL
       )
     ''');
@@ -71,6 +85,11 @@ class DatabaseService {
         name $textType,
         orderIndex $intType,
         colorValue INTEGER,
+        uuid TEXT NOT NULL UNIQUE,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER,
+        group_id TEXT,
         FOREIGN KEY (gameId) REFERENCES games (id) ON DELETE CASCADE
       )
     ''');
@@ -80,6 +99,11 @@ class DatabaseService {
         id $idType,
         gameId $intType,
         roundNumber $intType,
+        uuid TEXT NOT NULL UNIQUE,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER,
+        group_id TEXT,
         FOREIGN KEY (gameId) REFERENCES games (id) ON DELETE CASCADE
       )
     ''');
@@ -90,26 +114,93 @@ class DatabaseService {
         playerId $intType,
         roundId $intType,
         value $intType,
+        uuid TEXT NOT NULL UNIQUE,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER,
+        group_id TEXT,
         FOREIGN KEY (playerId) REFERENCES players (id) ON DELETE CASCADE,
         FOREIGN KEY (roundId) REFERENCES rounds (id) ON DELETE CASCADE
       )
     ''');
 
-    // Index pour améliorer les performances
+    // Outbox: every local mutation to a synced entity (group_id != NULL) is queued
+    // here for the sync worker. See ARCHITECTURE.md §5.1.
+    await db.execute('''
+      CREATE TABLE outbox (
+        id $idType,
+        entity_type $textType,
+        entity_uuid $textType,
+        op $textType,
+        payload $textType,
+        client_lamport $intType,
+        created_at $intType,
+        sent_at INTEGER
+      )
+    ''');
+
+    // Per-group sync state: last server_seq we have pulled, last lamport we emitted.
+    await db.execute('''
+      CREATE TABLE sync_state (
+        group_id TEXT PRIMARY KEY,
+        last_server_seq INTEGER NOT NULL DEFAULT 0,
+        last_lamport INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+
+    // Indexes
     await db.execute('CREATE INDEX idx_games_gameTypeId ON games(gameTypeId)');
     await db.execute('CREATE INDEX idx_players_gameId ON players(gameId)');
     await db.execute('CREATE INDEX idx_rounds_gameId ON rounds(gameId)');
     await db.execute('CREATE INDEX idx_scores_playerId ON scores(playerId)');
     await db.execute('CREATE INDEX idx_scores_roundId ON scores(roundId)');
+    await db.execute('CREATE INDEX idx_outbox_unsent ON outbox(sent_at, id)');
+    await db.execute('CREATE INDEX idx_games_group_id ON games(group_id)');
+    await db.execute('CREATE INDEX idx_players_group_id ON players(group_id)');
 
-    // Insérer les types de jeux par défaut
     await _insertDefaultGameTypes(db);
   }
 
   Future<void> _insertDefaultGameTypes(Database db) async {
+    // On v6+ tables we must also populate the sync-readiness columns (uuid,
+    // created_at, updated_at, group_id). On older tables these columns don't
+    // exist yet; sqflite's `insert` will silently drop unknown keys, but to be
+    // explicit we detect the column presence first.
+    final hasSyncCols = await _hasColumn(db, 'game_types', 'uuid');
+    final now = DateTime.now().millisecondsSinceEpoch;
     for (final gameType in GameType.defaultGameTypes()) {
-      await db.insert('game_types', gameType.toMap());
+      final map = gameType.toMap();
+      if (hasSyncCols) {
+        map['uuid'] = _newUuid();
+        map['created_at'] = now;
+        map['updated_at'] = now;
+        // Default game types are local (no group ownership); stays NULL.
+      }
+      await db.insert('game_types', map);
     }
+  }
+
+  /// Returns true if the column exists on the given table.
+  Future<bool> _hasColumn(Database db, String table, String column) async {
+    final cols = await db.rawQuery('PRAGMA table_info($table)');
+    return cols.any((c) => c['name'] == column);
+  }
+
+  /// Generates a v4-like UUID string. We avoid pulling the ``uuid`` package
+  /// just for this — a 16-byte cryptographically-random hex string is enough
+  /// for our uniqueness needs (1/2^122 collision probability).
+  static String _newUuid() {
+    final rng = math.Random.secure();
+    final bytes = List<int>.generate(16, (_) => rng.nextInt(256));
+    // RFC 4122 v4 markers
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    String hex(int i) => bytes[i].toRadixString(16).padLeft(2, '0');
+    return '${hex(0)}${hex(1)}${hex(2)}${hex(3)}-'
+        '${hex(4)}${hex(5)}-'
+        '${hex(6)}${hex(7)}-'
+        '${hex(8)}${hex(9)}-'
+        '${hex(10)}${hex(11)}${hex(12)}${hex(13)}${hex(14)}${hex(15)}';
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
@@ -244,6 +335,115 @@ class DatabaseService {
         ''');
       }
     }
+
+    if (oldVersion < 6) {
+      await _upgradeV5toV6(db);
+    }
+  }
+
+  /// v5 → v6 migration: sync-readiness.
+  ///
+  /// What changes:
+  /// - Every entity table gets ``uuid TEXT UNIQUE NOT NULL``,
+  ///   ``created_at INTEGER NOT NULL``, ``updated_at INTEGER NOT NULL``,
+  ///   ``deleted_at INTEGER NULL``, ``group_id TEXT NULL``.
+  /// - New tables: ``outbox`` (sync queue), ``sync_state`` (per-group cursor).
+  /// - Backfill: every existing row gets a fresh UUID and timestamps set to
+  ///   the current time (for games, we preserve ``createdAt`` ISO string by
+  ///   parsing it back to epoch ms). ``group_id`` stays NULL — all existing
+  ///   data is treated as local-only, which is the user's expectation.
+  ///
+  /// Safety / reversibility notes:
+  /// - We do NOT drop any existing column. Worst case the new columns are
+  ///   unused.
+  /// - The full normalization of players (global per group, see
+  ///   ARCHITECTURE.md §3.3) is deferred to a future migration v7 because it
+  ///   requires actual groups to scope into; doing it here would force every
+  ///   existing user into a transient state.
+  Future<void> _upgradeV5toV6(Database db) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    for (final table in ['game_types', 'games', 'players', 'rounds', 'scores']) {
+      // ALTER ADD COLUMN with UNIQUE is not supported by SQLite; we add as
+      // plain TEXT then enforce uniqueness via a UNIQUE INDEX after backfill.
+      await db.execute('ALTER TABLE $table ADD COLUMN uuid TEXT');
+      await db.execute('ALTER TABLE $table ADD COLUMN created_at INTEGER');
+      await db.execute('ALTER TABLE $table ADD COLUMN updated_at INTEGER');
+      await db.execute('ALTER TABLE $table ADD COLUMN deleted_at INTEGER');
+      await db.execute('ALTER TABLE $table ADD COLUMN group_id TEXT');
+    }
+
+    // Backfill timestamps and UUIDs.
+    // Games: preserve original createdAt if parseable.
+    final games = await db.query('games', columns: ['id', 'createdAt']);
+    for (final g in games) {
+      int createdAtMs = now;
+      final createdAtStr = g['createdAt'] as String?;
+      if (createdAtStr != null) {
+        try {
+          createdAtMs = DateTime.parse(createdAtStr).millisecondsSinceEpoch;
+        } catch (_) {/* keep now */}
+      }
+      await db.update(
+        'games',
+        {
+          'uuid': _newUuid(),
+          'created_at': createdAtMs,
+          'updated_at': now,
+        },
+        where: 'id = ?',
+        whereArgs: [g['id']],
+      );
+    }
+
+    // Other tables: now/now (no original timestamp to preserve).
+    for (final table in ['game_types', 'players', 'rounds', 'scores']) {
+      final rows = await db.query(table, columns: ['id']);
+      for (final r in rows) {
+        await db.update(
+          table,
+          {
+            'uuid': _newUuid(),
+            'created_at': now,
+            'updated_at': now,
+          },
+          where: 'id = ?',
+          whereArgs: [r['id']],
+        );
+      }
+    }
+
+    // Now enforce the UNIQUE constraint on uuid for each table.
+    for (final table in ['game_types', 'games', 'players', 'rounds', 'scores']) {
+      await db.execute(
+        'CREATE UNIQUE INDEX idx_${table}_uuid ON $table(uuid)',
+      );
+    }
+
+    // New tables: outbox, sync_state.
+    await db.execute('''
+      CREATE TABLE outbox (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        entity_type TEXT NOT NULL,
+        entity_uuid TEXT NOT NULL,
+        op TEXT NOT NULL,
+        payload TEXT NOT NULL,
+        client_lamport INTEGER NOT NULL,
+        created_at INTEGER NOT NULL,
+        sent_at INTEGER
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE sync_state (
+        group_id TEXT PRIMARY KEY,
+        last_server_seq INTEGER NOT NULL DEFAULT 0,
+        last_lamport INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+
+    await db.execute('CREATE INDEX idx_outbox_unsent ON outbox(sent_at, id)');
+    await db.execute('CREATE INDEX idx_games_group_id ON games(group_id)');
+    await db.execute('CREATE INDEX idx_players_group_id ON players(group_id)');
   }
 
   // CRUD pour Game

@@ -3,10 +3,41 @@ import '../models/game.dart';
 import '../models/player.dart';
 import '../models/round.dart';
 import '../models/score.dart';
+import '../repositories/game_repository.dart';
+import '../repositories/game_type_repository.dart';
+import '../repositories/player_repository.dart';
+import '../repositories/player_stats_repository.dart';
+import '../repositories/round_repository.dart';
+import '../repositories/score_repository.dart';
+import '../repositories/sqflite/sqflite_game_repository.dart';
+import '../repositories/sqflite/sqflite_game_type_repository.dart';
+import '../repositories/sqflite/sqflite_player_repository.dart';
+import '../repositories/sqflite/sqflite_player_stats_repository.dart';
+import '../repositories/sqflite/sqflite_round_repository.dart';
+import '../repositories/sqflite/sqflite_score_repository.dart';
 import '../services/database_service.dart';
 
 class GameProvider with ChangeNotifier {
-  final DatabaseService _db = DatabaseService.instance;
+  GameProvider({
+    GameRepository? gameRepo,
+    PlayerRepository? playerRepo,
+    RoundRepository? roundRepo,
+    ScoreRepository? scoreRepo,
+    GameTypeRepository? gameTypeRepo,
+    PlayerStatsRepository? statsRepo,
+  })  : _gameRepo = gameRepo ?? SqfliteGameRepository(DatabaseService.instance),
+        _playerRepo = playerRepo ?? SqflitePlayerRepository(DatabaseService.instance),
+        _roundRepo = roundRepo ?? SqfliteRoundRepository(DatabaseService.instance),
+        _scoreRepo = scoreRepo ?? SqfliteScoreRepository(DatabaseService.instance),
+        _gameTypeRepo = gameTypeRepo ?? SqfliteGameTypeRepository(DatabaseService.instance),
+        _statsRepo = statsRepo ?? SqflitePlayerStatsRepository(DatabaseService.instance);
+
+  final GameRepository _gameRepo;
+  final PlayerRepository _playerRepo;
+  final RoundRepository _roundRepo;
+  final ScoreRepository _scoreRepo;
+  final GameTypeRepository _gameTypeRepo;
+  final PlayerStatsRepository _statsRepo;
 
   List<Game> _games = [];
   Game? _currentGame;
@@ -20,13 +51,11 @@ class GameProvider with ChangeNotifier {
   List<Round> get currentRounds => _currentRounds;
   Map<String, Score> get scores => _scores;
 
-  // Charger toutes les parties
   Future<void> loadGames() async {
-    _games = await _db.getAllGames();
+    _games = await _gameRepo.getAll();
     notifyListeners();
   }
 
-  // Créer une nouvelle partie
   Future<int> createGame(
     String name,
     int? gameTypeId,
@@ -40,12 +69,11 @@ class GameProvider with ChangeNotifier {
       isLowestScoreWins: isLowestScoreWins,
     );
 
-    final gameId = await _db.createGame(game);
+    final gameId = await _gameRepo.create(game);
 
-    // Ajouter les joueurs avec leurs couleurs
     for (int i = 0; i < playerNames.length; i++) {
       final playerName = playerNames[i];
-      await _db.createPlayer(Player(
+      await _playerRepo.create(Player(
         gameId: gameId,
         name: playerName,
         orderIndex: i,
@@ -57,16 +85,14 @@ class GameProvider with ChangeNotifier {
     return gameId;
   }
 
-  // Charger une partie spécifique
   Future<void> loadGame(int gameId) async {
-    _currentGame = await _db.getGame(gameId);
-    _currentPlayers = await _db.getPlayersByGame(gameId);
-    _currentRounds = await _db.getRoundsByGame(gameId);
+    _currentGame = await _gameRepo.getById(gameId);
+    _currentPlayers = await _playerRepo.getByGame(gameId);
+    _currentRounds = await _roundRepo.getByGame(gameId);
 
-    // Charger tous les scores
     _scores.clear();
     for (final player in _currentPlayers) {
-      final playerScores = await _db.getScoresByPlayer(player.id!);
+      final playerScores = await _scoreRepo.getByPlayer(player.id!);
       for (final score in playerScores) {
         _scores['${score.playerId}_${score.roundId}'] = score;
       }
@@ -75,48 +101,39 @@ class GameProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Ajouter un tour
   Future<void> addRound() async {
     if (_currentGame == null) return;
 
     final roundNumber = _currentRounds.length + 1;
-    final roundId = await _db.createRound(Round(
+    final roundId = await _roundRepo.create(Round(
       gameId: _currentGame!.id!,
       roundNumber: roundNumber,
     ));
 
-    // Ajouter le tour à la liste locale
     _currentRounds.add(Round(
       id: roundId,
       gameId: _currentGame!.id!,
       roundNumber: roundNumber,
     ));
 
-    // Mettre à jour la date de modification
-    await _db.updateGame(_currentGame!);
+    await _gameRepo.update(_currentGame!);
 
     notifyListeners();
   }
 
-  // Supprimer un tour
   Future<void> deleteRound(int roundId) async {
-    await _db.deleteRound(roundId);
+    await _roundRepo.delete(roundId);
 
-    // Retirer de la liste locale et réorganiser
     _currentRounds.removeWhere((r) => r.id == roundId);
-
-    // Supprimer les scores associés de la map
     _scores.removeWhere((key, value) => value.roundId == roundId);
 
-    // Mettre à jour la date de modification
     if (_currentGame != null) {
-      await _db.updateGame(_currentGame!);
+      await _gameRepo.update(_currentGame!);
     }
 
     notifyListeners();
   }
 
-  // Mettre à jour un score
   Future<void> updateScore(int playerId, int roundId, int value) async {
     final score = Score(
       playerId: playerId,
@@ -124,28 +141,24 @@ class GameProvider with ChangeNotifier {
       value: value,
     );
 
-    await _db.upsertScore(score);
+    await _scoreRepo.upsert(score);
 
-    // Recharger le score depuis la DB pour avoir l'ID
-    final updatedScore = await _db.getScore(playerId, roundId);
+    final updatedScore = await _scoreRepo.getByPlayerAndRound(playerId, roundId);
     if (updatedScore != null) {
       _scores['${playerId}_$roundId'] = updatedScore;
     }
 
-    // Mettre à jour la date de modification
     if (_currentGame != null) {
-      await _db.updateGame(_currentGame!);
+      await _gameRepo.update(_currentGame!);
     }
 
     notifyListeners();
   }
 
-  // Obtenir le score pour un joueur et un tour
   int? getScore(int playerId, int roundId) {
     return _scores['${playerId}_$roundId']?.value;
   }
 
-  // Calculer le total d'un joueur
   int getPlayerTotal(int playerId) {
     int total = 0;
     for (final round in _currentRounds) {
@@ -157,7 +170,6 @@ class GameProvider with ChangeNotifier {
     return total;
   }
 
-  // Obtenir le classement
   List<Map<String, dynamic>> getRanking() {
     final ranking = <Map<String, dynamic>>[];
 
@@ -168,7 +180,6 @@ class GameProvider with ChangeNotifier {
       });
     }
 
-    // Trier selon les règles de la partie
     if (_currentGame != null) {
       ranking.sort((a, b) {
         final comparison = (a['total'] as int).compareTo(b['total'] as int);
@@ -179,12 +190,10 @@ class GameProvider with ChangeNotifier {
     return ranking;
   }
 
-  // Supprimer une partie
   Future<void> deleteGame(int gameId) async {
-    await _db.deleteGame(gameId);
+    await _gameRepo.delete(gameId);
     await loadGames();
 
-    // Si c'est la partie courante, la réinitialiser
     if (_currentGame?.id == gameId) {
       _currentGame = null;
       _currentPlayers = [];
@@ -194,11 +203,10 @@ class GameProvider with ChangeNotifier {
     }
   }
 
-  // Mettre à jour le nom de la partie
   Future<void> updateGameName(int gameId, String newName) async {
-    final game = await _db.getGame(gameId);
+    final game = await _gameRepo.getById(gameId);
     if (game != null) {
-      await _db.updateGame(game.copyWith(name: newName));
+      await _gameRepo.update(game.copyWith(name: newName));
       await loadGames();
 
       if (_currentGame?.id == gameId) {
@@ -208,38 +216,35 @@ class GameProvider with ChangeNotifier {
     }
   }
 
-  // Mettre à jour le type de jeu de la partie
   Future<void> updateGameType(int gameId, int? gameTypeId) async {
-    final game = await _db.getGame(gameId);
+    final game = await _gameRepo.getById(gameId);
     if (game != null) {
-      // Synchroniser isLowestScoreWins avec le GameType sélectionné
-      bool isLowestScoreWins = game.isLowestScoreWins; // Valeur par défaut
+      bool isLowestScoreWins = game.isLowestScoreWins;
 
       if (gameTypeId != null) {
-        final gameType = await _db.getGameType(gameTypeId);
+        final gameType = await _gameTypeRepo.getById(gameTypeId);
         if (gameType != null) {
           isLowestScoreWins = gameType.isLowestScoreWins;
         }
       }
 
-      await _db.updateGame(game.copyWith(
+      await _gameRepo.update(game.copyWith(
         gameTypeId: gameTypeId,
         isLowestScoreWins: isLowestScoreWins,
       ));
       await loadGames();
 
       if (_currentGame?.id == gameId) {
-        await loadGame(gameId); // Recharger complètement pour rafraîchir l'UI
+        await loadGame(gameId);
       }
     }
   }
 
-  // Ajouter un joueur à la partie
   Future<void> addPlayer(String name) async {
     if (_currentGame == null) return;
 
     final orderIndex = _currentPlayers.length;
-    final playerId = await _db.createPlayer(Player(
+    final playerId = await _playerRepo.create(Player(
       gameId: _currentGame!.id!,
       name: name,
       orderIndex: orderIndex,
@@ -255,37 +260,30 @@ class GameProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Supprimer un joueur
   Future<void> deletePlayer(int playerId) async {
-    await _db.deletePlayer(playerId);
+    await _playerRepo.delete(playerId);
     _currentPlayers.removeWhere((p) => p.id == playerId);
 
-    // Supprimer les scores associés
     _scores.removeWhere((key, value) => value.playerId == playerId);
 
     notifyListeners();
   }
 
-  // Obtenir tous les noms de joueurs
   Future<List<String>> getAllPlayerNames() async {
-    return await _db.getAllPlayerNames();
+    return await _playerRepo.getAllNames();
   }
 
-  // Obtenir les couleurs des joueurs
   Future<Map<String, int?>> getPlayerColors() async {
-    return await _db.getPlayerColors();
+    return await _playerRepo.getColorsByName();
   }
 
-  // Obtenir les statistiques d'un joueur
   Future<Map<String, dynamic>> getPlayerStats(String playerName) async {
-    return await _db.getPlayerStats(playerName);
+    return await _statsRepo.getStatsByName(playerName);
   }
 
-  // Renommer un joueur dans toutes les parties
   Future<void> renamePlayer(String oldName, String newName) async {
-    await _db.renamePlayer(oldName, newName);
+    await _playerRepo.renameByName(oldName, newName);
 
-    // Recharger les données si nécessaire
     await loadGames();
     if (_currentGame != null) {
       await loadGame(_currentGame!.id!);
@@ -294,11 +292,9 @@ class GameProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Supprimer un joueur par nom dans toutes les parties
   Future<void> deletePlayerByName(String playerName) async {
-    await _db.deletePlayerByName(playerName);
+    await _playerRepo.deleteByName(playerName);
 
-    // Recharger les données
     await loadGames();
     if (_currentGame != null) {
       await loadGame(_currentGame!.id!);

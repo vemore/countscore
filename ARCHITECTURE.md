@@ -50,18 +50,24 @@
 
 ## 2. État d'avancement
 
-| Jalon | Description | Statut |
-|---|---|---|
-| 0 | Filet de sécurité tests mobile | ✅ Implémenté |
-| 1 | Couche repository mobile | ✅ Implémenté |
-| 2 | Schéma v6 sync-ready (UUIDs, timestamps, soft-delete, players globaux) | ✅ Implémenté |
-| 3 | Migration Drift | 📋 Documenté, à implémenter |
-| 4 | Backend MVP (endpoint /comments stateless) | ✅ Implémenté |
-| 5 | Groupes + sync minimal (REST) | ✅ Implémenté (squelette + tests) |
-| 6 | Temps réel (WebSocket) | ✅ Implémenté (squelette) |
-| 7 | API commentaires complète (mémoire, rate-limit, budget) | ✅ Implémenté |
-| 8 | PWA web | 📋 Documenté, à implémenter |
-| 9 | Production-readiness backend | ✅ Partiellement (Docker Compose, backups) |
+| Jalon | Description | Statut | Notes |
+|---|---|---|---|
+| 0 | Filet de sécurité tests mobile | ⚠️ Scaffold | `test/database_service_test.dart` créé avec tests stubbés ; nécessite `flutter test` local + exposition de `_createDB`/`_upgradeDB` via `@visibleForTesting` pour activer les tests skippés. `sqflite_common_ffi` ajouté en dev-dep. |
+| 1 | Couche repository mobile | ✅ Implémenté | Interfaces + impls sqflite dans `lib/repositories/`. `GameProvider` et `GameTypeProvider` consomment les interfaces. À valider avec `flutter analyze` + `flutter test` local. |
+| 2 | Schéma v6 sync-ready (UUIDs, timestamps, soft-delete, outbox, sync_state) | ✅ Implémenté | Migration v5→v6 dans `database_service.dart` (`_upgradeV5toV6`). **Refonte player→global déférée en v7** (cf. §3.3, raison ci-dessous). Backfill préserve `games.createdAt` original. |
+| 3 | Migration Drift | 📋 Documenté | Voir §11.2 |
+| 4 | Backend MVP (endpoint `/comments/mvp` stateless) | ✅ Implémenté + testé | 3 tests OK |
+| 5 | Groupes + sync minimal (REST) | ✅ Implémenté + testé | 9 tests OK (groupes + sync push/pull/dedup/conflit round) |
+| 6 | Temps réel (WebSocket) | ✅ Squelette | Endpoint `/sync/stream` + LISTEN/NOTIFY. Tests WS à ajouter (intégration Postgres). |
+| 7 | API commentaires complète (mémoire, rate-limit, budget, prompt cache, anti-injection) | ✅ Implémenté + testé | 7 tests prompt builder + 3 tests endpoint |
+| 8 | PWA web | 📋 Documenté | Voir §11.2 |
+| 9 | Production-readiness backend | ✅ Partiel | Docker Compose + Caddy TLS + pg_dump quotidien implémentés. Manque : monitoring, alerting. |
+
+**Pourquoi player→global est déférée à v7** :
+- Le refactor nécessite des groupes existants pour scoper les joueurs (`group_id` obligatoire).
+- En v6 tous les `group_id` sont NULL (mode local par défaut, cf. §3.4).
+- Faire la refonte en v6 forcerait un état transitoire où les joueurs sont "globaux mais sans groupe", ce qui n'a pas de sens métier.
+- La v7 sera lancée la première fois qu'un device rejoint un groupe : on déduplique alors les joueurs au sein du nouveau scope.
 
 **Reprise** : voir section 11 "Comment continuer le travail".
 
@@ -541,11 +547,23 @@ Voir la table en §2 ("État d'avancement"). Pour chaque jalon "📋 à impléme
 
 ## 12. Limites connues / TODO
 
-- **Jalon 3 (Drift) non implémenté** : code mobile reste sur sqflite legacy en v6. La migration v5→v6 a été faite mais sans changer de moteur. Bénéfice immédiat : schéma sync-ready. Bénéfice futur (Drift) : web + type-safety.
-- **Jalon 8 (PWA web) non implémenté** : prérequis = jalon 3. Documenté en §11.2.
-- **Pas de tests d'intégration end-to-end** mobile↔backend : à ajouter quand on aura un device de test réel.
-- **`PUBLISHING.md` non mis à jour** pour la stack backend : à compléter pour les futures versions.
-- **Pas de monitoring** : les logs sont dans `docker logs`. Ajouter Prometheus + Grafana en option dans `docker-compose.monitoring.yml` plus tard.
+### À valider localement (impossible dans l'environnement de génération)
+- **`flutter analyze`** : le code mobile doit être validé sur une machine avec Flutter installé. Aucune erreur attendue mais la vérification est obligatoire avant publication.
+- **`flutter test`** : les tests unitaires existants doivent passer ; les nouveaux tests dans `test/database_service_test.dart` sont skippés en attendant l'exposition de `DatabaseService._createDB`/`_upgradeDB` via `@visibleForTesting`.
+- **Migration v5→v6 sur snapshot utilisateur réel** : capturer une base v5 d'un device en prod (cf. §11.2), la copier dans `test/fixtures/v5_user_snapshot.db`, écrire un test qui ouvre cette base avec `DatabaseService` et vérifie que toutes les rangées ont reçu `uuid`/`created_at`/`updated_at`.
+
+### Différé volontairement
+- **Jalon 3 (Drift)** : code mobile reste sur sqflite v6. La migration v5→v6 prépare le terrain (schéma identique au futur schéma Drift) mais ne change pas de moteur. Bénéfice futur de Drift : Web + type-safety.
+- **Jalon 8 (PWA web)** : prérequis Jalon 3.
+- **Refonte players globaux (v7)** : voir §2 ci-dessus.
+- **Tests d'intégration end-to-end mobile↔backend** : à ajouter quand un device de test réel est disponible.
+- **`SettingsProvider.exportDatabase/importDatabase`** utilisent `dart:io File()` directement. Lors du portage Web (Jalon 8), il faudra extraire une abstraction `FileExporter` avec impls io/web séparées.
+- **WebSocket sync : tests d'intégration manquants** — les tests existants stubbent `pg_notify` car SQLite ne le supporte pas. Ajouter des tests d'intégration avec Postgres réel (testcontainers ou docker-compose) avant la mise en prod.
+
+### Sécurité production
+- **`PUBLISHING.md` non mis à jour** pour la stack backend : à compléter avant la première release qui inclut les fonctionnalités groupes/commentaires.
+- **Monitoring** : seuls les logs `docker logs` sont disponibles. Pour la production, ajouter Prometheus + Grafana dans un `docker-compose.monitoring.yml` séparé (optionnel, déjà documenté en §6).
+- **Argon2 sur device_token** : O(N) verifies par requête où N est le nombre de devices. Pour >1000 devices, indexer un préfixe court du token comme prévu dans `app/auth.py` (docstring).
 
 ---
 
