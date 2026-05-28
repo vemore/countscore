@@ -27,7 +27,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 7,
+      version: 8,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -366,6 +366,15 @@ class DatabaseService {
     }
 
     if (oldVersion < 7) {
+      await _createGameAnalysesTable(db);
+    }
+
+    if (oldVersion < 8) {
+      // The Bedrock prototype shipped a v7 game_analyses table without the
+      // sync columns (uuid/created_at/updated_at/deleted_at/group_id). Devices
+      // already at v7 never re-run the v6→v7 step, so fix them here. The table
+      // is a regenerable cache of AI analyses, so dropping it is safe.
+      await db.execute('DROP TABLE IF EXISTS game_analyses');
       await _createGameAnalysesTable(db);
     }
   }

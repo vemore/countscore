@@ -44,25 +44,23 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadOrGenerate());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadCached());
   }
 
-  Future<void> _loadOrGenerate() async {
+  /// Loads a previously saved analysis if one exists. Generation is never
+  /// triggered automatically — the user taps "Generate" to spend an LLM call.
+  Future<void> _loadCached() async {
     final gameId = context.read<GameProvider>().currentGame?.id;
     if (gameId == null) return;
 
     final saved = await _repo.getByGame(gameId);
-    if (!mounted) return;
+    if (!mounted || saved == null) return;
 
-    if (saved != null) {
-      setState(() {
-        _analysisText = saved.content;
-        _generatedAt = saved.generatedAt;
-        _modelId = saved.modelId;
-      });
-    } else {
-      await _generate();
-    }
+    setState(() {
+      _analysisText = saved.content;
+      _generatedAt = saved.generatedAt;
+      _modelId = saved.modelId;
+    });
   }
 
   Future<void> _generate() async {
