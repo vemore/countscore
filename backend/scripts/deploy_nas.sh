@@ -56,5 +56,5 @@ ssh "$NAS_SSH" \
     "$NAS_PATH_EXPORT && cd $NAS_DEPLOY_DIR && docker compose exec -T api alembic upgrade head"
 
 echo "==> Deployed $IMAGE:$VERSION"
-echo "    Local (NAS): http://127.0.0.1:8086/health"
-echo "    Configure Web Station to reverse-proxy https://countscore.ombivince.synology.me -> http://localhost:8086"
+echo "    Local (NAS): http://127.0.0.1:8087/health"
+echo "    Configure Web Station to reverse-proxy https://countscore.ombivince.synology.me -> http://localhost:8087"

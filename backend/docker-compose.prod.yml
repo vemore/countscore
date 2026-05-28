@@ -1,6 +1,6 @@
 # Production compose for the Synology NAS. Copied to the NAS as compose.yaml by
 # scripts/deploy_nas.sh. No Caddy/TLS here: Synology Web Station terminates TLS and
-# reverse-proxies https://countscore.ombivince.synology.me/ -> http://localhost:8086.
+# reverse-proxies https://countscore.ombivince.synology.me/ -> http://localhost:8087.
 # The API is bound to 127.0.0.1 so only Web Station (on the NAS) can reach it.
 services:
   db:
@@ -47,7 +47,7 @@ services:
       IP_RL_PER_HOUR: ${IP_RL_PER_HOUR:-30}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
     ports:
-      - "127.0.0.1:8086:8000"
+      - "127.0.0.1:8087:8000"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s

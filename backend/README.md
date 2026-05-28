@@ -32,7 +32,7 @@ L'API est sur `http://localhost:8000`. La doc OpenAPI sur `http://localhost:8000
 
 La prod tourne sur le NAS Synology (192.168.1.25) via le registre Docker local. **Synology
 Web Station** gère le reverse-proxy + TLS pour `https://countscore.ombivince.synology.me/` —
-il n'y a donc plus de Caddy. L'API est publiée sur `127.0.0.1:8086` (voir
+il n'y a donc plus de Caddy. L'API est publiée sur `127.0.0.1:8087` (voir
 `docker-compose.prod.yml`), accessible uniquement par Web Station.
 
 **Mise en place initiale (une fois) :** poser le `.env` de prod sur le NAS (les secrets
@@ -55,7 +55,7 @@ cat .env | ssh nas "cat > /volume1/docker/countscore/.env"
 **Configurer Web Station** (Panneau de configuration → Portail des applications →
 Reverse Proxy) :
 - Source : `https://countscore.ombivince.synology.me` (port 443, HSTS activé)
-- Destination : `http://localhost:8086`
+- Destination : `http://localhost:8087`
 - **Activer le support WebSocket** (onglet « En-tête personnalisé » → WebSocket) pour
   l'endpoint temps réel `/sync/stream`.
 - Créer le certificat Let's Encrypt pour `countscore.ombivince.synology.me` une fois le
