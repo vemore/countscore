@@ -47,6 +47,12 @@ target-version = "py311"
 select = ["E", "F", "I", "B", "UP", "N", "SIM", "RUF"]
 ignore = ["B008", "N805"]
 
+[tool.ruff.lint.per-file-ignores]
+# bedrock_client.py holds the verbatim "Professeur Claude" system prompt as a
+# multi-line French string literal: wrapping lines would corrupt the prompt (E501)
+# and it legitimately uses typographic glyphs like × and — (RUF001).
+"app/services/bedrock_client.py" = ["E501", "RUF001"]
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]

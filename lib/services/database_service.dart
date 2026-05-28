@@ -992,37 +992,75 @@ class DatabaseService {
 
   /// Returns the N most recent finished games involving a player (by name),
   /// excluding [excludeGameId]. Used to give the AI commentator context.
+  /// Each entry includes the player's final score, rank and didWin flag so the
+  /// analysis can reference win/loss streaks.
   Future<List<Map<String, dynamic>>> getRecentPlayerHistory(
     String playerName, {
     int limit = 10,
     int? excludeGameId,
   }) async {
     final db = await database;
-    final exclude = excludeGameId != null ? 'AND g.id != ?' : '';
+
     final args = <Object?>[playerName];
-    if (excludeGameId != null) args.add(excludeGameId);
+    var whereClause = 'p.name = ?';
+    if (excludeGameId != null) {
+      whereClause += ' AND g.id != ?';
+      args.add(excludeGameId);
+    }
     args.add(limit);
 
     final rows = await db.rawQuery('''
       SELECT
-        g.id AS gameId,
-        g.name AS gameName,
-        gt.name AS gameType,
-        g.createdAt AS createdAt,
-        g.isLowestScoreWins AS isLowestScoreWins,
-        (SELECT COALESCE(SUM(s.value), 0)
-           FROM scores s
-           JOIN rounds r ON r.id = s.roundId
-           WHERE r.gameId = g.id AND s.playerId = p.id) AS finalScore,
-        (SELECT COUNT(DISTINCT pp.id) FROM players pp WHERE pp.gameId = g.id) AS totalPlayers
+        g.id as gameId,
+        g.name as gameName,
+        g.createdAt as createdAt,
+        g.isLowestScoreWins as isLowestScoreWins,
+        COALESCE(gt.name, 'Unknown') as gameType,
+        COALESCE(SUM(s.value), 0) as playerTotal
       FROM games g
-      JOIN game_types gt ON gt.id = g.gameTypeId
       JOIN players p ON p.gameId = g.id
-      WHERE p.name = ? $exclude
+      LEFT JOIN game_types gt ON g.gameTypeId = gt.id
+      LEFT JOIN scores s ON s.playerId = p.id
+      WHERE $whereClause
+      GROUP BY g.id, g.name, g.createdAt, g.isLowestScoreWins, gt.name
       ORDER BY g.createdAt DESC
       LIMIT ?
     ''', args);
 
-    return rows.map((row) => Map<String, dynamic>.from(row)).toList();
+    final history = <Map<String, dynamic>>[];
+    for (final row in rows) {
+      final gameId = row['gameId'] as int;
+      final isLowestWins = (row['isLowestScoreWins'] as int) == 1;
+      final playerTotal = row['playerTotal'] as int;
+
+      final allTotals = await db.rawQuery('''
+        SELECT p.id, p.name, COALESCE(SUM(s.value), 0) as total
+        FROM players p
+        LEFT JOIN scores s ON s.playerId = p.id
+        WHERE p.gameId = ?
+        GROUP BY p.id, p.name
+        ORDER BY total ${isLowestWins ? 'ASC' : 'DESC'}
+      ''', [gameId]);
+
+      var rank = 1;
+      for (final t in allTotals) {
+        if ((t['name'] as String) == playerName) break;
+        if ((t['total'] as int) != playerTotal) rank++;
+      }
+      final didWin = allTotals.isNotEmpty &&
+          (allTotals.first['total'] as int) == playerTotal;
+
+      history.add({
+        'gameId': gameId,
+        'gameName': row['gameName'] as String,
+        'gameType': row['gameType'] as String,
+        'date': row['createdAt'] as String,
+        'finalScore': playerTotal,
+        'totalPlayers': allTotals.length,
+        'rank': rank,
+        'didWin': didWin,
+      });
+    }
+    return history;
   }
 }

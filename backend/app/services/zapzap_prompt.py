@@ -32,9 +32,8 @@ def build_zapzap_user_message(payload: dict[str, Any]) -> str:
     lines.append(f"- Nom : {game['name']}")
     lines.append(f"- Date : {game['created_at']}")
     lines.append(f"- Type de jeu : {payload.get('game_type') or 'inconnu'}")
-    lines.append(
-        f"- Règle : {'score le plus bas gagne' if game['is_lowest_score_wins'] else 'score le plus haut gagne'}"
-    )
+    rule = "score le plus bas gagne" if game["is_lowest_score_wins"] else "score le plus haut gagne"
+    lines.append(f"- Règle : {rule}")
     lines.append(f"- Nombre de joueurs : {len(players)}")
     lines.append("")
 
