@@ -28,7 +28,7 @@ class GameAnalysisScreen extends StatefulWidget {
 class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
   static const _backendUrl = String.fromEnvironment(
     'BACKEND_URL',
-    defaultValue: 'http://localhost:8000',
+    defaultValue: 'https://countscore.ombivince.synology.me',
   );
   static const _requestTimeout = Duration(seconds: 90);
 
