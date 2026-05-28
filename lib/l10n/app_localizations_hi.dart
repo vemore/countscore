@@ -511,4 +511,10 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get endGame => 'End Game';
+
+  @override
+  String get comment => 'टिप्पणी';
+
+  @override
+  String get enterComment => 'टिप्पणी दर्ज करें';
 }

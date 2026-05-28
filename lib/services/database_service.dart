@@ -99,6 +99,7 @@ class DatabaseService {
         id $idType,
         gameId $intType,
         roundNumber $intType,
+        comment TEXT,
         uuid TEXT NOT NULL UNIQUE,
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL,
@@ -337,6 +338,7 @@ class DatabaseService {
     }
 
     if (oldVersion < 6) {
+      await db.execute('ALTER TABLE rounds ADD COLUMN comment TEXT');
       await _upgradeV5toV6(db);
     }
   }
@@ -561,6 +563,16 @@ class DatabaseService {
       'rounds',
       where: 'id = ?',
       whereArgs: [id],
+    );
+  }
+
+  Future<int> updateRoundComment(int roundId, String? comment) async {
+    final db = await database;
+    return await db.update(
+      'rounds',
+      {'comment': comment},
+      where: 'id = ?',
+      whereArgs: [roundId],
     );
   }
 

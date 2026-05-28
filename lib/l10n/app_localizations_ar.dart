@@ -510,4 +510,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get endGame => 'End Game';
+
+  @override
+  String get comment => 'تعليق';
+
+  @override
+  String get enterComment => 'أدخل تعليقًا';
 }

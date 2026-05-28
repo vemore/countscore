@@ -500,4 +500,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get endGame => 'End Game';
+
+  @override
+  String get comment => '备注';
+
+  @override
+  String get enterComment => '输入备注';
 }

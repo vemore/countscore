@@ -137,18 +137,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
   }
 
   Future<void> _createGame() async {
-    final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
-
-    if (_selectedPlayers.length < 2) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.atLeast2PlayersRequired),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
 
     final gameProvider = context.read<GameProvider>();
     final playerNames = _selectedPlayers.map((p) => p.name).toList();
@@ -219,26 +208,26 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                   return Text(l10n.loadingGameTypes);
                 }
 
-                return DropdownButtonFormField<int>(
-                  initialValue: _selectedGameTypeId,
-                  decoration: InputDecoration(
-                    labelText: l10n.gameType,
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.casino),
+                return DropdownMenu<int>(
+                  initialSelection: _selectedGameTypeId,
+                  enableSearch: false,
+                  requestFocusOnTap: false,
+                  expandedInsets: EdgeInsets.zero,
+                  menuHeight: 400,
+                  label: Text(l10n.gameType),
+                  inputDecorationTheme: const InputDecorationTheme(
+                    border: OutlineInputBorder(),
                   ),
-                  items: gameTypes.map((GameType type) {
-                    return DropdownMenuItem<int>(
-                      value: type.id,
-                      child: Row(
-                        children: [
-                          Icon(type.icon, size: 20, color: type.cardColor),
-                          const SizedBox(width: 8),
-                          Text(type.name),
-                        ],
-                      ),
+                  dropdownMenuEntries: gameTypes
+                      .where((t) => t.id != null)
+                      .map((GameType type) {
+                    return DropdownMenuEntry<int>(
+                      value: type.id!,
+                      label: type.name,
+                      leadingIcon: Icon(type.icon, size: 20, color: type.cardColor),
                     );
                   }).toList(),
-                  onChanged: (int? newValue) {
+                  onSelected: (int? newValue) {
                     if (newValue != null) {
                       final selectedType = gameTypes.firstWhere((t) => t.id == newValue);
                       setState(() {
@@ -343,7 +332,13 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                     child: ListTile(
                       leading: CircleAvatar(
                         backgroundColor: playerColor,
-                        child: const Icon(Icons.person, color: Colors.white),
+                        child: Text(
+                          player.name[0].toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                       title: Text(player.name),
                       trailing: IconButton(
@@ -360,7 +355,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
 
             // Bouton de création
             FilledButton.icon(
-              onPressed: _selectedPlayers.isNotEmpty ? _createGame : null,
+              onPressed: _selectedPlayers.length >= 2 ? _createGame : null,
               icon: const Icon(Icons.check),
               label: Text(l10n.createGame),
               style: FilledButton.styleFrom(

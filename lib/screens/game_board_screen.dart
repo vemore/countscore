@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/game_type.dart';
+import '../models/round.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
 import 'ranking_screen.dart';
@@ -182,13 +183,33 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                         }),
                       ],
                       rows: rounds.map((round) {
+                        final hasComment = round.comment != null &&
+                            round.comment!.trim().isNotEmpty;
                         return DataRow(
                           cells: [
                             DataCell(
-                              Text(
-                                round.roundNumber.toString(),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
+                              InkWell(
+                                onTap: () => _showCommentDialog(
+                                  context,
+                                  gameProvider,
+                                  round,
+                                ),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                  child: Text(
+                                    round.roundNumber.toString(),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      decoration: hasComment
+                                          ? TextDecoration.underline
+                                          : null,
+                                      decorationThickness:
+                                          hasComment ? 2.0 : null,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -254,16 +275,19 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
               ),
 
               // Bouton ajouter tour
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () async {
-                      await gameProvider.addRound();
-                    },
-                    icon: const Icon(Icons.add),
-                    label: Text(l10n.addRound),
+              SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () async {
+                        await gameProvider.addRound();
+                      },
+                      icon: const Icon(Icons.add),
+                      label: Text(l10n.addRound),
+                    ),
                   ),
                 ),
               ),
@@ -667,6 +691,65 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                 handleScoreUpdate(0);
               }
               Navigator.pop(context);
+            },
+            child: Text(l10n.save),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCommentDialog(
+    BuildContext context,
+    GameProvider gameProvider,
+    Round round,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = TextEditingController(text: round.comment ?? '');
+    final hasExisting =
+        round.comment != null && round.comment!.trim().isNotEmpty;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('${l10n.round} ${round.roundNumber} - ${l10n.comment}'),
+        content: TextField(
+          controller: controller,
+          maxLines: 3,
+          minLines: 3,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: InputDecoration(
+            labelText: l10n.comment,
+            hintText: l10n.enterComment,
+            border: const OutlineInputBorder(),
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          if (hasExisting)
+            TextButton(
+              onPressed: () async {
+                await gameProvider.updateRoundComment(round.id!, null);
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
+              },
+              child: Text(
+                l10n.delete,
+                style: TextStyle(
+                  color: Theme.of(dialogContext).colorScheme.error,
+                ),
+              ),
+            ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () async {
+              await gameProvider.updateRoundComment(
+                round.id!,
+                controller.text,
+              );
+              if (dialogContext.mounted) Navigator.pop(dialogContext);
             },
             child: Text(l10n.save),
           ),

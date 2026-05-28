@@ -510,4 +510,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get endGame => 'Spiel beenden';
+
+  @override
+  String get comment => 'Kommentar';
+
+  @override
+  String get enterComment => 'Kommentar eingeben';
 }

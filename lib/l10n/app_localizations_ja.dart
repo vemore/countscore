@@ -502,4 +502,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get endGame => 'End Game';
+
+  @override
+  String get comment => 'コメント';
+
+  @override
+  String get enterComment => 'コメントを入力';
 }

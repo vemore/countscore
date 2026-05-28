@@ -821,5 +821,9 @@
   "endGame": "Terminer la partie",
   "@endGame": {
     "description": "Button to end the game"
-  }
+  },
+
+  "comment": "Commentaire",
+
+  "enterComment": "Saisir un commentaire"
 }

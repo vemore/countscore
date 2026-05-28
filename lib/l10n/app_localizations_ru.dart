@@ -513,4 +513,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get endGame => 'End Game';
+
+  @override
+  String get comment => 'Комментарий';
+
+  @override
+  String get enterComment => 'Введите комментарий';
 }

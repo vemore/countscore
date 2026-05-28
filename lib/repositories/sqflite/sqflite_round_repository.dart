@@ -15,4 +15,8 @@ class SqfliteRoundRepository implements RoundRepository {
 
   @override
   Future<int> delete(int id) => _db.deleteRound(id);
+
+  @override
+  Future<int> updateComment(int roundId, String? comment) =>
+      _db.updateRoundComment(roundId, comment);
 }
