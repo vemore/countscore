@@ -48,6 +48,8 @@ dependencies:
   intl: ^0.20.2
   file_picker: ^10.3.6
   path: ^1.9.0
+  http: ^1.6.0
+  flutter_markdown_plus: ^1.0.3
 
 dev_dependencies:
   flutter_test:

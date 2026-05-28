@@ -30,6 +30,7 @@ from app.schemas.comments import (
     MvpGamePayload,
 )
 from app.services.anthropic_client import get_anthropic_client
+from app.services.bedrock_client import get_bedrock_client
 from app.services.budget import charge_budget, check_budget
 from app.services.prompt_builder import (
     GameForPrompt,
@@ -40,6 +41,7 @@ from app.services.prompt_builder import (
     compute_scores_hash,
 )
 from app.services.rate_limiter import check_and_increment
+from app.services.zapzap_prompt import build_zapzap_user_message
 
 router = APIRouter(tags=["comments"])
 
@@ -87,6 +89,49 @@ async def generate_mvp_comment(body: MvpGamePayload) -> MvpCommentResponse:
         tokens_in=result.tokens_in,
         tokens_out=result.tokens_out,
     )
+
+
+# ---------------------------------------------------------------------------
+# ZapZap analysis — stateless, AWS Bedrock (Llama-3) caustic commentator
+# ---------------------------------------------------------------------------
+
+
+@router.post("/comments/zapzap-analysis")
+async def generate_zapzap_analysis(body: dict) -> dict:
+    """Caustic ZapZap game analysis powered by AWS Bedrock (Llama-3).
+
+    Stateless: no persistence, no auth, no budget. The mobile app caches the
+    response locally in its game_analyses table. Auth and quotas will be added
+    once the multi-device groups stack is wired into the mobile app.
+    """
+    client = get_bedrock_client()
+    if not client.available:
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            "Bedrock not configured (AWS credentials missing)",
+        )
+
+    try:
+        user_message = build_zapzap_user_message(body)
+    except (KeyError, TypeError) as e:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY, f"invalid payload: {e}"
+        ) from e
+
+    try:
+        result = await client.analyze_zapzap(user_message)
+    except Exception as e:
+        raise HTTPException(
+            status.HTTP_502_BAD_GATEWAY,
+            f"upstream Bedrock error: {type(e).__name__}: {e}",
+        ) from e
+
+    return {
+        "content": result.content,
+        "model": result.model,
+        "tokens_in": result.tokens_in,
+        "tokens_out": result.tokens_out,
+    }
 
 
 # ---------------------------------------------------------------------------

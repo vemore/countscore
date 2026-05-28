@@ -506,4 +506,39 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get enterComment => '输入备注';
+
+  @override
+  String get analyzeGame => '分析游戏';
+
+  @override
+  String get analysisTitle => '游戏分析';
+
+  @override
+  String get generatingAnalysis => '正在生成分析…';
+
+  @override
+  String get generateAnalysis => '生成分析';
+
+  @override
+  String get regenerateAnalysis => '重新生成分析';
+
+  @override
+  String get deleteAnalysis => '删除分析';
+
+  @override
+  String get confirmRegenerateAnalysis => '重新生成？当前分析将被替换。';
+
+  @override
+  String get confirmDeleteAnalysis => '删除此游戏的分析？';
+
+  @override
+  String get analysisError => '生成分析失败';
+
+  @override
+  String get retry => '重试';
+
+  @override
+  String analysisGeneratedAt(String date) {
+    return '生成于 $date';
+  }
 }

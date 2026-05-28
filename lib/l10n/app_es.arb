@@ -294,5 +294,16 @@
   "continuePlay": "Continuar jugando",
   "endGame": "Terminar juego",
   "comment": "Comentario",
-  "enterComment": "Escribir un comentario"
+  "enterComment": "Escribir un comentario",
+  "analyzeGame": "Analizar partida",
+  "analysisTitle": "Análisis de la partida",
+  "generatingAnalysis": "Generando análisis…",
+  "generateAnalysis": "Generar análisis",
+  "regenerateAnalysis": "Regenerar análisis",
+  "deleteAnalysis": "Eliminar análisis",
+  "confirmRegenerateAnalysis": "¿Regenerar? El análisis actual será reemplazado.",
+  "confirmDeleteAnalysis": "¿Eliminar el análisis de esta partida?",
+  "analysisError": "Error al generar el análisis",
+  "retry": "Reintentar",
+  "analysisGeneratedAt": "Generado el {date}"
 }

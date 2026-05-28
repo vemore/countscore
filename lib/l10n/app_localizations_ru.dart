@@ -519,4 +519,40 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get enterComment => 'Введите комментарий';
+
+  @override
+  String get analyzeGame => 'Анализировать игру';
+
+  @override
+  String get analysisTitle => 'Анализ игры';
+
+  @override
+  String get generatingAnalysis => 'Создание анализа…';
+
+  @override
+  String get generateAnalysis => 'Создать анализ';
+
+  @override
+  String get regenerateAnalysis => 'Пересоздать анализ';
+
+  @override
+  String get deleteAnalysis => 'Удалить анализ';
+
+  @override
+  String get confirmRegenerateAnalysis =>
+      'Пересоздать? Текущий анализ будет заменён.';
+
+  @override
+  String get confirmDeleteAnalysis => 'Удалить анализ этой игры?';
+
+  @override
+  String get analysisError => 'Не удалось создать анализ';
+
+  @override
+  String get retry => 'Повторить';
+
+  @override
+  String analysisGeneratedAt(String date) {
+    return 'Создано $date';
+  }
 }

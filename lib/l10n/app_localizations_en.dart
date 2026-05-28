@@ -515,4 +515,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get enterComment => 'Enter a comment';
+
+  @override
+  String get analyzeGame => 'Analyze game';
+
+  @override
+  String get analysisTitle => 'Game analysis';
+
+  @override
+  String get generatingAnalysis => 'Generating analysis…';
+
+  @override
+  String get generateAnalysis => 'Generate analysis';
+
+  @override
+  String get regenerateAnalysis => 'Regenerate analysis';
+
+  @override
+  String get deleteAnalysis => 'Delete analysis';
+
+  @override
+  String get confirmRegenerateAnalysis =>
+      'Regenerate? Current analysis will be replaced.';
+
+  @override
+  String get confirmDeleteAnalysis => 'Delete the analysis for this game?';
+
+  @override
+  String get analysisError => 'Failed to generate analysis';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String analysisGeneratedAt(String date) {
+    return 'Generated on $date';
+  }
 }

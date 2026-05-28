@@ -516,4 +516,40 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get enterComment => 'أدخل تعليقًا';
+
+  @override
+  String get analyzeGame => 'تحليل المباراة';
+
+  @override
+  String get analysisTitle => 'تحليل المباراة';
+
+  @override
+  String get generatingAnalysis => 'جارٍ إنشاء التحليل…';
+
+  @override
+  String get generateAnalysis => 'إنشاء التحليل';
+
+  @override
+  String get regenerateAnalysis => 'إعادة إنشاء التحليل';
+
+  @override
+  String get deleteAnalysis => 'حذف التحليل';
+
+  @override
+  String get confirmRegenerateAnalysis =>
+      'إعادة الإنشاء؟ سيتم استبدال التحليل الحالي.';
+
+  @override
+  String get confirmDeleteAnalysis => 'حذف تحليل هذه المباراة؟';
+
+  @override
+  String get analysisError => 'فشل إنشاء التحليل';
+
+  @override
+  String get retry => 'إعادة المحاولة';
+
+  @override
+  String analysisGeneratedAt(String date) {
+    return 'تم الإنشاء في $date';
+  }
 }

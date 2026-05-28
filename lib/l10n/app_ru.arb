@@ -294,5 +294,16 @@
   "continuePlay": "Continue Playing",
   "endGame": "End Game",
   "comment": "Комментарий",
-  "enterComment": "Введите комментарий"
+  "enterComment": "Введите комментарий",
+  "analyzeGame": "Анализировать игру",
+  "analysisTitle": "Анализ игры",
+  "generatingAnalysis": "Создание анализа…",
+  "generateAnalysis": "Создать анализ",
+  "regenerateAnalysis": "Пересоздать анализ",
+  "deleteAnalysis": "Удалить анализ",
+  "confirmRegenerateAnalysis": "Пересоздать? Текущий анализ будет заменён.",
+  "confirmDeleteAnalysis": "Удалить анализ этой игры?",
+  "analysisError": "Не удалось создать анализ",
+  "retry": "Повторить",
+  "analysisGeneratedAt": "Создано {date}"
 }

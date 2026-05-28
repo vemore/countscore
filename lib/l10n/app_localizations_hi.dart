@@ -517,4 +517,40 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get enterComment => 'टिप्पणी दर्ज करें';
+
+  @override
+  String get analyzeGame => 'खेल का विश्लेषण करें';
+
+  @override
+  String get analysisTitle => 'खेल विश्लेषण';
+
+  @override
+  String get generatingAnalysis => 'विश्लेषण उत्पन्न हो रहा है…';
+
+  @override
+  String get generateAnalysis => 'विश्लेषण उत्पन्न करें';
+
+  @override
+  String get regenerateAnalysis => 'विश्लेषण पुनः उत्पन्न करें';
+
+  @override
+  String get deleteAnalysis => 'विश्लेषण हटाएँ';
+
+  @override
+  String get confirmRegenerateAnalysis =>
+      'पुनः उत्पन्न करें? वर्तमान विश्लेषण बदला जाएगा।';
+
+  @override
+  String get confirmDeleteAnalysis => 'इस खेल का विश्लेषण हटाएँ?';
+
+  @override
+  String get analysisError => 'विश्लेषण उत्पन्न करने में विफल';
+
+  @override
+  String get retry => 'पुनः प्रयास करें';
+
+  @override
+  String analysisGeneratedAt(String date) {
+    return '$date को उत्पन्न';
+  }
 }

@@ -1037,6 +1037,72 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Saisir un commentaire'**
   String get enterComment;
+
+  /// Menu item to launch LLM-based game analysis
+  ///
+  /// In fr, this message translates to:
+  /// **'Analyser la partie'**
+  String get analyzeGame;
+
+  /// Title of the analysis screen
+  ///
+  /// In fr, this message translates to:
+  /// **'Analyse de la partie'**
+  String get analysisTitle;
+
+  /// Shown while the LLM is generating
+  ///
+  /// In fr, this message translates to:
+  /// **'Génération de l\'analyse en cours…'**
+  String get generatingAnalysis;
+
+  /// Button to start generating an analysis
+  ///
+  /// In fr, this message translates to:
+  /// **'Générer l\'analyse'**
+  String get generateAnalysis;
+
+  /// Tooltip / label for regenerate action
+  ///
+  /// In fr, this message translates to:
+  /// **'Régénérer l\'analyse'**
+  String get regenerateAnalysis;
+
+  /// Tooltip / label for delete action
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer l\'analyse'**
+  String get deleteAnalysis;
+
+  /// Confirmation dialog content for regenerating
+  ///
+  /// In fr, this message translates to:
+  /// **'Régénérer ? L\'analyse actuelle sera remplacée.'**
+  String get confirmRegenerateAnalysis;
+
+  /// Confirmation dialog content for deleting analysis
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer l\'analyse de cette partie ?'**
+  String get confirmDeleteAnalysis;
+
+  /// Error message when LLM call fails
+  ///
+  /// In fr, this message translates to:
+  /// **'Échec de la génération de l\'analyse'**
+  String get analysisError;
+
+  /// Retry button
+  ///
+  /// In fr, this message translates to:
+  /// **'Réessayer'**
+  String get retry;
+
+  /// Footer with the analysis generation date
+  ///
+  /// In fr, this message translates to:
+  /// **'Généré le {date}'**
+  String analysisGeneratedAt(String date);
 }
 
 class _AppLocalizationsDelegate

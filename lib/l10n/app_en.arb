@@ -316,5 +316,66 @@
   "enterComment": "Enter a comment",
   "@enterComment": {
     "description": "Hint text in the round-comment text field"
+  },
+
+  "analyzeGame": "Analyze game",
+  "@analyzeGame": {
+    "description": "Menu item to launch LLM-based game analysis"
+  },
+
+  "analysisTitle": "Game analysis",
+  "@analysisTitle": {
+    "description": "Title of the analysis screen"
+  },
+
+  "generatingAnalysis": "Generating analysis…",
+  "@generatingAnalysis": {
+    "description": "Shown while the LLM is generating"
+  },
+
+  "generateAnalysis": "Generate analysis",
+  "@generateAnalysis": {
+    "description": "Button to start generating an analysis"
+  },
+
+  "regenerateAnalysis": "Regenerate analysis",
+  "@regenerateAnalysis": {
+    "description": "Tooltip / label for regenerate action"
+  },
+
+  "deleteAnalysis": "Delete analysis",
+  "@deleteAnalysis": {
+    "description": "Tooltip / label for delete action"
+  },
+
+  "confirmRegenerateAnalysis": "Regenerate? Current analysis will be replaced.",
+  "@confirmRegenerateAnalysis": {
+    "description": "Confirmation dialog content for regenerating"
+  },
+
+  "confirmDeleteAnalysis": "Delete the analysis for this game?",
+  "@confirmDeleteAnalysis": {
+    "description": "Confirmation dialog content for deleting analysis"
+  },
+
+  "analysisError": "Failed to generate analysis",
+  "@analysisError": {
+    "description": "Error message when LLM call fails"
+  },
+
+  "retry": "Retry",
+  "@retry": {
+    "description": "Retry button"
+  },
+
+  "analysisGeneratedAt": "Generated on {date}",
+  "@analysisGeneratedAt": {
+    "description": "Footer with the analysis generation date",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "05/04/2026 2:30 PM"
+      }
+    }
   }
 }

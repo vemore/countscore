@@ -16,6 +16,13 @@ class Settings(BaseSettings):
     default_budget_cents: int = 100
     comment_memory_size: int = 5
 
+    # AWS Bedrock — used by the ZapZap analysis endpoint
+    aws_region: str = "us-east-1"
+    aws_access_key_id: str | None = None
+    aws_secret_access_key: str | None = None
+    aws_session_token: str | None = None
+    bedrock_model_id: str = "us.meta.llama3-3-70b-instruct-v1:0"
+
     cors_origins: str = "http://localhost:3000"
 
     log_level: str = "INFO"

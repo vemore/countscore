@@ -5,6 +5,7 @@ import 'package:path/path.dart';
 import '../models/game.dart';
 import '../models/game_type.dart';
 import '../models/player.dart';
+import '../models/game_analysis.dart';
 import '../models/round.dart';
 import '../models/score.dart';
 
@@ -26,7 +27,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 6,
+      version: 7,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -159,7 +160,29 @@ class DatabaseService {
     await db.execute('CREATE INDEX idx_games_group_id ON games(group_id)');
     await db.execute('CREATE INDEX idx_players_group_id ON players(group_id)');
 
+    await _createGameAnalysesTable(db);
+
     await _insertDefaultGameTypes(db);
+  }
+
+  Future<void> _createGameAnalysesTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE game_analyses (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        uuid TEXT NOT NULL UNIQUE,
+        gameId INTEGER NOT NULL UNIQUE,
+        content TEXT NOT NULL,
+        modelId TEXT,
+        generatedAt TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER,
+        group_id TEXT,
+        FOREIGN KEY (gameId) REFERENCES games (id) ON DELETE CASCADE
+      )
+    ''');
+    await db.execute('CREATE INDEX idx_game_analyses_gameId ON game_analyses(gameId)');
+    await db.execute('CREATE INDEX idx_game_analyses_group_id ON game_analyses(group_id)');
   }
 
   Future<void> _insertDefaultGameTypes(Database db) async {
@@ -341,6 +364,10 @@ class DatabaseService {
       await db.execute('ALTER TABLE rounds ADD COLUMN comment TEXT');
       await _upgradeV5toV6(db);
     }
+
+    if (oldVersion < 7) {
+      await _createGameAnalysesTable(db);
+    }
   }
 
   /// v5 → v6 migration: sync-readiness.
@@ -359,7 +386,7 @@ class DatabaseService {
   /// - We do NOT drop any existing column. Worst case the new columns are
   ///   unused.
   /// - The full normalization of players (global per group, see
-  ///   ARCHITECTURE.md §3.3) is deferred to a future migration v7 because it
+  ///   ARCHITECTURE.md §3.3) is deferred to a future migration v8 because it
   ///   requires actual groups to scope into; doing it here would force every
   ///   existing user into a transient state.
   Future<void> _upgradeV5toV6(Database db) async {
@@ -924,5 +951,78 @@ class DatabaseService {
       where: 'name = ?',
       whereArgs: [playerName],
     );
+  }
+
+  // ===== Game Analyses =====
+
+  Future<GameAnalysis?> getAnalysisByGame(int gameId) async {
+    final db = await database;
+    final rows = await db.query(
+      'game_analyses',
+      where: 'gameId = ? AND deleted_at IS NULL',
+      whereArgs: [gameId],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return GameAnalysis.fromMap(rows.first);
+  }
+
+  Future<int> upsertAnalysis(GameAnalysis analysis) async {
+    final db = await database;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final map = analysis.toMap();
+    map['uuid'] ??= _newUuid();
+    map['created_at'] ??= now;
+    map['updated_at'] = now;
+    return await db.insert(
+      'game_analyses',
+      map,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<int> deleteAnalysisByGame(int gameId) async {
+    final db = await database;
+    return await db.delete(
+      'game_analyses',
+      where: 'gameId = ?',
+      whereArgs: [gameId],
+    );
+  }
+
+  /// Returns the N most recent finished games involving a player (by name),
+  /// excluding [excludeGameId]. Used to give the AI commentator context.
+  Future<List<Map<String, dynamic>>> getRecentPlayerHistory(
+    String playerName, {
+    int limit = 10,
+    int? excludeGameId,
+  }) async {
+    final db = await database;
+    final exclude = excludeGameId != null ? 'AND g.id != ?' : '';
+    final args = <Object?>[playerName];
+    if (excludeGameId != null) args.add(excludeGameId);
+    args.add(limit);
+
+    final rows = await db.rawQuery('''
+      SELECT
+        g.id AS gameId,
+        g.name AS gameName,
+        gt.name AS gameType,
+        g.createdAt AS createdAt,
+        g.isLowestScoreWins AS isLowestScoreWins,
+        (SELECT COALESCE(SUM(s.value), 0)
+           FROM scores s
+           JOIN rounds r ON r.id = s.roundId
+           WHERE r.gameId = g.id AND s.playerId = p.id) AS finalScore,
+        (SELECT COUNT(DISTINCT pp.id) FROM players pp WHERE pp.gameId = g.id) AS totalPlayers
+      FROM games g
+      JOIN game_types gt ON gt.id = g.gameTypeId
+      JOIN players p ON p.gameId = g.id
+      WHERE p.name = ? $exclude
+      ORDER BY g.createdAt DESC
+      LIMIT ?
+    ''', args);
+
+    return rows.map((row) => Map<String, dynamic>.from(row)).toList();
   }
 }

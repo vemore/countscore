@@ -516,4 +516,40 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get enterComment => 'Kommentar eingeben';
+
+  @override
+  String get analyzeGame => 'Partie analysieren';
+
+  @override
+  String get analysisTitle => 'Partieanalyse';
+
+  @override
+  String get generatingAnalysis => 'Analyse wird erstellt…';
+
+  @override
+  String get generateAnalysis => 'Analyse erstellen';
+
+  @override
+  String get regenerateAnalysis => 'Analyse neu erstellen';
+
+  @override
+  String get deleteAnalysis => 'Analyse löschen';
+
+  @override
+  String get confirmRegenerateAnalysis =>
+      'Neu erstellen? Die aktuelle Analyse wird ersetzt.';
+
+  @override
+  String get confirmDeleteAnalysis => 'Analyse für diese Partie löschen?';
+
+  @override
+  String get analysisError => 'Analyse konnte nicht erstellt werden';
+
+  @override
+  String get retry => 'Erneut versuchen';
+
+  @override
+  String analysisGeneratedAt(String date) {
+    return 'Erstellt am $date';
+  }
 }

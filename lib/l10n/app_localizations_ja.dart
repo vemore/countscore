@@ -508,4 +508,39 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get enterComment => 'コメントを入力';
+
+  @override
+  String get analyzeGame => 'ゲームを分析';
+
+  @override
+  String get analysisTitle => 'ゲーム分析';
+
+  @override
+  String get generatingAnalysis => '分析を生成中…';
+
+  @override
+  String get generateAnalysis => '分析を生成';
+
+  @override
+  String get regenerateAnalysis => '分析を再生成';
+
+  @override
+  String get deleteAnalysis => '分析を削除';
+
+  @override
+  String get confirmRegenerateAnalysis => '再生成しますか？現在の分析は置き換えられます。';
+
+  @override
+  String get confirmDeleteAnalysis => 'このゲームの分析を削除しますか？';
+
+  @override
+  String get analysisError => '分析の生成に失敗しました';
+
+  @override
+  String get retry => '再試行';
+
+  @override
+  String analysisGeneratedAt(String date) {
+    return '$date に生成';
+  }
 }

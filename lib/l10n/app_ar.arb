@@ -294,5 +294,16 @@
   "continuePlay": "Continue Playing",
   "endGame": "End Game",
   "comment": "تعليق",
-  "enterComment": "أدخل تعليقًا"
+  "enterComment": "أدخل تعليقًا",
+  "analyzeGame": "تحليل المباراة",
+  "analysisTitle": "تحليل المباراة",
+  "generatingAnalysis": "جارٍ إنشاء التحليل…",
+  "generateAnalysis": "إنشاء التحليل",
+  "regenerateAnalysis": "إعادة إنشاء التحليل",
+  "deleteAnalysis": "حذف التحليل",
+  "confirmRegenerateAnalysis": "إعادة الإنشاء؟ سيتم استبدال التحليل الحالي.",
+  "confirmDeleteAnalysis": "حذف تحليل هذه المباراة؟",
+  "analysisError": "فشل إنشاء التحليل",
+  "retry": "إعادة المحاولة",
+  "analysisGeneratedAt": "تم الإنشاء في {date}"
 }

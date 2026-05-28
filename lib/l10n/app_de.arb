@@ -294,5 +294,16 @@
   "continuePlay": "Weiterspielen",
   "endGame": "Spiel beenden",
   "comment": "Kommentar",
-  "enterComment": "Kommentar eingeben"
+  "enterComment": "Kommentar eingeben",
+  "analyzeGame": "Partie analysieren",
+  "analysisTitle": "Partieanalyse",
+  "generatingAnalysis": "Analyse wird erstellt…",
+  "generateAnalysis": "Analyse erstellen",
+  "regenerateAnalysis": "Analyse neu erstellen",
+  "deleteAnalysis": "Analyse löschen",
+  "confirmRegenerateAnalysis": "Neu erstellen? Die aktuelle Analyse wird ersetzt.",
+  "confirmDeleteAnalysis": "Analyse für diese Partie löschen?",
+  "analysisError": "Analyse konnte nicht erstellt werden",
+  "retry": "Erneut versuchen",
+  "analysisGeneratedAt": "Erstellt am {date}"
 }

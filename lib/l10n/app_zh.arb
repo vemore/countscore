@@ -294,5 +294,16 @@
   "continuePlay": "Continue Playing",
   "endGame": "End Game",
   "comment": "备注",
-  "enterComment": "输入备注"
+  "enterComment": "输入备注",
+  "analyzeGame": "分析游戏",
+  "analysisTitle": "游戏分析",
+  "generatingAnalysis": "正在生成分析…",
+  "generateAnalysis": "生成分析",
+  "regenerateAnalysis": "重新生成分析",
+  "deleteAnalysis": "删除分析",
+  "confirmRegenerateAnalysis": "重新生成？当前分析将被替换。",
+  "confirmDeleteAnalysis": "删除此游戏的分析？",
+  "analysisError": "生成分析失败",
+  "retry": "重试",
+  "analysisGeneratedAt": "生成于 {date}"
 }

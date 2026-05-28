@@ -825,5 +825,66 @@
 
   "comment": "Commentaire",
 
-  "enterComment": "Saisir un commentaire"
+  "enterComment": "Saisir un commentaire",
+
+  "analyzeGame": "Analyser la partie",
+  "@analyzeGame": {
+    "description": "Menu item to launch LLM-based game analysis"
+  },
+
+  "analysisTitle": "Analyse de la partie",
+  "@analysisTitle": {
+    "description": "Title of the analysis screen"
+  },
+
+  "generatingAnalysis": "Génération de l'analyse en cours…",
+  "@generatingAnalysis": {
+    "description": "Shown while the LLM is generating"
+  },
+
+  "generateAnalysis": "Générer l'analyse",
+  "@generateAnalysis": {
+    "description": "Button to start generating an analysis"
+  },
+
+  "regenerateAnalysis": "Régénérer l'analyse",
+  "@regenerateAnalysis": {
+    "description": "Tooltip / label for regenerate action"
+  },
+
+  "deleteAnalysis": "Supprimer l'analyse",
+  "@deleteAnalysis": {
+    "description": "Tooltip / label for delete action"
+  },
+
+  "confirmRegenerateAnalysis": "Régénérer ? L'analyse actuelle sera remplacée.",
+  "@confirmRegenerateAnalysis": {
+    "description": "Confirmation dialog content for regenerating"
+  },
+
+  "confirmDeleteAnalysis": "Supprimer l'analyse de cette partie ?",
+  "@confirmDeleteAnalysis": {
+    "description": "Confirmation dialog content for deleting analysis"
+  },
+
+  "analysisError": "Échec de la génération de l'analyse",
+  "@analysisError": {
+    "description": "Error message when LLM call fails"
+  },
+
+  "retry": "Réessayer",
+  "@retry": {
+    "description": "Retry button"
+  },
+
+  "analysisGeneratedAt": "Généré le {date}",
+  "@analysisGeneratedAt": {
+    "description": "Footer with the analysis generation date",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "04/05/2026 14:30"
+      }
+    }
+  }
 }

@@ -54,7 +54,8 @@
 |---|---|---|---|
 | 0 | Filet de sécurité tests mobile | ⚠️ Scaffold | `test/database_service_test.dart` créé avec tests stubbés ; nécessite `flutter test` local + exposition de `_createDB`/`_upgradeDB` via `@visibleForTesting` pour activer les tests skippés. `sqflite_common_ffi` ajouté en dev-dep. |
 | 1 | Couche repository mobile | ✅ Implémenté | Interfaces + impls sqflite dans `lib/repositories/`. `GameProvider` et `GameTypeProvider` consomment les interfaces. À valider avec `flutter analyze` + `flutter test` local. |
-| 2 | Schéma v6 sync-ready (UUIDs, timestamps, soft-delete, outbox, sync_state) | ✅ Implémenté | Migration v5→v6 dans `database_service.dart` (`_upgradeV5toV6`). **Refonte player→global déférée en v7** (cf. §3.3, raison ci-dessous). Backfill préserve `games.createdAt` original. |
+| 2 | Schéma v6 sync-ready (UUIDs, timestamps, soft-delete, outbox, sync_state) | ✅ Implémenté | Migration v5→v6 dans `database_service.dart` (`_upgradeV5toV6`). **Refonte player→global déférée en v8** (cf. §3.3, raison ci-dessous). Backfill préserve `games.createdAt` original. |
+| 2b | Schéma v7 — table `game_analyses` sync-ready | ✅ Implémenté | Migration v6→v7 ajoute `game_analyses` (cache des analyses IA caustiques renvoyées par `/comments/zapzap-analysis`). Cf. §7.4. |
 | 3 | Migration Drift | 📋 Documenté | Voir §11.2 |
 | 4 | Backend MVP (endpoint `/comments/mvp` stateless) | ✅ Implémenté + testé | 3 tests OK |
 | 5 | Groupes + sync minimal (REST) | ✅ Implémenté + testé | 9 tests OK (groupes + sync push/pull/dedup/conflit round) |
@@ -63,11 +64,11 @@
 | 8 | PWA web | 📋 Documenté | Voir §11.2 |
 | 9 | Production-readiness backend | ✅ Partiel | Docker Compose + Caddy TLS + pg_dump quotidien implémentés. Manque : monitoring, alerting. |
 
-**Pourquoi player→global est déférée à v7** :
+**Pourquoi player→global est déférée à v8** :
 - Le refactor nécessite des groupes existants pour scoper les joueurs (`group_id` obligatoire).
-- En v6 tous les `group_id` sont NULL (mode local par défaut, cf. §3.4).
+- En v6/v7 tous les `group_id` sont NULL (mode local par défaut, cf. §3.4).
 - Faire la refonte en v6 forcerait un état transitoire où les joueurs sont "globaux mais sans groupe", ce qui n'a pas de sens métier.
-- La v7 sera lancée la première fois qu'un device rejoint un groupe : on déduplique alors les joueurs au sein du nouveau scope.
+- La v8 sera lancée la première fois qu'un device rejoint un groupe : on déduplique alors les joueurs au sein du nouveau scope.
 
 **Reprise** : voir section 11 "Comment continuer le travail".
 
@@ -209,7 +210,7 @@
 
 ## 4. Schéma de données
 
-### 4.1 Schéma mobile v6 (Drift / sqflite)
+### 4.1 Schéma mobile v6 / v7 (Drift / sqflite)
 
 Évolution depuis v5 :
 
@@ -221,8 +222,11 @@
 | `games` | Ajout `group_id TEXT NULL`, suppression `lastModified` (remplacée par `updated_at`) |
 | `game_types` | `UNIQUE(name)`, ajout `group_id TEXT NULL` |
 | `rounds`, `scores` | `UNIQUE(game_id, round_number)`, `UNIQUE(player_id, round_id)` |
+| `rounds` | Conservation de `comment TEXT NULL` (annotation manuelle par tour) |
 | Nouvelle : `outbox` | `(id, entity_type, entity_uuid, op, payload, client_lamport, created_at, sent_at)` |
 | Nouvelle : `sync_state` | `(group_id, last_server_seq, last_lamport)` |
+
+**Migration v6 → v7** : ajout de la table `game_analyses` pour cacher les analyses IA caustiques générées par le backend (endpoint `/comments/zapzap-analysis`). Schéma sync-ready (uuid + timestamps + group_id) dès l'origine pour permettre une future synchronisation multi-device. Contrainte `UNIQUE(gameId)` : une seule analyse par partie ; régénérer remplace.
 
 **Backfill v5 → v6** :
 1. Pour chaque ligne, générer UUID v4 stable
@@ -359,6 +363,19 @@ Voir `backend/app/services/rate_limiter.py`.
 - Groupe : `monthly_budget_cents` (default 100¢ ≈ 830 commentaires Haiku/mois)
 
 **Implémentation** : table `rate_limits` avec sliding window (Postgres seul, pas de Redis). UPSERT atomique + check.
+
+### 7.4 Endpoint ZapZap (Bedrock / Llama-3)
+
+`POST /comments/zapzap-analysis` — stateless, sans auth, sans budget (pour le moment).
+
+Pourquoi un endpoint séparé du flow Claude/Anthropic standard :
+- **Persona très spécifique** ("Professeur Claude" caustique) qui ne rentre pas dans les 3 styles génériques (`narrative`, `humorous`, `analytical`)
+- **Modèle différent** (Llama-3 70B via Bedrock) choisi pour le ton irrévérencieux et le coût Llama vs Claude
+- **Format markdown structuré en sortie** (tableaux manches × joueurs, notes /20, etc.), incompatible avec les contraintes courtes des commentaires "1 partie = 2-6 phrases"
+
+**Implémentation** : `backend/app/services/bedrock_client.py` (boto3 sync wrappé en `asyncio.to_thread`), `backend/app/services/zapzap_prompt.py` (builder markdown), route dans `backend/app/routes/comments.py`. Credentials AWS via env vars backend (jamais bundlés dans l'APK). À durcir : auth device + budget partagé avec la table `rate_limits` quand la feature passera en mode groupe.
+
+**Côté mobile** : `lib/screens/game_analysis_screen.dart` POST le payload `{game, game_type, players, rounds, history_by_player_name}`. Réponse cachée dans `game_analyses` (table v7) ; la régénération efface et remplace.
 
 ---
 

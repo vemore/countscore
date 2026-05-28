@@ -6,6 +6,7 @@ import '../models/game_type.dart';
 import '../models/round.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
+import 'game_analysis_screen.dart';
 import 'ranking_screen.dart';
 
 class GameBoardScreen extends StatefulWidget {
@@ -41,57 +42,87 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
               );
             },
           ),
-          PopupMenuButton(
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'edit_game',
-                child: Row(
-                  children: [
-                    const Icon(Icons.edit),
-                    const SizedBox(width: 8),
-                    Text(l10n.editGame),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'delete_round',
-                child: Row(
-                  children: [
-                    const Icon(Icons.delete_outline),
-                    const SizedBox(width: 8),
-                    Text(l10n.deleteLastRound),
-                  ],
-                ),
-              ),
-            ],
-            onSelected: (value) async {
-              final gameProvider = context.read<GameProvider>();
-              if (value == 'edit_game') {
-                _showEditGameDialog();
-              } else if (value == 'delete_round' && gameProvider.currentRounds.isNotEmpty) {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text(l10n.confirm),
-                    content: Text(l10n.confirmDeleteLastRound),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: Text(l10n.cancel),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: Text(l10n.delete),
-                      ),
-                    ],
-                  ),
-                );
+          Consumer2<GameProvider, GameTypeProvider>(
+            builder: (context, gameProvider, gameTypeProvider, child) {
+              final menuGameType = gameProvider.currentGame?.gameTypeId != null
+                  ? gameTypeProvider
+                      .getGameTypeById(gameProvider.currentGame!.gameTypeId!)
+                  : null;
+              final isZapZap =
+                  menuGameType?.name.toLowerCase() == 'zapzap';
 
-                if (confirm == true) {
-                  final lastRound = gameProvider.currentRounds.last;
-                  await gameProvider.deleteRound(lastRound.id!);
-                }
-              }
+              return PopupMenuButton<String>(
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'edit_game',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.edit),
+                        const SizedBox(width: 8),
+                        Text(l10n.editGame),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete_round',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.delete_outline),
+                        const SizedBox(width: 8),
+                        Text(l10n.deleteLastRound),
+                      ],
+                    ),
+                  ),
+                  if (isZapZap)
+                    PopupMenuItem(
+                      value: 'analyze_game',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.auto_awesome),
+                          const SizedBox(width: 8),
+                          Text(l10n.analyzeGame),
+                        ],
+                      ),
+                    ),
+                ],
+                onSelected: (value) async {
+                  if (value == 'edit_game') {
+                    _showEditGameDialog();
+                  } else if (value == 'delete_round' &&
+                      gameProvider.currentRounds.isNotEmpty) {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text(l10n.confirm),
+                        content: Text(l10n.confirmDeleteLastRound),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: Text(l10n.cancel),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: Text(l10n.delete),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (confirm == true) {
+                      final lastRound = gameProvider.currentRounds.last;
+                      await gameProvider.deleteRound(lastRound.id!);
+                    }
+                  } else if (value == 'analyze_game') {
+                    if (!context.mounted) return;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const GameAnalysisScreen(),
+                      ),
+                    );
+                  }
+                },
+              );
             },
           ),
         ],
