@@ -81,13 +81,48 @@ dessus.
 | Méthode | Route | Description |
 |---|---|---|
 | POST | `/comments/mvp` | **Stateless** (Jalon 4 MVP) — pas d'auth, pas de persistance |
+| POST | `/comments/zapzap-analysis` | **Stateless** — analyse caustique « professeur Claude » (provider configurable) |
 | POST | `/groups/me/games/{game_id}/comments` | Génère + persiste un commentaire |
 | GET | `/groups/me/games/{game_id}/comments` | Liste les commentaires d'une partie |
+
+## Provider LLM (analyse ZapZap)
+
+L'endpoint `/comments/zapzap-analysis` peut tourner sur trois fournisseurs, sélectionnés
+par la variable `LLM_PROVIDER` (défaut `bedrock`) :
+
+| `LLM_PROVIDER` | Clé / config requises | Modèle (défaut, paramétrable) | SDK |
+|---|---|---|---|
+| `bedrock` | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `BEDROCK_MODEL_ID` | `us.meta.llama3-3-70b-instruct-v1:0` | `boto3` |
+| `gemini` | `GEMINI_API_KEY`, `GEMINI_MODEL` | `gemini-2.5-pro` | `openai` (endpoint compatible) |
+| `mistral` | `MISTRAL_API_KEY`, `MISTRAL_MODEL` | `mistral-large-latest` | `openai` (endpoint compatible) |
+
+Gemini et Mistral exposent un endpoint **compatible OpenAI** : un seul client `openai`
+les gère via `base_url` + clé + modèle. Le **prompt système** (« professeur Claude ») et le
+**user-message** (tableau des manches, historique) sont **strictement identiques** entre
+providers (mêmes `temperature=0.4`, `top_p=0.9`, `max_tokens=2048`) — seul l'appel API change,
+pour une comparaison équitable. Sans la clé du provider sélectionné, l'endpoint retourne `503`.
+
+Pour basculer : `export LLM_PROVIDER=gemini` (ou `mistral`) puis relancer le serveur.
+
+### Comparer les providers sur une vraie partie
+
+```bash
+# Renseigner les clés voulues dans .env (GEMINI_API_KEY, MISTRAL_API_KEY, AWS_*)
+python scripts/compare_providers.py --payload scripts/sample_payload.json \
+  --providers bedrock,gemini,mistral
+```
+
+Le script construit le user-message une seule fois, lance chaque provider avec le même
+prompt, écrit un fichier par provider dans `out/zapzap_<provider>.md` et affiche un récap
+côte à côte (modèle, tokens, durée, statut). Un provider sans clé ou en erreur est reporté
+sans interrompre les autres. `--payload` attend le même JSON que celui posté par l'app mobile
+(voir `scripts/sample_payload.json`).
 
 ## Variables d'environnement
 
 Voir `.env.example`. Critiques :
-- `ANTHROPIC_API_KEY` : sans elle, `/comments/*` retourne 503
+- `ANTHROPIC_API_KEY` : sans elle, `/comments/mvp` et `/comments/...` (Claude) retournent 503
+- `LLM_PROVIDER` + clé du provider choisi : sans elles, `/comments/zapzap-analysis` retourne 503
 - `POSTGRES_PASSWORD` : à durcir en production
 - `DOMAIN` : utilisé par Caddy pour le certificat TLS
 - `CORS_ORIGINS` : whitelist des origines PWA

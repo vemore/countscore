@@ -1,0 +1,81 @@
+{
+  "game": {
+    "id": 42,
+    "name": "Soirée ZapZap p161",
+    "is_lowest_score_wins": true,
+    "created_at": "2026-05-27T20:30:00.000"
+  },
+  "game_type": "ZapZap",
+  "players": [
+    { "id": 1, "name": "Nadia" },
+    { "id": 2, "name": "Vincent" },
+    { "id": 3, "name": "Laurent" }
+  ],
+  "rounds": [
+    {
+      "id": 10,
+      "number": 1,
+      "comment": "manche tranquille",
+      "scores": [
+        { "player_id": 1, "value": 0 },
+        { "player_id": 2, "value": 18 },
+        { "player_id": 3, "value": 70 }
+      ]
+    },
+    {
+      "id": 11,
+      "number": 2,
+      "comment": null,
+      "scores": [
+        { "player_id": 1, "value": 5 },
+        { "player_id": 2, "value": 0 },
+        { "player_id": 3, "value": 22 }
+      ]
+    },
+    {
+      "id": 12,
+      "number": 3,
+      "comment": "ZapZap raté de Laurent",
+      "scores": [
+        { "player_id": 1, "value": 3 },
+        { "player_id": 2, "value": 12 },
+        { "player_id": 3, "value": 45 }
+      ]
+    }
+  ],
+  "history_by_player_name": {
+    "Nadia": [
+      {
+        "gameName": "p160",
+        "gameType": "ZapZap",
+        "date": "2026-04-20T21:00:00.000",
+        "finalScore": 88,
+        "totalPlayers": 5,
+        "rank": 1,
+        "didWin": true
+      }
+    ],
+    "Vincent": [
+      {
+        "gameName": "p159",
+        "gameType": "ZapZap",
+        "date": "2026-04-13T21:00:00.000",
+        "finalScore": 96,
+        "totalPlayers": 5,
+        "rank": 2,
+        "didWin": false
+      }
+    ],
+    "Laurent": [
+      {
+        "gameName": "p152",
+        "gameType": "ZapZap",
+        "date": "2026-03-02T21:00:00.000",
+        "finalScore": 101,
+        "totalPlayers": 6,
+        "rank": 6,
+        "didWin": false
+      }
+    ]
+  }
+}

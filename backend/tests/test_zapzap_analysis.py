@@ -1,6 +1,6 @@
 """Tests for POST /comments/zapzap-analysis and the ZapZap prompt builder.
 
-The Bedrock client is mocked — we exercise routing, validation, error mapping and
+The LLM provider is mocked — we exercise routing, validation, error mapping and
 the Markdown prompt construction, not the LLM itself.
 """
 from __future__ import annotations
@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from app.services.bedrock_client import BedrockResult
+from app.services.llm import LLMResult
 from app.services.zapzap_prompt import build_zapzap_user_message
 
 
@@ -64,11 +64,11 @@ def _payload() -> dict:
 
 
 @pytest.fixture
-def mock_bedrock(monkeypatch):
+def mock_provider(monkeypatch):
     fake = AsyncMock()
     fake.available = True
-    fake.analyze_zapzap = AsyncMock(
-        return_value=BedrockResult(
+    fake.generate = AsyncMock(
+        return_value=LLMResult(
             content="## Verdict\nNadia, intouchable comme toujours.",
             model="us.meta.llama3-3-70b-instruct-v1:0",
             tokens_in=512,
@@ -76,11 +76,11 @@ def mock_bedrock(monkeypatch):
         )
     )
     from app.routes import comments as comments_route
-    monkeypatch.setattr(comments_route, "get_bedrock_client", lambda: fake)
+    monkeypatch.setattr(comments_route, "get_llm_provider", lambda: fake)
     return fake
 
 
-async def test_zapzap_success(client, mock_bedrock):
+async def test_zapzap_success(client, mock_provider):
     r = await client.post("/comments/zapzap-analysis", json=_payload())
     assert r.status_code == 200, r.text
     body = r.json()
@@ -88,10 +88,11 @@ async def test_zapzap_success(client, mock_bedrock):
     assert body["model"] == "us.meta.llama3-3-70b-instruct-v1:0"
     assert body["tokens_in"] == 512
     assert body["tokens_out"] == 300
-    assert mock_bedrock.analyze_zapzap.call_count == 1
+    assert mock_provider.generate.call_count == 1
 
-    # The user message handed to Bedrock must carry the structured game data.
-    user_message = mock_bedrock.analyze_zapzap.call_args.args[0]
+    # generate(system_prompt, user_message): the user message (arg 1) carries the game data.
+    system_prompt, user_message = mock_provider.generate.call_args.args
+    assert "professeur Claude" in system_prompt
     assert "Soirée ZapZap" in user_message
     assert "| Manche |" in user_message
 
@@ -100,25 +101,25 @@ async def test_zapzap_missing_config_returns_503(client, monkeypatch):
     stub = AsyncMock()
     stub.available = False
     from app.routes import comments as comments_route
-    monkeypatch.setattr(comments_route, "get_bedrock_client", lambda: stub)
+    monkeypatch.setattr(comments_route, "get_llm_provider", lambda: stub)
 
     r = await client.post("/comments/zapzap-analysis", json=_payload())
     assert r.status_code == 503
 
 
-async def test_zapzap_invalid_payload_returns_422(client, mock_bedrock):
+async def test_zapzap_invalid_payload_returns_422(client, mock_provider):
     # Missing the required "game" key.
     r = await client.post("/comments/zapzap-analysis", json={"players": []})
     assert r.status_code == 422
-    assert mock_bedrock.analyze_zapzap.call_count == 0
+    assert mock_provider.generate.call_count == 0
 
 
 async def test_zapzap_upstream_error_returns_502(client, monkeypatch):
     fake = AsyncMock()
     fake.available = True
-    fake.analyze_zapzap = AsyncMock(side_effect=RuntimeError("bedrock down"))
+    fake.generate = AsyncMock(side_effect=RuntimeError("provider down"))
     from app.routes import comments as comments_route
-    monkeypatch.setattr(comments_route, "get_bedrock_client", lambda: fake)
+    monkeypatch.setattr(comments_route, "get_llm_provider", lambda: fake)
 
     r = await client.post("/comments/zapzap-analysis", json=_payload())
     assert r.status_code == 502

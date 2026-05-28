@@ -30,8 +30,8 @@ from app.schemas.comments import (
     MvpGamePayload,
 )
 from app.services.anthropic_client import get_anthropic_client
-from app.services.bedrock_client import get_bedrock_client
 from app.services.budget import charge_budget, check_budget
+from app.services.llm import get_llm_provider
 from app.services.prompt_builder import (
     GameForPrompt,
     PastCommentSummary,
@@ -41,7 +41,7 @@ from app.services.prompt_builder import (
     compute_scores_hash,
 )
 from app.services.rate_limiter import check_and_increment
-from app.services.zapzap_prompt import build_zapzap_user_message
+from app.services.zapzap_prompt import ZAPZAP_SYSTEM_PROMPT, build_zapzap_user_message
 
 router = APIRouter(tags=["comments"])
 
@@ -98,17 +98,21 @@ async def generate_mvp_comment(body: MvpGamePayload) -> MvpCommentResponse:
 
 @router.post("/comments/zapzap-analysis")
 async def generate_zapzap_analysis(body: dict) -> dict:
-    """Caustic ZapZap game analysis powered by AWS Bedrock (Llama-3).
+    """Caustic ZapZap game analysis via the configured LLM provider.
 
-    Stateless: no persistence, no auth, no budget. The mobile app caches the
-    response locally in its game_analyses table. Auth and quotas will be added
-    once the multi-device groups stack is wired into the mobile app.
+    Provider chosen by the LLM_PROVIDER env var (bedrock | gemini | mistral, default
+    bedrock). The system prompt and user message are identical across providers — only
+    the API call differs.
+
+    Stateless: no persistence, no auth, no budget. The mobile app caches the response
+    locally in its game_analyses table. Auth and quotas will be added once the
+    multi-device groups stack is wired into the mobile app.
     """
-    client = get_bedrock_client()
-    if not client.available:
+    provider = get_llm_provider()
+    if not provider.available:
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
-            "Bedrock not configured (AWS credentials missing)",
+            "LLM provider not configured (API credentials missing)",
         )
 
     try:
@@ -119,11 +123,11 @@ async def generate_zapzap_analysis(body: dict) -> dict:
         ) from e
 
     try:
-        result = await client.analyze_zapzap(user_message)
+        result = await provider.generate(ZAPZAP_SYSTEM_PROMPT, user_message)
     except Exception as e:
         raise HTTPException(
             status.HTTP_502_BAD_GATEWAY,
-            f"upstream Bedrock error: {type(e).__name__}: {e}",
+            f"upstream LLM error: {type(e).__name__}: {e}",
         ) from e
 
     return {
@@ -348,4 +352,4 @@ async def list_comments(
 
 
 # Silence the unused-import warning
-_ = datetime, timezone  # noqa: B007
+_ = datetime, timezone
