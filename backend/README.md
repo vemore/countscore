@@ -28,19 +28,43 @@ uvicorn app.main:app --reload
 
 L'API est sur `http://localhost:8000`. La doc OpenAPI sur `http://localhost:8000/docs`.
 
-## Déploiement production (Docker Compose)
+## Déploiement production (NAS Synology + Web Station)
+
+La prod tourne sur le NAS Synology (192.168.1.25) via le registre Docker local. **Synology
+Web Station** gère le reverse-proxy + TLS pour `https://countscore.ombivince.synology.me/` —
+il n'y a donc plus de Caddy. L'API est publiée sur `127.0.0.1:8086` (voir
+`docker-compose.prod.yml`), accessible uniquement par Web Station.
+
+**Mise en place initiale (une fois) :** poser le `.env` de prod sur le NAS (les secrets
+restent hors dépôt) :
 
 ```bash
-cp .env.example .env  # IMPORTANT : remplir DOMAIN, ANTHROPIC_API_KEY, POSTGRES_PASSWORD
-
-docker compose up -d
-docker compose exec api alembic upgrade head
-
-# Vérification
-curl https://<DOMAIN>/health
+# Remplir un .env local avec les valeurs de prod :
+#   POSTGRES_PASSWORD, CORS_ORIGINS=https://countscore.ombivince.synology.me,
+#   LLM_PROVIDER=mistral (+ MISTRAL_API_KEY) — ou le provider voulu.
+cat .env | ssh nas "cat > /volume1/docker/countscore/.env"
 ```
 
-Caddy gère HTTPS automatiquement via Let's Encrypt (le port 80/443 doit être ouvert).
+**Déployer** (build → push registre → compose up → migrations) :
+
+```bash
+./scripts/deploy_nas.sh                 # déploie HEAD
+./scripts/deploy_nas.sh --rollback <git-sha>   # revient à une version
+```
+
+**Configurer Web Station** (Panneau de configuration → Portail des applications →
+Reverse Proxy) :
+- Source : `https://countscore.ombivince.synology.me` (port 443, HSTS activé)
+- Destination : `http://localhost:8086`
+- **Activer le support WebSocket** (onglet « En-tête personnalisé » → WebSocket) pour
+  l'endpoint temps réel `/sync/stream`.
+- Créer le certificat Let's Encrypt pour `countscore.ombivince.synology.me` une fois le
+  proxy en place.
+
+**Vérification :** `curl https://countscore.ombivince.synology.me/health`.
+
+> Pour un test full-stack local (db + api + backup, sans Caddy) : `docker compose up -d`
+> puis `curl http://localhost:8000/health`.
 
 ## Tests
 
@@ -124,8 +148,9 @@ Voir `.env.example`. Critiques :
 - `ANTHROPIC_API_KEY` : sans elle, `/comments/mvp` et `/comments/...` (Claude) retournent 503
 - `LLM_PROVIDER` + clé du provider choisi : sans elles, `/comments/zapzap-analysis` retourne 503
 - `POSTGRES_PASSWORD` : à durcir en production
-- `DOMAIN` : utilisé par Caddy pour le certificat TLS
-- `CORS_ORIGINS` : whitelist des origines PWA
+- `CORS_ORIGINS` : whitelist des origines (jamais `*` — rejeté au démarrage). En prod :
+  `https://countscore.ombivince.synology.me`
+- `IP_RL_PER_MINUTE` / `IP_RL_PER_HOUR` : plafond par IP des endpoints LLM non authentifiés
 
 ## Sécurité
 
@@ -133,5 +158,16 @@ Voir `../ARCHITECTURE.md` §10. Points critiques :
 - `device_token` stocké hashé argon2
 - 5 couches de défense prompt injection
 - Rate limit device + budget groupe
-- TLS automatique via Caddy + Let's Encrypt
-- Backups quotidiens chiffrés (sidecar)
+- **Rate limit par IP** sur les endpoints LLM non authentifiés (`/comments/mvp`,
+  `/comments/zapzap-analysis`) — garde-fou anti-abus de coût (lit `X-Forwarded-For`)
+- **Cap de taille de requête** (413 au-delà de `MAX_BODY_BYTES`, 256 Kio par défaut)
+- CORS verrouillé (refus de `*`)
+- TLS géré par Synology Web Station (Let's Encrypt)
+- Backups quotidiens (sidecar)
+
+### Dette sécurité connue (à traiter)
+- **WebSocket `/sync/stream?token=…`** : le `device_token` transite en query string et peut
+  être journalisé par le reverse-proxy. À déplacer hors query string (touche le client Flutter).
+- Pas de rate limit sur `POST /groups` et `/groups/join` ; `share_token` renvoyé sur
+  `GET /groups/me` ; bornes de validation manquantes sur scores/manches.
+- En-têtes `X-Content-Type-Options`, `X-Frame-Options`, HSTS : à poser au niveau Web Station.

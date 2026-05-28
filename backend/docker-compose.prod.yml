@@ -1,8 +1,11 @@
-# Local full-stack compose (db + api + daily backup) for development/testing.
-# Production deploys to the Synology NAS via docker-compose.prod.yml — see README.
+# Production compose for the Synology NAS. Copied to the NAS as compose.yaml by
+# scripts/deploy_nas.sh. No Caddy/TLS here: Synology Web Station terminates TLS and
+# reverse-proxies https://countscore.ombivince.synology.me/ -> http://localhost:8086.
+# The API is bound to 127.0.0.1 so only Web Station (on the NAS) can reach it.
 services:
   db:
     image: postgres:17-alpine
+    container_name: countscore-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -17,20 +20,34 @@ services:
       retries: 5
 
   api:
-    build: .
+    image: localhost:5050/countscore:latest
+    container_name: countscore
     restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
+    # Single worker: the per-IP rate limiter keeps state in process memory.
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      LLM_PROVIDER: ${LLM_PROVIDER:-bedrock}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       COMMENT_MODEL: ${COMMENT_MODEL:-claude-haiku-4-5}
-      DEFAULT_BUDGET_CENTS: ${DEFAULT_BUDGET_CENTS:-100}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
+      MISTRAL_MODEL: ${MISTRAL_MODEL:-mistral-large-latest}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-pro}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-}
+      BEDROCK_MODEL_ID: ${BEDROCK_MODEL_ID:-us.meta.llama3-3-70b-instruct-v1:0}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      IP_RL_PER_MINUTE: ${IP_RL_PER_MINUTE:-5}
+      IP_RL_PER_HOUR: ${IP_RL_PER_HOUR:-30}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8086:8000"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s
@@ -39,7 +56,9 @@ services:
 
   db-backup:
     image: postgres:17-alpine
+    container_name: countscore-db-backup
     restart: unless-stopped
+    user: "1027:100"
     depends_on:
       db:
         condition: service_healthy
@@ -51,7 +70,7 @@ services:
     volumes:
       - ./backups:/backups
     entrypoint: ["/bin/sh", "-c"]
-    # Daily pg_dump at 03:00, gzip, retain 7 days
+    # Daily pg_dump at 03:00, gzip, retain 7 days.
     command: |
       "
       while true; do

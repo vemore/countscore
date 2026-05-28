@@ -28,6 +28,15 @@ from app.main import create_app  # noqa: E402
 from app import models  # noqa: F401, E402
 
 
+@pytest.fixture(autouse=True)
+def _reset_ip_rate_limiter():
+    """The IP limiter holds process-global state; clear it between tests."""
+    from app.services import ip_rate_limiter
+    ip_rate_limiter.reset()
+    yield
+    ip_rate_limiter.reset()
+
+
 @pytest_asyncio.fixture
 async def engine():
     eng = create_async_engine("sqlite+aiosqlite:///:memory:")

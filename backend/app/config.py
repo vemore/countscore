@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -40,10 +41,24 @@ class Settings(BaseSettings):
 
     log_level: str = "INFO"
 
-    # Rate limit thresholds — see ARCHITECTURE.md §7.3
+    # Rate limit thresholds (per authenticated device) — see ARCHITECTURE.md §7.3
     rl_per_minute: int = 6
     rl_per_hour: int = 30
     rl_per_day: int = 100
+
+    # Per-IP rate limit for the unauthenticated LLM endpoints (cost-abuse guard).
+    ip_rl_per_minute: int = 5
+    ip_rl_per_hour: int = 30
+
+    # Max accepted request body size (bytes); larger requests are rejected with 413.
+    max_body_bytes: int = 262144  # 256 KiB
+
+    @field_validator("cors_origins")
+    @classmethod
+    def _reject_cors_wildcard(cls, v: str) -> str:
+        if "*" in v:
+            raise ValueError("CORS wildcard '*' is not allowed; list explicit origins")
+        return v
 
     @property
     def cors_origins_list(self) -> list[str]:

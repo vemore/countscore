@@ -11,10 +11,11 @@ Two endpoints:
 """
 from __future__ import annotations
 
+import logging
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,6 +32,7 @@ from app.schemas.comments import (
 )
 from app.services.anthropic_client import get_anthropic_client
 from app.services.budget import charge_budget, check_budget
+from app.services.ip_rate_limiter import check_ip_rate_limit, client_ip
 from app.services.llm import get_llm_provider
 from app.services.prompt_builder import (
     GameForPrompt,
@@ -44,6 +46,19 @@ from app.services.rate_limiter import check_and_increment
 from app.services.zapzap_prompt import ZAPZAP_SYSTEM_PROMPT, build_zapzap_user_message
 
 router = APIRouter(tags=["comments"])
+logger = logging.getLogger(__name__)
+
+
+def _enforce_ip_rate_limit(request: Request, response: Response) -> None:
+    """Per-IP throttle for the unauthenticated LLM endpoints (cost-abuse guard)."""
+    dec = check_ip_rate_limit(client_ip(request))
+    if not dec.allowed:
+        response.headers["Retry-After"] = str(dec.retry_after_seconds)
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            f"rate-limited at {dec.scope} scope",
+            headers={"Retry-After": str(dec.retry_after_seconds)},
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -51,15 +66,15 @@ router = APIRouter(tags=["comments"])
 # ---------------------------------------------------------------------------
 
 @router.post("/comments/mvp", response_model=MvpCommentResponse)
-async def generate_mvp_comment(body: MvpGamePayload) -> MvpCommentResponse:
+async def generate_mvp_comment(
+    body: MvpGamePayload, request: Request, response: Response
+) -> MvpCommentResponse:
     """Stateless comment generation — see Jalon 4 in ARCHITECTURE.md §11.
 
-    No persistence, no quota check, no auth. Intended for early validation of the
-    Claude integration before the full group/sync stack is wired up on a device.
-    Deployed alongside the rest of the API for convenience.
-
-    Future hardening (when this endpoint stays in prod): add per-IP rate limit.
+    No persistence, no auth. Protected only by a per-IP rate limit (cost-abuse guard)
+    since it calls the paid Anthropic API without a device/group budget.
     """
+    _enforce_ip_rate_limit(request, response)
     client = get_anthropic_client()
     if not client.available:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Anthropic API not configured")
@@ -97,17 +112,18 @@ async def generate_mvp_comment(body: MvpGamePayload) -> MvpCommentResponse:
 
 
 @router.post("/comments/zapzap-analysis")
-async def generate_zapzap_analysis(body: dict) -> dict:
+async def generate_zapzap_analysis(body: dict, request: Request, response: Response) -> dict:
     """Caustic ZapZap game analysis via the configured LLM provider.
 
     Provider chosen by the LLM_PROVIDER env var (bedrock | gemini | mistral, default
     bedrock). The system prompt and user message are identical across providers — only
     the API call differs.
 
-    Stateless: no persistence, no auth, no budget. The mobile app caches the response
-    locally in its game_analyses table. Auth and quotas will be added once the
-    multi-device groups stack is wired into the mobile app.
+    Stateless: no persistence, no auth, no budget — protected only by a per-IP rate limit
+    (cost-abuse guard). The mobile app caches the response locally in its game_analyses
+    table.
     """
+    _enforce_ip_rate_limit(request, response)
     provider = get_llm_provider()
     if not provider.available:
         raise HTTPException(
@@ -125,9 +141,10 @@ async def generate_zapzap_analysis(body: dict) -> dict:
     try:
         result = await provider.generate(ZAPZAP_SYSTEM_PROMPT, user_message)
     except Exception as e:
+        logger.exception("zapzap-analysis upstream LLM error")
         raise HTTPException(
             status.HTTP_502_BAD_GATEWAY,
-            f"upstream LLM error: {type(e).__name__}: {e}",
+            f"upstream LLM error: {type(e).__name__}",
         ) from e
 
     return {
