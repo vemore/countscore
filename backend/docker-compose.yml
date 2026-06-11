@@ -51,11 +51,17 @@ services:
     volumes:
       - ./backups:/backups
     entrypoint: ["/bin/sh", "-c"]
-    # Daily pg_dump at 03:00, gzip, retain 7 days
+    # Daily pg_dump at 03:00 UTC, gzip, retain 7 days.
+    # BusyBox 'date' (postgres:17-alpine) has no GNU "-d 'tomorrow 03:00'", so we
+    # compute the delay to the next 03:00 from the epoch (seconds-since-midnight,
+    # UTC) instead. Sleep-then-dump keeps the loop idle between runs.
     command: |
       "
+      target=10800;
       while true; do
-        sleep $$((($$(date -d 'tomorrow 03:00' +%s) - $$(date +%s))));
+        secs=$$(( $$(date +%s) % 86400 ));
+        if [ $$secs -le $$target ]; then delay=$$((target - secs)); else delay=$$((86400 - secs + target)); fi;
+        sleep $$delay;
         ts=$$(date +%Y%m%d_%H%M%S);
         PGPASSWORD=$$POSTGRES_PASSWORD pg_dump -h db -U $$POSTGRES_USER -d $$POSTGRES_DB -Fc | gzip > /backups/countscore_$$ts.sql.gz;
         find /backups -name 'countscore_*.sql.gz' -mtime +7 -delete;
