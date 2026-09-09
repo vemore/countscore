@@ -126,3 +126,11 @@ firebase_options.dart
 *.tmp
 *.temp
 *~
+
+# Drift web runtime assets (~1.1 MB of binaries, referenced by
+# lib/services/drift/connection/connection_web.dart). Not tracked: fetch them
+# before building for web.
+#   web/sqlite3.wasm    -> https://github.com/simolus3/sqlite3.dart/releases
+#   web/drift_worker.js -> dart run drift_dev make-web-worker
+web/sqlite3.wasm
+web/drift_worker.js
