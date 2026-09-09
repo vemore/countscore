@@ -16,10 +16,10 @@ import '../repositories/game_analysis_repository.dart';
 import '../services/drift/database.dart';
 
 class GameAnalysisScreen extends StatefulWidget {
-  const GameAnalysisScreen({super.key, GameAnalysisRepository? repository})
-      : _repository = repository;
+  // Public so it stays usable as an injection seam from outside this library.
+  const GameAnalysisScreen({super.key, this.repository});
 
-  final GameAnalysisRepository? _repository;
+  final GameAnalysisRepository? repository;
 
   @override
   State<GameAnalysisScreen> createState() => _GameAnalysisScreenState();
@@ -33,7 +33,7 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
   static const _requestTimeout = Duration(seconds: 90);
 
   late final GameAnalysisRepository _repo =
-      widget._repository ?? DriftGameAnalysisRepository(AppDatabase.instance);
+      widget.repository ?? DriftGameAnalysisRepository(AppDatabase.instance);
 
   bool _isLoading = false;
   String? _analysisText;

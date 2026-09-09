@@ -127,6 +127,10 @@ firebase_options.dart
 *.temp
 *~
 
-# web/sqlite3.wasm and web/drift_worker.js are deliberately tracked: the
-# drift_dev CLI that regenerates the worker does not build at our pinned
-# drift version, so the repo is the only reliable source for them.
+# web/sqlite3.wasm and web/drift_worker.js are deliberately tracked so that a
+# fresh clone can run the PWA without fetching binaries. drift_worker.js also
+# ships prebuilt at the drift package root; sqlite3.wasm comes from the
+# sqlite3.dart GitHub releases. See .llmwiki/Web.md.
+
+# Playwright MCP scratch output (screenshots, snapshots)
+.playwright-mcp/

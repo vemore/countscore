@@ -57,6 +57,9 @@ class GameType {
     this.gameOverThreshold,
   });
 
+  // The code point comes from the database, so it cannot be a constant. This is
+  // the reason every build must pass --no-tree-shake-icons; see CLAUDE.md.
+  // ignore: non_const_argument_for_const_parameter
   IconData get icon => IconData(iconCodePoint, fontFamily: 'MaterialIcons');
   Color get cardColor => Color(cardColorValue);
 
