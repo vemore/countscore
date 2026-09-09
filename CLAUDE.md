@@ -26,14 +26,13 @@ Scoped instructions: `backend/CLAUDE.md` (Python/FastAPI) and `web/CLAUDE.md` (P
 
 1. **Never hardcode a user-facing string.** Always `AppLocalizations` — 10 languages are
    kept in sync. Never hand-roll a plural; use ICU forms. Use the `i18n-add-string` skill.
-2. **Always pass `--no-tree-shake-icons`** to every build — apk, appbundle, ios and web.
-   Game-type icons are built from database values, so the tree-shaker cannot see them and
-   the build fails without it.
-3. **A fresh clone does not compile until code is generated.** `*.g.dart` is gitignored:
-   run `dart run build_runner build` first.
-4. **Never commit** the keystore, `key.properties`, or any `.env`.
-5. **`web/sqlite3.wasm` and `web/drift_worker.js` are tracked on purpose** — do not delete
-   or gitignore them. See `.llmwiki/Web.md`.
+2. **A fresh clone does not compile until code is generated.** `*.g.dart` is gitignored:
+   run `dart run build_runner build` first. No hook checks this one — a generated file that
+   exists but is stale looks exactly like a healthy clone.
+
+The rules a hook now refuses outright — build flags, secrets, the two tracked web binaries,
+the gates, the branch — are in `.llmwiki/Hooks.md`, with the reasoning that used to sit
+here and, more usefully, with what those hooks do *not* cover.
 
 ## Workflow
 
@@ -79,12 +78,10 @@ Scoped instructions: `backend/CLAUDE.md` (Python/FastAPI) and `web/CLAUDE.md` (P
 
 - **Nothing is finished until it is tested and committed.** A feature or a bugfix is done
   only once the automated gates covering the code it touches are green *and* the change is
-  committed. For the Flutter app that gate is imperative: **`flutter analyze && flutter
-  test` must pass before committing** — no exception, whatever the change. For `backend/`
-  it is `ruff check`, `mypy` and `pytest` (see `backend/CLAUDE.md`). Green gates with no
-  commit, or a commit with no green gates, are both incomplete. Documentation the change
-  falsifies — a wiki page, `README.md`, or the privacy documents — belongs in that same
-  commit, not in a follow-up.
+  committed; a hook runs those gates at commit time and refuses the commit while they are
+  red (`.llmwiki/Hooks.md`). Green gates with no commit, or a commit with no green gates,
+  are both incomplete. Documentation the change falsifies — a wiki page, `README.md`, or
+  the privacy documents — belongs in that same commit, not in a follow-up.
 
 ## Commands
 
@@ -129,15 +126,12 @@ git fetch --prune origin
 git switch -c <type>/<short-topic> origin/main
 ```
 
-Do not carry on committing to whatever branch the working tree happened to be left on. That
-branch is usually the *previous* session's, and once its pull request is merged the remote
-rebases and deletes it: committing there stacks new work on top of commits that no longer
-exist upstream, and the branch has to be untangled before anything can be pushed. The
-starting branch being clean is not evidence that it is still live — check `git branch -r`.
-
-If you find you have already committed to a stale branch, recover it rather than rewriting
-history: `git cherry -v origin/main HEAD` marks commits already upstream with `-` and genuinely
-new ones with `+`; branch off `origin/main` and cherry-pick only the `+` ones.
+Do not carry on committing to whatever branch the working tree happened to be left on: it is
+usually the *previous* session's, and once its pull request is merged the remote deletes it.
+A hook refuses a commit on `main`, on a detached HEAD, and on a branch it can tell is stale —
+but it never fetches, so it only knows what your last `git fetch --prune` left behind. That
+is why the fetch above is on you, and why a silent pass is not evidence the branch is live.
+The recovery recipe, if you are already on a stale branch, is in `.llmwiki/Hooks.md`.
 
 - Branch names: `<type>/<short-topic>`, using the commit-message types below.
 - Commit messages: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`.

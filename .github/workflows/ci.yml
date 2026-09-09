@@ -72,6 +72,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # The Claude Code hooks decide from a parsed command line; the table in this
+      # script is what keeps a rule change from silently breaking one of them. It
+      # needs neither Flutter nor Python packages, so it runs first and fails fast.
+      - name: Claude Code hooks self-test
+        run: scripts/hooks_selftest.sh
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:

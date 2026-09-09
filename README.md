@@ -185,8 +185,9 @@ CI — it calls the production endpoint. See `.llmwiki/Testing.md`.
 6. Push the branch and open a Pull Request.
 
 Working conventions live in [CLAUDE.md](CLAUDE.md): never hardcode a user-facing string
-(everything goes through `AppLocalizations`), always pass `--no-tree-shake-icons`, and record
-open work in `TODO.md` / closed work in `DONE.md`. Architecture, schema and deployment
+(everything goes through `AppLocalizations`), and record open work in `TODO.md` / closed work
+in `DONE.md`. The rules a Claude Code hook enforces on its own — the build flag above, the
+gates, secrets, the branch — are in `.llmwiki/Hooks.md`. Architecture, schema and deployment
 knowledge is in `.llmwiki/` — start at `.llmwiki/INDEX.md`.
 
 ## License
