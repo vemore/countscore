@@ -46,12 +46,45 @@ Scoped instructions: `backend/CLAUDE.md` (Python/FastAPI) and `web/CLAUDE.md` (P
   `**Status:** done (YYYY-MM-DD)` on it, and paste it at the top of `DONE.md` — newest
   first — with a line saying what closed it. `TODO.md` then holds only open work, and the
   reasoning behind a closed item stays readable in `DONE.md`.
+- **`README.md` makes claims about the code — keep them true in the same change.** It is the
+  only document a newcomer reads *before* running anything, and it drifted for ten months
+  because no rule said when it was implicated. It is implicated whenever a change touches
+  one of these:
+
+  | What you changed | What to check in `README.md` |
+  |---|---|
+  | Flutter/Dart version, or `environment:` in `pubspec.yaml` | Version badge · Prerequisites · Tech stack |
+  | A dependency added, removed, or bumped a major | Tech stack |
+  | **A step needed to build a fresh clone** | Getting started — a missing step here means a clone does not compile; treat it as a defect, not a doc nit |
+  | A build flag, or a new build target | Building for production |
+  | A new top-level directory, or a new `lib/` subdirectory | Project structure |
+  | A CI job | Continuous integration |
+  | Platform support gained or dropped | Platform badge · Getting started · Building |
+  | Anything that sends data off the device | Privacy — and the rule below |
+  | A feature a user would notice | Features |
+
+  Verify against the source, never against the old README: versions come from
+  `pubspec.yaml` and the toolchain table in `.llmwiki/MobileApp.md`, not from the line
+  already written. If the change falsifies nothing in that list, the README needs no edit —
+  say so and move on rather than touching it for its own sake.
+
+- **A new outbound data flow is a change to three documents, or it is not finished.**
+  `README.md` (Privacy), `privacy_policy.md` and `PLAY_STORE_DATA_SAFETY.md` each describe
+  what leaves the device. Adding a network call, a new recipient, or a new field to an
+  existing payload means updating all three in the same change — and checking that
+  `android/app/src/main/AndroidManifest.xml` grants the permission the flow needs, since
+  `INTERNET` lives only in the debug and profile manifests by default. A Play Store data
+  safety declaration that does not match the binary is a policy violation, not a stale
+  line. The audit behind this rule is in `DONE.md` (2026-09-09).
+
 - **Nothing is finished until it is tested and committed.** A feature or a bugfix is done
   only once the automated gates covering the code it touches are green *and* the change is
   committed. For the Flutter app that gate is imperative: **`flutter analyze && flutter
   test` must pass before committing** — no exception, whatever the change. For `backend/`
   it is `ruff check`, `mypy` and `pytest` (see `backend/CLAUDE.md`). Green gates with no
-  commit, or a commit with no green gates, are both incomplete.
+  commit, or a commit with no green gates, are both incomplete. Documentation the change
+  falsifies — a wiki page, `README.md`, or the privacy documents — belongs in that same
+  commit, not in a follow-up.
 
 ## Commands
 
