@@ -3,6 +3,34 @@
 Open work only. A finished item moves to `DONE.md` — see the workflow section of
 `CLAUDE.md`.
 
+## `privacy_policy.md` and `PLAY_STORE_DATA_SAFETY.md` deny a data flow that exists
+
+**Status:** open — noted 2026-09-09, while refreshing `README.md`.
+
+Both compliance documents state that CountScore transmits nothing and uses no third-party
+service. That stopped being true when the ZapZap analysis moved server-side: requesting one
+posts the game's data — game type, player names, round scores and per-player history — from
+`lib/screens/game_analysis_screen.dart` to the backend, which forwards it to an LLM provider
+(Bedrock / Gemini / Mistral).
+
+The offending claims:
+
+- `privacy_policy.md:88` — "does not integrate with any third-party services for data
+  collection, analytics, or advertising" — and the `:235` summary line "No third-party
+  services".
+- `PLAY_STORE_DATA_SAFETY.md:15` — "No data is transmitted to external servers, and no
+  third-party services are used" — plus `:55` and `:308`.
+
+`README.md` was corrected on 2026-09-09; these two were left alone deliberately, because a
+Play Store data safety declaration is a legal statement and rewriting it needs a decision
+about what is actually declared (data type, purpose, whether it is "collected" or only
+"transmitted", retention at the provider), not a copy-edit.
+
+**This blocks the next store submission that ships the analysis feature.** It is the same
+class of problem `.llmwiki/Release.md` already records for `PUBLISHING.md`, which likewise
+predates the backend. See [[LlmProviders]] for exactly what the payload contains and
+[[Security]] for what the declarations would have to disclose.
+
 ## The Flutter sync client does not exist
 
 **Status:** open — noted 2026-09-09, during a branch/commit review.
