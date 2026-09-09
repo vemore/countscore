@@ -60,6 +60,28 @@ applies it), the `kotlinOptions` block replaced by a top-level
 `android.enableJetifier=true` was dropped: no Flutter template has ever set it, it only
 rewrites pre-AndroidX artifacts, and it costs build time.
 
+### Verification
+
+`flutter analyze` clean · 37/37 `flutter test` · release apk and appbundle build with R8
+enabled · web build serves and drift opens its database in the browser (`drift_worker.js`
+fetched, IndexedDB `countscore` created, zero console errors) against the **committed**
+worker.
+
+On a Pixel 9 Pro XL (Android 17), because none of this has automated coverage:
+
+- **flex_color_picker 4.0.0** — the one upgrade with real API exposure. Both the Primary/
+  Accent/Wheel dialog and the wheel picker render correctly and preselect the current
+  colour, matching the `pickersEnabled` map in `players_screen.dart`.
+- **wakelock_plus 1.8.0** — toggling it acquires a real `SCREEN_BRIGHT_WAKE_LOCK`
+  attributed to `com.vemore.countscore` in `dumpsys power`, and releases it on toggle off.
+- **file_picker 12.2.0 + export** — the SAF directory picker opens and a full export
+  completes end to end.
+
+Not run: `integration_test/app_test.dart` on device, which needs `adb shell pm clear` and
+so would destroy real game data; and the chromedriver web e2e, since chromedriver is not
+installed. The Playwright runtime check above covers what the web e2e would have proved
+about startup and persistence.
+
 ### Smaller consequences
 
 - `build_runner` 2.16 **removed `--delete-conflicting-outputs`** — it now warns and ignores
