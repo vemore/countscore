@@ -1,0 +1,105 @@
+# Hooks
+
+> Scope: the Claude Code hooks that enforce project rules mechanically, and the reasoning
+> that used to live in `CLAUDE.md`.
+> Related: [[Web]] · [[I18n]] · [[Testing]] · [[Backend]] · [[KnownLimits]]
+> Updated: 2026-09-09
+
+## Facts
+
+### What is configured
+
+`.claude/settings.json` declares four handlers. The scripts are in `.claude/hooks/`; the
+`hooks` key merges across settings levels, so `.claude/settings.local.json` (permissions)
+is untouched by it.
+
+| Event | Matcher | Script | What it does |
+|---|---|---|---|
+| `PreToolUse` | `Bash` | `guard-bash.sh` | Refuses three commands outright; runs the gates before a commit |
+| `PostToolUse` | `Edit\|Write` | `guard-gitignore.sh` | Refuses a `.gitignore` that starts ignoring the two web binaries |
+| `PostToolUse` | `Edit\|Write` | `check-arb-sync.sh` | Reports ARB key drift as context — never blocks |
+| `SessionStart` | — | `session-start.sh` | Says whether the clone needs codegen and whether the branch is safe |
+
+`parse_command.py` and `arb_keys.py` are helpers, not handlers.
+`scripts/hooks_selftest.sh` exercises all of them from a table of ~57 cases and runs as the
+first step of the `app` job in `.github/workflows/ci.yml`.
+
+### What is refused, and on what evidence
+
+| Rule | Evidence used |
+|---|---|
+| `flutter build <target>` without `--no-tree-shake-icons` | tokenised command; `--help` and a bare `flutter build` produce no artifact and pass |
+| `ruff format` | any `ruff` on the line followed by `format`; `--check` and `--diff` pass |
+| Deleting or moving `web/sqlite3.wasm`, `web/drift_worker.js`, or `web/` itself | each argument resolved against a notional cwd that follows `cd`; copies under `build/` pass |
+| A `.gitignore` matching either binary | `git check-ignore --no-index`, one path per call |
+| Committing a keystore, `key.properties` or a `.env` | staged path list; `*.template` and `.env.example` pass |
+| Committing on `main`, on a detached HEAD, or on a stale branch | `%(upstream:track)` = `[gone]`, then `git cherry origin/main HEAD` |
+| Committing with red gates | `flutter analyze`, `flutter test` if app paths are involved; `ruff`/`mypy`/`pytest -m 'not integration'` if `backend/` is |
+| Committing divergent ARB files, or a stale `app_localizations*.dart` | key sets against the template from `l10n.yaml`, then `flutter gen-l10n` |
+
+The path set that decides which gates run is a union, not `git diff --cached` alone:
+`git commit -a` stages tracked changes *after* the hook has read the index, so `--cached`
+would report nothing and the filter would conclude "documentation only". `--amend` adds
+`HEAD`'s files, and trailing pathspecs are added too. The gates are project-wide anyway, so
+a superset costs seconds and never blocks wrongly.
+
+### What the hooks do not cover
+
+- **Anything a `Bash` command writes.** `PostToolUse` does not fire when a shell command
+  rewrites a file, so the two post-edit handlers are a convenience. The guarantee is the
+  commit-time check in `guard-bash.sh`.
+- **`git merge`, `git rebase --continue`, `git revert`, `git cherry-pick`,** and any commit
+  made inside a script invoked as `bash scripts/foo.sh`: the hook only sees the command
+  string it was given.
+- **`git checkout` / `git restore` / a `Write` overwriting the web binaries** — only
+  removal and gitignoring are guarded. `web/CLAUDE.md` still states the rule.
+- **`ruff check --fix`**, which also rewrites files.
+- **A stale `*.g.dart`.** `session-start.sh` only notices when *no* generated file exists.
+  This is why the codegen rule stays in `CLAUDE.md`.
+- **Freshness of `origin/main`.** The hooks never fetch: no network in a hook. Everything
+  they know about a branch is as old as the last `git fetch --prune`, so they err towards
+  letting a stale branch through — which is why that command stays in `CLAUDE.md`.
+- **Hard enforcement generally.** A hook whose script is missing or non-executable exits
+  127, which does not block; a hook that times out does not block either. They reduce a
+  class of mistake, they do not make it impossible.
+
+## Decisions & History
+
+- **Why hooks at all (2026-09-09).** Every rule listed above was previously prose in
+  `CLAUDE.md`, enforced only by re-reading the file, and `.github/workflows/ci.yml` caught
+  the failures after a push. The rules that a script can decide were moved to scripts; the
+  rules that need judgement — never hardcode a user-facing string, keep `README.md` true,
+  the three privacy documents, `TODO.md` → `DONE.md` — stayed in `CLAUDE.md` because a
+  heuristic guard that cries wolf is worse than the prose.
+- **Why the tree-shaker flag is not optional.** Game-type icons are `IconData` built from
+  codepoints stored in the database (`.llmwiki/MobileApp.md`), so Flutter's icon
+  tree-shaker cannot see those references and the build fails. It costs roughly 200 KB.
+- **Why a parser rather than a `grep`.** Splitting on `&&` and `;` and matching substrings
+  produced a false positive on every quoting case — a `git commit -m "flutter build apk"`,
+  an `echo`, and above all a heredoc body documenting a forbidden command, which made the
+  guard fire on the file that documents it. `.claude/hooks/parse_command.py` strips heredoc
+  bodies, tokenises with `shlex`, segments on operators, and follows `cd`. A command it
+  cannot parse yields no refusal (a guard that blocks what it cannot read is worse than the
+  risk) but is assumed to be a commit (a skipped gate is a silent regression).
+- **Why `[gone]` and not just `git cherry` (2026-09-09).** `CLAUDE.md` described a branch
+  whose merged pull request the remote deleted. Under a squash merge, N commits become one
+  upstream commit with a different patch-id, so `git cherry` shows no `-` line and would
+  have missed exactly the case it was written for. `%(upstream:track)` = `[gone]` survives
+  a squash; `git cherry` is kept as a second signal, and catches a deliberate cherry-pick
+  from `main` too — the check cannot tell the two apart and says so when it refuses.
+- **Why the ARB check does not block on edit.** Adding one string means ten edits, and the
+  key sets are legitimately divergent after edits one through nine. A blocking
+  `PostToolUse` tells the model its last edit was rejected, and inviting it to undo good
+  work would make the `i18n-add-string` skill unusable. It reports progress instead, and
+  the refusal happens once, at commit time.
+- **Why no `flutter gen-l10n` after each ARB edit.** Ten regenerations for one useful
+  result, nine of them writing an `app_localizations_*.dart` that reflects an intermediate
+  state — and `generate: true` in `pubspec.yaml` already regenerates on `pub get`, `run`,
+  `test` and `build`. The commit-time check runs it once and refuses if the committed
+  generated files would be stale.
+- **Why the gates are cheap enough to block on.** Measured warm on the development machine:
+  `flutter analyze` 3.2 s, `flutter test` 3.6 s, `ruff` 0.1 s, `mypy` 1.6 s,
+  `pytest -m 'not integration'` 6.7 s.
+- **Why the self-test is in CI.** The interesting cases are the ones that look like a
+  violation and are not. Without a table exercised on every push, the first rule change
+  breaks a guard silently — and a broken guard is indistinguishable from a passing one.

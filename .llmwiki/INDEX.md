@@ -47,6 +47,7 @@ Load this file first. Then read only the pages your task touches.
 | Page | Summary | Updated |
 |---|---|---|
 | [[Deployment]] | Synology NAS, Web Station TLS, `deploy_nas.sh`, environment | 2026-09-09 |
+| [[Hooks]] | What Claude Code refuses mechanically, and why each rule left CLAUDE.md | 2026-09-09 |
 | [[Security]] | Defended surfaces, and the security debt that is knowingly open | 2026-09-09 |
 | [[Testing]] | Unit, Drift, migration, e2e web and device; backend pytest | 2026-09-09 |
 | [[Release]] | Play Store signing state, icons, target API | 2026-09-09 |
