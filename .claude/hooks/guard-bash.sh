@@ -22,6 +22,12 @@ verdict=$(printf '%s' "$payload" | CLAUDE_PROJECT_DIR="$ROOT" python3 "$HOOKS/pa
 
 # --------------------------------------------------------------- outright refusals
 
+# Stacking is refused by default but stays possible, deliberately and per repository.
+allow_stacked=$(cd "$ROOT" 2>/dev/null && git config --get --bool countscore.allowStackedPr 2>/dev/null)
+if [ "$allow_stacked" = "true" ]; then
+    verdict=$(printf '%s' "$verdict" | jq '.blocks |= map(select(.rule != "stacked-pr"))' 2>/dev/null)
+fi
+
 blocked=$(printf '%s' "$verdict" | jq -r '.blocks[]?.message' 2>/dev/null)
 if [ -n "$blocked" ]; then
     printf '%s\n' "$blocked" >&2

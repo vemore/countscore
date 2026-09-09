@@ -93,6 +93,13 @@ here and, more usefully, with what those hooks do *not* cover.
   `git config branch.<name>.noPullRequest true`, and you say so rather than doing it
   silently.
 
+- **A pull request targets `main`.** Never stack one on another branch: it merges into that
+  base, and if the base is merged first — it usually is — the child's work reaches nowhere,
+  while both pull requests read as merged and green. When the work depends on something not
+  yet merged, wait for it and rebase onto `main`, or put both changes in one pull request.
+  A hook refuses `gh pr create --base <anything but main>`; stacking anyway is the user's
+  decision to take, not yours.
+
 ## Commands
 
 ```bash

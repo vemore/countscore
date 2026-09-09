@@ -17,7 +17,37 @@ if [ -z "$(find lib -name '*.g.dart' -print -quit 2>/dev/null)" ]; then
     echo "(no --delete-conflicting-outputs -- build_runner 2.16 removed the flag). Nothing compiles until then."
 fi
 
+# A merged pull request whose base was not `main` merged into that base. If the base
+# was itself merged first, the child's work never reached main -- it happened on
+# 2026-09-09 and was invisible until someone looked at `git ls-tree origin/main`.
+delivery_check() {
+    case "$(git remote get-url origin 2>/dev/null)" in *github.com*) ;; *) return ;; esac
+    command -v gh >/dev/null 2>&1 || return
+    gh auth status >/dev/null 2>&1 || return
+
+    local cutoff acked
+    cutoff=$(date -u -d '14 days ago' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null) || return
+    acked=" $(git config --get-all countscore.deliveryAcknowledged 2>/dev/null | tr '\n' ' ') "
+
+    timeout 20 gh pr list --state merged --limit 30 \
+        --json number,title,baseRefName,mergeCommit,mergedAt \
+        --jq ".[] | select(.baseRefName != \"main\") | select(.mergedAt > \"$cutoff\") | \"\(.number)\t\(.baseRefName)\t\(.mergeCommit.oid)\t\(.title)\"" \
+        2>/dev/null |
+    while IFS=$'\t' read -r number base sha title; do
+        case "$acked" in *" $number "*) continue ;; esac
+        # Ask GitHub rather than git: the merge commit of a deleted branch may not
+        # exist in this clone at all.
+        case "$(timeout 20 gh api "repos/{owner}/{repo}/compare/main...$sha" --jq .status 2>/dev/null)" in
+            identical|behind) continue ;;
+        esac
+        echo "PR #$number merged into '$base', not into main, and its commits are not on main:"
+        echo "  \"$title\" — check whether that work reached main another way. If it did,"
+        echo "  record it: git config --add countscore.deliveryAcknowledged $number"
+    done
+}
+
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
+delivery_check
 branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 [ -z "$branch" ] && exit 0
 

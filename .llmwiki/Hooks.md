@@ -21,6 +21,11 @@ is untouched by it.
 | `SessionStart` | — | `session-start.sh` | Says whether the clone needs codegen and whether the branch is safe |
 | `Stop` | — | `require-pull-request.sh` | Refuses to end the turn while finished commits have no pull request, or while that pull request is red |
 
+`session-start.sh` also reports any pull request merged in the last 14 days whose base was
+not `main` and whose commits are not on `main` — work that merged into a dead-end branch.
+Acknowledge one that reached `main` another way with
+`git config --add countscore.deliveryAcknowledged <number>`.
+
 `parse_command.py` and `arb_keys.py` are helpers, not handlers.
 `scripts/hooks_selftest.sh` exercises all of them from a table of ~57 cases and runs as the
 first step of the `app` job in `.github/workflows/ci.yml`.
@@ -38,6 +43,7 @@ first step of the `app` job in `.github/workflows/ci.yml`.
 | Committing with red gates | `flutter analyze`, `flutter test` if app paths are involved; `ruff`/`mypy`/`pytest -m 'not integration'` if `backend/` is |
 | Committing divergent ARB files, or a stale `app_localizations*.dart` | key sets against the template from `l10n.yaml`, then `flutter gen-l10n` |
 | Ending a turn with commits that no pull request covers, or whose pull request has a failing check | `gh pr list --head <branch>`, then `gh pr checks` |
+| `gh pr create --base <anything but main>` | the parsed `--base` argument; unlocked per repository by `countscore.allowStackedPr` |
 
 The path set that decides which gates run is a union, not `git diff --cached` alone:
 `git commit -a` stages tracked changes *after* the hook has read the index, so `--cached`
@@ -115,6 +121,16 @@ a superset costs seconds and never blocks wrongly.
   in the payload marks the retry, and the hook stands down then, so a turn can always end.
   Failing checks block too, on the same reasoning: a red pull request is not a delivered
   change. Both `gh` calls are wrapped in `timeout` so a slow network cannot hang a session.
+- **Why stacked pull requests are refused (2026-09-09).** PR #3 was opened with
+  `--base docs/privacy-disclosure` while that branch was under review. The parent merged
+  first, rebased, so `main` took a snapshot from before the child existed; the child then
+  merged into its base — a branch whose content was already on `main` under different
+  hashes — and its own work arrived nowhere. Both pull requests read as merged and green.
+  It cost a fourth pull request to repair. The guard refuses the shape rather than trying
+  to police merge order, which is the user's action and not observable from here. The
+  session-start check is the net for the same failure arriving another way; it asks GitHub
+  to compare rather than git, because the merge commit of a deleted branch may not exist
+  in the clone at all.
 - **Why the self-test is in CI.** The interesting cases are the ones that look like a
   violation and are not. Without a table exercised on every push, the first rule change
   breaks a guard silently — and a broken guard is indistinguishable from a passing one.

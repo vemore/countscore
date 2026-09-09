@@ -69,6 +69,11 @@ guard "the build output copy is disposable"         0 'rm build/web/sqlite3.wasm
 guard "a same-named file outside the project"       0 'rm -rf /tmp/web/sqlite3.wasm'
 guard "wiping build/ is routine"                    0 'rm -rf build/'
 guard "an unparseable command fails open"           0 'echo "unbalanced'
+guard "a pull request aimed at main"                 0 'gh pr create --base main --head x --title t --body b'
+guard "a pull request stacked on another branch"    2 'gh pr create --base feat/other --head x --title t'
+guard "the same, written --base=x"                  2 'gh pr create --base=feat/other --title t'
+guard "no --base means the repository default"      0 'gh pr create --title t --body b'
+guard "reading pull requests is not creating one"   0 'gh pr list --state merged'
 
 echo "== commit detection =========================================="
 commit_field "plain commit"                    false '.commit.all'   'git commit -m x'
@@ -196,6 +201,16 @@ stop_case() {  # description, expected (silent|block), [stop_hook_active]
 
 git -C "$WORK" switch -q main
 stop_case "nothing to publish from main" silent
+
+# Stacking stays possible, per repository and on purpose.
+out=$(payload "gh pr create --base feat/other --title t" "$WORK" \
+      | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/guard-bash.sh" 2>/dev/null)
+report "stacking is refused by default" 2 "$?"
+git -C "$WORK" config countscore.allowStackedPr true
+out=$(payload "gh pr create --base feat/other --title t" "$WORK" \
+      | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/guard-bash.sh" 2>/dev/null)
+report "stacking unlocked for this repository" 0 "$?"
+git -C "$WORK" config --unset countscore.allowStackedPr
 
 git -C "$WORK" switch -qc feat/quiet origin/main
 stop_case "a branch with no commits of its own" silent
