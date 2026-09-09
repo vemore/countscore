@@ -6,6 +6,101 @@ readable after the fact.
 
 ---
 
+## Release builds declare no `INTERNET` permission, so the analysis cannot work
+
+**Status:** done (2026-09-09) — closed on `fix/release-internet-permission`.
+
+`android/app/src/main/AndroidManifest.xml` declared **no permissions at all**. `INTERNET`
+appeared only in `android/app/src/debug/AndroidManifest.xml` and the profile manifest, where
+Flutter's template puts it for hot reload. Confirmed against a merged release manifest: it
+contained one `uses-permission`, the generated `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`,
+and no `INTERNET`.
+
+So **the ZapZap analysis could not work in a signed release build** — the HTTP POST in
+`lib/screens/game_analysis_screen.dart` would fail with a `SocketException`. It worked in
+debug and profile, which is why it went unnoticed: the e2e device run drives a debug build,
+and CI builds a debug APK.
+
+**What closed it.** The permission is now in the main manifest, with a comment saying what
+needs it and why the debug manifest does not cover it. Verified the way the bug demanded —
+against the *merged* manifest of a real signed build, not the source:
+
+```
+$ grep uses-permission build/app/intermediates/merged_manifests/release/*/AndroidManifest.xml
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="com.vemore.countscore.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+```
+
+It shipped with the data safety declaration it depends on, in the same commit, because the
+two are only correct together: the permission without the declaration transmits data the
+form denies, and the declaration without the permission declares a flow the binary cannot
+perform.
+
+The entry left two questions open. Both are answered:
+
+- **Should the release build reach the network at all before the sync client exists?** Yes.
+  The ZapZap analysis is a shipped, user-facing 1.1.0 feature and is the only flow the
+  permission enables; groups and sync have no client, so they add nothing to the surface.
+- **Should the e2e suite run against a release build so this is caught mechanically?** No —
+  it calls the production endpoint and needs the keystore, which is why it is already out of
+  CI. Instead the `android` CI job now asserts that the main manifest declares `INTERNET`.
+  That is a weaker check than a real release build, and deliberately so: it needs no
+  keystore, no network and no minutes, and it catches the exact regression that happened.
+  What it cannot catch — a permission present in source but lost in the merge — is covered
+  by the `release-android` checklist, which now greps the merged manifest every release.
+
+---
+
+## `PUBLISHING.md` predates the backend
+
+**Status:** done (2026-09-09) — closed on `fix/release-internet-permission`.
+
+It described a purely local, offline app. Any release shipping group sharing or LLM
+commentary needed the Play Data Safety declaration rewritten first, to disclose the network
+calls and what game data leaves the device. **This blocked the next store release.**
+
+`PLAY_STORE_DATA_SAFETY.md` and `privacy_policy.md` had already had that pass on
+2026-09-09; `PUBLISHING.md` was the one document still contradicting them, telling the
+reader to answer *"Does your app collect or share user data? **No**"* and carrying an
+embedded privacy-policy template that said *"No data is transmitted to external servers"*.
+
+**What closed it.** The file was cut from 867 lines to 184 rather than corrected, because
+correcting it would have preserved the cause. It had duplicated the keystore and build
+procedure from the `release-android` skill and the form answers from
+`PLAY_STORE_DATA_SAFETY.md`; the duplicates are what drifted. What remains is
+Console-specific only — listing, App Content answers, tracks, rollout, post-launch — with a
+table at the top routing everything else to its single source. Stale facts disappeared with
+the sections carrying them: Flutter 3.9.2, version 1.0.0+1, the policy template, both "no
+data collected" answers, "Shares user data: No", and "verify ProGuard/R8 is enabled".
+
+**Three things the pass turned up that the entry did not predict:**
+
+1. **The actual published listing text was false too.**
+   `store_listing/en-US/full_description.txt` and its `fr-FR` twin — the copy that goes on
+   the store page, not a template — said *"no data collection"* and *"Your data stays on
+   your device"*. That would have put the store listing in direct contradiction with a Data
+   Safety form saying "Yes", which is the pairing reviewers look for. Both locales now
+   describe the ZapZap analysis as an optional feature and say plainly that data is sent
+   when the user asks.
+2. **Both listings claimed "Requires Android 5.0 or higher"** against a `minSdk` of 24,
+   which is Android 7.0. Corrected in the same pass.
+3. **ProGuard/R8 is enabled, and three documents said it was disabled.**
+   `android/app/build.gradle.kts:53-54` has `isMinifyEnabled = true` and
+   `isShrinkResources = true` — turned on in `1614707` and never reflected anywhere.
+   `.llmwiki/Release.md` and the `release-android` skill are corrected; the wiki keeps the
+   old claim in a `Status: Outdated` block.
+
+The privacy policy is also published now. `scripts/build_privacy_page.py` renders
+`privacy_policy.md` to `docs/privacy-policy.html` with pandoc, GitHub Pages serves it at
+`https://vemore.github.io/countscore/privacy-policy.html`, and that URL replaces the
+`[YOUR_PRIVACY_POLICY_URL]` placeholder the Data Safety guide carried. Generating rather
+than hand-writing the page is deliberate: a hand-maintained copy is exactly how
+`PUBLISHING.md` came to contradict the policy in the first place. **Enabling Pages in the
+repository settings is still a manual step**, and the release is not submittable until it is
+done.
+
+---
+
 ## `privacy_policy.md` and `PLAY_STORE_DATA_SAFETY.md` deny a data flow that exists
 
 **Status:** done (2026-09-09) — closed by the rewrite of both documents on

@@ -4,7 +4,8 @@ Complete guide for filling out the Data Safety section in Google Play Console fo
 
 **Last Updated**: September 9, 2026
 **Applies to**: CountScore v1.1.0 and later
-**Privacy Policy**: See `privacy_policy.md`
+**Privacy Policy**: `privacy_policy.md`, published at
+https://vemore.github.io/countscore/privacy-policy.html
 
 > **This guide changed materially in September 2026.** Versions 1.0.x contained no networking
 > code, and the declaration for them was correctly "no data collected". **Version 1.1.0 adds
@@ -29,7 +30,7 @@ to an LLM provider to generate the analysis text. Nothing is stored on the backe
 ## Table of Contents
 
 1. [What Changed and Why](#what-changed-and-why)
-2. [Prerequisite Before Submitting](#prerequisite-before-submitting)
+2. [Check Before Submitting](#check-before-submitting)
 3. [Question-by-Question Guide](#question-by-question-guide)
 4. [Data Types to Declare](#data-types-to-declare)
 5. [App Permissions Justification](#app-permissions-justification)
@@ -67,28 +68,29 @@ required is permitted; declaring less is what gets apps removed.
 
 ---
 
-## Prerequisite Before Submitting
+## Check Before Submitting
 
-⚠️ **The release build currently declares no `INTERNET` permission.**
-`android/app/src/main/AndroidManifest.xml` requests no permissions at all; `INTERNET` is
-present only in `android/app/src/debug/AndroidManifest.xml` and the profile manifest, which
-Flutter adds for hot reload. A signed release build therefore **cannot make the analysis
-request** — it will fail at runtime.
+✅ **The release build declares `INTERNET`.** It is in
+`android/app/src/main/AndroidManifest.xml`, and it is the only permission the app declares.
 
-Before shipping 1.1.0, add to `android/app/src/main/AndroidManifest.xml`:
+This was not always true: until 2026-09-09 the permission existed only in
+`android/app/src/debug/AndroidManifest.xml` and the profile manifest, where Flutter puts it
+for hot reload. Neither is merged into a release build, so a signed release could not make
+the analysis request at all — it failed at runtime while working perfectly in debug. The
+declaration on this form and the permission in the binary have to move together, which is why
+they landed in the same change.
 
-```xml
-<uses-permission android:name="android.permission.INTERNET"/>
-```
-
-Then verify it survived the merge:
+Re-run the check on every release, against the **merged** manifest and not the source one:
 
 ```bash
 flutter build apk --release --no-tree-shake-icons
 grep uses-permission build/app/intermediates/merged_manifests/release/*/AndroidManifest.xml
 ```
 
-Both the permission and this declaration must land in the same release. See `TODO.md`.
+Expect `android.permission.INTERNET` alongside the generated
+`DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`. A CI step asserts the source manifest still
+declares it (`.github/workflows/ci.yml`, the `android` job); CI cannot check the merged
+release manifest, because release signing needs the gitignored `android/key.properties`.
 
 ---
 
@@ -134,21 +136,16 @@ cleartext transmission path.
 
 #### Q4: Privacy policy URL
 
-**Answer**: `[YOUR_PRIVACY_POLICY_URL]`
+**Answer**: `https://vemore.github.io/countscore/privacy-policy.html`
 
-The published policy must be the **current** `privacy_policy.md` (v2.0, September 9, 2026),
-which describes the analysis feature. Publishing the older v1.0 text alongside a "Yes"
-declaration is exactly the mismatch reviewers look for.
+That page is `docs/privacy-policy.html`, a static rendering of the **current**
+`privacy_policy.md` (v2.1, September 9, 2026), which describes the analysis feature.
+Publishing the older v1.0 text alongside a "Yes" declaration is exactly the mismatch
+reviewers look for, so the two must be regenerated together — see `docs/README.md`.
 
-**Hosting options**:
-
-1. **GitHub Pages** (recommended, free) — `https://vemore.github.io/countscore/privacy-policy.html`;
-   create `docs/privacy-policy.html` from `privacy_policy.md` and enable Pages.
-2. **Personal website** — must be permanent and publicly accessible.
-
-```bash
-pandoc privacy_policy.md -o privacy-policy.html --standalone
-```
+**One manual step remains**: GitHub Pages has to be switched on for the repository —
+*Settings → Pages → Source: Deploy from a branch → `main` / `docs`*. Confirm the URL loads
+publicly, in a private window, before pasting it into the Console.
 
 **CRITICAL**: the URL must be publicly accessible (no login), permanent, and HTTPS.
 
@@ -194,8 +191,8 @@ from previous games.
 
 ### 1. INTERNET
 
-**Status**: must be added to the main manifest before 1.1.0 — see
-[Prerequisite](#prerequisite-before-submitting).
+**Status**: ✅ **Declared** in `android/app/src/main/AndroidManifest.xml`, and it is the only
+permission the app declares — see [Check Before Submitting](#check-before-submitting).
 
 **Justification**:
 "The INTERNET permission is used for a single, optional, user-initiated feature: generating a
@@ -233,14 +230,16 @@ The merged manifest is the one that ships — always verify there, not in the so
 
 Before submitting:
 
-- [ ] `INTERNET` added to the main manifest and confirmed in the merged release manifest
+- [ ] `INTERNET` confirmed in the **merged release** manifest, not just the source one
 - [ ] **Q1**: answered "Yes" for data collection/sharing
 - [ ] **Data types**: Personal info → Name, and App activity → Other user-generated content
 - [ ] Both marked **Optional**, purpose **App functionality**, **not** linked to identity,
       **not** used for tracking
 - [ ] **Q2**: answered "Yes" for encryption in transit
 - [ ] **Q3**: answered "Yes" for data deletion
-- [ ] **Privacy Policy**: URL live, HTTPS, publicly accessible, and serving the **v2.0** text
+- [ ] **GitHub Pages enabled** (Settings → Pages → `main` / `docs`)
+- [ ] **Privacy Policy**: https://vemore.github.io/countscore/privacy-policy.html live over
+      HTTPS, publicly accessible in a private window, and serving the **v2.1** text
 - [ ] Policy content matches the declaration — no leftover "no data is transmitted" claims
 - [ ] Data Safety preview reviewed in Play Console
 - [ ] Changes saved
@@ -369,7 +368,7 @@ DATA SAFETY QUICK REFERENCE — CountScore v1.1.0+
 Q: Collect or share data?        A: YES (optional, user-initiated analysis only)
 Q: Data encrypted in transit?    A: YES (HTTPS/TLS)
 Q: Data deletion available?      A: YES
-Privacy Policy URL:              [YOUR_URL]  (must serve the v2.0 text)
+Privacy Policy URL:              https://vemore.github.io/countscore/privacy-policy.html
 
 Data types declared:
 - Personal info > Name .................. player names
@@ -377,7 +376,7 @@ Data types declared:
 Both: collected YES, shared YES, optional, App functionality,
       NOT linked to identity, NOT used for tracking.
 
-Permissions: INTERNET (must be added to the main manifest before release)
+Permissions: INTERNET (declared in the main manifest; the only one)
              No WAKE_LOCK, no storage permissions.
 
 Summary: local-only by default; one optional feature transmits one game's data

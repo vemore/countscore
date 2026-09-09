@@ -15,7 +15,10 @@ Complete Game History
 Review the full score history for every game. Track progress over time and settle those "who won last time?" debates.
 
 Works Offline
-All data is stored locally on your device. No internet connection required – perfect for camping trips, flights, or anywhere you play.
+All data is stored locally on your device. No internet connection required to track a single score – perfect for camping trips, flights, or anywhere you play.
+
+ZapZap Analysis (optional)
+Finished a game of ZapZap? Ask for a written commentary on how it went. This is the one feature that uses the internet: when you tap the button, that game's scores are sent to our server and on to an AI model to write the analysis. It only ever runs when you ask for it.
 
 HOW IT WORKS
 
@@ -30,7 +33,7 @@ Family game nights, card tournaments, board game sessions, sports scorekeeping, 
 
 PRIVACY
 
-Your data stays on your device. There are no accounts to create, no cloud sync, and no data collection. CountScore is open-source (MIT License) so you can verify this yourself.
+No accounts, no cloud sync, no ads and no tracking. Your games stay on your device, with one exception you control: tapping "generate analysis" sends that game's data to our server and on to an AI provider to write the commentary, and nothing else is ever sent. Full details in our privacy policy. CountScore is open-source (MIT License), so you can verify all of this yourself.
 
 COMPLETELY FREE
 
@@ -41,4 +44,4 @@ SUPPORT
 Email: scribio.ai@gmail.com
 Source code: github.com/vemore/countscore
 
-Requires Android 5.0 or higher.
+Requires Android 7.0 or higher.

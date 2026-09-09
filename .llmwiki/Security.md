@@ -25,6 +25,24 @@
 | Security headers | `security_headers` middleware in `app/main.py:main`; HSTS behind `HSTS_ENABLED`. |
 | Backups | Daily `pg_dump`, 7-day rotation. |
 
+### Disclosure — what the app admits to sending, and to whom
+
+[[Release]] and `DONE.md` point here for "what those declarations would have to disclose",
+so it is stated once, here, and the compliance documents are written from it.
+
+| Question | Answer, and where it is verified |
+|---|---|
+| What leaves the device | One request, `POST /comments/zapzap-analysis`, built at `lib/screens/game_analysis_screen.dart:95-122`: game name and date, player **names**, every round's scores and free-text **comment**, and per-player history of up to 10 *other* games (`drift_repositories.dart:698-708`). |
+| When | Only when the user taps Generate. Nothing is sent on launch, on a timer, or in the background; `initState` only reads the local cache. |
+| To whom | Our backend, then the provider `LLM_PROVIDER` selects — AWS Bedrock, Google Gemini or Mistral (`backend/app/services/llm/factory.py`). The provider sees essentially the whole payload, rendered by `zapzap_prompt.py`. |
+| Kept where | Nowhere on our side: the route takes no `session` and writes no row. The per-IP counter is process memory only. The device keeps its own copy in `game_analyses` until the user deletes it. At the provider, whatever that provider's retention policy says — which we do not control, and which is why the Play declaration does not claim the ephemeral-processing exemption. |
+| Declared as | Personal info → Name, and App activity → Other user-generated content. Both optional, App functionality, not linked to identity, not used for tracking. `PLAY_STORE_DATA_SAFETY.md`. |
+| Permission it needs | `INTERNET`, and only that, in `android/app/src/main/AndroidManifest.xml`. |
+
+The rule that keeps this true is in `CLAUDE.md`: a new outbound flow — a new field in this
+payload included — changes `README.md`, `privacy_policy.md` and `PLAY_STORE_DATA_SAFETY.md`
+in the same commit, or it is not finished.
+
 ### Known debt — open, and deliberate for now
 
 - **The two stateless `/comments` endpoints are unauthenticated and unbudgeted**, protected
@@ -34,6 +52,11 @@
 - **Every device in a group is equal.** There is no owner role on `Device`, so any member
   can rotate the share token or revoke a sibling device. Full lateral privilege within a
   group, which matches the household model but not a public one.
+- **The ZapZap system prompt names real people.** `backend/app/services/zapzap_prompt.py:52-59`
+  hard-codes eight first names and a reputation for each into `ZAPZAP_SYSTEM_PROMPT`, so
+  those names reach the third-party provider on **every** request, whoever is playing. The
+  compliance documents do not cover it, because they describe what leaves the *device*. See
+  `TODO.md`.
 - **In-memory state ties the service to one worker.** `ip_rate_limiter` and `ws_ticket`
   both live in process memory; horizontal scaling needs them moved to Redis or Postgres
   first. See rule 2 in `backend/CLAUDE.md`.

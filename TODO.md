@@ -3,38 +3,29 @@
 Open work only. A finished item moves to `DONE.md` — see the workflow section of
 `CLAUDE.md`.
 
-## Release builds declare no `INTERNET` permission, so the analysis cannot work
+## The ZapZap system prompt hard-codes eight real people's names
 
-**Status:** open — noted 2026-09-09, while checking permissions for the data safety guide.
+**Status:** open — noted 2026-09-09, while tracing the analysis payload for the data safety
+pass.
 
-`android/app/src/main/AndroidManifest.xml` declares **no permissions at all**. `INTERNET`
-appears only in `android/app/src/debug/AndroidManifest.xml` and the profile manifest, where
-Flutter's template puts it for hot reload. Confirmed against a merged release manifest built
-today: `build/app/intermediates/merged_manifests/release/processReleaseManifest/AndroidManifest.xml`
-contains one `uses-permission`, the generated `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, and
-no `INTERNET`.
+`backend/app/services/zapzap_prompt.py:52-59` writes eight first names — Thibaut, Vincent,
+Lionel, Laurent, Guillaume, Simon, Nadia, Ben — and a one-line reputation for each directly
+into `ZAPZAP_SYSTEM_PROMPT`. The prompt is constant, so **those names and characterisations
+are sent to the third-party LLM provider on every single request**, whoever is actually
+playing, and they reach a provider whose retention we do not control ([[Security]]).
 
-So **the ZapZap analysis cannot work in a signed release build** — the HTTP POST in
-`lib/screens/game_analysis_screen.dart` will fail with a `SocketException`. It works in debug
-and profile, which is why it has not been noticed: the e2e device run described in
-[[Testing]] drives a debug build.
+Two separate problems. The privacy one: none of the compliance documents mentions it,
+because all three describe what leaves the *device*, and this text never was on the device.
+A stranger who installs the app and generates one analysis transmits eight real people's
+names without any of it being disclosed. The quality one: the model is being told about
+players who are not in the game, which is a strange thing to ask it to write around.
 
-The fix is one line in the main manifest:
-
-```xml
-<uses-permission android:name="android.permission.INTERNET"/>
-```
-
-It is filed rather than applied because it is a shipping-behaviour change that belongs with a
-release, needs verification against the merged manifest (not the source one), and must land in
-the same release as the updated Play Store data safety declaration — see
-`PLAY_STORE_DATA_SAFETY.md`, which documents it as a prerequisite. Declaring transmission on
-the form while the binary cannot transmit, or shipping the permission while the form still
-says nothing is collected, are both worse than either change alone.
-
-Worth checking on the same pass whether the release build should reach the network at all
-before the sync client exists, and whether the e2e suite should run against a release build
-so this class of bug is caught mechanically.
+The fix is to move the personalities out of the constant prompt and into per-group
+configuration, or to drop them. Either way it is a change to what the provider receives, so
+`.llmwiki/Security.md` and the three privacy documents are implicated — see the outbound
+data flow rule in `CLAUDE.md`. Not fixed inline because it changes the tone of every
+generated analysis, which is a product decision, and the personalities are presumably there
+on purpose.
 
 ## The Flutter sync client does not exist
 
@@ -211,14 +202,6 @@ the whole tree at once. Background for each lives in the wiki page named alongsi
 nothing: no vhost, no Web Station config, no deploy script, no documented `--base-href`.
 The app is built and served by hand. Whoever deploys it next has to rediscover how.
 See `.llmwiki/Web.md`.
-
-### `PUBLISHING.md` predates the backend
-
-It describes a purely local, offline app. Any release shipping group sharing or LLM
-commentary needs the Play Data Safety declaration rewritten first, to disclose the network
-calls and what game data leaves the device. `PLAY_STORE_DATA_SAFETY.md` and
-`privacy_policy.md` need the same pass. **This blocks the next store release**, not the next
-commit. See `.llmwiki/Release.md` and `.llmwiki/Security.md`.
 
 ### Smaller, self-contained
 

@@ -15,7 +15,10 @@ Historique complet des parties
 Consultez l'historique complet des scores de chaque partie. Suivez la progression dans le temps et réglez les débats "qui a gagné la dernière fois ?".
 
 Fonctionne hors ligne
-Toutes les données sont stockées localement sur votre appareil. Aucune connexion internet requise – parfait pour le camping, les voyages ou partout où vous jouez.
+Toutes les données sont stockées localement sur votre appareil. Aucune connexion internet n'est nécessaire pour suivre vos scores – parfait pour le camping, les voyages ou partout où vous jouez.
+
+Analyse ZapZap (optionnelle)
+Une partie de ZapZap terminée ? Demandez un commentaire écrit de la partie. C'est la seule fonctionnalité qui utilise internet : quand vous appuyez sur le bouton, les données de cette partie sont envoyées à notre serveur puis à un modèle d'IA qui rédige l'analyse. Elle ne se déclenche jamais toute seule.
 
 COMMENT ÇA MARCHE
 
@@ -30,7 +33,7 @@ Les soirées jeux en famille, les tournois de cartes, les sessions de jeux de so
 
 CONFIDENTIALITÉ
 
-Vos données restent sur votre appareil. Aucun compte à créer, aucune synchronisation cloud, aucune collecte de données. CountScore est open source (licence MIT), vous pouvez le vérifier vous-même.
+Aucun compte à créer, aucune synchronisation cloud, aucune publicité, aucun traceur. Vos parties restent sur votre appareil, à une exception près que vous contrôlez : appuyer sur « générer l'analyse » envoie les données de cette partie à notre serveur puis à un fournisseur d'IA pour rédiger le commentaire, et rien d'autre n'est jamais transmis. Tous les détails dans notre politique de confidentialité. CountScore est open source (licence MIT), vous pouvez tout vérifier vous-même.
 
 ENTIÈREMENT GRATUIT
 
@@ -41,4 +44,4 @@ SUPPORT
 Email : scribio.ai@gmail.com
 Code source : github.com/vemore/countscore
 
-Nécessite Android 5.0 ou supérieur.
+Nécessite Android 7.0 ou supérieur.
