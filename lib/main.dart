@@ -8,12 +8,18 @@ import 'providers/settings_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Read the theme before the first frame so a dark-mode user never sees a
+  // light flash on cold start.
+  final themeMode = await ThemeProvider.load();
+  runApp(MyApp(initialThemeMode: themeMode));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, required this.initialThemeMode});
+
+  final ThemeMode initialThemeMode;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +28,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => GameProvider()),
         ChangeNotifierProvider(create: (_) => GameTypeProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider(initialThemeMode)),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {

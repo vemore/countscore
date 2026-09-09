@@ -13,7 +13,9 @@
 `lib/main.dart` — `MyApp` wraps a `MultiProvider` (4 providers) around a `MaterialApp`.
 Material 3, seed colour `Colors.deepPurple`. 10 `supportedLocales` with a
 `localeResolutionCallback` falling back to `en`. Home is `HomeScreen`.
-There is no DI container and no `WidgetsFlutterBinding.ensureInitialized()`.
+There is no DI container. `main()` is `async` and calls
+`WidgetsFlutterBinding.ensureInitialized()` for one reason: to `await ThemeProvider.load()`
+and hand the result to `MyApp(initialThemeMode:)`, so the first frame is already themed.
 
 ### Providers — `lib/providers/`, all `ChangeNotifier` (provider ^6.1.2)
 
@@ -22,7 +24,7 @@ There is no DI container and no `WidgetsFlutterBinding.ensureInitialized()`.
 | `game_provider.dart` (339 l.) | The substantial one. Repositories are constructor-injectable, defaulting to the six Drift implementations over `AppDatabase.instance`. Owns `_games`, `_currentGame`, `_currentPlayers`, `_currentRounds` and `_scores` (keyed `"playerId_roundId"`). Game/round/score CRUD plus stats. |
 | `game_type_provider.dart` (46 l.) | Game-type list CRUD, `getGameTypeById`. |
 | `settings_provider.dart` (72 l.) | Wakelock toggle (SharedPreferences-backed) and DB export/import. The **only** caller of `DatabaseService` for I/O. Exposes `supportsDbExportImport => !kIsWeb`. |
-| `theme_provider.dart` (19 l.) | `ThemeMode` only, **not persisted** — resets to `ThemeMode.system` on every restart. |
+| `theme_provider.dart` (33 l.) | `ThemeMode` only, persisted to SharedPreferences under `themeMode` as `ThemeMode.name`. `load()` is called from `main()` before `runApp`. |
 
 ### Screens — `lib/screens/` (10)
 
@@ -55,5 +57,9 @@ web alike. It costs roughly 200 KB. Omitting it fails the build with a tree-shak
 - **Icons are database-driven** so that a user can pick an icon for a custom game type.
   The `--no-tree-shake-icons` tax is the accepted price; the alternative was a fixed enum
   of icons, which would have made custom game types feel second-class.
-- **`ThemeProvider` deliberately holds nothing but `ThemeMode`.** Persisting it was never
-  wired up — this is a small known gap, not a design choice.
+- **`ThemeProvider` is preloaded rather than self-loading.** `SettingsProvider` loads its
+  prefs asynchronously from its own constructor, which is fine for a wakelock but would
+  paint one frame of the wrong theme on every cold start. So the theme is read in `main()`
+  instead and injected — the only reason the app has an `async` `main()`.
+- **The mode is stored as `ThemeMode.name`, not its index**, so reordering the enum cannot
+  silently flip a user's theme. An unknown stored value decodes to `ThemeMode.system`.

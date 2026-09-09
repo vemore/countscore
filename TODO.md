@@ -123,9 +123,12 @@ commit. See `.llmwiki/Release.md` and `.llmwiki/Security.md`.
 
 ### Smaller, self-contained
 
-- **`ThemeProvider` never persists.** `lib/providers/theme_provider.dart` is 19 lines and
-  holds `ThemeMode` in memory only, so the app resets to `ThemeMode.system` on every
-  restart. `SettingsProvider` already has the SharedPreferences wiring to copy.
+- **`ThemeProvider` never persists.** **Status:** done (2026-09-09).
+  `lib/providers/theme_provider.dart` held `ThemeMode` in memory only, so the app reset to
+  `ThemeMode.system` on every restart. It now stores `ThemeMode.name` under the `themeMode`
+  key, and `main()` reads it before `runApp` rather than loading async in the constructor
+  the way `SettingsProvider` does — that pattern would have shown a light flash on every
+  cold start for a dark-mode user. The unused `toggleTheme()` and `isDarkMode` went with it.
 - **`test/widget_test.dart` pumps no widgets.** Its 8 tests are model serialisation. The
   name implies widget coverage that does not exist anywhere in the repo — rename it, or
   give it real widget tests.
