@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -69,21 +70,23 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
           ),
-          Consumer<SettingsProvider>(
-            builder: (context, settingsProvider, child) {
-              return SwitchListTile(
-                title: Text(l10n.keepScreenAwake),
-                subtitle: Text(l10n.keepScreenAwakeDescription),
-                value: settingsProvider.keepScreenAwake,
-                onChanged: (value) {
-                  settingsProvider.toggleKeepScreenAwake();
-                },
-              );
-            },
-          ),
-          const Divider(),
+          if (!kIsWeb)
+            Consumer<SettingsProvider>(
+              builder: (context, settingsProvider, child) {
+                return SwitchListTile(
+                  title: Text(l10n.keepScreenAwake),
+                  subtitle: Text(l10n.keepScreenAwakeDescription),
+                  value: settingsProvider.keepScreenAwake,
+                  onChanged: (value) {
+                    settingsProvider.toggleKeepScreenAwake();
+                  },
+                );
+              },
+            ),
+          if (!kIsWeb) const Divider(),
 
-          // Section Sauvegarde
+          // Section Sauvegarde (mobile/desktop only)
+          if (!kIsWeb) ...[
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Text(
@@ -205,6 +208,7 @@ class SettingsScreen extends StatelessWidget {
               );
             },
           ),
+          ], // end if (!kIsWeb)
         ],
       ),
     );

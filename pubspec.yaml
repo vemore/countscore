@@ -50,9 +50,14 @@ dependencies:
   path: ^1.9.0
   http: ^1.6.0
   flutter_markdown_plus: ^1.0.3
+  drift: ^2.33.0
+  drift_flutter: ^0.3.0
 
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  # End-to-end widget driving on web (chromedriver) and real devices.
+  integration_test:
     sdk: flutter
   # In-memory SQLite for desktop/CI tests (avoids Android/iOS device dependency).
   sqflite_common_ffi: ^2.3.0
@@ -66,6 +71,8 @@ dev_dependencies:
 
   # Flutter launcher icons - generates app icons for all platforms
   flutter_launcher_icons: ^0.14.1
+  drift_dev: ^2.33.0
+  build_runner: ^2.15.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

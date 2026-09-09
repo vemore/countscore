@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart';
 import '../models/game_type.dart';
+import '../repositories/drift/drift_repositories.dart';
 import '../repositories/game_type_repository.dart';
-import '../repositories/sqflite/sqflite_game_type_repository.dart';
-import '../services/database_service.dart';
+import '../services/drift/database.dart';
 
 class GameTypeProvider with ChangeNotifier {
   GameTypeProvider({GameTypeRepository? repo})
-      : _repo = repo ?? SqfliteGameTypeRepository(DatabaseService.instance);
+      : _repo = repo ?? DriftGameTypeRepository(AppDatabase.instance);
 
   final GameTypeRepository _repo;
 

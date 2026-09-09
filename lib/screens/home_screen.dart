@@ -6,7 +6,6 @@ import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
 import '../models/game.dart';
 import '../models/game_type.dart';
-import '../services/database_service.dart';
 import 'about_screen.dart';
 import 'create_game_screen.dart';
 import 'game_board_screen.dart';
@@ -454,8 +453,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<List<String>> _getGamePlayers(GameProvider provider, int gameId) async {
-    final db = DatabaseService.instance;
-    final players = await db.getPlayersByGame(gameId);
+    final players = await provider.getPlayersOfGame(gameId);
     return players.map((player) => player.name).toList();
   }
 

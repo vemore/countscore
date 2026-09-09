@@ -9,6 +9,9 @@ class SettingsProvider with ChangeNotifier {
 
   bool get keepScreenAwake => _keepScreenAwake;
 
+  /// Export/import is mobile-only in v1 (dart:io File required).
+  bool get supportsDbExportImport => !kIsWeb;
+
   SettingsProvider() {
     _loadSettings();
   }
@@ -29,6 +32,7 @@ class SettingsProvider with ChangeNotifier {
   }
 
   Future<void> _applyWakeLock() async {
+    if (kIsWeb) return; // WakelockPlus not available on web.
     if (_keepScreenAwake) {
       await WakelockPlus.enable();
     } else {
@@ -36,42 +40,31 @@ class SettingsProvider with ChangeNotifier {
     }
   }
 
-  // Exporter la base de données
+  // Exporter la base de données (mobile/desktop only)
   Future<String?> exportDatabase() async {
+    if (kIsWeb) throw UnsupportedError('Export not available on web');
     try {
-      // Demander à l'utilisateur de sélectionner un dossier
       String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
-
-      if (selectedDirectory == null) {
-        // L'utilisateur a annulé la sélection
-        return null;
-      }
-
-      // Exporter la base de données
-      final exportedPath = await DatabaseService.instance.exportDatabase(selectedDirectory);
+      if (selectedDirectory == null) return null;
+      final exportedPath =
+          await DatabaseService.instance.exportDatabase(selectedDirectory);
       return exportedPath;
     } catch (e) {
       throw Exception('Erreur lors de l\'export: $e');
     }
   }
 
-  // Importer une base de données
+  // Importer une base de données (mobile/desktop only)
   Future<bool> importDatabase() async {
+    if (kIsWeb) throw UnsupportedError('Import not available on web');
     try {
-      // Demander à l'utilisateur de sélectionner un fichier
-      // Using FileType.any because .db extension may not be recognized on all Android devices
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.any,
         allowMultiple: false,
       );
-
-      if (result == null || result.files.single.path == null) {
-        // L'utilisateur a annulé la sélection
-        return false;
-      }
-
-      // Importer la base de données
-      await DatabaseService.instance.importDatabase(result.files.single.path!);
+      if (result == null || result.files.single.path == null) return false;
+      await DatabaseService.instance
+          .importDatabase(result.files.single.path!);
       notifyListeners();
       return true;
     } catch (e) {

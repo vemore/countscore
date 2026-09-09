@@ -4,7 +4,6 @@ import '../l10n/app_localizations.dart';
 import '../models/game_type.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
-import '../services/database_service.dart';
 
 class PlayerStatsScreen extends StatefulWidget {
   const PlayerStatsScreen({super.key});
@@ -61,21 +60,9 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
   }
 
   Future<Color> _loadPlayerColor(String playerName) async {
-    final db = await DatabaseService.instance.database;
-
-    final result = await db.query(
-      'players',
-      columns: ['colorValue'],
-      where: 'name = ?',
-      whereArgs: [playerName],
-      limit: 1,
-    );
-
-    if (result.isNotEmpty && result.first['colorValue'] != null) {
-      return Color(result.first['colorValue'] as int);
-    }
-
-    return Colors.blue; // Default color
+    final colorValue =
+        await context.read<GameProvider>().getPlayerColorValue(playerName);
+    return colorValue != null ? Color(colorValue) : Colors.blue;
   }
 
   @override

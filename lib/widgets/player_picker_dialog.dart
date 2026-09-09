@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
-import '../services/database_service.dart';
+import '../providers/game_provider.dart';
 
 class PlayerSelection {
   final String name;
@@ -101,24 +102,11 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
   }
 
   Future<void> _loadPlayerColors() async {
-    final db = await DatabaseService.instance.database;
+    final colorValues = await context.read<GameProvider>().getPlayerColors();
     final colors = <String, Color>{};
-
     for (final playerName in widget.availablePlayers) {
-      final result = await db.query(
-        'players',
-        columns: ['colorValue'],
-        where: 'name = ?',
-        whereArgs: [playerName],
-        orderBy: 'id DESC',
-        limit: 1,
-      );
-
-      if (result.isNotEmpty && result.first['colorValue'] != null) {
-        colors[playerName] = Color(result.first['colorValue'] as int);
-      } else {
-        colors[playerName] = Colors.blue;
-      }
+      final value = colorValues[playerName];
+      colors[playerName] = value != null ? Color(value) : Colors.blue;
     }
 
     if (mounted) {
@@ -190,6 +178,7 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
             Padding(
               padding: const EdgeInsets.all(16),
               child: TextField(
+                key: const Key('player_picker_search'),
                 controller: _searchController,
                 decoration: InputDecoration(
                   labelText: l10n.searchOrCreate,
@@ -221,6 +210,7 @@ class _PlayerPickerDialogState extends State<PlayerPickerDialog> {
               child: SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
+                  key: const Key('player_picker_create'),
                   onPressed: _canCreatePlayer ? _createNewPlayer : null,
                   icon: const Icon(Icons.add_circle_outline),
                   label: Text(l10n.createNewPlayer),

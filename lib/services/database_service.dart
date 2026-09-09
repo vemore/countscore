@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/game.dart';
@@ -21,13 +22,33 @@ class DatabaseService {
     return _database!;
   }
 
+  /// Test hook: inject an already-open database (e.g. an in-memory FFI handle)
+  /// so the singleton CRUD methods operate against it. Pass `null` to reset.
+  @visibleForTesting
+  static set debugDatabase(Database? db) => _database = db;
+
+  /// Exposes [_createDB] for tests that want to build the v9 schema in an
+  /// in-memory FFI database without going through [_initDB].
+  @visibleForTesting
+  Future<void> createDB(Database db, int version) => _createDB(db, version);
+
+  /// Native bootstrap for the Drift migration: open the legacy sqflite file to
+  /// run the v1→v9 migration chain (and create the v9 schema for fresh
+  /// installs), then close so Drift can adopt the migrated file in place.
+  /// See ARCHITECTURE.md §3.2 (two-release strategy).
+  Future<void> bootstrapMigrate() async {
+    final db = await database;
+    await db.close();
+    _database = null;
+  }
+
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
     return await openDatabase(
       path,
-      version: 8,
+      version: 9,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -79,10 +100,28 @@ class DatabaseService {
       )
     ''');
 
+    // Schema v9 — players are GLOBAL (unique per (group_id, name)); a separate
+    // `game_players` join carries the per-game membership (order, color). See
+    // ARCHITECTURE.md §3.3 / §4.1. `game_players.id` is the per-game key that
+    // `scores` references (preserved across the v8→v9 migration).
     await db.execute('''
       CREATE TABLE players (
         id $idType,
+        name $textType,
+        colorValue INTEGER,
+        uuid TEXT NOT NULL UNIQUE,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER,
+        group_id TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE game_players (
+        id $idType,
         gameId $intType,
+        player_id $intType,
         name $textType,
         orderIndex $intType,
         colorValue INTEGER,
@@ -91,7 +130,8 @@ class DatabaseService {
         updated_at INTEGER NOT NULL,
         deleted_at INTEGER,
         group_id TEXT,
-        FOREIGN KEY (gameId) REFERENCES games (id) ON DELETE CASCADE
+        FOREIGN KEY (gameId) REFERENCES games (id) ON DELETE CASCADE,
+        FOREIGN KEY (player_id) REFERENCES players (id) ON DELETE CASCADE
       )
     ''');
 
@@ -121,7 +161,7 @@ class DatabaseService {
         updated_at INTEGER NOT NULL,
         deleted_at INTEGER,
         group_id TEXT,
-        FOREIGN KEY (playerId) REFERENCES players (id) ON DELETE CASCADE,
+        FOREIGN KEY (playerId) REFERENCES game_players (id) ON DELETE CASCADE,
         FOREIGN KEY (roundId) REFERENCES rounds (id) ON DELETE CASCADE
       )
     ''');
@@ -152,13 +192,22 @@ class DatabaseService {
 
     // Indexes
     await db.execute('CREATE INDEX idx_games_gameTypeId ON games(gameTypeId)');
-    await db.execute('CREATE INDEX idx_players_gameId ON players(gameId)');
+    await db.execute('CREATE INDEX idx_game_players_gameId ON game_players(gameId)');
+    await db.execute('CREATE INDEX idx_game_players_player_id ON game_players(player_id)');
+    await db.execute('CREATE UNIQUE INDEX idx_game_players_unique ON game_players(gameId, player_id)');
     await db.execute('CREATE INDEX idx_rounds_gameId ON rounds(gameId)');
     await db.execute('CREATE INDEX idx_scores_playerId ON scores(playerId)');
     await db.execute('CREATE INDEX idx_scores_roundId ON scores(roundId)');
     await db.execute('CREATE INDEX idx_outbox_unsent ON outbox(sent_at, id)');
     await db.execute('CREATE INDEX idx_games_group_id ON games(group_id)');
-    await db.execute('CREATE INDEX idx_players_group_id ON players(group_id)');
+    await db.execute('CREATE INDEX idx_game_players_group_id ON game_players(group_id)');
+    // Local players (group_id NULL) are unique by name (case-insensitive).
+    await db.execute(
+      'CREATE UNIQUE INDEX idx_players_name_local ON players(name COLLATE NOCASE) WHERE group_id IS NULL',
+    );
+    await db.execute(
+      'CREATE UNIQUE INDEX idx_players_name_group ON players(group_id, name COLLATE NOCASE) WHERE group_id IS NOT NULL',
+    );
 
     await _createGameAnalysesTable(db);
 
@@ -377,6 +426,142 @@ class DatabaseService {
       await db.execute('DROP TABLE IF EXISTS game_analyses');
       await _createGameAnalysesTable(db);
     }
+
+    if (oldVersion < 9) {
+      await _upgradeV8toV9(db);
+    }
+  }
+
+  /// v8 → v9 migration: global player identity (see ARCHITECTURE.md §3.3).
+  ///
+  /// Before: `players` is per-game (`players.gameId`), and `scores.playerId`
+  /// references those per-game rows. Cross-game stats merge every human sharing
+  /// a name (the `getPlayerStats` bug).
+  ///
+  /// After:
+  /// - The per-game `players` table is **renamed to `game_players`** (a
+  ///   membership row). Its `id` is unchanged, so `scores.playerId` keeps
+  ///   pointing at the same rows — **no score data is rewritten**.
+  /// - A new global `players` table holds one row per distinct human, unique by
+  ///   `(group_id, name)`. All existing data is local (`group_id = NULL`).
+  /// - `game_players.player_id` links each membership to its global player.
+  ///
+  /// Deduplication: players are collapsed by `lower(trim(name))`. Two players
+  /// with the same name **in the same game** are deliberate distinct humans, so
+  /// they are kept as separate global players (the 2nd+ occurrence gets a
+  /// `" (n)"` suffix on the *global* identity only; the in-game display name is
+  /// preserved on `game_players.name`). Duplicates remain recoverable by
+  /// renaming, per §3.3.
+  ///
+  /// Safety: runs inside the open transaction sqflite wraps around onUpgrade.
+  /// `scores` rows are untouched; only schema reshaping + backfill of the new
+  /// `players` table and `game_players.player_id` happen.
+  @visibleForTesting
+  Future<void> upgradeV8toV9(Database db) => _upgradeV8toV9(db);
+
+  Future<void> _upgradeV8toV9(Database db) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    // 1. Snapshot existing per-game players (ordered for stable disambiguation).
+    final oldPlayers = await db.query(
+      'players',
+      columns: ['id', 'gameId', 'name', 'orderIndex', 'colorValue'],
+      orderBy: 'gameId ASC, orderIndex ASC, id ASC',
+    );
+
+    // 2. Rename per-game `players` -> `game_players`. SQLite rewrites the
+    //    `scores` foreign-key reference to the new name automatically; the
+    //    `scores.playerId` values keep matching the same (now-renamed) rows.
+    await db.execute('DROP INDEX IF EXISTS idx_players_gameId');
+    await db.execute('DROP INDEX IF EXISTS idx_players_group_id');
+    await db.execute('DROP INDEX IF EXISTS idx_players_uuid');
+    await db.execute('ALTER TABLE players RENAME TO game_players');
+    await db.execute('ALTER TABLE game_players ADD COLUMN player_id INTEGER');
+
+    // 3. Create the new global `players` table.
+    await db.execute('''
+      CREATE TABLE players (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        colorValue INTEGER,
+        uuid TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        deleted_at INTEGER,
+        group_id TEXT
+      )
+    ''');
+
+    // 4. Deduplicate. For each game, the k-th occurrence of a normalized name
+    //    maps to the k-th global player for that name (suffixing duplicates).
+    final globalsByNorm = <String, List<int>>{}; // norm -> [globalId per slot]
+    final latestColorByNorm = <String, int?>{}; // most-recent color wins
+
+    // Track per-game occurrence index per normalized name.
+    final perGameNameCount = <String, int>{}; // "gameId|norm" -> count so far
+
+    for (final p in oldPlayers) {
+      final gameId = p['gameId'] as int;
+      final rawName = (p['name'] as String?) ?? '';
+      final norm = rawName.trim().toLowerCase();
+      final color = p['colorValue'] as int?;
+      latestColorByNorm[norm] = color; // ordered, so last wins
+
+      final key = '$gameId|$norm';
+      final slot = perGameNameCount[key] ?? 0;
+      perGameNameCount[key] = slot + 1;
+
+      final list = globalsByNorm.putIfAbsent(norm, () => <int>[]);
+      while (list.length <= slot) {
+        list.add(-1);
+      }
+      if (list[slot] == -1) {
+        // Create the global player for this (name, slot).
+        final displayName = slot == 0 ? rawName.trim() : '${rawName.trim()} (${slot + 1})';
+        final globalId = await db.insert('players', {
+          'name': displayName.isEmpty ? rawName : displayName,
+          'colorValue': color,
+          'uuid': _newUuid(),
+          'created_at': now,
+          'updated_at': now,
+        });
+        list[slot] = globalId;
+      }
+      // Link the membership row to its global player and keep its display name.
+      await db.update(
+        'game_players',
+        {'player_id': list[slot]},
+        where: 'id = ?',
+        whereArgs: [p['id']],
+      );
+    }
+
+    // 5. Refresh global colors to the most-recently-used per name.
+    for (final entry in latestColorByNorm.entries) {
+      if (entry.value == null) continue;
+      await db.update(
+        'players',
+        {'colorValue': entry.value},
+        where: 'group_id IS NULL AND name = ? COLLATE NOCASE',
+        whereArgs: [entry.key],
+      );
+    }
+
+    // 6. Indexes for both tables.
+    await db.execute('CREATE UNIQUE INDEX idx_players_uuid ON players(uuid)');
+    await db.execute(
+      'CREATE UNIQUE INDEX idx_players_name_local ON players(name COLLATE NOCASE) WHERE group_id IS NULL',
+    );
+    await db.execute(
+      'CREATE UNIQUE INDEX idx_players_name_group ON players(group_id, name COLLATE NOCASE) WHERE group_id IS NOT NULL',
+    );
+    await db.execute('CREATE UNIQUE INDEX idx_game_players_uuid ON game_players(uuid)');
+    await db.execute('CREATE INDEX idx_game_players_gameId ON game_players(gameId)');
+    await db.execute('CREATE INDEX idx_game_players_player_id ON game_players(player_id)');
+    await db.execute('CREATE INDEX idx_game_players_group_id ON game_players(group_id)');
+    await db.execute(
+      'CREATE UNIQUE INDEX idx_game_players_unique ON game_players(gameId, player_id)',
+    );
   }
 
   /// v5 → v6 migration: sync-readiness.
@@ -487,7 +672,12 @@ class DatabaseService {
   // CRUD pour Game
   Future<int> createGame(Game game) async {
     final db = await database;
-    return await db.insert('games', game.toMap());
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final map = game.toMap();
+    map['uuid'] ??= _newUuid();
+    map['created_at'] ??= now;
+    map['updated_at'] ??= now;
+    return await db.insert('games', map);
   }
 
   Future<Game?> getGame(int id) async {
@@ -540,17 +730,94 @@ class DatabaseService {
     );
   }
 
-  // CRUD pour Player
+  // CRUD pour Player (v9: `Player` = a game_players membership; `Player.id`
+  // is the game_players row id, used as the score key. Global identity lives
+  // in the `players` table and is resolved find-or-create by name.)
+
+  /// Resolve (find-or-create) the global player for [name] that is not already
+  /// a member of [gameId], updating its preferred color. Returns the global id.
+  Future<int> _resolveGlobalPlayerForGame(
+    Database db,
+    int gameId,
+    String name,
+    int? color,
+  ) async {
+    final norm = name.trim();
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    final candidates = await db.query(
+      'players',
+      columns: ['id'],
+      where: 'group_id IS NULL AND name = ? COLLATE NOCASE AND deleted_at IS NULL',
+      whereArgs: [norm],
+      orderBy: 'id ASC',
+    );
+
+    for (final c in candidates) {
+      final gid = c['id'] as int;
+      final inGame = Sqflite.firstIntValue(await db.rawQuery(
+        'SELECT COUNT(*) FROM game_players WHERE gameId = ? AND player_id = ? AND deleted_at IS NULL',
+        [gameId, gid],
+      ));
+      if ((inGame ?? 0) == 0) {
+        if (color != null) {
+          await db.update('players', {'colorValue': color, 'updated_at': now},
+              where: 'id = ?', whereArgs: [gid]);
+        }
+        return gid;
+      }
+    }
+
+    // Every existing "name" is already in this game -> create a distinct global
+    // identity with a free " (n)" suffix (a deliberate same-game duplicate).
+    var displayName = norm;
+    if (candidates.isNotEmpty) {
+      var n = candidates.length + 1;
+      while (true) {
+        final candidate = '$norm ($n)';
+        final exists = Sqflite.firstIntValue(await db.rawQuery(
+          'SELECT COUNT(*) FROM players WHERE group_id IS NULL AND name = ? COLLATE NOCASE',
+          [candidate],
+        ));
+        if ((exists ?? 0) == 0) {
+          displayName = candidate;
+          break;
+        }
+        n++;
+      }
+    }
+    return await db.insert('players', {
+      'name': displayName.isEmpty ? norm : displayName,
+      'colorValue': color,
+      'uuid': _newUuid(),
+      'created_at': now,
+      'updated_at': now,
+    });
+  }
+
   Future<int> createPlayer(Player player) async {
     final db = await database;
-    return await db.insert('players', player.toMap());
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final globalId = await _resolveGlobalPlayerForGame(
+        db, player.gameId, player.name, player.colorValue);
+    return await db.insert('game_players', {
+      'gameId': player.gameId,
+      'player_id': globalId,
+      'name': player.name,
+      'orderIndex': player.orderIndex,
+      'colorValue': player.colorValue,
+      'uuid': _newUuid(),
+      'created_at': now,
+      'updated_at': now,
+    });
   }
 
   Future<List<Player>> getPlayersByGame(int gameId) async {
     final db = await database;
     final maps = await db.query(
-      'players',
-      where: 'gameId = ?',
+      'game_players',
+      columns: ['id', 'gameId', 'name', 'orderIndex', 'colorValue'],
+      where: 'gameId = ? AND deleted_at IS NULL',
       whereArgs: [gameId],
       orderBy: 'orderIndex ASC',
     );
@@ -560,8 +827,13 @@ class DatabaseService {
   Future<int> updatePlayer(Player player) async {
     final db = await database;
     return await db.update(
-      'players',
-      player.toMap(),
+      'game_players',
+      {
+        'name': player.name,
+        'orderIndex': player.orderIndex,
+        'colorValue': player.colorValue,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+      },
       where: 'id = ?',
       whereArgs: [player.id],
     );
@@ -569,8 +841,10 @@ class DatabaseService {
 
   Future<int> deletePlayer(int id) async {
     final db = await database;
+    // Foreign keys are not enforced at runtime, so cascade scores manually.
+    await db.delete('scores', where: 'playerId = ?', whereArgs: [id]);
     return await db.delete(
-      'players',
+      'game_players',
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -579,7 +853,12 @@ class DatabaseService {
   // CRUD pour Round
   Future<int> createRound(Round round) async {
     final db = await database;
-    return await db.insert('rounds', round.toMap());
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final map = round.toMap();
+    map['uuid'] ??= _newUuid();
+    map['created_at'] ??= now;
+    map['updated_at'] ??= now;
+    return await db.insert('rounds', map);
   }
 
   Future<List<Round>> getRoundsByGame(int gameId) async {
@@ -615,7 +894,12 @@ class DatabaseService {
   // CRUD pour Score
   Future<int> createScore(Score score) async {
     final db = await database;
-    return await db.insert('scores', score.toMap());
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final map = score.toMap();
+    map['uuid'] ??= _newUuid();
+    map['created_at'] ??= now;
+    map['updated_at'] ??= now;
+    return await db.insert('scores', map);
   }
 
   Future<Score?> getScore(int playerId, int roundId) async {
@@ -661,28 +945,21 @@ class DatabaseService {
     }
   }
 
-  // Récupérer tous les noms de joueurs uniques
+  // Récupérer tous les noms de joueurs (globaux, scope local)
   Future<List<String>> getAllPlayerNames() async {
     final db = await database;
     final result = await db.rawQuery(
-      'SELECT DISTINCT name FROM players ORDER BY name ASC',
+      'SELECT name FROM players WHERE group_id IS NULL AND deleted_at IS NULL ORDER BY name ASC',
     );
     return result.map((row) => row['name'] as String).toList();
   }
 
-  // Récupérer les couleurs des joueurs (dernière couleur utilisée par chaque joueur)
+  // Couleur préférée par joueur global (scope local)
   Future<Map<String, int?>> getPlayerColors() async {
     final db = await database;
-    final result = await db.rawQuery('''
-      SELECT p1.name, p1.colorValue
-      FROM players p1
-      INNER JOIN (
-        SELECT name, MAX(id) as maxId
-        FROM players
-        GROUP BY name
-      ) p2 ON p1.name = p2.name AND p1.id = p2.maxId
-      ORDER BY p1.name ASC
-    ''');
+    final result = await db.rawQuery(
+      'SELECT name, colorValue FROM players WHERE group_id IS NULL AND deleted_at IS NULL ORDER BY name ASC',
+    );
 
     final Map<String, int?> playerColors = {};
     for (final row in result) {
@@ -691,33 +968,43 @@ class DatabaseService {
     return playerColors;
   }
 
-  // Statistiques par joueur et par type de jeu
+  // Statistiques par joueur (global) et par type de jeu
   Future<Map<String, dynamic>> getPlayerStats(String playerName) async {
     final db = await database;
 
     try {
-      // Nombre total de parties jouées (doit correspondre à la somme par type de jeu)
-      final totalGamesPlayed = await db.rawQuery('''
-        SELECT COUNT(DISTINCT g.id) as count
-        FROM games g
-        JOIN players p ON p.gameId = g.id
-        WHERE p.name = ?
-      ''', [playerName]);
+      // Résoudre le joueur global par nom (scope local).
+      final globalRows = await db.query(
+        'players',
+        columns: ['id'],
+        where: 'group_id IS NULL AND name = ? COLLATE NOCASE AND deleted_at IS NULL',
+        whereArgs: [playerName],
+        limit: 1,
+      );
+      if (globalRows.isEmpty) {
+        return {
+          'gamesPlayed': 0,
+          'wins': 0,
+          'byGameType': <String, Map<String, int>>{},
+        };
+      }
+      final globalId = globalRows.first['id'] as int;
 
-      // Récupérer toutes les parties du joueur avec leurs scores
+      // Les parties du joueur via ses memberships game_players.
       final playerGames = await db.rawQuery('''
         SELECT
           g.id as gameId,
           COALESCE(gt.name, 'Unknown') as gameType,
           g.isLowestScoreWins,
+          gp.id as gpId,
           COALESCE(SUM(s.value), 0) as playerTotal
-        FROM games g
-        JOIN players p ON p.gameId = g.id
+        FROM game_players gp
+        JOIN games g ON g.id = gp.gameId
         LEFT JOIN game_types gt ON g.gameTypeId = gt.id
-        LEFT JOIN scores s ON s.playerId = p.id
-        WHERE p.name = ?
-        GROUP BY g.id, gt.name, g.isLowestScoreWins
-      ''', [playerName]);
+        LEFT JOIN scores s ON s.playerId = gp.id
+        WHERE gp.player_id = ? AND gp.deleted_at IS NULL
+        GROUP BY g.id, gt.name, g.isLowestScoreWins, gp.id
+      ''', [globalId]);
 
       int totalWins = 0;
       final statsByGameType = <String, Map<String, int>>{};
@@ -731,11 +1018,11 @@ class DatabaseService {
 
         // Récupérer tous les totaux des joueurs pour cette partie
         final allTotals = await db.rawQuery('''
-          SELECT p.id, COALESCE(SUM(s.value), 0) as total
-          FROM players p
-          LEFT JOIN scores s ON s.playerId = p.id
-          WHERE p.gameId = ?
-          GROUP BY p.id
+          SELECT gp.id, COALESCE(SUM(s.value), 0) as total
+          FROM game_players gp
+          LEFT JOIN scores s ON s.playerId = gp.id
+          WHERE gp.gameId = ? AND gp.deleted_at IS NULL
+          GROUP BY gp.id
           ORDER BY total ${isLowestWins ? 'ASC' : 'DESC'}
         ''', [gameId]);
 
@@ -766,7 +1053,7 @@ class DatabaseService {
       }
 
       return {
-        'gamesPlayed': totalGamesPlayed.first['count'] as int,
+        'gamesPlayed': playerGames.length,
         'wins': totalWins,
         'byGameType': statsByGameType,
       };
@@ -835,15 +1122,26 @@ class DatabaseService {
     );
   }
 
-  // Mettre à jour la couleur d'un joueur spécifique (par nom unique)
+  // Mettre à jour la couleur d'un joueur global et de ses memberships
   Future<void> updatePlayerColor(String playerName, int colorValue) async {
     final db = await database;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final globals = await db.query('players',
+        columns: ['id'],
+        where: 'group_id IS NULL AND name = ? COLLATE NOCASE',
+        whereArgs: [playerName]);
     await db.update(
       'players',
-      {'colorValue': colorValue},
-      where: 'name = ?',
+      {'colorValue': colorValue, 'updated_at': now},
+      where: 'group_id IS NULL AND name = ? COLLATE NOCASE',
       whereArgs: [playerName],
     );
+    final ids = globals.map((r) => r['id'] as int).toList();
+    if (ids.isNotEmpty) {
+      final ph = List.filled(ids.length, '?').join(',');
+      await db.update('game_players', {'colorValue': colorValue, 'updated_at': now},
+          where: 'player_id IN ($ph)', whereArgs: ids);
+    }
   }
 
   Future<void> close() async {
@@ -941,25 +1239,48 @@ class DatabaseService {
     return join(dbPath, 'countscore.db');
   }
 
-  // Renommer un joueur dans toutes les parties
+  // Renommer un joueur global (et le nom affiché de ses memberships)
   Future<int> renamePlayer(String oldName, String newName) async {
     final db = await database;
-    return await db.update(
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final globals = await db.query('players',
+        columns: ['id'],
+        where: 'group_id IS NULL AND name = ? COLLATE NOCASE',
+        whereArgs: [oldName]);
+    final ids = globals.map((r) => r['id'] as int).toList();
+    final count = await db.update(
       'players',
-      {'name': newName},
-      where: 'name = ?',
+      {'name': newName, 'updated_at': now},
+      where: 'group_id IS NULL AND name = ? COLLATE NOCASE',
       whereArgs: [oldName],
     );
+    if (ids.isNotEmpty) {
+      final ph = List.filled(ids.length, '?').join(',');
+      await db.update('game_players', {'name': newName, 'updated_at': now},
+          where: 'player_id IN ($ph)', whereArgs: ids);
+    }
+    return count;
   }
 
-  // Supprimer un joueur par nom dans toutes les parties
+  // Supprimer un joueur global, ses memberships et leurs scores
   Future<int> deletePlayerByName(String playerName) async {
     final db = await database;
-    return await db.delete(
-      'players',
-      where: 'name = ?',
-      whereArgs: [playerName],
-    );
+    final globals = await db.query('players',
+        columns: ['id'],
+        where: 'group_id IS NULL AND name = ? COLLATE NOCASE',
+        whereArgs: [playerName]);
+    final ids = globals.map((r) => r['id'] as int).toList();
+    if (ids.isEmpty) return 0;
+    final ph = List.filled(ids.length, '?').join(',');
+    final gps = await db.query('game_players',
+        columns: ['id'], where: 'player_id IN ($ph)', whereArgs: ids);
+    final gpIds = gps.map((r) => r['id'] as int).toList();
+    if (gpIds.isNotEmpty) {
+      final gpph = List.filled(gpIds.length, '?').join(',');
+      await db.delete('scores', where: 'playerId IN ($gpph)', whereArgs: gpIds);
+      await db.delete('game_players', where: 'id IN ($gpph)', whereArgs: gpIds);
+    }
+    return await db.delete('players', where: 'id IN ($ph)', whereArgs: ids);
   }
 
   // ===== Game Analyses =====
@@ -1010,8 +1331,18 @@ class DatabaseService {
   }) async {
     final db = await database;
 
-    final args = <Object?>[playerName];
-    var whereClause = 'p.name = ?';
+    final globalRows = await db.query(
+      'players',
+      columns: ['id'],
+      where: 'group_id IS NULL AND name = ? COLLATE NOCASE AND deleted_at IS NULL',
+      whereArgs: [playerName],
+      limit: 1,
+    );
+    if (globalRows.isEmpty) return [];
+    final globalId = globalRows.first['id'] as int;
+
+    final args = <Object?>[globalId];
+    var whereClause = 'gp.player_id = ? AND gp.deleted_at IS NULL';
     if (excludeGameId != null) {
       whereClause += ' AND g.id != ?';
       args.add(excludeGameId);
@@ -1025,13 +1356,14 @@ class DatabaseService {
         g.createdAt as createdAt,
         g.isLowestScoreWins as isLowestScoreWins,
         COALESCE(gt.name, 'Unknown') as gameType,
+        gp.id as gpId,
         COALESCE(SUM(s.value), 0) as playerTotal
-      FROM games g
-      JOIN players p ON p.gameId = g.id
+      FROM game_players gp
+      JOIN games g ON g.id = gp.gameId
       LEFT JOIN game_types gt ON g.gameTypeId = gt.id
-      LEFT JOIN scores s ON s.playerId = p.id
+      LEFT JOIN scores s ON s.playerId = gp.id
       WHERE $whereClause
-      GROUP BY g.id, g.name, g.createdAt, g.isLowestScoreWins, gt.name
+      GROUP BY g.id, g.name, g.createdAt, g.isLowestScoreWins, gt.name, gp.id
       ORDER BY g.createdAt DESC
       LIMIT ?
     ''', args);
@@ -1039,21 +1371,22 @@ class DatabaseService {
     final history = <Map<String, dynamic>>[];
     for (final row in rows) {
       final gameId = row['gameId'] as int;
+      final gpId = row['gpId'] as int;
       final isLowestWins = (row['isLowestScoreWins'] as int) == 1;
       final playerTotal = row['playerTotal'] as int;
 
       final allTotals = await db.rawQuery('''
-        SELECT p.id, p.name, COALESCE(SUM(s.value), 0) as total
-        FROM players p
-        LEFT JOIN scores s ON s.playerId = p.id
-        WHERE p.gameId = ?
-        GROUP BY p.id, p.name
+        SELECT gp.id, COALESCE(SUM(s.value), 0) as total
+        FROM game_players gp
+        LEFT JOIN scores s ON s.playerId = gp.id
+        WHERE gp.gameId = ? AND gp.deleted_at IS NULL
+        GROUP BY gp.id
         ORDER BY total ${isLowestWins ? 'ASC' : 'DESC'}
       ''', [gameId]);
 
       var rank = 1;
       for (final t in allTotals) {
-        if ((t['name'] as String) == playerName) break;
+        if ((t['id'] as int) == gpId) break;
         if ((t['total'] as int) != playerTotal) rank++;
       }
       final didWin = allTotals.isNotEmpty &&

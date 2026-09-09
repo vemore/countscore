@@ -3,19 +3,14 @@ import '../models/game.dart';
 import '../models/player.dart';
 import '../models/round.dart';
 import '../models/score.dart';
+import '../repositories/drift/drift_repositories.dart';
 import '../repositories/game_repository.dart';
 import '../repositories/game_type_repository.dart';
 import '../repositories/player_repository.dart';
 import '../repositories/player_stats_repository.dart';
 import '../repositories/round_repository.dart';
 import '../repositories/score_repository.dart';
-import '../repositories/sqflite/sqflite_game_repository.dart';
-import '../repositories/sqflite/sqflite_game_type_repository.dart';
-import '../repositories/sqflite/sqflite_player_repository.dart';
-import '../repositories/sqflite/sqflite_player_stats_repository.dart';
-import '../repositories/sqflite/sqflite_round_repository.dart';
-import '../repositories/sqflite/sqflite_score_repository.dart';
-import '../services/database_service.dart';
+import '../services/drift/database.dart';
 
 class GameProvider with ChangeNotifier {
   GameProvider({
@@ -25,12 +20,12 @@ class GameProvider with ChangeNotifier {
     ScoreRepository? scoreRepo,
     GameTypeRepository? gameTypeRepo,
     PlayerStatsRepository? statsRepo,
-  })  : _gameRepo = gameRepo ?? SqfliteGameRepository(DatabaseService.instance),
-        _playerRepo = playerRepo ?? SqflitePlayerRepository(DatabaseService.instance),
-        _roundRepo = roundRepo ?? SqfliteRoundRepository(DatabaseService.instance),
-        _scoreRepo = scoreRepo ?? SqfliteScoreRepository(DatabaseService.instance),
-        _gameTypeRepo = gameTypeRepo ?? SqfliteGameTypeRepository(DatabaseService.instance),
-        _statsRepo = statsRepo ?? SqflitePlayerStatsRepository(DatabaseService.instance);
+  })  : _gameRepo = gameRepo ?? DriftGameRepository(AppDatabase.instance),
+        _playerRepo = playerRepo ?? DriftPlayerRepository(AppDatabase.instance),
+        _roundRepo = roundRepo ?? DriftRoundRepository(AppDatabase.instance),
+        _scoreRepo = scoreRepo ?? DriftScoreRepository(AppDatabase.instance),
+        _gameTypeRepo = gameTypeRepo ?? DriftGameTypeRepository(AppDatabase.instance),
+        _statsRepo = statsRepo ?? DriftPlayerStatsRepository(AppDatabase.instance);
 
   final GameRepository _gameRepo;
   final PlayerRepository _playerRepo;
@@ -300,6 +295,20 @@ class GameProvider with ChangeNotifier {
 
   Future<Map<String, int?>> getPlayerColors() async {
     return await _playerRepo.getColorsByName();
+  }
+
+  Future<int?> getPlayerColorValue(String name) async {
+    final colors = await _playerRepo.getColorsByName();
+    return colors[name];
+  }
+
+  Future<void> updatePlayerColor(String name, int colorValue) async {
+    await _playerRepo.updateColorByName(name, colorValue);
+    notifyListeners();
+  }
+
+  Future<List<Player>> getPlayersOfGame(int gameId) {
+    return _playerRepo.getByGame(gameId);
   }
 
   Future<Map<String, dynamic>> getPlayerStats(String playerName) async {

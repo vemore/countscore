@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/game_provider.dart';
-import '../services/database_service.dart';
 
 class PlayersScreen extends StatefulWidget {
   const PlayersScreen({super.key});
@@ -14,7 +13,6 @@ class PlayersScreen extends StatefulWidget {
 
 class _PlayersScreenState extends State<PlayersScreen> {
   List<String> _playerNames = [];
-  final DatabaseService _db = DatabaseService.instance;
 
   @override
   void initState() {
@@ -104,12 +102,14 @@ class _PlayersScreenState extends State<PlayersScreen> {
                                   context,
                                   playerColor,
                                 );
-                                if (newColor != null) {
-                                  await _db.updatePlayerColor(
-                                    playerName,
-                                    newColor.toARGB32(),
-                                  );
-                                  setState(() {}); // Refresh UI
+                                if (newColor != null && context.mounted) {
+                                  await context
+                                      .read<GameProvider>()
+                                      .updatePlayerColor(
+                                        playerName,
+                                        newColor.toARGB32(),
+                                      );
+                                  setState(() {});
                                 }
                               },
                               child: CircleAvatar(
@@ -139,12 +139,14 @@ class _PlayersScreenState extends State<PlayersScreen> {
                                       context,
                                       playerColor,
                                     );
-                                    if (newColor != null) {
-                                      await _db.updatePlayerColor(
-                                        playerName,
-                                        newColor.toARGB32(),
-                                      );
-                                      setState(() {}); // Refresh UI
+                                    if (newColor != null && context.mounted) {
+                                      await context
+                                          .read<GameProvider>()
+                                          .updatePlayerColor(
+                                            playerName,
+                                            newColor.toARGB32(),
+                                          );
+                                      setState(() {});
                                     }
                                   },
                                   tooltip: l10n.changeColor,
@@ -175,22 +177,9 @@ class _PlayersScreenState extends State<PlayersScreen> {
   }
 
   Future<Color> _getPlayerColor(String playerName) async {
-    // Récupérer la couleur depuis la base de données (dernier joueur avec ce nom)
-    final db = await _db.database;
-    final result = await db.query(
-      'players',
-      columns: ['colorValue'],
-      where: 'name = ?',
-      whereArgs: [playerName],
-      orderBy: 'id DESC',
-      limit: 1,
-    );
-
-    if (result.isNotEmpty && result.first['colorValue'] != null) {
-      return Color(result.first['colorValue'] as int);
-    }
-
-    return Colors.blue; // Couleur par défaut
+    final colorValue =
+        await context.read<GameProvider>().getPlayerColorValue(playerName);
+    return colorValue != null ? Color(colorValue) : Colors.blue;
   }
 
   Future<Color?> _showColorPicker(

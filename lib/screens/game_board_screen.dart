@@ -313,6 +313,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                   child: SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
+                      key: const Key('board_add_round'),
                       onPressed: () async {
                         await gameProvider.addRound();
                       },

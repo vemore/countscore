@@ -52,23 +52,21 @@
 
 | Jalon | Description | Statut | Notes |
 |---|---|---|---|
-| 0 | Filet de sécurité tests mobile | ⚠️ Scaffold | `test/database_service_test.dart` créé avec tests stubbés ; nécessite `flutter test` local + exposition de `_createDB`/`_upgradeDB` via `@visibleForTesting` pour activer les tests skippés. `sqflite_common_ffi` ajouté en dev-dep. |
-| 1 | Couche repository mobile | ✅ Implémenté | Interfaces + impls sqflite dans `lib/repositories/`. `GameProvider` et `GameTypeProvider` consomment les interfaces. À valider avec `flutter analyze` + `flutter test` local. |
-| 2 | Schéma v6 sync-ready (UUIDs, timestamps, soft-delete, outbox, sync_state) | ✅ Implémenté | Migration v5→v6 dans `database_service.dart` (`_upgradeV5toV6`). **Refonte player→global déférée en v8** (cf. §3.3, raison ci-dessous). Backfill préserve `games.createdAt` original. |
-| 2b | Schéma v7 — table `game_analyses` sync-ready | ✅ Implémenté | Migration v6→v7 ajoute `game_analyses` (cache des analyses IA caustiques renvoyées par `/comments/zapzap-analysis`). Cf. §7.4. |
-| 3 | Migration Drift | 📋 Documenté | Voir §11.2 |
+| 0 | Filet de sécurité tests mobile | ✅ Implémenté + testé | `test/database_service_test.dart` : 9 tests actifs (schéma v9, CRUD via singleton, migration v8→v9, sérialisation modèles). `createDB` exposé via `@visibleForTesting`. |
+| 1 | Couche repository mobile | ✅ Implémenté | Interfaces dans `lib/repositories/`. Impls Drift dans `lib/repositories/drift/`. `GameProvider` et `GameTypeProvider` utilisent les impls Drift. |
+| 2 | Schéma v6→v9 sync-ready | ✅ Implémenté | v6 : UUIDs + sync cols. v7 : `game_analyses`. v8 : fix cache. **v9 : joueurs globaux** (`players` global + `game_players` join). Migration `_upgradeV8toV9` testée (`test/migration_v8_to_v9_test.dart`). |
+| 3 | Migration Drift | ✅ Implémenté + testé | `lib/services/drift/` (tables.dart + database.dart). Impls Drift de tous les repos. Stratégie 2 releases : sqflite bootstrap v9 → Drift adopte. 9 tests Drift (`test/drift/`). |
 | 4 | Backend MVP (endpoint `/comments/mvp` stateless) | ✅ Implémenté + testé | 3 tests OK |
-| 5 | Groupes + sync minimal (REST) | ✅ Implémenté + testé | 9 tests OK (groupes + sync push/pull/dedup/conflit round) |
-| 6 | Temps réel (WebSocket) | ✅ Squelette | Endpoint `/sync/stream` + LISTEN/NOTIFY. Tests WS à ajouter (intégration Postgres). |
-| 7 | API commentaires complète (mémoire, rate-limit, budget, prompt cache, anti-injection) | ✅ Implémenté + testé | 7 tests prompt builder + 3 tests endpoint |
-| 8 | PWA web | 📋 Documenté | Voir §11.2 |
-| 9 | Production-readiness backend | ✅ Partiel | Docker Compose + Caddy TLS + pg_dump quotidien implémentés. Manque : monitoring, alerting. |
+| 5 | Groupes + sync minimal (REST) | ✅ Implémenté + testé | Tests OK (groupes + sync push/pull/dedup/conflit round) |
+| 6 | Temps réel (WebSocket) | ✅ Implémenté + testé | Endpoint `/sync/stream` + LISTEN/NOTIFY. Tests d'intégration Postgres réel via `testcontainers` (`test_sync_ws_integration.py`). |
+| 7 | API commentaires complète | ✅ Implémenté + testé | 7 tests prompt builder + 3 tests endpoint. Providers LLM pluggables (bedrock/gemini/mistral). IP rate limiting. |
+| 8 | PWA web | ✅ Implémenté + testé e2e | `flutter create --platforms=web`. Drift web via `sqlite3.wasm` + OPFS. Guards `kIsWeb` sur export/import + wakelock. **Fix runtime** : `connection_web.dart` passe explicitement `DriftWebOptions(sqlite3Wasm, driftWorker)` — sans ça, drift_flutter 0.3.0 lève `ArgumentError` au démarrage et la PWA crashait (le build, lui, passait). Parcours doré validé en Chrome headless via `integration_test` (voir §9.1). |
+| 9 | Production-readiness backend | ✅ Partiel | `docker-compose.prod.yml` + Web Station TLS + pg_dump quotidien. Manque : monitoring, alerting. |
 
-**Pourquoi player→global est déférée à v8** :
-- Le refactor nécessite des groupes existants pour scoper les joueurs (`group_id` obligatoire).
-- En v6/v7 tous les `group_id` sont NULL (mode local par défaut, cf. §3.4).
-- Faire la refonte en v6 forcerait un état transitoire où les joueurs sont "globaux mais sans groupe", ce qui n'a pas de sens métier.
-- La v8 sera lancée la première fois qu'un device rejoint un groupe : on déduplique alors les joueurs au sein du nouveau scope.
+**Joueurs globaux (v9) — décision implémentée** :
+- La table `players` est désormais globale (une identité par `(group_id, nom)`) ; `game_players` porte la membership par partie.
+- Les données `group_id IS NULL` (mode local) fonctionnent sans groupes → migration sûre pour tous les utilisateurs existants.
+- Le bug `getPlayerStats` (agrégation de toutes les "Alice" de toutes les parties) est corrigé : stats keyed par UUID global.
 
 **Reprise** : voir section 11 "Comment continuer le travail".
 
@@ -102,20 +100,20 @@
 2. Release N+1 : Drift ouvre la base v6 telle quelle (`schemaVersion = 6`, pas de CREATE TABLE). Tests d'intégration sur snapshot v5 réel.
 3. Filet : dump JSON automatique de la base à chaque démarrage (rolling 3 snapshots) dans le dossier app.
 
-### 3.3 Identité joueur : globale par groupe
+### 3.3 Identité joueur : globale par groupe ✅ Implémenté en v9
 
-**Décision** : un joueur est unique au sein d'un groupe (table `players` séparée + jointure `game_players`).
+**Décision** : un joueur est unique au sein d'un groupe (table `players` globale + table `game_players` pour la membership par partie).
 
 **Pourquoi** :
-- Forme normalisée correcte → stats joueur cross-parties enfin justes (le bug actuel agrège tous les "Alice" de toutes les parties)
+- Forme normalisée correcte → stats joueur cross-parties enfin justes (le bug `getPlayerStats` qui agrège tous les "Alice" est **corrigé** en v9)
 - Sync multi-device propre → un UUID joueur, plusieurs devices peuvent y faire référence sans collision
 - "Alice de la famille" ≠ "Alice du club" reste possible car le scope est le groupe
 
 **Pourquoi pas** :
-- Joueur par-partie pur (statu quo) : perpétue le bug `getPlayerStats`, dette technique
+- Joueur par-partie pur (statu quo v8) : perpétuait le bug `getPlayerStats`, dette technique
 - Joueur global cross-groupe : pas de cas d'usage réel, complique la modélisation
 
-**Migration** : v5→v6 déduplique par nom normalisé (`trim + lowercase`) au sein de la base existante. Les doublons volontaires sont récupérables post-migration par renommage.
+**Migration v8→v9** : `_upgradeV8toV9` dans `database_service.dart` renomme l'ancienne table `players` en `game_players`, crée la nouvelle table `players` globale, et déduplique par `lower(trim(name))`. Les doublons intra-partie reçoivent un suffixe `(n)` sur leur identité globale uniquement ; le nom d'affichage en partie est préservé. Tests : `test/migration_v8_to_v9_test.dart`.
 
 ### 3.4 Modèle de groupe : local + connecté
 
@@ -210,32 +208,35 @@
 
 ## 4. Schéma de données
 
-### 4.1 Schéma mobile v6 / v7 (Drift / sqflite)
+### 4.1 Schéma mobile v9 (Drift / sqflite)
 
-Évolution depuis v5 :
+Historique des migrations :
 
-| Table | Modifications |
+| Version | Changements clés |
 |---|---|
-| Toutes | Ajout `uuid TEXT UNIQUE NOT NULL`, `created_at INTEGER NOT NULL`, `updated_at INTEGER NOT NULL`, `deleted_at INTEGER NULL` |
-| `players` | **Refonte** : devient globale (suppression de `gameId`), ajout `group_id TEXT NULL` |
-| Nouvelle : `game_players` | Jointure `(game_id, player_id, order_index, color_value)` |
-| `games` | Ajout `group_id TEXT NULL`, suppression `lastModified` (remplacée par `updated_at`) |
-| `game_types` | `UNIQUE(name)`, ajout `group_id TEXT NULL` |
-| `rounds`, `scores` | `UNIQUE(game_id, round_number)`, `UNIQUE(player_id, round_id)` |
-| `rounds` | Conservation de `comment TEXT NULL` (annotation manuelle par tour) |
-| Nouvelle : `outbox` | `(id, entity_type, entity_uuid, op, payload, client_lamport, created_at, sent_at)` |
-| Nouvelle : `sync_state` | `(group_id, last_server_seq, last_lamport)` |
+| v1→v5 | Évolutions sqflite successives (types de jeux, couleurs, conditions élimination) |
+| v6 | Toutes les tables : `uuid`, `created_at`, `updated_at`, `deleted_at`, `group_id`. Tables `outbox` + `sync_state`. |
+| v7 | Table `game_analyses` (cache analyses ZapZap). |
+| v8 | Recréation `game_analyses` pour ajouter les colonnes sync manquantes dans le prototype Bedrock. |
+| **v9** | **Joueurs globaux** : `players` per-game → `players` global + `game_players` join. Dédup par `lower(trim(name))`. Fix bug `getPlayerStats`. |
 
-**Migration v6 → v7** : ajout de la table `game_analyses` pour cacher les analyses IA caustiques générées par le backend (endpoint `/comments/zapzap-analysis`). Schéma sync-ready (uuid + timestamps + group_id) dès l'origine pour permettre une future synchronisation multi-device. Contrainte `UNIQUE(gameId)` : une seule analyse par partie ; régénérer remplace.
+**Schéma v9 (état actuel) :**
 
-**Backfill v5 → v6** :
-1. Pour chaque ligne, générer UUID v4 stable
-2. `created_at = COALESCE(games.createdAt, now())` pour games, `now()` pour le reste
-3. `updated_at = now()` pour tous
-4. Déduplication joueurs : `INSERT INTO players_v6 SELECT min(id), group_id=NULL, name, ... GROUP BY lower(trim(name))`
-5. Repointer `game_players(game_id, player_id_v6)` via mapping
+| Table | Description |
+|---|---|
+| `game_types` | Types de jeux (uuid, sync cols) |
+| `games` | Parties (uuid, group_id, sync cols) |
+| `players` | **Identité globale** : `(id, name, colorValue, uuid, group_id, sync cols)`. UNIQUE par `(name COLLATE NOCASE)` pour `group_id IS NULL`. |
+| `game_players` | **Membership par partie** : `(id, gameId, player_id FK→players, name, orderIndex, colorValue, uuid, sync cols)`. UNIQUE `(gameId, player_id)`. Les `scores.playerId` référencent `game_players.id`. |
+| `rounds` | Manches (gameId FK, roundNumber, comment, sync cols) |
+| `scores` | Scores (playerId FK→game_players, roundId FK, value, sync cols) |
+| `outbox` | Queue de sync locale (entity_type, client_lamport, sent_at) |
+| `sync_state` | Curseur sync par groupe (last_server_seq, last_lamport) |
+| `game_analyses` | Cache analyses IA ZapZap (gameId UNIQUE, content, modelId, sync cols) |
 
-**IDs** : on garde les `INTEGER AUTOINCREMENT` comme clé locale (perf, FK natives) ; l'UUID devient la **clé logique** pour le sync.
+**Moteur** : Drift 2.x (`lib/services/drift/`). Stratégie deux releases : Release N migre sqflite v8→v9 ; Release N+1 Drift adopte la base v9 (`bootstrapMigrate()`). Sur web : install neuve, Drift crée directement v9 via OPFS (`sqlite3.wasm`).
+
+**IDs** : `INTEGER AUTOINCREMENT` comme clé locale ; UUID = clé logique sync.
 
 ### 4.2 Schéma serveur (Postgres)
 
@@ -297,27 +298,33 @@ Reconnexion :
 
 ---
 
-## 6. Stack Docker Compose (déploiement)
+## 6. Déploiement (Synology NAS — production)
 
-Voir `backend/docker-compose.yml`. Services :
+**URL** : `https://countscore.ombivince.synology.me`
 
-- `caddy` : reverse proxy + TLS Let's Encrypt auto (config 5 lignes)
-- `api` : FastAPI uvicorn (2 workers)
+**TLS** : géré par **Synology Web Station** (certificat Let's Encrypt intégré). Caddy n'est plus utilisé. Web Station reverse-proxie vers `http://127.0.0.1:8087`.
+
+Voir `backend/docker-compose.prod.yml`. Services :
+
+- `api` : FastAPI uvicorn **1 worker** (état IP rate limiter en mémoire = mono-process). Image depuis registry NAS local `192.168.1.25:5050/countscore:latest`. Port `127.0.0.1:8087:8000`.
 - `db` : Postgres 17-alpine, volume monté
 - `db-backup` : sidecar cron `pg_dump → /backups` (rotation 7 jours)
 
-**Sécurité** :
-- `.env` jamais commité (`.gitignore`), template fourni `.env.example`
-- `ANTHROPIC_API_KEY`, `POSTGRES_PASSWORD` via secrets Docker
-- Caddy gère HTTPS automatiquement avec Let's Encrypt
-
-**Bootstrap** :
+**Déploiement** :
 ```bash
 cd backend
-cp .env.example .env       # remplir les valeurs
-docker compose up -d
-docker compose exec api alembic upgrade head
+./scripts/deploy_nas.sh          # build → push registry NAS → pull → up → alembic
+# ou pour rollback :
+./scripts/deploy_nas.sh --rollback <git-sha>
 ```
+
+**Dev local** : utiliser `docker-compose.yml` (uvicorn non-TLS, Postgres local).
+
+**Sécurité** :
+- `.env` jamais commité (`.gitignore`), template fourni `.env.example`
+- `ANTHROPIC_API_KEY`, `POSTGRES_PASSWORD`, `AWS_*` via env dans compose.prod
+- HTTPS via Web Station (plus de Caddy)
+- IP rate limiting en mémoire (X-Forwarded-For, 1 seul worker pour cohérence)
 
 ---
 
@@ -373,9 +380,18 @@ Pourquoi un endpoint séparé du flow Claude/Anthropic standard :
 - **Modèle différent** (Llama-3 70B via Bedrock) choisi pour le ton irrévérencieux et le coût Llama vs Claude
 - **Format markdown structuré en sortie** (tableaux manches × joueurs, notes /20, etc.), incompatible avec les contraintes courtes des commentaires "1 partie = 2-6 phrases"
 
-**Implémentation** : `backend/app/services/bedrock_client.py` (boto3 sync wrappé en `asyncio.to_thread`), `backend/app/services/zapzap_prompt.py` (builder markdown), route dans `backend/app/routes/comments.py`. Credentials AWS via env vars backend (jamais bundlés dans l'APK). À durcir : auth device + budget partagé avec la table `rate_limits` quand la feature passera en mode groupe.
+**Implémentation** : `backend/app/services/llm/` — architecture pluggable :
+- `base.py` : protocole `LLMProvider` + `LLMResult`
+- `bedrock.py` : AWS Bedrock (boto3 sync → `asyncio.to_thread`)
+- `openai_compat.py` : Gemini + Mistral via endpoint OpenAI-compatible
+- `factory.py` : `get_llm_provider(name)` — sélection via env `LLM_PROVIDER` (défaut `bedrock`)
 
-**Côté mobile** : `lib/screens/game_analysis_screen.dart` POST le payload `{game, game_type, players, rounds, history_by_player_name}`. Réponse cachée dans `game_analyses` (table v7) ; la régénération efface et remplace.
+`backend/app/services/zapzap_prompt.py` : builder markdown du prompt Professeur Claude.
+`backend/app/services/ip_rate_limiter.py` : rate limiting en mémoire par IP (X-Forwarded-For), 5 req/min + 30 req/h. **Mono-process obligatoire** (état en mémoire) → 1 worker uvicorn en prod.
+
+Credentials AWS via env vars backend (jamais bundlés dans l'APK). À durcir : auth device + budget partagé avec la table `rate_limits` quand la feature passera en mode groupe.
+
+**Côté mobile** : `lib/screens/game_analysis_screen.dart` POST le payload `{game, game_type, players, rounds, history_by_player_name}`. URL configurable via `--dart-define=BACKEND_URL=...`, défaut production `https://countscore.ombivince.synology.me`. Réponse cachée dans `game_analyses` (table v9) ; la régénération efface et remplace.
 
 ---
 
@@ -387,41 +403,52 @@ Pourquoi un endpoint séparé du flow Claude/Anthropic standard :
 lib/
 ├── main.dart
 ├── l10n/                          # localizations (inchangé)
-├── models/                        # domain models (refondus en v6)
+├── models/                        # domain models
 │   ├── game.dart
 │   ├── game_type.dart
-│   ├── player.dart                # ← refondu : plus de gameId, ajout uuid
+│   ├── player.dart                # sans gameId (v9) ; id = game_players.id
 │   ├── round.dart
-│   ├── score.dart
-│   └── sync_models.dart           # ← NEW : OutboxEntry, SyncDelta, etc.
+│   ├── score.dart                 # playerId → game_players.id
+│   └── game_analysis.dart
 ├── services/
-│   ├── database_service.dart      # ← legacy (v5), à supprimer après Drift
-│   ├── drift/                     # ← NEW : Drift schema + DAOs (jalon 3)
-│   │   ├── database.dart
-│   │   └── tables.dart
-│   ├── sync_service.dart          # ← NEW : outbox drain, pull, WS (jalon 5-6)
+│   ├── database_service.dart      # sqflite bootstrap (migration v1→v9 + export/import mobile)
+│   ├── uuid.dart                  # générateur UUID v4 platform-neutral
+│   ├── drift/
+│   │   ├── tables.dart            # déclarations Drift (miroir schéma v9)
+│   │   ├── database.dart          # AppDatabase + MigrationStrategy
+│   │   └── connection/
+│   │       ├── connection.dart    # export conditionnel io/web
+│   │       ├── connection_native.dart  # bootstrapMigrate() → NativeDatabase
+│   │       └── connection_web.dart    # driftDatabase + DriftWebOptions (sqlite3.wasm/worker, OPFS/IndexedDB)
+│   ├── sync_service.dart          # ← TODO : outbox drain, pull, WS (jalon 5-6)
 │   └── backend_client.dart        # ← NEW : HTTP client typé (jalon 4+)
-├── repositories/                  # ← NEW (jalon 1)
-│   ├── game_repository.dart
+├── repositories/
+│   ├── game_repository.dart        # interfaces abstraites
 │   ├── player_repository.dart
 │   ├── round_repository.dart
 │   ├── score_repository.dart
-│   └── game_type_repository.dart
-├── providers/                     # (existants, refacto pour utiliser repos)
-└── screens/, widgets/             # (essentiellement inchangés)
+│   ├── game_type_repository.dart
+│   ├── player_stats_repository.dart
+│   ├── game_analysis_repository.dart
+│   └── drift/
+│       └── drift_repositories.dart # impls Drift (cross-platform)
+├── providers/                      # consomment les impls Drift
+└── screens/, widgets/
 ```
 
 ### 8.2 Backend (Python)
 
 ```
 backend/
-├── docker-compose.yml
-├── Caddyfile
+├── docker-compose.yml             # dev local
+├── docker-compose.prod.yml        # NAS (Web Station TLS, port 8087, 1 worker)
 ├── Dockerfile
 ├── pyproject.toml                 # uv-compatible, pinned versions
 ├── alembic.ini
 ├── .env.example
 ├── README.md
+├── scripts/
+│   └── deploy_nas.sh              # build → push registry NAS → up → migrations
 ├── alembic/
 │   ├── env.py
 │   └── versions/
@@ -433,21 +460,12 @@ backend/
 │   ├── db.py                      # async session
 │   ├── auth.py                    # device_token middleware
 │   ├── models/                    # SQLModel ORM
-│   │   ├── group.py
-│   │   ├── device.py
-│   │   ├── player.py
-│   │   ├── game.py
-│   │   ├── comment.py
-│   │   ├── change_log.py
-│   │   └── rate_limit.py
+│   │   ├── group.py, device.py, player.py, game.py
+│   │   ├── comment.py, change_log.py, rate_limit.py
 │   ├── schemas/                   # Pydantic request/response
-│   │   ├── groups.py
-│   │   ├── sync.py
-│   │   └── comments.py
+│   │   ├── groups.py, sync.py, comments.py
 │   ├── routes/
-│   │   ├── groups.py
-│   │   ├── sync.py
-│   │   └── comments.py
+│   │   ├── groups.py, sync.py, comments.py
 │   └── services/
 │       ├── anthropic_client.py
 │       ├── prompt_builder.py
@@ -458,6 +476,7 @@ backend/
     ├── conftest.py
     ├── test_groups.py
     ├── test_sync.py
+    ├── test_sync_ws_integration.py  # WS + LISTEN/NOTIFY Postgres réel (testcontainers)
     └── test_comments.py
 ```
 
@@ -465,19 +484,32 @@ backend/
 
 ## 9. Tests
 
-### 9.1 Mobile
+### 9.1 Mobile (28 tests unitaires + 1 e2e parcours doré)
 
-- `test/database_service_test.dart` : tests sqflite legacy (jalon 0), couvre toutes les requêtes et migrations v1→v5
-- `test/repository_test.dart` : tests d'interfaces repository (jalon 1)
-- `test/migration_v5_to_v6_test.dart` : tests sur snapshot v5 réel (jalon 2)
-- Fixture binaire : `test/fixtures/v5_user_snapshot.db` (à capturer depuis un device réel)
+- `test/database_service_test.dart` : schéma v9 fresh install, CRUD via singleton, migration v8→v9, sérialisation modèles (9 tests)
+- `test/migration_v8_to_v9_test.dart` : dédup cross-parties, désambiguïsation intra-partie (2 tests)
+- `test/drift/drift_repositories_test.dart` : cycle de vie complet via impls Drift (9 tests)
+- `test/widget_test.dart` : sérialisation modèles v5-compat (8 tests)
+- Commande : `flutter test`
 
-### 9.2 Backend
+**E2E `integration_test/app_test.dart`** (parcours doré, une seule suite, web + device) :
+créer une partie ZapZap → 2 joueurs globaux (Alice, Bob) → 3 manches de scores → vérif totaux → stats (Alice gagnante, lowest-wins) → analyse ZapZap (POST réseau réel) + preuve du cache `game_analyses`. Finders robustes aux 10 locales (Keys `player_picker_search/create`, `create_game_submit`, `board_add_round`, `analysis_generate` + icônes + texte non localisé `ZapZap`). Helpers d'attente maison (`_waitFor`, `_waitEnabled`, `_waitDashes`) car le worker Drift web résout en asynchrone sans planifier de frame → `pumpAndSettle` ne suffit pas.
+- **Web (PWA)** : `chromedriver` (major = Chrome installé) sur `:4444`, puis
+  `flutter drive --driver=test_driver/integration_test.dart --target=integration_test/app_test.dart -d web-server --browser-name=chrome --headless --dart-define=BACKEND_URL=https://countscore.ombivince.synology.me`.
+  L'étape réseau ZapZap est *skippée* sur web (CORS prod n'autorise pas l'origine `localhost`) ; elle est validée séparément via `curl` prod et lors du run device.
+- **Device (Android)** : DB propre requise (`adb shell pm clear com.vemore.countscore`) pour que le défaut soit ZapZap + « Partie 1 », puis
+  `flutter test integration_test/app_test.dart -d <device_id> --dart-define=BACKEND_URL=https://countscore.ombivince.synology.me` (exerce l'appel réseau réel, sans CORS).
+
+### 9.2 Backend (42 tests unitaires + 2 tests d'intégration WS)
 
 - `tests/test_groups.py` : create, join, revoke, rotate_share_token
-- `tests/test_sync.py` : push/pull deltas, LWW, idempotence, conflits round
+- `tests/test_sync.py` : push/pull deltas, LWW, idempotence, conflits round (SQLite in-memory, pg_notify stubbé)
+- `tests/test_sync_ws_integration.py` : handshake WS + push → NOTIFY → new_seq → pull sur **Postgres réel** via testcontainers (marqueur `integration`, Docker requis)
 - `tests/test_comments.py` : génération avec mock Anthropic, rate limit, budget, prompt injection
-- Pytest + `pytest-asyncio` + `testcontainers` pour spawning Postgres jetable
+- `tests/test_zapzap_analysis.py` : endpoint + prompt builder ZapZap
+- `tests/test_llm_providers.py` : providers LLM pluggables (bedrock/openai_compat)
+- `tests/test_ip_rate_limit.py` : rate limiting par IP
+- Commande : `uv run pytest` (unitaires) ; `uv run pytest -m integration` (WS, nécessite Docker)
 
 ---
 
@@ -493,8 +525,10 @@ backend/
 | SQL injection | SQLModel/asyncpg paramétré partout, jamais de string concat |
 | CSRF | API stateless avec Bearer token → pas de CSRF |
 | CORS | Whitelist explicite des origines PWA dans `config.py` |
-| Rate limit | Niveau device + niveau groupe, voir §7.3 |
-| Backups | `pg_dump` quotidien chiffré (gpg) + rotation 7 jours |
+| Rate limit | Niveau device + niveau groupe (§7.3) + niveau IP (`ip_rate_limiter.py`) |
+| IP rate limit | Process-global en mémoire (X-Forwarded-For) — **1 worker uvicorn obligatoire** |
+| TLS | Synology Web Station (Let's Encrypt intégré) — Caddy supprimé |
+| Backups | `pg_dump` quotidien + rotation 7 jours |
 
 ---
 
@@ -508,27 +542,13 @@ git log --oneline               # repérer le commit qui fonctionne
 git reset --hard <sha>          # revenir à cet état
 ```
 
-### 11.2 Pour reprendre un jalon non terminé
+### 11.2 Rollout de la migration Drift en production
 
-Voir la table en §2 ("État d'avancement"). Pour chaque jalon "📋 à implémenter" :
+Stratégie deux releases pour ne pas perdre les données (§3.2) :
+- **Release N** : code avec `database_service.dart` qui migre sqflite v8 → v9. L'app fonctionne toujours sur sqflite. Si bug, rollback sur `git reset --hard`.
+- **Release N+1** : Drift activé. `bootstrapMigrate()` ouvre sqflite, exécute v1→v9, ferme. Drift adopte le fichier migrée. Sur web (install neuve), Drift crée v9 directement.
 
-**Jalon 3 (Drift)** :
-1. Ajouter à `pubspec.yaml` : `drift: ^2.18.0`, `drift_flutter: ^0.2.0`, `sqlite3_flutter_libs: ^0.5.0` ; dev: `drift_dev: ^2.18.0`, `build_runner: ^2.4.0`
-2. Créer `lib/services/drift/tables.dart` en miroir du schéma v6 (table par table, avec annotations Drift)
-3. Créer `lib/services/drift/database.dart` avec `@DriftDatabase(tables: [...])` et `schemaVersion = 6`, `MigrationStrategy` no-op (la base existante est déjà v6 grâce au jalon 2)
-4. `dart run build_runner build`
-5. Réécrire chaque `*RepositoryImpl` sqflite → `*RepositoryDriftImpl`
-6. Wrapper créations multi-entités dans `transaction { }`
-7. Supprimer `sqflite` du pubspec et `database_service.dart`
-8. Snapshot v5 → migrer → ouvrir avec Drift : doit lire toutes les données
-
-**Jalon 8 (PWA web)** :
-1. `flutter create --platforms=web .`
-2. Vérifier que `drift_flutter` charge bien `sqlite3.wasm` (OPFS)
-3. Abstraction `FileExporter` : créer `lib/services/file_exporter.dart` (interface), `file_exporter_io.dart`, `file_exporter_web.dart`, import conditionnel via `if (dart.library.html)`
-4. Ajouter `web/manifest.json` PWA-compliant (icons, theme_color, display: standalone)
-5. Service worker via `flutter_service_worker.js` généré par `flutter build web` (cache stratégie : network-first pour `/api/*`, cache-first pour assets)
-6. Tester offline : devtools → Application → Service Workers → Offline
+Pour tester la migration sur une vraie base avant de déployer : copier une base device dans `test/fixtures/vX_user_snapshot.db` et l'ouvrir dans un test `sqflite_common_ffi`.
 
 ### 11.3 Pour ajouter une nouvelle entité
 
@@ -537,15 +557,12 @@ Voir la table en §2 ("État d'avancement"). Pour chaque jalon "📋 à impléme
 3. Backend `services/sync.py` : ajouter dans `ENTITY_HANDLERS` le handler d'apply_delta pour cette entité
 4. Mettre à jour ce document (§4 et §8)
 
-### 11.4 Pour configurer le serveur de production
+### 11.4 Pour déployer le backend (NAS Synology)
 
-1. VPS / home server avec Docker + Docker Compose installés
-2. DNS A record pointant vers l'IP
-3. `git clone` + `cd backend`
-4. `cp .env.example .env` et remplir : `ANTHROPIC_API_KEY`, `POSTGRES_PASSWORD`, `DOMAIN`
-5. `docker compose up -d`
-6. `docker compose exec api alembic upgrade head`
-7. Vérifier `https://<DOMAIN>/health` retourne `200 OK`
+1. Configurer Web Station : reverse-proxy `https://countscore.ombivince.synology.me` → `http://localhost:8087`
+2. `cd backend && cp .env.example .env` + remplir les variables critiques
+3. `./scripts/deploy_nas.sh` (build image → push registry NAS → docker compose up → alembic upgrade)
+4. Vérifier `https://countscore.ombivince.synology.me/health` → `{"status": "ok"}`
 
 ### 11.5 Variables d'environnement critiques
 
@@ -555,32 +572,29 @@ Voir la table en §2 ("État d'avancement"). Pour chaque jalon "📋 à impléme
 | `POSTGRES_PASSWORD` | Mot de passe Postgres | (requis) |
 | `POSTGRES_USER` | User Postgres | `countscore` |
 | `POSTGRES_DB` | DB Postgres | `countscore` |
-| `DOMAIN` | FQDN public pour Caddy | `localhost` |
-| `COMMENT_MODEL` | Modèle Claude utilisé | `claude-haiku-4-5` |
+| `LLM_PROVIDER` | Provider ZapZap : `bedrock`, `gemini`, `mistral` | `bedrock` |
+| `BEDROCK_MODEL_ID` | Modèle Bedrock | `us.meta.llama3-3-70b-instruct-v1:0` |
+| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | Credentials AWS pour Bedrock | (requis si bedrock) |
+| `COMMENT_MODEL` | Modèle Claude pour /comments | `claude-haiku-4-5` |
 | `DEFAULT_BUDGET_CENTS` | Budget mensuel par défaut par groupe | `100` |
-| `CORS_ORIGINS` | Origines autorisées (CSV) | `https://<DOMAIN>` |
+| `CORS_ORIGINS` | Origines autorisées (CSV) | `https://countscore.ombivince.synology.me` |
+| `IP_RL_PER_MINUTE` / `IP_RL_PER_HOUR` | Rate limit IP anonyme | `5` / `30` |
 
 ---
 
 ## 12. Limites connues / TODO
 
-### À valider localement (impossible dans l'environnement de génération)
-- **`flutter analyze`** : le code mobile doit être validé sur une machine avec Flutter installé. Aucune erreur attendue mais la vérification est obligatoire avant publication.
-- **`flutter test`** : les tests unitaires existants doivent passer ; les nouveaux tests dans `test/database_service_test.dart` sont skippés en attendant l'exposition de `DatabaseService._createDB`/`_upgradeDB` via `@visibleForTesting`.
-- **Migration v5→v6 sur snapshot utilisateur réel** : capturer une base v5 d'un device en prod (cf. §11.2), la copier dans `test/fixtures/v5_user_snapshot.db`, écrire un test qui ouvre cette base avec `DatabaseService` et vérifie que toutes les rangées ont reçu `uuid`/`created_at`/`updated_at`.
-
 ### Différé volontairement
-- **Jalon 3 (Drift)** : code mobile reste sur sqflite v6. La migration v5→v6 prépare le terrain (schéma identique au futur schéma Drift) mais ne change pas de moteur. Bénéfice futur de Drift : Web + type-safety.
-- **Jalon 8 (PWA web)** : prérequis Jalon 3.
-- **Refonte players globaux (v7)** : voir §2 ci-dessus.
-- **Tests d'intégration end-to-end mobile↔backend** : à ajouter quand un device de test réel est disponible.
-- **`SettingsProvider.exportDatabase/importDatabase`** utilisent `dart:io File()` directement. Lors du portage Web (Jalon 8), il faudra extraire une abstraction `FileExporter` avec impls io/web séparées.
-- **WebSocket sync : tests d'intégration manquants** — les tests existants stubbent `pg_notify` car SQLite ne le supporte pas. Ajouter des tests d'intégration avec Postgres réel (testcontainers ou docker-compose) avant la mise en prod.
+- **Export/import base sur web** : masqué en v1 (guard `kIsWeb`). Pour l'activer, extraire une abstraction `FileExporter` (io/web) ; côté web, sérialiser la base en JSON et download/upload via le navigateur.
+- **Sync mobile↔backend** : `sync_service.dart` + outbox drain + WebSocket client non implémentés. Le schéma (outbox, sync_state) et le backend sont prêts.
+- **Tests d'intégration end-to-end** : couverts par `integration_test/app_test.dart` (§9.1), exécuté en Chrome headless (PWA) et exécutable sur device Android. L'unique flux mobile↔backend actuel (analyse ZapZap) y est exercé ; le run web skippe cette étape (CORS) et est validé par `curl` prod. Reste à couvrir : le futur flux sync (quand `sync_service.dart` existera) et un run device CI automatisé.
+- **Snapshot utilisateur réel pour tests** : capturer une base v8 prod dans `test/fixtures/v8_user_snapshot.db` et l'exercer dans un test de migration.
+- **Rollout Release N vs Release N+1** (migration Drift) : en production actuellement sur sqflite v9 ; Drift s'active à la prochaine release.
 
 ### Sécurité production
-- **`PUBLISHING.md` non mis à jour** pour la stack backend : à compléter avant la première release qui inclut les fonctionnalités groupes/commentaires.
-- **Monitoring** : seuls les logs `docker logs` sont disponibles. Pour la production, ajouter Prometheus + Grafana dans un `docker-compose.monitoring.yml` séparé (optionnel, déjà documenté en §6).
-- **Argon2 sur device_token** : O(N) verifies par requête où N est le nombre de devices. Pour >1000 devices, indexer un préfixe court du token comme prévu dans `app/auth.py` (docstring).
+- **`PUBLISHING.md` non mis à jour** pour la stack backend : à compléter avant la première release groupes/commentaires.
+- **Monitoring** : logs `docker logs` seulement. Ajouter Prometheus + Grafana dans `docker-compose.monitoring.yml`.
+- **Argon2 sur device_token** : O(N) verifies. Pour >1000 devices, indexer un préfixe court (cf. `app/auth.py` docstring).
 
 ---
 

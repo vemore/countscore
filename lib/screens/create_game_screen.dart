@@ -308,6 +308,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
 
             // Bouton d'ajout de joueur
             OutlinedButton.icon(
+              key: const Key('create_add_player'),
               onPressed: _addPlayer,
               icon: const Icon(Icons.add),
               label: Text(l10n.add),
@@ -355,6 +356,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
 
             // Bouton de création
             FilledButton.icon(
+              key: const Key('create_game_submit'),
               onPressed: _selectedPlayers.length >= 2 ? _createGame : null,
               icon: const Icon(Icons.check),
               label: Text(l10n.createGame),

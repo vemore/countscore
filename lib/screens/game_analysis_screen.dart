@@ -11,9 +11,9 @@ import '../l10n/app_localizations.dart';
 import '../models/game_analysis.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
+import '../repositories/drift/drift_repositories.dart';
 import '../repositories/game_analysis_repository.dart';
-import '../repositories/sqflite/sqflite_game_analysis_repository.dart';
-import '../services/database_service.dart';
+import '../services/drift/database.dart';
 
 class GameAnalysisScreen extends StatefulWidget {
   const GameAnalysisScreen({super.key, GameAnalysisRepository? repository})
@@ -33,7 +33,7 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
   static const _requestTimeout = Duration(seconds: 90);
 
   late final GameAnalysisRepository _repo =
-      widget._repository ?? SqfliteGameAnalysisRepository(DatabaseService.instance);
+      widget._repository ?? DriftGameAnalysisRepository(AppDatabase.instance);
 
   bool _isLoading = false;
   String? _analysisText;
@@ -297,6 +297,7 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
     if (_analysisText == null) {
       return Center(
         child: FilledButton.icon(
+          key: const Key('analysis_generate'),
           icon: const Icon(Icons.auto_awesome),
           label: Text(l10n.generateAnalysis),
           onPressed: _generate,
