@@ -42,6 +42,19 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/require-pull-request.sh",
+            "args": [],
+            "timeout": 60,
+            "statusMessage": "Checking the pull request for this branch"
+          }
+        ]
+      }
     ]
   }
 }

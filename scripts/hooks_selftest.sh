@@ -181,6 +181,38 @@ branch_case "a branch replaying a commit already upstream" 2
 git -C "$WORK" checkout -q --detach origin/main
 branch_case "a detached HEAD" 2
 
+echo "== pull request ==============================================="
+stop_case() {  # description, expected (silent|block), [stop_hook_active]
+    local out got
+    out=$(printf '{"hook_event_name":"Stop","stop_hook_active":%s}' "${3:-false}" \
+          | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/require-pull-request.sh" 2>/dev/null)
+    case "$out" in
+        "")       got=silent ;;
+        *'"block"'*) got=block ;;
+        *)        got="unexpected: $out" ;;
+    esac
+    report "$1" "$2" "$got"
+}
+
+git -C "$WORK" switch -q main
+stop_case "nothing to publish from main" silent
+
+git -C "$WORK" switch -qc feat/quiet origin/main
+stop_case "a branch with no commits of its own" silent
+
+git -C "$WORK" commit -q --allow-empty -m "work in progress"
+stop_case "a local-only remote is not a forge" silent
+
+git -C "$WORK" remote set-url origin https://github.com/example/does-not-exist.git
+if gh auth status >/dev/null 2>&1; then
+    stop_case "commits with no pull request" block
+    stop_case "already asked, do not loop" silent true
+    git -C "$WORK" config branch.feat/quiet.noPullRequest true
+    stop_case "a branch deliberately not published" silent
+else
+    echo "  skip  the three GitHub cases (gh is not authenticated here)"
+fi
+
 echo "== wiring ===================================================="
 for script in "$HOOKS"/*.sh "$HOOKS"/*.py; do
     [ -x "$script" ] && pass=$((pass + 1)) || { fail=$((fail + 1)); echo "  FAIL  $script is not executable"; }
