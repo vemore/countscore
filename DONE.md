@@ -6,6 +6,47 @@ readable after the fact.
 
 ---
 
+## There is no CI
+
+**Status:** done (2026-09-09) — closed by the `chore/ci` branch. Opened 2026-09-09,
+carried over from the Flutter 3.47 entry.
+
+Nothing mechanically checked that a fresh clone builds, which was uncomfortable given
+`*.g.dart` is gitignored. The backend already had three green gates (`ruff check`,
+`mypy`, `pytest`) and the app had `flutter analyze` + `flutter test`; a workflow running
+them costs little and stops lint debt from re-accumulating.
+
+The Flutter 3.47 upgrade made this sharper: it turned out `android/settings.gradle` had
+been shadowing `android/settings.gradle.kts` since the first commit, so edits to the `.kts`
+file were silently dead. A build in CI would have caught that years earlier.
+
+**Closed by `.github/workflows/ci.yml`** — three parallel jobs on every push to `main` and
+every PR:
+
+- `backend` — `uv sync --locked --extra dev`, then `ruff check .`, `mypy`, `pytest -v`.
+  The full suite, so the `integration`-marked testcontainers test really starts
+  `postgres:17-alpine` and exercises LISTEN/NOTIFY and JSONB — covered nowhere else.
+  `uv` rather than `pip install -e ".[dev]"`, which silently misses `testcontainers` and
+  `httpx-ws`: they live in `[dependency-groups]`, which pip does not read.
+- `app` — `pub get` → `dart run build_runner build` → `analyze` → `test` → web release
+  build. The codegen step is what makes this a fresh-clone proof.
+- `android` — the same codegen, then `flutter build apk --debug`, plus an assertion that
+  the Flutter tool really injected the gitignored `gradlew` / `gradle-wrapper.jar`.
+
+Deliberately **not** covered, so the gap stays honest: the e2e suite
+(`integration_test/app_test.dart`) is out, because it calls the real production endpoint;
+the signed release APK/AAB is out, because it needs the keystore secrets; and `ruff format`
+is not run, as it remains its own open item.
+
+Two traps found while writing it. `gradle/actions/setup-gradle` is the wrong action here —
+it expects a wrapper at checkout time, but `android/gradlew` is gitignored until Flutter
+injects it, so `actions/setup-java` with `cache: gradle` does the job instead. And
+`android/gradle.properties` asks for `-Xmx8G`, more than a runner has; the override goes in
+the `GRADLE_USER_HOME` `gradle.properties`, which outranks the project's, so the committed
+file stays untouched.
+
+---
+
 ## Upgrade Flutter to 3.47 to unblock the held-back dependencies
 
 **Status:** done (2026-09-09) — closed by the `chore/flutter-3-47` branch. Opened

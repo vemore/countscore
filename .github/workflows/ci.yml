@@ -1,0 +1,174 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Cancel superseded PR runs; never cancel a run for a commit already on main,
+# so main keeps a complete green/red record.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: "3.47.2"
+  BACKEND_URL: "https://countscore.ombivince.synology.me"
+
+jobs:
+  backend:
+    name: Backend — ruff, mypy, pytest
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      # Ephemeral runner: nothing needs reaping, and Ryuk is a known flake source.
+      TESTCONTAINERS_RYUK_DISABLED: "true"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          # Matches backend/Dockerfile (python:3.13-slim), i.e. production parity.
+          # ruff target-version=py311 and mypy python_version=3.11 are analysis
+          # targets and are unaffected by this.
+          python-version: "3.13"
+          enable-cache: true
+          cache-dependency-glob: "backend/uv.lock"
+
+      # --locked fails if uv.lock is stale against pyproject.toml: a free extra gate.
+      # --extra dev pulls [project.optional-dependencies].dev (pytest, ruff, mypy);
+      # the [dependency-groups].dev group (httpx-ws, testcontainers) is installed by
+      # default by `uv sync`. This is why `pip install -e ".[dev]"` cannot be used:
+      # it silently misses testcontainers, which the integration test imports.
+      - name: Install dependencies
+        run: uv sync --locked --extra dev
+
+      # ruff check only. `ruff format` has never been run on this codebase and
+      # would rewrite ~43 of 50 files; it is a separate deferred item in TODO.md.
+      - name: ruff check
+        run: uv run ruff check .
+
+      - name: mypy
+        run: uv run mypy
+
+      # Full suite, including the `integration`-marked testcontainers test: the
+      # runner has Docker, so postgres:17-alpine really does start. That branch
+      # (LISTEN/NOTIFY, JSONB) is covered nowhere else.
+      - name: pytest
+        run: uv run pytest -v
+
+  app:
+    name: App — codegen, analyze, test, web build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - run: flutter --version
+
+      # `flutter: generate: true` + l10n.yaml means gen-l10n runs here
+      # automatically; no separate `flutter gen-l10n` step is needed.
+      - name: flutter pub get
+        run: flutter pub get
+
+      # MANDATORY, and it must precede analyze/test/build: *.g.dart is gitignored,
+      # so lib/services/drift/database.g.dart does not exist in a fresh clone.
+      # Do NOT add --delete-conflicting-outputs: build_runner 2.16 removed it.
+      - name: Code generation (drift)
+        run: dart run build_runner build
+
+      - name: flutter analyze
+        run: flutter analyze
+
+      - name: flutter test
+        run: flutter test
+
+      # --no-tree-shake-icons is mandatory on every build target: game-type icons
+      # are built from database codepoints, which the tree-shaker cannot see.
+      - name: Build web (release)
+        run: |
+          flutter build web --release --no-tree-shake-icons \
+            --dart-define=BACKEND_URL=${{ env.BACKEND_URL }}
+
+  android:
+    name: Android debug APK — fresh-clone build proof
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          # Covers ~/.gradle/caches and ~/.gradle/wrapper — the big win, since the
+          # Gradle 9.3.1 distribution alone is ~200 MB. Deliberately not using
+          # gradle/actions/setup-gradle: it expects a wrapper at checkout time,
+          # but android/gradlew is gitignored until the Flutter tool injects it.
+          cache: gradle
+
+      # android/gradle.properties asks for -Xmx8G -XX:MaxMetaspaceSize=4G, more
+      # than a standard runner has. gradle.properties in GRADLE_USER_HOME takes
+      # precedence over the project's, so this caps the heap without touching the
+      # committed file. Written after setup-java, whose cache only covers
+      # ~/.gradle/caches and ~/.gradle/wrapper.
+      - name: Cap the Gradle heap for CI
+        run: |
+          mkdir -p "$HOME/.gradle"
+          {
+            echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError"
+            echo "kotlin.daemon.jvmargs=-Xmx2g"
+            echo "org.gradle.workers.max=2"
+          } >> "$HOME/.gradle/gradle.properties"
+
+      # AGP 9.1 needs compileSdk 36 and build-tools 36.0.0. Accepting the licences
+      # also lets AGP auto-download the pinned NDK if the image lacks it.
+      - name: Install pinned Android SDK packages
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses > /dev/null || true
+          "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: flutter pub get
+        run: flutter pub get
+
+      - name: Code generation (drift)
+        run: dart run build_runner build
+
+      # Debug, not release: release signing reads android/key.properties, which is
+      # gitignored and absent in CI by design. Never invoke ./gradlew directly —
+      # android/settings.gradle.kts requires flutter.sdk in local.properties, and
+      # only `flutter build` writes that file.
+      - name: Build debug APK
+        run: flutter build apk --debug --no-tree-shake-icons
+
+      # gradlew and gradle-wrapper.jar are gitignored; the Flutter tool injects
+      # them. Asserting that on a clean checkout is half the point of this job.
+      - name: Prove the Gradle wrapper was injected into a clean checkout
+        run: |
+          ls -l android/gradlew android/gradle/wrapper/gradle-wrapper.jar
+          grep distributionUrl android/gradle/wrapper/gradle-wrapper.properties
+          ls -lh build/app/outputs/flutter-apk/app-debug.apk

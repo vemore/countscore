@@ -23,9 +23,11 @@
 
 ### Missing rather than deferred
 
-- **No CI.** Nothing mechanically checks that a fresh clone builds. This matters because
-  `*.g.dart` is gitignored, so a clean checkout does not compile until
-  `dart run build_runner build` has run.
+- **No e2e or release-artifact coverage in CI.** `.github/workflows/ci.yml` proves a fresh
+  clone builds — codegen, analyze, test, the web release and a debug APK — and runs the
+  three backend gates. It does not run the e2e suite, which calls the real production
+  endpoint, nor the signed release APK/AAB, which needs the keystore secrets. Both stay
+  manual. See [[Testing]].
 - **No monitoring or alerting.** `docker logs` only. Prometheus + Grafana in a
   `docker-compose.monitoring.yml` is the intended shape.
 - **`PUBLISHING.md` predates the backend.** It must be updated before the first release

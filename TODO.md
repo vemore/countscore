@@ -104,19 +104,6 @@ comes back `merged_lww` and that the stored row is the winner's — including th
 only the loser touched is **not** merged in. That last assertion is the one that pins the
 row-level behaviour down, and it is exactly the fact the wiki got wrong. See [[Sync]].
 
-## There is no CI
-
-**Status:** open — noted 2026-09-09, carried over from the Flutter 3.47 entry.
-
-Nothing mechanically checks that a fresh clone builds, which is uncomfortable given
-`*.g.dart` is gitignored. Now that the backend has three green gates (`ruff check`,
-`mypy`, `pytest`) and the app has `flutter analyze` + `flutter test`, a workflow running
-them costs little and would stop lint debt from re-accumulating.
-
-The Flutter 3.47 upgrade made this sharper: it turned out `android/settings.gradle` had
-been shadowing `android/settings.gradle.kts` since the first commit, so edits to the `.kts`
-file were silently dead. A build in CI would have caught that years earlier.
-
 ## `ruff format` has never been run on `backend/`
 
 **Status:** open — noted 2026-09-09, carried over from the Flutter 3.47 entry.
@@ -160,6 +147,19 @@ Flutter copies everything under `web/` into the build output, so `build/web/CLAU
 ships to whoever serves the PWA — internal instructions on a public URL. Harmless today,
 but it should either move out of `web/` or be stripped by whatever deploy step the PWA
 eventually gets (see "The Flutter web app has no deployment path" below).
+
+## `README.md` advertises a Flutter version four majors out of date
+
+**Status:** open — noted 2026-09-09, spotted while adding the CI badge.
+
+It claims `Flutter SDK ^3.9.2` in three places (the badge, the Tech Stack section and the
+prerequisites). The project runs 3.47.2 / Dart 3.13.2 — see the toolchain table in
+[[MobileApp]]. The Platform badge also reads `Android | iOS`, while everything documented
+in [[Release]] and `store_listing/` targets the Play Store and the web PWA; whether iOS is
+still an intended target is worth settling in the same pass.
+
+Worth a pass over the whole Tech Stack list rather than a one-line badge fix: the
+dependency versions quoted there predate the Flutter 3.47 upgrade too.
 
 ## `shared_preferences_android` still applies the Kotlin Gradle Plugin
 
