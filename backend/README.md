@@ -2,7 +2,7 @@
 
 Backend FastAPI pour CountScore : groupes, sync delta-log offline-first, API commentaires Claude.
 
-Voir `../ARCHITECTURE.md` pour la conception complète.
+Voir `../.llmwiki/INDEX.md` pour la conception complète (notamment `Architecture.md`, `Sync.md`, `LlmProviders.md`).
 
 ## Démarrage local (sans Docker)
 
@@ -123,7 +123,7 @@ par la variable `LLM_PROVIDER` (défaut `bedrock`) :
 Gemini et Mistral exposent un endpoint **compatible OpenAI** : un seul client `openai`
 les gère via `base_url` + clé + modèle. Le **prompt système** (« professeur Claude ») et le
 **user-message** (tableau des manches, historique) sont **strictement identiques** entre
-providers (mêmes `temperature=0.4`, `top_p=0.9`, `max_tokens=2048`) — seul l'appel API change,
+providers (mêmes `temperature=0.4`, `top_p=0.9`, `max_tokens=8192`) — seul l'appel API change,
 pour une comparaison équitable. Sans la clé du provider sélectionné, l'endpoint retourne `503`.
 
 Pour basculer : `export LLM_PROVIDER=gemini` (ou `mistral`) puis relancer le serveur.
@@ -154,7 +154,7 @@ Voir `.env.example`. Critiques :
 
 ## Sécurité
 
-Voir `../ARCHITECTURE.md` §10. Points critiques :
+Voir `../.llmwiki/Security.md`. Points critiques :
 - `device_token` stocké hashé argon2
 - 5 couches de défense prompt injection
 - Rate limit device + budget groupe

@@ -1,4 +1,4 @@
-"""Delta-log sync endpoints — see ARCHITECTURE.md §3.5 and §5.
+"""Delta-log sync endpoints — see .llmwiki/Sync.md.
 
 Apply order on push:
 1. Dedup: skip deltas whose (origin_device_id, client_lamport) is already in change_log.

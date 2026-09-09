@@ -1,6 +1,6 @@
 """Prompt construction for Claude-generated game commentary.
 
-Design choices (see ARCHITECTURE.md §7):
+Design choices (see .llmwiki/LlmProviders.md):
 - System prompt is structured for prompt caching (cache_control: ephemeral). It contains
   the style/language/anti-injection rules and the sliding-window memory.
 - Player names are wrapped in <player_name>…</player_name> tags. The system prompt

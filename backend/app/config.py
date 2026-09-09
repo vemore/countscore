@@ -41,7 +41,7 @@ class Settings(BaseSettings):
 
     log_level: str = "INFO"
 
-    # Rate limit thresholds (per authenticated device) — see ARCHITECTURE.md §7.3
+    # Rate limit thresholds (per authenticated device) — see .llmwiki/LlmProviders.md
     rl_per_minute: int = 6
     rl_per_hour: int = 30
     rl_per_day: int = 100

@@ -1,0 +1,80 @@
+# Web
+
+> Scope: everything specific to the PWA build.
+> Related: [[DataLayer]] · [[MobileApp]] · [[Testing]] · [[LlmProviders]] · [[KnownLimits]]
+> Updated: 2026-09-09
+
+## Facts
+
+### What is in `web/`
+
+`index.html` (1525 B, **stock Flutter template, zero customisation** — `$FLUTTER_BASE_HREF`,
+`flutter_bootstrap.js async`, no custom loader or service-worker code) · `manifest.json`
+(CountScore, standalone, portrait-primary, theme `#673AB7`) · `favicon.png` · `icons/`
+(4 PNGs) · and the two Drift runtime binaries: **`sqlite3.wasm` (744 KB)** and
+**`drift_worker.js` (351 KB)**.
+
+### Persistence
+
+`lib/services/drift/connection/connection_web.dart`:
+
+```dart
+driftDatabase(
+  name: 'countscore',
+  web: DriftWebOptions(
+    sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+    driftWorker: Uri.parse('drift_worker.js'),
+  ),
+)
+```
+
+SQLite compiled to wasm, persisted through OPFS (IndexedDB fallback) by `drift_flutter`.
+
+**Those explicit URIs are load-bearing.** Without them, drift_flutter 0.3.0 throws
+`ArgumentError` at startup and the PWA crashes — while the *build* still passes clean. If
+the web app dies on launch with nothing wrong at compile time, look here first.
+
+There is no legacy database on web, so `bootstrapMigrate()` never runs: Drift's `onCreate`
+builds schema v9 directly. See [[DataLayer]].
+
+### Feature guards
+
+`kIsWeb` appears in only two files, plus the conditional export in `connection.dart`:
+
+- `lib/providers/settings_provider.dart:13,35,45,59` — export/import throw
+  `UnsupportedError`; wakelock is a silent no-op.
+- `lib/screens/settings_screen.dart:73,86,89,211` — hides the wakelock and export/import
+  UI blocks entirely.
+
+### Building
+
+```bash
+flutter build web --release --no-tree-shake-icons \
+  --dart-define=BACKEND_URL=https://countscore.ombivince.synology.me
+```
+
+`--no-tree-shake-icons` applies to web exactly as it does to apk — see [[MobileApp]].
+Add `--base-href=/subpath/` if not served from the domain root.
+
+There is **no committed hosting configuration for the Flutter web app** — no nginx or
+Caddy vhost anywhere in the repo. [[Deployment]] covers only the FastAPI container.
+
+### CORS caveat
+
+Production CORS does not whitelist a `localhost` origin. A web build served locally against
+the production backend cannot reach `/comments/zapzap-analysis`. The e2e run skips that
+step for the same reason and it is validated by `curl` and on a device instead — see
+[[Testing]].
+
+## Decisions & History
+
+- **`sqlite3.wasm` and `drift_worker.js` are tracked in git on purpose** (`8a13541`),
+  1.1 MB and all. `dart run drift_dev make-web-worker` does not compile at the pinned
+  drift 2.34.4 / drift_dev 2.34.0 pairing, so the repository is the only reliable source
+  for them. `.gitignore` carries a comment saying so. **Do not regenerate or delete them**
+  until the CLI builds again — see `TODO.md`.
+- **Export/import is hidden rather than reimplemented on web.** It needs `dart:io`. Doing
+  it properly means a `FileExporter` abstraction with a JSON serialisation path for the
+  browser; that was scoped out of v1 rather than shipped half-working.
+- **`index.html` was left stock.** Every customisation is one more thing to reconcile on a
+  Flutter upgrade, and none was needed to ship.

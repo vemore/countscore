@@ -35,7 +35,7 @@ class DatabaseService {
   /// Native bootstrap for the Drift migration: open the legacy sqflite file to
   /// run the v1→v9 migration chain (and create the v9 schema for fresh
   /// installs), then close so Drift can adopt the migrated file in place.
-  /// See ARCHITECTURE.md §3.2 (two-release strategy).
+  /// See .llmwiki/DataLayer.md (two-release strategy).
   Future<void> bootstrapMigrate() async {
     final db = await database;
     await db.close();
@@ -59,7 +59,7 @@ class DatabaseService {
     const textType = 'TEXT NOT NULL';
     const intType = 'INTEGER NOT NULL';
 
-    // Schema v6 — sync-ready (see ARCHITECTURE.md §4.1)
+    // Schema v6 — sync-ready (see .llmwiki/SchemaV9.md)
     // Every entity has: uuid (logical key for sync), created_at, updated_at,
     // deleted_at (soft delete), group_id (NULL = local-only, non-NULL = shared).
 
@@ -102,7 +102,7 @@ class DatabaseService {
 
     // Schema v9 — players are GLOBAL (unique per (group_id, name)); a separate
     // `game_players` join carries the per-game membership (order, color). See
-    // ARCHITECTURE.md §3.3 / §4.1. `game_players.id` is the per-game key that
+    // .llmwiki/SchemaV9.md. `game_players.id` is the per-game key that
     // `scores` references (preserved across the v8→v9 migration).
     await db.execute('''
       CREATE TABLE players (
@@ -167,7 +167,7 @@ class DatabaseService {
     ''');
 
     // Outbox: every local mutation to a synced entity (group_id != NULL) is queued
-    // here for the sync worker. See ARCHITECTURE.md §5.1.
+    // here for the sync worker. See .llmwiki/Sync.md.
     await db.execute('''
       CREATE TABLE IF NOT EXISTS outbox (
         id $idType,
@@ -432,7 +432,7 @@ class DatabaseService {
     }
   }
 
-  /// v8 → v9 migration: global player identity (see ARCHITECTURE.md §3.3).
+  /// v8 → v9 migration: global player identity (see .llmwiki/SchemaV9.md).
   ///
   /// Before: `players` is per-game (`players.gameId`), and `scores.playerId`
   /// references those per-game rows. Cross-game stats merge every human sharing
@@ -620,7 +620,7 @@ class DatabaseService {
   /// - We do NOT drop any existing column. Worst case the new columns are
   ///   unused.
   /// - The full normalization of players (global per group, see
-  ///   ARCHITECTURE.md §3.3) is deferred to a future migration v8 because it
+  ///   .llmwiki/SchemaV9.md) is deferred to a future migration v8 because it
   ///   requires actual groups to scope into; doing it here would force every
   ///   existing user into a transient state.
   Future<void> _upgradeV5toV6(Database db) async {

@@ -69,7 +69,7 @@ def _enforce_ip_rate_limit(request: Request, response: Response) -> None:
 async def generate_mvp_comment(
     body: MvpGamePayload, request: Request, response: Response
 ) -> MvpCommentResponse:
-    """Stateless comment generation — see Jalon 4 in ARCHITECTURE.md §11.
+    """Stateless comment generation — see .llmwiki/Api.md (milestone 4).
 
     No persistence, no auth. Protected only by a per-IP rate limit (cost-abuse guard)
     since it calls the paid Anthropic API without a device/group budget.

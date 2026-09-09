@@ -1,4 +1,4 @@
-"""Sliding-window rate limiter (per device) — see ARCHITECTURE.md §7.3.
+"""Sliding-window rate limiter (per device) — see .llmwiki/LlmProviders.md.
 
 Single source of truth: the ``rate_limits`` table. We use a windowed counter
 (per-minute, per-hour, per-day) rather than a token bucket because the limits

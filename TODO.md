@@ -73,3 +73,74 @@ affect us: `game_types_screen.dart` and `players_screen.dart` use only
   own pass rather than riding along with an SDK upgrade.
 - There is **no CI**. Nothing mechanically checks that a fresh clone builds,
   which is uncomfortable given `*.g.dart` is gitignored.
+
+---
+
+## Surfaced during the LLM-wiki migration
+
+**Status:** open — noted 2026-09-09, while decomposing `CLAUDE.md` and `ARCHITECTURE.md`
+into `.llmwiki/`. None of these were introduced by that change; they were found by reading
+the whole tree at once. Background for each lives in the wiki page named alongside it.
+
+### Backend lint debt — 40 ruff errors
+
+`ruff check .` in `backend/` has never been clean against the pinned ruff 0.16.6:
+
+| Rule | Count | What it is |
+|---|---:|---|
+| `UP017` | 16 | `timezone.utc` → `datetime.UTC` |
+| `I001` | 5 | Unsorted import blocks |
+| `F401` | 4 | Unused imports (`sync.py` imports `HTTPException` and `Group` for nothing) |
+| `E501` | 4 | Lines over 100 |
+| `RUF100` | 4 | `noqa: E402` directives that no longer suppress anything |
+| `RUF059` | 3 | Unpacked-but-unused `group_id` in `test_sync.py` |
+| `SIM105` | 2 | `try`/`except`/`pass` → `contextlib.suppress` |
+| `SIM118`, `UP041` | 1 each | `key in dict.keys()`; aliased `TimeoutError` |
+
+**30 of the 40 are auto-fixable.** `UP017` and `I001` together are 21 of them and are purely
+mechanical. The four `F401`/`RUF059` are worth reading rather than auto-fixing — an unused
+import can mean a dropped call site.
+
+This matters more than it did: `backend/CLAUDE.md` now advertises `ruff check .` as part of
+the loop, so leaving it red trains everyone to ignore it. Do the auto-fixable pass, then
+decide case by case on the rest.
+
+### mypy is declared but never configured
+
+`mypy>=2.3.1` sits in the dev extras and a `.mypy_cache/` exists, so it has been run by
+hand — but there is no `[tool.mypy]`, no `mypy.ini`, no `setup.cfg` anywhere. Either
+configure it (and add it to the loop next to ruff) or drop the dependency. Right now it is
+neither a gate nor an honest absence. See `.llmwiki/Backend.md`.
+
+### The Flutter web app has no deployment path
+
+`.llmwiki/Deployment.md` covers the FastAPI container completely. For the PWA there is
+nothing: no vhost, no Web Station config, no deploy script, no documented `--base-href`.
+The app is built and served by hand. Whoever deploys it next has to rediscover how.
+See `.llmwiki/Web.md`.
+
+### `PUBLISHING.md` predates the backend
+
+It describes a purely local, offline app. Any release shipping group sharing or LLM
+commentary needs the Play Data Safety declaration rewritten first, to disclose the network
+calls and what game data leaves the device. `PLAY_STORE_DATA_SAFETY.md` and
+`privacy_policy.md` need the same pass. **This blocks the next store release**, not the next
+commit. See `.llmwiki/Release.md` and `.llmwiki/Security.md`.
+
+### Smaller, self-contained
+
+- **`ThemeProvider` never persists.** `lib/providers/theme_provider.dart` is 19 lines and
+  holds `ThemeMode` in memory only, so the app resets to `ThemeMode.system` on every
+  restart. `SettingsProvider` already has the SharedPreferences wiring to copy.
+- **`test/widget_test.dart` pumps no widgets.** Its 8 tests are model serialisation. The
+  name implies widget coverage that does not exist anywhere in the repo — rename it, or
+  give it real widget tests.
+- **The Drift repositories are raw SQL.** `drift_repositories.dart` uses `customSelect` /
+  `customInsert` throughout, a faithful port of the sqflite queries. That was the right
+  call for a safe migration, but the type-safe-query argument for adopting Drift is still
+  unbanked. Converting the simplest repositories first would prove the pattern.
+- **Backend security debt is catalogued but untouched** — `device_token` in the WebSocket
+  query string, no rate limit on `POST /groups` or `/groups/join`, `share_token` returned
+  by `GET /groups/me`, no bounds validation on scores and rounds, no security headers. Each
+  is a considered trade-off at household scale; all of them need revisiting before anything
+  public. See `.llmwiki/Security.md`.
