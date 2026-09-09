@@ -48,10 +48,25 @@ field**, ordered lexicographically by `(client_lamport, origin_device_id)`.
 
 ### WebSocket — signal only
 
-`/sync/stream`, `Authorization: Bearer <device_token>` at handshake. The server pushes
-exactly `{"type": "new_seq", "server_seq": N}`; the client reacts by calling `/sync/pull`.
-No server-side buffer, so reconnection is safe. Backoff is exponential 1s, 2s, 4s … capped
-at 60s; on reconnect `since_seq` recovers whatever was missed.
+> **Status: Outdated** (2026-09-09) — this page described `Authorization: Bearer
+> <device_token>` at handshake, which the code never did. Browsers cannot set headers on a
+> WebSocket handshake at all. The credential went in the query string until it was replaced
+> by the ticket flow below.
+
+Two steps. `POST /sync/ws-ticket` carries the device token in the Authorization header,
+where it works, and returns a single-use ticket with a 60 s TTL. The client then opens
+`/sync/stream?ticket=<value>`. The ticket is redeemed — and destroyed — before the
+handshake is accepted, so the long-lived credential never reaches a URL and an
+unauthenticated peer gets nothing but a 1008 close.
+
+The server pushes exactly `{"type": "new_seq", "server_seq": N}`; the client reacts by
+calling `/sync/pull`. Every 30 s of silence it sends `{"type": "ping"}` and re-checks that
+the device is still not revoked, closing the stream if it is. No server-side buffer, so
+reconnection is safe — fetch a fresh ticket, then reconnect. Backoff is exponential 1s, 2s,
+4s … capped at 60s; on reconnect `since_seq` recovers whatever was missed.
+
+Tickets live in process memory (`backend/app/services/ws_ticket.py`), which is one more
+reason production runs a single uvicorn worker.
 
 ### Server schema
 

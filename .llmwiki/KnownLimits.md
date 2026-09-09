@@ -30,8 +30,10 @@
   `docker-compose.monitoring.yml` is the intended shape.
 - **`PUBLISHING.md` predates the backend.** It must be updated before the first release
   that ships groups or commentary. See [[Release]].
-- **Argon2 device-token verification is O(N).** One argon2 verify per device row. Fine at
-  current scale; above ~1000 devices, index a short token prefix. See `backend/app/auth.py`.
+- **Argon2 device-token verification is O(N).** One argon2 verify per device row, on every
+  authenticated HTTP request. Fine at current scale; above ~1000 devices, index a short
+  token prefix. See `backend/app/auth.py`. The WebSocket handshake used to duplicate this
+  scan inline and no longer does — it redeems a ticket instead. See [[Sync]].
 - **Flutter SDK upgrade blocked.** Six packages are pinned back, and `dart run drift_dev`
   does not compile at all at drift 2.34.4 / drift_dev 2.34.0. Full analysis and the plan
   live in `TODO.md` at the repo root — that file is the source of truth for this item.

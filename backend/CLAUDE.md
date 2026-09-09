@@ -32,9 +32,9 @@ docker compose up -d                    # or: db + api on :8000 + backup sidecar
 pytest -m 'not integration' -q          # fast, no Docker
 pytest -v                               # everything; `integration` needs Docker
 
-# Lint
-ruff check .
-ruff format .
+# Lint / types
+ruff check .                            # must be clean
+mypy                                    # must be clean; config in pyproject.toml
 
 # Migrations
 alembic upgrade head
@@ -45,9 +45,10 @@ alembic revision --autogenerate -m "add x"
 
 1. **Never commit `.env`.** `.env.example` is the template and must stay in sync with
    `app/config.py`.
-2. **Production runs exactly one uvicorn worker.** `ip_rate_limiter.py` keeps state in
-   process memory, so a second worker silently doubles the effective rate limit. Do not
-   raise the worker count without moving that state out of memory first.
+2. **Production runs exactly one uvicorn worker.** `ip_rate_limiter.py` and
+   `ws_ticket.py` keep state in process memory: a second worker silently doubles the
+   effective rate limit and drops WebSocket tickets issued by its sibling. Do not raise
+   the worker count without moving that state out of memory first.
 3. **Never let `CORS_ORIGINS` become `*`.** A validator rejects it at startup — leave it in.
 4. **The ZapZap generation prompt must stay identical across bedrock, gemini and mistral.**
    It is the control variable that makes provider comparison meaningful.
@@ -59,10 +60,11 @@ alembic revision --autogenerate -m "add x"
 
 ## Gotchas
 
-- **mypy is a declared dev dependency with no configuration anywhere.** There is no
-  `[tool.mypy]`, no `mypy.ini`. Type checking is not part of the gate; do not report it as
-  passing.
+- **SQLModel query expressions need `col()` to type-check.** `Model.field == x` is typed
+  `bool` by mypy, because SQLModel annotates the class attribute with its Python type
+  rather than `Column`. Write `col(Model.field) == x` in `where`/`join`/`order_by`.
+- **`ruff format` has never been run on this codebase** and would rewrite ~43 files. Do
+  not run it as a side effect of another change; it deserves its own `chore:` commit.
 - Tests run on in-memory SQLite while production is Postgres. JSONB and `LISTEN/NOTIFY`
   paths are only covered by the `integration`-marked tests.
 - Ruff: line length 100, `select = E,F,I,B,UP,N,SIM,RUF`, `ignore = B008,N805`.
-- `openai` is pinned `>=2,<3` while 3.x is out — see `TODO.md`.

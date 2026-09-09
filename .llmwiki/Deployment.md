@@ -57,7 +57,9 @@ hosting config. Only the backend container is covered. See [[Web]].
 | `MISTRAL_API_KEY` / `MISTRAL_MODEL` / `MISTRAL_BASE_URL` | Mistral | — / `mistral-large-latest` / — |
 | `CORS_ORIGINS` | Allowed origins, CSV. `*` is rejected at startup | prod URL |
 | `RL_PER_MINUTE` / `RL_PER_HOUR` / `RL_PER_DAY` | Per-device rate limit | `6` / `30` / `100` |
-| `IP_RL_PER_MINUTE` / `IP_RL_PER_HOUR` | Anonymous IP rate limit | `5` / `30` |
+| `IP_RL_PER_MINUTE` / `IP_RL_PER_HOUR` | Anonymous IP rate limit on the LLM endpoints | `5` / `30` |
+| `GROUP_RL_PER_MINUTE` / `GROUP_RL_PER_HOUR` | IP rate limit on group create/join, own bucket | `3` / `10` |
+| `HSTS_ENABLED` | Send `Strict-Transport-Security`. `true` in prod, `false` for local http | `false` |
 | `MAX_BODY_BYTES` | Request body cap (413 above) | `262144` |
 | `LOG_LEVEL` | | — |
 

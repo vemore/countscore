@@ -66,13 +66,13 @@ affect us: `game_types_screen.dart` and `players_screen.dart` use only
 
 ### Also open, unrelated to the SDK
 
-- `openai` is pinned `>=2,<3` in `backend/pyproject.toml` while 3.x is out.
-  3.0 switches to `httpx2`, like `anthropic` 1.x did. Our usage
-  (`AsyncOpenAI`, `chat.completions.create`, `openai.OpenAIError`) passes no
-  httpx objects, so it should be a lift-the-pin change — but it deserves its
-  own pass rather than riding along with an SDK upgrade.
 - There is **no CI**. Nothing mechanically checks that a fresh clone builds,
-  which is uncomfortable given `*.g.dart` is gitignored.
+  which is uncomfortable given `*.g.dart` is gitignored. Now that the backend
+  has three green gates (`ruff check`, `mypy`, `pytest`), a workflow running
+  them costs little and would stop the lint debt below from re-accumulating.
+- `ruff format` has **never** been run on `backend/`: it would rewrite 43 of
+  50 files. Left out of the 2026-09-09 backend pass on purpose, so the
+  functional diff stayed readable. It wants its own `chore:` commit.
 
 ---
 
@@ -82,35 +82,29 @@ affect us: `game_types_screen.dart` and `players_screen.dart` use only
 into `.llmwiki/`. None of these were introduced by that change; they were found by reading
 the whole tree at once. Background for each lives in the wiki page named alongside it.
 
-### Backend lint debt — 40 ruff errors
+### Backend lint debt and type checking — done (2026-09-09)
 
-`ruff check .` in `backend/` has never been clean against the pinned ruff 0.16.6:
+`ruff check .` in `backend/` is clean, and `mypy` is now configured
+(`[tool.mypy]` in `backend/pyproject.toml`) and clean over the 36 source files.
+The SQLModel query expressions were rewritten with `sqlmodel.col()` rather than
+having the error codes silenced, so the checker still reads those lines.
 
-| Rule | Count | What it is |
-|---|---:|---|
-| `UP017` | 16 | `timezone.utc` → `datetime.UTC` |
-| `I001` | 5 | Unsorted import blocks |
-| `F401` | 4 | Unused imports (`sync.py` imports `HTTPException` and `Group` for nothing) |
-| `E501` | 4 | Lines over 100 |
-| `RUF100` | 4 | `noqa: E402` directives that no longer suppress anything |
-| `RUF059` | 3 | Unpacked-but-unused `group_id` in `test_sync.py` |
-| `SIM105` | 2 | `try`/`except`/`pass` → `contextlib.suppress` |
-| `SIM118`, `UP041` | 1 each | `key in dict.keys()`; aliased `TimeoutError` |
+`openai` is unpinned from `>=2,<3` to `>=3,<4` (3.10.0). The only breaking
+change in 3.0 was httpx2 as the default client, which `openai_compat.py` never
+touched — and `anthropic` 1.4 was already on httpx2, so the tree converged.
 
-**30 of the 40 are auto-fixable.** `UP017` and `I001` together are 21 of them and are purely
-mechanical. The four `F401`/`RUF059` are worth reading rather than auto-fixing — an unused
-import can mean a dropped call site.
+### Backend security debt — done (2026-09-09)
 
-This matters more than it did: `backend/CLAUDE.md` now advertises `ruff check .` as part of
-the loop, so leaving it red trains everyone to ignore it. Do the auto-fixable pass, then
-decide case by case on the rest.
+All five catalogued items are closed, plus four found while reading the code:
+WebSocket ticket handshake, IP rate limit on group create/join, `share_token`
+out of `GET /groups/me`, value bounds on `/sync/push`, security headers; and
+the driver error leaked in sync rejections, the `--workers 2` default in the
+Dockerfile, the `Content-Length` bypass of the body cap, and the one
+string-built SQL statement in `notify.py`.
 
-### mypy is declared but never configured
-
-`mypy>=2.3.1` sits in the dev extras and a `.mypy_cache/` exists, so it has been run by
-hand — but there is no `[tool.mypy]`, no `mypy.ini`, no `setup.cfg` anywhere. Either
-configure it (and add it to the loop next to ruff) or drop the dependency. Right now it is
-neither a gate nor an honest absence. See `.llmwiki/Backend.md`.
+Details and the reasoning: `.llmwiki/Security.md`. What remains open is listed
+there too — the unauthenticated `/comments` endpoints, the O(N) argon2 scan,
+and the absence of an owner role on `Device`.
 
 ### The Flutter web app has no deployment path
 
@@ -139,8 +133,3 @@ commit. See `.llmwiki/Release.md` and `.llmwiki/Security.md`.
   `customInsert` throughout, a faithful port of the sqflite queries. That was the right
   call for a safe migration, but the type-safe-query argument for adopting Drift is still
   unbanked. Converting the simplest repositories first would prove the pattern.
-- **Backend security debt is catalogued but untouched** — `device_token` in the WebSocket
-  query string, no rate limit on `POST /groups` or `/groups/join`, `share_token` returned
-  by `GET /groups/me`, no bounds validation on scores and rounds, no security headers. Each
-  is a considered trade-off at household scale; all of them need revisiting before anything
-  public. See `.llmwiki/Security.md`.

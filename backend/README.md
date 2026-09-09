@@ -98,7 +98,8 @@ dessus.
 |---|---|---|
 | POST | `/sync/push` | Pousse des deltas (max 500/req) |
 | GET | `/sync/pull?since_seq=N` | Récupère les deltas après N |
-| WS | `/sync/stream?token=...` | Signal temps réel (new_seq) |
+| POST | `/sync/ws-ticket` | Ticket à usage unique (60 s) pour le stream |
+| WS | `/sync/stream?ticket=...` | Signal temps réel (new_seq) |
 
 ### Commentaires Claude
 
@@ -165,9 +166,25 @@ Voir `../.llmwiki/Security.md`. Points critiques :
 - TLS géré par Synology Web Station (Let's Encrypt)
 - Backups quotidiens (sidecar)
 
-### Dette sécurité connue (à traiter)
-- **WebSocket `/sync/stream?token=…`** : le `device_token` transite en query string et peut
-  être journalisé par le reverse-proxy. À déplacer hors query string (touche le client Flutter).
-- Pas de rate limit sur `POST /groups` et `/groups/join` ; `share_token` renvoyé sur
-  `GET /groups/me` ; bornes de validation manquantes sur scores/manches.
-- En-têtes `X-Content-Type-Options`, `X-Frame-Options`, HSTS : à poser au niveau Web Station.
+### Mesures ajoutées le 2026-09-09
+- **WebSocket** : le `device_token` ne transite plus en query string. `POST /sync/ws-ticket`
+  échange le token (en en-tête `Authorization`) contre un ticket à usage unique valable
+  60 s, redeemé *avant* l'acceptation du handshake.
+- **Rate limit par IP sur `POST /groups` et `/groups/join`** (`GROUP_RL_*`), dans un bucket
+  distinct de celui des endpoints LLM. Borne aussi le grindage de `share_token` sur `/join`.
+- **`share_token`** n'est plus renvoyé par `GET /groups/me` ni `PATCH /groups/me/settings` —
+  seulement par create, join et rotate.
+- **Bornes de validation** sur les valeurs poussées via `/sync/push`
+  (`app/services/delta_bounds.py`), y compris la liste blanche de caractères des noms de
+  joueurs.
+- **En-têtes de sécurité** posés par l'application (`X-Content-Type-Options`,
+  `X-Frame-Options`, `Referrer-Policy`, `Cross-Origin-Opener-Policy`, CSP), HSTS derrière
+  `HSTS_ENABLED`. Web Station reste le terminateur TLS.
+
+### Dette sécurité restante
+- Les deux endpoints `/comments` sans authentification restent protégés par le seul
+  limiteur par IP en mémoire — d'où le worker unique en production.
+- La vérification argon2 reste en O(N) sur les devices pour chaque requête HTTP authentifiée.
+- Aucun rôle propriétaire sur `Device` : tout appareil du groupe peut révoquer les autres.
+
+Détail et arbitrages : `.llmwiki/Security.md`.
