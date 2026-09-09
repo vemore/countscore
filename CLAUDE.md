@@ -41,9 +41,11 @@ Scoped instructions: `backend/CLAUDE.md` (Python/FastAPI) and `web/CLAUDE.md` (P
   something unrelated to it, do not fix it inline and do not drop it: add an entry to
   `TODO.md`, dated, with enough context to act on it later — then carry on with the task
   at hand.
-- **A `TODO.md` item you fix is marked done in the same change.** Write
-  `**Status:** done (YYYY-MM-DD)` on it rather than deleting the entry, so the reasoning
-  stays readable.
+- **A `TODO.md` item you fix moves to `DONE.md` in the same change.** Do not delete the
+  entry and do not leave it in `TODO.md`: cut it whole, write
+  `**Status:** done (YYYY-MM-DD)` on it, and paste it at the top of `DONE.md` — newest
+  first — with a line saying what closed it. `TODO.md` then holds only open work, and the
+  reasoning behind a closed item stays readable in `DONE.md`.
 - **Nothing is finished until it is tested and committed.** A feature or a bugfix is done
   only once the automated gates covering the code it touches are green *and* the change is
   committed. For the Flutter app that gate is imperative: **`flutter analyze && flutter

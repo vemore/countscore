@@ -45,4 +45,5 @@
   build at the pinned drift version, so the repository is the only reliable source for
   them. Reconsider once the CLI works again. (`8a13541`)
 - **This page is not a backlog.** It records limits so that a session does not rediscover
-  them. Actionable work with a plan attached belongs in `TODO.md`.
+  them. Actionable work with a plan attached belongs in `TODO.md`, and moves to `DONE.md`
+  once it is closed.

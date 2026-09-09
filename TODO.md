@@ -1,5 +1,8 @@
 # TODO
 
+Open work only. A finished item moves to `DONE.md` — see the workflow section of
+`CLAUDE.md`.
+
 ## Upgrade Flutter to 3.47 to unblock the held-back dependencies
 
 **Status:** open — noted 2026-09-09, during the dependency update (`f0a8bd6`).
@@ -69,7 +72,8 @@ affect us: `game_types_screen.dart` and `players_screen.dart` use only
 - There is **no CI**. Nothing mechanically checks that a fresh clone builds,
   which is uncomfortable given `*.g.dart` is gitignored. Now that the backend
   has three green gates (`ruff check`, `mypy`, `pytest`), a workflow running
-  them costs little and would stop the lint debt below from re-accumulating.
+  them costs little and would stop the lint debt just closed (see `DONE.md`) from
+  re-accumulating.
 - `ruff format` has **never** been run on `backend/`: it would rewrite 43 of
   50 files. Left out of the 2026-09-09 backend pass on purpose, so the
   functional diff stayed readable. It wants its own `chore:` commit.
@@ -81,30 +85,6 @@ affect us: `game_types_screen.dart` and `players_screen.dart` use only
 **Status:** open — noted 2026-09-09, while decomposing `CLAUDE.md` and `ARCHITECTURE.md`
 into `.llmwiki/`. None of these were introduced by that change; they were found by reading
 the whole tree at once. Background for each lives in the wiki page named alongside it.
-
-### Backend lint debt and type checking — done (2026-09-09)
-
-`ruff check .` in `backend/` is clean, and `mypy` is now configured
-(`[tool.mypy]` in `backend/pyproject.toml`) and clean over the 36 source files.
-The SQLModel query expressions were rewritten with `sqlmodel.col()` rather than
-having the error codes silenced, so the checker still reads those lines.
-
-`openai` is unpinned from `>=2,<3` to `>=3,<4` (3.10.0). The only breaking
-change in 3.0 was httpx2 as the default client, which `openai_compat.py` never
-touched — and `anthropic` 1.4 was already on httpx2, so the tree converged.
-
-### Backend security debt — done (2026-09-09)
-
-All five catalogued items are closed, plus four found while reading the code:
-WebSocket ticket handshake, IP rate limit on group create/join, `share_token`
-out of `GET /groups/me`, value bounds on `/sync/push`, security headers; and
-the driver error leaked in sync rejections, the `--workers 2` default in the
-Dockerfile, the `Content-Length` bypass of the body cap, and the one
-string-built SQL statement in `notify.py`.
-
-Details and the reasoning: `.llmwiki/Security.md`. What remains open is listed
-there too — the unauthenticated `/comments` endpoints, the O(N) argon2 scan,
-and the absence of an owner role on `Device`.
 
 ### The Flutter web app has no deployment path
 
@@ -123,12 +103,6 @@ commit. See `.llmwiki/Release.md` and `.llmwiki/Security.md`.
 
 ### Smaller, self-contained
 
-- **`ThemeProvider` never persists.** **Status:** done (2026-09-09).
-  `lib/providers/theme_provider.dart` held `ThemeMode` in memory only, so the app reset to
-  `ThemeMode.system` on every restart. It now stores `ThemeMode.name` under the `themeMode`
-  key, and `main()` reads it before `runApp` rather than loading async in the constructor
-  the way `SettingsProvider` does — that pattern would have shown a light flash on every
-  cold start for a dark-mode user. The unused `toggleTheme()` and `isDarkMode` went with it.
 - **`test/widget_test.dart` pumps no widgets.** Its 8 tests are model serialisation. The
   name implies widget coverage that does not exist anywhere in the repo — rename it, or
   give it real widget tests.
