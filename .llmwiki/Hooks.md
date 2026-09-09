@@ -19,6 +19,7 @@ is untouched by it.
 | `PostToolUse` | `Edit\|Write` | `guard-gitignore.sh` | Refuses a `.gitignore` that starts ignoring the two web binaries |
 | `PostToolUse` | `Edit\|Write` | `check-arb-sync.sh` | Reports ARB key drift as context — never blocks |
 | `SessionStart` | — | `session-start.sh` | Says whether the clone needs codegen and whether the branch is safe |
+| `Stop` | — | `require-pull-request.sh` | Refuses to end the turn while finished commits have no pull request, or while that pull request is red |
 
 `parse_command.py` and `arb_keys.py` are helpers, not handlers.
 `scripts/hooks_selftest.sh` exercises all of them from a table of ~57 cases and runs as the
@@ -36,6 +37,7 @@ first step of the `app` job in `.github/workflows/ci.yml`.
 | Committing on `main`, on a detached HEAD, or on a stale branch | `%(upstream:track)` = `[gone]`, then `git cherry origin/main HEAD` |
 | Committing with red gates | `flutter analyze`, `flutter test` if app paths are involved; `ruff`/`mypy`/`pytest -m 'not integration'` if `backend/` is |
 | Committing divergent ARB files, or a stale `app_localizations*.dart` | key sets against the template from `l10n.yaml`, then `flutter gen-l10n` |
+| Ending a turn with commits that no pull request covers, or whose pull request has a failing check | `gh pr list --head <branch>`, then `gh pr checks` |
 
 The path set that decides which gates run is a union, not `git diff --cached` alone:
 `git commit -a` stages tracked changes *after* the hook has read the index, so `--cached`
@@ -59,6 +61,12 @@ a superset costs seconds and never blocks wrongly.
 - **Freshness of `origin/main`.** The hooks never fetch: no network in a hook. Everything
   they know about a branch is as old as the last `git fetch --prune`, so they err towards
   letting a stale branch through — which is why that command stays in `CLAUDE.md`.
+- **Pushing and opening.** `require-pull-request.sh` reads GitHub, never writes to it: it
+  asks for the pull request, it does not create one. Publishing is an outward-facing act
+  and stays deliberate. It also stays silent when `gh` is absent or unauthenticated, when
+  the origin remote is not GitHub, and on a branch carrying
+  `git config branch.<name>.noPullRequest true` — the escape hatch for work deliberately
+  held back.
 - **Hard enforcement generally.** A hook whose script is missing or non-executable exits
   127, which does not block; a hook that times out does not block either. They reduce a
   class of mistake, they do not make it impossible.
@@ -100,6 +108,13 @@ a superset costs seconds and never blocks wrongly.
 - **Why the gates are cheap enough to block on.** Measured warm on the development machine:
   `flutter analyze` 3.2 s, `flutter test` 3.6 s, `ruff` 0.1 s, `mypy` 1.6 s,
   `pytest -m 'not integration'` 6.7 s.
+- **Why a `Stop` hook for the pull request (2026-09-09).** A commit that never becomes a
+  pull request is not delivered: nobody reviewed it, CI never ran on it, and it is
+  invisible to everyone but the machine that holds it. `Stop` is the only event that fires
+  when the work is plausibly finished. It blocks at most once per turn — `stop_hook_active`
+  in the payload marks the retry, and the hook stands down then, so a turn can always end.
+  Failing checks block too, on the same reasoning: a red pull request is not a delivered
+  change. Both `gh` calls are wrapped in `timeout` so a slow network cannot hang a session.
 - **Why the self-test is in CI.** The interesting cases are the ones that look like a
   violation and are not. Without a table exercised on every push, the first rule change
   breaks a guard silently — and a broken guard is indistinguishable from a passing one.
