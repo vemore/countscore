@@ -125,7 +125,7 @@
 -keep class com.mr.flutter.plugin.filepicker.** { *; }
 
 # Wakelock Plus
--keep class com.flutter_webview_plugin.** { *; }
+-keep class dev.fluttercommunity.plus.wakelock.** { *; }
 
 # ============================================================================
 # GSON (if used for JSON serialization)
@@ -174,11 +174,6 @@
 # Suppress warnings for Google Play Core (optional Flutter deferred components feature)
 # These classes are referenced by Flutter but not used in this app
 -dontwarn com.google.android.play.core.**
-
-# Suppress warnings for Apache Tika (file_picker dependency)
-# XMLStreamException is part of javax.xml.stream which may not be available on all Android versions
--dontwarn javax.xml.stream.XMLStreamException
--dontwarn org.apache.tika.**
 
 # ============================================================================
 # OPTIMIZATION

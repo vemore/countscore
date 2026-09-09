@@ -48,7 +48,7 @@ def create_app() -> FastAPI:
         if cl is not None and cl.isdigit() and int(cl) > max_body_bytes:
             return JSONResponse(
                 {"detail": "request body too large"},
-                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                status_code=status.HTTP_413_CONTENT_TOO_LARGE,
             )
         return await call_next(request)
 

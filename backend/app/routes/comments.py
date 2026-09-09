@@ -135,7 +135,7 @@ async def generate_zapzap_analysis(body: dict, request: Request, response: Respo
         user_message = build_zapzap_user_message(body)
     except (KeyError, TypeError) as e:
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY, f"invalid payload: {e}"
+            status.HTTP_422_UNPROCESSABLE_CONTENT, f"invalid payload: {e}"
         ) from e
 
     try:
@@ -194,7 +194,7 @@ async def _load_game_for_prompt(
         rounds_data.append((r.round_number, scores))
 
     if not rounds_data:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "game has no rounds yet")
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "game has no rounds yet")
 
     # Resolve game_type name (best effort)
     game_type_name = "Unknown"

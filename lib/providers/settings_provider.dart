@@ -44,7 +44,7 @@ class SettingsProvider with ChangeNotifier {
   Future<String?> exportDatabase() async {
     if (kIsWeb) throw UnsupportedError('Export not available on web');
     try {
-      String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+      String? selectedDirectory = await FilePicker.getDirectoryPath();
       if (selectedDirectory == null) return null;
       final exportedPath =
           await DatabaseService.instance.exportDatabase(selectedDirectory);
@@ -58,13 +58,11 @@ class SettingsProvider with ChangeNotifier {
   Future<bool> importDatabase() async {
     if (kIsWeb) throw UnsupportedError('Import not available on web');
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
+      final PlatformFile? picked = await FilePicker.pickFile(
         type: FileType.any,
-        allowMultiple: false,
       );
-      if (result == null || result.files.single.path == null) return false;
-      await DatabaseService.instance
-          .importDatabase(result.files.single.path!);
+      if (picked?.path == null) return false;
+      await DatabaseService.instance.importDatabase(picked!.path!);
       notifyListeners();
       return true;
     } catch (e) {

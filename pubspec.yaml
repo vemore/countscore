@@ -41,17 +41,17 @@ dependencies:
   cupertino_icons: ^1.0.8
   provider: ^6.1.2
   sqflite: ^2.4.1
-  path_provider: ^2.1.5
-  wakelock_plus: ^1.2.8
+  path_provider: ^2.1.6
+  wakelock_plus: ^1.7.0
   flex_color_picker: ^3.5.1
   shared_preferences: ^2.3.3
   intl: ^0.20.2
-  file_picker: ^10.3.6
+  file_picker: ^12.2.0
   path: ^1.9.0
   http: ^1.6.0
-  flutter_markdown_plus: ^1.0.3
-  drift: ^2.33.0
-  drift_flutter: ^0.3.0
+  flutter_markdown_plus: ^1.0.12
+  drift: ^2.34.4
+  drift_flutter: ^0.3.1
 
 dev_dependencies:
   flutter_test:
@@ -71,8 +71,8 @@ dev_dependencies:
 
   # Flutter launcher icons - generates app icons for all platforms
   flutter_launcher_icons: ^0.14.1
-  drift_dev: ^2.33.0
-  build_runner: ^2.15.0
+  drift_dev: ^2.34.0
+  build_runner: ^2.15.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
