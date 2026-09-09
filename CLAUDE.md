@@ -31,10 +31,25 @@ Scoped instructions: `backend/CLAUDE.md` (Python/FastAPI) and `web/CLAUDE.md` (P
    the build fails without it.
 3. **A fresh clone does not compile until code is generated.** `*.g.dart` is gitignored:
    run `dart run build_runner build --delete-conflicting-outputs` first.
-4. **`flutter analyze && flutter test` must pass before committing.**
-5. **Never commit** the keystore, `key.properties`, or any `.env`.
-6. **`web/sqlite3.wasm` and `web/drift_worker.js` are tracked on purpose** — do not delete
+4. **Never commit** the keystore, `key.properties`, or any `.env`.
+5. **`web/sqlite3.wasm` and `web/drift_worker.js` are tracked on purpose** — do not delete
    or regenerate them. See `.llmwiki/Web.md`.
+
+## Workflow
+
+- **A problem you find but were not asked to fix goes in `TODO.md`.** When a task surfaces
+  something unrelated to it, do not fix it inline and do not drop it: add an entry to
+  `TODO.md`, dated, with enough context to act on it later — then carry on with the task
+  at hand.
+- **A `TODO.md` item you fix is marked done in the same change.** Write
+  `**Status:** done (YYYY-MM-DD)` on it rather than deleting the entry, so the reasoning
+  stays readable.
+- **Nothing is finished until it is tested and committed.** A feature or a bugfix is done
+  only once the automated gates covering the code it touches are green *and* the change is
+  committed. For the Flutter app that gate is imperative: **`flutter analyze && flutter
+  test` must pass before committing** — no exception, whatever the change. For `backend/`
+  it is `ruff check`, `mypy` and `pytest` (see `backend/CLAUDE.md`). Green gates with no
+  commit, or a commit with no green gates, are both incomplete.
 
 ## Commands
 
