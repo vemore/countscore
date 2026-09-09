@@ -83,6 +83,16 @@ here and, more usefully, with what those hooks do *not* cover.
   are both incomplete. Documentation the change falsifies — a wiki page, `README.md`, or
   the privacy documents — belongs in that same commit, not in a follow-up.
 
+- **A finished feature or fix is a pull request, and a green one.** A commit sitting on a
+  local branch is not delivered: nothing reviewed it and CI never saw it. When the work is
+  done, push the branch, open the pull request with a body saying what changed and why,
+  then watch its checks and fix what they find — `gh pr create`, then `gh pr checks`.
+  Report the URL and the state of the checks; merging is the user's call, not yours. A hook
+  refuses to end the turn while the commits have no pull request or while its checks are
+  red (`.llmwiki/Hooks.md`). A branch deliberately held back sets
+  `git config branch.<name>.noPullRequest true`, and you say so rather than doing it
+  silently.
+
 ## Commands
 
 ```bash
