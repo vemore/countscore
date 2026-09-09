@@ -220,6 +220,39 @@ def check_ruff_format(tokens):
     return None
 
 
+def check_stacked_pr(tokens):
+    """A pull request whose base is not `main` merges into that base, not into main."""
+    if not tokens or base(tokens[0]) != "gh":
+        return None
+    words = [t for t in tokens[1:] if not is_option(t)]
+    if words[:2] != ["pr", "create"]:
+        return None
+    target = None
+    for index, token in enumerate(tokens):
+        if token == "--base" and index + 1 < len(tokens):
+            target = tokens[index + 1]
+        elif token.startswith("--base="):
+            target = token.split("=", 1)[1]
+    if target is None or target == "main":
+        return None  # no --base means the repository default, which is main
+    return {
+        "rule": "stacked-pr",
+        "message": (
+            "Refused: `gh pr create --base {target}` stacks this pull request on another "
+            "branch.\n"
+            "A stacked pull request merges into its base, not into main. If the base is "
+            "merged first -- and it usually is, since it is reviewed first -- the child "
+            "merges into a branch whose content already reached main under different "
+            "hashes, and its own work silently never arrives. That happened on 2026-09-09 "
+            "and cost a fourth pull request to repair.\n"
+            "Do one of these instead: wait for the other branch to merge, then rebase onto "
+            "main and target main; or put both changes in one pull request.\n"
+            "If stacking really is what you want, say so to the user and let them decide, "
+            "then unlock it with `git config countscore.allowStackedPr true`."
+        ).format(target=target),
+    }
+
+
 def check_web_binaries(tokens, cwd):
     if not tokens:
         return None
@@ -346,6 +379,7 @@ def main():
         for finding in (
             check_flutter_build(tokens_of_segment),
             check_ruff_format(tokens_of_segment),
+            check_stacked_pr(tokens_of_segment),
             check_web_binaries(tokens_of_segment, notional_cwd),
         ):
             if finding:
