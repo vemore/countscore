@@ -12,11 +12,13 @@ target — there is no separate web source tree.
 
 ## Rules
 
-1. **`sqlite3.wasm` (744 KB) and `drift_worker.js` (351 KB) are tracked in git on purpose.**
-   `dart run drift_dev make-web-worker` does not compile at the pinned drift version, so
-   this repository is the only reliable source for them. **Do not delete, regenerate, or
-   gitignore them** until the CLI builds again — `.gitignore` carries a comment saying so,
-   and `TODO.md` tracks the unblock.
+1. **`sqlite3.wasm` (744 KB) and `drift_worker.js` (351 KB) are tracked in git on purpose**,
+   so a fresh clone can run the PWA without fetching binaries. `drift_worker.js` also ships
+   prebuilt at the drift package root (`~/.pub-cache/hosted/pub.dev/drift-<version>/`);
+   `sqlite3.wasm` comes from the `sqlite3.dart` GitHub releases. There is no
+   `drift_dev make-web-worker` subcommand — do not go looking for one. **Do not delete or
+   gitignore these two files**; `.gitignore` carries a comment saying so. The committed
+   worker is currently one build behind drift 2.34.4 — refreshing it is tracked in `TODO.md`.
 2. **`connection_web.dart` must keep passing `DriftWebOptions` explicitly.** Without the
    explicit `sqlite3Wasm` and `driftWorker` URIs, drift_flutter 0.3.0 throws `ArgumentError`
    at startup and the PWA crashes — while the build still passes clean. If the web app dies

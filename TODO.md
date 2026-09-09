@@ -3,80 +3,78 @@
 Open work only. A finished item moves to `DONE.md` — see the workflow section of
 `CLAUDE.md`.
 
-## Upgrade Flutter to 3.47 to unblock the held-back dependencies
+## There is no CI
 
-**Status:** open — noted 2026-09-09, during the dependency update (`f0a8bd6`).
+**Status:** open — noted 2026-09-09, carried over from the Flutter 3.47 entry.
 
-We currently run **Flutter 3.41.9 / Dart 3.11.5**. Latest stable is **3.47**.
-Six upgrades are blocked by that, and one of them is an actual defect rather
-than just a version lag.
+Nothing mechanically checks that a fresh clone builds, which is uncomfortable given
+`*.g.dart` is gitignored. Now that the backend has three green gates (`ruff check`,
+`mypy`, `pytest`) and the app has `flutter analyze` + `flutter test`, a workflow running
+them costs little and would stop lint debt from re-accumulating.
 
-### The reason this matters now: the drift_dev CLI is broken
+The Flutter 3.47 upgrade made this sharper: it turned out `android/settings.gradle` had
+been shadowing `android/settings.gradle.kts` since the first commit, so edits to the `.kts`
+file were silently dead. A build in CI would have caught that years earlier.
 
-`dart run drift_dev <anything>` fails to compile at the pinned
-**drift 2.34.4 / drift_dev 2.34.0** pairing:
+## `ruff format` has never been run on `backend/`
+
+**Status:** open — noted 2026-09-09, carried over from the Flutter 3.47 entry.
+
+It would rewrite 43 of 50 files. Left out of the 2026-09-09 backend pass on purpose, so
+the functional diff stayed readable. It wants its own `chore:` commit.
+
+## Refresh the committed `web/drift_worker.js`
+
+**Status:** open — noted 2026-09-09, found while verifying the drift_dev CLI.
+
+`web/drift_worker.js` is 351,222 B; the worker drift 2.34.4 ships at its package root
+(`~/.pub-cache/hosted/pub.dev/drift-2.34.4/drift_worker.js`) is 355,222 B. The committed
+copy is an older build than the drift runtime the app is compiled against. The PWA works
+today, but a worker/runtime mismatch is exactly the class of bug that shows up as an
+inexplicable web-only failure.
+
+Copying the package's file over ours is a one-line change — but it must be followed by a
+real PWA launch and the web e2e run, not just a green build, because
+`connection_web.dart` failures surface only at runtime. That is why it was not folded into
+the SDK upgrade. See `.llmwiki/Web.md`.
+
+Note this also settles the old question of whether to untrack the two binaries: they stay
+tracked **by choice** (a fresh clone should not have to fetch binaries to run the PWA), not
+because the repo is their only source. It never was.
+
+## `.llmwiki/Testing.md` is missing a test file
+
+**Status:** open — noted 2026-09-09, spotted while running the gates for the Flutter 3.47
+upgrade.
+
+Its table lists four files totalling 30 tests. `flutter test` runs **37** across six files:
+`test/providers/theme_provider_test.dart` (added by `ccc3640`) was never added to the page.
+Not introduced by the SDK upgrade — just visible from running the suite.
+
+## `web/CLAUDE.md` is published with the PWA
+
+**Status:** open — noted 2026-09-09, spotted while runtime-checking the web build.
+
+Flutter copies everything under `web/` into the build output, so `build/web/CLAUDE.md`
+ships to whoever serves the PWA — internal instructions on a public URL. Harmless today,
+but it should either move out of `web/` or be stripped by whatever deploy step the PWA
+eventually gets (see "The Flutter web app has no deployment path" below).
+
+## `shared_preferences_android` still applies the Kotlin Gradle Plugin
+
+**Status:** open — noted 2026-09-09, during the Flutter 3.47 upgrade.
+
+Every Android build now prints:
 
 ```
-drift_dev-2.34.0/lib/src/services/schema/verifier_common.dart:45
-  The getter 'allSchemaEntities' isn't defined for the type 'GeneratedDatabase'
-  - from drift-2.34.4/lib/src/drift3_preview/src/database/db_base.dart
+WARNING: Your app uses the following plugins that apply Kotlin Gradle Plugin (KGP):
+shared_preferences_android
+Future versions of Flutter will fail to build if your app uses plugins that apply KGP.
 ```
 
-Code generation through `build_runner` is **not** affected — that is the path
-the project actually uses, and `database.g.dart` regenerates fine. What is
-broken is every CLI subcommand, including `make-web-worker`, which is how
-`web/drift_worker.js` would normally be regenerated.
-
-That is why `web/sqlite3.wasm` and `web/drift_worker.js` are committed
-(`8a13541`) despite being ~1.1 MB: with the CLI down, the repo is the only
-reliable source for them. Once the CLI builds again, reconsider tracking them.
-
-`drift_dev` **2.34.6** is the candidate fix, but it needs a newer `analyzer`
-than Dart 3.11 allows — hence the Flutter upgrade.
-
-### What else the upgrade unblocks
-
-| Package | Pinned at | Latest | Blocked by |
-|---|---|---|---|
-| `drift_dev` | 2.34.0 | 2.34.6 | analyzer tied to Dart 3.11 |
-| `build_runner` | 2.15.1 | 2.16.1 | analyzer tied to Dart 3.11 |
-| `flex_color_picker` | 3.8.0 | 4.0.0 | requires Flutter 3.47 |
-| `wakelock_plus` | 1.7.0 | 1.8.0 | requires Flutter 3.47 |
-| `sqflite` | 2.4.2+1 | 2.4.3 | requires Dart 3.12 |
-| `intl` | 0.20.2 | 0.20.3 | pinned by `flutter_localizations` |
-
-`flex_color_picker` 4.0.0 is the only major among them. Its one real breaking
-change — the removal of `colorCodeIcon`, deprecated since 2.0.0 — does not
-affect us: `game_types_screen.dart` and `players_screen.dart` use only
-`ColorPicker(color:, onColorChanged:, pickersEnabled:)`.
-
-### Things to watch when doing it
-
-- **Kotlin/AGP drift.** `android/settings.gradle.kts` pins Kotlin 2.2.20 and
-  AGP 8.9.1; Flutter 3.41.9's template ships AGP 8.11.1 / Gradle 8.14, and
-  3.47's will be newer again. Kotlin already had to be bumped once for
-  `wakelock_plus` 1.7.0 to compile at all — expect the same class of problem.
-- **Clean build required.** Gradle's incremental state survives plugin
-  swaps badly; `flutter clean` before judging any failure.
-- **`sqlite3_flutter_libs` resolves to `0.6.0+eol`** (transitive of
-  `drift_flutter`). The `+eol` suffix marks end-of-life; check whether a newer
-  `drift_flutter` moves off it.
-- Regenerate afterwards: `dart run build_runner build` (note `*.g.dart` is
-  gitignored, so a clean checkout must run this) and `flutter gen-l10n`.
-- Verify on a real device, not just tests: the export/import flow
-  (`file_picker`) and the wakelock toggle have no automated coverage. See
-  `.claude/skills/flutter-device-test/`.
-
-### Also open, unrelated to the SDK
-
-- There is **no CI**. Nothing mechanically checks that a fresh clone builds,
-  which is uncomfortable given `*.g.dart` is gitignored. Now that the backend
-  has three green gates (`ruff check`, `mypy`, `pytest`), a workflow running
-  them costs little and would stop the lint debt just closed (see `DONE.md`) from
-  re-accumulating.
-- `ruff format` has **never** been run on `backend/`: it would rewrite 43 of
-  50 files. Left out of the 2026-09-09 backend pass on purpose, so the
-  functional diff stayed readable. It wants its own `chore:` commit.
+Nothing to do on our side — it needs an upstream release that migrates to AGP's built-in
+Kotlin. Watch the `shared_preferences` changelog; this becomes a hard build failure on some
+future Flutter, not on 3.47.2.
 
 ---
 

@@ -30,10 +30,10 @@ Scoped instructions: `backend/CLAUDE.md` (Python/FastAPI) and `web/CLAUDE.md` (P
    Game-type icons are built from database values, so the tree-shaker cannot see them and
    the build fails without it.
 3. **A fresh clone does not compile until code is generated.** `*.g.dart` is gitignored:
-   run `dart run build_runner build --delete-conflicting-outputs` first.
+   run `dart run build_runner build` first.
 4. **Never commit** the keystore, `key.properties`, or any `.env`.
 5. **`web/sqlite3.wasm` and `web/drift_worker.js` are tracked on purpose** — do not delete
-   or regenerate them. See `.llmwiki/Web.md`.
+   or gitignore them. See `.llmwiki/Web.md`.
 
 ## Workflow
 
@@ -58,7 +58,7 @@ Scoped instructions: `backend/CLAUDE.md` (Python/FastAPI) and `web/CLAUDE.md` (P
 ```bash
 # Setup
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs   # required, *.g.dart is gitignored
+dart run build_runner build   # required, *.g.dart is gitignored
 flutter gen-l10n                                           # after touching any .arb
 
 # Run

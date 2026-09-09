@@ -41,7 +41,7 @@ On web there is no legacy file, so Drift's `onCreate` builds the current version
    `lib/repositories/drift/drift_repositories.dart`. Existing implementations use
    `db.customSelect`/`customInsert` with raw SQL; match that style.
 7. **Provider** — wire it in `lib/providers/`, constructor-injectable like `GameProvider`.
-8. **Regenerate**: `dart run build_runner build --delete-conflicting-outputs`.
+8. **Regenerate**: `dart run build_runner build`.
 9. **Tests**:
    - fresh-schema and CRUD in `test/database_service_test.dart`
    - a migration test modelled on `test/migration_v8_to_v9_test.dart` — build the *old*
@@ -72,7 +72,7 @@ Only needed if the entity syncs.
 ## Verify
 
 ```bash
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 flutter analyze && flutter test
 cd backend && ruff check . && pytest -m 'not integration' -q
 ```

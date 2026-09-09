@@ -37,8 +37,13 @@ background. To change it: replace that PNG and run
 
 ### Target
 
-API level 35 (Android 15), for 2025 Play Store compliance. App name "CountScore",
-package `com.vemore.countscore`.
+API level **36** (Android 16). `targetSdk` is not hardcoded — it is
+`flutter.targetSdkVersion`, so it followed the Flutter 3.47.2 upgrade up from 35. `minSdk`
+is `flutter.minSdkVersion` = 24. See the toolchain table in [[MobileApp]]. App name
+"CountScore", package `com.vemore.countscore`.
+
+> **Status: Outdated** (2026-09-09) — this section previously read "API level 35 (Android
+> 15), for 2025 Play Store compliance". The next store submission ships against 36.
 
 ### Store assets
 

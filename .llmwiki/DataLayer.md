@@ -49,11 +49,17 @@ Drift is only partly cashed in so far.
 A clean checkout does not compile until:
 
 ```bash
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 ```
 
-`build_runner` codegen works fine. The `drift_dev` **CLI** does not build at all at the
-pinned versions — see `TODO.md` and [[KnownLimits]].
+`build_runner` 2.16 **removed `--delete-conflicting-outputs`**: passing it now prints
+*"These options have been removed and were ignored"*. Just run the command above.
+
+The `drift_dev` CLI works at drift 2.34.4 / drift_dev 2.34.6 — `dart run drift_dev analyze`
+returns *No errors found*. It did not compile at all at drift_dev 2.34.0. Note that
+`make-web-worker` is **not** one of its subcommands (`analyze`, `identify-databases`,
+`make-migrations`, `schema`); the web worker comes prebuilt with the drift package instead.
+See [[Web]].
 
 ## Decisions & History
 

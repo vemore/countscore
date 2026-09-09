@@ -53,7 +53,7 @@ Adaptive icon on white `#FFFFFF`; all densities are generated.
 ```bash
 flutter clean
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs   # *.g.dart is gitignored
+dart run build_runner build   # *.g.dart is gitignored
 flutter gen-l10n
 flutter analyze
 flutter test

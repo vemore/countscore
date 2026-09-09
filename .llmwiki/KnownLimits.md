@@ -38,12 +38,23 @@
   does not compile at all at drift 2.34.4 / drift_dev 2.34.0. Full analysis and the plan
   live in `TODO.md` at the repo root — that file is the source of truth for this item.
 
+  > **Status: Outdated** (2026-09-09) — done. The project is on Flutter 3.47.2 / Dart 3.13.2
+  > and all seven held-back packages moved. `drift_dev` 2.34.6 compiles and runs
+  > (`dart run drift_dev analyze` → *No errors found*). See `DONE.md`.
+
 ## Decisions & History
 
 - **`web/sqlite3.wasm` and `web/drift_worker.js` are committed** (1.1 MB) despite being
   build outputs. The `drift_dev make-web-worker` CLI that regenerates the worker does not
   build at the pinned drift version, so the repository is the only reliable source for
   them. Reconsider once the CLI works again. (`8a13541`)
+
+  > **Status: Outdated** (2026-09-09) — the premise was wrong in two ways. `make-web-worker`
+  > is not a `drift_dev` subcommand at all in 2.34.6 (the commands are `analyze`,
+  > `identify-databases`, `make-migrations`, `schema`), and the worker never needed the CLI:
+  > **drift ships a prebuilt `drift_worker.js` at its package root**,
+  > `~/.pub-cache/hosted/pub.dev/drift-<version>/drift_worker.js`. So the repository is *not*
+  > the only source. They stay tracked by choice, not by necessity — see [[Web]].
 - **This page is not a backlog.** It records limits so that a session does not rediscover
   them. Actionable work with a plan attached belongs in `TODO.md`, and moves to `DONE.md`
   once it is closed.

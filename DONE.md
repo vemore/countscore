@@ -6,6 +6,82 @@ readable after the fact.
 
 ---
 
+## Upgrade Flutter to 3.47 to unblock the held-back dependencies
+
+**Status:** done (2026-09-09) — closed by the `chore/flutter-3-47` branch. Opened
+2026-09-09 during the dependency update (`f0a8bd6`).
+
+The trigger was a defect, not version lag: `dart run drift_dev <anything>` failed to
+compile at drift 2.34.4 / drift_dev 2.34.0 (`The getter 'allSchemaEntities' isn't defined
+for the type 'GeneratedDatabase'`). `drift_dev` 2.34.6 fixes it but needs
+`analyzer >=13.0.0 <15.0.0`, and Dart 3.11 capped us at analyzer 10.0.1.
+
+**Flutter 3.41.9 / Dart 3.11.5 → 3.47.2 / Dart 3.13.2**, and all seven held-back packages
+moved: `drift_dev` 2.34.0→2.34.6, `build_runner` 2.15.1→2.16.1, `flex_color_picker`
+3.8.0→4.0.0, `wakelock_plus` 1.7.0→1.8.0, `sqflite` 2.4.2+1→2.4.3, `intl` 0.20.2→0.20.3,
+`sqflite_common_ffi` 2.4.0+3→2.4.2+1. `analyzer` went 10.0.1→14.3.0. `drift` itself stayed
+at 2.34.4 — drift_dev 2.34.6 requires `drift <2.35.0`.
+
+The CLI works again: `dart run drift_dev analyze` returns *No errors found*.
+
+### What the entry got wrong about the web binaries
+
+The old entry, `.llmwiki/Web.md` and `web/CLAUDE.md` all justified tracking
+`web/sqlite3.wasm` and `web/drift_worker.js` with "the `make-web-worker` CLI is broken, so
+the repo is the only reliable source". Both halves were wrong. `make-web-worker` is not a
+`drift_dev` subcommand at all in 2.34.6, and the worker never needed a CLI: **drift ships
+it prebuilt at its package root**. The files stay tracked, but now for the honest reason —
+a fresh clone should not have to fetch binaries to run the PWA. Refreshing the stale
+committed worker is its own `TODO.md` entry.
+
+### `android/settings.gradle` had been shadowing `settings.gradle.kts` since the first commit
+
+The first AGP 9 build failed with *"Your project's Android Gradle Plugin version (8.9.1) is
+lower than Flutter's minimum"* — after `settings.gradle.kts` had been edited to 9.1.0. A
+Groovy `android/settings.gradle` from `4e52a54` sat next to it pinning AGP 8.9.1 and Kotlin
+**2.1.0**, and Gradle prefers the Groovy file when both exist. So every edit to
+`settings.gradle.kts` had been dead — including the Kotlin 2.2.20 bump the old TODO
+described as already applied. The Groovy file is deleted; the rest of the project is Kotlin
+DSL. This is the strongest argument yet for the still-open "no CI" item.
+
+### Android toolchain, aligned to Flutter 3.47.2's own templates
+
+Gradle 8.12→9.3.1, AGP 8.9.1→9.1.0, Kotlin 2.1.0→2.4.0, compileSdk/targetSdk 35→36 (both
+follow `flutter.*`), SDK Build-Tools 36.0.0 installed as an AGP 9 prerequisite. Flutter
+hard-errors below Gradle 8.14 / AGP 8.11.1 / KGP 2.2.20 / Java 17, so the Android side
+could not have been left alone regardless.
+
+The AGP 9 migration itself is the three-line diff Flutter's own template makes:
+`id("kotlin-android")` dropped from `android/app/build.gradle.kts` (Flutter's Gradle plugin
+applies it), the `kotlinOptions` block replaced by a top-level
+`kotlin { compilerOptions { jvmTarget = JVM_17 } }`, and `android.newDsl=false` +
+`android.builtInKotlin=false` added to `android/gradle.properties` — AGP 9 defaults both to
+`true`, and `org.jetbrains.kotlin.android` is incompatible with the new DSL.
+`android.enableJetifier=true` was dropped: no Flutter template has ever set it, it only
+rewrites pre-AndroidX artifacts, and it costs build time.
+
+### Smaller consequences
+
+- `build_runner` 2.16 **removed `--delete-conflicting-outputs`** — it now warns and ignores
+  the flag. Dropped from `CLAUDE.md`, `.llmwiki/DataLayer.md` and the `db-migration` and
+  `release-android` skills.
+- Analyzer 14 raised two new findings on pre-existing code. `IconData(iconCodePoint, ...)`
+  in `lib/models/game_type.dart` now warns `non_const_argument_for_const_parameter` — that
+  warning *is* the dynamic-icon constraint surfacing, so it carries a targeted `// ignore:`
+  with the reason rather than a hardcoded codepoint. `GameAnalysisScreen`'s private
+  `_repository` field became public `repository`, which satisfies `prefer_initializing_formals`
+  properly and keeps the injection seam usable from outside the library.
+- Every Android build now warns that `shared_preferences_android` applies KGP. Upstream's
+  to fix; tracked in `TODO.md`.
+- `flutter analyze` on 3.47 rewrites `analysis_options.yaml` itself, printing *"Upgrading
+  analysis_options.yaml to exclude build and platform directories"* and adding an
+  `analyzer: exclude:` block for `build/`, `android/`, `ios/` and `web/`. The block is
+  committed because reverting it just makes the next `flutter analyze` add it back.
+- `android/.kotlin/` is a new Kotlin 2.4 build-artifact directory; added to
+  `android/.gitignore`.
+
+---
+
 ## `ThemeProvider` never persists
 
 **Status:** done (2026-09-09) — closed by `ccc3640`, *fix: persist the selected theme

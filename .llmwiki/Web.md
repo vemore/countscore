@@ -73,6 +73,16 @@ step for the same reason and it is validated by `curl` and on a device instead �
   drift 2.34.4 / drift_dev 2.34.0 pairing, so the repository is the only reliable source
   for them. `.gitignore` carries a comment saying so. **Do not regenerate or delete them**
   until the CLI builds again — see `TODO.md`.
+
+  > **Status: Outdated** (2026-09-09) — the stated reason does not hold. `make-web-worker`
+  > is not a `drift_dev` subcommand in 2.34.6, and never needed to be: **drift ships a
+  > prebuilt `drift_worker.js` at its package root**, so
+  > `~/.pub-cache/hosted/pub.dev/drift-2.34.4/drift_worker.js` is an always-available source.
+  > `sqlite3.wasm` comes from the `sqlite3.dart` GitHub releases, not from any package.
+  > The two files remain tracked — a fresh clone should not have to fetch binaries to run
+  > the PWA — but that is now a choice, not a workaround. **The committed
+  > `drift_worker.js` is stale**: 351,222 B against the 355,222 B drift 2.34.4 ships.
+  > Refreshing it is its own change, tracked in `TODO.md`.
 - **Export/import is hidden rather than reimplemented on web.** It needs `dart:io`. Doing
   it properly means a `FileExporter` abstraction with a JSON serialisation path for the
   browser; that was scoped out of v1 rather than shipped half-working.

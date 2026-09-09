@@ -42,12 +42,47 @@ and hand the result to `MyApp(initialThemeMode:)`, so the first frame is already
 `toMap`/`fromMap`. `player.dart` has no `gameId` since v9 — its `id` is a
 `game_players.id`. See [[SchemaV9]].
 
+### Toolchain
+
+| | Version | Set in |
+|---|---|---|
+| Flutter | 3.47.2 (stable) | `/home/vemore/sdk/flutter` |
+| Dart | 3.13.2 | ships with Flutter |
+| Dart SDK constraint | `^3.13.0` | `pubspec.yaml:25` |
+| Gradle | 9.3.1 | `android/gradle/wrapper/gradle-wrapper.properties` |
+| AGP | 9.1.0 | `android/settings.gradle.kts:23` |
+| Kotlin (KGP) | 2.4.0 | `android/settings.gradle.kts:24` |
+| compileSdk / targetSdk | 36 / 36 | `flutter.compileSdkVersion`, `flutter.targetSdkVersion` |
+| minSdk | 24 | `flutter.minSdkVersion` |
+| NDK | 28.2.13676358 | `flutter.ndkVersion` |
+| SDK Build-Tools | 36.0.0 | AGP 9 minimum; install with `sdkmanager "build-tools;36.0.0"` |
+| JVM target | 17 | `compileOptions` + the `kotlin { compilerOptions { } }` block |
+
+These are Flutter 3.47.2's own template values, matched exactly. Flutter hard-errors below
+Gradle 8.14, AGP 8.11.1, KGP 2.2.20 or Java 17 — see
+`packages/flutter_tools/gradle/src/main/kotlin/DependencyVersionChecker.kt` in the SDK.
+
+`android/app/build.gradle.kts` does **not** apply `id("kotlin-android")`: Flutter's own
+Gradle plugin applies it (`FlutterPluginUtils.detectApplyingKotlinGradlePlugin`). The JVM
+target lives in a top-level `kotlin { compilerOptions { } }` block, not in the `kotlinOptions`
+block AGP 9 dropped.
+
+`android/gradle.properties` sets `android.newDsl=false` and `android.builtInKotlin=false`,
+both of which AGP 9 flips to `true` by default. Flutter's template opts out of both, because
+`org.jetbrains.kotlin.android` is incompatible with AGP's new DSL. Removing either line
+produces `ClassCastException: ...ApplicationExtensionImpl... cannot be cast to BaseExtension`.
+
 ### The dynamic-icon constraint
 
 `lib/models/game_type.dart` (228 l.) holds `defaultGameTypes()` and builds `IconData`
 from codepoints stored in the database. Flutter's icon tree-shaker cannot see those
 references, so **every** build must pass `--no-tree-shake-icons` — apk, appbundle, ios and
 web alike. It costs roughly 200 KB. Omitting it fails the build with a tree-shake error.
+
+Since analyzer 14 (Dart 3.13), `IconData`'s `codePoint` is flagged as needing a constant, so
+`game_type.dart` carries a targeted `// ignore: non_const_argument_for_const_parameter` with
+the reason. That warning *is* the tree-shaking constraint showing up in the analyzer — do
+not "fix" it by hardcoding a codepoint.
 
 ## Decisions & History
 
