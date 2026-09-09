@@ -3,6 +3,27 @@
 Open work only. A finished item moves to `DONE.md` — see the workflow section of
 `CLAUDE.md`.
 
+## The Flutter sync client does not exist
+
+**Status:** open — noted 2026-09-09, during a branch/commit review.
+
+Milestones 5 to 7 are marked Done in `.llmwiki/Architecture.md`, and on the server they
+are: groups, delta-log sync with per-field LWW, and `/sync/stream` over Postgres
+LISTEN/NOTIFY are implemented and tested. **Nothing in the app consumes any of it.**
+
+`lib/services/sync_service.dart` and `lib/services/backend_client.dart` are referenced by
+the documentation but are not on disk — `lib/services/` holds only `database_service.dart`,
+`drift/` and `uuid.dart`. The single file in `lib/` that makes a network call is
+`lib/screens/game_analysis_screen.dart`, for the ZapZap analysis.
+
+So the backend is a working service with no client, and both the mobile app and the PWA are
+still purely local. This is the largest gap between what the wiki says the project is and
+what it does, and it is the thing that would make group sharing real.
+
+It needs its own design pass, not a quick patch: an outbox on the Drift side, conflict
+handling that matches the server's LWW rules, device-token storage, and a reconnect policy
+for the WebSocket. See [[Sync]] and [[Architecture]].
+
 ## There is no CI
 
 **Status:** open — noted 2026-09-09, carried over from the Flutter 3.47 entry.
