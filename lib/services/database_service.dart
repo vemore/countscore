@@ -169,7 +169,7 @@ class DatabaseService {
     // Outbox: every local mutation to a synced entity (group_id != NULL) is queued
     // here for the sync worker. See ARCHITECTURE.md §5.1.
     await db.execute('''
-      CREATE TABLE outbox (
+      CREATE TABLE IF NOT EXISTS outbox (
         id $idType,
         entity_type $textType,
         entity_uuid $textType,
@@ -183,7 +183,7 @@ class DatabaseService {
 
     // Per-group sync state: last server_seq we have pulled, last lamport we emitted.
     await db.execute('''
-      CREATE TABLE sync_state (
+      CREATE TABLE IF NOT EXISTS sync_state (
         group_id TEXT PRIMARY KEY,
         last_server_seq INTEGER NOT NULL DEFAULT 0,
         last_lamport INTEGER NOT NULL DEFAULT 0
@@ -459,7 +459,47 @@ class DatabaseService {
   @visibleForTesting
   Future<void> upgradeV8toV9(Database db) => _upgradeV8toV9(db);
 
+  @visibleForTesting
+  Future<void> ensureV6ShapeForTesting(Database db) => _ensureV6Shape(db);
+
+  /// Column names currently present on [table].
+  Future<Set<String>> _columnsOf(Database db, String table) async {
+    final rows = await db.rawQuery('PRAGMA table_info($table)');
+    return {for (final row in rows) row['name'] as String};
+  }
+
+  /// Brings a database up to the v6 "sync-readiness" shape, whatever its
+  /// recorded `user_version` claims.
+  ///
+  /// Some installs reached v8 while their tables still had the pre-v6 shape:
+  /// no `uuid` / `created_at` / `updated_at` / `deleted_at` / `group_id`
+  /// columns and no `outbox` / `sync_state` tables, even though the version
+  /// counter had moved on. On those, [_upgradeV8toV9] fails with
+  /// `no such column: uuid` while creating `idx_game_players_uuid`; because
+  /// the migration runs inside [bootstrapMigrate], the failure propagates out
+  /// of Drift's `LazyDatabase` opener and the database never opens at all —
+  /// the app starts on an empty screen with every game still on disk.
+  ///
+  /// So probe the real schema instead of trusting the version counter.
+  /// [_upgradeV5toV6] only adds what is missing, so this is a no-op on a
+  /// database that genuinely went through v6.
+  Future<void> _ensureV6Shape(Database db) async {
+    if ((await _columnsOf(db, 'players')).contains('uuid')) return;
+
+    // `rounds.comment` belongs to the same v5 → v6 step but is applied by
+    // [_upgradeDB] rather than [_upgradeV5toV6], so it needs its own guard.
+    if (!(await _columnsOf(db, 'rounds')).contains('comment')) {
+      await db.execute('ALTER TABLE rounds ADD COLUMN comment TEXT');
+    }
+
+    await _upgradeV5toV6(db);
+  }
+
   Future<void> _upgradeV8toV9(Database db) async {
+    // A database stamped v8 that never received the v6 sync columns would
+    // otherwise fail below on `game_players(uuid)`.
+    await _ensureV6Shape(db);
+
     final now = DateTime.now().millisecondsSinceEpoch;
 
     // 1. Snapshot existing per-game players (ordered for stable disambiguation).
@@ -586,19 +626,33 @@ class DatabaseService {
   Future<void> _upgradeV5toV6(Database db) async {
     final now = DateTime.now().millisecondsSinceEpoch;
 
+    const syncColumns = <String, String>{
+      'uuid': 'TEXT',
+      'created_at': 'INTEGER',
+      'updated_at': 'INTEGER',
+      'deleted_at': 'INTEGER',
+      'group_id': 'TEXT',
+    };
+
     for (final table in ['game_types', 'games', 'players', 'rounds', 'scores']) {
       // ALTER ADD COLUMN with UNIQUE is not supported by SQLite; we add as
       // plain TEXT then enforce uniqueness via a UNIQUE INDEX after backfill.
-      await db.execute('ALTER TABLE $table ADD COLUMN uuid TEXT');
-      await db.execute('ALTER TABLE $table ADD COLUMN created_at INTEGER');
-      await db.execute('ALTER TABLE $table ADD COLUMN updated_at INTEGER');
-      await db.execute('ALTER TABLE $table ADD COLUMN deleted_at INTEGER');
-      await db.execute('ALTER TABLE $table ADD COLUMN group_id TEXT');
+      // Only add what is missing: this step has to be replayable on databases
+      // whose `user_version` ran ahead of their real schema (see
+      // [_ensureV6Shape]).
+      final existing = await _columnsOf(db, table);
+      for (final column in syncColumns.entries) {
+        if (existing.contains(column.key)) continue;
+        await db.execute(
+          'ALTER TABLE $table ADD COLUMN ${column.key} ${column.value}',
+        );
+      }
     }
 
-    // Backfill timestamps and UUIDs.
+    // Backfill timestamps and UUIDs for the rows that don't have them yet.
     // Games: preserve original createdAt if parseable.
-    final games = await db.query('games', columns: ['id', 'createdAt']);
+    final games =
+        await db.query('games', columns: ['id', 'createdAt'], where: 'uuid IS NULL');
     for (final g in games) {
       int createdAtMs = now;
       final createdAtStr = g['createdAt'] as String?;
@@ -621,7 +675,7 @@ class DatabaseService {
 
     // Other tables: now/now (no original timestamp to preserve).
     for (final table in ['game_types', 'players', 'rounds', 'scores']) {
-      final rows = await db.query(table, columns: ['id']);
+      final rows = await db.query(table, columns: ['id'], where: 'uuid IS NULL');
       for (final r in rows) {
         await db.update(
           table,
@@ -639,7 +693,7 @@ class DatabaseService {
     // Now enforce the UNIQUE constraint on uuid for each table.
     for (final table in ['game_types', 'games', 'players', 'rounds', 'scores']) {
       await db.execute(
-        'CREATE UNIQUE INDEX idx_${table}_uuid ON $table(uuid)',
+        'CREATE UNIQUE INDEX IF NOT EXISTS idx_${table}_uuid ON $table(uuid)',
       );
     }
 
@@ -664,9 +718,15 @@ class DatabaseService {
       )
     ''');
 
-    await db.execute('CREATE INDEX idx_outbox_unsent ON outbox(sent_at, id)');
-    await db.execute('CREATE INDEX idx_games_group_id ON games(group_id)');
-    await db.execute('CREATE INDEX idx_players_group_id ON players(group_id)');
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_outbox_unsent ON outbox(sent_at, id)',
+    );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_games_group_id ON games(group_id)',
+    );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_players_group_id ON players(group_id)',
+    );
   }
 
   // CRUD pour Game
