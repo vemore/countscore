@@ -10,10 +10,26 @@
 `backend_client.dart` do not exist on disk, and nothing in `lib/` writes to `outbox`. The
 schema is ready and waiting — see [[SchemaV9]].
 
+> **Status: Outdated** (2026-09-09) — "complete and tested" overstates one area. The
+> endpoints, dedup, round conflicts and the WebSocket are implemented and covered; the
+> **conflict-resolution branch is neither what this page describes nor tested at all**.
+> See the block under **Model** below, and the gap noted in [[Testing]].
+
 ### Model
 
 An append-only `change_log` table on the server. Conflicts resolve **Last-Write-Wins per
 field**, ordered lexicographically by `(client_lamport, origin_device_id)`.
+
+> **Status: Outdated** (2026-09-09) — the server has never resolved conflicts per field.
+> It resolves them **per row**. `backend/app/routes/sync.py:184-199` compares the incoming
+> `(client_lamport, origin_device_id)` against the highest pair already in `change_log`
+> for that `entity_uuid` and, when the incoming delta loses, drops it whole and answers
+> `merged_lww` — nothing of it is written. The comment at `sync.py:184` says so outright:
+> per-field would need a `field_versions` table, and there is none.
+>
+> What holds: **one writer wins the entire entity**. Two concurrent edits to *different*
+> fields of the same row do not merge; the loser is discarded. The ordering rule itself is
+> unchanged — lexicographic on `(client_lamport, origin_device_id)`.
 
 - `client_lamport` is a monotone integer per device, a logical clock. On write:
   `lamport = max(local_max, last_server_seq_received) + 1`.
@@ -45,6 +61,14 @@ field**, ordered lexicographically by `(client_lamport, origin_device_id)`.
    c. apply LWW per field: write if delta.client_lamport > local.last_lamport_per_field
    d. sync_state.last_server_seq = max(current, delta.server_seq)
 ```
+
+> **Status: Outdated** (2026-09-09) — step (c) is written against per-field LWW, which the
+> server does not implement. A client built from this sketch would apply a merge rule the
+> server does not share and would diverge from it silently. The rule to write against is
+> the row-level one: apply the delta when `(delta.client_lamport,
+> delta.origin_device_id)` is greater than the pair last applied for that entity, and
+> discard it entirely otherwise. This is client design, not an implemented fact — there is
+> no client.
 
 ### WebSocket — signal only
 
@@ -86,6 +110,12 @@ exact DDL. Tables: `groups`, `devices`, `players`, `game_types`, `games`, `game_
   the conflict model.
 - **LWW per field, not per row.** Alice renames Bob while Charlie changes Bob's colour —
   both merge instead of one silently destroying the other.
+
+  > **Status: Outdated** (2026-09-09) — recorded as a decision, never implemented. In this
+  > exact example the code drops one of the two edits (`merged_lww`) instead of merging
+  > them. The intent still stands, but it is **open design, not behaviour**, until a
+  > `field_versions` table exists. Nothing guards the gap either: `merged_lww` appears
+  > nowhere under `backend/tests/`, so the branch that decides a conflict has no test.
 - **The WebSocket carries a sequence number, not the payload.** Nothing to buffer, nothing
   to replay, and reconnection needs no special case: the client already knows its
   `since_seq`.

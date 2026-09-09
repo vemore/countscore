@@ -56,8 +56,9 @@ work, use the `flutter-device-test` skill.
 
 ### Backend — `pytest`
 
-`tests/test_groups.py` (create, join, revoke, rotate) · `test_sync.py` (push/pull, LWW,
-idempotence, round conflicts — SQLite in memory, `pg_notify` stubbed) ·
+`tests/test_groups.py` (create, join, revoke, rotate) · `test_sync.py` (push/pull,
+idempotence, round conflicts, payload bounds, player-name allow-list — SQLite in memory,
+`pg_notify` stubbed) ·
 `test_sync_ws_integration.py` (WS handshake + push → NOTIFY → new_seq → pull on a **real
 Postgres** via testcontainers) · `test_comments.py` (mocked Anthropic, rate limit, budget,
 prompt injection) · `test_zapzap_analysis.py` · `test_llm_providers.py` ·
@@ -76,6 +77,12 @@ pytest -v                        # everything; the integration marker needs Dock
 **There is no CI.** Nothing mechanically verifies that a fresh clone builds — which matters
 because `*.g.dart` is gitignored. Export/import and the wakelock toggle have no automated
 coverage at all and must be checked on a device.
+
+**The sync conflict branch is untested.** `merged_lww` appears nowhere under
+`backend/tests/` — `test_sync.py` covers push/pull, dedup and the round-uniqueness
+rejection, but never drives two competing writers at the same entity. So the one piece of
+`/sync/push` that decides who wins (`backend/app/routes/sync.py:184-199`) is unguarded,
+and this page claimed until 2026-09-09 that it was covered. See [[Sync]].
 
 ## Decisions & History
 

@@ -3,8 +3,10 @@
 Apply order on push:
 1. Dedup: skip deltas whose (origin_device_id, client_lamport) is already in change_log.
 2. Append-to-log: every accepted delta becomes a change_log row with a serial server_seq.
-3. Materialize: apply the delta to the per-entity table using LWW by field
-   (compare each field's last lamport).
+3. Materialize: apply the delta to the per-entity table using row-level LWW — the
+   highest (client_lamport, origin_device_id) wins the whole entity, and a losing delta
+   is discarded with status=merged_lww. Per-field LWW is designed but not built; see
+   the comment at the update branch below, and .llmwiki/Sync.md.
 4. Notify: pg_notify('group_<uuid>', {server_seq}) before commit so listening
    WebSockets are woken.
 

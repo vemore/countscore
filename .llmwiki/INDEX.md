@@ -39,7 +39,7 @@ Load this file first. Then read only the pages your task touches.
 |---|---|---|
 | [[Backend]] | Stack, module layout, settings, device-token auth | 2026-09-09 |
 | [[Api]] | Every endpoint, its auth requirement and its failure modes | 2026-09-09 |
-| [[Sync]] | Delta-log + per-field LWW, outbox, WebSocket signalling | 2026-09-09 |
+| [[Sync]] | Delta-log + row-level LWW, outbox, WebSocket signalling | 2026-09-09 |
 | [[LlmProviders]] | ZapZap prompt, the pluggable provider factory, the separate Claude path | 2026-09-09 |
 
 ## Operations
