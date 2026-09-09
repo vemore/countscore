@@ -1,5 +1,6 @@
 # CountScore
 
+[![CI](https://github.com/vemore/countscore/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vemore/countscore/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Flutter](https://img.shields.io/badge/Flutter-^3.9.2-blue.svg)](https://flutter.dev/)
 [![Platform](https://img.shields.io/badge/Platform-Android%20|%20iOS-green.svg)](https://flutter.dev/)

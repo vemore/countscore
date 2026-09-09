@@ -72,11 +72,44 @@ pytest -v                        # everything; the integration marker needs Dock
 
 `asyncio_mode = "auto"`, `testpaths = ["tests"]`, marker `integration`.
 
+### CI — `.github/workflows/ci.yml`
+
+Three parallel jobs, on every push to `main`, every pull request, and `workflow_dispatch`.
+Flutter is pinned to **3.47.2** by the `FLUTTER_VERSION` env key — that pin and the
+toolchain table in [[MobileApp]] must move together.
+
+| Job | Steps |
+|---|---|
+| `backend` | `uv sync --locked --extra dev` → `ruff check .` → `mypy` → `pytest -v` |
+| `app` | `pub get` → `dart run build_runner build` → `analyze` → `test` → `build web --release` |
+| `android` | `pub get` → `dart run build_runner build` → `build apk --debug` |
+
+**Codegen comes before analyze, test and every build.** `*.g.dart` is gitignored, so
+`lib/services/drift/database.g.dart` does not exist in a fresh clone; skipping the step
+fails with `Target of URI hasn't been generated` and a cascade of undefined `_$AppDatabase`
+errors. On the `android` job that cascade appears *after* minutes of Gradle configuration,
+so it reads like a Gradle fault when it is not.
+
+`uv`, not `pip install -e ".[dev]"`: `testcontainers` and `httpx-ws` live in
+`[dependency-groups]`, which pip does not read, so a pip-based job would silently skip the
+integration test. `--locked` additionally fails if `uv.lock` has drifted from
+`pyproject.toml`.
+
+The `android` job caps the Gradle heap by appending to `$HOME/.gradle/gradle.properties`,
+which outranks the project's `android/gradle.properties` and its `-Xmx8G` request; the
+committed file is not touched. It builds **debug** only — release signing reads
+`android/key.properties`, absent in CI by design — and asserts afterwards that the Flutter
+tool injected the gitignored `gradlew` and `gradle-wrapper.jar`.
+
+Not in CI on purpose: the e2e suite (it calls the real production endpoint), the signed
+release APK/AAB (needs the keystore secrets), and `ruff format`.
+
 ### Gaps
 
-**There is no CI.** Nothing mechanically verifies that a fresh clone builds — which matters
-because `*.g.dart` is gitignored. Export/import and the wakelock toggle have no automated
-coverage at all and must be checked on a device.
+**The e2e suite does not run in CI.** `integration_test/app_test.dart` drives a real
+network call against production, so it stays a manual step — on web via chromedriver, on a
+device via the `flutter-device-test` skill. Export/import and the wakelock toggle have no
+automated coverage at all and must be checked on a device.
 
 **The sync conflict branch is untested.** `merged_lww` appears nowhere under
 `backend/tests/` — `test_sync.py` covers push/pull, dedup and the round-uniqueness
@@ -96,3 +129,14 @@ and this page claimed until 2026-09-09 that it was covered. See [[Sync]].
   suite mocks away. It is marked `integration` so the default run stays Docker-free.
 - **`test/widget_test.dart` is misnamed** — it is a model serialisation suite. Left as is to
   avoid churn; do not assume widget coverage exists because of the filename.
+- **CI runs the full backend suite, integration tests included** (2026-09-09). The runner
+  has Docker, so paying ~40 s to start `postgres:17-alpine` buys mechanical coverage of
+  `LISTEN/NOTIFY` and JSONB, which nothing else exercises. `TESTCONTAINERS_RYUK_DISABLED`
+  is set because the runner is ephemeral and Ryuk is a known flake source. If it ever turns
+  flaky, the fallback is `-m 'not integration'` on PRs and the full run on `main`.
+- **The Android CI job builds debug, and there are no path filters** (2026-09-09). Debug
+  because release signing needs `android/key.properties`, which is never committed. No
+  `paths:` filters because a filtered-out job never reports a status, so branch protection
+  with required checks would hang forever on docs-only PRs — and because the bug that
+  motivated CI at all (`settings.gradle` shadowing `settings.gradle.kts` for years) was
+  precisely a "nobody built it" bug. Narrowing when the build runs would reopen that hole.

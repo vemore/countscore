@@ -46,7 +46,7 @@ and hand the result to `MyApp(initialThemeMode:)`, so the first frame is already
 
 | | Version | Set in |
 |---|---|---|
-| Flutter | 3.47.2 (stable) | `/home/vemore/sdk/flutter` |
+| Flutter | 3.47.2 (stable) | `/home/vemore/sdk/flutter`; pinned for CI in `.github/workflows/ci.yml` (`FLUTTER_VERSION`) |
 | Dart | 3.13.2 | ships with Flutter |
 | Dart SDK constraint | `^3.13.0` | `pubspec.yaml:25` |
 | Gradle | 9.3.1 | `android/gradle/wrapper/gradle-wrapper.properties` |
