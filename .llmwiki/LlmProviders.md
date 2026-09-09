@@ -54,6 +54,12 @@ The system block is marked `cache_control: ephemeral`, so across a games evening
   iff the AWS key and secret are set) and `openai_compat.py`
   (`OpenAICompatProvider(label, base_url, api_key, model)` — one class serving both Gemini
   and Mistral over OpenAI Chat Completions).
+> **Status: Outdated** (2026-09-09) — production is on `mistral` with `MISTRAL_MODEL`
+> unset, so it uses the code default `mistral-large-latest`, and the account's Mistral tier
+> **rejects that model** (403 `tier_not_allowed`). Every ZapZap analysis has been returning
+> 502 in production. `mistral-large-latest` is not in the 40 models the production key can
+> list. See `TODO.md`.
+
 - **Comparison tool**:
   `python scripts/compare_providers.py --payload scripts/sample_payload.json --providers bedrock,gemini,mistral`
   → writes `out/zapzap_<provider>.md` plus a side-by-side recap.
