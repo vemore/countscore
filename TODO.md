@@ -3,6 +3,54 @@
 Open work only. A finished item moves to `DONE.md` — see the workflow section of
 `CLAUDE.md`.
 
+## The ZapZap analysis is down in production: Mistral rejects the configured model
+
+**Status:** open — noted 2026-09-09, found by the on-device release test that closed the
+`INTERNET` permission item.
+
+`POST /comments/zapzap-analysis` returns **502** for every request, on every client. It is
+not the permission bug and not a device problem: it reproduces from any machine.
+
+```
+$ curl -sS -X POST https://countscore.ombivince.synology.me/comments/zapzap-analysis \
+    -H 'Content-Type: application/json' -d @payload.json
+{"detail":"upstream LLM error: RuntimeError"}          # 502, in 0.18 s
+```
+
+The container log gives the cause:
+
+```
+RuntimeError: mistral API call failed: PermissionDeniedError: Error code: 403 -
+{'message': 'This model is not available in your subscription tier',
+ 'type': 'tier_not_allowed', 'code': '1910'}
+```
+
+Production runs `LLM_PROVIDER=mistral` and does **not** set `MISTRAL_MODEL`, so it falls back
+to the code default `mistral-large-latest` (`backend/app/config.py:37`). That model is no
+longer available to the account: `GET https://api.mistral.ai/v1/models` with the production
+key lists 40 models and `mistral-large-latest` is not among them. The key itself is valid —
+the 403 is about the tier, not authentication.
+
+Available and plausible replacements from that listing: `mistral-medium-latest`,
+`mistral-small-latest`, `magistral-medium-latest`. The ZapZap prompt asks for long-form
+French commentary, so `mistral-medium-latest` is the closest to what `large` was doing.
+
+**The fix is one line of production environment**, not code: set `MISTRAL_MODEL` in the NAS
+`.env` and restart the container (`backend-deploy` skill). It is filed rather than applied
+because changing what production sends to a paid third-party API is the user's call, and
+because the choice of model changes the tone and the cost of every analysis.
+
+Two things worth doing in the same pass:
+
+- **Decide whether `mistral-large-latest` should stay the code default.** A default that the
+  production account cannot use is a trap for the next deployment; `.llmwiki/Deployment.md`
+  already warns that production and the documented default disagree.
+- **The failure is invisible until someone taps the button.** There is no health check that
+  exercises a provider, and `/health` returns `{"status":"ok"}` while the only user-facing
+  LLM feature has been returning 502. A cheap provider ping — or at least an alert on the
+  502 rate — would have caught this before a release test did. See [[LlmProviders]] and
+  [[Deployment]].
+
 ## The ZapZap system prompt hard-codes eight real people's names
 
 **Status:** open — noted 2026-09-09, while tracing the analysis payload for the data safety

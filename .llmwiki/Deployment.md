@@ -75,4 +75,7 @@ hosting config. Only the backend container is covered. See [[Web]].
   The dataset is small and the recovery story is "copy a file back".
 - **`LLM_PROVIDER` defaults to `bedrock` in code**, but production has been run on
   `mistral`; `backend/README.md` describes only the default. Check the actual `.env` on the
-  NAS before assuming which provider answered a given request.
+  NAS before assuming which provider answered a given request. **This bit (2026-09-09):**
+  production sets `LLM_PROVIDER=mistral` but not `MISTRAL_MODEL`, so it inherits the code
+  default `mistral-large-latest` — a model the account's tier no longer allows. Every
+  analysis 502s and `/health` still says `ok`. See `TODO.md` and [[LlmProviders]].
