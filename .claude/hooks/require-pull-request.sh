@@ -44,9 +44,25 @@ block() {
     exit 0
 }
 
+# Ask for every state, not just open. A merged pull request is the whole point of the
+# rule, and asking only for open ones made this hook block forever on a branch whose
+# pull request had just been merged -- the commits are still ahead of a local origin/main
+# that has not been fetched since.
 # `.[0] | ...` on an empty result yields the string "null null", not nothing.
-pr=$(timeout 20 gh pr list --head "$branch" --state open --json number,url \
-     --jq '.[] | "\(.number) \(.url)"' 2>/dev/null | head -1)
+pr=$(timeout 20 gh pr list --head "$branch" --state all --limit 1 --json number,url,state \
+     --jq '.[] | "\(.number) \(.state) \(.url)"' 2>/dev/null | head -1)
+
+state=$(printf '%s' "$pr" | cut -d' ' -f2)
+case "$state" in
+    MERGED)
+        exit 0 ;;   # delivered; the branch is just still checked out
+    CLOSED)
+        block "Pull request $(printf '%s' "$pr" | cut -d' ' -f3) was closed without being merged,
+and this branch still carries $(git rev-list --count origin/main..HEAD) commit(s).
+
+Either the work was abandoned -- then say so and switch off this branch -- or it needs a
+new pull request. Leaving it here delivers nothing." ;;
+esac
 
 if [ -z "$pr" ]; then
     dirty=""
@@ -65,8 +81,8 @@ If this branch is genuinely not meant to be published yet, say so to the user an
 \`git config branch.$branch.noPullRequest true\`."
 fi
 
-number=${pr%% *}
-url=${pr#* }
+number=$(printf '%s' "$pr" | cut -d' ' -f1)
+url=$(printf '%s' "$pr" | cut -d' ' -f3)
 failing=$(timeout 30 gh pr checks "$number" --required 2>/dev/null | awk -F'\t' '$2 == "fail" {print "  " $1 "  " $4}')
 [ -z "$failing" ] && failing=$(timeout 30 gh pr checks "$number" 2>/dev/null | awk -F'\t' '$2 == "fail" {print "  " $1 "  " $4}')
 

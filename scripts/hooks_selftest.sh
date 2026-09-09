@@ -219,14 +219,60 @@ git -C "$WORK" commit -q --allow-empty -m "work in progress"
 stop_case "a local-only remote is not a forge" silent
 
 git -C "$WORK" remote set-url origin https://github.com/example/does-not-exist.git
-if gh auth status >/dev/null 2>&1; then
-    stop_case "commits with no pull request" block
-    stop_case "already asked, do not loop" silent true
-    git -C "$WORK" config branch.feat/quiet.noPullRequest true
-    stop_case "a branch deliberately not published" silent
-else
-    echo "  skip  the three GitHub cases (gh is not authenticated here)"
-fi
+
+# A stubbed `gh` makes every state testable offline, including in CI. The real one
+# only ever answered "open or nothing", which is how a merged pull request came to
+# block a turn forever.
+STUB="$SANDBOX/stub"
+mkdir -p "$STUB"
+stub_gh() {  # pr-list line, pr-checks lines
+    cat > "$STUB/gh" <<STUBEOF
+#!/bin/bash
+case "\$1 \$2" in
+    "auth status") exit 0 ;;
+    "pr list")     printf '%s' '$1'; [ -n '$1' ] && echo ;;
+    "pr checks")   printf '%b' '${2:-}' ;;
+esac
+exit 0
+STUBEOF
+    chmod +x "$STUB/gh"
+}
+
+stopped() {  # description, expected, [stop_hook_active]
+    local out got
+    out=$(printf '{"hook_event_name":"Stop","stop_hook_active":%s}' "${3:-false}" \
+          | PATH="$STUB:$PATH" CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/require-pull-request.sh" 2>/dev/null)
+    case "$out" in
+        "")          got=silent ;;
+        *'"block"'*) got=block ;;
+        *)           got="unexpected: $out" ;;
+    esac
+    report "$1" "$2" "$got"
+}
+
+stub_gh ""
+stopped "commits with no pull request" block
+stopped "already asked, do not loop" silent true
+
+stub_gh "5 MERGED https://example.invalid/5"
+stopped "the pull request was merged" silent
+
+stub_gh "5 CLOSED https://example.invalid/5"
+stopped "the pull request was closed unmerged" block
+
+stub_gh "5 OPEN https://example.invalid/5" "App\tpass\t2m\thttps://example.invalid/j1\n"
+stopped "an open pull request whose checks pass" silent
+
+stub_gh "5 OPEN https://example.invalid/5" "App\tfail\t2m\thttps://example.invalid/j1\n"
+stopped "an open pull request with a failing check" block
+
+stub_gh "5 OPEN https://example.invalid/5" "App\tpending\t0\thttps://example.invalid/j1\n"
+stopped "checks still running are not a failure" silent
+
+git -C "$WORK" config branch.feat/quiet.noPullRequest true
+stub_gh ""
+stopped "a branch deliberately not published" silent
+git -C "$WORK" config --unset branch.feat/quiet.noPullRequest
 
 echo "== wiring ===================================================="
 for script in "$HOOKS"/*.sh "$HOOKS"/*.py; do
