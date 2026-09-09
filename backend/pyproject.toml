@@ -16,7 +16,7 @@ dependencies = [
     "pydantic-settings>=2.15.0",
     "anthropic>=1.4,<2",
     "boto3>=1.43.90",
-    "openai>=2,<3",
+    "openai>=3,<4",
     "argon2-cffi>=25.1.0",
     "httpx>=0.28.1",
     "python-multipart>=0.0.32",
@@ -54,6 +54,16 @@ ignore = ["B008", "N805"]
 # multi-line French string literal: wrapping lines would corrupt the prompt (E501)
 # and it legitimately uses typographic glyphs like × and — (RUF001).
 "app/services/zapzap_prompt.py" = ["E501", "RUF001"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["app"]
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+# Deliberately not strict: the point is a gate that stays green and catches real
+# mistakes, not a fully annotated rewrite of the service. SQLModel query expressions
+# need sqlmodel.col() to type-check — see .llmwiki/Backend.md.
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

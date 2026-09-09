@@ -30,11 +30,12 @@ def _channel_for(group_id: uuid.UUID) -> str:
 async def notify_new_seq(session, group_id: uuid.UUID, server_seq: int) -> None:
     """Sends a NOTIFY in the current transaction. Must be called BEFORE commit."""
     payload = json.dumps({"server_seq": server_seq})
-    # The channel name is built from a UUID (hex only) so f-string interpolation is safe;
-    # the payload is parameterized.
+    # pg_notify is a function, so the channel binds as a parameter like any other
+    # value. The subscribe side never builds SQL at all — asyncpg's add_listener takes
+    # the channel as an argument. No string-built SQL anywhere in the codebase.
     await session.execute(
-        text(f"SELECT pg_notify('{_channel_for(group_id)}', :payload)"),
-        {"payload": payload},
+        text("SELECT pg_notify(:channel, :payload)"),
+        {"channel": _channel_for(group_id), "payload": payload},
     )
 
 

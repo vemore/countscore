@@ -8,9 +8,10 @@ from __future__ import annotations
 import os
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import engine_from_config, pool
 from sqlmodel import SQLModel
+
+from alembic import context
 
 # Import all models so SQLModel.metadata is populated.
 from app import models  # noqa: F401

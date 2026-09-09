@@ -53,3 +53,10 @@ class PullResponse(BaseModel):
     deltas: list[DeltaOut]
     server_seq_max: int
     has_more: bool
+
+
+class WsTicketResponse(BaseModel):
+    """A single-use credential for the /sync/stream handshake."""
+
+    ticket: str
+    expires_in: int

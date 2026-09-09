@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -34,7 +34,7 @@ async def check_and_increment(
     Postgres serializes via row lock on the PK (device_id).
     """
     settings = get_settings()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     # Upsert a row, fetching the current state (initialized to zero on first call).
     stmt = pg_insert(RateLimit).values(

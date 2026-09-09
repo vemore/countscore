@@ -21,4 +21,7 @@ COPY alembic.ini ./
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+# One worker, deliberately: ip_rate_limiter and ws_ticket keep state in process memory,
+# so a second worker doubles the effective rate limit and drops WS tickets. See rule 2
+# in backend/CLAUDE.md before raising this.
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

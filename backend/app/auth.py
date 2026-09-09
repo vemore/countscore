@@ -13,13 +13,14 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from fastapi import Depends, Header, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import col
 
 from app.db import get_session
 from app.models import Device, Group
@@ -69,14 +70,14 @@ async def require_device(
 
     # Try each non-revoked device. With argon2, this is intentionally slow;
     # see the docstring above for the optimization path.
-    result = await session.execute(select(Device).where(Device.revoked_at.is_(None)))
+    result = await session.execute(select(Device).where(col(Device.revoked_at).is_(None)))
     devices = result.scalars().all()
     for device in devices:
         if verify_token(raw, device.token_hash):
             group = await session.get(Group, device.group_id)
             if group is None:
                 raise HTTPException(status.HTTP_401_UNAUTHORIZED, "orphaned device")
-            device.last_seen_at = datetime.now(timezone.utc)
+            device.last_seen_at = datetime.now(UTC)
             await session.commit()
             return AuthContext(device=device, group=group)
     raise HTTPException(status.HTTP_401_UNAUTHORIZED, "invalid or revoked device token")

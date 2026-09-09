@@ -38,13 +38,15 @@ class MvpPlayer(BaseModel):
 
 
 class MvpRoundScore(BaseModel):
-    player_uuid: str
-    value: int
+    player_uuid: str = Field(min_length=1, max_length=64)
+    # Same generous bound as the sync path — see app/services/delta_bounds.py. Values
+    # here are rendered straight into an LLM prompt, so they are size-capped too.
+    value: int = Field(ge=-1_000_000, le=1_000_000)
 
 
 class MvpRound(BaseModel):
-    n: int
-    scores: list[MvpRoundScore]
+    n: int = Field(ge=0, le=10_000)
+    scores: list[MvpRoundScore] = Field(max_length=12)
 
 
 class MvpGamePayload(BaseModel):

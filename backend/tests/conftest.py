@@ -8,7 +8,6 @@ a real Postgres via docker-compose in CI.
 from __future__ import annotations
 
 import os
-import uuid
 from collections.abc import AsyncIterator
 
 import pytest
@@ -21,20 +20,22 @@ os.environ.setdefault("ANTHROPIC_API_KEY", "")  # tests can run without it; MVP/
 os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 
 # Import after env is set
-from app import db as db_module  # noqa: E402
-from app.main import create_app  # noqa: E402
+from app import db as db_module
 
 # Ensure models are loaded before metadata creation
-from app import models  # noqa: F401, E402
+from app import models  # noqa: F401
+from app.main import create_app
 
 
 @pytest.fixture(autouse=True)
-def _reset_ip_rate_limiter():
-    """The IP limiter holds process-global state; clear it between tests."""
-    from app.services import ip_rate_limiter
+def _reset_process_state():
+    """The IP limiter and the WS ticket store hold process-global state; clear it."""
+    from app.services import ip_rate_limiter, ws_ticket
     ip_rate_limiter.reset()
+    ws_ticket.reset()
     yield
     ip_rate_limiter.reset()
+    ws_ticket.reset()
 
 
 @pytest_asyncio.fixture

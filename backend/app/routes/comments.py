@@ -13,11 +13,11 @@ from __future__ import annotations
 
 import logging
 import uuid
-from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import col
 
 from app.auth import AuthContext, require_device
 from app.config import get_settings
@@ -170,9 +170,9 @@ async def _load_game_for_prompt(
     # Players in this game
     gp_rows = await session.execute(
         select(GamePlayer, Player)
-        .join(Player, GamePlayer.player_id == Player.id)
-        .where(GamePlayer.game_id == game.id)
-        .order_by(GamePlayer.order_index.asc())
+        .join(Player, col(GamePlayer.player_id) == col(Player.id))
+        .where(col(GamePlayer.game_id) == game.id)
+        .order_by(col(GamePlayer.order_index).asc())
     )
     players: list[tuple[str, str]] = []
     for _gp, p in gp_rows.all():
@@ -182,13 +182,13 @@ async def _load_game_for_prompt(
     # Rounds + scores
     rounds_rows = await session.execute(
         select(Round)
-        .where(Round.game_id == game.id, Round.deleted_at.is_(None))
-        .order_by(Round.round_number.asc())
+        .where(col(Round.game_id) == game.id, col(Round.deleted_at).is_(None))
+        .order_by(col(Round.round_number).asc())
     )
     rounds_data: list[tuple[int, list[tuple[str, int]]]] = []
     for r in rounds_rows.scalars().all():
         scores_rows = await session.execute(
-            select(Score).where(Score.round_id == r.id, Score.deleted_at.is_(None))
+            select(Score).where(col(Score.round_id) == r.id, col(Score.deleted_at).is_(None))
         )
         scores = [(str(s.player_id), s.value) for s in scores_rows.scalars().all()]
         rounds_data.append((r.round_number, scores))
@@ -218,9 +218,9 @@ async def _load_past_comments(
 ) -> list[PastCommentSummary]:
     rows = await session.execute(
         select(Comment, Game)
-        .join(Game, Comment.game_id == Game.id)
-        .where(Comment.group_id == group_id)
-        .order_by(Comment.created_at.desc())
+        .join(Game, col(Comment.game_id) == col(Game.id))
+        .where(col(Comment.group_id) == group_id)
+        .order_by(col(Comment.created_at).desc())
         .limit(limit)
     )
     summaries: list[PastCommentSummary] = []
@@ -344,8 +344,8 @@ async def list_comments(
 
     rows = await session.execute(
         select(Comment)
-        .where(Comment.game_id == game_id)
-        .order_by(Comment.created_at.desc())
+        .where(col(Comment.game_id) == game_id)
+        .order_by(col(Comment.created_at).desc())
         .limit(limit)
     )
     out = []
@@ -366,7 +366,3 @@ async def list_comments(
             )
         )
     return out
-
-
-# Silence the unused-import warning
-_ = datetime, timezone

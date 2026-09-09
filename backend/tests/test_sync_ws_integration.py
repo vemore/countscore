@@ -9,6 +9,7 @@ Marked ``@pytest.mark.integration``. Auto-skipped when Docker is unavailable.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import os
 import subprocess
@@ -21,7 +22,6 @@ from httpx import AsyncClient
 from httpx_ws.transport import ASGIWebSocketTransport  # type: ignore[import]
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlmodel import SQLModel
-
 
 # ---------------------------------------------------------------------------
 # Docker guard
@@ -68,10 +68,9 @@ async def pg_engine(postgres_container):
     async with eng.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
     yield eng
-    try:
+    # Teardown errors from anyio cancel-scope mismatch are harmless.
+    with contextlib.suppress(Exception):
         await eng.dispose()
-    except Exception:
-        pass  # Teardown errors from anyio cancel-scope mismatch are harmless.
 
 
 @pytest_asyncio.fixture
@@ -87,7 +86,7 @@ async def pg_client(postgres_container, pg_engine) -> AsyncIterator[AsyncClient]
     from app import db as db_module
     from app.config import get_settings
     from app.main import create_app
-    from app.routes import sync as sync_route  # noqa: E402
+    from app.routes import sync as sync_route
 
     get_settings.cache_clear()
 
@@ -111,10 +110,9 @@ async def pg_client(postgres_container, pg_engine) -> AsyncIterator[AsyncClient]
     ac = AsyncClient(transport=transport, base_url="http://test")
     await ac.__aenter__()
     yield ac
-    try:
+    # anyio cancel-scope teardown in a different task — harmless.
+    with contextlib.suppress(RuntimeError):
         await ac.__aexit__(None, None, None)
-    except RuntimeError:
-        pass  # anyio cancel-scope teardown in different task — harmless.
 
     sync_route.AsyncSessionLocal = original_sl  # restore
     db_module.AsyncSessionLocal = original_sl
@@ -133,6 +131,13 @@ async def _make_group_and_token(client: AsyncClient) -> tuple[str, str]:
     return body["group"]["id"], body["device"]["token"]
 
 
+async def _ws_url(client, token: str) -> str:
+    """Trade the device token for a single-use handshake ticket."""
+    r = await client.post("/sync/ws-ticket", headers={"Authorization": f"Bearer {token}"})
+    assert r.status_code == 200, r.text
+    return f"http://test/sync/stream?ticket={r.json()['ticket']}"
+
+
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
@@ -141,7 +146,7 @@ async def test_ws_receives_new_seq_after_push(pg_client):
     """push → pg_notify → WS client receives {"type":"new_seq","server_seq":1}."""
     _group_id, token = await _make_group_and_token(pg_client)
     headers = {"Authorization": f"Bearer {token}"}
-    ws_url = f"http://test/sync/stream?token={token}"
+    ws_url = await _ws_url(pg_client, token)
 
     from httpx_ws import aconnect_ws  # type: ignore[import]
 
@@ -171,7 +176,7 @@ async def test_ws_push_pull_full_cycle(pg_client):
     """push → WS notified → pull returns the delta."""
     _group_id, token = await _make_group_and_token(pg_client)
     headers = {"Authorization": f"Bearer {token}"}
-    ws_url = f"http://test/sync/stream?token={token}"
+    ws_url = await _ws_url(pg_client, token)
 
     from httpx_ws import aconnect_ws  # type: ignore[import]
 

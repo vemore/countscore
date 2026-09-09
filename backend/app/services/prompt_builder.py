@@ -15,6 +15,8 @@ import html
 from dataclasses import dataclass
 from typing import Literal
 
+from anthropic.types import TextBlockParam
+
 CommentStyle = Literal["narrative", "humorous", "analytical"]
 
 # Style-specific guidance. Each block stays small to keep cached system tokens cheap.
@@ -81,7 +83,7 @@ def build_system_prompt(
     style: CommentStyle,
     language: str,
     past_comments: list[PastCommentSummary],
-) -> list[dict]:
+) -> list[TextBlockParam]:
     """Returns Anthropic-format system blocks with cache_control on the static parts.
 
     Block layout:
@@ -157,9 +159,8 @@ def build_user_message(game: GameForPrompt) -> str:
     lines: list[str] = ["<game>"]
     lines.append(f"  <name>{html.escape(game.name)}</name>")
     lines.append(f"  <type>{html.escape(game.game_type)}</type>")
-    lines.append(
-        f'  <ranking_direction>{"lowest_wins" if game.is_lowest_score_wins else "highest_wins"}</ranking_direction>'
-    )
+    direction = "lowest_wins" if game.is_lowest_score_wins else "highest_wins"
+    lines.append(f"  <ranking_direction>{direction}</ranking_direction>")
 
     # Players
     lines.append("  <players>")
@@ -211,7 +212,7 @@ def compute_scores_hash(game: GameForPrompt) -> str:
     return h.hexdigest()
 
 
-def compute_prompt_hash(system_blocks: list[dict], user_content: str) -> str:
+def compute_prompt_hash(system_blocks: list[TextBlockParam], user_content: str) -> str:
     h = hashlib.sha256()
     for block in system_blocks:
         h.update(block.get("text", "").encode())

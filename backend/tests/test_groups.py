@@ -113,3 +113,74 @@ async def test_update_settings(client):
         headers={"Authorization": f"Bearer {token}"},
     )
     assert r.status_code == 422
+
+
+async def test_get_me_does_not_leak_the_share_token(client):
+    """Any member device can re-share a group whose token is echoed on a plain read."""
+    created = await client.post("/groups", json={"name": "Famille", "device_label": "d"})
+    token = created.json()["device"]["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    me = await client.get("/groups/me", headers=headers)
+    assert me.status_code == 200
+    assert "share_token" not in me.json()
+
+    settings = await client.patch(
+        "/groups/me/settings", json={"comment_style": "humorous"}, headers=headers
+    )
+    assert settings.status_code == 200
+    assert "share_token" not in settings.json()
+
+
+async def test_share_token_is_returned_where_a_link_is_asked_for(client):
+    """Create, join and rotate are the three moments the caller wants a share link."""
+    created = await client.post("/groups", json={"name": "Famille", "device_label": "d"})
+    share_token = created.json()["group"]["share_token"]
+    token = created.json()["device"]["token"]
+
+    joined = await client.post(
+        "/groups/join", json={"share_token": share_token, "device_label": "d2"}
+    )
+    assert joined.json()["group"]["share_token"] == share_token
+
+    rotated = await client.post(
+        "/groups/me/rotate-share-token", headers={"Authorization": f"Bearer {token}"}
+    )
+    assert rotated.status_code == 200
+    assert rotated.json()["share_token"] != share_token
+
+
+async def test_group_creation_is_rate_limited(client):
+    from app.config import get_settings
+
+    limit = get_settings().group_rl_per_minute
+    for _ in range(limit):
+        r = await client.post("/groups", json={"name": "g", "device_label": "d"})
+        assert r.status_code == 201, r.text
+
+    blocked = await client.post("/groups", json={"name": "g", "device_label": "d"})
+    assert blocked.status_code == 429
+    assert int(blocked.headers["Retry-After"]) >= 1
+
+
+async def test_join_is_rate_limited_so_share_tokens_cannot_be_ground(client):
+    """A 201 and a 404 tell a valid share_token from an invalid one — cap the guessing."""
+    import uuid
+
+    from app.config import get_settings
+    from app.services import ip_rate_limiter
+
+    limit = get_settings().group_rl_per_minute
+    for _ in range(limit):
+        r = await client.post(
+            "/groups/join", json={"share_token": str(uuid.uuid4()), "device_label": "d"}
+        )
+        assert r.status_code == 404
+
+    blocked = await client.post(
+        "/groups/join", json={"share_token": str(uuid.uuid4()), "device_label": "d"}
+    )
+    assert blocked.status_code == 429
+
+    # The LLM quota lives in its own bucket and must be untouched by the above.
+    assert ip_rate_limiter.check_ip_rate_limit("testclient").allowed

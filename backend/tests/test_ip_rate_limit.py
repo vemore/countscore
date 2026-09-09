@@ -89,3 +89,37 @@ async def test_body_too_large_returns_413(client):
     oversized = {"game": {"name": "a" * 300_000}}
     r = await client.post("/comments/zapzap-analysis", json=oversized)
     assert r.status_code == 413
+
+
+def test_buckets_do_not_share_counters():
+    """Group spam must not consume the quota that guards the paid LLM calls."""
+    from app.config import get_settings
+    from app.services.ip_rate_limiter import check_ip_rate_limit
+
+    settings = get_settings()
+    for _ in range(settings.group_rl_per_minute):
+        assert check_ip_rate_limit(
+            "1.2.3.4",
+            bucket="groups",
+            per_minute=settings.group_rl_per_minute,
+            per_hour=settings.group_rl_per_hour,
+        ).allowed
+    assert not check_ip_rate_limit(
+        "1.2.3.4",
+        bucket="groups",
+        per_minute=settings.group_rl_per_minute,
+        per_hour=settings.group_rl_per_hour,
+    ).allowed
+
+    assert check_ip_rate_limit("1.2.3.4").allowed
+
+
+def test_different_ips_do_not_share_counters():
+    from app.config import get_settings
+    from app.services.ip_rate_limiter import check_ip_rate_limit
+
+    for _ in range(get_settings().ip_rl_per_minute):
+        assert check_ip_rate_limit("10.0.0.1").allowed
+
+    assert not check_ip_rate_limit("10.0.0.1").allowed
+    assert check_ip_rate_limit("10.0.0.2").allowed

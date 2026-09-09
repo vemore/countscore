@@ -5,7 +5,6 @@ rate-limiting and budget logic — not to verify Claude itself.
 """
 from __future__ import annotations
 
-import uuid
 from unittest.mock import AsyncMock
 
 import pytest
@@ -42,7 +41,13 @@ async def test_mvp_endpoint(client, mock_anthropic):
             {"uuid": "p2", "name": "Bob"},
         ],
         "rounds": [
-            {"n": 1, "scores": [{"player_uuid": "p1", "value": 5}, {"player_uuid": "p2", "value": 10}]},
+            {
+                "n": 1,
+                "scores": [
+                    {"player_uuid": "p1", "value": 5},
+                    {"player_uuid": "p2", "value": 10},
+                ],
+            },
         ],
         "style": "narrative",
         "language": "fr",

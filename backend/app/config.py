@@ -50,6 +50,15 @@ class Settings(BaseSettings):
     ip_rl_per_minute: int = 5
     ip_rl_per_hour: int = 30
 
+    # Per-IP rate limit for group create/join. Counted in its own bucket so that group
+    # spam cannot eat the LLM quota above. Also caps share_token guessing on /join.
+    group_rl_per_minute: int = 3
+    group_rl_per_hour: int = 10
+
+    # Send Strict-Transport-Security. Off by default: local development is plain http
+    # and an HSTS header there pins the browser to https for a year.
+    hsts_enabled: bool = False
+
     # Max accepted request body size (bytes); larger requests are rejected with 413.
     max_body_bytes: int = 262144  # 256 KiB
 

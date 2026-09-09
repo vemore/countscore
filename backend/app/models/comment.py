@@ -2,14 +2,14 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import Column, DateTime, ForeignKey, Index
 from sqlmodel import Field, SQLModel
 
 
 def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class Comment(SQLModel, table=True):
@@ -40,7 +40,8 @@ class Comment(SQLModel, table=True):
     model: str = Field(max_length=64)
     tokens_in: int = Field(default=0)
     tokens_out: int = Field(default=0)
-    cost_cents: int = Field(default=0)  # stored as int (cents * 100 = "milli-cents" if we want more precision)
+    # Stored as an int; cents * 100 would give "milli-cents" if we ever need more precision.
+    cost_cents: int = Field(default=0)
 
     created_at: datetime = Field(
         default_factory=_utcnow,

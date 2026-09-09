@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,8 +31,8 @@ class BudgetDecision:
 
 def _next_month_start(now: datetime) -> datetime:
     if now.month == 12:
-        return datetime(now.year + 1, 1, 1, tzinfo=timezone.utc)
-    return datetime(now.year, now.month + 1, 1, tzinfo=timezone.utc)
+        return datetime(now.year + 1, 1, 1, tzinfo=UTC)
+    return datetime(now.year, now.month + 1, 1, tzinfo=UTC)
 
 
 async def check_budget(session: AsyncSession, group_id: uuid.UUID) -> BudgetDecision:
@@ -41,7 +41,7 @@ async def check_budget(session: AsyncSession, group_id: uuid.UUID) -> BudgetDeci
     if group is None:
         return BudgetDecision(allowed=False)
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     if group.budget_resets_at <= now:
         group.current_month_used_cents = 0
         group.budget_resets_at = _next_month_start(now)

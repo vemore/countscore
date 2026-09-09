@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import JSON, Column, DateTime, ForeignKey, Index
@@ -14,7 +14,7 @@ _JSON_TYPE = JSON().with_variant(JSONB(), "postgresql")
 
 
 def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class ChangeLog(SQLModel, table=True):
@@ -35,7 +35,9 @@ class ChangeLog(SQLModel, table=True):
     entity_type: str = Field(max_length=32)
     entity_uuid: uuid.UUID
     op: str = Field(max_length=8)  # 'upsert' | 'delete'
-    payload: dict[str, Any] = Field(default_factory=dict, sa_column=Column(_JSON_TYPE, nullable=False))
+    payload: dict[str, Any] = Field(
+        default_factory=dict, sa_column=Column(_JSON_TYPE, nullable=False)
+    )
     client_lamport: int
     server_seq: int = Field(index=True)
     applied_at: datetime = Field(

@@ -14,6 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import anthropic
+from anthropic.types import TextBlock, TextBlockParam
 
 from app.config import get_settings
 
@@ -58,7 +59,7 @@ class AnthropicClient:
 
     async def generate_comment(
         self,
-        system_blocks: list[dict],
+        system_blocks: list[TextBlockParam],
         user_content: str,
         max_tokens: int = 400,
     ) -> CommentResult:
@@ -79,10 +80,11 @@ class AnthropicClient:
             messages=[{"role": "user", "content": user_content}],
         )
 
-        # Extract text from the first text block
+        # Extract text from the first text block. A response can also carry
+        # thinking or tool blocks, which have no .text at all.
         content = ""
         for block in message.content:
-            if getattr(block, "type", None) == "text":
+            if isinstance(block, TextBlock):
                 content = block.text
                 break
 
