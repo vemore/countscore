@@ -108,6 +108,9 @@ coverage/
 *.sqlite
 *.sqlite3
 
+# Claude Code local settings (permissions); .claude/settings.json is shared on purpose
+.claude/settings.local.json
+
 # Environment files
 .env
 .env.*

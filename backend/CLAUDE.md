@@ -43,8 +43,8 @@ alembic revision --autogenerate -m "add x"
 
 ## Rules
 
-1. **Never commit `.env`.** `.env.example` is the template and must stay in sync with
-   `app/config.py`.
+1. **`.env.example` is the template and must stay in sync with `app/config.py`.** (A hook
+   refuses a commit that stages `.env` itself.)
 2. **Production runs exactly one uvicorn worker.** `ip_rate_limiter.py` and
    `ws_ticket.py` keep state in process memory: a second worker silently doubles the
    effective rate limit and drops WebSocket tickets issued by its sibling. Do not raise
@@ -63,8 +63,10 @@ alembic revision --autogenerate -m "add x"
 - **SQLModel query expressions need `col()` to type-check.** `Model.field == x` is typed
   `bool` by mypy, because SQLModel annotates the class attribute with its Python type
   rather than `Column`. Write `col(Model.field) == x` in `where`/`join`/`order_by`.
-- **`ruff format` has never been run on this codebase** and would rewrite ~43 files. Do
-  not run it as a side effect of another change; it deserves its own `chore:` commit.
+- **`ruff format` has never been run on this codebase** and would rewrite 43 of 50 files. A
+  hook refuses it, because running it as a side effect of another change buries that diff;
+  closing it is its own `chore:` commit, open in `TODO.md`. `ruff check --fix` also rewrites
+  files and is **not** refused — the same rule applies to it by hand.
 - Tests run on in-memory SQLite while production is Postgres. JSONB and `LISTEN/NOTIFY`
   paths are only covered by the `integration`-marked tests.
 - Ruff: line length 100, `select = E,F,I,B,UP,N,SIM,RUF`, `ignore = B008,N805`.
