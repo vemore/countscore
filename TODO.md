@@ -3,33 +3,38 @@
 Open work only. A finished item moves to `DONE.md` — see the workflow section of
 `CLAUDE.md`.
 
-## `privacy_policy.md` and `PLAY_STORE_DATA_SAFETY.md` deny a data flow that exists
+## Release builds declare no `INTERNET` permission, so the analysis cannot work
 
-**Status:** open — noted 2026-09-09, while refreshing `README.md`.
+**Status:** open — noted 2026-09-09, while checking permissions for the data safety guide.
 
-Both compliance documents state that CountScore transmits nothing and uses no third-party
-service. That stopped being true when the ZapZap analysis moved server-side: requesting one
-posts the game's data — game type, player names, round scores and per-player history — from
-`lib/screens/game_analysis_screen.dart` to the backend, which forwards it to an LLM provider
-(Bedrock / Gemini / Mistral).
+`android/app/src/main/AndroidManifest.xml` declares **no permissions at all**. `INTERNET`
+appears only in `android/app/src/debug/AndroidManifest.xml` and the profile manifest, where
+Flutter's template puts it for hot reload. Confirmed against a merged release manifest built
+today: `build/app/intermediates/merged_manifests/release/processReleaseManifest/AndroidManifest.xml`
+contains one `uses-permission`, the generated `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, and
+no `INTERNET`.
 
-The offending claims:
+So **the ZapZap analysis cannot work in a signed release build** — the HTTP POST in
+`lib/screens/game_analysis_screen.dart` will fail with a `SocketException`. It works in debug
+and profile, which is why it has not been noticed: the e2e device run described in
+[[Testing]] drives a debug build.
 
-- `privacy_policy.md:88` — "does not integrate with any third-party services for data
-  collection, analytics, or advertising" — and the `:235` summary line "No third-party
-  services".
-- `PLAY_STORE_DATA_SAFETY.md:15` — "No data is transmitted to external servers, and no
-  third-party services are used" — plus `:55` and `:308`.
+The fix is one line in the main manifest:
 
-`README.md` was corrected on 2026-09-09; these two were left alone deliberately, because a
-Play Store data safety declaration is a legal statement and rewriting it needs a decision
-about what is actually declared (data type, purpose, whether it is "collected" or only
-"transmitted", retention at the provider), not a copy-edit.
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
 
-**This blocks the next store submission that ships the analysis feature.** It is the same
-class of problem `.llmwiki/Release.md` already records for `PUBLISHING.md`, which likewise
-predates the backend. See [[LlmProviders]] for exactly what the payload contains and
-[[Security]] for what the declarations would have to disclose.
+It is filed rather than applied because it is a shipping-behaviour change that belongs with a
+release, needs verification against the merged manifest (not the source one), and must land in
+the same release as the updated Play Store data safety declaration — see
+`PLAY_STORE_DATA_SAFETY.md`, which documents it as a prerequisite. Declaring transmission on
+the form while the binary cannot transmit, or shipping the permission while the form still
+says nothing is collected, are both worse than either change alone.
+
+Worth checking on the same pass whether the release build should reach the network at all
+before the sync client exists, and whether the e2e suite should run against a release build
+so this class of bug is caught mechanically.
 
 ## The Flutter sync client does not exist
 
@@ -175,19 +180,6 @@ Flutter copies everything under `web/` into the build output, so `build/web/CLAU
 ships to whoever serves the PWA — internal instructions on a public URL. Harmless today,
 but it should either move out of `web/` or be stripped by whatever deploy step the PWA
 eventually gets (see "The Flutter web app has no deployment path" below).
-
-## `README.md` advertises a Flutter version four majors out of date
-
-**Status:** open — noted 2026-09-09, spotted while adding the CI badge.
-
-It claims `Flutter SDK ^3.9.2` in three places (the badge, the Tech Stack section and the
-prerequisites). The project runs 3.47.2 / Dart 3.13.2 — see the toolchain table in
-[[MobileApp]]. The Platform badge also reads `Android | iOS`, while everything documented
-in [[Release]] and `store_listing/` targets the Play Store and the web PWA; whether iOS is
-still an intended target is worth settling in the same pass.
-
-Worth a pass over the whole Tech Stack list rather than a one-line badge fix: the
-dependency versions quoted there predate the Flutter 3.47 upgrade too.
 
 ## `shared_preferences_android` still applies the Kotlin Gradle Plugin
 
