@@ -42,7 +42,7 @@ first step of the `app` job in `.github/workflows/ci.yml`.
 | Committing on `main`, on a detached HEAD, or on a stale branch | `%(upstream:track)` = `[gone]`, then `git cherry origin/main HEAD` |
 | Committing with red gates | `flutter analyze`, `flutter test` if app paths are involved; `ruff`/`mypy`/`pytest -m 'not integration'` if `backend/` is |
 | Committing divergent ARB files, or a stale `app_localizations*.dart` | key sets against the template from `l10n.yaml`, then `flutter gen-l10n` |
-| Ending a turn with commits that no pull request covers, or whose pull request has a failing check | `gh pr list --head <branch>`, then `gh pr checks` |
+| Ending a turn with commits that no pull request covers, whose pull request was closed unmerged, or whose checks are failing | `gh pr list --head <branch> --state all`, then `gh pr checks` |
 | `gh pr create --base <anything but main>` | the parsed `--base` argument; unlocked per repository by `countscore.allowStackedPr` |
 
 The path set that decides which gates run is a union, not `git diff --cached` alone:
@@ -131,6 +131,15 @@ a superset costs seconds and never blocks wrongly.
   session-start check is the net for the same failure arriving another way; it asks GitHub
   to compare rather than git, because the merge commit of a deleted branch may not exist
   in the clone at all.
+- **Why the pull-request check asks for every state (2026-09-09).** The first version
+  asked only for *open* pull requests. The moment one was merged, the branch still carried
+  commits ahead of a local `origin/main` that had not been fetched since, and no open pull
+  request answered for them — so the hook blocked the end of every turn, on work that was
+  in fact delivered. It now reads the state: merged is silence, closed-unmerged is a
+  refusal of its own, open falls through to the checks. The states are exercised offline
+  through a stubbed `gh` in `scripts/hooks_selftest.sh`, which is what the first version
+  lacked: its only GitHub-dependent cases were skipped wherever `gh` was unauthenticated,
+  so the one answer it had never seen was the one that broke it.
 - **Why the self-test is in CI.** The interesting cases are the ones that look like a
   violation and are not. Without a table exercised on every push, the first rule change
   breaks a guard silently — and a broken guard is indistinguishable from a passing one.
