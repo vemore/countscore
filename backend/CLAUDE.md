@@ -9,7 +9,7 @@ Background lives in the wiki at the repo root — load these before non-trivial 
 
 - `.llmwiki/Backend.md` — stack, module layout, settings, device-token auth
 - `.llmwiki/Api.md` — every endpoint, its auth requirement, its failure modes
-- `.llmwiki/Sync.md` — delta-log, per-field LWW, WebSocket signalling
+- `.llmwiki/Sync.md` — delta-log, row-level LWW, WebSocket signalling
 - `.llmwiki/LlmProviders.md` — the two LLM paths, ZapZap prompt, rate limits
 - `.llmwiki/Deployment.md` — NAS topology and the full environment-variable table
 - `.llmwiki/Security.md` — defended surfaces and the open debt

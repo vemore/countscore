@@ -8,7 +8,7 @@ Open work only. A finished item moves to `DONE.md` — see the workflow section 
 **Status:** open — noted 2026-09-09, during a branch/commit review.
 
 Milestones 5 to 7 are marked Done in `.llmwiki/Architecture.md`, and on the server they
-are: groups, delta-log sync with per-field LWW, and `/sync/stream` over Postgres
+are: groups, delta-log sync with row-level LWW, and `/sync/stream` over Postgres
 LISTEN/NOTIFY are implemented and tested. **Nothing in the app consumes any of it.**
 
 `lib/services/sync_service.dart` and `lib/services/backend_client.dart` are referenced by
@@ -21,8 +21,88 @@ still purely local. This is the largest gap between what the wiki says the proje
 what it does, and it is the thing that would make group sharing real.
 
 It needs its own design pass, not a quick patch: an outbox on the Drift side, conflict
-handling that matches the server's LWW rules, device-token storage, and a reconnect policy
-for the WebSocket. See [[Sync]] and [[Architecture]].
+handling that matches the server's LWW rules — **row-level**, not per field, whatever
+`.llmwiki/Sync.md` used to say (`backend/app/routes/sync.py:184-199`) — device-token
+storage, and a reconnect policy for the WebSocket. See [[Sync]] and [[Architecture]].
+
+### What the design pass must settle first
+
+Reviewed 2026-09-09 against both sides of the wire. The four items below are not
+implementation detail — each one can invalidate code written before it is answered, and
+none of them was visible in the sketch above. Together they are most of the work.
+
+**1. Local `int` primary keys against server `UUID` primary keys.** The local schema keys
+every table on `integer().autoIncrement()` and carries its foreign keys as *local* ints —
+`rounds.gameId`, `scores.playerId`/`roundId`, `games.gameTypeId`, `game_players.gameId`/
+`player_id` (`lib/services/drift/tables.dart`). The server keys everything on UUID, foreign
+keys included (`backend/app/models/game.py`). So a delta cannot be built by serialising a
+local row, and cannot be applied by writing a pulled payload: it needs a bidirectional
+id↔uuid resolution layer over six entity types, in both directions. It also needs an answer
+for **deltas that arrive before their parent** — a `score` whose `round` is not local yet —
+which means a quarantine queue and a replay, not a straight apply loop. This is the largest
+single piece and it was missing from the estimate; `.llmwiki/Sync.md` still says "roughly
+500 LOC of client".
+
+**2. Local fields that have no server column would vanish silently.** `_coerce_payload`
+drops every key that is not a mapped column (`backend/app/routes/sync.py:77`, `if key not in
+columns: continue`) — no error, no rejected status. Today that means:
+
+- `rounds.comment` exists locally and **not** in the server `Round` model. Round comments
+  would not survive a round trip.
+- `game_analyses` is not in `_ENTITY_MAP` at all (the six types are `player`, `game_type`,
+  `game`, `game_player`, `round`, `score`), so ZapZap analyses never sync.
+- `game_players` carries `name` and `uuid` locally; the server row has a composite PK, no
+  `uuid` and no `deleted_at`, so its delete is a hard delete with no tombstone.
+- `games` keeps `createdAt`/`lastModified` as ISO text locally against `started_at`/
+  `ended_at` on the server — a modelling difference, not a mapping.
+
+Decide per field: add the column server-side, or accept it as device-local and say so. A
+"shared game" that is silently only partly shared is worse than one that refuses to share.
+
+**3. Merging pre-existing local data at join time is undefined, and the common case
+fails.** The server holds `uq_players_group_name` on `(group_id, name_normalized)`
+(`backend/app/models/player.py:44`). Two phones that each already have a local "Alice" —
+different UUIDs, same name — join the same group; the second push hits `IntegrityError` and
+comes back `rejected` with "integrity constraint violation". Reading the status is not the
+hard part: the question is what the app does next. Adopting the server's UUID rewrites the
+player's identity, and **player stats have been keyed by player UUID since v9**
+([[SchemaV9]]), so that reindexes the whole statistics history. Options worth costing —
+dedupe by normalised name at join, keep a local↔server player mapping table, or (cheapest)
+do not sync the global player catalogue at all in v1 and create group players fresh, which
+sidesteps the constraint and leaves stats identity untouched.
+
+**4. The repositories are group-blind by construction.** `group_id IS NULL` is hardcoded in
+about a dozen player queries in `lib/repositories/drift/drift_repositories.dart` (lines 288,
+320, 397, 406, 420, 425, 449, 478, 482, 511, 646). A player with a non-NULL `group_id` is
+invisible to the player list, the picker and the stats. So this is not an additive feature:
+it reopens the repository layer that was just ported to Drift and **has not shipped yet**
+(production still runs sqflite v9 — see [[DataLayer]]). Sequencing matters; shipping the
+engine swap and the first network write path in one release doubles the blast radius on a
+project with no CI and no backend alerting.
+
+Two cheap prerequisites fall out of the above and can be done independently:
+
+- Extract a `BackendClient` from `lib/screens/game_analysis_screen.dart`. It is useful on
+  its own, and it removes a raw network call from a screen — which the `Code style` rule in
+  `CLAUDE.md` forbids.
+- Land CI before the client, not after (see the CI entry below).
+
+## The sync conflict branch has no test
+
+**Status:** open — noted 2026-09-09, while reviewing the sync-client entry.
+
+`merged_lww` appears nowhere under `backend/tests/`. `test_sync.py` covers push/pull,
+idempotence, the round-uniqueness rejection and the payload bounds, but never drives two
+devices writing the same entity, so the branch that decides who wins
+(`backend/app/routes/sync.py:184-199`) has never run in a test. `.llmwiki/Testing.md`
+asserted it was covered until this was checked; the page is corrected.
+
+Cheap to close and worth closing before any client exists, because the client's outbox is
+written against whatever this branch actually does: push the same `entity_uuid` from two
+device tokens with competing `(client_lamport, origin_device_id)` pairs, assert the loser
+comes back `merged_lww` and that the stored row is the winner's — including that a field
+only the loser touched is **not** merged in. That last assertion is the one that pins the
+row-level behaviour down, and it is exactly the fact the wiki got wrong. See [[Sync]].
 
 ## There is no CI
 
