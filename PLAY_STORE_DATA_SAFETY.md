@@ -1,41 +1,94 @@
-# Google Play Store - Data Safety Form Guide
+# Google Play Store — Data Safety Form Guide
 
 Complete guide for filling out the Data Safety section in Google Play Console for CountScore.
 
-**Last Updated**: November 9, 2025
-**App**: CountScore v1.0.0
+**Last Updated**: September 9, 2026
+**Applies to**: CountScore v1.1.0 and later
 **Privacy Policy**: See `privacy_policy.md`
+
+> **This guide changed materially in September 2026.** Versions 1.0.x contained no networking
+> code, and the declaration for them was correctly "no data collected". **Version 1.1.0 adds
+> the ZapZap analysis**, which transmits game data off the device. The form must be updated
+> **before** 1.1.0 is submitted — a declaration that does not match app behaviour is a Play
+> policy violation and a common cause of suspension.
 
 ---
 
 ## Quick Summary
 
-**CountScore collects NO user data.**
+**CountScore collects and shares a small amount of data, only when the user asks for an
+analysis.**
 
-All data is stored locally on the user's device. No data is transmitted to external servers, and no third-party services are used.
+Everything the app does normally — creating games, entering scores, viewing statistics — is
+local to the device. One optional, user-initiated feature (the **ZapZap analysis**) sends that
+game's player names, scores and round comments to the developer's backend, which forwards them
+to an LLM provider to generate the analysis text. Nothing is stored on the backend.
 
 ---
 
 ## Table of Contents
 
-1. [Data Safety Form Overview](#data-safety-form-overview)
-2. [Question-by-Question Guide](#question-by-question-guide)
-3. [App Permissions Justification](#app-permissions-justification)
-4. [Testing Your Answers](#testing-your-answers)
+1. [What Changed and Why](#what-changed-and-why)
+2. [Prerequisite Before Submitting](#prerequisite-before-submitting)
+3. [Question-by-Question Guide](#question-by-question-guide)
+4. [Data Types to Declare](#data-types-to-declare)
+5. [App Permissions Justification](#app-permissions-justification)
+6. [Completion Checklist](#completion-checklist)
+7. [Common Questions & Answers](#common-questions--answers)
+8. [Quick Reference Card](#quick-reference-card)
 
 ---
 
-## Data Safety Form Overview
+## What Changed and Why
 
-**Where to Find**: Google Play Console > App content > Data safety
+The ZapZap analysis feature (`lib/screens/game_analysis_screen.dart`) posts a JSON payload to
+`POST /comments/zapzap-analysis` on the CountScore backend. The payload contains:
 
-**What Google Requires**:
-- Declaration of all data collection practices
-- Transparency about how data is used
-- Information about data sharing
-- Security practices
+| Field | Content |
+|---|---|
+| `game` | Name, scoring rule, creation date |
+| `game_type` | e.g. "ZapZap" |
+| `players[].name` | **Player names entered by the user** |
+| `rounds[].comment` | **Free text the user typed on a round** |
+| `rounds[].scores[]` | Score values |
+| `history_by_player_name` | Past results for each player, from up to 10 of their other games |
 
-**CountScore's Status**: ✅ **No data collection**
+The backend is stateless for this endpoint — it persists nothing — but it forwards the payload
+to an LLM provider (**AWS Bedrock**, **Google Gemini**, or **Mistral AI**, depending on the
+`LLM_PROVIDER` server setting) whose retention is governed by that provider's own terms.
+
+**Why we declare rather than claim an exemption.** Google's "ephemeral processing" exemption
+allows answering "not collected" when data is used only in memory and kept no longer than
+needed to serve the request. Our own backend meets that bar; the LLM provider is not under our
+control, and at least one supported configuration (free-tier Gemini) may use submitted prompts
+for product improvement. The exemption cannot be claimed for every configuration the server
+supports, so the declaration is made on the conservative reading. Declaring more than strictly
+required is permitted; declaring less is what gets apps removed.
+
+---
+
+## Prerequisite Before Submitting
+
+⚠️ **The release build currently declares no `INTERNET` permission.**
+`android/app/src/main/AndroidManifest.xml` requests no permissions at all; `INTERNET` is
+present only in `android/app/src/debug/AndroidManifest.xml` and the profile manifest, which
+Flutter adds for hot reload. A signed release build therefore **cannot make the analysis
+request** — it will fail at runtime.
+
+Before shipping 1.1.0, add to `android/app/src/main/AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+Then verify it survived the merge:
+
+```bash
+flutter build apk --release --no-tree-shake-icons
+grep uses-permission build/app/intermediates/merged_manifests/release/*/AndroidManifest.xml
+```
+
+Both the permission and this declaration must land in the same release. See `TODO.md`.
 
 ---
 
@@ -45,301 +98,258 @@ All data is stored locally on the user's device. No data is transmitted to exter
 
 #### Q1: Does your app collect or share any of the required user data types?
 
-**Answer**: ❌ **No**
+**Answer**: ✅ **Yes**
 
-**Explanation**: CountScore stores all data locally on the user's device. No data is collected, transmitted, or shared with any external parties.
-
-**What this means**:
-- All game scores, player names, and settings remain on the device
-- No analytics or tracking
-- No third-party services
-- No server communication
+**Explanation**: When the user explicitly requests a ZapZap analysis, the app transmits that
+game's player names, scores and round comments to the developer's backend and on to an LLM
+provider. All other app data stays on the device.
 
 ---
-
-### Section 2: Data Types (Skip if answered "No" above)
-
-**Since you answered "No" to Q1, you can skip all data type questions.**
-
-The form will show: ✅ "This app doesn't collect any of the required user data types"
-
----
-
-### Section 3: Security Practices
-
-These questions appear regardless of data collection:
 
 #### Q2: Is all of the user data collected by your app encrypted in transit?
 
-**Answer**: **Not Applicable (N/A)**
+**Answer**: ✅ **Yes**
 
-**Explanation**: Since CountScore does not transmit any data, encryption in transit is not applicable.
-
-**Alternative wording if required**: "No data transmission occurs"
+**Explanation**: The request is sent over HTTPS/TLS to
+`https://countscore.ombivince.synology.me`, terminated by Synology Web Station. There is no
+cleartext transmission path.
 
 ---
 
 #### Q3: Do you provide a way for users to request that their data is deleted?
 
-**Answer**: **Yes**
+**Answer**: ✅ **Yes**
 
-**Explanation**: Users can delete their data through:
+**Explanation**:
 
-1. **In-app deletion**: Delete individual games, scores, or players through the app interface
-2. **Clear app data**: Android Settings > Apps > CountScore > Storage > Clear Data
-3. **Uninstall**: Uninstalling the app removes all data
-
-**Note**: Even though data is local only, Google requires this answer for user control.
+1. **In-app deletion** — delete individual games, rounds, players or custom game types;
+   deleting a game also deletes its cached analysis.
+2. **Clear app data** — Android Settings → Apps → CountScore → Storage → Clear Data.
+3. **Uninstall** — removes all app data permanently.
+4. **Server-side** — nothing to delete: the analysis endpoint stores no game data.
 
 ---
 
-### Section 4: Privacy Policy
+### Section 2: Privacy Policy
 
 #### Q4: Privacy policy URL
 
 **Answer**: `[YOUR_PRIVACY_POLICY_URL]`
 
-**Hosting Options**:
+The published policy must be the **current** `privacy_policy.md` (v2.0, September 9, 2026),
+which describes the analysis feature. Publishing the older v1.0 text alongside a "Yes"
+declaration is exactly the mismatch reviewers look for.
 
-1. **GitHub Pages** (Recommended - Free):
-   - URL format: `https://yourusername.github.io/countscore/privacy-policy.html`
-   - Setup: Create `docs/privacy-policy.html` from `privacy_policy.md`, enable GitHub Pages
+**Hosting options**:
 
-2. **GitHub Raw** (Simple but not recommended for production):
-   - URL format: `https://raw.githubusercontent.com/yourusername/countscore/main/privacy_policy.md`
-   - Note: Not ideal for user-facing content
+1. **GitHub Pages** (recommended, free) — `https://vemore.github.io/countscore/privacy-policy.html`;
+   create `docs/privacy-policy.html` from `privacy_policy.md` and enable Pages.
+2. **Personal website** — must be permanent and publicly accessible.
 
-3. **Personal Website**:
-   - Host `privacy_policy.md` on your own website
-   - Must be permanent and publicly accessible
-
-**Converting privacy_policy.md to HTML**:
 ```bash
-# Using pandoc (if installed)
 pandoc privacy_policy.md -o privacy-policy.html --standalone
-
-# Or use online Markdown to HTML converters
 ```
 
-**CRITICAL**: Privacy policy URL must be:
-- ✅ Publicly accessible (no login required)
-- ✅ Permanent (won't change or be removed)
-- ✅ HTTPS (secure connection)
+**CRITICAL**: the URL must be publicly accessible (no login), permanent, and HTTPS.
+
+---
+
+## Data Types to Declare
+
+Declare **two** data types. For both, the answers to the sub-questions are the same:
+
+| Sub-question | Answer | Why |
+|---|---|---|
+| Collected? | **Yes** | It is transmitted off the device |
+| Shared? | **Yes** | Forwarded to a third-party LLM provider |
+| Processed ephemerally? | **No** | Not claimed — see [What Changed and Why](#what-changed-and-why) |
+| Required or optional? | **Optional** | The app is fully usable without ever generating an analysis |
+| Purpose | **App functionality** | Only to produce the requested analysis text |
+| Linked to the user's identity? | **No** | No accounts, no device or advertising identifiers, nothing to link to |
+| Used for tracking? | **No** | No cross-app or cross-site tracking of any kind |
+
+### 1. Personal info → Name
+
+Player names the user creates. These are user-chosen labels — often first names or nicknames —
+but a user may enter a real name, so this is declared as **Name** rather than treated as
+anonymous.
+
+### 2. App activity → Other user-generated content
+
+Game names, round comments (free text the user types), score values, and per-player history
+from previous games.
+
+### Do NOT declare
+
+- **Location, Financial info, Health, Contacts, Calendar, Photos, Audio, Files** — never
+  accessed.
+- **Device or other IDs** — none collected. The backend inspects the requesting IP address in
+  memory for rate limiting (5/min, 30/h) and never stores it; transient anti-abuse use of an
+  IP address is not a declarable data type.
+- **App info and performance** — no crash reporting, no diagnostics, no analytics SDK.
 
 ---
 
 ## App Permissions Justification
 
-### Permissions CountScore Uses
+### 1. INTERNET
 
-CountScore requests the following Android permissions. Here's how to justify them:
-
-#### 1. WAKE_LOCK
-
-**Declared in**: Automatically by `wakelock_plus` plugin
-
-**Purpose**: Keeps device screen awake during active games
+**Status**: must be added to the main manifest before 1.1.0 — see
+[Prerequisite](#prerequisite-before-submitting).
 
 **Justification**:
-"The WAKE_LOCK permission is used to prevent the screen from turning off while users are actively tracking game scores. This ensures uninterrupted gameplay without requiring users to constantly unlock their device. The wake lock is only active during games and is released when the game ends or the app is closed."
+"The INTERNET permission is used for a single, optional, user-initiated feature: generating a
+written analysis of a completed game. The app makes no other network requests. No background
+networking, telemetry, analytics or advertising traffic occurs."
 
-**Data Collection**: None - this permission does not access or collect any user data
+### 2. WAKE_LOCK
 
----
+**Status**: ❌ **Not requested.** Earlier versions of this guide stated that CountScore
+declares `WAKE_LOCK`; it does not. The `wakelock_plus` plugin keeps the screen on using the
+`FLAG_KEEP_SCREEN_ON` window flag, which requires no permission. Verified against the merged
+release manifest, which contains no `WAKE_LOCK` entry.
 
-#### 2. INTERNET (if declared)
+### 3. Storage permissions
 
-**Status**: Check `android/app/src/main/AndroidManifest.xml`
+**Status**: ❌ **Not requested.** The export/import feature uses the system file picker
+(Storage Access Framework), which needs no storage permission.
 
-**If present**: Usually added automatically by Flutter
-
-**Justification** (if needed):
-"The INTERNET permission may be declared by the Flutter framework but is not actively used by CountScore. No network communication occurs, and all data remains local to the device."
-
-**Data Collection**: None - no network requests are made
-
----
-
-#### 3. READ_EXTERNAL_STORAGE / WRITE_EXTERNAL_STORAGE (if implemented)
-
-**Status**: Currently not used (as of v1.0.0)
-
-**If you add import/export features**:
-
-**Purpose**: Allow users to export/import game data
-
-**Justification**:
-"Storage permissions are used only when users explicitly choose to export their game data to a file or import previously exported data. No automatic access to device storage occurs. These features are entirely user-initiated and optional."
-
-**Data Collection**: None - files remain on user's device
-
----
-
-### Checking Your Permissions
-
-Run this command to see all permissions your app requests:
+### Checking your permissions
 
 ```bash
-# View AndroidManifest.xml permissions
-grep -A 1 "uses-permission" android/app/src/main/AndroidManifest.xml
+# Source manifests
+grep -rn "uses-permission" android/app/src/main/AndroidManifest.xml
 
-# Or check the merged manifest after build
-./gradlew :app:processDebugManifest
-cat android/app/build/intermediates/merged_manifests/debug/AndroidManifest.xml | grep uses-permission
+# Authoritative: the merged manifest after a release build
+flutter build apk --release --no-tree-shake-icons
+grep uses-permission build/app/intermediates/merged_manifests/release/*/AndroidManifest.xml
 ```
 
----
-
-## Data Safety Form Completion Checklist
-
-Before submitting, verify:
-
-- [ ] **Q1**: Answered "No" for data collection
-- [ ] **Q3**: Answered "Yes" for data deletion option
-- [ ] **Privacy Policy**: URL entered and publicly accessible
-- [ ] **Privacy Policy**: URL uses HTTPS
-- [ ] **Privacy Policy**: Content matches your actual practices
-- [ ] **Permissions**: All permissions justified (if asked)
-- [ ] **Review**: All sections marked as complete
-- [ ] **Saved**: Changes saved in Play Console
+The merged manifest is the one that ships — always verify there, not in the source manifest.
 
 ---
 
-## Testing Your Answers
+## Completion Checklist
 
-### Before Submission
+Before submitting:
 
-1. **Privacy Policy Accessibility**:
-   ```bash
-   # Test your privacy policy URL
-   curl -I [YOUR_PRIVACY_POLICY_URL]
-   # Should return: HTTP/2 200
-   ```
-
-2. **Policy Content Accuracy**:
-   - [ ] Policy reflects current app version
-   - [ ] All permissions mentioned
-   - [ ] Contact email is correct
-   - [ ] No false claims about data practices
-
-3. **Form Completeness**:
-   - [ ] All required sections completed
-   - [ ] No warnings or errors in Play Console
-   - [ ] Data Safety preview looks correct
+- [ ] `INTERNET` added to the main manifest and confirmed in the merged release manifest
+- [ ] **Q1**: answered "Yes" for data collection/sharing
+- [ ] **Data types**: Personal info → Name, and App activity → Other user-generated content
+- [ ] Both marked **Optional**, purpose **App functionality**, **not** linked to identity,
+      **not** used for tracking
+- [ ] **Q2**: answered "Yes" for encryption in transit
+- [ ] **Q3**: answered "Yes" for data deletion
+- [ ] **Privacy Policy**: URL live, HTTPS, publicly accessible, and serving the **v2.0** text
+- [ ] Policy content matches the declaration — no leftover "no data is transmitted" claims
+- [ ] Data Safety preview reviewed in Play Console
+- [ ] Changes saved
 
 ---
 
 ## Common Questions & Answers
 
-### Q: "Do I need to declare SQLite database usage?"
+### Q: "Do I need to declare the SQLite database?"
 
-**A**: No. SQLite is local storage on the device. Google's Data Safety form is concerned with data that's *collected* (transmitted to external parties), not local storage.
-
-### Q: "What about SharedPreferences?"
-
-**A**: Same as SQLite - it's local storage, not data collection.
+**A**: No. Local storage is not "collection" in Google's definition — only data that leaves
+the device counts. The SQLite database itself is never uploaded.
 
 ### Q: "Should I mention player names users enter?"
 
-**A**: No. User-entered data that stays on the device is not "collected data" in Google's definition.
+**A**: **Yes, as of v1.1.0.** They stay local while the user only tracks scores, but they are
+transmitted as part of an analysis request, and transmission is what makes them declarable.
+(This answer was "No" in earlier versions of this guide, correctly, for 1.0.x.)
+
+### Q: "The backend stores nothing. Isn't that 'ephemeral processing'?"
+
+**A**: For our own server, yes. But the payload is forwarded to a third-party LLM provider
+whose retention we do not control, and free-tier Gemini may use prompts for product
+improvement. We therefore do not claim the exemption. If production is ever pinned to a
+provider with a contractual no-retention, no-training guarantee, this is worth revisiting —
+with the reasoning recorded, not silently.
+
+### Q: "Is it 'shared' if the LLM provider is just our processor?"
+
+**A**: Arguably not — Google exempts transfers to a service provider acting on your behalf.
+We answer "Yes" anyway, because the answer is defensible either way and over-declaring carries
+no penalty while under-declaring does.
+
+### Q: "What if the user never uses the analysis?"
+
+**A**: Then nothing is transmitted. That is why both data types are declared **Optional**. The
+declaration describes what the app *can* do, not what every user does.
+
+### Q: "What about the group sharing and sync endpoints in the backend?"
+
+**A**: Not declarable yet — the app contains no client code for them, so no user data reaches
+them. When a sync client ships, this guide and the privacy policy must be updated **before**
+that release.
 
 ### Q: "What if I add analytics later?"
 
-**A**: You must update the Data Safety form and privacy policy before the update is published.
-
-### Q: "Can I skip the data deletion question?"
-
-**A**: No. Google requires you to provide a data deletion method even for local-only apps.
-
-### Q: "What if Google asks for more details?"
-
-**A**: Respond through Play Console messages with:
-- Reference to your privacy policy
-- Explanation that all data is local only
-- Screenshots showing no network activity (if requested)
+**A**: Update the privacy policy and the Data Safety form before the update is published.
 
 ---
 
-## What If Google Rejects Your Form?
+## What If Google Questions the Declaration?
 
-**Common Rejection Reasons**:
+**Response template**:
 
-1. **Privacy policy not accessible**
-   - Fix: Ensure URL works in incognito/private browsing
-   - Verify HTTPS connection
-
-2. **Privacy policy doesn't match declaration**
-   - Fix: Ensure policy mentions all permissions
-   - Update policy to match app functionality
-
-3. **Unclear data handling**
-   - Fix: Provide additional clarification through Play Console messages
-   - Offer to provide app walkthrough or screenshots
-
-**Response Template**:
 ```
 Hello Google Play Review Team,
 
-Thank you for reviewing CountScore. I'd like to clarify our data handling:
+Thank you for reviewing CountScore. Our data handling is as follows:
 
-1. CountScore stores all data locally on the user's device using SQLite database and SharedPreferences
-2. No data is transmitted to external servers
-3. No third-party analytics or advertising services are integrated
-4. The app's source code is open source and can be audited at: [GITHUB_URL]
+1. All game data (game types, players, scores, preferences) is stored locally on the
+   device using SQLite and SharedPreferences.
+2. One optional, user-initiated feature ("ZapZap analysis") transmits a single game's
+   player names, scores and round comments over HTTPS to our backend, which forwards
+   them to a large language model provider to generate an analysis text. This occurs
+   only when the user explicitly taps the generate button.
+3. Our backend stores none of this data; it is stateless for this endpoint.
+4. We use no analytics, advertising or tracking SDKs, and collect no device identifiers.
+5. The app is open source and can be audited at:
+   https://github.com/vemore/countscore
+   The network request in question is in lib/screens/game_analysis_screen.dart.
 
-Our privacy policy at [PRIVACY_POLICY_URL] provides detailed information about our data practices.
-
-Please let me know if you need any additional information or clarification.
+Our privacy policy at [PRIVACY_POLICY_URL] describes this in detail.
 
 Best regards,
-[YOUR_NAME]
+vemore
 ```
 
 ---
 
 ## Data Safety Summary for Copy-Paste
 
-Use this summary when communicating with Google or users:
-
 ```
-CountScore is a local-only score tracking application that:
-- Stores all data locally on the user's device
-- Does not collect, transmit, or share any user data
-- Does not use analytics, advertising, or third-party services
+CountScore is a score-tracking application that:
+- Stores all game data locally on the user's device
+- Uses no analytics, advertising or tracking services
+- Collects no device identifiers and requires no account
 - Allows users to delete their data at any time
 - Is open-source software (MIT License)
 
-All game scores, player information, and app preferences are stored using Android's local storage (SQLite and SharedPreferences) and never leave the device.
+One optional feature, generated only at the user's explicit request, sends a single
+game's player names, scores and round comments over an encrypted connection to the
+developer's backend and on to a large language model provider, solely to produce a
+written analysis of that game. That data is not stored on the backend, is not linked
+to any identity, and is not used for tracking or advertising.
 ```
-
----
-
-## Review Timeline
-
-**Typical Timeline**:
-- Initial submission: Usually approved within minutes to hours
-- If questions arise: 1-3 business days for Google to respond
-- Resubmission after changes: 24-48 hours
-
-**Pro Tip**: Complete the Data Safety form accurately the first time to avoid delays.
 
 ---
 
 ## Updates and Maintenance
 
-**When to Update Data Safety Form**:
-- ✅ Before adding analytics
-- ✅ Before adding advertising
-- ✅ Before adding cloud sync features
-- ✅ Before adding social features
+**When to update the Data Safety form**:
+- ✅ Before shipping the sync/group client
+- ✅ Before adding analytics or advertising
+- ✅ Before changing the LLM provider in a way that changes retention
 - ✅ When adding new permissions
 - ✅ When changing data handling practices
 
-**Update Process**:
-1. Update privacy policy first
-2. Update Data Safety form in Play Console
-3. Submit app update with changes
-4. Both must be consistent
+**Update process**: update the privacy policy first, then the Data Safety form, then submit
+the app update. All three must be consistent.
 
 ---
 
@@ -353,24 +363,28 @@ All game scores, player information, and app preferences are stored using Androi
 
 ## Quick Reference Card
 
-Print or save this for easy reference:
-
 ```
-DATA SAFETY QUICK REFERENCE - CountScore
+DATA SAFETY QUICK REFERENCE — CountScore v1.1.0+
 
-Q: Collect or share data?          A: NO
-Q: Data encrypted in transit?      A: N/A (no transmission)
-Q: Data deletion available?        A: YES
-Privacy Policy URL:                 [YOUR_URL]
+Q: Collect or share data?        A: YES (optional, user-initiated analysis only)
+Q: Data encrypted in transit?    A: YES (HTTPS/TLS)
+Q: Data deletion available?      A: YES
+Privacy Policy URL:              [YOUR_URL]  (must serve the v2.0 text)
 
-Permissions Used:
-- WAKE_LOCK: Keep screen awake during games (no data collection)
+Data types declared:
+- Personal info > Name .................. player names
+- App activity > Other user-generated ... game names, round comments, scores
+Both: collected YES, shared YES, optional, App functionality,
+      NOT linked to identity, NOT used for tracking.
 
-Summary: All data local only, no collection, no sharing.
+Permissions: INTERNET (must be added to the main manifest before release)
+             No WAKE_LOCK, no storage permissions.
+
+Summary: local-only by default; one optional feature transmits one game's data
+         to an LLM provider at the user's explicit request.
 ```
 
 ---
 
-**You're ready to complete the Data Safety form!** 🎉
-
-Follow this guide step-by-step in Google Play Console, and you should have no issues with approval.
+**Before submitting, re-read `privacy_policy.md` and confirm every statement in it still
+matches the code.** A declaration is only as good as the policy backing it.

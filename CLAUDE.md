@@ -88,6 +88,25 @@ Backend commands are in `backend/CLAUDE.md`.
 
 ## Git
 
-- Work on feature branches. Main branch is `main`.
+**Start every session on a fresh branch off the current `main`.** Before the first commit of
+a session — not after it — run:
+
+```bash
+git fetch --prune origin
+git switch -c <type>/<short-topic> origin/main
+```
+
+Do not carry on committing to whatever branch the working tree happened to be left on. That
+branch is usually the *previous* session's, and once its pull request is merged the remote
+rebases and deletes it: committing there stacks new work on top of commits that no longer
+exist upstream, and the branch has to be untangled before anything can be pushed. The
+starting branch being clean is not evidence that it is still live — check `git branch -r`.
+
+If you find you have already committed to a stale branch, recover it rather than rewriting
+history: `git cherry -v origin/main HEAD` marks commits already upstream with `-` and genuinely
+new ones with `+`; branch off `origin/main` and cherry-pick only the `+` ones.
+
+- Branch names: `<type>/<short-topic>`, using the commit-message types below.
 - Commit messages: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`.
 - Do not commit build artifacts or generated files.
+- Never force-push, and never rewrite a commit that is already on `origin/main`.

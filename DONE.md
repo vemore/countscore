@@ -6,6 +6,78 @@ readable after the fact.
 
 ---
 
+## `privacy_policy.md` and `PLAY_STORE_DATA_SAFETY.md` deny a data flow that exists
+
+**Status:** done (2026-09-09) — closed by the rewrite of both documents on
+`docs/privacy-disclosure`.
+
+Both compliance documents state that CountScore transmits nothing and uses no third-party
+service. That stopped being true when the ZapZap analysis moved server-side: requesting one
+posts the game's data — game type, player names, round scores and per-player history — from
+`lib/screens/game_analysis_screen.dart` to the backend, which forwards it to an LLM provider
+(Bedrock / Gemini / Mistral).
+
+The offending claims:
+
+- `privacy_policy.md:88` — "does not integrate with any third-party services for data
+  collection, analytics, or advertising" — and the `:235` summary line "No third-party
+  services".
+- `PLAY_STORE_DATA_SAFETY.md:15` — "No data is transmitted to external servers, and no
+  third-party services are used" — plus `:55` and `:308`.
+
+`README.md` was corrected on 2026-09-09; these two were left alone deliberately, because a
+Play Store data safety declaration is a legal statement and rewriting it needs a decision
+about what is actually declared (data type, purpose, whether it is "collected" or only
+"transmitted", retention at the provider), not a copy-edit.
+
+**This blocks the next store submission that ships the analysis feature.** It is the same
+class of problem `.llmwiki/Release.md` already records for `PUBLISHING.md`, which likewise
+predates the backend. See [[LlmProviders]] for exactly what the payload contains and
+[[Security]] for what the declarations would have to disclose.
+
+**What closed it.** `privacy_policy.md` is now v2.0: it describes the ZapZap payload field by
+field, names the recipients (the backend, then AWS Bedrock / Google Gemini / Mistral AI),
+states that the backend persists nothing, gives consent as the legal basis, and keeps the v1.0
+text identified as the policy for the 1.0.x releases still on the store.
+`PLAY_STORE_DATA_SAFETY.md` flips Q1 to "Yes" and declares two data types — Personal info →
+Name, and App activity → Other user-generated content — both optional, App functionality, not
+linked to identity, not used for tracking.
+
+The posture was a deliberate choice: Google's ephemeral-processing exemption would allow "not
+collected", and our own backend meets that bar, but the LLM provider is env-configurable and
+free-tier Gemini may train on submitted prompts, so the exemption cannot hold for every
+supported configuration. Over-declaring is permitted; under-declaring is what removes apps.
+
+Checking the manifests for this also turned up the missing `INTERNET` permission and the
+`WAKE_LOCK` claim that was never true — the first is now its own open item, the second is
+corrected in both documents.
+
+---
+
+## `README.md` advertises a Flutter version four majors out of date
+
+**Status:** done (2026-09-09) — closed by the full README refresh on
+`docs/privacy-disclosure`.
+
+It claims `Flutter SDK ^3.9.2` in three places (the badge, the Tech Stack section and the
+prerequisites). The project runs 3.47.2 / Dart 3.13.2 — see the toolchain table in
+[[MobileApp]]. The Platform badge also reads `Android | iOS`, while everything documented
+in [[Release]] and `store_listing/` targets the Play Store and the web PWA; whether iOS is
+still an intended target is worth settling in the same pass.
+
+Worth a pass over the whole Tech Stack list rather than a one-line badge fix: the
+dependency versions quoted there predate the Flutter 3.47 upgrade too.
+
+**What closed it.** The whole README was rewritten rather than patched: badges (Flutter 3.47.2,
+`Android | Web` — iOS settled as not a target), a tech stack split into app and backend with
+Drift as the database and sqflite named as the bootstrap migrator only, the mandatory
+`dart run build_runner build` step that was missing from Getting Started, the web PWA build,
+the 10 languages, a Backend section stating plainly that the sync client does not exist, the
+three CI jobs, and a corrected privacy section. Versions were cross-checked against
+`pubspec.yaml` rather than carried over.
+
+---
+
 ## There is no CI
 
 **Status:** done (2026-09-09) — closed by the `chore/ci` branch. Opened 2026-09-09,
