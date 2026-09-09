@@ -122,7 +122,9 @@ countscore/
 ├── android/             # Android platform code
 ├── test/                # Unit, Drift and migration tests
 ├── integration_test/    # End-to-end suite (web + real device)
-├── store_listing/       # Play Store assets
+├── store_listing/       # Play Store assets and the per-locale listing text
+├── docs/                # Published by GitHub Pages — the privacy policy Play links to
+├── scripts/             # Keystore, screenshots, privacy page, hook self-test
 ├── .llmwiki/            # Durable project knowledge — start at INDEX.md
 └── pubspec.yaml
 ```
@@ -173,7 +175,8 @@ CI — it calls the production endpoint. See `.llmwiki/Testing.md`.
 
 - **Backend** — `ruff check`, `mypy`, `pytest` (integration tests included).
 - **App** — codegen, `flutter analyze`, `flutter test`, release web build.
-- **Android** — debug APK from a clean checkout, as a fresh-clone build proof.
+- **Android** — debug APK from a clean checkout, as a fresh-clone build proof, plus an
+  assertion that the release manifest still declares `INTERNET`.
 
 ### Contributing
 
@@ -202,7 +205,8 @@ attribution, or the built-in Flutter license viewer in the app.
 
 ## Privacy
 
-**CountScore collects nothing about you.**
+**No accounts, no analytics, no ads, no tracking.** One feature sends data off the device,
+and only when you ask it to — described below.
 
 - ✅ **No analytics, no tracking**: we don't track how you use the app.
 - ✅ **No ads**.
@@ -222,7 +226,11 @@ tap the button. The result is cached locally so it is generated once.
 Group sharing and sync exist on the server but are not reachable from the app yet, so no
 data leaves your device through them today.
 
-**Privacy Policy**: see [privacy_policy.md](privacy_policy.md) for complete details, and
+The release build declares one Android permission, `INTERNET`, for that request and nothing
+else.
+
+**Privacy Policy**: [privacy_policy.md](privacy_policy.md) for complete details — published
+at https://vemore.github.io/countscore/privacy-policy.html — and
 [PLAY_STORE_DATA_SAFETY.md](PLAY_STORE_DATA_SAFETY.md) for the store declarations.
 
 ## Resources

@@ -4,8 +4,11 @@
 
 **Effective Date**: Applies to CountScore v1.1.0 and later
 
-**Previous version**: v1.0 (November 9, 2025), which applies to CountScore 1.0.x — the
-versions currently on the Play Store. See [Version History](#version-history).
+**Previous versions**: v2.0 (September 9, 2026) and v1.0 (November 9, 2025). v1.0 applies to
+CountScore 1.0.x — the versions currently on the Play Store. See
+[Version History](#version-history).
+
+**Published at**: https://vemore.github.io/countscore/privacy-policy.html
 
 ## Introduction
 
@@ -189,15 +192,18 @@ directly on your device. To ask a question, use the contact details above.
 
 ## Permissions
 
-**As of v1.1.0, the released Android app requests no Android runtime permissions.**
+**The released Android app declares exactly one permission: `INTERNET`.** It requests no
+runtime permissions — the kind Android asks you to approve with a dialog — at all.
 
+- **`INTERNET`** is declared in `android/app/src/main/AndroidManifest.xml`. It exists for the
+  ZapZap analysis and for nothing else: the app makes no other network request, has no
+  background networking, and sends no telemetry. Android grants it at install time without
+  asking you, because it is not a runtime permission — which is why the safeguard that matters
+  is the one described above: no data is sent unless you tap the button.
 - **Keeping the screen awake** during a game uses a window flag, not the `WAKE_LOCK`
   permission — nothing is requested and no data is accessed.
 - **Storage**: the export/import feature uses the system file picker, which does not require
   a storage permission.
-- **`INTERNET`**: this permission is currently present only in development builds. A release
-  build that ships the ZapZap analysis must declare it, and this policy will remain accurate
-  when it does — the permission enables only the user-initiated request described above.
 
 ## Children's Privacy
 
@@ -241,6 +247,11 @@ changes are announced through app updates on the Google Play Store.
 
 ### Version History
 
+- **v2.1** (September 9, 2026): Corrects the permissions section. v2.0 stated that the
+  released app requests no permissions and that `INTERNET` was present only in development
+  builds. That was true of the source at the time and made the ZapZap analysis unusable in a
+  release build; the permission is now declared in the main manifest, so the shipped app
+  declares `INTERNET`, for that one feature.
 - **v2.0** (September 9, 2026): Updated for CountScore 1.1.0. Documents the optional ZapZap
   analysis feature, which sends game data to the CountScore backend and on to an LLM
   provider. Corrects the previous version's statement that no data is ever transmitted, which

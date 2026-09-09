@@ -1,4 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required by the ZapZap analysis, the only network call the app makes
+         (lib/screens/game_analysis_screen.dart) and always user-initiated.
+         src/debug and src/profile declare it too, for hot reload — but a release
+         build merges neither, so it gets no permission that is not declared here. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="CountScore"
         android:name="${applicationName}"

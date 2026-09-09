@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy — CountScore</title>
+<meta name="description" content="How CountScore handles your information.">
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: #fbfaf8;
+  --surface: #ffffff;
+  --text: #1c1b1a;
+  --muted: #5c5955;
+  --rule: #e2ded7;
+  --accent: #1f5fa9;
+  --code-bg: #f1efea;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16181c;
+    --surface: #1d2026;
+    --text: #e6e4e0;
+    --muted: #a2a09b;
+    --rule: #32363e;
+    --accent: #7fb2ec;
+    --code-bg: #262a31;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 2.5rem 1.25rem 5rem;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+main {
+  max-width: 46rem;
+  margin: 0 auto;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+}
+h1, h2, h3 { line-height: 1.25; }
+h1 { font-size: 1.9rem; margin: 0 0 1.5rem; }
+h2 {
+  font-size: 1.3rem;
+  margin: 2.5rem 0 0.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--rule);
+}
+h3 { font-size: 1.05rem; margin: 1.75rem 0 0.5rem; color: var(--muted); }
+a { color: var(--accent); }
+code {
+  background: var(--code-bg);
+  padding: 0.12em 0.35em;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+}
+pre { background: var(--code-bg); padding: 1rem; border-radius: 8px; overflow-x: auto; }
+pre code { background: none; padding: 0; }
+blockquote {
+  margin: 1.25rem 0;
+  padding: 0.25rem 0 0.25rem 1rem;
+  border-left: 3px solid var(--rule);
+  color: var(--muted);
+}
+ul, ol { padding-left: 1.35rem; }
+li { margin: 0.35rem 0; }
+hr { border: 0; border-top: 1px solid var(--rule); margin: 2.5rem 0; }
+table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; }
+th, td { border: 1px solid var(--rule); padding: 0.5rem 0.65rem; text-align: left; }
+th { background: var(--code-bg); }
+.generated {
+  max-width: 46rem;
+  margin: 1.5rem auto 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+.generated a { color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+<h1 id="privacy-policy-for-countscore">Privacy Policy for
+CountScore</h1>
+<p><strong>Last Updated</strong>: September 9, 2026</p>
+<p><strong>Effective Date</strong>: Applies to CountScore v1.1.0 and
+later</p>
+<p><strong>Previous versions</strong>: v2.0 (September 9, 2026) and v1.0
+(November 9, 2025). v1.0 applies to CountScore 1.0.x — the versions
+currently on the Play Store. See <a href="#version-history">Version
+History</a>.</p>
+<p><strong>Published at</strong>: <a
+href="https://vemore.github.io/countscore/privacy-policy.html">https://vemore.github.io/countscore/privacy-policy.html</a></p>
+<h2 id="introduction">Introduction</h2>
+<p>This Privacy Policy describes how CountScore ("we", "our", or "the
+app") handles information when you use our application. CountScore is
+developed by vemore and is available on the Google Play Store.</p>
+<p><strong>In short</strong>: CountScore stores your games on your
+device and requires no account. It has no analytics, no tracking and no
+advertising. There is <strong>one</strong> feature that sends data off
+your device — the optional <strong>ZapZap analysis</strong> — and it
+only ever runs when you ask it to. That feature is described in full
+below.</p>
+<h2 id="developer-information">Developer Information</h2>
+<ul>
+<li><strong>Developer</strong>: vemore</li>
+<li><strong>Contact Email</strong>: <a
+href="mailto:scribio.ai@gmail.com">scribio.ai@gmail.com</a></li>
+<li><strong>App Website</strong>: <a
+href="https://github.com/vemore/countscore">https://github.com/vemore/countscore</a></li>
+</ul>
+<p>For the purposes of the GDPR, vemore is the data controller for the
+processing described in this policy.</p>
+<h2 id="information-stored-on-your-device">Information Stored on Your
+Device</h2>
+<p>CountScore stores the following <strong>locally on your
+device</strong>:</p>
+<ol type="1">
+<li><strong>Game Information</strong> — game type names and settings
+(e.g. "Uno", "Scrabble", custom games), scoring rules (lowest-wins or
+highest-wins), colours and icons.</li>
+<li><strong>Player Information</strong> — player names you create, and
+their association with games.</li>
+<li><strong>Score Data</strong> — scores, round-by-round history, any
+comment you attach to a round, timestamps, and completed-game
+results.</li>
+<li><strong>App Preferences</strong> — theme, language and other
+interface settings.</li>
+<li><strong>Cached analyses</strong> — the text of any ZapZap analysis
+you have generated.</li>
+</ol>
+<h3 id="storage-technology">Storage technology</h3>
+<ul>
+<li><strong>SQLite database</strong> (via Drift) — game types, players,
+rounds, scores, cached analyses. On Android this is a local database
+file; in the web version it is a browser-local database (OPFS).</li>
+<li><strong>SharedPreferences</strong> — app settings and
+preferences.</li>
+<li><strong>Local file storage</strong> — for the optional database
+export/import feature (Android only).</li>
+</ul>
+<p>This data is not synchronised, backed up to us, or uploaded anywhere.
+It stays on your device until you delete it.</p>
+<h2 id="the-one-feature-that-sends-data-zapzap-analysis">The One Feature
+That Sends Data: ZapZap Analysis</h2>
+<p>CountScore includes an optional feature that generates a written
+analysis of a finished ZapZap game using a large language model (LLM).
+<strong>It never runs automatically.</strong> No data is sent unless you
+open a game's analysis screen and explicitly tap the button to generate
+one.</p>
+<h3 id="what-is-sent">What is sent</h3>
+<p>When you request an analysis, the app sends the following for that
+game:</p>
+<ul>
+<li>the game's name, its game type, its scoring rule and its creation
+date;</li>
+<li>the <strong>names of the players</strong> in that game;</li>
+<li>every round: its number, its scores, and <strong>any comment you
+typed on that round</strong>;</li>
+<li>a <strong>history for each player</strong>, drawn from up to 10 of
+their other games (their past results under the same name).</li>
+</ul>
+<p>Round comments are free text. Whatever you type there is included, so
+please do not put anything sensitive in them.</p>
+<p>Player names are chosen by you. If you enter a real full name, that
+name is transmitted. We recommend first names or nicknames.</p>
+<h3 id="where-it-is-sent">Where it is sent</h3>
+<ol type="1">
+<li><strong>To the CountScore backend</strong>, over an encrypted
+HTTPS/TLS connection. This is a small self-hosted service run by the
+developer. For this feature the backend is <strong>stateless</strong>:
+it does not write your game data to any database, and it keeps no copy
+of it after the request completes.</li>
+<li><strong>From there to an LLM provider</strong>, which generates the
+analysis text. Depending on how the server is configured, this is
+<strong>Amazon Web Services (Bedrock), Google (Gemini), or Mistral
+AI</strong>. Your data is processed by that provider under
+<strong>their</strong> terms and retention policy, which we do not
+control.</li>
+</ol>
+<p>The generated text is returned to your device and cached locally, so
+an analysis is only generated once per game.</p>
+<h3 id="your-ip-address">Your IP address</h3>
+<p>To prevent abuse of a paid API, the backend applies a rate limit (5
+requests per minute, 30 per hour). This inspects the requesting IP
+address in server memory only. It is not written to a database and is
+discarded once the time window elapses. If a request to the LLM provider
+fails, the server writes a technical error entry to its log to allow
+diagnosis.</p>
+<h3 id="legal-basis-and-how-to-avoid-it-entirely">Legal basis and how to
+avoid it entirely</h3>
+<p>The processing above is carried out <strong>on the basis of your
+consent</strong>, given by tapping the generate button. <strong>If you
+never use the ZapZap analysis feature, no data ever leaves your
+device.</strong> There is no way for it to be triggered by anything else
+in the app.</p>
+<h2 id="information-we-do-not-collect">Information We Do NOT
+Collect</h2>
+<p>CountScore does <strong>not</strong> collect, transmit, store, or
+share:</p>
+<ul>
+<li>❌ Personal identification information — we have no accounts, and
+never ask for your name, email, phone number or address</li>
+<li>❌ Device identifiers (IMEI, MAC address, Android ID, advertising
+ID)</li>
+<li>❌ Location data</li>
+<li>❌ Usage analytics or statistics</li>
+<li>❌ Crash reports or diagnostic telemetry</li>
+<li>❌ Any data from other apps on your device</li>
+<li>❌ Photos, contacts, or other device data</li>
+</ul>
+<p>We do not use any analytics SDK, advertising SDK, or tracking library
+of any kind.</p>
+<h2 id="how-information-is-used">How Information Is Used</h2>
+<ul>
+<li><strong>On your device</strong>: to store and display your games,
+scores and preferences.</li>
+<li><strong>In the ZapZap analysis</strong>: solely to generate the
+requested analysis text and return it to you.</li>
+</ul>
+<p><strong>No data is used for analytics, advertising, profiling, or any
+other purpose, and nothing is ever sold.</strong></p>
+<h2 id="data-sharing-and-third-parties">Data Sharing and Third
+Parties</h2>
+<p>Apart from the ZapZap analysis described above, CountScore shares no
+data with anyone.</p>
+<p>For that one feature, the LLM provider (AWS, Google or Mistral AI,
+depending on server configuration) acts as a processor generating the
+analysis on our behalf. We do not share data with analytics providers,
+advertisers, data brokers, or social networks, and we do not sell
+data.</p>
+<h3 id="international-transfers">International transfers</h3>
+<p>The LLM providers may process the request outside your country and
+outside the European Economic Area. Where that occurs, it relies on the
+provider's own transfer safeguards (such as Standard Contractual
+Clauses). If this matters to you, do not use the analysis feature — the
+rest of the app is unaffected.</p>
+<h2 id="features-not-yet-active">Features Not Yet Active</h2>
+<p>The CountScore backend also implements group sharing and multi-device
+synchronisation. <strong>The app does not currently use them</strong>:
+there is no code in the released app that sends your games to a group or
+syncs them to a server. If that changes, this policy and the Play Store
+data safety declaration will be updated before the feature ships.</p>
+<h2 id="data-security">Data Security</h2>
+<ol type="1">
+<li><strong>Local storage</strong>: data on your device is protected by
+your device's own security (screen lock, disk encryption).</li>
+<li><strong>Encryption in transit</strong>: the analysis request is sent
+over HTTPS/TLS.</li>
+<li><strong>No server-side storage</strong>: the analysis endpoint
+retains nothing after answering.</li>
+<li><strong>Minimal permissions</strong>: see <a
+href="#permissions">Permissions</a>.</li>
+<li><strong>Open source</strong>: the code that performs the request can
+be inspected by anyone.</li>
+</ol>
+<p>No method of transmission over the internet is completely secure, and
+we cannot guarantee absolute security.</p>
+<h2 id="your-data-rights">Your Data Rights</h2>
+<h3 id="access">Access</h3>
+<p>All your data is visible in the app.</p>
+<h3 id="deletion">Deletion</h3>
+<p><strong>Option 1 — Delete specific data</strong>: delete individual
+games, rounds, players or custom game types in the app. Deleting a game
+also deletes its cached analysis.</p>
+<p><strong>Option 2 — Delete all app data</strong>: Settings → Apps →
+CountScore → Storage → Clear Data.</p>
+<p><strong>Option 3 — Uninstall</strong>: removes all app data
+permanently.</p>
+<p>Because we keep no copy of your data on any server, there is nothing
+for us to delete on our side, and nothing to restore if you delete it
+locally. For data held by an LLM provider from an analysis request,
+contact that provider under their own privacy policy.</p>
+<h3 id="portability">Portability</h3>
+<p>Android builds offer a database export/import feature, giving you a
+copy of your data as a file. Your data is not tied to any account or
+service.</p>
+<h3 id="gdpr-rights">GDPR rights</h3>
+<p>Users in the EEA and the UK have rights of access, rectification,
+erasure, restriction, portability and objection, and the right to
+withdraw consent at any time (by not using the analysis feature), as
+well as the right to complain to a supervisory authority. Since we hold
+no server-side copy of your data and cannot identify you, most of these
+rights are exercised directly on your device. To ask a question, use the
+contact details above.</p>
+<h2 id="permissions">Permissions</h2>
+<p><strong>The released Android app declares exactly one permission:
+<code>INTERNET</code>.</strong> It requests no runtime permissions — the
+kind Android asks you to approve with a dialog — at all.</p>
+<ul>
+<li><strong><code>INTERNET</code></strong> is declared in
+<code>android/app/src/main/AndroidManifest.xml</code>. It exists for the
+ZapZap analysis and for nothing else: the app makes no other network
+request, has no background networking, and sends no telemetry. Android
+grants it at install time without asking you, because it is not a
+runtime permission — which is why the safeguard that matters is the one
+described above: no data is sent unless you tap the button.</li>
+<li><strong>Keeping the screen awake</strong> during a game uses a
+window flag, not the <code>WAKE_LOCK</code> permission — nothing is
+requested and no data is accessed.</li>
+<li><strong>Storage</strong>: the export/import feature uses the system
+file picker, which does not require a storage permission.</li>
+</ul>
+<h2 id="childrens-privacy">Children's Privacy</h2>
+<p>CountScore requires no personal information to use and is suitable
+for all ages.</p>
+<p>Please note that the ZapZap analysis transmits the player names
+entered in the app. If children use the app, we recommend using first
+names or nicknames rather than full names, or simply not using the
+analysis feature.</p>
+<p>We do not knowingly collect personal information from children. As we
+operate no accounts and store nothing on our servers, we hold no such
+information.</p>
+<h2 id="data-retention">Data Retention</h2>
+<ul>
+<li><strong>On your device</strong>: until you delete it, clear app
+data, or uninstall.</li>
+<li><strong>On our server</strong>: nothing. The analysis endpoint
+stores no game data. IP addresses used for rate limiting live in memory
+only and are discarded when the window elapses.</li>
+<li><strong>At the LLM provider</strong>: governed by that provider's
+retention policy, which we do not control.</li>
+</ul>
+<h2 id="open-source">Open Source</h2>
+<p>CountScore is open-source software licensed under the MIT License, so
+its privacy claims can be independently verified. The network request
+described in this policy is the only one in the app, and it is in a
+single file: <code>lib/screens/game_analysis_screen.dart</code>.</p>
+<p><strong>Source Code</strong>: <a
+href="https://github.com/vemore/countscore">https://github.com/vemore/countscore</a></p>
+<h2 id="california-privacy-rights-ccpacpra">California Privacy Rights
+(CCPA/CPRA)</h2>
+<p>CountScore does not sell personal information, and does not share it
+for cross-context behavioural advertising. We do not collect personal
+information for commercial purposes, and we maintain no profile about
+you.</p>
+<h2 id="changes-to-this-privacy-policy">Changes to This Privacy
+Policy</h2>
+<p>We may update this policy to reflect changes in the app's
+functionality or in legal requirements. Updates are posted on this page
+with a new "Last Updated" date, and significant changes are announced
+through app updates on the Google Play Store.</p>
+<h3 id="version-history">Version History</h3>
+<ul>
+<li><strong>v2.1</strong> (September 9, 2026): Corrects the permissions
+section. v2.0 stated that the released app requests no permissions and
+that <code>INTERNET</code> was present only in development builds. That
+was true of the source at the time and made the ZapZap analysis unusable
+in a release build; the permission is now declared in the main manifest,
+so the shipped app declares <code>INTERNET</code>, for that one
+feature.</li>
+<li><strong>v2.0</strong> (September 9, 2026): Updated for CountScore
+1.1.0. Documents the optional ZapZap analysis feature, which sends game
+data to the CountScore backend and on to an LLM provider. Corrects the
+previous version's statement that no data is ever transmitted, which was
+accurate for 1.0.x but would not be for 1.1.0. Also corrects the
+permissions section: the app does not request
+<code>WAKE_LOCK</code>.</li>
+<li><strong>v1.0</strong> (November 9, 2025): Initial privacy policy for
+CountScore 1.0.0. Accurate for the 1.0.x releases, which contained no
+networking code.</li>
+</ul>
+<h2 id="contact-us">Contact Us</h2>
+<p><strong>Email</strong>: <a
+href="mailto:scribio.ai@gmail.com">scribio.ai@gmail.com</a>
+<strong>GitHub Issues</strong>: <a
+href="https://github.com/vemore/countscore/issues">https://github.com/vemore/countscore/issues</a>
+(for technical questions) <strong>Response Time</strong>: We aim to
+respond within 48-72 hours</p>
+<h2 id="consent">Consent</h2>
+<p>By using CountScore, you consent to this Privacy Policy. By tapping
+the button that generates a ZapZap analysis, you additionally consent to
+that game's data being transmitted as described above.</p>
+<p>If you do not agree with this Privacy Policy, please do not use
+CountScore.</p>
+<hr />
+<h2 id="summary-tldr">Summary (TL;DR)</h2>
+<p>✅ <strong>No account, no analytics, no tracking, no ads</strong> ✅
+<strong>Your games are stored on your device</strong> ✅ <strong>You
+control your data and can delete it anytime</strong> ✅
+<strong>Open-source and auditable</strong> ✅ <strong>Free, with no
+hidden costs</strong> ⚠️ <strong>One exception</strong>: if <em>you</em>
+tap "generate analysis", that game's data — player names, scores and
+round comments — is sent over HTTPS to the CountScore backend and on to
+an LLM provider (AWS, Google or Mistral) to write the analysis. Nothing
+is stored on our server. Never using that button means nothing ever
+leaves your device.</p>
+<hr />
+<p><em>This privacy policy applies to CountScore v1.1.0 and later. For
+versions 1.0.x, see v1.0 of this document in the repository
+history.</em></p>
+</main>
+<p class="generated">
+Generated from <a href="https://github.com/vemore/countscore/blob/main/privacy_policy.md">privacy_policy.md</a>
+in the CountScore repository.
+</p>
+</body>
+</html>

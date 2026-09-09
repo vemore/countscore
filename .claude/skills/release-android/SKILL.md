@@ -32,8 +32,10 @@ git check-ignore -v android/key.properties && echo "ignored — good"
 git status --porcelain | grep -Ei 'keystore|\.jks|key\.properties' && echo "STOP: staged secret"
 ```
 
-Release signing is already configured in `android/app/build.gradle.kts`. R8/ProGuard is
-disabled on purpose — the app is open source.
+Release signing is already configured in `android/app/build.gradle.kts`, which also enables
+R8 shrinking (`isMinifyEnabled`/`isShrinkResources`, rules in `android/app/proguard-rules.pro`).
+It is on for the size saving, not for obfuscation — the app is open source. This skill said
+"disabled" until 2026-09-09; see [[Release]].
 
 ## 2. Version bump
 
@@ -86,19 +88,33 @@ and the locale follows the system language.
 
 ## 7. Play Console
 
-Target **API level 35** (Android 15). Compliance documents that must match what ships:
-`privacy_policy.md`, `PLAY_STORE_DATA_SAFETY.md`, `THIRD_PARTY_LICENSES.md`.
-Store assets are in `store_listing/`; `scripts/capture_screenshots.sh` pulls fresh
-screenshots over ADB.
+Target **API level 36** (Android 16) — it follows `flutter.targetSdkVersion`, so check
+[[Release]] rather than assuming. Compliance documents that must match what ships:
+`privacy_policy.md`, `PLAY_STORE_DATA_SAFETY.md`, `THIRD_PARTY_LICENSES.md`, and the
+per-locale listing text in `store_listing/en-US/` and `store_listing/fr-FR/`.
+`scripts/capture_screenshots.sh` pulls fresh screenshots over ADB.
 
-Roll out to internal testing first, then staged production.
+The Console walkthrough — form answers, tracks, rollout — is `PUBLISHING.md`. Roll out to
+internal testing first, then staged production.
 
-## Blocker to check every time
+## Check every time
 
-**`PUBLISHING.md` predates the backend.** If the release ships group sharing or LLM
-commentary, the Data Safety declaration must be updated first to disclose the network calls
-and what is sent — see `.llmwiki/Security.md`. Do not submit such a release against the
-current declaration.
+**Does the merged release manifest still declare `INTERNET`?**
+
+```bash
+grep uses-permission build/app/intermediates/merged_manifests/release/*/AndroidManifest.xml
+```
+
+The ZapZap analysis is the app's only network call and it needs that permission. It lives in
+`android/app/src/main/AndroidManifest.xml`; the debug and profile manifests declare it too,
+which is why a missing release declaration is invisible to every debug build and to the e2e
+suite. It shipped missing once — see `DONE.md` (2026-09-09).
+
+**Did anything change what leaves the device?** A new field in the analysis payload, a new
+recipient, or the sync client when it exists means `README.md`, `privacy_policy.md`,
+`PLAY_STORE_DATA_SAFETY.md` and the store listing text move first — the rule is in
+`CLAUDE.md`, and what we currently disclose is in `.llmwiki/Security.md`. Regenerate the
+published policy with `python3 scripts/build_privacy_page.py` if the policy changed.
 
 ## Checklist
 
@@ -108,5 +124,8 @@ current declaration.
 - [ ] Built with `--no-tree-shake-icons`
 - [ ] Signature verified as the upload key
 - [ ] No keystore, `key.properties` or `.env` staged
+- [ ] Merged **release** manifest declares `INTERNET`
 - [ ] Data Safety declaration matches what the build actually does
+- [ ] Store listing text matches the declaration (`store_listing/*/full_description.txt`)
+- [ ] Privacy policy URL live and serving the current text (`docs/`)
 - [ ] Keystore backup exists and is current

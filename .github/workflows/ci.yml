@@ -171,6 +171,17 @@ jobs:
       - name: Build debug APK
         run: flutter build apk --debug --no-tree-shake-icons
 
+      # This job builds debug, and the debug manifest declares INTERNET for hot
+      # reload — so no build here can catch a release manifest that does not. The
+      # assertion is on the source manifest instead: without it, the ZapZap
+      # analysis fails with a SocketException in every signed release build.
+      - name: Prove the release manifest declares INTERNET
+        run: |
+          grep -q 'android.permission.INTERNET' android/app/src/main/AndroidManifest.xml || {
+            echo "::error file=android/app/src/main/AndroidManifest.xml::the main manifest must declare INTERNET — src/debug and src/profile are not merged into a release build, so the ZapZap analysis would fail at runtime in the store binary"
+            exit 1
+          }
+
       # gradlew and gradle-wrapper.jar are gitignored; the Flutter tool injects
       # them. Asserting that on a clean checkout is half the point of this job.
       - name: Prove the Gradle wrapper was injected into a clean checkout
