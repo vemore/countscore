@@ -32,7 +32,10 @@
   three backend gates. It does not run the e2e suite, which needs a real backend, nor the signed release APK/AAB, which needs the keystore secrets. Both stay
   manual. See [[Testing]].
 - **No monitoring or alerting.** `docker logs` only. Prometheus + Grafana in a
-  `docker-compose.monitoring.yml` is the intended shape.
+  `docker-compose.monitoring.yml` is the intended shape. Since 2026-09-11 `GET /health`
+  reports the *resolved* LLM provider and model, so a misconfigured deploy is visible from
+  one free request — but nothing watches a 502 rate, and nothing would notice if the provider
+  started refusing calls again. That is how the 2026-09-09 outage survived two days.
 - **`PUBLISHING.md` predates the backend.** It must be updated before the first release
   that ships groups or commentary. See [[Release]].
 - **Argon2 device-token verification is O(N).** One argon2 verify per device row, on every

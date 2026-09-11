@@ -39,6 +39,12 @@ class BedrockProvider:
     def available(self) -> bool:
         return self._client is not None
 
+    @property
+    def model(self) -> str:
+        # `model_id` is kept as the attribute name because it is boto3's own
+        # parameter (`modelId=`); `model` is the name the LLMProvider contract uses.
+        return self.model_id
+
     def _invoke_sync(
         self,
         system_prompt: str,

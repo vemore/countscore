@@ -52,6 +52,10 @@ def test_factory_returns_mistral_from_env(monkeypatch):
     provider = get_llm_provider()
     assert isinstance(provider, OpenAICompatProvider)
     assert provider.label == "mistral"
+    # The assertion this test was missing on 2026-09-09: the model must be the
+    # configured one. `available` is true whenever a key is set, so it stayed true
+    # throughout the outage.
+    assert provider.model == "mistral-medium-latest"
     assert provider.available is True
 
 
@@ -76,7 +80,7 @@ async def test_openai_compat_unavailable_generate_raises():
 
 async def test_openai_compat_generate_builds_messages_and_parses():
     p = OpenAICompatProvider(
-        label="mistral", base_url="http://x", api_key="k", model="mistral-large-latest"
+        label="mistral", base_url="http://x", api_key="k", model="mistral-medium-latest"
     )
     fake_response = SimpleNamespace(
         choices=[SimpleNamespace(message=SimpleNamespace(content="  Verdict acide.  "))],
@@ -94,7 +98,7 @@ async def test_openai_compat_generate_builds_messages_and_parses():
     assert result.tokens_out == 80
 
     kwargs = create.call_args.kwargs
-    assert kwargs["model"] == "mistral-large-latest"
+    assert kwargs["model"] == "mistral-medium-latest"
     assert kwargs["messages"] == [
         {"role": "system", "content": "SYSTEM"},
         {"role": "user", "content": "USER"},

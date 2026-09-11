@@ -3,6 +3,37 @@
 Open work only. A finished item moves to `DONE.md` — see the workflow section of
 `CLAUDE.md`.
 
+## `GEMINI_MODEL` defaults to a model that is quota-0 on the free tier
+
+**Status:** open — noted 2026-09-11, while closing the Mistral default.
+
+`gemini_model: str = "gemini-2.5-pro"` (`backend/app/config.py:32`), duplicated as
+`${GEMINI_MODEL:-gemini-2.5-pro}` in `docker-compose.prod.yml:40`. On a free-tier Google key
+`gemini-2.5-pro` has a quota of **0**, so switching `LLM_PROVIDER=gemini` without also setting
+`GEMINI_MODEL` fails immediately — exactly the class of trap just closed for Mistral, on the
+provider next door. `gemini-2.5-flash` works without billing enabled.
+
+Not fixed inline because nothing currently runs on gemini, and because picking the default is
+the same product decision the Mistral one was. When it is fixed, remember the default lives in
+**two** tracked places, and the compose one wins in production.
+
+## Backend tests read the developer's local `backend/.env`
+
+**Status:** open — noted 2026-09-11, found when a new `/health` test passed in CI's shape and
+failed locally.
+
+`Settings` has `env_file=".env"` (`backend/app/config.py:11`) and pytest runs from `backend/`,
+so every test that touches `get_settings()` picks up the untracked local `.env`. A machine with
+`BEDROCK_MODEL_ID=us.meta.llama3-1-70b-instruct-v1:0` in it makes an assertion on the code
+default fail, while CI — which has no `.env` — passes. The tests are therefore not reproducible
+across machines.
+
+`conftest.py:19-20` already neutralises `ANTHROPIC_API_KEY` and `DATABASE_URL` with
+`os.environ.setdefault`, which does not help: the `.env` file is read regardless. The fix is to
+point `Settings.model_config["env_file"]` at nothing during tests, or to have `conftest.py`
+construct settings with `_env_file=None`. Worked around for now by setting every value the new
+tests assert (`tests/test_health.py`), which is correct but does not protect the next test.
+
 ## The dev `docker-compose.yml` cannot serve the ZapZap endpoint
 
 **Status:** open — noted 2026-09-11, while setting up an on-device test of the configurable
@@ -99,19 +130,11 @@ Option 2 is the one worth doing if it is done at all.
 
 ## The ZapZap analysis is down in production: Mistral rejects the configured model
 
-**Status:** open — noted 2026-09-09, found by the on-device release test that closed the
-`INTERNET` permission item.
+**Status:** open — noted 2026-09-09. **Code half landed 2026-09-11** on
+`fix/zapzap-mistral-and-analysis-ui`; what remains is the production environment, below.
 
-`POST /comments/zapzap-analysis` returns **502** for every request, on every client. It is
-not the permission bug and not a device problem: it reproduces from any machine.
-
-```
-$ curl -sS -X POST "$BACKEND_URL/comments/zapzap-analysis" \
-    -H 'Content-Type: application/json' -d @payload.json
-{"detail":"upstream LLM error: RuntimeError"}          # 502, in 0.18 s
-```
-
-The container log gives the cause:
+`POST /comments/zapzap-analysis` returns **502** for every request, on every client, because
+production runs `LLM_PROVIDER=mistral` and inherits a code default the account's tier rejects:
 
 ```
 RuntimeError: mistral API call failed: PermissionDeniedError: Error code: 403 -
@@ -119,31 +142,32 @@ RuntimeError: mistral API call failed: PermissionDeniedError: Error code: 403 -
  'type': 'tier_not_allowed', 'code': '1910'}
 ```
 
-Production runs `LLM_PROVIDER=mistral` and does **not** set `MISTRAL_MODEL`, so it falls back
-to the code default `mistral-large-latest` (`backend/app/config.py:37`). That model is no
-longer available to the account: `GET https://api.mistral.ai/v1/models` with the production
-key lists 40 models and `mistral-large-latest` is not among them. The key itself is valid —
-the 403 is about the tier, not authentication.
+### Done on 2026-09-11
 
-Available and plausible replacements from that listing: `mistral-medium-latest`,
-`mistral-small-latest`, `magistral-medium-latest`. The ZapZap prompt asks for long-form
-French commentary, so `mistral-medium-latest` is the closest to what `large` was doing.
+- The default is `mistral-medium-latest` in **all five** tracked places. The original entry
+  said the fix was one line of production environment; that was wrong. The default lives in
+  `app/config.py:37` **and** in `docker-compose.prod.yml:38` as `${MISTRAL_MODEL:-…}`, and the
+  compose value wins in production — a default changed in `config.py` alone never reaches the
+  container. Plus `.env.example` twice and `backend/README.md`.
+- `GET /health` now reports the resolved provider and model
+  (`{"llm": {"provider", "model", "credentials"}}`), built without calling the provider, so a
+  misconfigured deploy is visible from one free request. It stays 200 when the provider is
+  unresolvable, because failing the probe would restart-loop a container whose group and sync
+  routes are fine.
+- `test_health.py` pins that shape, including the unknown-provider case;
+  `test_factory_returns_mistral_from_env` gained the `provider.model` assertion it was missing
+  — the hole the outage went through.
 
-**The fix is one line of production environment**, not code: set `MISTRAL_MODEL` in the NAS
-`.env` and restart the container (`backend-deploy` skill). It is filed rather than applied
-because changing what production sends to a paid third-party API is the user's call, and
-because the choice of model changes the tone and the cost of every analysis.
+### Still open
 
-Two things worth doing in the same pass:
+**The production container has not been touched.** Until `MISTRAL_MODEL` is set on the NAS, or
+the new image is deployed, every analysis still 502s. See §2 of the `backend-deploy` skill for
+the in-place procedure, then verify with a real `POST` — only that proves the account's tier
+allows `mistral-medium-latest`. If it 403s too, `mistral-small-latest` is the fallback.
 
-- **Decide whether `mistral-large-latest` should stay the code default.** A default that the
-  production account cannot use is a trap for the next deployment; `.llmwiki/Deployment.md`
-  already warns that production and the documented default disagree.
-- **The failure is invisible until someone taps the button.** There is no health check that
-  exercises a provider, and `/health` returns `{"status":"ok"}` while the only user-facing
-  LLM feature has been returning 502. A cheap provider ping — or at least an alert on the
-  502 rate — would have caught this before a release test did. See [[LlmProviders]] and
-  [[Deployment]].
+**Nothing watches the failure.** `/health` now makes a *misconfiguration* visible, but nothing
+alerts on a 502 rate, and nothing would notice the provider refusing calls again. That is how
+this survived two days. See [[LlmProviders]] and [[KnownLimits]].
 
 ## The ZapZap system prompt hard-codes eight real people's names
 

@@ -57,6 +57,29 @@ at startup, so a wrong value fails fast rather than opening the API.
 
 Keep `.env.example` in sync with `app/config.py` whenever a setting is added.
 
+### Changing one variable in place, without a rebuild
+
+The production `.env` lives at `$NAS_DEPLOY_DIR/.env` and `deploy_nas.sh` never touches it,
+so a setting can be changed on its own. `scp` is blocked on the NAS — pipe over ssh, and
+prefix any command needing `docker` with the PATH export.
+
+```bash
+source scripts/deploy.env
+NAS_PATH='export PATH=/var/packages/ContainerManager/target/usr/bin:$PATH'
+
+# 1. Read first — never append blind, the key may already be set.
+ssh "$NAS_SSH" "grep -n MISTRAL_MODEL $NAS_DEPLOY_DIR/.env" || echo "not set"
+
+# 2. Append (or edit) it.
+echo 'MISTRAL_MODEL=mistral-medium-latest' | ssh "$NAS_SSH" "cat >> $NAS_DEPLOY_DIR/.env"
+
+# 3. Recreate the container with the new interpolated environment.
+ssh "$NAS_SSH" "$NAS_PATH; cd $NAS_DEPLOY_DIR && docker compose up -d"
+```
+
+No image build, no registry push, no Alembic run. Rollback is deleting the line and
+repeating step 3.
+
 ## 3. Deploy
 
 ```bash
@@ -73,8 +96,15 @@ from `scripts/deploy.env`; the script exits naming the variable if one is missin
 ```bash
 source scripts/deploy.env
 curl -s "$PUBLIC_URL/health"
-# expect: {"status":"ok","version":...}
+# expect: {"status":"ok","version":...,"llm":{"provider":...,"model":...,"credentials":true}}
 ```
+
+**Read the `llm` block, do not just check for `ok`.** Confirm `provider` and `model` are the
+ones you intended: a wrong model there *is* the 2026-09-09 outage, which returned 502 to every
+client for two days while this endpoint answered `ok`. It costs nothing — the model is
+resolved locally, never by calling the provider. `credentials: true` only means a key is set;
+it does not prove the account may call that model, which is why the real request below still
+matters.
 
 Then exercise a real path — the unauthenticated analysis endpoint is the quickest end-to-end
 proof, since it crosses TLS, the app, and the LLM provider:
@@ -118,5 +148,6 @@ The dev compose file and Dockerfile default to 2 workers, which is fine locally.
 - [ ] `.env.example` updated if `app/config.py` gained a setting
 - [ ] `CORS_ORIGINS` correct, never `*`
 - [ ] Still exactly 1 uvicorn worker in `docker-compose.prod.yml`
-- [ ] `/health` returns ok after deploy
-- [ ] A real endpoint exercised, not just `/health`
+- [ ] `/health` returns ok **and names the intended `llm.provider` and `llm.model`**
+- [ ] A real endpoint exercised, not just `/health` — only a real call proves the account's
+      tier allows the configured model

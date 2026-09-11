@@ -37,7 +37,10 @@ cd backend
 Dev uses `docker-compose.yml` (no TLS, local Postgres): `docker compose up -d` — db plus
 api on 8000 plus the backup sidecar.
 
-Verify with `curl "$PUBLIC_URL/health"` → `{"status": "ok"}`.
+Verify with `curl "$PUBLIC_URL/health"` → `{"status": "ok", "version": …, "llm":
+{"provider": …, "model": …, "credentials": …}}`. The `llm` block reports the model the
+container actually resolved, which is the check that would have caught the 2026-09-09
+outage — see [[LlmProviders]].
 
 There is **no deployment path for the Flutter web app** in this repo — no vhost, no
 hosting config. Only the backend container is covered. See [[Web]].
@@ -58,7 +61,7 @@ hosting config. Only the backend container is covered. See [[Web]].
 | `BEDROCK_MODEL_ID` | Bedrock model | `us.meta.llama3-3-70b-instruct-v1:0` |
 | `AWS_REGION` / `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` | Bedrock credentials | required if bedrock |
 | `GEMINI_API_KEY` / `GEMINI_MODEL` / `GEMINI_BASE_URL` | Gemini | — / `gemini-2.5-pro` / — |
-| `MISTRAL_API_KEY` / `MISTRAL_MODEL` / `MISTRAL_BASE_URL` | Mistral | — / `mistral-large-latest` / — |
+| `MISTRAL_API_KEY` / `MISTRAL_MODEL` / `MISTRAL_BASE_URL` | Mistral | — / `mistral-medium-latest` / — |
 | `CORS_ORIGINS` | Allowed origins, CSV. `*` is rejected at startup | prod URL |
 | `RL_PER_MINUTE` / `RL_PER_HOUR` / `RL_PER_DAY` | Per-device rate limit | `6` / `30` / `100` |
 | `IP_RL_PER_MINUTE` / `IP_RL_PER_HOUR` | Anonymous IP rate limit on the LLM endpoints | `5` / `30` |
@@ -85,7 +88,15 @@ hosting config. Only the backend container is covered. See [[Web]].
   The dataset is small and the recovery story is "copy a file back".
 - **`LLM_PROVIDER` defaults to `bedrock` in code**, but production has been run on
   `mistral`; `backend/README.md` describes only the default. Check the actual `.env` on the
-  NAS before assuming which provider answered a given request. **This bit (2026-09-09):**
-  production sets `LLM_PROVIDER=mistral` but not `MISTRAL_MODEL`, so it inherits the code
-  default `mistral-large-latest` — a model the account's tier no longer allows. Every
-  analysis 502s and `/health` still says `ok`. See `TODO.md` and [[LlmProviders]].
+  NAS before assuming which provider answered a given request. **This bit (2026-09-09 →
+  2026-09-11):** production set `LLM_PROVIDER=mistral` but not `MISTRAL_MODEL`, inherited the
+  code default `mistral-large-latest` — a model the account's tier no longer allows — and
+  every analysis 502'd for two days while `/health` still said `ok`. Closed on 2026-09-11 by
+  three changes together: the default is now `mistral-medium-latest`, `/health` reports the
+  resolved model, and production sets `MISTRAL_MODEL` explicitly. See `DONE.md` and
+  [[LlmProviders]].
+- **The compose file carries its own defaults, and they win.** `docker-compose.prod.yml`
+  interpolates `${MISTRAL_MODEL:-…}` from the NAS `.env`, so a default written only in
+  `app/config.py` never reaches production. Every provider default therefore exists twice and
+  the two must move together — that duplication is what made the 2026-09-09 fix a five-file
+  change rather than a one-line one.

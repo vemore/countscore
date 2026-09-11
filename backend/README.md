@@ -124,7 +124,7 @@ par la variable `LLM_PROVIDER` (défaut `bedrock`) :
 |---|---|---|---|
 | `bedrock` | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `BEDROCK_MODEL_ID` | `us.meta.llama3-3-70b-instruct-v1:0` | `boto3` |
 | `gemini` | `GEMINI_API_KEY`, `GEMINI_MODEL` | `gemini-2.5-pro` | `openai` (endpoint compatible) |
-| `mistral` | `MISTRAL_API_KEY`, `MISTRAL_MODEL` | `mistral-large-latest` | `openai` (endpoint compatible) |
+| `mistral` | `MISTRAL_API_KEY`, `MISTRAL_MODEL` | `mistral-medium-latest` | `openai` (endpoint compatible) |
 
 Gemini et Mistral exposent un endpoint **compatible OpenAI** : un seul client `openai`
 les gère via `base_url` + clé + modèle. Le **prompt système** (« professeur Claude ») et le
