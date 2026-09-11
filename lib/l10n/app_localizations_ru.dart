@@ -550,6 +550,11 @@ class AppLocalizationsRu extends AppLocalizations {
   String get analysisError => 'Не удалось создать анализ';
 
   @override
+  String analysisErrorStatus(int status) {
+    return 'Не удалось создать анализ (HTTP $status)';
+  }
+
+  @override
   String get retry => 'Повторить';
 
   @override

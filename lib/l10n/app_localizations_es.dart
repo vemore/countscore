@@ -550,6 +550,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get analysisError => 'Error al generar el análisis';
 
   @override
+  String analysisErrorStatus(int status) {
+    return 'Error al generar el análisis (HTTP $status)';
+  }
+
+  @override
   String get retry => 'Reintentar';
 
   @override

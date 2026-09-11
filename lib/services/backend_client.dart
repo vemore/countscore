@@ -3,6 +3,21 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+/// A non-2xx answer from the configured backend.
+///
+/// Carries the status code, which is genuinely useful to a user who runs the
+/// server themselves, and the decoded body for logging — never for display: the
+/// body is the server's raw JSON and usually names an internal exception type.
+class BackendException implements Exception {
+  BackendException(this.statusCode, this.body);
+
+  final int statusCode;
+  final String body;
+
+  @override
+  String toString() => 'BackendException($statusCode): $body';
+}
+
 /// The single place that knows how to turn a backend base URL into a request.
 ///
 /// The base URL is supplied by the user at runtime (see [BackendProvider]);
@@ -50,7 +65,12 @@ class BackendClient {
         .timeout(analysisTimeout);
 
     if (response.statusCode != 200) {
-      throw Exception('HTTP ${response.statusCode}: ${response.body}');
+      // bodyBytes, not body: `body` falls back to latin-1 when the response
+      // carries no charset, which turns an accented error message into mojibake.
+      throw BackendException(
+        response.statusCode,
+        utf8.decode(response.bodyBytes, allowMalformed: true),
+      );
     }
 
     final body =

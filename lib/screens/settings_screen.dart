@@ -84,10 +84,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Text(
               l10n.appearance,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.deepPurple,
+                // From the scheme, not Colors.deepPurple: the literal is a
+                // low-contrast blue-violet on the dark theme's black.
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           ),
@@ -124,10 +126,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Text(
               l10n.serverSection,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.deepPurple,
+                // From the scheme, not Colors.deepPurple: the literal is a
+                // low-contrast blue-violet on the dark theme's black.
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           ),
@@ -207,10 +211,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Text(
               l10n.screen,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.deepPurple,
+                // From the scheme, not Colors.deepPurple: the literal is a
+                // low-contrast blue-violet on the dark theme's black.
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           ),
@@ -235,10 +241,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Text(
               l10n.backup,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.deepPurple,
+                // From the scheme, not Colors.deepPurple: the literal is a
+                // low-contrast blue-violet on the dark theme's black.
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           ),

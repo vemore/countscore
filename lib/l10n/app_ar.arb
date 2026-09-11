@@ -304,6 +304,7 @@
   "confirmRegenerateAnalysis": "إعادة الإنشاء؟ سيتم استبدال التحليل الحالي.",
   "confirmDeleteAnalysis": "حذف تحليل هذه المباراة؟",
   "analysisError": "فشل إنشاء التحليل",
+  "analysisErrorStatus": "فشل إنشاء التحليل (HTTP {status})",
   "retry": "إعادة المحاولة",
   "analysisGeneratedAt": "تم الإنشاء في {date}",
   "serverSection": "الخادم",

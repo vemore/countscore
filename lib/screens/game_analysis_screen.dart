@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -18,9 +19,13 @@ import 'settings_screen.dart';
 
 class GameAnalysisScreen extends StatefulWidget {
   // Public so it stays usable as an injection seam from outside this library.
-  const GameAnalysisScreen({super.key, this.repository});
+  const GameAnalysisScreen({super.key, this.repository, this.httpClient});
 
   final GameAnalysisRepository? repository;
+
+  /// Injection seam for tests, exactly like [repository]: the screen otherwise
+  /// builds its own client. The app never passes one.
+  final http.Client? httpClient;
 
   @override
   State<GameAnalysisScreen> createState() => _GameAnalysisScreenState();
@@ -117,7 +122,8 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
         'history_by_player_name': historyByName,
       };
 
-      final result = await BackendClient(baseUrl).zapzapAnalysis(payload);
+      final result = await BackendClient(baseUrl, httpClient: widget.httpClient)
+          .zapzapAnalysis(payload);
       final text = result.content;
       final modelId = result.model;
       final now = DateTime.now();
@@ -139,19 +145,38 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
       });
     } on TimeoutException {
       if (!mounted) return;
-      final l10n = AppLocalizations.of(context)!;
-      setState(() {
-        _isLoading = false;
-        _error = l10n.analysisError;
-      });
+      _reportFailure(AppLocalizations.of(context)!.analysisError);
+    } on BackendException catch (e) {
+      if (!mounted) return;
+      debugPrint('zapzap analysis failed: $e'); // status + body stay in the log
+      _reportFailure(
+        AppLocalizations.of(context)!.analysisErrorStatus(e.statusCode),
+      );
     } catch (e) {
       if (!mounted) return;
-      final l10n = AppLocalizations.of(context)!;
-      setState(() {
-        _isLoading = false;
-        _error = '${l10n.analysisError}\n$e';
-      });
+      debugPrint('zapzap analysis failed: $e');
+      _reportFailure(AppLocalizations.of(context)!.analysisError);
     }
+  }
+
+  /// Reports a generation failure without destroying what is already on screen.
+  ///
+  /// A cached analysis is local data that a failed refresh never touched — the
+  /// repository is only written on success. Replacing it with a full-screen
+  /// error made it look destroyed, so with content present the failure is a
+  /// snackbar and the error state is kept for the case where there is nothing
+  /// to show at all.
+  void _reportFailure(String message) {
+    final hadContent = _analysisText != null;
+    setState(() {
+      _isLoading = false;
+      if (!hadContent) _error = message;
+    });
+    if (!hadContent) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: Theme.of(context).colorScheme.error,
+    ));
   }
 
   Future<void> _regenerate() async {
@@ -237,7 +262,12 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
           ),
         ],
       ),
-      body: _buildBody(context, l10n, canGenerate: canGenerate),
+      // The footer used to be drawn behind the system gesture bar. Wrapping the
+      // whole body covers all four branches; `top` is already handled by the AppBar.
+      body: SafeArea(
+        top: false,
+        child: _buildBody(context, l10n, canGenerate: canGenerate),
+      ),
     );
   }
 
@@ -294,6 +324,10 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
       );
     }
 
+    // Only ever non-null when there is nothing to show: `_reportFailure` sends a
+    // failure here exclusively when no analysis is loaded, and to a snackbar
+    // otherwise. So this branch preceding the `_analysisText == null` one below
+    // is safe, and moving it would leave a second route back to the old bug.
     if (_error != null) {
       return Center(
         child: Padding(
@@ -340,7 +374,7 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
         : '';
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

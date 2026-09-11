@@ -868,6 +868,26 @@
   },
 
   "analysisError": "Échec de la génération de l'analyse",
+
+  "analysisErrorStatus": "Échec de la génération de l'analyse (HTTP {status})",
+
+  "@analysisErrorStatus": {
+
+    "description": "Analysis failure carrying the HTTP status returned by the user's own server",
+
+    "placeholders": {
+
+      "status": {
+
+        "type": "int",
+
+        "example": "502"
+
+      }
+
+    }
+
+  },
   "@analysisError": {
     "description": "Error message when LLM call fails"
   },

@@ -88,7 +88,10 @@ regenerate action stays disabled and delete stays enabled.
 
 The HTTP call lives in `lib/services/backend_client.dart`: `zapzapAnalysis` (90 s timeout)
 and `health` (10 s, used by the Test-connection button). It remains the only HTTP call in the
-whole app.
+whole app. A non-200 arrives as `BackendException(statusCode, body)`; the screen shows the
+status alone (`analysisErrorStatus`) and sends the body to `debugPrint`, never to the UI. A
+failure with an analysis already on screen is a snackbar, not the error state — the cached
+text is local data a failed refresh never touched.
 
 ### Rate limiting and budget
 

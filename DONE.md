@@ -6,6 +6,80 @@ readable after the fact.
 
 ---
 
+## A failed regeneration hides the cached analysis until you leave the screen
+
+**Status:** done (2026-09-11) — closed on `fix/zapzap-mistral-and-analysis-ui`.
+
+`_buildBody` in `lib/screens/game_analysis_screen.dart` tests `_error != null` **before**
+`_analysisText == null`, so a failed regenerate replaces the existing analysis with the error
+state. The stored row is untouched — `upsert` only runs on success, and navigating away and
+back shows the text again — but from the user's side their analysis appears to have been
+destroyed by a failed refresh.
+
+Two changes worth making together:
+
+1. Keep the cached text on screen and report the failure as a snackbar, or render the error
+   above the content rather than instead of it.
+2. Stop printing the raw exception. The error line currently reads
+   `Échec de la génération de l'analyse` followed by
+   `Exception: HTTP 502: {"detail":"upstream LLM error: RuntimeError"}`. Now that the server
+   is one the user runs, a status code is genuinely useful to them — but the JSON body and the
+   Dart exception prefix are not.
+
+Closed by splitting the failure from the content. `_reportFailure` now writes `_error` only
+when there is nothing on screen; with a cached analysis present the failure is a snackbar in
+`colorScheme.error` and the text stays put. The `_buildBody` cascade was deliberately **not**
+reordered — `_error` is now unreachable while content exists, and moving the branch would have
+left a second route back to the same bug. The raw exception is gone too: `BackendClient` throws
+`BackendException(statusCode, body)`, the screen shows `analysisErrorStatus` (the status alone)
+and sends the body to `debugPrint`. Fixing the throw path also fixed a latent mojibake bug —
+`response.body` decodes latin-1 with no charset, where the success path already used
+`utf8.decode(bodyBytes)`. Four tests in `test/services/backend_client_test.dart` and two in
+`test/screens/game_analysis_screen_test.dart` pin all of it, the second asserting the cached
+text survives and that no `Exception:` or JSON body reaches the UI.
+
+---
+
+## The analysis footer sits under the navigation bar
+
+**Status:** done (2026-09-11) — closed on `fix/zapzap-mistral-and-analysis-ui`.
+
+`lib/screens/game_analysis_screen.dart` ends its `SingleChildScrollView` with
+`padding: EdgeInsets.fromLTRB(16, 16, 16, 32)` and no `SafeArea`. Scrolled to the bottom, the
+"Généré le … · <model>" line is drawn behind the system gesture bar and is partly unreadable.
+32 logical pixels is less than the bottom inset on this device.
+
+Fix: wrap the body in a `SafeArea(bottom: true)`, or add
+`MediaQuery.viewPaddingOf(context).bottom` to that padding. Pre-existing; the footer has
+always been there.
+
+Closed by wrapping the `Scaffold`'s `body` in `SafeArea(top: false)` rather than adding the
+inset to one padding: that covers all four branches of `_buildBody`, not just the content one,
+and needs no arithmetic. The bottom padding dropped from 32 to a plain `EdgeInsets.all(16)` —
+keeping 32 on top of a `SafeArea` would double-count the inset and open a visible gap. The one
+precedent in `lib/` is `game_board_screen.dart:342`.
+
+---
+
+## Section headers are hardcoded `Colors.deepPurple`, which is weak in dark mode
+
+**Status:** done (2026-09-11) — closed on `fix/zapzap-mistral-and-analysis-ui`.
+
+Every section header in `lib/screens/settings_screen.dart` ("Apparence", "Serveur", "Écran",
+"Sauvegarde") uses `color: Colors.deepPurple` rather than a colour from the scheme. On black
+that purple is a low-contrast, saturated blue-violet. The Server section added on 2026-09-11
+copied the existing style rather than diverge from its neighbours, so the fix is one change
+across all four: `Theme.of(context).colorScheme.primary`.
+
+Closed by taking all four from `Theme.of(context).colorScheme.primary` (the `const` on the
+`TextStyle` goes with it). The theme is already seeded on `Colors.deepPurple`
+(`lib/main.dart:82,95`), so the hue is unchanged in light mode and correctly lightened in dark.
+Every other `Colors.deepPurple` in `lib/` is a card default, an avatar palette entry or the seed
+itself, and was left alone. Filed rather than widened: `_snack` in the same file still hardcodes
+`Colors.green`/`Colors.red`.
+
+---
+
 ## `.llmwiki/Testing.md` is missing a test file
 
 **Status:** done (2026-09-11) — closed on `feat/configurable-backend-url`, which added two

@@ -16,14 +16,19 @@
 | `test/widget_test.dart` (8) | Model serialisation only — it pumps no widgets, despite the name. |
 | `test/providers/theme_provider_test.dart` (7) | `ThemeMode` decode fallbacks and the SharedPreferences round-trip. |
 | `test/providers/backend_provider_test.dart` (10) | Backend URL validation — https anywhere, http only on a private or loopback host — and the persistence round-trip, including that a cleared setting is not re-seeded from `--dart-define`. |
-| `test/screens/game_analysis_screen_test.dart` (3) | The only widget-pumping tests: with no backend configured the analysis screen offers no generation, a cached analysis still renders, and configuring one restores the button. |
+| `test/screens/game_analysis_screen_test.dart` (5) | The only widget-pumping tests: with no backend configured the analysis screen offers no generation, a cached analysis still renders, and configuring one restores the button; plus the two failure paths — a failed regeneration keeps the cached text and warns by snackbar, and with nothing cached the error state carries the HTTP status and no raw exception. |
+| `test/services/backend_client_test.dart` (4) | `BackendException` carries the status, keeps the body for logging, and decodes utf8 on both the error and the success path. `MockClient` from `package:http/testing.dart`. |
+
+Neither the `SafeArea` inset nor the scheme-derived header colour has a widget test: both
+need golden files this repo does not use, and an assertion that a `SafeArea` exists proves
+nothing. They were verified on device on 2026-09-11.
 
 The Analyze menu entry's own gating (`game_board_screen.dart`, `isConfigured ||
 _hasCachedAnalysis`) has **no** widget test: pumping the board needs a loaded game and six
 repositories. It was verified on device on 2026-09-11 — both directions, and the p171 case
 where neither condition holds.
 
-50 tests in seven files.
+56 tests in eight files.
 
 ### End-to-end — `integration_test/app_test.dart`
 
@@ -36,6 +41,11 @@ backend is configured, so the teardown always runs.
 Finders are locale-proof across all 10 languages: `Key`s (`player_picker_search`,
 `player_picker_create`, `create_game_submit`, `board_add_round`, `analysis_generate`), icons,
 and the untranslated literal `ZapZap`.
+
+**`pumpAndSettle` cannot be used while the analysis screen is loading.** Its
+`CircularProgressIndicator` animates forever, so the call times out; and settling *after* the
+failure waits out the snackbar's own auto-dismiss, leaving nothing to assert. The failure
+tests hand-pump instead — see `_pumpFailure` in `test/screens/game_analysis_screen_test.dart`.
 
 **`pumpAndSettle` is not sufficient on web.** The Drift web worker resolves asynchronously
 without scheduling a frame, so the suite uses hand-rolled waiters `_waitFor`, `_waitEnabled`
