@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cleartext is permitted here at the platform level, and restricted to private
+  addresses one layer up, in BackendProvider.check
+  (lib/providers/backend_provider.dart).
+
+  That split is not a preference: Android's network security config matches on
+  host *names*, not address ranges, so "http:// is fine on 192.168.0.0/16 and
+  nowhere else" cannot be written in this file at all. The app therefore refuses
+  to store an http:// URL whose host is not private, which means no cleartext
+  request is ever issued even though the platform would allow one.
+
+  Everything else stays at the Android 9+ default: TLS is required, and system
+  trust anchors are used.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

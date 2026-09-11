@@ -305,5 +305,18 @@
   "confirmDeleteAnalysis": "Analyse für diese Partie löschen?",
   "analysisError": "Analyse konnte nicht erstellt werden",
   "retry": "Erneut versuchen",
-  "analysisGeneratedAt": "Erstellt am {date}"
+  "analysisGeneratedAt": "Erstellt am {date}",
+  "serverSection": "Server",
+  "backendUrlLabel": "Server-URL",
+  "backendUrlHint": "https://countscore.example.com",
+  "backendUrlDescription": "Für die Online-Funktionen wird ein CountScore-Server benötigt. Richte einen aus dem Ordner backend/ ein und trage hier seine Adresse ein. Ohne Server verlassen keine Daten dieses Gerät.",
+  "backendNotConfigured": "Kein Server konfiguriert",
+  "backendUrlInvalid": "Ungültige Adresse. Gib eine vollständige URL ein, zum Beispiel https://countscore.example.com",
+  "backendUrlInsecure": "http:// wird nur im lokalen Netzwerk akzeptiert. Für einen öffentlichen Server https:// verwenden.",
+  "testConnection": "Verbindung testen",
+  "connectionOk": "Der Server antwortet",
+  "connectionFailed": "Der Server antwortet nicht",
+  "serverUrlSaved": "Server gespeichert",
+  "analysisRequiresBackend": "Diese Analyse benötigt einen Server. Richte einen in den Einstellungen ein.",
+  "openSettings": "Einstellungen öffnen"
 }

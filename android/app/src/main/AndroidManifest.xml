@@ -1,12 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Required by the ZapZap analysis, the only network call the app makes
-         (lib/screens/game_analysis_screen.dart) and always user-initiated.
+         (lib/screens/game_analysis_screen.dart) and always user-initiated. It
+         reaches a backend the user configures themselves in Settings; with none
+         configured — the default — the app issues no request at all.
          src/debug and src/profile declare it too, for hot reload — but a release
          build merges neither, so it gets no permission that is not declared here. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="CountScore"
         android:name="${applicationName}"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

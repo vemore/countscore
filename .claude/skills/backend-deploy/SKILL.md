@@ -5,7 +5,9 @@ description: Deploy or roll back the CountScore FastAPI backend on the Synology 
 
 # Deploying the CountScore backend
 
-Target: `https://countscore.ombivince.synology.me`. Topology, service list and the full
+Target: the host named by `PUBLIC_URL` in `backend/scripts/deploy.env` — untracked, because
+it is one person's infrastructure and this repository is public. Copy
+`backend/scripts/deploy.env.example` if it is missing. Topology, service list and the full
 environment table are in `.llmwiki/Deployment.md`. For general NAS operations unrelated to
 this app, the `deploy-nas` skill covers the machine itself.
 
@@ -62,13 +64,15 @@ cd backend
 ./scripts/deploy_nas.sh
 ```
 
-The script builds the image, pushes it to the local registry `192.168.1.25:5050`, SSHes to
-`nas`, brings the compose stack up, and runs `alembic upgrade head`.
+The script builds the image, pushes it to the registry named by `$REGISTRY`, SSHes to
+`$NAS_SSH`, brings the compose stack up, and runs `alembic upgrade head`. All three come
+from `scripts/deploy.env`; the script exits naming the variable if one is missing.
 
 ## 4. Verify
 
 ```bash
-curl -s https://countscore.ombivince.synology.me/health
+source scripts/deploy.env
+curl -s "$PUBLIC_URL/health"
 # expect: {"status":"ok","version":...}
 ```
 
@@ -76,7 +80,7 @@ Then exercise a real path — the unauthenticated analysis endpoint is the quick
 proof, since it crosses TLS, the app, and the LLM provider:
 
 ```bash
-curl -s -X POST https://countscore.ombivince.synology.me/comments/zapzap-analysis \
+curl -s -X POST "$PUBLIC_URL/comments/zapzap-analysis" \
   -H 'Content-Type: application/json' \
   -d @scripts/sample_payload.json | head -20
 ```

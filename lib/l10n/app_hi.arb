@@ -305,5 +305,18 @@
   "confirmDeleteAnalysis": "इस खेल का विश्लेषण हटाएँ?",
   "analysisError": "विश्लेषण उत्पन्न करने में विफल",
   "retry": "पुनः प्रयास करें",
-  "analysisGeneratedAt": "{date} को उत्पन्न"
+  "analysisGeneratedAt": "{date} को उत्पन्न",
+  "serverSection": "सर्वर",
+  "backendUrlLabel": "सर्वर URL",
+  "backendUrlHint": "https://countscore.example.com",
+  "backendUrlDescription": "कनेक्टेड सुविधाओं के लिए एक CountScore सर्वर आवश्यक है। इसे backend/ फ़ोल्डर से इंस्टॉल करें और उसका पता यहाँ दर्ज करें। सर्वर के बिना, कोई भी डेटा इस डिवाइस से बाहर नहीं जाता।",
+  "backendNotConfigured": "कोई सर्वर कॉन्फ़िगर नहीं है",
+  "backendUrlInvalid": "अमान्य पता। पूरा URL दर्ज करें, उदाहरण के लिए https://countscore.example.com",
+  "backendUrlInsecure": "http:// केवल लोकल नेटवर्क पर स्वीकार किया जाता है। सार्वजनिक सर्वर के लिए https:// का उपयोग करें।",
+  "testConnection": "कनेक्शन जाँचें",
+  "connectionOk": "सर्वर प्रतिक्रिया दे रहा है",
+  "connectionFailed": "सर्वर प्रतिक्रिया नहीं दे रहा है",
+  "serverUrlSaved": "सर्वर सहेजा गया",
+  "analysisRequiresBackend": "इस विश्लेषण के लिए एक सर्वर आवश्यक है। सेटिंग्स में एक कॉन्फ़िगर करें।",
+  "openSettings": "सेटिंग्स खोलें"
 }

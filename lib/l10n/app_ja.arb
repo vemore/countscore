@@ -305,5 +305,18 @@
   "confirmDeleteAnalysis": "このゲームの分析を削除しますか？",
   "analysisError": "分析の生成に失敗しました",
   "retry": "再試行",
-  "analysisGeneratedAt": "{date} に生成"
+  "analysisGeneratedAt": "{date} に生成",
+  "serverSection": "サーバー",
+  "backendUrlLabel": "サーバーの URL",
+  "backendUrlHint": "https://countscore.example.com",
+  "backendUrlDescription": "オンライン機能には CountScore サーバーが必要です。backend/ フォルダーから自分で用意し、そのアドレスをここに入力してください。サーバーが未設定の場合、データが端末から送信されることはありません。",
+  "backendNotConfigured": "サーバーが未設定です",
+  "backendUrlInvalid": "https://countscore.example.com のような完全な URL を入力してください",
+  "backendUrlInsecure": "http:// はローカルネットワークでのみ使用できます。公開サーバーには https:// を使用してください。",
+  "testConnection": "接続をテスト",
+  "connectionOk": "サーバーは応答しています",
+  "connectionFailed": "サーバーが応答しません",
+  "serverUrlSaved": "サーバーを保存しました",
+  "analysisRequiresBackend": "この分析にはサーバーが必要です。設定から構成してください。",
+  "openSettings": "設定を開く"
 }

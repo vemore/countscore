@@ -553,4 +553,47 @@ class AppLocalizationsAr extends AppLocalizations {
   String analysisGeneratedAt(String date) {
     return 'تم الإنشاء في $date';
   }
+
+  @override
+  String get serverSection => 'الخادم';
+
+  @override
+  String get backendUrlLabel => 'عنوان الخادم';
+
+  @override
+  String get backendUrlHint => 'https://countscore.example.com';
+
+  @override
+  String get backendUrlDescription =>
+      'تتطلب الميزات المتصلة خادم CountScore. ثبّت خادمًا من مجلد backend/ وأدخل عنوانه هنا. بدون خادم، لا تغادر أي بيانات هذا الجهاز.';
+
+  @override
+  String get backendNotConfigured => 'لم يتم إعداد أي خادم';
+
+  @override
+  String get backendUrlInvalid =>
+      'عنوان غير صالح. أدخل رابطًا كاملًا، مثل https://countscore.example.com';
+
+  @override
+  String get backendUrlInsecure =>
+      'لا يُقبل http:// إلا على شبكة محلية. استخدم https:// لخادم عام.';
+
+  @override
+  String get testConnection => 'اختبار الاتصال';
+
+  @override
+  String get connectionOk => 'الخادم يستجيب';
+
+  @override
+  String get connectionFailed => 'الخادم لا يستجيب';
+
+  @override
+  String get serverUrlSaved => 'تم حفظ الخادم';
+
+  @override
+  String get analysisRequiresBackend =>
+      'يتطلب هذا التحليل خادمًا. قم بإعداد واحد من الإعدادات.';
+
+  @override
+  String get openSettings => 'فتح الإعدادات';
 }

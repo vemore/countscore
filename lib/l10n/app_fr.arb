@@ -886,5 +886,57 @@
         "example": "04/05/2026 14:30"
       }
     }
+  },
+  "serverSection": "Serveur",
+  "@serverSection": {
+    "description": "Section title for the self-hosted backend settings"
+  },
+  "backendUrlLabel": "URL du serveur",
+  "@backendUrlLabel": {
+    "description": "Label of the backend base URL text field"
+  },
+  "backendUrlHint": "https://countscore.example.com",
+  "@backendUrlHint": {
+    "description": "Placeholder text inside the backend URL field"
+  },
+  "backendUrlDescription": "Les fonctions connectées nécessitent un serveur CountScore. Installez-en un depuis le dossier backend/ et indiquez son adresse ici. Sans serveur, aucune donnée ne quitte cet appareil.",
+  "@backendUrlDescription": {
+    "description": "Explains that connected features need a self-hosted server"
+  },
+  "backendNotConfigured": "Aucun serveur configuré",
+  "@backendNotConfigured": {
+    "description": "Shown under the field when no backend URL is set"
+  },
+  "backendUrlInvalid": "Adresse invalide. Saisissez une URL complète, par exemple https://countscore.example.com",
+  "@backendUrlInvalid": {
+    "description": "Validation error for a URL that is not a usable http(s) address"
+  },
+  "backendUrlInsecure": "http:// n'est accepté que sur un réseau local. Utilisez https:// pour un serveur public.",
+  "@backendUrlInsecure": {
+    "description": "Validation error for http:// on a public host"
+  },
+  "testConnection": "Tester la connexion",
+  "@testConnection": {
+    "description": "Button that calls GET /health on the configured server"
+  },
+  "connectionOk": "Le serveur répond",
+  "@connectionOk": {
+    "description": "Result of a successful connection test"
+  },
+  "connectionFailed": "Le serveur ne répond pas",
+  "@connectionFailed": {
+    "description": "Result of a failed connection test"
+  },
+  "serverUrlSaved": "Serveur enregistré",
+  "@serverUrlSaved": {
+    "description": "Snackbar shown after the backend URL is saved"
+  },
+  "analysisRequiresBackend": "Cette analyse nécessite un serveur. Configurez-en un dans les paramètres.",
+  "@analysisRequiresBackend": {
+    "description": "Empty state on the analysis screen when no server is configured"
+  },
+  "openSettings": "Ouvrir les paramètres",
+  "@openSettings": {
+    "description": "Button that opens the settings screen"
   }
 }

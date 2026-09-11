@@ -305,5 +305,18 @@
   "confirmDeleteAnalysis": "Excluir a análise desta partida?",
   "analysisError": "Falha ao gerar a análise",
   "retry": "Tentar novamente",
-  "analysisGeneratedAt": "Gerado em {date}"
+  "analysisGeneratedAt": "Gerado em {date}",
+  "serverSection": "Servidor",
+  "backendUrlLabel": "URL do servidor",
+  "backendUrlHint": "https://countscore.example.com",
+  "backendUrlDescription": "As funcionalidades conectadas precisam de um servidor CountScore. Instale um a partir da pasta backend/ e informe o endereço aqui. Sem servidor, nenhum dado sai deste dispositivo.",
+  "backendNotConfigured": "Nenhum servidor configurado",
+  "backendUrlInvalid": "Endereço inválido. Informe uma URL completa, por exemplo https://countscore.example.com",
+  "backendUrlInsecure": "http:// só é aceito em uma rede local. Use https:// para um servidor público.",
+  "testConnection": "Testar conexão",
+  "connectionOk": "O servidor está respondendo",
+  "connectionFailed": "O servidor não está respondendo",
+  "serverUrlSaved": "Servidor salvo",
+  "analysisRequiresBackend": "Esta análise precisa de um servidor. Configure um nas configurações.",
+  "openSettings": "Abrir configurações"
 }

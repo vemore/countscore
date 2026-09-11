@@ -2,11 +2,15 @@
 
 > Scope: production topology and environment. For the procedure, use the `backend-deploy` skill.
 > Related: [[Backend]] · [[Security]] · [[Web]] · [[LlmProviders]]
-> Updated: 2026-09-09
+> Updated: 2026-09-11
 
 ## Facts
 
-**URL**: `https://countscore.ombivince.synology.me`
+**URL**: whatever `PUBLIC_URL` in `backend/scripts/deploy.env` names. That file is
+untracked, and so are the NAS hostname, the registry address and the SSH alias: the
+repository is public and they are one person's infrastructure. The tracked template is
+`backend/scripts/deploy.env.example`; `deploy_nas.sh` sources the real one and exits naming
+any variable it is missing.
 
 **TLS**: Synology **Web Station** with its built-in Let's Encrypt certificate, reverse
 proxying to `http://127.0.0.1:8087`. Caddy was removed and is no longer part of the stack.
@@ -15,7 +19,7 @@ proxying to `http://127.0.0.1:8087`. Caddy was removed and is no longer part of 
 
 | Service | Detail |
 |---|---|
-| `api` | FastAPI/uvicorn, **1 worker**. Image from the local NAS registry `192.168.1.25:5050/countscore:latest`. Port `127.0.0.1:8087:8000`. |
+| `api` | FastAPI/uvicorn, **1 worker**. Image from the local NAS registry, `$REGISTRY/countscore:latest`. Port `127.0.0.1:8087:8000`. |
 | `db` | Postgres 17-alpine, mounted volume. |
 | `db-backup` | Sidecar cron: `pg_dump → /backups`, 7-day rotation. |
 
@@ -33,7 +37,7 @@ cd backend
 Dev uses `docker-compose.yml` (no TLS, local Postgres): `docker compose up -d` — db plus
 api on 8000 plus the backup sidecar.
 
-Verify with `https://countscore.ombivince.synology.me/health` → `{"status": "ok"}`.
+Verify with `curl "$PUBLIC_URL/health"` → `{"status": "ok"}`.
 
 There is **no deployment path for the Flutter web app** in this repo — no vhost, no
 hosting config. Only the backend container is covered. See [[Web]].
@@ -69,8 +73,14 @@ hosting config. Only the backend container is covered. See [[Web]].
   Encrypt; running Caddy meant a second certificate authority path and another container to
   keep alive for no gain.
 - **A local Docker registry on the NAS rather than a public one.** The image is not public
-  and the NAS is on the LAN — pushing to `192.168.1.25:5050` avoids credentials, egress and
-  a third-party dependency in the deploy path.
+  and the NAS is on the LAN — pushing to a registry on that LAN avoids credentials, egress
+  and a third-party dependency in the deploy path.
+- **The deployment target left the repository (2026-09-11).** It was spread over
+  `deploy_nas.sh`, `docker-compose.prod.yml`, `backend/README.md`, this page and the
+  `backend-deploy` skill. Once the app's backend URL became a user setting, publishing the
+  owner's NAS hostname and LAN registry IP alongside it served nothing. They moved to the
+  untracked `backend/scripts/deploy.env`. Git history still carries them — rewriting it is
+  forbidden by `CLAUDE.md`, and the point is that nothing published *from here on* does.
 - **Backups are `pg_dump` on a cron sidecar with 7-day rotation**, not a managed service.
   The dataset is small and the recovery story is "copy a file back".
 - **`LLM_PROVIDER` defaults to `bedrock` in code**, but production has been run on

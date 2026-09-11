@@ -30,19 +30,25 @@ L'API est sur `http://localhost:8000`. La doc OpenAPI sur `http://localhost:8000
 
 ## Déploiement production (NAS Synology + Web Station)
 
-La prod tourne sur le NAS Synology (192.168.1.25) via le registre Docker local. **Synology
-Web Station** gère le reverse-proxy + TLS pour `https://countscore.ombivince.synology.me/` —
-il n'y a donc plus de Caddy. L'API est publiée sur `127.0.0.1:8087` (voir
-`docker-compose.prod.yml`), accessible uniquement par Web Station.
+La prod tourne sur un NAS Synology via un registre Docker local. **Synology Web Station**
+gère le reverse-proxy + TLS pour l'URL publique — il n'y a donc plus de Caddy. L'API est
+publiée sur `127.0.0.1:8087` (voir `docker-compose.prod.yml`), accessible uniquement par
+Web Station.
+
+L'hôte, le registre et l'alias SSH ne sont **pas** dans le dépôt : ils vivent dans
+`scripts/deploy.env` (gitignoré, template `scripts/deploy.env.example`), que
+`scripts/deploy_nas.sh` lit au démarrage. Les exemples ci-dessous utilisent les variables
+qu'il définit.
 
 **Mise en place initiale (une fois) :** poser le `.env` de prod sur le NAS (les secrets
 restent hors dépôt) :
 
 ```bash
 # Remplir un .env local avec les valeurs de prod :
-#   POSTGRES_PASSWORD, CORS_ORIGINS=https://countscore.ombivince.synology.me,
+#   POSTGRES_PASSWORD, CORS_ORIGINS=$PUBLIC_URL,
 #   LLM_PROVIDER=mistral (+ MISTRAL_API_KEY) — ou le provider voulu.
-cat .env | ssh nas "cat > /volume1/docker/countscore/.env"
+source scripts/deploy.env
+cat .env | ssh "$NAS_SSH" "cat > $NAS_DEPLOY_DIR/.env"
 ```
 
 **Déployer** (build → push registre → compose up → migrations) :
@@ -54,14 +60,13 @@ cat .env | ssh nas "cat > /volume1/docker/countscore/.env"
 
 **Configurer Web Station** (Panneau de configuration → Portail des applications →
 Reverse Proxy) :
-- Source : `https://countscore.ombivince.synology.me` (port 443, HSTS activé)
+- Source : votre URL publique, celle de `PUBLIC_URL` (port 443, HSTS activé)
 - Destination : `http://localhost:8087`
 - **Activer le support WebSocket** (onglet « En-tête personnalisé » → WebSocket) pour
   l'endpoint temps réel `/sync/stream`.
-- Créer le certificat Let's Encrypt pour `countscore.ombivince.synology.me` une fois le
-  proxy en place.
+- Créer le certificat Let's Encrypt pour ce domaine une fois le proxy en place.
 
-**Vérification :** `curl https://countscore.ombivince.synology.me/health`.
+**Vérification :** `curl "$PUBLIC_URL/health"`.
 
 > Pour un test full-stack local (db + api + backup, sans Caddy) : `docker compose up -d`
 > puis `curl http://localhost:8000/health`.
@@ -149,8 +154,9 @@ Voir `.env.example`. Critiques :
 - `ANTHROPIC_API_KEY` : sans elle, `/comments/mvp` et `/comments/...` (Claude) retournent 503
 - `LLM_PROVIDER` + clé du provider choisi : sans elles, `/comments/zapzap-analysis` retourne 503
 - `POSTGRES_PASSWORD` : à durcir en production
-- `CORS_ORIGINS` : whitelist des origines (jamais `*` — rejeté au démarrage). En prod :
-  `https://countscore.ombivince.synology.me`
+- `CORS_ORIGINS` : whitelist des origines (jamais `*` — rejeté au démarrage). En prod,
+  l'origine qui sert le client — et, si vous hébergez le backend pour d'autres, chacune des
+  origines qui doivent pouvoir l'appeler
 - `IP_RL_PER_MINUTE` / `IP_RL_PER_HOUR` : plafond par IP des endpoints LLM non authentifiés
 
 ## Sécurité

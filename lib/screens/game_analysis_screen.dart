@@ -1,19 +1,20 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/game_analysis.dart';
+import '../providers/backend_provider.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
 import '../repositories/drift/drift_repositories.dart';
 import '../repositories/game_analysis_repository.dart';
+import '../services/backend_client.dart';
 import '../services/drift/database.dart';
+import 'settings_screen.dart';
 
 class GameAnalysisScreen extends StatefulWidget {
   // Public so it stays usable as an injection seam from outside this library.
@@ -26,12 +27,6 @@ class GameAnalysisScreen extends StatefulWidget {
 }
 
 class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
-  static const _backendUrl = String.fromEnvironment(
-    'BACKEND_URL',
-    defaultValue: 'https://countscore.ombivince.synology.me',
-  );
-  static const _requestTimeout = Duration(seconds: 90);
-
   late final GameAnalysisRepository _repo =
       widget.repository ?? DriftGameAnalysisRepository(AppDatabase.instance);
 
@@ -66,8 +61,9 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
   Future<void> _generate() async {
     final gameProvider = context.read<GameProvider>();
     final gameTypeProvider = context.read<GameTypeProvider>();
+    final baseUrl = context.read<BackendProvider>().baseUrl;
     final game = gameProvider.currentGame;
-    if (game == null || game.id == null) return;
+    if (game == null || game.id == null || baseUrl == null) return;
 
     setState(() {
       _isLoading = true;
@@ -121,21 +117,9 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
         'history_by_player_name': historyByName,
       };
 
-      final response = await http
-          .post(
-            Uri.parse('$_backendUrl/comments/zapzap-analysis'),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode(payload),
-          )
-          .timeout(_requestTimeout);
-
-      if (response.statusCode != 200) {
-        throw Exception('HTTP ${response.statusCode}: ${response.body}');
-      }
-
-      final body = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
-      final text = body['content'] as String;
-      final modelId = body['model'] as String?;
+      final result = await BackendClient(baseUrl).zapzapAnalysis(payload);
+      final text = result.content;
+      final modelId = result.model;
       final now = DateTime.now();
 
       await _repo.upsert(GameAnalysis(
@@ -232,6 +216,9 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final hasContent = _analysisText != null;
+    // A cached analysis stays readable with no server configured — it is local
+    // data. Only generating it needs one.
+    final canGenerate = context.watch<BackendProvider>().isConfigured;
 
     return Scaffold(
       appBar: AppBar(
@@ -240,7 +227,8 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: l10n.regenerateAnalysis,
-            onPressed: hasContent && !_isLoading ? _regenerate : null,
+            onPressed:
+                hasContent && canGenerate && !_isLoading ? _regenerate : null,
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline),
@@ -249,11 +237,50 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
           ),
         ],
       ),
-      body: _buildBody(context, l10n),
+      body: _buildBody(context, l10n, canGenerate: canGenerate),
     );
   }
 
-  Widget _buildBody(BuildContext context, AppLocalizations l10n) {
+  /// Shown when no backend is configured: the feature is off by default and
+  /// the user has to point the app at a server of their own.
+  Widget _buildNoServer(BuildContext context, AppLocalizations l10n) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.cloud_off,
+                size: 48, color: Theme.of(context).colorScheme.outline),
+            const SizedBox(height: 16),
+            Text(
+              l10n.analysisRequiresBackend,
+              key: const Key('analysis_no_server'),
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+            const SizedBox(height: 24),
+            FilledButton.icon(
+              icon: const Icon(Icons.settings),
+              label: Text(l10n.openSettings),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBody(
+    BuildContext context,
+    AppLocalizations l10n, {
+    required bool canGenerate,
+  }) {
     if (_isLoading) {
       return Center(
         child: Column(
@@ -295,6 +322,7 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
     }
 
     if (_analysisText == null) {
+      if (!canGenerate) return _buildNoServer(context, l10n);
       return Center(
         child: FilledButton.icon(
           key: const Key('analysis_generate'),

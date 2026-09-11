@@ -553,4 +553,47 @@ class AppLocalizationsDe extends AppLocalizations {
   String analysisGeneratedAt(String date) {
     return 'Erstellt am $date';
   }
+
+  @override
+  String get serverSection => 'Server';
+
+  @override
+  String get backendUrlLabel => 'Server-URL';
+
+  @override
+  String get backendUrlHint => 'https://countscore.example.com';
+
+  @override
+  String get backendUrlDescription =>
+      'Für die Online-Funktionen wird ein CountScore-Server benötigt. Richte einen aus dem Ordner backend/ ein und trage hier seine Adresse ein. Ohne Server verlassen keine Daten dieses Gerät.';
+
+  @override
+  String get backendNotConfigured => 'Kein Server konfiguriert';
+
+  @override
+  String get backendUrlInvalid =>
+      'Ungültige Adresse. Gib eine vollständige URL ein, zum Beispiel https://countscore.example.com';
+
+  @override
+  String get backendUrlInsecure =>
+      'http:// wird nur im lokalen Netzwerk akzeptiert. Für einen öffentlichen Server https:// verwenden.';
+
+  @override
+  String get testConnection => 'Verbindung testen';
+
+  @override
+  String get connectionOk => 'Der Server antwortet';
+
+  @override
+  String get connectionFailed => 'Der Server antwortet nicht';
+
+  @override
+  String get serverUrlSaved => 'Server gespeichert';
+
+  @override
+  String get analysisRequiresBackend =>
+      'Diese Analyse benötigt einen Server. Richte einen in den Einstellungen ein.';
+
+  @override
+  String get openSettings => 'Einstellungen öffnen';
 }

@@ -305,5 +305,18 @@
   "confirmDeleteAnalysis": "删除此游戏的分析？",
   "analysisError": "生成分析失败",
   "retry": "重试",
-  "analysisGeneratedAt": "生成于 {date}"
+  "analysisGeneratedAt": "生成于 {date}",
+  "serverSection": "服务器",
+  "backendUrlLabel": "服务器地址",
+  "backendUrlHint": "https://countscore.example.com",
+  "backendUrlDescription": "联网功能需要一台 CountScore 服务器。请从 backend/ 目录自行部署，并在此填写其地址。未配置服务器时，任何数据都不会离开本设备。",
+  "backendNotConfigured": "未配置服务器",
+  "backendUrlInvalid": "地址无效。请输入完整的 URL，例如 https://countscore.example.com",
+  "backendUrlInsecure": "http:// 仅在局域网内可用。公网服务器请使用 https://。",
+  "testConnection": "测试连接",
+  "connectionOk": "服务器响应正常",
+  "connectionFailed": "服务器无响应",
+  "serverUrlSaved": "服务器已保存",
+  "analysisRequiresBackend": "此分析需要一台服务器。请在设置中配置。",
+  "openSettings": "打开设置"
 }

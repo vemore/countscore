@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/game_type.dart';
 import '../models/round.dart';
+import '../providers/backend_provider.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
 import 'game_analysis_screen.dart';
@@ -50,6 +51,10 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                   : null;
               final isZapZap =
                   menuGameType?.name.toLowerCase() == 'zapzap';
+              // The analysis is the app's only network call: it is offered
+              // solely once the user has configured their own server.
+              final canAnalyse =
+                  isZapZap && context.watch<BackendProvider>().isConfigured;
 
               return PopupMenuButton<String>(
                 itemBuilder: (context) => [
@@ -73,7 +78,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                       ],
                     ),
                   ),
-                  if (isZapZap)
+                  if (canAnalyse)
                     PopupMenuItem(
                       value: 'analyze_game',
                       child: Row(

@@ -2,7 +2,7 @@
 
 > Scope: what is tested, how to run it, and the traps.
 > Related: [[MobileApp]] · [[DataLayer]] · [[SchemaV9]] · [[Backend]] · [[Web]] · [[KnownLimits]]
-> Updated: 2026-09-09
+> Updated: 2026-09-11
 
 ## Facts
 
@@ -14,13 +14,19 @@
 | `test/migration_v8_to_v9_test.dart` (4) | Hand-written v8 fixture; cross-game dedup and intra-game disambiguation. |
 | `test/drift/drift_repositories_test.dart` (9) | Full lifecycle through the Drift repositories over `AppDatabase.forTesting(NativeDatabase.memory())`. |
 | `test/widget_test.dart` (8) | Model serialisation only — it pumps no widgets, despite the name. |
+| `test/providers/theme_provider_test.dart` (7) | `ThemeMode` decode fallbacks and the SharedPreferences round-trip. |
+| `test/providers/backend_provider_test.dart` (10) | Backend URL validation — https anywhere, http only on a private or loopback host — and the persistence round-trip, including that a cleared setting is not re-seeded from `--dart-define`. |
+| `test/screens/game_analysis_screen_test.dart` (3) | The only widget-pumping tests: with no backend configured the analysis screen offers no generation, a cached analysis still renders, and configuring one restores the button. |
+
+50 tests in seven files.
 
 ### End-to-end — `integration_test/app_test.dart`
 
 One golden-path `testWidgets`, shared by web and device: create a ZapZap game → 2 global
 players (Alice, Bob) → 3 rounds of scores → check totals → check stats (Alice wins,
 lowest-wins) → generate a ZapZap analysis over a real network call → prove the
-`game_analyses` cache was used.
+`game_analyses` cache was used. The analysis half lives in `_analyse`, skipped whole when no
+backend is configured, so the teardown always runs.
 
 Finders are locale-proof across all 10 languages: `Key`s (`player_picker_search`,
 `player_picker_create`, `create_game_submit`, `board_add_round`, `analysis_generate`), icons,
@@ -37,18 +43,23 @@ chromedriver --port=4444 &
 flutter drive --driver=test_driver/integration_test.dart \
   --target=integration_test/app_test.dart \
   -d web-server --browser-name=chrome --headless \
-  --dart-define=BACKEND_URL=https://countscore.ombivince.synology.me
+  --dart-define=BACKEND_URL=<your backend URL>
 ```
 
-The ZapZap network step is **skipped** on web: production CORS does not allow a `localhost`
-origin. It is validated separately by `curl` and by the device run.
+The ZapZap network step is **skipped** on web whenever the configured backend's
+`CORS_ORIGINS` does not list the serving origin — normally the case for `localhost`. It is
+validated separately by `curl` and by the device run.
+
+It is also skipped, on both targets, when **no** `--dart-define=BACKEND_URL` was passed: the
+backend URL is a runtime setting with no default, so the Analyze menu entry is legitimately
+absent and `_analyse` is not entered. The teardown still runs.
 
 **Device run** — a clean database is required so the defaults are ZapZap and "Partie 1":
 
 ```bash
 adb shell pm clear com.vemore.countscore
 flutter test integration_test/app_test.dart -d <device_id> \
-  --dart-define=BACKEND_URL=https://countscore.ombivince.synology.me
+  --dart-define=BACKEND_URL=<your backend URL>
 ```
 
 This one exercises the real network call, with no CORS in the way. For broader on-device

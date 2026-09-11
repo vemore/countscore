@@ -1,6 +1,7 @@
 # Production compose for the Synology NAS. Copied to the NAS as compose.yaml by
 # scripts/deploy_nas.sh. No Caddy/TLS here: Synology Web Station terminates TLS and
-# reverse-proxies https://countscore.ombivince.synology.me/ -> http://localhost:8087.
+# reverse-proxies your public URL -> http://localhost:8087. The URL itself lives in
+# the untracked scripts/deploy.env, not in the repository.
 # The API is bound to 127.0.0.1 so only Web Station (on the NAS) can reach it.
 services:
   db:

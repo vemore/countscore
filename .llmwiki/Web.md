@@ -2,7 +2,7 @@
 
 > Scope: everything specific to the PWA build.
 > Related: [[DataLayer]] · [[MobileApp]] · [[Testing]] · [[LlmProviders]] · [[KnownLimits]]
-> Updated: 2026-09-09
+> Updated: 2026-09-11
 
 ## Facts
 
@@ -49,9 +49,11 @@ builds schema v9 directly. See [[DataLayer]].
 ### Building
 
 ```bash
-flutter build web --release --no-tree-shake-icons \
-  --dart-define=BACKEND_URL=https://countscore.ombivince.synology.me
+flutter build web --release --no-tree-shake-icons
 ```
+
+`--dart-define=BACKEND_URL=<url>` is optional and seeds the runtime setting only on a
+profile that has never configured a server — see [[LlmProviders]]. CI passes no such flag.
 
 `--no-tree-shake-icons` applies to web exactly as it does to apk — see [[MobileApp]].
 Add `--base-href=/subpath/` if not served from the domain root.
@@ -59,12 +61,17 @@ Add `--base-href=/subpath/` if not served from the domain root.
 There is **no committed hosting configuration for the Flutter web app** — no nginx or
 Caddy vhost anywhere in the repo. [[Deployment]] covers only the FastAPI container.
 
-### CORS caveat
+### CORS and mixed content
 
-Production CORS does not whitelist a `localhost` origin. A web build served locally against
-the production backend cannot reach `/comments/zapzap-analysis`. The e2e run skips that
-step for the same reason and it is validated by `curl` and on a device instead — see
-[[Testing]].
+The backend a user configures must whitelist the origin serving the PWA in its
+`CORS_ORIGINS`, or the analysis call fails in the browser and nowhere else. A web build
+served from `localhost` against a backend that does not list it cannot reach
+`/comments/zapzap-analysis`; the e2e run skips that step for the same reason and it is
+validated by `curl` and on a device instead — see [[Testing]].
+
+A second browser rule applies only on web: an `https://` page cannot call an `http://`
+backend, whatever the app allows. `BackendProvider.check` accepts `http://` on a private
+address for the Android case; on web that URL still only works from an http origin.
 
 ## Decisions & History
 
@@ -83,6 +90,9 @@ step for the same reason and it is validated by `curl` and on a device instead �
   > the PWA — but that is now a choice, not a workaround. **The committed
   > `drift_worker.js` is stale**: 351,222 B against the 355,222 B drift 2.34.4 ships.
   > Refreshing it is its own change, tracked in `TODO.md`.
+- **The Server section of Settings is *not* `kIsWeb`-guarded**, unlike wakelock and
+  export/import. The PWA needs a configured backend exactly as the Android app does, and a
+  browser user has no other way to supply one.
 - **Export/import is hidden rather than reimplemented on web.** It needs `dart:io`. Doing
   it properly means a `FileExporter` abstraction with a JSON serialisation path for the
   browser; that was scoped out of v1 rather than shipped half-working.

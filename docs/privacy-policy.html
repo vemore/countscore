@@ -88,13 +88,13 @@ th { background: var(--code-bg); }
 <main>
 <h1 id="privacy-policy-for-countscore">Privacy Policy for
 CountScore</h1>
-<p><strong>Last Updated</strong>: September 9, 2026</p>
+<p><strong>Last Updated</strong>: September 11, 2026</p>
 <p><strong>Effective Date</strong>: Applies to CountScore v1.1.0 and
 later</p>
-<p><strong>Previous versions</strong>: v2.0 (September 9, 2026) and v1.0
-(November 9, 2025). v1.0 applies to CountScore 1.0.x — the versions
-currently on the Play Store. See <a href="#version-history">Version
-History</a>.</p>
+<p><strong>Previous versions</strong>: v2.1 and v2.0 (September 9, 2026)
+and v1.0 (November 9, 2025). v1.0 applies to CountScore 1.0.x — the
+versions currently on the Play Store. See <a
+href="#version-history">Version History</a>.</p>
 <p><strong>Published at</strong>: <a
 href="https://vemore.github.io/countscore/privacy-policy.html">https://vemore.github.io/countscore/privacy-policy.html</a></p>
 <h2 id="introduction">Introduction</h2>
@@ -103,8 +103,11 @@ app") handles information when you use our application. CountScore is
 developed by vemore and is available on the Google Play Store.</p>
 <p><strong>In short</strong>: CountScore stores your games on your
 device and requires no account. It has no analytics, no tracking and no
-advertising. There is <strong>one</strong> feature that sends data off
-your device — the optional <strong>ZapZap analysis</strong> — and it
+advertising. Out of the box it sends nothing anywhere: the app contains
+<strong>no server address at all</strong>. There is <strong>one</strong>
+feature that can send data off your device — the optional <strong>ZapZap
+analysis</strong> — and it requires you to first enter, in Settings →
+Server, the address of a backend <strong>you</strong> run. Even then it
 only ever runs when you ask it to. That feature is described in full
 below.</p>
 <h2 id="developer-information">Developer Information</h2>
@@ -147,13 +150,22 @@ export/import feature (Android only).</li>
 </ul>
 <p>This data is not synchronised, backed up to us, or uploaded anywhere.
 It stays on your device until you delete it.</p>
-<h2 id="the-one-feature-that-sends-data-zapzap-analysis">The One Feature
-That Sends Data: ZapZap Analysis</h2>
+<h2 id="the-one-feature-that-can-send-data-zapzap-analysis">The One
+Feature That Can Send Data: ZapZap Analysis</h2>
 <p>CountScore includes an optional feature that generates a written
-analysis of a finished ZapZap game using a large language model (LLM).
-<strong>It never runs automatically.</strong> No data is sent unless you
-open a game's analysis screen and explicitly tap the button to generate
-one.</p>
+analysis of a finished ZapZap game using a large language model
+(LLM).</p>
+<p><strong>It is switched off until you supply a server.</strong> The
+app is published with no backend address, and none is compiled into it.
+Until you enter one in <strong>Settings → Server</strong>, the analysis
+is not offered anywhere in the interface and the app makes no network
+request whatsoever. The server you enter is one you host yourself — the
+source for it is in the <code>backend/</code> directory of the public
+repository. We operate no service on your behalf, and we receive no data
+from you at any point.</p>
+<p>Once a server is configured, <strong>the feature still never runs
+automatically.</strong> No data is sent unless you open a game's
+analysis screen and explicitly tap the button to generate one.</p>
 <h3 id="what-is-sent">What is sent</h3>
 <p>When you request an analysis, the app sends the following for that
 game:</p>
@@ -172,34 +184,45 @@ please do not put anything sensitive in them.</p>
 name is transmitted. We recommend first names or nicknames.</p>
 <h3 id="where-it-is-sent">Where it is sent</h3>
 <ol type="1">
-<li><strong>To the CountScore backend</strong>, over an encrypted
-HTTPS/TLS connection. This is a small self-hosted service run by the
-developer. For this feature the backend is <strong>stateless</strong>:
-it does not write your game data to any database, and it keeps no copy
-of it after the request completes.</li>
+<li><strong>To the backend whose address you entered</strong> — normally
+a machine you own, running the CountScore server software from the
+<code>backend/</code> directory. The connection is encrypted
+(HTTPS/TLS); the app accepts an unencrypted <code>http://</code> address
+only for a private or loopback address such as <code>192.168.1.10</code>
+or <code>localhost</code>, so that a server on your own home network
+works without a certificate. That server software is
+<strong>stateless</strong> for this feature: it does not write your game
+data to any database, and keeps no copy of it after the request
+completes.</li>
 <li><strong>From there to an LLM provider</strong>, which generates the
-analysis text. Depending on how the server is configured, this is
-<strong>Amazon Web Services (Bedrock), Google (Gemini), or Mistral
-AI</strong>. Your data is processed by that provider under
-<strong>their</strong> terms and retention policy, which we do not
-control.</li>
+analysis text. Which one depends on how <em>your</em> server is
+configured: <strong>Amazon Web Services (Bedrock), Google (Gemini), or
+Mistral AI</strong>. Your data is processed by that provider under
+<strong>their</strong> terms and retention policy, which neither we nor
+this app control.</li>
 </ol>
+<p>Because the destination is chosen by you, the operator of that server
+is responsible for it. If you point the app at someone else's server,
+you are trusting that operator.</p>
 <p>The generated text is returned to your device and cached locally, so
 an analysis is only generated once per game.</p>
 <h3 id="your-ip-address">Your IP address</h3>
-<p>To prevent abuse of a paid API, the backend applies a rate limit (5
-requests per minute, 30 per hour). This inspects the requesting IP
-address in server memory only. It is not written to a database and is
+<p>To prevent abuse of a paid API, the server software applies a rate
+limit (5 requests per minute, 30 per hour). This inspects the requesting
+IP address in server memory only. It is not written to a database and is
 discarded once the time window elapses. If a request to the LLM provider
 fails, the server writes a technical error entry to its log to allow
-diagnosis.</p>
+diagnosis. Those logs are on the server you run, not on any machine of
+ours.</p>
 <h3 id="legal-basis-and-how-to-avoid-it-entirely">Legal basis and how to
 avoid it entirely</h3>
 <p>The processing above is carried out <strong>on the basis of your
-consent</strong>, given by tapping the generate button. <strong>If you
-never use the ZapZap analysis feature, no data ever leaves your
-device.</strong> There is no way for it to be triggered by anything else
-in the app.</p>
+consent</strong>, given twice: once by configuring a server, and again
+by tapping the generate button. <strong>If you never configure a server,
+no data can leave your device at all</strong> — and even with one
+configured, nothing is sent until you ask. There is no way for it to be
+triggered by anything else in the app. Clearing the server address in
+Settings switches the feature back off.</p>
 <h2 id="information-we-do-not-collect">Information We Do NOT
 Collect</h2>
 <p>CountScore does <strong>not</strong> collect, transmit, store, or
@@ -229,24 +252,27 @@ other purpose, and nothing is ever sold.</strong></p>
 <h2 id="data-sharing-and-third-parties">Data Sharing and Third
 Parties</h2>
 <p>Apart from the ZapZap analysis described above, CountScore shares no
-data with anyone.</p>
-<p>For that one feature, the LLM provider (AWS, Google or Mistral AI,
-depending on server configuration) acts as a processor generating the
-analysis on our behalf. We do not share data with analytics providers,
-advertisers, data brokers, or social networks, and we do not sell
-data.</p>
+data with anyone — and that one feature requires you to nominate the
+recipient yourself.</p>
+<p>For it, the operator of the server you configured, and the LLM
+provider that server uses (AWS, Google or Mistral AI), process the
+analysis request. Where you run the server, that operator is you. We do
+not share data with analytics providers, advertisers, data brokers, or
+social networks, and we do not sell data.</p>
 <h3 id="international-transfers">International transfers</h3>
 <p>The LLM providers may process the request outside your country and
 outside the European Economic Area. Where that occurs, it relies on the
 provider's own transfer safeguards (such as Standard Contractual
-Clauses). If this matters to you, do not use the analysis feature — the
-rest of the app is unaffected.</p>
+Clauses). If this matters to you, leave the server address empty or
+choose an LLM provider and region yourself when configuring your server
+— the rest of the app is unaffected either way.</p>
 <h2 id="features-not-yet-active">Features Not Yet Active</h2>
-<p>The CountScore backend also implements group sharing and multi-device
-synchronisation. <strong>The app does not currently use them</strong>:
-there is no code in the released app that sends your games to a group or
-syncs them to a server. If that changes, this policy and the Play Store
-data safety declaration will be updated before the feature ships.</p>
+<p>The CountScore server software also implements group sharing and
+multi-device synchronisation. <strong>The app does not currently use
+them</strong>: there is no code in the released app that sends your
+games to a group or syncs them to a server. If that changes, this policy
+and the Play Store data safety declaration will be updated before the
+feature ships.</p>
 <h2 id="data-security">Data Security</h2>
 <ol type="1">
 <li><strong>Local storage</strong>: data on your device is protected by
@@ -284,11 +310,11 @@ service.</p>
 <h3 id="gdpr-rights">GDPR rights</h3>
 <p>Users in the EEA and the UK have rights of access, rectification,
 erasure, restriction, portability and objection, and the right to
-withdraw consent at any time (by not using the analysis feature), as
-well as the right to complain to a supervisory authority. Since we hold
-no server-side copy of your data and cannot identify you, most of these
-rights are exercised directly on your device. To ask a question, use the
-contact details above.</p>
+withdraw consent at any time (by clearing the server address or by not
+using the analysis feature), as well as the right to complain to a
+supervisory authority. Since we hold no server-side copy of your data
+and cannot identify you, most of these rights are exercised directly on
+your device. To ask a question, use the contact details above.</p>
 <h2 id="permissions">Permissions</h2>
 <p><strong>The released Android app declares exactly one permission:
 <code>INTERNET</code>.</strong> It requests no runtime permissions — the
@@ -297,10 +323,19 @@ kind Android asks you to approve with a dialog — at all.</p>
 <li><strong><code>INTERNET</code></strong> is declared in
 <code>android/app/src/main/AndroidManifest.xml</code>. It exists for the
 ZapZap analysis and for nothing else: the app makes no other network
-request, has no background networking, and sends no telemetry. Android
-grants it at install time without asking you, because it is not a
-runtime permission — which is why the safeguard that matters is the one
-described above: no data is sent unless you tap the button.</li>
+request, has no background networking, and sends no telemetry. It goes
+entirely unused until you configure a server. Android grants it at
+install time without asking you, because it is not a runtime permission
+— which is why the safeguards that matter are the ones described above:
+there is no address to send to unless you supply one, and nothing is
+sent unless you tap the button.</li>
+<li><strong>Unencrypted connections</strong> are allowed by the app's
+network security configuration
+(<code>android/app/src/main/res/xml/network_security_config.xml</code>)
+solely so that a server on your own local network can be reached without
+a TLS certificate. The app itself refuses to store an
+<code>http://</code> address that is not a private or loopback one, so
+traffic to a public host is always encrypted.</li>
 <li><strong>Keeping the screen awake</strong> during a game uses a
 window flag, not the <code>WAKE_LOCK</code> permission — nothing is
 requested and no data is accessed.</li>
@@ -315,23 +350,27 @@ entered in the app. If children use the app, we recommend using first
 names or nicknames rather than full names, or simply not using the
 analysis feature.</p>
 <p>We do not knowingly collect personal information from children. As we
-operate no accounts and store nothing on our servers, we hold no such
-information.</p>
+operate no accounts and run no server that receives your data, we hold
+no such information.</p>
 <h2 id="data-retention">Data Retention</h2>
 <ul>
 <li><strong>On your device</strong>: until you delete it, clear app
 data, or uninstall.</li>
-<li><strong>On our server</strong>: nothing. The analysis endpoint
-stores no game data. IP addresses used for rate limiting live in memory
-only and are discarded when the window elapses.</li>
+<li><strong>On a server we run</strong>: nothing, because we run none
+that your app talks to. On the server <em>you</em> configure, the
+analysis endpoint stores no game data; IP addresses used for rate
+limiting live in that process's memory only and are discarded when the
+window elapses.</li>
 <li><strong>At the LLM provider</strong>: governed by that provider's
 retention policy, which we do not control.</li>
 </ul>
 <h2 id="open-source">Open Source</h2>
 <p>CountScore is open-source software licensed under the MIT License, so
 its privacy claims can be independently verified. The network request
-described in this policy is the only one in the app, and it is in a
-single file: <code>lib/screens/game_analysis_screen.dart</code>.</p>
+described in this policy is the only one in the app. It is issued from
+<code>lib/services/backend_client.dart</code>, and the address it uses
+comes from <code>lib/providers/backend_provider.dart</code>, which has
+no default value.</p>
 <p><strong>Source Code</strong>: <a
 href="https://github.com/vemore/countscore">https://github.com/vemore/countscore</a></p>
 <h2 id="california-privacy-rights-ccpacpra">California Privacy Rights
@@ -348,6 +387,15 @@ with a new "Last Updated" date, and significant changes are announced
 through app updates on the Google Play Store.</p>
 <h3 id="version-history">Version History</h3>
 <ul>
+<li><strong>v2.2</strong> (September 11, 2026): The backend address
+became a setting with <strong>no default</strong>. Earlier versions
+compiled in the address of a server run by the developer, so a ZapZap
+analysis was sent there. The published app now contains no server
+address at all: the analysis feature is hidden until you enter one in
+Settings → Server, the server is one you host, and the developer neither
+operates a service for you nor receives your data. Also documents the
+network security configuration that lets a server on your own local
+network be reached over <code>http://</code>.</li>
 <li><strong>v2.1</strong> (September 9, 2026): Corrects the permissions
 section. v2.0 stated that the released app requests no permissions and
 that <code>INTERNET</code> was present only in development builds. That
@@ -375,8 +423,9 @@ href="https://github.com/vemore/countscore/issues">https://github.com/vemore/cou
 respond within 48-72 hours</p>
 <h2 id="consent">Consent</h2>
 <p>By using CountScore, you consent to this Privacy Policy. By tapping
-the button that generates a ZapZap analysis, you additionally consent to
-that game's data being transmitted as described above.</p>
+the button that generates a ZapZap analysis, having configured a server
+of your own, you additionally consent to that game's data being
+transmitted to that server as described above.</p>
 <p>If you do not agree with this Privacy Policy, please do not use
 CountScore.</p>
 <hr />
@@ -385,12 +434,16 @@ CountScore.</p>
 <strong>Your games are stored on your device</strong> ✅ <strong>You
 control your data and can delete it anytime</strong> ✅
 <strong>Open-source and auditable</strong> ✅ <strong>Free, with no
-hidden costs</strong> ⚠️ <strong>One exception</strong>: if <em>you</em>
-tap "generate analysis", that game's data — player names, scores and
-round comments — is sent over HTTPS to the CountScore backend and on to
-an LLM provider (AWS, Google or Mistral) to write the analysis. Nothing
-is stored on our server. Never using that button means nothing ever
-leaves your device.</p>
+hidden costs</strong> ✅ <strong>No server configured by
+default</strong> — the app ships with no backend address, so out of the
+box it makes no network request at all ⚠️ <strong>One
+exception</strong>: if <em>you</em> set up your own CountScore server,
+enter its address in Settings → Server, and tap "generate analysis",
+that game's data — player names, scores and round comments — is sent to
+<strong>your</strong> server and on to the LLM provider it is configured
+to use (AWS, Google or Mistral) to write the analysis. The server stores
+none of it. Leaving the address empty, or never tapping that button,
+means nothing ever leaves your device.</p>
 <hr />
 <p><em>This privacy policy applies to CountScore v1.1.0 and later. For
 versions 1.0.x, see v1.0 of this document in the repository

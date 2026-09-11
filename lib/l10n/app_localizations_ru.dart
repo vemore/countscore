@@ -556,4 +556,47 @@ class AppLocalizationsRu extends AppLocalizations {
   String analysisGeneratedAt(String date) {
     return 'Создано $date';
   }
+
+  @override
+  String get serverSection => 'Сервер';
+
+  @override
+  String get backendUrlLabel => 'Адрес сервера';
+
+  @override
+  String get backendUrlHint => 'https://countscore.example.com';
+
+  @override
+  String get backendUrlDescription =>
+      'Сетевые функции требуют сервера CountScore. Установите его из папки backend/ и укажите здесь его адрес. Без сервера никакие данные не покидают это устройство.';
+
+  @override
+  String get backendNotConfigured => 'Сервер не настроен';
+
+  @override
+  String get backendUrlInvalid =>
+      'Неверный адрес. Введите полный URL, например https://countscore.example.com';
+
+  @override
+  String get backendUrlInsecure =>
+      'http:// допускается только в локальной сети. Для публичного сервера используйте https://.';
+
+  @override
+  String get testConnection => 'Проверить соединение';
+
+  @override
+  String get connectionOk => 'Сервер отвечает';
+
+  @override
+  String get connectionFailed => 'Сервер не отвечает';
+
+  @override
+  String get serverUrlSaved => 'Сервер сохранён';
+
+  @override
+  String get analysisRequiresBackend =>
+      'Для этого анализа нужен сервер. Настройте его в настройках.';
+
+  @override
+  String get openSettings => 'Открыть настройки';
 }
