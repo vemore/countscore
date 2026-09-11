@@ -6,6 +6,52 @@ readable after the fact.
 
 ---
 
+## The ZapZap analysis is down in production: Mistral rejects the configured model
+
+**Status:** done (2026-09-11) — closed by `fix/zapzap-mistral-and-analysis-ui`, deployed to
+production as `eb9ba02` the same day. **The feature is still down**, but for a different
+cause, filed separately in `TODO.md` — see the note at the end.
+
+`POST /comments/zapzap-analysis` returned **502 to every client from 2026-09-09**. Production
+ran `LLM_PROVIDER=mistral` without `MISTRAL_MODEL` and inherited the code default
+`mistral-large-latest`, which the account's tier rejects:
+
+```
+RuntimeError: mistral API call failed: PermissionDeniedError: Error code: 403 -
+{'message': 'This model is not available in your subscription tier',
+ 'type': 'tier_not_allowed', 'code': '1910'}
+```
+
+### What the entry got wrong
+
+It recorded the fix as "**one line of production environment**". That was wrong in a way that
+mattered: the default lives in **five** tracked places, and
+`docker-compose.prod.yml` interpolates `${MISTRAL_MODEL:-…}`, so **the compose default is what
+production actually reads**. A default changed in `app/config.py` alone would never have
+reached the container. All five now say `mistral-medium-latest`, and the deploy fixed
+production without the NAS `.env` being touched at all — which is the proof that the compose
+copy was the operative one.
+
+### Verified after deployment
+
+- `GET /health` returns `{"llm":{"provider":"mistral","model":"mistral-medium-latest",
+  "credentials":true}}` — the enrichment added by the same change, and the check that would
+  have caught the original outage in one free request.
+- `GET https://api.mistral.ai/v1/models` with the production key, run from inside the
+  container: 46 models, `mistral-medium-latest` **present**, `mistral-large-latest` still
+  **absent**. The 403 cause is gone and the replacement is genuinely allowed.
+- The 2026-09-09 observation that "the failure is invisible until someone taps the button" is
+  closed by `/health`; the alerting half is not, and stays open under [[KnownLimits]].
+
+### It is still down, for a new reason
+
+A real `POST` now fails with **429 `rate_limited`** rather than 403. A 5-token request to
+`mistral-small-latest` gets the same 429, so the limit is account-wide, not about the model or
+the payload. That is a Mistral account problem, not a code or deployment one, and it is filed
+as its own `TODO.md` entry.
+
+---
+
 ## A failed regeneration hides the cached analysis until you leave the screen
 
 **Status:** done (2026-09-11) — closed on `fix/zapzap-mistral-and-analysis-ui`.

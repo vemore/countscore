@@ -112,6 +112,13 @@ text is local data a failed refresh never touched.
 
 ## Decisions & History
 
+- **Production is deployed on `mistral-medium-latest` but currently rate-limited
+  (2026-09-11).** The `tier_not_allowed` outage is closed: `eb9ba02` is live, `/health`
+  reports the model, and the models listing run with the production key shows
+  `mistral-medium-latest` present and `mistral-large-latest` absent. A real call now fails
+  with **429 `rate_limited`** instead — account-wide, reproduced by a 5-token request to
+  `mistral-small-latest`, so it is neither the model nor the payload. That is an account
+  quota, not a repository fact; see `TODO.md`.
 - **`mistral-medium-latest` is the default, not `mistral-large-latest` (2026-09-11).** The
   account's tier rejects `large` with 403 `tier_not_allowed`, which returned 502 to every
   client from 2026-09-09 to 2026-09-11. `medium` was chosen over `small` and

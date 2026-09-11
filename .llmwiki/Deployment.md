@@ -94,7 +94,9 @@ hosting config. Only the backend container is covered. See [[Web]].
   every analysis 502'd for two days while `/health` still said `ok`. Closed on 2026-09-11 by
   three changes together: the default is now `mistral-medium-latest`, `/health` reports the
   resolved model, and production sets `MISTRAL_MODEL` explicitly. See `DONE.md` and
-  [[LlmProviders]].
+  [[LlmProviders]]. **Confirmed by the deploy (2026-09-11):** production picked up
+  `mistral-medium-latest` from the *compose* default alone — the NAS `.env` was never edited —
+  which proves the compose copy, not `app/config.py`, is the one production reads.
 - **The compose file carries its own defaults, and they win.** `docker-compose.prod.yml`
   interpolates `${MISTRAL_MODEL:-…}` from the NAS `.env`, so a default written only in
   `app/config.py` never reaches production. Every provider default therefore exists twice and
