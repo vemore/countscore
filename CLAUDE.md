@@ -45,6 +45,16 @@ here and, more usefully, with what those hooks do *not* cover.
   something unrelated to it, do not fix it inline and do not drop it: add an entry to
   `TODO.md`, dated, with enough context to act on it later — then carry on with the task
   at hand.
+- **Tooling that fights you is a `TODO.md` item too.** A skill, a hook, a slash command, a
+  wiki procedure or any part of this file that you had to work around — steps that no
+  longer match the code, a gate that fires on the wrong thing, a rule that forced a detour,
+  something done by hand twice that no skill covers — is the same class of finding as a bug
+  in `lib/`. Do not silently absorb the detour and do not leave the next session to
+  rediscover it: add a dated `TODO.md` entry naming the tool, what it actually made you do,
+  and the improvement you propose, then carry on with the task at hand. A one-line
+  correction that the current task already proves wrong — a renamed file in a skill, a dead
+  command — gets fixed inline and mentioned; anything that changes what a tool *does* is a
+  proposal, not a detour of its own.
 - **A `TODO.md` item you fix moves to `DONE.md` in the same change.** Do not delete the
   entry and do not leave it in `TODO.md`: cut it whole, write
   `**Status:** done (YYYY-MM-DD)` on it, and paste it at the top of `DONE.md` — newest
