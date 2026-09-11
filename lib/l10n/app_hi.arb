@@ -304,6 +304,7 @@
   "confirmRegenerateAnalysis": "पुनः उत्पन्न करें? वर्तमान विश्लेषण बदला जाएगा।",
   "confirmDeleteAnalysis": "इस खेल का विश्लेषण हटाएँ?",
   "analysisError": "विश्लेषण उत्पन्न करने में विफल",
+  "analysisErrorStatus": "विश्लेषण उत्पन्न करने में विफल (HTTP {status})",
   "retry": "पुनः प्रयास करें",
   "analysisGeneratedAt": "{date} को उत्पन्न",
   "serverSection": "सर्वर",

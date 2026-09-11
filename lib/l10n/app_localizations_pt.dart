@@ -550,6 +550,11 @@ class AppLocalizationsPt extends AppLocalizations {
   String get analysisError => 'Falha ao gerar a análise';
 
   @override
+  String analysisErrorStatus(int status) {
+    return 'Falha ao gerar a análise (HTTP $status)';
+  }
+
+  @override
   String get retry => 'Tentar novamente';
 
   @override

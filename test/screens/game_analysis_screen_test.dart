@@ -2,9 +2,13 @@
 // must not be offerable at all — and a previously cached analysis must still
 // be readable, because that text is local data.
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:provider/provider.dart';
 import 'package:countscore/l10n/app_localizations.dart';
 import 'package:countscore/models/game.dart';
@@ -75,6 +79,26 @@ Widget _wrap(Widget child, {String? backendUrl, GameProvider? gameProvider}) {
   );
 }
 
+/// A backend that always refuses. `Response.bytes` keeps the fixture out of
+/// http's latin-1 fallback.
+MockClient _failing502() => MockClient(
+      (_) async => http.Response.bytes(
+        utf8.encode('{"detail":"upstream LLM error: RuntimeError"}'),
+        502,
+      ),
+    );
+
+/// Drives the screen from tapped button to settled failure.
+///
+/// `pumpAndSettle` cannot be used while loading: the CircularProgressIndicator
+/// animates forever and would time it out. And settling afterwards would wait
+/// out the snackbar's own auto-dismiss, so the assertions would find nothing.
+Future<void> _pumpFailure(WidgetTester tester) async {
+  await tester.pump(); // start the request
+  await tester.pump(const Duration(milliseconds: 100)); // MockClient resolves
+  await tester.pump(); // let the SnackBar enter
+}
+
 void main() {
   testWidgets('with no server configured, generation is not offered',
       (tester) async {
@@ -116,5 +140,66 @@ void main() {
 
     expect(find.byKey(const Key('analysis_generate')), findsOneWidget);
     expect(find.byKey(const Key('analysis_no_server')), findsNothing);
+  });
+
+  testWidgets('a failed regeneration keeps the cached analysis and warns',
+      (tester) async {
+    // The defect this pins: the error state used to win over the content, so a
+    // failed refresh looked like it had destroyed an analysis that was never
+    // touched — the repository is only written on success.
+    final cached = GameAnalysis(
+      gameId: 1,
+      content: 'Le professeur a parlé.',
+      modelId: 'test-model',
+      generatedAt: DateTime(2026, 9, 11, 14, 30),
+    );
+    await tester.pumpWidget(_wrap(
+      GameAnalysisScreen(
+        repository: _FakeAnalysisRepository(cached),
+        httpClient: _failing502(),
+      ),
+      backendUrl: 'https://countscore.example.com',
+      gameProvider: _GameProviderWithCurrentGame(),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('Le professeur a parlé.'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.refresh));
+    await tester.pumpAndSettle();
+    // By position, not by label: regenerateAnalysis is also the IconButton's
+    // tooltip, so a text finder can match twice.
+    await tester.tap(find.descendant(
+      of: find.byType(AlertDialog),
+      matching: find.byType(TextButton),
+    ).last);
+    await _pumpFailure(tester);
+
+    expect(find.text('Le professeur a parlé.'), findsOneWidget);
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(find.text('Failed to generate analysis (HTTP 502)'), findsOneWidget);
+    expect(find.byIcon(Icons.error_outline), findsNothing);
+  });
+
+  testWidgets('with nothing cached, a failure shows the error without the raw exception',
+      (tester) async {
+    await tester.pumpWidget(_wrap(
+      GameAnalysisScreen(
+        repository: _FakeAnalysisRepository(),
+        httpClient: _failing502(),
+      ),
+      backendUrl: 'https://countscore.example.com',
+      gameProvider: _GameProviderWithCurrentGame(),
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('analysis_generate')));
+    await _pumpFailure(tester);
+
+    expect(find.byIcon(Icons.error_outline), findsOneWidget);
+    expect(find.text('Failed to generate analysis (HTTP 502)'), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
+    // The leak: the screen used to append the Dart exception verbatim.
+    expect(find.textContaining('Exception'), findsNothing);
+    expect(find.textContaining('upstream LLM error'), findsNothing);
   });
 }

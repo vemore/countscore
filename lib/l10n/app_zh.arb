@@ -304,6 +304,7 @@
   "confirmRegenerateAnalysis": "重新生成？当前分析将被替换。",
   "confirmDeleteAnalysis": "删除此游戏的分析？",
   "analysisError": "生成分析失败",
+  "analysisErrorStatus": "生成分析失败 (HTTP {status})",
   "retry": "重试",
   "analysisGeneratedAt": "生成于 {date}",
   "serverSection": "服务器",

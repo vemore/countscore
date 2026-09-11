@@ -548,6 +548,11 @@ class AppLocalizationsHi extends AppLocalizations {
   String get analysisError => 'विश्लेषण उत्पन्न करने में विफल';
 
   @override
+  String analysisErrorStatus(int status) {
+    return 'विश्लेषण उत्पन्न करने में विफल (HTTP $status)';
+  }
+
+  @override
   String get retry => 'पुनः प्रयास करें';
 
   @override

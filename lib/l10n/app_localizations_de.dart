@@ -547,6 +547,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get analysisError => 'Analyse konnte nicht erstellt werden';
 
   @override
+  String analysisErrorStatus(int status) {
+    return 'Analyse konnte nicht erstellt werden (HTTP $status)';
+  }
+
+  @override
   String get retry => 'Erneut versuchen';
 
   @override

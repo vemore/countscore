@@ -547,6 +547,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get analysisError => 'فشل إنشاء التحليل';
 
   @override
+  String analysisErrorStatus(int status) {
+    return 'فشل إنشاء التحليل (HTTP $status)';
+  }
+
+  @override
   String get retry => 'إعادة المحاولة';
 
   @override

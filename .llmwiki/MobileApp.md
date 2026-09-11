@@ -35,8 +35,8 @@ themed and already knows whether the connected features exist.
 
 `home_screen` (545 l.) · `game_board_screen` (792 l., the scoring grid) ·
 `game_types_screen` (491 l.) · `create_game_screen` (372 l.) ·
-`game_analysis_screen` (334 l., the LLM analysis — see [[LlmProviders]]) ·
-`players_screen` (326 l.) · `player_stats_screen` (299 l.) · `settings_screen` (216 l.) ·
+`game_analysis_screen` (396 l., the LLM analysis — see [[LlmProviders]]) ·
+`players_screen` (326 l.) · `player_stats_screen` (299 l.) · `settings_screen` (368 l.) ·
 `about_screen` (145 l.) · `ranking_screen` (140 l.).
 
 `lib/widgets/` holds exactly one component: `player_picker_dialog.dart` (291 l.).

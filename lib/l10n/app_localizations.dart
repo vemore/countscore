@@ -1092,6 +1092,12 @@ abstract class AppLocalizations {
   /// **'Échec de la génération de l\'analyse'**
   String get analysisError;
 
+  /// Analysis failure carrying the HTTP status returned by the user's own server
+  ///
+  /// In fr, this message translates to:
+  /// **'Échec de la génération de l\'analyse (HTTP {status})'**
+  String analysisErrorStatus(int status);
+
   /// Retry button
   ///
   /// In fr, this message translates to:

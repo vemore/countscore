@@ -304,6 +304,7 @@
   "confirmRegenerateAnalysis": "¿Regenerar? El análisis actual será reemplazado.",
   "confirmDeleteAnalysis": "¿Eliminar el análisis de esta partida?",
   "analysisError": "Error al generar el análisis",
+  "analysisErrorStatus": "Error al generar el análisis (HTTP {status})",
   "retry": "Reintentar",
   "analysisGeneratedAt": "Generado el {date}",
   "serverSection": "Servidor",

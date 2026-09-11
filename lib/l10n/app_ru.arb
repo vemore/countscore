@@ -304,6 +304,7 @@
   "confirmRegenerateAnalysis": "Пересоздать? Текущий анализ будет заменён.",
   "confirmDeleteAnalysis": "Удалить анализ этой игры?",
   "analysisError": "Не удалось создать анализ",
+  "analysisErrorStatus": "Не удалось создать анализ (HTTP {status})",
   "retry": "Повторить",
   "analysisGeneratedAt": "Создано {date}",
   "serverSection": "Сервер",

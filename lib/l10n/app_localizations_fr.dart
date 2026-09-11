@@ -549,6 +549,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get analysisError => 'Échec de la génération de l\'analyse';
 
   @override
+  String analysisErrorStatus(int status) {
+    return 'Échec de la génération de l\'analyse (HTTP $status)';
+  }
+
+  @override
   String get retry => 'Réessayer';
 
   @override

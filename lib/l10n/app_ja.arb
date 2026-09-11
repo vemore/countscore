@@ -304,6 +304,7 @@
   "confirmRegenerateAnalysis": "再生成しますか？現在の分析は置き換えられます。",
   "confirmDeleteAnalysis": "このゲームの分析を削除しますか？",
   "analysisError": "分析の生成に失敗しました",
+  "analysisErrorStatus": "分析の生成に失敗しました (HTTP {status})",
   "retry": "再試行",
   "analysisGeneratedAt": "{date} に生成",
   "serverSection": "サーバー",

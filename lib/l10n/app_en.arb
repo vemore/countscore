@@ -359,6 +359,8 @@
   },
 
   "analysisError": "Failed to generate analysis",
+
+  "analysisErrorStatus": "Failed to generate analysis (HTTP {status})",
   "@analysisError": {
     "description": "Error message when LLM call fails"
   },
