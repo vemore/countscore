@@ -28,9 +28,16 @@ of every settings confirmation, not just a label colour.
 `GEMINI_MODEL` fails immediately — exactly the class of trap just closed for Mistral, on the
 provider next door. `gemini-2.5-flash` works without billing enabled.
 
+**Worse than a bad default: production sets the bad value explicitly.** Checked inside the
+container on 2026-09-11 — the NAS `.env` carries `GEMINI_MODEL=gemini-2.5-pro` alongside a
+valid `GEMINI_API_KEY`. So the ready-made escape hatch from the Mistral rate limit
+(see below) is armed to fail: flipping `LLM_PROVIDER=gemini` alone would swap a 429 for a
+quota-0 error. Whoever switches must set `gemini-2.5-flash` in the same edit.
+
 Not fixed inline because nothing currently runs on gemini, and because picking the default is
 the same product decision the Mistral one was. When it is fixed, remember the default lives in
-**two** tracked places, and the compose one wins in production.
+**two** tracked places, the compose one wins in production — and that the NAS `.env` overrides
+both, so fixing the repository alone would not fix this deployment.
 
 ## Backend tests read the developer's local `backend/.env`
 
@@ -121,15 +128,25 @@ The configuration is provably correct: `/health` reports
 `{"provider":"mistral","model":"mistral-medium-latest","credentials":true}`, and the models
 listing confirms the account may use that model. Nothing in this repository is wrong.
 
-Three ways out, none of which is the agent's call:
+**Decision (2026-09-11): wait.** If this is a monthly cap it resets on the billing cycle.
+Re-check with a real `POST`; `/health` will keep saying the configuration is fine, because it
+is — that is the one thing this endpoint deliberately cannot tell you.
 
-1. **Wait**, if this is a monthly cap — it resets on the billing cycle.
-2. **Add billing to the Mistral account**, lifting the free-tier quota.
-3. **Switch provider.** `LLM_PROVIDER=gemini` with `GEMINI_MODEL=gemini-2.5-flash` works
-   without billing enabled — but *not* the code default `gemini-2.5-pro`, which is quota-0 on
-   the free tier (its own entry above). Switching changes the tone of every analysis and sends
-   the payload to a different third party, so it implicates [[Security]] and the privacy
-   documents if the recipient changes.
+The two other ways out, if waiting does not resolve it:
+
+1. **Add billing to the Mistral account**, lifting the free-tier quota.
+2. **Switch to Gemini.** This needs **no code** — `LLM_PROVIDER` is already pluggable
+   (`app/services/llm/factory.py`), `docker-compose.prod.yml` already passes `GEMINI_API_KEY`
+   and `GEMINI_MODEL`, and production **already holds a Gemini key**. It is two variables in
+   `$NAS_DEPLOY_DIR/.env` plus `docker compose up -d` — §2 of the `backend-deploy` skill.
+
+   **But it would fail as currently configured.** Production explicitly sets
+   `GEMINI_MODEL=gemini-2.5-pro`, which is quota-0 on the free tier, so the switch must set
+   `gemini-2.5-flash` in the same edit. See the entry above.
+
+   Switching also changes the tone of every analysis and sends the payload to a different
+   third party, so it implicates [[Security]] and the privacy documents if the recipient
+   changes.
 
 Worth doing regardless of which is chosen: **the client shows the user a bare HTTP 502 for
 what is really "the server's LLM quota is exhausted"**. The server deliberately returns only

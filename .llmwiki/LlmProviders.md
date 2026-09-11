@@ -112,6 +112,14 @@ text is local data a failed refresh never touched.
 
 ## Decisions & History
 
+- **Switching provider is a configuration change, not a code change.** `LLM_PROVIDER` picks
+  between `bedrock`, `gemini` and `mistral` at first use; `docker-compose.prod.yml` passes
+  every provider's key and model, so a switch is a couple of variables in the NAS `.env` plus
+  `docker compose up -d` (§2 of the `backend-deploy` skill). Verified inside the production
+  container on 2026-09-11: it already holds **both** a Mistral and a Gemini key. The catch is
+  that it also sets `GEMINI_MODEL=gemini-2.5-pro`, which is quota-0 on the free tier — so the
+  Gemini escape hatch exists but is armed to fail until that value becomes
+  `gemini-2.5-flash`. See `TODO.md`.
 - **Production is deployed on `mistral-medium-latest` but currently rate-limited
   (2026-09-11).** The `tier_not_allowed` outage is closed: `eb9ba02` is live, `/health`
   reports the model, and the models listing run with the production key shows
