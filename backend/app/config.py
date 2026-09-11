@@ -34,7 +34,7 @@ class Settings(BaseSettings):
 
     # Mistral (OpenAI-compatible endpoint)
     mistral_api_key: str | None = None
-    mistral_model: str = "mistral-large-latest"
+    mistral_model: str = "mistral-medium-latest"
     mistral_base_url: str = "https://api.mistral.ai/v1"
 
     cors_origins: str = "http://localhost:3000"

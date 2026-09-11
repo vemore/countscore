@@ -36,6 +36,16 @@ class LLMProvider(Protocol):
         """True when credentials are configured and the provider can be called."""
         ...
 
+    @property
+    def model(self) -> str:
+        """The model identifier this provider will call.
+
+        Exposed so `/health` can report the *resolved* model without spending a
+        request: `available` only proves a key is set, never that the account may
+        call the model behind it. See .llmwiki/LlmProviders.md.
+        """
+        ...
+
     async def generate(
         self,
         system_prompt: str,

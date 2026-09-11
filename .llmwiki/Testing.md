@@ -78,7 +78,8 @@ idempotence, round conflicts, payload bounds, player-name allow-list — SQLite 
 `test_sync_ws_integration.py` (WS handshake + push → NOTIFY → new_seq → pull on a **real
 Postgres** via testcontainers) · `test_comments.py` (mocked Anthropic, rate limit, budget,
 prompt injection) · `test_zapzap_analysis.py` · `test_llm_providers.py` ·
-`test_ip_rate_limit.py`.
+`test_ip_rate_limit.py` · `test_health.py` (the `/health` shape, including that the resolved
+LLM model is reported and that an unknown `LLM_PROVIDER` still answers 200).
 
 ```bash
 cd backend

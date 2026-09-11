@@ -21,7 +21,7 @@ Load this file first. Then read only the pages your task touches.
 | Page | Summary | Updated |
 |---|---|---|
 | [[Architecture]] | The three evolution axes, target topology, milestone status | 2026-09-09 |
-| [[KnownLimits]] | What is deliberately deferred, and what is simply missing | 2026-09-09 |
+| [[KnownLimits]] | What is deliberately deferred, and what is simply missing | 2026-09-11 |
 
 ## Mobile (Flutter)
 
@@ -37,19 +37,19 @@ Load this file first. Then read only the pages your task touches.
 
 | Page | Summary | Updated |
 |---|---|---|
-| [[Backend]] | Stack, module layout, settings, device-token auth | 2026-09-09 |
-| [[Api]] | Every endpoint, its auth requirement and its failure modes | 2026-09-09 |
+| [[Backend]] | Stack, module layout, settings, device-token auth | 2026-09-11 |
+| [[Api]] | Every endpoint, its auth requirement and its failure modes | 2026-09-11 |
 | [[Sync]] | Delta-log + row-level LWW, outbox, WebSocket signalling | 2026-09-09 |
-| [[LlmProviders]] | ZapZap prompt, the pluggable provider factory, the separate Claude path | 2026-09-09 |
+| [[LlmProviders]] | ZapZap prompt, the pluggable provider factory, the separate Claude path | 2026-09-11 |
 
 ## Operations
 
 | Page | Summary | Updated |
 |---|---|---|
-| [[Deployment]] | Synology NAS, Web Station TLS, `deploy_nas.sh`, environment | 2026-09-09 |
+| [[Deployment]] | Synology NAS, Web Station TLS, `deploy_nas.sh`, environment | 2026-09-11 |
 | [[Hooks]] | What Claude Code refuses mechanically, and why each rule left CLAUDE.md | 2026-09-09 |
 | [[Security]] | Defended surfaces, and the security debt that is knowingly open | 2026-09-09 |
-| [[Testing]] | Unit, Drift, migration, e2e web and device; backend pytest | 2026-09-09 |
+| [[Testing]] | Unit, Drift, migration, e2e web and device; backend pytest | 2026-09-11 |
 | [[Release]] | Play Store signing state, icons, target API | 2026-09-09 |
 
 ## Procedures live in skills, not here

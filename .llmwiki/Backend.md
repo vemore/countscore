@@ -2,7 +2,7 @@
 
 > Scope: the FastAPI service — stack, layout, configuration, auth.
 > Related: [[Api]] · [[Sync]] · [[LlmProviders]] · [[Deployment]] · [[Security]] · [[Testing]]
-> Updated: 2026-09-09
+> Updated: 2026-09-11
 
 ## Facts
 
@@ -24,7 +24,7 @@ present. `backend/README.md` is the fullest existing prose doc.
 
 | Path | Role |
 |---|---|
-| `app/main.py` | `create_app()` factory + module-level `app`. CORS from settings, a `limit_body_size` middleware (413 above `max_body_bytes`, 411 with no `Content-Length` on a write), a `security_headers` middleware, `lifespan` sets logging, includes the three routers, defines `GET /health`. |
+| `app/main.py` | `create_app()` factory + module-level `app`. CORS from settings, a `limit_body_size` middleware (413 above `max_body_bytes`, 411 with no `Content-Length` on a write), a `security_headers` middleware, `lifespan` sets logging, includes the three routers, defines `GET /health` (`HealthResponse`: status, version, and the active LLM provider/model resolved without calling it — see [[Api]]). |
 | `app/config.py` | pydantic-settings `Settings` + `@lru_cache get_settings()`. |
 | `app/db.py` | Async engine, `AsyncSessionLocal`, `get_session()` dependency. Skips `pool_size`/`max_overflow` when the URL contains `sqlite`. |
 | `app/auth.py` | argon2 device tokens: `hash_token`, `verify_token`, `generate_token`, `AuthContext`, and the `require_device` dependency reading `Authorization: Bearer`. |

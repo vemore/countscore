@@ -39,12 +39,9 @@ The system block is marked `cache_control: ephemeral`, so across a games evening
   the verbatim French "professeur Claude" persona, ported from the Flutter prototype
   `lib/services/bedrock_analysis_service.dart`. `build_zapzap_user_message(payload)` at
   line 78 builds the Markdown round table plus per-player history.
-- **Contract**: `app/services/llm/base.py` — `LLMProvider` Protocol (`available` property,
-  `async generate`), `LLMResult(content, model, tokens_in, tokens_out)`. Shared parameters:
+- **Contract**: `app/services/llm/base.py` — `LLMProvider` Protocol (`available` and `model`
+  properties, `async generate`), `LLMResult(content, model, tokens_in, tokens_out)`. Shared parameters:
   `DEFAULT_MAX_TOKENS = 8192`, `DEFAULT_TEMPERATURE = 0.4`, `DEFAULT_TOP_P = 0.9`.
-
-  > **Status: Outdated** (2026-09-09) — `backend/README.md` still says `max_tokens=2048`.
-  > The code sets 8192; the README is the stale one.
 
 - **Selection**: `app/services/llm/factory.py` — `get_llm_provider(name=None)` resolves
   `settings.llm_provider` (default `bedrock`), caches instances, `_PROVIDERS = ("bedrock",
@@ -54,11 +51,14 @@ The system block is marked `cache_control: ephemeral`, so across a games evening
   iff the AWS key and secret are set) and `openai_compat.py`
   (`OpenAICompatProvider(label, base_url, api_key, model)` — one class serving both Gemini
   and Mistral over OpenAI Chat Completions).
-> **Status: Outdated** (2026-09-09) — production is on `mistral` with `MISTRAL_MODEL`
-> unset, so it uses the code default `mistral-large-latest`, and the account's Mistral tier
-> **rejects that model** (403 `tier_not_allowed`). Every ZapZap analysis has been returning
-> 502 in production. `mistral-large-latest` is not in the 40 models the production key can
-> list. See `TODO.md`.
+- **Model defaults**: `bedrock_model_id` / `gemini_model` / `mistral_model` in
+  `backend/app/config.py:28,32,37`. Each is **duplicated** in `docker-compose.prod.yml`
+  (`${MISTRAL_MODEL:-…}` and siblings), and the compose value wins in production — a default
+  changed in `config.py` alone never reaches the container.
+- **Resolved configuration is observable**: `GET /health` returns
+  `llm: {provider, model, credentials}` built by `_llm_health()` in `backend/app/main.py`.
+  It constructs the provider but never calls it, so the probe is free. `credentials` means a
+  key is set — **not** that the model can be called.
 
 - **Comparison tool**:
   `python scripts/compare_providers.py --payload scripts/sample_payload.json --providers bedrock,gemini,mistral`
@@ -109,6 +109,22 @@ whole app.
 
 ## Decisions & History
 
+- **`mistral-medium-latest` is the default, not `mistral-large-latest` (2026-09-11).** The
+  account's tier rejects `large` with 403 `tier_not_allowed`, which returned 502 to every
+  client from 2026-09-09 to 2026-09-11. `medium` was chosen over `small` and
+  `magistral-medium` because the ZapZap prompt asks for long-form French commentary and
+  `medium` is the closest register to what `large` was producing. A default the production
+  account cannot call is a trap for the next deployment, so it was changed in all five
+  tracked places rather than patched in the NAS `.env` alone.
+- **`/health` reports the resolved model, and stays 200 when the provider is broken
+  (2026-09-11).** The outage was invisible for two days because nothing exercised the
+  provider and `/health` answered `ok`. It now names the provider and the model id, which
+  makes a deploy verifiable for free. It deliberately does **not** ping the provider: the
+  container healthcheck polls every 30 s and a real generation would bill each one. It also
+  deliberately keeps returning 200 on a bad `LLM_PROVIDER` — failing the probe would
+  restart-loop a service whose groups and sync routes are fine. Exposing the model id
+  discloses nothing new: every successful analysis already returns it, and the app prints it
+  in the analysis footer.
 - **The generation prompt is intentionally identical across bedrock, gemini and mistral.**
   It is the control variable that makes provider comparison meaningful. Do not tune it for
   one provider.
