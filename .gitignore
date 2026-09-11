@@ -137,3 +137,8 @@ firebase_options.dart
 
 # Playwright MCP scratch output (screenshots, snapshots)
 .playwright-mcp/
+
+# Obsidian vault configuration. The wiki in .llmwiki/ is plain Markdown and is
+# tracked; .obsidian/ holds one editor's local appearance, plugin and workspace
+# state, which is personal to whoever opened the vault.
+.obsidian/
