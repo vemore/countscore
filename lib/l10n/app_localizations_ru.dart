@@ -599,4 +599,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get openSettings => 'Открыть настройки';
+
+  @override
+  String get serverUrlCleared => 'Сервер удалён';
 }

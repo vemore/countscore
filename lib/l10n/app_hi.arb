@@ -318,5 +318,6 @@
   "connectionFailed": "सर्वर प्रतिक्रिया नहीं दे रहा है",
   "serverUrlSaved": "सर्वर सहेजा गया",
   "analysisRequiresBackend": "इस विश्लेषण के लिए एक सर्वर आवश्यक है। सेटिंग्स में एक कॉन्फ़िगर करें।",
-  "openSettings": "सेटिंग्स खोलें"
+  "openSettings": "सेटिंग्स खोलें",
+  "serverUrlCleared": "सर्वर हटा दिया गया"
 }

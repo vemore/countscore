@@ -596,4 +596,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get openSettings => 'فتح الإعدادات';
+
+  @override
+  String get serverUrlCleared => 'تم مسح الخادم';
 }

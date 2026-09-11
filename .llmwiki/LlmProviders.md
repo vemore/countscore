@@ -79,10 +79,12 @@ The base URL is a **runtime setting with no default**: `lib/providers/backend_pr
 SharedPreferences key `backendUrl`, edited in Settings → Server. `--dart-define=BACKEND_URL`
 survives only as a seed applied when nothing is stored yet, and no published build passes it.
 `BackendProvider.check` accepts `https://` anywhere and `http://` only on a private address.
-With nothing configured, `isConfigured` is false, the Analyze entry is absent from the game
-menu (`game_board_screen.dart`), the analysis screen shows `analysisRequiresBackend`, and the
-app issues **no** network request — though an analysis generated earlier still renders, being
-local data.
+With nothing configured, `isConfigured` is false, the analysis screen shows
+`analysisRequiresBackend` and the app issues **no** network request. The Analyze entry in the
+game menu is gated on `isConfigured || _hasCachedAnalysis` (`game_board_screen.dart`): hidden
+when there is neither a server nor anything to read, present when an analysis was generated
+earlier, since that text is local data and this is the only way to reach it. On that path the
+regenerate action stays disabled and delete stays enabled.
 
 The HTTP call lives in `lib/services/backend_client.dart`: `zapzapAnalysis` (90 s timeout)
 and `health` (10 s, used by the Test-connection button). It remains the only HTTP call in the

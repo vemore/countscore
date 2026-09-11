@@ -1181,6 +1181,12 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Ouvrir les paramètres'**
   String get openSettings;
+
+  /// Snackbar shown after the backend URL is cleared
+  ///
+  /// In fr, this message translates to:
+  /// **'Serveur effacé'**
+  String get serverUrlCleared;
 }
 
 class _AppLocalizationsDelegate

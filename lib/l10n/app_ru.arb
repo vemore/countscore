@@ -318,5 +318,6 @@
   "connectionFailed": "Сервер не отвечает",
   "serverUrlSaved": "Сервер сохранён",
   "analysisRequiresBackend": "Для этого анализа нужен сервер. Настройте его в настройках.",
-  "openSettings": "Открыть настройки"
+  "openSettings": "Открыть настройки",
+  "serverUrlCleared": "Сервер удалён"
 }

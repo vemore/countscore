@@ -390,5 +390,6 @@
   "connectionFailed": "The server is not responding",
   "serverUrlSaved": "Server saved",
   "analysisRequiresBackend": "This analysis needs a server. Configure one in the settings.",
-  "openSettings": "Open settings"
+  "openSettings": "Open settings",
+  "serverUrlCleared": "Server cleared"
 }

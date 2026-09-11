@@ -599,4 +599,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get openSettings => 'Abrir ajustes';
+
+  @override
+  String get serverUrlCleared => 'Servidor borrado';
 }

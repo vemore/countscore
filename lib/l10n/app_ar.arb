@@ -318,5 +318,6 @@
   "connectionFailed": "الخادم لا يستجيب",
   "serverUrlSaved": "تم حفظ الخادم",
   "analysisRequiresBackend": "يتطلب هذا التحليل خادمًا. قم بإعداد واحد من الإعدادات.",
-  "openSettings": "فتح الإعدادات"
+  "openSettings": "فتح الإعدادات",
+  "serverUrlCleared": "تم مسح الخادم"
 }

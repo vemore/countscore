@@ -599,4 +599,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get openSettings => 'Abrir configurações';
+
+  @override
+  String get serverUrlCleared => 'Servidor removido';
 }

@@ -583,4 +583,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get openSettings => '打开设置';
+
+  @override
+  String get serverUrlCleared => '服务器已清除';
 }

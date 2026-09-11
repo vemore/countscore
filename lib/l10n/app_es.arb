@@ -318,5 +318,6 @@
   "connectionFailed": "El servidor no responde",
   "serverUrlSaved": "Servidor guardado",
   "analysisRequiresBackend": "Este análisis requiere un servidor. Configura uno en los ajustes.",
-  "openSettings": "Abrir ajustes"
+  "openSettings": "Abrir ajustes",
+  "serverUrlCleared": "Servidor borrado"
 }
