@@ -2,7 +2,7 @@
 
 > Scope: what is defended, and what is knowingly open.
 > Related: [[Backend]] · [[Api]] · [[LlmProviders]] · [[Deployment]] · [[KnownLimits]]
-> Updated: 2026-09-09
+> Updated: 2026-09-11
 
 ## Facts
 
@@ -33,18 +33,36 @@ so it is stated once, here, and the compliance documents are written from it.
 | Question | Answer, and where it is verified |
 |---|---|
 | What leaves the device | One request, `POST /comments/zapzap-analysis`, built at `lib/screens/game_analysis_screen.dart:95-122`: game name and date, player **names**, every round's scores and free-text **comment**, and per-player history of up to 10 *other* games (`drift_repositories.dart:698-708`). |
-| When | Only when the user taps Generate. Nothing is sent on launch, on a timer, or in the background; `initState` only reads the local cache. |
-| To whom | Our backend, then the provider `LLM_PROVIDER` selects — AWS Bedrock, Google Gemini or Mistral (`backend/app/services/llm/factory.py`). The provider sees essentially the whole payload, rendered by `zapzap_prompt.py`. |
-| Kept where | Nowhere on our side: the route takes no `session` and writes no row. The per-IP counter is process memory only. The device keeps its own copy in `game_analyses` until the user deletes it. At the provider, whatever that provider's retention policy says — which we do not control, and which is why the Play declaration does not claim the ephemeral-processing exemption. |
+| When | Only once the user has configured a backend in Settings → Server **and** taps Generate. There is no default URL, so an install that has never been configured makes no network request at all. Nothing is sent on launch, on a timer, or in the background; `initState` only reads the local cache. |
+| To whom | The backend whose URL the user entered — usually one they run themselves from `backend/` — and then the provider that backend's `LLM_PROVIDER` selects: AWS Bedrock, Google Gemini or Mistral (`backend/app/services/llm/factory.py`). The provider sees essentially the whole payload, rendered by `zapzap_prompt.py`. The recipient is the operator's choice, not ours. |
+| Kept where | Nowhere on the backend's side: the route takes no `session` and writes no row. The per-IP counter is process memory only. The device keeps its own copy in `game_analyses` until the user deletes it. At the provider, whatever that provider's retention policy says — which we do not control, and which is why the Play declaration does not claim the ephemeral-processing exemption. |
 | Declared as | Personal info → Name, and App activity → Other user-generated content. Both optional, App functionality, not linked to identity, not used for tracking. `PLAY_STORE_DATA_SAFETY.md`. |
-| Permission it needs | `INTERNET`, and only that, in `android/app/src/main/AndroidManifest.xml`. |
+| Permission it needs | `INTERNET`, and only that, in `android/app/src/main/AndroidManifest.xml`. That manifest also points at `res/xml/network_security_config.xml`. |
 
 The rule that keeps this true is in `CLAUDE.md`: a new outbound flow — a new field in this
 payload included — changes `README.md`, `privacy_policy.md` and `PLAY_STORE_DATA_SAFETY.md`
 in the same commit, or it is not finished.
 
+### Cleartext, and where the rule actually lives
+
+`android/app/src/main/res/xml/network_security_config.xml` sets
+`cleartextTrafficPermitted="true"`, which reads alarming and is not what it looks like.
+Android's network security config matches **host names**, not address ranges, so the rule
+that was wanted — `http://` on a LAN, `https://` everywhere else — cannot be written in that
+file at all. `BackendProvider.check` (`lib/providers/backend_provider.dart`) enforces it
+instead: an `http://` URL whose host is not private or loopback is refused before it can be
+stored, so no cleartext request is ever issued even though the platform would permit one.
+Covered by `test/providers/backend_provider_test.dart`.
+
+A user-entered URL is a user-controlled request destination, which is normally an SSRF
+concern. It is not one here: the request originates on the user's own device, targets the
+server they chose, and carries no credential of ours.
+
 ### Known debt — open, and deliberate for now
 
+- **Nothing pins the certificate or the identity of the configured backend.** The user
+  types a URL and the app trusts the system trust store for it. Deliberate: a self-hosted
+  service cannot be pinned in advance.
 - **The two stateless `/comments` endpoints are unauthenticated and unbudgeted**, protected
   only by an in-memory per-IP limit that a single worker makes coherent — see [[Api]].
 - **Argon2 verification is O(N) in devices** — one verify per row on every authenticated
@@ -63,6 +81,11 @@ in the same commit, or it is not finished.
 
 ## Decisions & History
 
+- **The default is no backend at all (2026-09-11).** The URL used to be compiled in, so the
+  published app sent every requested analysis to the author's NAS. Making it a setting with
+  no default turns the strongest privacy claim — nothing leaves the device — from a
+  description of what most users happen to do into the actual shipped default, and it lets
+  anyone run the service themselves. See [[LlmProviders]] and [[Deployment]].
 - **No tool use in any LLM call** is a security control, not a capability decision: if a
   prompt injection gets through the other four layers, the worst outcome is one strange
   comment rather than a database action.

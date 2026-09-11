@@ -3,11 +3,72 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
+import '../providers/backend_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/theme_provider.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  late final TextEditingController _backendUrlController =
+      TextEditingController(text: context.read<BackendProvider>().baseUrl ?? '');
+  bool _testingConnection = false;
+
+  @override
+  void dispose() {
+    _backendUrlController.dispose();
+    super.dispose();
+  }
+
+  void _snack(String message, {bool ok = true}) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: ok ? Colors.green : Colors.red,
+    ));
+  }
+
+  /// Saves the typed URL, or clears the setting when the field is empty.
+  Future<void> _saveBackendUrl() async {
+    final l10n = AppLocalizations.of(context)!;
+    final backend = context.read<BackendProvider>();
+    final check = BackendProvider.check(_backendUrlController.text);
+
+    if (check.url != null) {
+      await backend.setBaseUrl(check.url!);
+      if (!mounted) return;
+      _backendUrlController.text = check.url!;
+      _snack(l10n.serverUrlSaved);
+      return;
+    }
+
+    switch (check.error!) {
+      // An empty field is how the user turns the connected features back off,
+      // not a mistake to complain about.
+      case BackendUrlError.empty:
+        await backend.clear();
+        if (!mounted) return;
+        _snack(l10n.serverUrlSaved);
+      case BackendUrlError.malformed:
+        _snack(l10n.backendUrlInvalid, ok: false);
+      case BackendUrlError.insecure:
+        _snack(l10n.backendUrlInsecure, ok: false);
+    }
+  }
+
+  Future<void> _testConnection() async {
+    final l10n = AppLocalizations.of(context)!;
+    final backend = context.read<BackendProvider>();
+    setState(() => _testingConnection = true);
+    final ok = await backend.testConnection();
+    if (!mounted) return;
+    setState(() => _testingConnection = false);
+    _snack(ok ? l10n.connectionOk : l10n.connectionFailed, ok: ok);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +111,89 @@ class SettingsScreen extends StatelessWidget {
                     RadioListTile<ThemeMode>(
                       title: Text(l10n.system),
                       value: ThemeMode.system,
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          const Divider(),
+
+          // Section Serveur — pas de garde kIsWeb : la PWA en a besoin aussi.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              l10n.serverSection,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple,
+              ),
+            ),
+          ),
+          Consumer<BackendProvider>(
+            builder: (context, backend, child) {
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.backendUrlDescription,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: _backendUrlController,
+                      keyboardType: TextInputType.url,
+                      autocorrect: false,
+                      decoration: InputDecoration(
+                        labelText: l10n.backendUrlLabel,
+                        hintText: l10n.backendUrlHint,
+                        border: const OutlineInputBorder(),
+                        helperText: backend.isConfigured
+                            ? null
+                            : l10n.backendNotConfigured,
+                      ),
+                      onSubmitted: (_) => _saveBackendUrl(),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        FilledButton(
+                          key: const Key('backend_url_save'),
+                          onPressed: _testingConnection ? null : _saveBackendUrl,
+                          child: Text(l10n.save),
+                        ),
+                        TextButton.icon(
+                          key: const Key('backend_url_test'),
+                          icon: _testingConnection
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.wifi_tethering),
+                          label: Text(l10n.testConnection),
+                          onPressed: backend.isConfigured && !_testingConnection
+                              ? _testConnection
+                              : null,
+                        ),
+                        TextButton(
+                          key: const Key('backend_url_clear'),
+                          onPressed: backend.isConfigured && !_testingConnection
+                              ? () async {
+                                  await backend.clear();
+                                  if (!context.mounted) return;
+                                  _backendUrlController.clear();
+                                  _snack(l10n.serverUrlSaved);
+                                }
+                              : null,
+                          child: Text(l10n.clear),
+                        ),
+                      ],
                     ),
                   ],
                 ),

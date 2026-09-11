@@ -552,4 +552,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String analysisGeneratedAt(String date) {
     return 'Generated on $date';
   }
+
+  @override
+  String get serverSection => 'Server';
+
+  @override
+  String get backendUrlLabel => 'Server URL';
+
+  @override
+  String get backendUrlHint => 'https://countscore.example.com';
+
+  @override
+  String get backendUrlDescription =>
+      'Connected features need a CountScore server. Install one from the backend/ folder and enter its address here. With no server, no data ever leaves this device.';
+
+  @override
+  String get backendNotConfigured => 'No server configured';
+
+  @override
+  String get backendUrlInvalid =>
+      'Invalid address. Enter a full URL, for example https://countscore.example.com';
+
+  @override
+  String get backendUrlInsecure =>
+      'http:// is only accepted on a local network. Use https:// for a public server.';
+
+  @override
+  String get testConnection => 'Test connection';
+
+  @override
+  String get connectionOk => 'The server is responding';
+
+  @override
+  String get connectionFailed => 'The server is not responding';
+
+  @override
+  String get serverUrlSaved => 'Server saved';
+
+  @override
+  String get analysisRequiresBackend =>
+      'This analysis needs a server. Configure one in the settings.';
+
+  @override
+  String get openSettings => 'Open settings';
 }

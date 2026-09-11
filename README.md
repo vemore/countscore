@@ -8,7 +8,9 @@
 An offline-first score tracker for card and board games. CountScore is a Flutter client —
 Android and a web PWA — that keeps every game in a local SQLite database and works with no
 network at all. Alongside it lives an optional FastAPI backend providing group sharing,
-delta-log sync and LLM-generated game commentary.
+delta-log sync and LLM-generated game commentary — **which you host yourself**. The app
+ships with no server address, so out of the box it never makes a network request; point it
+at your own server in Settings → Server if you want the connected features.
 
 ## Features
 
@@ -21,8 +23,12 @@ delta-log sync and LLM-generated game commentary.
 - **10 languages**, fully translated: English, French, Spanish, German, Portuguese (BR),
   Russian, Chinese (Simplified), Japanese, Hindi and Arabic — Arabic including RTL layout.
 - **Offline-first**: everything works with no network. Data lives on the device.
-- **ZapZap analysis** (optional, network): a long-form LLM commentary on a finished ZapZap
-  game. Always user-initiated, never automatic, and cached locally once generated.
+- **ZapZap analysis** (optional, network, off until you configure a server): a long-form
+  LLM commentary on a finished ZapZap game. Always user-initiated, never automatic, and
+  cached locally once generated.
+- **Bring your own backend**: the server address is a setting, empty by default. Run the
+  FastAPI service in `backend/` on hardware you control and your data never touches anyone
+  else's infrastructure.
 - **Comfort**: light/dark/system theme, screen kept awake during a game, database
   export/import (Android only).
 - **Material Design 3** throughout.
@@ -83,8 +89,14 @@ cascade of undefined `_$AppDatabase` errors.
 4. Run the app:
 ```bash
 flutter run                                              # connected device
-flutter run -d chrome --dart-define=BACKEND_URL=<url>    # web
+flutter run -d chrome                                    # web
 ```
+
+The connected features need a backend, which you host: see
+[backend/README.md](backend/README.md), then enter its URL in Settings → Server. There is no
+default and none is compiled in. `--dart-define=BACKEND_URL=<url>` exists for development
+only — it pre-fills that setting on a profile that has never configured a server, and no
+release build passes it.
 
 Localizations are generated automatically by `flutter pub get` and every build
 (`flutter: generate: true` in `pubspec.yaml`). Run `flutter gen-l10n` by hand only after
@@ -95,8 +107,7 @@ editing an `.arb` file.
 ```bash
 flutter build apk       --release --no-tree-shake-icons
 flutter build appbundle --release --no-tree-shake-icons   # Play Store
-flutter build web       --release --no-tree-shake-icons \
-  --dart-define=BACKEND_URL=<url>
+flutter build web       --release --no-tree-shake-icons
 ```
 
 **`--no-tree-shake-icons` is mandatory on every target.** Game-type icons are `IconData`
@@ -114,7 +125,7 @@ countscore/
 │   ├── widgets/         # Reusable UI components
 │   ├── providers/       # Provider state management
 │   ├── repositories/    # Data-access interfaces + their Drift implementations
-│   ├── services/        # Drift database, sqflite bootstrap migrator, helpers
+│   ├── services/        # Drift database, sqflite bootstrap migrator, backend client
 │   ├── l10n/            # ARB files (10 languages) + generated localizations
 │   └── main.dart
 ├── backend/             # FastAPI service (groups, sync, LLM commentary)
@@ -131,7 +142,9 @@ countscore/
 
 ## Backend
 
-The backend is **optional** — the app is fully usable without it. It exposes:
+The backend is **optional and self-hosted** — the app is fully usable without it, and no
+server is configured by default. There is no public CountScore instance to point at: run
+your own, and your data stays on it. It exposes:
 
 | Surface | Purpose |
 |---|---|
@@ -142,8 +155,14 @@ The backend is **optional** — the app is fully usable without it. It exposes:
 
 **Current state, stated plainly:** the server side of groups and sync is implemented and
 tested, but **the Flutter client for it has not been written yet**. The app is therefore
-local-only today, and the single live app↔backend call is the ZapZap analysis. See
-[TODO.md](TODO.md) and `.llmwiki/Architecture.md`.
+local-only today, and the single live app↔backend call is the ZapZap analysis — which
+itself only happens once you have configured a server. See [TODO.md](TODO.md) and
+`.llmwiki/Architecture.md`.
+
+The app accepts an `https://` URL for any host, and an `http://` URL only for a private or
+loopback address (`192.168.x.x`, `10.x.x.x`, `172.16–31.x.x`, `localhost`, `*.local`), so a
+backend on your LAN works without a certificate while a public one must use TLS. On the web
+build, a browser additionally refuses to call an `http://` backend from an `https://` page.
 
 Running the backend locally, and deploying it, are covered in
 [backend/README.md](backend/README.md).
@@ -205,8 +224,10 @@ attribution, or the built-in Flutter license viewer in the app.
 
 ## Privacy
 
-**No accounts, no analytics, no ads, no tracking.** One feature sends data off the device,
-and only when you ask it to — described below.
+**No accounts, no analytics, no ads, no tracking.** By default **nothing leaves the device
+at all**: there is no server address in the app, so there is nowhere for data to go. One
+feature can send data off the device, and only after you have configured a server of your
+own and asked for it — described below.
 
 - ✅ **No analytics, no tracking**: we don't track how you use the app.
 - ✅ **No ads**.
@@ -217,17 +238,23 @@ and only when you ask it to — described below.
 preferences are stored in a local SQLite database on your device. Delete a game or a player
 at any time; uninstalling removes everything permanently.
 
-**The one time data leaves your device**: asking for a **ZapZap analysis** sends that game's
-data — game type, player names, round scores and per-player history — to the CountScore
-backend, which forwards it to an LLM provider to generate the commentary. This is always
-user-initiated: no analysis is ever generated automatically, and no data is sent unless you
-tap the button. The result is cached locally so it is generated once.
+**The one time data can leave your device**: asking for a **ZapZap analysis** sends that
+game's data — game type, player names, round scores and per-player history — to the
+CountScore backend **you configured in Settings → Server**, which forwards it to an LLM
+provider to generate the commentary. Two conditions, both yours: no server configured means
+the feature is not even offered, and with one configured nothing is sent until you tap the
+button. No analysis is ever generated automatically. The result is cached locally so it is
+generated once.
+
+Because the server is one you run, the data goes to infrastructure you control — and on to
+whichever LLM provider *your* server is configured to use. We operate no service on your
+behalf and receive nothing.
 
 Group sharing and sync exist on the server but are not reachable from the app yet, so no
 data leaves your device through them today.
 
 The release build declares one Android permission, `INTERNET`, for that request and nothing
-else.
+else. It is unused until you configure a server.
 
 **Privacy Policy**: [privacy_policy.md](privacy_policy.md) for complete details — published
 at https://vemore.github.io/countscore/privacy-policy.html — and

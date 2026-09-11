@@ -544,4 +544,46 @@ class AppLocalizationsJa extends AppLocalizations {
   String analysisGeneratedAt(String date) {
     return '$date に生成';
   }
+
+  @override
+  String get serverSection => 'サーバー';
+
+  @override
+  String get backendUrlLabel => 'サーバーの URL';
+
+  @override
+  String get backendUrlHint => 'https://countscore.example.com';
+
+  @override
+  String get backendUrlDescription =>
+      'オンライン機能には CountScore サーバーが必要です。backend/ フォルダーから自分で用意し、そのアドレスをここに入力してください。サーバーが未設定の場合、データが端末から送信されることはありません。';
+
+  @override
+  String get backendNotConfigured => 'サーバーが未設定です';
+
+  @override
+  String get backendUrlInvalid =>
+      'https://countscore.example.com のような完全な URL を入力してください';
+
+  @override
+  String get backendUrlInsecure =>
+      'http:// はローカルネットワークでのみ使用できます。公開サーバーには https:// を使用してください。';
+
+  @override
+  String get testConnection => '接続をテスト';
+
+  @override
+  String get connectionOk => 'サーバーは応答しています';
+
+  @override
+  String get connectionFailed => 'サーバーが応答しません';
+
+  @override
+  String get serverUrlSaved => 'サーバーを保存しました';
+
+  @override
+  String get analysisRequiresBackend => 'この分析にはサーバーが必要です。設定から構成してください。';
+
+  @override
+  String get openSettings => '設定を開く';
 }

@@ -1103,6 +1103,84 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Généré le {date}'**
   String analysisGeneratedAt(String date);
+
+  /// Section title for the self-hosted backend settings
+  ///
+  /// In fr, this message translates to:
+  /// **'Serveur'**
+  String get serverSection;
+
+  /// Label of the backend base URL text field
+  ///
+  /// In fr, this message translates to:
+  /// **'URL du serveur'**
+  String get backendUrlLabel;
+
+  /// Placeholder text inside the backend URL field
+  ///
+  /// In fr, this message translates to:
+  /// **'https://countscore.example.com'**
+  String get backendUrlHint;
+
+  /// Explains that connected features need a self-hosted server
+  ///
+  /// In fr, this message translates to:
+  /// **'Les fonctions connectées nécessitent un serveur CountScore. Installez-en un depuis le dossier backend/ et indiquez son adresse ici. Sans serveur, aucune donnée ne quitte cet appareil.'**
+  String get backendUrlDescription;
+
+  /// Shown under the field when no backend URL is set
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun serveur configuré'**
+  String get backendNotConfigured;
+
+  /// Validation error for a URL that is not a usable http(s) address
+  ///
+  /// In fr, this message translates to:
+  /// **'Adresse invalide. Saisissez une URL complète, par exemple https://countscore.example.com'**
+  String get backendUrlInvalid;
+
+  /// Validation error for http:// on a public host
+  ///
+  /// In fr, this message translates to:
+  /// **'http:// n\'est accepté que sur un réseau local. Utilisez https:// pour un serveur public.'**
+  String get backendUrlInsecure;
+
+  /// Button that calls GET /health on the configured server
+  ///
+  /// In fr, this message translates to:
+  /// **'Tester la connexion'**
+  String get testConnection;
+
+  /// Result of a successful connection test
+  ///
+  /// In fr, this message translates to:
+  /// **'Le serveur répond'**
+  String get connectionOk;
+
+  /// Result of a failed connection test
+  ///
+  /// In fr, this message translates to:
+  /// **'Le serveur ne répond pas'**
+  String get connectionFailed;
+
+  /// Snackbar shown after the backend URL is saved
+  ///
+  /// In fr, this message translates to:
+  /// **'Serveur enregistré'**
+  String get serverUrlSaved;
+
+  /// Empty state on the analysis screen when no server is configured
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette analyse nécessite un serveur. Configurez-en un dans les paramètres.'**
+  String get analysisRequiresBackend;
+
+  /// Button that opens the settings screen
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouvrir les paramètres'**
+  String get openSettings;
 }
 
 class _AppLocalizationsDelegate

@@ -2,7 +2,7 @@
 
 Complete guide for filling out the Data Safety section in Google Play Console for CountScore.
 
-**Last Updated**: September 9, 2026
+**Last Updated**: September 11, 2026
 **Applies to**: CountScore v1.1.0 and later
 **Privacy Policy**: `privacy_policy.md`, published at
 https://vemore.github.io/countscore/privacy-policy.html
@@ -17,13 +17,21 @@ https://vemore.github.io/countscore/privacy-policy.html
 
 ## Quick Summary
 
-**CountScore collects and shares a small amount of data, only when the user asks for an
-analysis.**
+**CountScore can share a small amount of data, and only after the user has configured a
+server of their own and asked for an analysis.**
 
 Everything the app does normally — creating games, entering scores, viewing statistics — is
-local to the device. One optional, user-initiated feature (the **ZapZap analysis**) sends that
-game's player names, scores and round comments to the developer's backend, which forwards them
-to an LLM provider to generate the analysis text. Nothing is stored on the backend.
+local to the device. One optional feature (the **ZapZap analysis**) sends that game's player
+names, scores and round comments to a backend, which forwards them to an LLM provider to
+generate the analysis text. Nothing is stored on that backend.
+
+**The app ships with no backend address.** There is no default and none is compiled in: the
+user enters one in Settings → Server, pointing at a server they host themselves from the
+public `backend/` sources. Until they do, the feature is not offered and the app makes no
+network request at all. The developer operates no service that the published app talks to.
+
+The declaration is still made, because the *binary is capable* of the transfer and the form
+describes capability rather than the default — see below.
 
 ---
 
@@ -42,8 +50,9 @@ to an LLM provider to generate the analysis text. Nothing is stored on the backe
 
 ## What Changed and Why
 
-The ZapZap analysis feature (`lib/screens/game_analysis_screen.dart`) posts a JSON payload to
-`POST /comments/zapzap-analysis` on the CountScore backend. The payload contains:
+The ZapZap analysis feature (`lib/screens/game_analysis_screen.dart`, issuing the request via
+`lib/services/backend_client.dart`) posts a JSON payload to `POST /comments/zapzap-analysis`
+on the backend the user configured. The payload contains:
 
 | Field | Content |
 |---|---|
@@ -55,16 +64,22 @@ The ZapZap analysis feature (`lib/screens/game_analysis_screen.dart`) posts a JS
 | `history_by_player_name` | Past results for each player, from up to 10 of their other games |
 
 The backend is stateless for this endpoint — it persists nothing — but it forwards the payload
-to an LLM provider (**AWS Bedrock**, **Google Gemini**, or **Mistral AI**, depending on the
-`LLM_PROVIDER` server setting) whose retention is governed by that provider's own terms.
+to an LLM provider (**AWS Bedrock**, **Google Gemini**, or **Mistral AI**, depending on that
+server's `LLM_PROVIDER` setting) whose retention is governed by that provider's own terms.
 
 **Why we declare rather than claim an exemption.** Google's "ephemeral processing" exemption
 allows answering "not collected" when data is used only in memory and kept no longer than
-needed to serve the request. Our own backend meets that bar; the LLM provider is not under our
-control, and at least one supported configuration (free-tier Gemini) may use submitted prompts
-for product improvement. The exemption cannot be claimed for every configuration the server
-supports, so the declaration is made on the conservative reading. Declaring more than strictly
-required is permitted; declaring less is what gets apps removed.
+needed to serve the request. The server software meets that bar; the LLM provider is not under
+anyone's control here, and at least one supported configuration (free-tier Gemini) may use
+submitted prompts for product improvement. The exemption cannot be claimed for every
+configuration the server supports, so the declaration is made on the conservative reading.
+Declaring more than strictly required is permitted; declaring less is what gets apps removed.
+
+**Why the user-configured destination does not reduce the declaration.** It is tempting to
+answer "no data collected" on the grounds that the shipped app has nowhere to send anything.
+Google's form asks what the app *can* do, and a code path that transmits player names once a
+URL is entered is a transmission capability. Declaring it is the conservative reading, and the
+only one that survives a reviewer who types a URL into Settings.
 
 ---
 
@@ -102,9 +117,10 @@ release manifest, because release signing needs the gitignored `android/key.prop
 
 **Answer**: ✅ **Yes**
 
-**Explanation**: When the user explicitly requests a ZapZap analysis, the app transmits that
-game's player names, scores and round comments to the developer's backend and on to an LLM
-provider. All other app data stays on the device.
+**Explanation**: When the user has configured a backend server of their own and then
+explicitly requests a ZapZap analysis, the app transmits that game's player names, scores and
+round comments to that server and on to an LLM provider. No server is configured by default,
+so a user who never sets one up transmits nothing. All other app data stays on the device.
 
 ---
 
@@ -112,9 +128,18 @@ provider. All other app data stays on the device.
 
 **Answer**: ✅ **Yes**
 
-**Explanation**: The request is sent over HTTPS/TLS to
-`https://countscore.ombivince.synology.me`, terminated by Synology Web Station. There is no
-cleartext transmission path.
+**Explanation**: The request is sent over HTTPS/TLS to the server address the user configured.
+The app refuses to store an `http://` address unless its host is a private or loopback address
+(`192.168.x.x`, `10.x.x.x`, `172.16–31.x.x`, `127.x.x.x`, `localhost`, `*.local`), so the only
+unencrypted path possible is one that never leaves the user's own local network, to a server
+they operate. That rule is enforced in `lib/providers/backend_provider.dart` and covered by
+`test/providers/backend_provider_test.dart`.
+
+`android/app/src/main/res/xml/network_security_config.xml` sets
+`cleartextTrafficPermitted="true"` — necessary because Android's network security config
+matches host names and cannot express an address range, so the LAN exception cannot be written
+there. The app-level rule above is what actually constrains it. Mention this if a reviewer
+queries the manifest.
 
 ---
 
@@ -180,9 +205,9 @@ from previous games.
 
 - **Location, Financial info, Health, Contacts, Calendar, Photos, Audio, Files** — never
   accessed.
-- **Device or other IDs** — none collected. The backend inspects the requesting IP address in
-  memory for rate limiting (5/min, 30/h) and never stores it; transient anti-abuse use of an
-  IP address is not a declarable data type.
+- **Device or other IDs** — none collected. The user's own backend inspects the requesting IP
+  address in memory for rate limiting (5/min, 30/h) and never stores it; transient anti-abuse
+  use of an IP address is not a declarable data type.
 - **App info and performance** — no crash reporting, no diagnostics, no analytics SDK.
 
 ---
@@ -196,8 +221,10 @@ permission the app declares — see [Check Before Submitting](#check-before-subm
 
 **Justification**:
 "The INTERNET permission is used for a single, optional, user-initiated feature: generating a
-written analysis of a completed game. The app makes no other network requests. No background
-networking, telemetry, analytics or advertising traffic occurs."
+written analysis of a completed game, against a server the user configures themselves. The app
+ships with no server address, so the permission goes unused until the user supplies one. The
+app makes no other network requests. No background networking, telemetry, analytics or
+advertising traffic occurs."
 
 ### 2. WAKE_LOCK
 
@@ -231,6 +258,9 @@ The merged manifest is the one that ships — always verify there, not in the so
 Before submitting:
 
 - [ ] `INTERNET` confirmed in the **merged release** manifest, not just the source one
+- [ ] The release build contains no backend hostname:
+      `strings build/app/outputs/flutter-apk/app-release.apk` — or grep the sources for a
+      `defaultValue` on `BACKEND_URL`, which must not exist
 - [ ] **Q1**: answered "Yes" for data collection/sharing
 - [ ] **Data types**: Personal info → Name, and App activity → Other user-generated content
 - [ ] Both marked **Optional**, purpose **App functionality**, **not** linked to identity,
@@ -278,6 +308,13 @@ no penalty while under-declaring does.
 **A**: Then nothing is transmitted. That is why both data types are declared **Optional**. The
 declaration describes what the app *can* do, not what every user does.
 
+### Q: "The app has no server address at all. Why declare anything?"
+
+**A**: Same reasoning. The shipped binary contains a code path that transmits player names as
+soon as a URL is entered in Settings → Server, and a reviewer can enter one. Capability is
+what the form asks about. The absence of a default is a privacy improvement to state in the
+explanations, not a reason to answer "no data collected".
+
 ### Q: "What about the group sharing and sync endpoints in the backend?"
 
 **A**: Not declarable yet — the app contains no client code for them, so no user data reaches
@@ -301,15 +338,21 @@ Thank you for reviewing CountScore. Our data handling is as follows:
 
 1. All game data (game types, players, scores, preferences) is stored locally on the
    device using SQLite and SharedPreferences.
-2. One optional, user-initiated feature ("ZapZap analysis") transmits a single game's
-   player names, scores and round comments over HTTPS to our backend, which forwards
-   them to a large language model provider to generate an analysis text. This occurs
-   only when the user explicitly taps the generate button.
-3. Our backend stores none of this data; it is stateless for this endpoint.
+2. One optional feature ("ZapZap analysis") transmits a single game's player names,
+   scores and round comments over HTTPS to a backend server. The app ships with no
+   server address and none is compiled into it: the user must first enter the address
+   of a server they host themselves (the server source is in the backend/ directory of
+   the public repository). The backend forwards the payload to a large language model
+   provider to generate an analysis text. This occurs only when a server has been
+   configured and the user explicitly taps the generate button.
+3. That backend stores none of this data; it is stateless for this endpoint. We operate
+   no server that the published app communicates with.
 4. We use no analytics, advertising or tracking SDKs, and collect no device identifiers.
 5. The app is open source and can be audited at:
    https://github.com/vemore/countscore
-   The network request in question is in lib/screens/game_analysis_screen.dart.
+   The network request in question is in lib/services/backend_client.dart, and the
+   address it uses comes from lib/providers/backend_provider.dart, which has no
+   default value.
 
 Our privacy policy at [PRIVACY_POLICY_URL] describes this in detail.
 
@@ -365,8 +408,11 @@ the app update. All three must be consistent.
 ```
 DATA SAFETY QUICK REFERENCE — CountScore v1.1.0+
 
-Q: Collect or share data?        A: YES (optional, user-initiated analysis only)
-Q: Data encrypted in transit?    A: YES (HTTPS/TLS)
+Q: Collect or share data?        A: YES (optional, user-initiated analysis only,
+                                    and only to a server the user configures;
+                                    no server address ships with the app)
+Q: Data encrypted in transit?    A: YES (HTTPS/TLS; http:// accepted only for a
+                                    private/loopback host, i.e. the user's own LAN)
 Q: Data deletion available?      A: YES
 Privacy Policy URL:              https://vemore.github.io/countscore/privacy-policy.html
 
@@ -378,9 +424,11 @@ Both: collected YES, shared YES, optional, App functionality,
 
 Permissions: INTERNET (declared in the main manifest; the only one)
              No WAKE_LOCK, no storage permissions.
+             networkSecurityConfig points at res/xml/network_security_config.xml.
 
-Summary: local-only by default; one optional feature transmits one game's data
-         to an LLM provider at the user's explicit request.
+Summary: local-only by default, with no backend address shipped at all; one
+         optional feature transmits one game's data to a server the user
+         configures, and on to an LLM provider, at their explicit request.
 ```
 
 ---

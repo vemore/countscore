@@ -377,5 +377,18 @@
         "example": "05/04/2026 2:30 PM"
       }
     }
-  }
+  },
+  "serverSection": "Server",
+  "backendUrlLabel": "Server URL",
+  "backendUrlHint": "https://countscore.example.com",
+  "backendUrlDescription": "Connected features need a CountScore server. Install one from the backend/ folder and enter its address here. With no server, no data ever leaves this device.",
+  "backendNotConfigured": "No server configured",
+  "backendUrlInvalid": "Invalid address. Enter a full URL, for example https://countscore.example.com",
+  "backendUrlInsecure": "http:// is only accepted on a local network. Use https:// for a public server.",
+  "testConnection": "Test connection",
+  "connectionOk": "The server is responding",
+  "connectionFailed": "The server is not responding",
+  "serverUrlSaved": "Server saved",
+  "analysisRequiresBackend": "This analysis needs a server. Configure one in the settings.",
+  "openSettings": "Open settings"
 }

@@ -34,11 +34,13 @@ target — there is no separate web source tree.
 
 ```bash
 # Run locally
-flutter run -d chrome --dart-define=BACKEND_URL=https://countscore.ombivince.synology.me
+flutter run -d chrome
+# --dart-define=BACKEND_URL=<url> is optional: it only seeds the runtime setting
+# on a profile that has never configured a server. Leave it out and configure the
+# server in Settings, like a user would.
 
 # Build
-flutter build web --release --no-tree-shake-icons \
-  --dart-define=BACKEND_URL=https://countscore.ombivince.synology.me
+flutter build web --release --no-tree-shake-icons
 # add --base-href=/subpath/ if not served from the domain root
 
 # End-to-end (chromedriver major version must match installed Chrome)
@@ -46,14 +48,17 @@ chromedriver --port=4444 &
 flutter drive --driver=test_driver/integration_test.dart \
   --target=integration_test/app_test.dart \
   -d web-server --browser-name=chrome --headless \
-  --dart-define=BACKEND_URL=https://countscore.ombivince.synology.me
+  --dart-define=BACKEND_URL=<your backend URL>
 ```
 
 ## Gotchas
 
-- **Production CORS does not allow a `localhost` origin**, so a locally served web build
-  cannot reach `/comments/zapzap-analysis`. The e2e run skips that step for the same
-  reason; it is validated by `curl` and on a device instead.
+- **CORS is the backend operator's problem, and it bites locally.** A backend whose
+  `CORS_ORIGINS` does not list the origin serving the web build cannot be reached from it,
+  so a locally served build usually cannot call `/comments/zapzap-analysis`. The e2e run
+  skips that step for the same reason; it is validated by `curl` and on a device instead.
+- **A browser blocks `http://` from an `https://` page** whatever the app allows, so an
+  `http://192.168.x.x` backend only works for a PWA that is itself served over http.
 - **`pumpAndSettle` is insufficient in web tests.** The Drift web worker resolves
   asynchronously without scheduling a frame. Use the `_waitFor` / `_waitEnabled` /
   `_waitDashes` helpers in `integration_test/app_test.dart`; do not "simplify" them away.

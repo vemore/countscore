@@ -554,4 +554,47 @@ class AppLocalizationsHi extends AppLocalizations {
   String analysisGeneratedAt(String date) {
     return '$date को उत्पन्न';
   }
+
+  @override
+  String get serverSection => 'सर्वर';
+
+  @override
+  String get backendUrlLabel => 'सर्वर URL';
+
+  @override
+  String get backendUrlHint => 'https://countscore.example.com';
+
+  @override
+  String get backendUrlDescription =>
+      'कनेक्टेड सुविधाओं के लिए एक CountScore सर्वर आवश्यक है। इसे backend/ फ़ोल्डर से इंस्टॉल करें और उसका पता यहाँ दर्ज करें। सर्वर के बिना, कोई भी डेटा इस डिवाइस से बाहर नहीं जाता।';
+
+  @override
+  String get backendNotConfigured => 'कोई सर्वर कॉन्फ़िगर नहीं है';
+
+  @override
+  String get backendUrlInvalid =>
+      'अमान्य पता। पूरा URL दर्ज करें, उदाहरण के लिए https://countscore.example.com';
+
+  @override
+  String get backendUrlInsecure =>
+      'http:// केवल लोकल नेटवर्क पर स्वीकार किया जाता है। सार्वजनिक सर्वर के लिए https:// का उपयोग करें।';
+
+  @override
+  String get testConnection => 'कनेक्शन जाँचें';
+
+  @override
+  String get connectionOk => 'सर्वर प्रतिक्रिया दे रहा है';
+
+  @override
+  String get connectionFailed => 'सर्वर प्रतिक्रिया नहीं दे रहा है';
+
+  @override
+  String get serverUrlSaved => 'सर्वर सहेजा गया';
+
+  @override
+  String get analysisRequiresBackend =>
+      'इस विश्लेषण के लिए एक सर्वर आवश्यक है। सेटिंग्स में एक कॉन्फ़िगर करें।';
+
+  @override
+  String get openSettings => 'सेटिंग्स खोलें';
 }

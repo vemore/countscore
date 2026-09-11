@@ -2,7 +2,7 @@
 
 > Scope: what is deliberately deferred, and what is simply missing.
 > Related: [[Architecture]] · [[Sync]] · [[Security]] · [[Testing]] · [[Web]]
-> Updated: 2026-09-09
+> Updated: 2026-09-11
 
 ## Facts
 
@@ -10,7 +10,11 @@
 
 - **Sync client on mobile.** The schema (`outbox`, `sync_state`) and the whole backend are
   ready; `sync_service.dart`, the outbox drain and the WebSocket client are not written.
-  Nothing in `lib/` writes to `outbox` today. See [[Sync]].
+  Nothing in `lib/` writes to `outbox` today. `lib/services/backend_client.dart` exists but
+  covers only the two analysis-related calls. See [[Sync]].
+- **No in-app way to discover or install a backend.** Settings takes a URL and tests it;
+  finding a server, running `backend/` and getting TLS onto it are left to the user, and
+  the app says so in one sentence rather than walking them through it.
 - **Database export/import on web.** Hidden behind `kIsWeb` guards. Enabling it means
   extracting a `FileExporter` abstraction (io/web) and serialising the database to JSON for
   browser download/upload. See [[Web]].
@@ -25,8 +29,7 @@
 
 - **No e2e or release-artifact coverage in CI.** `.github/workflows/ci.yml` proves a fresh
   clone builds — codegen, analyze, test, the web release and a debug APK — and runs the
-  three backend gates. It does not run the e2e suite, which calls the real production
-  endpoint, nor the signed release APK/AAB, which needs the keystore secrets. Both stay
+  three backend gates. It does not run the e2e suite, which needs a real backend, nor the signed release APK/AAB, which needs the keystore secrets. Both stay
   manual. See [[Testing]].
 - **No monitoring or alerting.** `docker logs` only. Prometheus + Grafana in a
   `docker-compose.monitoring.yml` is the intended shape.

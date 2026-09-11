@@ -96,7 +96,11 @@ void main() {
       await tester.pageBack();
       await tester.pumpAndSettle();
 
-      // === Step 7: ZapZap analysis (network → prod backend).
+      // === Step 7: ZapZap analysis (network → the configured backend).
+      // The backend URL is a runtime setting with no default, so this step only
+      // runs when the build was given --dart-define=BACKEND_URL=<url>, which
+      // seeds it. Without one the "Analyze" item is correctly absent and the
+      // step skips rather than failing.
       await _waitFor(tester, find.text('Partie 1'));
       await tester.tap(find.text('Partie 1'));
       // Wait for the board to actually open — the home game card ALSO has a
@@ -105,41 +109,20 @@ void main() {
       await _waitFor(tester, find.byType(DataTable));
       await _waitFor(tester, find.byIcon(Icons.more_vert));
       await tester.tap(find.byIcon(Icons.more_vert));
-      await _waitFor(tester, find.byIcon(Icons.auto_awesome)); // "Analyze" item.
-      await tester.tap(find.byIcon(Icons.auto_awesome));
-      await _waitFor(tester, find.byKey(const Key('analysis_generate')));
-
-      await tester.tap(find.byKey(const Key('analysis_generate')));
-      await tester.pump(); // enter loading state
-
-      final ok = await _pumpUntil(
+      final hasAnalyse = await _pumpUntil(
         tester,
-        () =>
-            find.byType(MarkdownBody).evaluate().isNotEmpty ||
-            find.byIcon(Icons.error_outline).evaluate().isNotEmpty,
-        timeout: const Duration(seconds: 120),
+        () => find.byIcon(Icons.auto_awesome).evaluate().isNotEmpty,
+        timeout: const Duration(seconds: 5),
       );
-
-      if (!ok || find.byIcon(Icons.error_outline).evaluate().isNotEmpty) {
-        // On web the browser blocks the cross-origin POST (prod CORS allowlist
-        // excludes localhost); the prod IP rate limiter can also return 429.
-        // The real network path is exercised on-device. Don't fail the suite.
+      if (!hasAnalyse) {
         markTestSkipped(
-          'ZapZap analysis network step skipped (CORS on web / rate-limit / offline).',
+          'ZapZap analysis skipped: no backend configured '
+          '(pass --dart-define=BACKEND_URL=<url> to exercise it).',
         );
+        await tester.tapAt(const Offset(5, 5)); // dismiss the popup menu
+        await tester.pumpAndSettle();
       } else {
-        final md = tester.widget<MarkdownBody>(find.byType(MarkdownBody));
-        expect(md.data, isNotEmpty);
-
-        // Cache proof: re-open the screen → _loadCached() repaints the result
-        // from the game_analyses table, with no "Generate" button.
-        await tester.pageBack();
-        await tester.pumpAndSettle();
-        await tester.tap(find.byIcon(Icons.more_vert));
-        await tester.pumpAndSettle();
-        await tester.tap(find.byIcon(Icons.auto_awesome));
-        await _waitFor(tester, find.byType(MarkdownBody));
-        expect(find.byKey(const Key('analysis_generate')), findsNothing);
+        await _analyse(tester);
       }
 
       // === Teardown: remove what this run created (idempotent next time).
@@ -147,6 +130,46 @@ void main() {
     },
     timeout: const Timeout(Duration(minutes: 5)),
   );
+}
+
+/// Step 7's second half: generate an analysis and prove it is cached. Split out
+/// so the step can be skipped without skipping the teardown.
+Future<void> _analyse(WidgetTester tester) async {
+  await tester.tap(find.byIcon(Icons.auto_awesome));
+  await _waitFor(tester, find.byKey(const Key('analysis_generate')));
+
+  await tester.tap(find.byKey(const Key('analysis_generate')));
+  await tester.pump(); // enter loading state
+
+  final ok = await _pumpUntil(
+    tester,
+    () =>
+        find.byType(MarkdownBody).evaluate().isNotEmpty ||
+        find.byIcon(Icons.error_outline).evaluate().isNotEmpty,
+    timeout: const Duration(seconds: 120),
+  );
+
+  if (!ok || find.byIcon(Icons.error_outline).evaluate().isNotEmpty) {
+    // On web the browser blocks the cross-origin POST unless the configured
+    // backend's CORS_ORIGINS lists this origin; its IP rate limiter can also
+    // return 429. The real network path is exercised on-device. Don't fail.
+    markTestSkipped(
+      'ZapZap analysis network step skipped (CORS on web / rate-limit / offline).',
+    );
+  } else {
+    final md = tester.widget<MarkdownBody>(find.byType(MarkdownBody));
+    expect(md.data, isNotEmpty);
+
+    // Cache proof: re-open the screen → _loadCached() repaints the result
+    // from the game_analyses table, with no "Generate" button.
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.more_vert));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.auto_awesome));
+    await _waitFor(tester, find.byType(MarkdownBody));
+    expect(find.byKey(const Key('analysis_generate')), findsNothing);
+  }
 }
 
 /// Pumps in 250ms ticks until [condition] holds or [timeout] elapses.

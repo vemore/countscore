@@ -542,4 +542,45 @@ class AppLocalizationsZh extends AppLocalizations {
   String analysisGeneratedAt(String date) {
     return '生成于 $date';
   }
+
+  @override
+  String get serverSection => '服务器';
+
+  @override
+  String get backendUrlLabel => '服务器地址';
+
+  @override
+  String get backendUrlHint => 'https://countscore.example.com';
+
+  @override
+  String get backendUrlDescription =>
+      '联网功能需要一台 CountScore 服务器。请从 backend/ 目录自行部署，并在此填写其地址。未配置服务器时，任何数据都不会离开本设备。';
+
+  @override
+  String get backendNotConfigured => '未配置服务器';
+
+  @override
+  String get backendUrlInvalid =>
+      '地址无效。请输入完整的 URL，例如 https://countscore.example.com';
+
+  @override
+  String get backendUrlInsecure => 'http:// 仅在局域网内可用。公网服务器请使用 https://。';
+
+  @override
+  String get testConnection => '测试连接';
+
+  @override
+  String get connectionOk => '服务器响应正常';
+
+  @override
+  String get connectionFailed => '服务器无响应';
+
+  @override
+  String get serverUrlSaved => '服务器已保存';
+
+  @override
+  String get analysisRequiresBackend => '此分析需要一台服务器。请在设置中配置。';
+
+  @override
+  String get openSettings => '打开设置';
 }

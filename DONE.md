@@ -6,6 +6,17 @@ readable after the fact.
 
 ---
 
+## `.llmwiki/Testing.md` is missing a test file
+
+**Status:** done (2026-09-11) — closed on `feat/configurable-backend-url`, which added two
+more test files and would otherwise have widened the gap.
+
+Its table listed four files totalling 30 tests while `flutter test` ran 37 across six:
+`test/providers/theme_provider_test.dart` (added by `ccc3640`) was never added to the page.
+The table now lists all seven files and 50 tests, the suite's current shape.
+
+---
+
 ## Release builds declare no `INTERNET` permission, so the analysis cannot work
 
 **Status:** done (2026-09-09) — closed on `fix/release-internet-permission`.

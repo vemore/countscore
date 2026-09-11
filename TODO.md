@@ -3,6 +3,33 @@
 Open work only. A finished item moves to `DONE.md` — see the workflow section of
 `CLAUDE.md`.
 
+## The NAS hostname is still in git history
+
+**Status:** open — noted 2026-09-11, while making the backend URL configurable.
+
+`feat/configurable-backend-url` removed `countscore.ombivince.synology.me` and the LAN
+registry address `192.168.1.25:5050` from the working tree: they now live in the untracked
+`backend/scripts/deploy.env`. **Every commit before that one still contains them**, and the
+repository is public, so `git log -p` and the GitHub UI still show them.
+
+Nothing was rewritten on purpose: `CLAUDE.md` forbids force-pushing and rewriting commits
+already on `origin/main`, and a rewrite would break every existing clone and every link to a
+commit. The exposure is a hostname and an RFC 1918 address, not a credential — the values are
+not secret, they are simply personal infrastructure that no longer belongs in a public tree.
+
+If that is judged worth closing, the options, worst to best:
+
+1. Leave it. The host is behind TLS with its own auth surface; knowing the name buys an
+   attacker a target list entry and nothing else.
+2. Rename the Synology DDNS host, making the old name dead. Cheap, and it invalidates the
+   history without touching git. Requires re-issuing the Let's Encrypt certificate and
+   updating `deploy.env` — the app no longer needs updating, which is the point of this
+   change.
+3. `git filter-repo` over the history plus a force-push. Correct in principle, forbidden by
+   `CLAUDE.md`, and it rewrites every sha in the project.
+
+Option 2 is the one worth doing if it is done at all.
+
 ## The ZapZap analysis is down in production: Mistral rejects the configured model
 
 **Status:** open — noted 2026-09-09, found by the on-device release test that closed the
@@ -12,7 +39,7 @@ Open work only. A finished item moves to `DONE.md` — see the workflow section 
 not the permission bug and not a device problem: it reproduces from any machine.
 
 ```
-$ curl -sS -X POST https://countscore.ombivince.synology.me/comments/zapzap-analysis \
+$ curl -sS -X POST "$BACKEND_URL/comments/zapzap-analysis" \
     -H 'Content-Type: application/json' -d @payload.json
 {"detail":"upstream LLM error: RuntimeError"}          # 502, in 0.18 s
 ```
@@ -83,10 +110,11 @@ Milestones 5 to 7 are marked Done in `.llmwiki/Architecture.md`, and on the serv
 are: groups, delta-log sync with row-level LWW, and `/sync/stream` over Postgres
 LISTEN/NOTIFY are implemented and tested. **Nothing in the app consumes any of it.**
 
-`lib/services/sync_service.dart` and `lib/services/backend_client.dart` are referenced by
-the documentation but are not on disk — `lib/services/` holds only `database_service.dart`,
-`drift/` and `uuid.dart`. The single file in `lib/` that makes a network call is
-`lib/screens/game_analysis_screen.dart`, for the ZapZap analysis.
+`lib/services/sync_service.dart` is referenced by the documentation but is not on disk.
+`lib/services/backend_client.dart` now exists (2026-09-11) but covers only two calls,
+`zapzapAnalysis` and `health`; it holds the base URL and is where a sync client would land.
+The single feature in `lib/` that makes a network call is still the ZapZap analysis — and
+only once the user has configured a backend, since there is no default URL.
 
 So the backend is a working service with no client, and both the mobile app and the PWA are
 still purely local. This is the largest gap between what the wiki says the project is and
@@ -201,15 +229,6 @@ the SDK upgrade. See `.llmwiki/Web.md`.
 Note this also settles the old question of whether to untrack the two binaries: they stay
 tracked **by choice** (a fresh clone should not have to fetch binaries to run the PWA), not
 because the repo is their only source. It never was.
-
-## `.llmwiki/Testing.md` is missing a test file
-
-**Status:** open — noted 2026-09-09, spotted while running the gates for the Flutter 3.47
-upgrade.
-
-Its table lists four files totalling 30 tests. `flutter test` runs **37** across six files:
-`test/providers/theme_provider_test.dart` (added by `ccc3640`) was never added to the page.
-Not introduced by the SDK upgrade — just visible from running the suite.
 
 ## `web/CLAUDE.md` is published with the PWA
 

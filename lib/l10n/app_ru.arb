@@ -305,5 +305,18 @@
   "confirmDeleteAnalysis": "Удалить анализ этой игры?",
   "analysisError": "Не удалось создать анализ",
   "retry": "Повторить",
-  "analysisGeneratedAt": "Создано {date}"
+  "analysisGeneratedAt": "Создано {date}",
+  "serverSection": "Сервер",
+  "backendUrlLabel": "Адрес сервера",
+  "backendUrlHint": "https://countscore.example.com",
+  "backendUrlDescription": "Сетевые функции требуют сервера CountScore. Установите его из папки backend/ и укажите здесь его адрес. Без сервера никакие данные не покидают это устройство.",
+  "backendNotConfigured": "Сервер не настроен",
+  "backendUrlInvalid": "Неверный адрес. Введите полный URL, например https://countscore.example.com",
+  "backendUrlInsecure": "http:// допускается только в локальной сети. Для публичного сервера используйте https://.",
+  "testConnection": "Проверить соединение",
+  "connectionOk": "Сервер отвечает",
+  "connectionFailed": "Сервер не отвечает",
+  "serverUrlSaved": "Сервер сохранён",
+  "analysisRequiresBackend": "Для этого анализа нужен сервер. Настройте его в настройках.",
+  "openSettings": "Открыть настройки"
 }

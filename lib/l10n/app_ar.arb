@@ -305,5 +305,18 @@
   "confirmDeleteAnalysis": "حذف تحليل هذه المباراة؟",
   "analysisError": "فشل إنشاء التحليل",
   "retry": "إعادة المحاولة",
-  "analysisGeneratedAt": "تم الإنشاء في {date}"
+  "analysisGeneratedAt": "تم الإنشاء في {date}",
+  "serverSection": "الخادم",
+  "backendUrlLabel": "عنوان الخادم",
+  "backendUrlHint": "https://countscore.example.com",
+  "backendUrlDescription": "تتطلب الميزات المتصلة خادم CountScore. ثبّت خادمًا من مجلد backend/ وأدخل عنوانه هنا. بدون خادم، لا تغادر أي بيانات هذا الجهاز.",
+  "backendNotConfigured": "لم يتم إعداد أي خادم",
+  "backendUrlInvalid": "عنوان غير صالح. أدخل رابطًا كاملًا، مثل https://countscore.example.com",
+  "backendUrlInsecure": "لا يُقبل http:// إلا على شبكة محلية. استخدم https:// لخادم عام.",
+  "testConnection": "اختبار الاتصال",
+  "connectionOk": "الخادم يستجيب",
+  "connectionFailed": "الخادم لا يستجيب",
+  "serverUrlSaved": "تم حفظ الخادم",
+  "analysisRequiresBackend": "يتطلب هذا التحليل خادمًا. قم بإعداد واحد من الإعدادات.",
+  "openSettings": "فتح الإعدادات"
 }

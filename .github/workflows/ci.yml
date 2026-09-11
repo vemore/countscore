@@ -17,7 +17,6 @@ permissions:
 
 env:
   FLUTTER_VERSION: "3.47.2"
-  BACKEND_URL: "https://countscore.ombivince.synology.me"
 
 jobs:
   backend:
@@ -106,10 +105,10 @@ jobs:
 
       # --no-tree-shake-icons is mandatory on every build target: game-type icons
       # are built from database codepoints, which the tree-shaker cannot see.
+      # No --dart-define=BACKEND_URL: the backend URL is a runtime setting with
+      # no default, and this job only proves the build compiles.
       - name: Build web (release)
-        run: |
-          flutter build web --release --no-tree-shake-icons \
-            --dart-define=BACKEND_URL=${{ env.BACKEND_URL }}
+        run: flutter build web --release --no-tree-shake-icons
 
   android:
     name: Android debug APK — fresh-clone build proof

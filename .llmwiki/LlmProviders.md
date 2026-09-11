@@ -2,7 +2,7 @@
 
 > Scope: both LLM paths — Claude for short comments, a pluggable provider for ZapZap.
 > Related: [[Api]] · [[Backend]] · [[Security]] · [[MobileApp]] · [[Deployment]]
-> Updated: 2026-09-09
+> Updated: 2026-09-11
 
 ## Facts
 
@@ -67,13 +67,26 @@ The system block is marked `cache_control: ephemeral`, so across a games evening
 ### Client side
 
 `lib/screens/game_analysis_screen.dart` posts `{game, game_type, players, rounds,
-history_by_player_name}` with a 90 s timeout and reads back `{content, model}`. The base URL
-is **compile-time**: `String.fromEnvironment('BACKEND_URL', defaultValue:
-'https://countscore.ombivince.synology.me')` at line 29 — set it with
-`--dart-define=BACKEND_URL=…`, it cannot be changed at runtime. There is no API client
-class; this is the only HTTP call in the whole app. The result is cached in `game_analyses`;
-regenerating deletes and replaces. Generation is manual-only, never automatic, so no LLM
-call happens without a user asking.
+history_by_player_name}` and reads back `{content, model}`. The result is cached in
+`game_analyses`; regenerating deletes and replaces. Generation is manual-only, never
+automatic, so no LLM call happens without a user asking.
+
+> **Status: Outdated** (2026-09-11) — the base URL was a compile-time
+> `String.fromEnvironment('BACKEND_URL', defaultValue: <the author's NAS>)` with no API
+> client class. Both statements are now false. What holds:
+
+The base URL is a **runtime setting with no default**: `lib/providers/backend_provider.dart`,
+SharedPreferences key `backendUrl`, edited in Settings → Server. `--dart-define=BACKEND_URL`
+survives only as a seed applied when nothing is stored yet, and no published build passes it.
+`BackendProvider.check` accepts `https://` anywhere and `http://` only on a private address.
+With nothing configured, `isConfigured` is false, the Analyze entry is absent from the game
+menu (`game_board_screen.dart`), the analysis screen shows `analysisRequiresBackend`, and the
+app issues **no** network request — though an analysis generated earlier still renders, being
+local data.
+
+The HTTP call lives in `lib/services/backend_client.dart`: `zapzapAnalysis` (90 s timeout)
+and `health` (10 s, used by the Test-connection button). It remains the only HTTP call in the
+whole app.
 
 ### Rate limiting and budget
 
@@ -112,6 +125,11 @@ call happens without a user asking.
 - **`max_tokens` was raised 2048 → 8192** to leave room for Gemini's thinking tokens.
 - **Gemini on the free tier**: `gemini-2.5-pro` is quota-zero; use Flash unless billing is
   enabled.
+- **The backend is the user's, not the developer's (2026-09-11).** Shipping a default URL
+  meant every install of the published app sent its game data to one person's NAS. The URL
+  became a setting, the default became nothing, and the connected features switch themselves
+  off until someone points the app at a server they run. That is also why the hostname left
+  the repository — see [[Deployment]].
 - **AWS credentials live in backend env vars only** and are never bundled into the APK —
   that is the whole reason ZapZap moved server-side from the Flutter prototype.
 - **To harden**: give ZapZap device auth and share the `rate_limits` budget once the

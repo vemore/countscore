@@ -3,6 +3,11 @@
 CountScore is a score-tracking app: a Flutter client (Android + web PWA) on Drift/SQLite,
 plus a FastAPI backend in `backend/` for group sharing and LLM-generated game commentary.
 
+The backend is **self-hosted by whoever uses it**, and the app ships with no URL for it: the
+connected features stay off until a user enters one in Settings → Server. Never reintroduce a
+default, and never commit a real deployment host — `--dart-define=BACKEND_URL` is a dev seed
+only, and the author's own target lives in the untracked `backend/scripts/deploy.env`.
+
 ## Read the wiki first
 
 Durable project knowledge lives in **`.llmwiki/`**, not in this file.
@@ -110,7 +115,7 @@ flutter gen-l10n                                           # after touching any 
 
 # Run
 flutter run                                                 # connected device
-flutter run -d chrome --dart-define=BACKEND_URL=<url>       # web
+flutter run -d chrome                                       # web
 
 # Quality
 flutter analyze
@@ -119,7 +124,7 @@ flutter test
 # Build
 flutter build apk        --release --no-tree-shake-icons
 flutter build appbundle  --release --no-tree-shake-icons    # Play Store
-flutter build web        --release --no-tree-shake-icons --dart-define=BACKEND_URL=<url>
+flutter build web        --release --no-tree-shake-icons
 ```
 
 Backend commands are in `backend/CLAUDE.md`.

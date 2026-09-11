@@ -2,7 +2,7 @@
 
 > Scope: what CountScore is made of and how far each part has got.
 > Related: [[MobileApp]] · [[Backend]] · [[Web]] · [[Sync]] · [[Deployment]] · [[KnownLimits]]
-> Updated: 2026-09-09
+> Updated: 2026-09-11
 
 ## Facts
 
@@ -24,7 +24,8 @@ CountScore Mobile            CountScore Web
         \                        /
          HTTPS REST + WebSocket
                    |
-        Synology Web Station (TLS)
+   a backend the user configures — none
+   by default — behind its own TLS proxy
                    |
           FastAPI (uvicorn, 1 worker)
            /sync/*  /groups/*  /comments/*  /sync/stream
@@ -49,8 +50,11 @@ CountScore Mobile            CountScore Web
 | 9 | Backend production-readiness | Partial | Compose + TLS + daily `pg_dump`; **no monitoring or alerting** |
 
 The server side of milestones 5–7 is complete, but **the Flutter client for sync does not
-exist**: `sync_service.dart` and `backend_client.dart` are designed and referenced but are
-not on disk. The only live app↔backend call is the ZapZap analysis — see [[LlmProviders]].
+exist**: `sync_service.dart` is designed and referenced but is not on disk.
+`lib/services/backend_client.dart` now does exist, in a minimal form — `zapzapAnalysis` and
+`health`, nothing more — and is where a sync client would land. The only live app↔backend
+call is still the ZapZap analysis, and it only happens once the user has configured a
+backend of their own: there is no default URL. See [[LlmProviders]].
 
 ## Decisions & History
 

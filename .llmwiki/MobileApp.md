@@ -2,7 +2,7 @@
 
 > Scope: the Flutter app's own structure — entry point, state, screens, models.
 > Related: [[DataLayer]] · [[SchemaV9]] · [[I18n]] · [[Web]] · [[Testing]]
-> Updated: 2026-09-09
+> Updated: 2026-09-11
 
 ## Facts
 
@@ -10,12 +10,13 @@
 
 ### Entry point
 
-`lib/main.dart` — `MyApp` wraps a `MultiProvider` (4 providers) around a `MaterialApp`.
+`lib/main.dart` — `MyApp` wraps a `MultiProvider` (5 providers) around a `MaterialApp`.
 Material 3, seed colour `Colors.deepPurple`. 10 `supportedLocales` with a
 `localeResolutionCallback` falling back to `en`. Home is `HomeScreen`.
 There is no DI container. `main()` is `async` and calls
-`WidgetsFlutterBinding.ensureInitialized()` for one reason: to `await ThemeProvider.load()`
-and hand the result to `MyApp(initialThemeMode:)`, so the first frame is already themed.
+`WidgetsFlutterBinding.ensureInitialized()` to `await ThemeProvider.load()` and
+`BackendProvider.load()` and hand both results to `MyApp`, so the first frame is already
+themed and already knows whether the connected features exist.
 
 ### Providers — `lib/providers/`, all `ChangeNotifier` (provider ^6.1.2)
 
@@ -25,8 +26,12 @@ and hand the result to `MyApp(initialThemeMode:)`, so the first frame is already
 | `game_type_provider.dart` (46 l.) | Game-type list CRUD, `getGameTypeById`. |
 | `settings_provider.dart` (72 l.) | Wakelock toggle (SharedPreferences-backed) and DB export/import. The **only** caller of `DatabaseService` for I/O. Exposes `supportsDbExportImport => !kIsWeb`. |
 | `theme_provider.dart` (33 l.) | `ThemeMode` only, persisted to SharedPreferences under `themeMode` as `ThemeMode.name`. `load()` is called from `main()` before `runApp`. |
+| `backend_provider.dart` | The self-hosted backend base URL, SharedPreferences key `backendUrl`, **no default**. `check()` validates and canonicalises what the user typed; `isConfigured` gates every connected feature. `load()` is called from `main()` before `runApp`. |
 
 ### Screens — `lib/screens/` (10)
+
+`settings_screen` is a `StatefulWidget` since the Server section (it owns the URL
+`TextEditingController`).
 
 `home_screen` (545 l.) · `game_board_screen` (792 l., the scoring grid) ·
 `game_types_screen` (491 l.) · `create_game_screen` (372 l.) ·
@@ -92,6 +97,10 @@ not "fix" it by hardcoding a codepoint.
 - **Icons are database-driven** so that a user can pick an icon for a custom game type.
   The `--no-tree-shake-icons` tax is the accepted price; the alternative was a fixed enum
   of icons, which would have made custom game types feel second-class.
+- **The backend URL has no default, and that is the privacy model.** An install that has
+  never been configured makes no network request at all; `--dart-define=BACKEND_URL` seeds
+  the setting for a dev build and is absent from every published one. See [[LlmProviders]]
+  and `README.md` (Privacy).
 - **`ThemeProvider` is preloaded rather than self-loading.** `SettingsProvider` loads its
   prefs asynchronously from its own constructor, which is fine for a wakelock but would
   paint one frame of the wrong theme on every cold start. So the theme is read in `main()`

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'l10n/app_localizations.dart';
+import 'providers/backend_provider.dart';
 import 'providers/game_provider.dart';
 import 'providers/game_type_provider.dart';
 import 'providers/settings_provider.dart';
@@ -13,13 +14,21 @@ void main() async {
   // Read the theme before the first frame so a dark-mode user never sees a
   // light flash on cold start.
   final themeMode = await ThemeProvider.load();
-  runApp(MyApp(initialThemeMode: themeMode));
+  // Same reasoning for the backend URL: the ZapZap entry in the game menu must
+  // not appear and then vanish once preferences have loaded.
+  final backendUrl = await BackendProvider.load();
+  runApp(MyApp(initialThemeMode: themeMode, initialBackendUrl: backendUrl));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.initialThemeMode});
+  const MyApp({
+    super.key,
+    required this.initialThemeMode,
+    this.initialBackendUrl,
+  });
 
   final ThemeMode initialThemeMode;
+  final String? initialBackendUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +38,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => GameTypeProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider(initialThemeMode)),
+        ChangeNotifierProvider(
+          create: (_) => BackendProvider(initialBackendUrl),
+        ),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
