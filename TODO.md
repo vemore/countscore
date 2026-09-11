@@ -99,46 +99,42 @@ If that is judged worth closing, the options, worst to best:
 
 Option 2 is the one worth doing if it is done at all.
 
-## The ZapZap analysis is down in production: Mistral rejects the configured model
+## The Mistral account is rate-limited, so the analysis still 502s
 
-**Status:** open — noted 2026-09-09. **Code half landed 2026-09-11** on
-`fix/zapzap-mistral-and-analysis-ui`; what remains is the production environment, below.
+**Status:** open — noted 2026-09-11, immediately after the deploy that closed the
+`tier_not_allowed` outage (see `DONE.md`).
 
-`POST /comments/zapzap-analysis` returns **502** for every request, on every client, because
-production runs `LLM_PROVIDER=mistral` and inherits a code default the account's tier rejects:
+`POST /comments/zapzap-analysis` in production returns 502 with:
 
 ```
-RuntimeError: mistral API call failed: PermissionDeniedError: Error code: 403 -
-{'message': 'This model is not available in your subscription tier',
- 'type': 'tier_not_allowed', 'code': '1910'}
+RuntimeError: mistral API call failed: RateLimitError: Error code: 429 -
+{'message': 'Rate limit exceeded', 'type': 'rate_limited', 'code': '1300'}
 ```
 
-### Done on 2026-09-11
+**Not a throttle we can wait out between calls.** Two attempts 75 s apart both failed, and a
+minimal 5-token request to `mistral-small-latest`, issued from inside the container, returns
+the same 429. The limit is account-wide — independent of the model and of our payload size —
+so it is an exhausted free-tier quota or an account-level cap, not something the code can
+retry around.
 
-- The default is `mistral-medium-latest` in **all five** tracked places. The original entry
-  said the fix was one line of production environment; that was wrong. The default lives in
-  `app/config.py:37` **and** in `docker-compose.prod.yml:38` as `${MISTRAL_MODEL:-…}`, and the
-  compose value wins in production — a default changed in `config.py` alone never reaches the
-  container. Plus `.env.example` twice and `backend/README.md`.
-- `GET /health` now reports the resolved provider and model
-  (`{"llm": {"provider", "model", "credentials"}}`), built without calling the provider, so a
-  misconfigured deploy is visible from one free request. It stays 200 when the provider is
-  unresolvable, because failing the probe would restart-loop a container whose group and sync
-  routes are fine.
-- `test_health.py` pins that shape, including the unknown-provider case;
-  `test_factory_returns_mistral_from_env` gained the `provider.model` assertion it was missing
-  — the hole the outage went through.
+The configuration is provably correct: `/health` reports
+`{"provider":"mistral","model":"mistral-medium-latest","credentials":true}`, and the models
+listing confirms the account may use that model. Nothing in this repository is wrong.
 
-### Still open
+Three ways out, none of which is the agent's call:
 
-**The production container has not been touched.** Until `MISTRAL_MODEL` is set on the NAS, or
-the new image is deployed, every analysis still 502s. See §2 of the `backend-deploy` skill for
-the in-place procedure, then verify with a real `POST` — only that proves the account's tier
-allows `mistral-medium-latest`. If it 403s too, `mistral-small-latest` is the fallback.
+1. **Wait**, if this is a monthly cap — it resets on the billing cycle.
+2. **Add billing to the Mistral account**, lifting the free-tier quota.
+3. **Switch provider.** `LLM_PROVIDER=gemini` with `GEMINI_MODEL=gemini-2.5-flash` works
+   without billing enabled — but *not* the code default `gemini-2.5-pro`, which is quota-0 on
+   the free tier (its own entry above). Switching changes the tone of every analysis and sends
+   the payload to a different third party, so it implicates [[Security]] and the privacy
+   documents if the recipient changes.
 
-**Nothing watches the failure.** `/health` now makes a *misconfiguration* visible, but nothing
-alerts on a 502 rate, and nothing would notice the provider refusing calls again. That is how
-this survived two days. See [[LlmProviders]] and [[KnownLimits]].
+Worth doing regardless of which is chosen: **the client shows the user a bare HTTP 502 for
+what is really "the server's LLM quota is exhausted"**. The server deliberately returns only
+`type(e).__name__` to avoid leaking provider detail ([[Api]]), which is right, but a 429 from
+upstream could reasonably map to a distinct status the app can word better than "HTTP 502".
 
 ## The ZapZap system prompt hard-codes eight real people's names
 
