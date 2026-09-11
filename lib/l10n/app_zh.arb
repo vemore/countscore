@@ -318,5 +318,6 @@
   "connectionFailed": "服务器无响应",
   "serverUrlSaved": "服务器已保存",
   "analysisRequiresBackend": "此分析需要一台服务器。请在设置中配置。",
-  "openSettings": "打开设置"
+  "openSettings": "打开设置",
+  "serverUrlCleared": "服务器已清除"
 }

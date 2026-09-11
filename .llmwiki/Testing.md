@@ -18,6 +18,11 @@
 | `test/providers/backend_provider_test.dart` (10) | Backend URL validation — https anywhere, http only on a private or loopback host — and the persistence round-trip, including that a cleared setting is not re-seeded from `--dart-define`. |
 | `test/screens/game_analysis_screen_test.dart` (3) | The only widget-pumping tests: with no backend configured the analysis screen offers no generation, a cached analysis still renders, and configuring one restores the button. |
 
+The Analyze menu entry's own gating (`game_board_screen.dart`, `isConfigured ||
+_hasCachedAnalysis`) has **no** widget test: pumping the board needs a loaded game and six
+repositories. It was verified on device on 2026-09-11 — both directions, and the p171 case
+where neither condition holds.
+
 50 tests in seven files.
 
 ### End-to-end — `integration_test/app_test.dart`

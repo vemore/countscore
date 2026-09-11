@@ -3,6 +3,73 @@
 Open work only. A finished item moves to `DONE.md` — see the workflow section of
 `CLAUDE.md`.
 
+## The dev `docker-compose.yml` cannot serve the ZapZap endpoint
+
+**Status:** open — noted 2026-09-11, while setting up an on-device test of the configurable
+backend URL.
+
+`backend/docker-compose.yml:22-35` passes six variables into the `api` container —
+`DATABASE_URL`, `ANTHROPIC_API_KEY`, `COMMENT_MODEL`, `DEFAULT_BUDGET_CENTS`, `CORS_ORIGINS`,
+`LOG_LEVEL` — and **none** of `LLM_PROVIDER`, `AWS_*`, `BEDROCK_MODEL_ID`, `GEMINI_*` or
+`MISTRAL_*`. So `POST /comments/zapzap-analysis` on a local `docker compose up` always answers
+503 "LLM provider not configured", whatever `backend/.env` holds.
+
+`docker-compose.prod.yml` does not have the problem: the NAS `.env` is mounted as a file, so
+the whole environment reaches the container.
+
+The workaround used on 2026-09-11 was `.venv/bin/uvicorn app.main:app --port 8000`, which
+loads `.env` through pydantic-settings and needs no Postgres — the endpoint is stateless
+(`app/routes/comments.py:114-132`, no `session` parameter) and `Settings.database_url` has a
+default. That works, but it means the documented local stack cannot exercise the one feature
+the app actually calls.
+
+Fix: add the provider variables to the `api` service's `environment:` block, or switch it to
+`env_file: .env` like production. The second is smaller and cannot drift again.
+
+## The analysis footer sits under the navigation bar
+
+**Status:** open — noted 2026-09-11, seen on the Pixel 9 Pro XL.
+
+`lib/screens/game_analysis_screen.dart` ends its `SingleChildScrollView` with
+`padding: EdgeInsets.fromLTRB(16, 16, 16, 32)` and no `SafeArea`. Scrolled to the bottom, the
+"Généré le … · <model>" line is drawn behind the system gesture bar and is partly unreadable.
+32 logical pixels is less than the bottom inset on this device.
+
+Fix: wrap the body in a `SafeArea(bottom: true)`, or add
+`MediaQuery.viewPaddingOf(context).bottom` to that padding. Pre-existing; the footer has
+always been there.
+
+## A failed regeneration hides the cached analysis until you leave the screen
+
+**Status:** open — noted 2026-09-11, seen while testing against the production backend, which
+currently 502s (see the Mistral item below).
+
+`_buildBody` in `lib/screens/game_analysis_screen.dart` tests `_error != null` **before**
+`_analysisText == null`, so a failed regenerate replaces the existing analysis with the error
+state. The stored row is untouched — `upsert` only runs on success, and navigating away and
+back shows the text again — but from the user's side their analysis appears to have been
+destroyed by a failed refresh.
+
+Two changes worth making together:
+
+1. Keep the cached text on screen and report the failure as a snackbar, or render the error
+   above the content rather than instead of it.
+2. Stop printing the raw exception. The error line currently reads
+   `Échec de la génération de l'analyse` followed by
+   `Exception: HTTP 502: {"detail":"upstream LLM error: RuntimeError"}`. Now that the server
+   is one the user runs, a status code is genuinely useful to them — but the JSON body and the
+   Dart exception prefix are not.
+
+## Section headers are hardcoded `Colors.deepPurple`, which is weak in dark mode
+
+**Status:** open — noted 2026-09-11, seen on the Pixel 9 Pro XL in dark mode.
+
+Every section header in `lib/screens/settings_screen.dart` ("Apparence", "Serveur", "Écran",
+"Sauvegarde") uses `color: Colors.deepPurple` rather than a colour from the scheme. On black
+that purple is a low-contrast, saturated blue-violet. The Server section added on 2026-09-11
+copied the existing style rather than diverge from its neighbours, so the fix is one change
+across all four: `Theme.of(context).colorScheme.primary`.
+
 ## The NAS hostname is still in git history
 
 **Status:** open — noted 2026-09-11, while making the backend URL configurable.

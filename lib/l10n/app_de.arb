@@ -318,5 +318,6 @@
   "connectionFailed": "Der Server antwortet nicht",
   "serverUrlSaved": "Server gespeichert",
   "analysisRequiresBackend": "Diese Analyse benötigt einen Server. Richte einen in den Einstellungen ein.",
-  "openSettings": "Einstellungen öffnen"
+  "openSettings": "Einstellungen öffnen",
+  "serverUrlCleared": "Server gelöscht"
 }

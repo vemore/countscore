@@ -7,6 +7,9 @@ import '../models/round.dart';
 import '../providers/backend_provider.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
+import '../repositories/drift/drift_repositories.dart';
+import '../repositories/game_analysis_repository.dart';
+import '../services/drift/database.dart';
 import 'game_analysis_screen.dart';
 import 'ranking_screen.dart';
 
@@ -20,6 +23,28 @@ class GameBoardScreen extends StatefulWidget {
 class _GameBoardScreenState extends State<GameBoardScreen> {
   // Track eliminated players to play sound only once
   final Set<int> _eliminatedPlayers = {};
+
+  late final GameAnalysisRepository _analysisRepo =
+      DriftGameAnalysisRepository(AppDatabase.instance);
+
+  /// Whether this game already has an analysis stored locally. It keeps the
+  /// menu entry available after the server is cleared: the generated text is
+  /// local data, and this screen is the only way to reach it.
+  bool _hasCachedAnalysis = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshCachedAnalysis());
+  }
+
+  Future<void> _refreshCachedAnalysis() async {
+    final gameId = context.read<GameProvider>().currentGame?.id;
+    if (gameId == null) return;
+    final has = await _analysisRepo.getByGame(gameId) != null;
+    if (!mounted || has == _hasCachedAnalysis) return;
+    setState(() => _hasCachedAnalysis = has);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,10 +76,12 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                   : null;
               final isZapZap =
                   menuGameType?.name.toLowerCase() == 'zapzap';
-              // The analysis is the app's only network call: it is offered
-              // solely once the user has configured their own server.
-              final canAnalyse =
-                  isZapZap && context.watch<BackendProvider>().isConfigured;
+              // The analysis is the app's only network call, so generating one
+              // needs a server the user configured. An analysis already stored
+              // stays reachable without one — it is local data.
+              final canAnalyse = isZapZap &&
+                  (context.watch<BackendProvider>().isConfigured ||
+                      _hasCachedAnalysis);
 
               return PopupMenuButton<String>(
                 itemBuilder: (context) => [
@@ -119,12 +146,13 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                     }
                   } else if (value == 'analyze_game') {
                     if (!context.mounted) return;
-                    Navigator.push(
+                    await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const GameAnalysisScreen(),
                       ),
                     );
+                    await _refreshCachedAnalysis();
                   }
                 },
               );

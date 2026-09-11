@@ -595,4 +595,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get openSettings => 'Open settings';
+
+  @override
+  String get serverUrlCleared => 'Server cleared';
 }

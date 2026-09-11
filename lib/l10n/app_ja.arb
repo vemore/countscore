@@ -318,5 +318,6 @@
   "connectionFailed": "サーバーが応答しません",
   "serverUrlSaved": "サーバーを保存しました",
   "analysisRequiresBackend": "この分析にはサーバーが必要です。設定から構成してください。",
-  "openSettings": "設定を開く"
+  "openSettings": "設定を開く",
+  "serverUrlCleared": "サーバーを消去しました"
 }

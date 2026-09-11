@@ -586,4 +586,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get openSettings => '設定を開く';
+
+  @override
+  String get serverUrlCleared => 'サーバーを消去しました';
 }

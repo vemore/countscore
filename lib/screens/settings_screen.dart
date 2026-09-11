@@ -52,7 +52,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       case BackendUrlError.empty:
         await backend.clear();
         if (!mounted) return;
-        _snack(l10n.serverUrlSaved);
+        _snack(l10n.serverUrlCleared);
       case BackendUrlError.malformed:
         _snack(l10n.backendUrlInvalid, ok: false);
       case BackendUrlError.insecure:
@@ -188,7 +188,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   await backend.clear();
                                   if (!context.mounted) return;
                                   _backendUrlController.clear();
-                                  _snack(l10n.serverUrlSaved);
+                                  _snack(l10n.serverUrlCleared);
                                 }
                               : null,
                           child: Text(l10n.clear),

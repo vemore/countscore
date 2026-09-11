@@ -598,4 +598,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get openSettings => 'Ouvrir les paramètres';
+
+  @override
+  String get serverUrlCleared => 'Serveur effacé';
 }

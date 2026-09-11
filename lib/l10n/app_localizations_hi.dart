@@ -597,4 +597,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get openSettings => 'सेटिंग्स खोलें';
+
+  @override
+  String get serverUrlCleared => 'सर्वर हटा दिया गया';
 }

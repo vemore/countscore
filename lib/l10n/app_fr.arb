@@ -938,5 +938,9 @@
   "openSettings": "Ouvrir les paramètres",
   "@openSettings": {
     "description": "Button that opens the settings screen"
+  },
+  "serverUrlCleared": "Serveur effacé",
+  "@serverUrlCleared": {
+    "description": "Snackbar shown after the backend URL is cleared"
   }
 }
