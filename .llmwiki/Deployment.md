@@ -43,9 +43,10 @@ first deploy after the subnet was pinned needs `docker compose down && docker co
 on the NAS (Compose will not change an existing network's IPAM), after checking that no
 other network there uses `172.28.87.0/24`. Verify from outside, since access logs
 are off (`uvicorn.access` at WARNING in `app/main.py`): four `POST /groups/join` with a bogus
-`share_token` and a different `X-Forwarded-For` each must answer `404, 404, 404, 429`. Four
-`404`s mean every caller shares the gateway's bucket — `FORWARDED_ALLOW_IPS` does not match the
-peer — and a `404` that never turns into a `429` means the header is trusted again.
+`share_token` and a different `X-Forwarded-For` each must answer `404, 404, 404, 429` — four
+`404`s mean the header is trusted again. Then, within the minute, one more from another network
+(a phone on mobile data) must answer `404`: a `429` there means every caller shares the
+gateway's bucket, i.e. `FORWARDED_ALLOW_IPS` does not match the peer.
 
 Dev uses `docker-compose.yml` (no TLS, local Postgres): `docker compose up -d` — db plus
 api on 8000 plus the backup sidecar.
