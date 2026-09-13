@@ -92,6 +92,11 @@ an API route (`/groups`, `/sync/app`, `/health`, `/docs`…) refuses to start. C
   `GROUP_RL_PER_HOUR` 10) in a bucket of their own, so group spam cannot consume the LLM
   quota. On `/join` the same limit is what caps `share_token` guessing: a 201 and a 404
   tell a valid token from an invalid one.
+
+  > **Status: Outdated** (2026-09-13) — it caps nothing: the limit keys on the first hop of
+  > `X-Forwarded-For`, which the client sets. `share_token` guessing is bounded only by the
+  > 122 bits of a uuid4. See [[Security]] and `TODO.md`, *Backend security review —
+  > 2026-09-13*.
 - **The stream is authenticated by ticket, not by the device token.** The ticket is
   redeemed before `websocket.accept()`, so an unauthenticated peer cannot make the server
   do work. See [[Sync]] and [[Security]].

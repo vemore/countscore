@@ -19,6 +19,13 @@
 | CSRF | Stateless API with a bearer token, so not applicable. |
 | CORS | Explicit origin whitelist in `config.py`; `*` is rejected at startup. |
 | Rate limiting | Per device, per group budget, and per IP — including group create/join. |
+
+> **Status: Outdated** (2026-09-13) — the per-IP limit is not a defence: `client_ip()` in
+> `app/services/ip_rate_limiter.py` takes the *first* hop of `X-Forwarded-For`, which the
+> client chooses. A rotating header passed 20 group creations through a 3-per-minute limit.
+> Only the per-device and per-group-budget rows above hold. Fix proposed in `TODO.md`,
+> *Backend security review — 2026-09-13*.
+
 | Body size | `limit_body_size` middleware, 413 above `MAX_BODY_BYTES` (262144); 411 when `Content-Length` is absent on a write. |
 | WebSocket auth | Single-use ticket from `POST /sync/ws-ticket`, 60 s TTL. `app/services/ws_ticket.py`. |
 | Sync payload values | Per-entity bounds in `app/services/delta_bounds.py`, enforced before write. |
@@ -61,6 +68,24 @@ server they chose, and carries no credential of ours.
 
 ### Known debt — open, and deliberate for now
 
+The four items found by the 2026-09-13 review are **not** deliberate; they are open
+because they were found after the 2026-09-09 hardening. Proposed fixes, evidence and the
+proof-of-concept results are in `TODO.md`, *Backend security review — 2026-09-13*.
+
+- **`POST /sync/push` is not group-scoped.** `app/routes/sync.py:152` finds an entity by
+  UUID alone and then overwrites it and reassigns its `group_id` to the caller's group;
+  `round` and `score` have no `group_id` and their parent ids are written unchecked. A
+  revoked device knows every UUID of its former group, so revocation protects nothing.
+  Confirmed by a proof of concept: rename, steal, attach a round, tombstone — all `applied`.
+- **The per-IP limit is spoofable** through `X-Forwarded-For` — see the status block above.
+- **The argon2 scan is a CPU denial of service, not only a scaling limit.** One verify
+  (30 ms) per device row for any bearer token, valid or not, with no rate limit on 401s;
+  combined with free group creation the single worker can be kept saturated.
+- **`/comments/zapzap-analysis` takes an unvalidated `dict`.** No field bounds, no name
+  allow-list, none of the five injection layers below apply to it — with the per-IP limit
+  bypassable it is an open LLM proxy on the operator's key.
+
+
 - **Nothing pins the certificate or the identity of the configured backend.** The user
   types a URL and the app trusts the system trust store for it. Deliberate: a self-hosted
   service cannot be pinned in advance.
@@ -77,6 +102,12 @@ server they chose, and carries no credential of ours.
 
 ## Decisions & History
 
+- **Second review, 2026-09-13.** The whole of `backend/` was read again after the PWA
+  deploy, this time asking what an attacker holding a former device or no credential at
+  all could do. The three HIGH findings were confirmed by proof-of-concept tests run on the
+  SQLite fixtures, not committed — a test that asserts a flaw is present would be red the
+  day the flaw is fixed. Nothing was changed in the code: the user asked for the findings
+  and the proposed fixes in `TODO.md`, and the fixes are each a change of their own.
 - **The PWA's CSP allows `connect-src https:` (2026-09-13).** The backend URL is a user
   setting, so a PWA served by one backend may legitimately be pointed at another; pinning
   `connect-src` to `'self'` would break that with nothing but a console line. Scripts stay

@@ -21,7 +21,7 @@ Load this file first. Then read only the pages your task touches.
 | Page | Summary | Updated |
 |---|---|---|
 | [[Architecture]] | The three evolution axes, target topology, milestone status | 2026-09-09 |
-| [[KnownLimits]] | What is deliberately deferred, and what is simply missing | 2026-09-11 |
+| [[KnownLimits]] | What is deliberately deferred, and what is simply missing | 2026-09-13 |
 
 ## Mobile (Flutter)
 
