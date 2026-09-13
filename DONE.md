@@ -6,6 +6,43 @@ readable after the fact.
 
 ---
 
+## The Flutter web app has no deployment path
+
+**Status:** done (2026-09-13) — closed by `chore/pwa-deploy`: `scripts/deploy_web.sh` builds for a sub-path and publishes to a Web Station folder over ssh with an atomic swap and a one-step rollback; the target lives in the untracked `scripts/deploy_web.env`. Procedure in the `web-deploy` skill, facts in `.llmwiki/Deployment.md`. Noted 2026-09-09 during the LLM-wiki migration.
+
+`.llmwiki/Deployment.md` covers the FastAPI container completely. For the PWA there is
+nothing: no vhost, no Web Station config, no deploy script, no documented `--base-href`.
+The app is built and served by hand. Whoever deploys it next has to rediscover how.
+See `.llmwiki/Web.md`.
+
+## `web/CLAUDE.md` is published with the PWA
+
+**Status:** done (2026-09-13) — closed by `chore/pwa-deploy`: moved to `.claude/rules/web.md`, a path-scoped rule outside the tree Flutter copies. `build/web` no longer contains it, and `scripts/deploy_web.sh` refuses to publish a build holding any `.md` file.
+
+Flutter copies everything under `web/` into the build output, so `build/web/CLAUDE.md`
+ships to whoever serves the PWA — internal instructions on a public URL. Harmless today,
+but it should either move out of `web/` or be stripped by whatever deploy step the PWA
+eventually gets (see "The Flutter web app has no deployment path" below).
+
+## Refresh the committed `web/drift_worker.js`
+
+**Status:** done (2026-09-13) — closed by `chore/pwa-deploy`: `web/drift_worker.js` copied byte-for-byte from the drift 2.34.4 package root, then validated by the web e2e (all tests passed, headless Chrome 153) and by a manual launch of a `--base-href=/countscore/` release build, a game created and still there after a reload.
+
+`web/drift_worker.js` is 351,222 B; the worker drift 2.34.4 ships at its package root
+(`~/.pub-cache/hosted/pub.dev/drift-2.34.4/drift_worker.js`) is 355,222 B. The committed
+copy is an older build than the drift runtime the app is compiled against. The PWA works
+today, but a worker/runtime mismatch is exactly the class of bug that shows up as an
+inexplicable web-only failure.
+
+Copying the package's file over ours is a one-line change — but it must be followed by a
+real PWA launch and the web e2e run, not just a green build, because
+`connection_web.dart` failures surface only at runtime. That is why it was not folded into
+the SDK upgrade. See `.llmwiki/Web.md`.
+
+Note this also settles the old question of whether to untrack the two binaries: they stay
+tracked **by choice** (a fresh clone should not have to fetch binaries to run the PWA), not
+because the repo is their only source. It never was.
+
 ## `ruff format` has never been run on `backend/`
 
 **Status:** done (2026-09-13) — run on `fix/backend-todo` in its own `chore:` commit: 47 files reformatted, 86 tests green, `ZAPZAP_SYSTEM_PROMPT` checked identical before and after. The hook that refused the command was removed at the user's request; `ruff format --check .` is now a commit gate and a CI step instead.

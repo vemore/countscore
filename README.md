@@ -115,6 +115,19 @@ built from codepoints stored in the database, so Flutter's icon tree-shaker cann
 references and the build fails without the flag. It costs roughly 200 KB. See
 [CLAUDE.md](CLAUDE.md).
 
+### Publishing the PWA
+
+`scripts/deploy_web.sh` builds the web app for a sub-path and publishes it to a static
+folder over SSH (written for a Synology Web Station, usable with any host that serves a
+directory). The target is never in the repository: copy
+`scripts/deploy_web.env.example` to `scripts/deploy_web.env` and fill it in.
+
+```bash
+scripts/deploy_web.sh --dry-run   # build + checks, prints what it would run
+scripts/deploy_web.sh             # publish, keeping the previous release
+scripts/deploy_web.sh --rollback  # swap the previous release back
+```
+
 ## Project structure
 
 ```
@@ -135,7 +148,7 @@ countscore/
 ├── integration_test/    # End-to-end suite (web + real device)
 ├── store_listing/       # Play Store assets and the per-locale listing text
 ├── docs/                # Published by GitHub Pages — the privacy policy Play links to
-├── scripts/             # Keystore, screenshots, privacy page, hook self-test
+├── scripts/             # Keystore, screenshots, privacy page, PWA deploy, hook self-test
 ├── .llmwiki/            # Durable project knowledge — start at INDEX.md
 └── pubspec.yaml
 ```

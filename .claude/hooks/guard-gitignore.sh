@@ -30,7 +30,7 @@ That .gitignore edit now ignores a file that is tracked on purpose:
 
 $(git check-ignore -v --no-index web/sqlite3.wasm web/drift_worker.js 2>/dev/null)
 
-web/sqlite3.wasm (744 KB) and web/drift_worker.js (351 KB) are committed so a fresh
+web/sqlite3.wasm (744 KB) and web/drift_worker.js (355 KB) are committed so a fresh
 clone can run the PWA without fetching binaries. Revert that rule. See .llmwiki/Web.md.
 MSG
     exit 2

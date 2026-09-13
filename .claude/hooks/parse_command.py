@@ -264,7 +264,7 @@ def web_refusal(token):
         "rule": "web-binaries",
         "message": (
             "Refused: this would remove or move `{token}`.\n"
-            "web/sqlite3.wasm (744 KB) and web/drift_worker.js (351 KB) are tracked in git on "
+            "web/sqlite3.wasm (744 KB) and web/drift_worker.js (355 KB) are tracked in git on "
             "purpose, so a fresh clone can run the PWA without fetching binaries. .gitignore "
             "carries a comment saying so, and .llmwiki/Web.md explains where each comes from.\n"
             "Copies under build/ are build output and may be deleted freely."
