@@ -1,8 +1,8 @@
 # Data Layer
 
 > Scope: how the app reaches SQLite — Drift, the sqflite bootstrap, repositories, codegen.
-> Related: [[SchemaV9]] · [[MobileApp]] · [[Web]] · [[Testing]] · [[Sync]]
-> Updated: 2026-09-09
+> Related: [[SchemaV10]] · [[MobileApp]] · [[Web]] · [[Testing]] · [[Sync]]
+> Updated: 2026-09-13
 
 ## Facts
 
@@ -25,7 +25,7 @@ All three remaining roles are inside `lib/services/database_service.dart` (1468 
 - `lib/services/drift/tables.dart` (162 l.) — 9 table declarations mirroring the v9 sqflite
   schema, using `.named()` to keep the legacy mixed-case column names (`gameTypeId`,
   `orderIndex`, `created_at`).
-- `lib/services/drift/database.dart` — `AppDatabase`, `schemaVersion => 9` at line 30.
+- `lib/services/drift/database.dart` — `AppDatabase`, `schemaVersion => 10`.
   `onUpgrade` is **intentionally a no-op**: by the time Drift opens the file, sqflite has
   already brought it to 9, so Drift sees 9 == 9. `onCreate` (web, fresh install) builds v9
   directly: `m.createAll()` + `_createExtraIndexes()` (20 indexes) + `_insertDefaultGameTypes()`.
@@ -75,6 +75,13 @@ See [[Web]].
   running on sqflite — if it breaks, roll back and the app still works. Release N+1 turns
   Drift on, and `bootstrapMigrate()` hands it an already-migrated file. Production is
   currently at Release N.
+
+  > **Status: Outdated** (2026-09-13) — Release N never shipped. The Play Store still has
+  > 1.0.1 (tag `1.0.1+3`, sqflite schema **v5**, no Drift), so the next release runs v5 →
+  > v10 *and* switches to Drift in one go — and, by the user's decision of 2026-09-13, also
+  > carries group sync. The two-release safety net is gone; what replaces it is
+  > `test/migration_v5_to_v10_test.dart`, which upgrades a real v5 file and reads it back
+  > through Drift. See [[SchemaV10]].
 - **`onUpgrade` is a no-op rather than a mirrored migration chain.** Maintaining the same
   migration twice, once per engine, would guarantee the two drift apart. sqflite is the
   single source of migration truth on native; on web there is no legacy file, so `onCreate`

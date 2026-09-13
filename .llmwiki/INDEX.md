@@ -28,8 +28,8 @@ Load this file first. Then read only the pages your task touches.
 | Page | Summary | Updated |
 |---|---|---|
 | [[MobileApp]] | `lib/` layout, providers, screens, the dynamic-icon constraint | 2026-09-11 |
-| [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-09-09 |
-| [[SchemaV9]] | The nine tables, global player identity, the migration chain | 2026-09-09 |
+| [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-09-13 |
+| [[SchemaV10]] | The twelve tables, global player identity, sync bookkeeping, tombstones, the migration chain | 2026-09-13 |
 | [[I18n]] | 10 languages × 181 keys, French template, English fallback | 2026-09-13 |
 | [[Web]] | PWA specifics: sqlite3.wasm, OPFS, committed binaries, `kIsWeb` guards, base href | 2026-09-13 |
 

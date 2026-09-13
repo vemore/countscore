@@ -16,6 +16,10 @@ class DatabaseService {
 
   DatabaseService._init();
 
+  /// Must equal `AppDatabase.schemaVersion`: Drift adopts the file this chain
+  /// produced and never migrates it itself.
+  static const schemaVersion = 10;
+
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDB('countscore.db');
@@ -27,13 +31,23 @@ class DatabaseService {
   @visibleForTesting
   static set debugDatabase(Database? db) => _database = db;
 
+  /// Opens (or creates) the sqflite database at [path] with the production
+  /// version and callbacks — the upgrade path a Play Store install takes.
+  @visibleForTesting
+  Future<Database> openForTesting(String path) => openDatabase(
+        path,
+        version: schemaVersion,
+        onCreate: _createDB,
+        onUpgrade: _upgradeDB,
+      );
+
   /// Exposes [_createDB] for tests that want to build the v9 schema in an
   /// in-memory FFI database without going through [_initDB].
   @visibleForTesting
   Future<void> createDB(Database db, int version) => _createDB(db, version);
 
   /// Native bootstrap for the Drift migration: open the legacy sqflite file to
-  /// run the v1→v9 migration chain (and create the v9 schema for fresh
+  /// run the v1→v10 migration chain (and create the v10 schema for fresh
   /// installs), then close so Drift can adopt the migrated file in place.
   /// See .llmwiki/DataLayer.md (two-release strategy).
   Future<void> bootstrapMigrate() async {
@@ -48,7 +62,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 9,
+      version: schemaVersion,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -59,7 +73,7 @@ class DatabaseService {
     const textType = 'TEXT NOT NULL';
     const intType = 'INTEGER NOT NULL';
 
-    // Schema v6 — sync-ready (see .llmwiki/SchemaV9.md)
+    // Schema v6 — sync-ready (see .llmwiki/SchemaV10.md)
     // Every entity has: uuid (logical key for sync), created_at, updated_at,
     // deleted_at (soft delete), group_id (NULL = local-only, non-NULL = shared).
 
@@ -102,7 +116,7 @@ class DatabaseService {
 
     // Schema v9 — players are GLOBAL (unique per (group_id, name)); a separate
     // `game_players` join carries the per-game membership (order, color). See
-    // .llmwiki/SchemaV9.md. `game_players.id` is the per-game key that
+    // .llmwiki/SchemaV10.md. `game_players.id` is the per-game key that
     // `scores` references (preserved across the v8→v9 migration).
     await db.execute('''
       CREATE TABLE players (
@@ -210,8 +224,63 @@ class DatabaseService {
     );
 
     await _createGameAnalysesTable(db);
+    await _createSyncV10Tables(db);
 
     await _insertDefaultGameTypes(db);
+  }
+
+  /// v10 — what the sync client needs beyond the v6 outbox and cursor. See
+  /// .llmwiki/SchemaV10.md. Also the whole of the v9 → v10 step: every change is
+  /// additive, so a fresh install and an upgraded one end up identical.
+  Future<void> _createSyncV10Tables(Database db) async {
+    // `outbox` and `sync_state` exist since v6 (or were repaired by
+    // [_ensureV6Shape]); only add what is missing.
+    final outbox = await _columnsOf(db, 'outbox');
+    if (!outbox.contains('rejected_at')) {
+      await db.execute('ALTER TABLE outbox ADD COLUMN rejected_at INTEGER');
+    }
+    if (!outbox.contains('reject_reason')) {
+      await db.execute('ALTER TABLE outbox ADD COLUMN reject_reason TEXT');
+    }
+    final syncState = await _columnsOf(db, 'sync_state');
+    if (!syncState.contains('device_id')) {
+      await db.execute('ALTER TABLE sync_state ADD COLUMN device_id TEXT');
+    }
+    if (!syncState.contains('group_name')) {
+      await db.execute('ALTER TABLE sync_state ADD COLUMN group_name TEXT');
+    }
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS group_links (
+        group_id TEXT NOT NULL,
+        entity_type TEXT NOT NULL,
+        local_uuid TEXT NOT NULL,
+        remote_uuid TEXT NOT NULL,
+        PRIMARY KEY (group_id, entity_type, local_uuid),
+        UNIQUE (group_id, entity_type, remote_uuid)
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS entity_versions (
+        entity_type TEXT NOT NULL,
+        entity_uuid TEXT NOT NULL,
+        lamport INTEGER NOT NULL,
+        origin_device_id TEXT NOT NULL,
+        PRIMARY KEY (entity_type, entity_uuid)
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS sync_inbox (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        server_seq INTEGER NOT NULL,
+        delta TEXT NOT NULL,
+        reason TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_sync_inbox_seq ON sync_inbox(server_seq)',
+    );
   }
 
   Future<void> _createGameAnalysesTable(Database db) async {
@@ -430,9 +499,13 @@ class DatabaseService {
     if (oldVersion < 9) {
       await _upgradeV8toV9(db);
     }
+
+    if (oldVersion < 10) {
+      await _createSyncV10Tables(db);
+    }
   }
 
-  /// v8 → v9 migration: global player identity (see .llmwiki/SchemaV9.md).
+  /// v8 → v9 migration: global player identity (see .llmwiki/SchemaV10.md).
   ///
   /// Before: `players` is per-game (`players.gameId`), and `scores.playerId`
   /// references those per-game rows. Cross-game stats merge every human sharing
@@ -620,7 +693,7 @@ class DatabaseService {
   /// - We do NOT drop any existing column. Worst case the new columns are
   ///   unused.
   /// - The full normalization of players (global per group, see
-  ///   .llmwiki/SchemaV9.md) is deferred to a future migration v8 because it
+  ///   .llmwiki/SchemaV10.md) is deferred to a future migration v8 because it
   ///   requires actual groups to scope into; doing it here would force every
   ///   existing user into a transient state.
   Future<void> _upgradeV5toV6(Database db) async {

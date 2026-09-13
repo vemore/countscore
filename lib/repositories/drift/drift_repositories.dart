@@ -24,6 +24,36 @@ import '../score_repository.dart';
 
 int _nowMs() => DateTime.now().millisecondsSinceEpoch;
 
+/// Whether the row [id] of [table] belongs to a group.
+///
+/// Shared rows are tombstoned instead of deleted: the delete has to reach the
+/// other devices, and a row that is gone cannot say it was deleted. Local rows
+/// (`group_id IS NULL`) are still deleted outright, as before v10.
+Future<bool> _isShared(AppDatabase db, String table, int id) async {
+  final row = await db
+      .customSelect(
+        'SELECT group_id FROM $table WHERE id = ?',
+        variables: [Variable(id)],
+      )
+      .getSingleOrNull();
+  return row?.data['group_id'] != null;
+}
+
+/// Tombstones the live rows of [table] matching [where].
+Future<void> _tombstone(
+  AppDatabase db,
+  String table,
+  String where,
+  List<Object?> args,
+  int now,
+) {
+  return db.customStatement(
+    'UPDATE $table SET deleted_at = ?, updated_at = ? '
+    'WHERE deleted_at IS NULL AND ($where)',
+    [now, now, ...args],
+  );
+}
+
 Future<int> _insertRow(AppDatabase db, String table, Map<String, Object?> m) {
   final cols = m.keys.join(', ');
   final ph = List.filled(m.length, '?').join(', ');
@@ -50,8 +80,10 @@ class DriftGameRepository implements GameRepository {
   @override
   Future<Game?> getById(int id) async {
     final row = await _db
-        .customSelect('SELECT * FROM games WHERE id = ?',
-            variables: [Variable(id)])
+        .customSelect(
+          'SELECT * FROM games WHERE id = ? AND deleted_at IS NULL',
+          variables: [Variable(id)],
+        )
         .getSingleOrNull();
     return row == null ? null : Game.fromMap(row.data);
   }
@@ -60,7 +92,9 @@ class DriftGameRepository implements GameRepository {
   Future<List<Game>> getAll() async {
     final rows = await _db
         .customSelect(
-            'SELECT * FROM games ORDER BY createdAt DESC, lastModified DESC')
+          'SELECT * FROM games WHERE deleted_at IS NULL '
+          'ORDER BY createdAt DESC, lastModified DESC',
+        )
         .get();
     return rows.map((r) => Game.fromMap(r.data)).toList();
   }
@@ -69,8 +103,10 @@ class DriftGameRepository implements GameRepository {
   Future<List<Game>> getByType(int gameTypeId) async {
     final rows = await _db
         .customSelect(
-            'SELECT * FROM games WHERE gameTypeId = ? ORDER BY createdAt DESC',
-            variables: [Variable(gameTypeId)])
+          'SELECT * FROM games WHERE gameTypeId = ? AND deleted_at IS NULL '
+          'ORDER BY createdAt DESC',
+          variables: [Variable(gameTypeId)],
+        )
         .get();
     return rows.map((r) => Game.fromMap(r.data)).toList();
   }
@@ -97,17 +133,52 @@ class DriftGameRepository implements GameRepository {
   @override
   Future<int> delete(int id) async {
     return _db.transaction(() async {
+      if (await _isShared(_db, 'games', id)) {
+        final now = _nowMs();
+        await _tombstone(
+          _db,
+          'scores',
+          'roundId IN (SELECT id FROM rounds WHERE gameId = ?)',
+          [id],
+          now,
+        );
+        await _tombstone(
+          _db,
+          'scores',
+          'playerId IN (SELECT id FROM game_players WHERE gameId = ?)',
+          [id],
+          now,
+        );
+        await _tombstone(_db, 'rounds', 'gameId = ?', [id], now);
+        await _tombstone(_db, 'game_players', 'gameId = ?', [id], now);
+        await _tombstone(_db, 'game_analyses', 'gameId = ?', [id], now);
+        return _db.customUpdate(
+          'UPDATE games SET deleted_at = ?, updated_at = ? '
+          'WHERE id = ? AND deleted_at IS NULL',
+          variables: [Variable(now), Variable(now), Variable(id)],
+          updates: {_db.games},
+        );
+      }
       await _db.customStatement(
-          'DELETE FROM scores WHERE roundId IN (SELECT id FROM rounds WHERE gameId = ?)',
-          [id]);
+        'DELETE FROM scores WHERE roundId IN (SELECT id FROM rounds WHERE gameId = ?)',
+        [id],
+      );
       await _db.customStatement(
-          'DELETE FROM scores WHERE playerId IN (SELECT id FROM game_players WHERE gameId = ?)',
-          [id]);
+        'DELETE FROM scores WHERE playerId IN (SELECT id FROM game_players WHERE gameId = ?)',
+        [id],
+      );
       await _db.customStatement('DELETE FROM rounds WHERE gameId = ?', [id]);
-      await _db.customStatement('DELETE FROM game_players WHERE gameId = ?', [id]);
-      await _db.customStatement('DELETE FROM game_analyses WHERE gameId = ?', [id]);
-      return _db.customUpdate('DELETE FROM games WHERE id = ?',
-          variables: [Variable(id)], updates: {_db.games});
+      await _db.customStatement('DELETE FROM game_players WHERE gameId = ?', [
+        id,
+      ]);
+      await _db.customStatement('DELETE FROM game_analyses WHERE gameId = ?', [
+        id,
+      ]);
+      return _db.customUpdate(
+        'DELETE FROM games WHERE id = ?',
+        variables: [Variable(id)],
+        updates: {_db.games},
+      );
     });
   }
 }
@@ -129,8 +200,10 @@ class DriftGameTypeRepository implements GameTypeRepository {
   @override
   Future<GameType?> getById(int id) async {
     final row = await _db
-        .customSelect('SELECT * FROM game_types WHERE id = ?',
-            variables: [Variable(id)])
+        .customSelect(
+          'SELECT * FROM game_types WHERE id = ? AND deleted_at IS NULL',
+          variables: [Variable(id)],
+        )
         .getSingleOrNull();
     return row == null ? null : GameType.fromMap(row.data);
   }
@@ -138,7 +211,9 @@ class DriftGameTypeRepository implements GameTypeRepository {
   @override
   Future<List<GameType>> getAll() async {
     final rows = await _db
-        .customSelect('SELECT * FROM game_types ORDER BY name ASC')
+        .customSelect(
+          'SELECT * FROM game_types WHERE deleted_at IS NULL ORDER BY name ASC',
+        )
         .get();
     return rows.map((r) => GameType.fromMap(r.data)).toList();
   }
@@ -162,15 +237,25 @@ class DriftGameTypeRepository implements GameTypeRepository {
   @override
   Future<int> delete(int id) async {
     final countRow = await _db
-        .customSelect('SELECT COUNT(*) AS c FROM games WHERE gameTypeId = ?',
-            variables: [Variable(id)])
+        .customSelect(
+          'SELECT COUNT(*) AS c FROM games WHERE gameTypeId = ? AND deleted_at IS NULL',
+          variables: [Variable(id)],
+        )
         .getSingle();
     final count = countRow.data['c'] as int;
     if (count > 0) {
       throw Exception('Cannot delete game type: $count games are using it');
     }
-    return _db.customUpdate('DELETE FROM game_types WHERE id = ?',
-        variables: [Variable(id)], updates: {_db.gameTypes});
+    // A tombstoned game nobody can see must not keep the type alive.
+    await _db.customStatement(
+      'UPDATE games SET gameTypeId = NULL WHERE gameTypeId = ? AND deleted_at IS NOT NULL',
+      [id],
+    );
+    return _db.customUpdate(
+      'DELETE FROM game_types WHERE id = ?',
+      variables: [Variable(id)],
+      updates: {_db.gameTypes},
+    );
   }
 }
 
@@ -192,8 +277,10 @@ class DriftRoundRepository implements RoundRepository {
   Future<List<Round>> getByGame(int gameId) async {
     final rows = await _db
         .customSelect(
-            'SELECT * FROM rounds WHERE gameId = ? ORDER BY roundNumber ASC',
-            variables: [Variable(gameId)])
+          'SELECT * FROM rounds WHERE gameId = ? AND deleted_at IS NULL '
+          'ORDER BY roundNumber ASC',
+          variables: [Variable(gameId)],
+        )
         .get();
     return rows.map((r) => Round.fromMap(r.data)).toList();
   }
@@ -201,9 +288,22 @@ class DriftRoundRepository implements RoundRepository {
   @override
   Future<int> delete(int id) async {
     return _db.transaction(() async {
+      if (await _isShared(_db, 'rounds', id)) {
+        final now = _nowMs();
+        await _tombstone(_db, 'scores', 'roundId = ?', [id], now);
+        return _db.customUpdate(
+          'UPDATE rounds SET deleted_at = ?, updated_at = ? '
+          'WHERE id = ? AND deleted_at IS NULL',
+          variables: [Variable(now), Variable(now), Variable(id)],
+          updates: {_db.rounds},
+        );
+      }
       await _db.customStatement('DELETE FROM scores WHERE roundId = ?', [id]);
-      return _db.customUpdate('DELETE FROM rounds WHERE id = ?',
-          variables: [Variable(id)], updates: {_db.rounds});
+      return _db.customUpdate(
+        'DELETE FROM rounds WHERE id = ?',
+        variables: [Variable(id)],
+        updates: {_db.rounds},
+      );
     });
   }
 
@@ -234,8 +334,10 @@ class DriftScoreRepository implements ScoreRepository {
   @override
   Future<Score?> getByPlayerAndRound(int playerId, int roundId) async {
     final row = await _db
-        .customSelect('SELECT * FROM scores WHERE playerId = ? AND roundId = ?',
-            variables: [Variable(playerId), Variable(roundId)])
+        .customSelect(
+          'SELECT * FROM scores WHERE playerId = ? AND roundId = ? AND deleted_at IS NULL',
+          variables: [Variable(playerId), Variable(roundId)],
+        )
         .getSingleOrNull();
     return row == null ? null : Score.fromMap(row.data);
   }
@@ -243,8 +345,10 @@ class DriftScoreRepository implements ScoreRepository {
   @override
   Future<List<Score>> getByPlayer(int playerId) async {
     final rows = await _db
-        .customSelect('SELECT * FROM scores WHERE playerId = ?',
-            variables: [Variable(playerId)])
+        .customSelect(
+          'SELECT * FROM scores WHERE playerId = ? AND deleted_at IS NULL',
+          variables: [Variable(playerId)],
+        )
         .get();
     return rows.map((r) => Score.fromMap(r.data)).toList();
   }
@@ -340,8 +444,11 @@ class DriftPlayerRepository implements PlayerRepository {
   @override
   Future<int> create(Player player) async {
     final now = _nowMs();
-    final globalId =
-        await _resolveGlobal(player.gameId, player.name, player.colorValue);
+    final globalId = await _resolveGlobal(
+      player.gameId,
+      player.name,
+      player.colorValue,
+    );
     return _insertRow(_db, 'game_players', {
       'gameId': player.gameId,
       'player_id': globalId,
@@ -384,9 +491,22 @@ class DriftPlayerRepository implements PlayerRepository {
   @override
   Future<int> delete(int id) async {
     return _db.transaction(() async {
+      if (await _isShared(_db, 'game_players', id)) {
+        final now = _nowMs();
+        await _tombstone(_db, 'scores', 'playerId = ?', [id], now);
+        return _db.customUpdate(
+          'UPDATE game_players SET deleted_at = ?, updated_at = ? '
+          'WHERE id = ? AND deleted_at IS NULL',
+          variables: [Variable(now), Variable(now), Variable(id)],
+          updates: {_db.gamePlayers},
+        );
+      }
       await _db.customStatement('DELETE FROM scores WHERE playerId = ?', [id]);
-      return _db.customUpdate('DELETE FROM game_players WHERE id = ?',
-          variables: [Variable(id)], updates: {_db.gamePlayers});
+      return _db.customUpdate(
+        'DELETE FROM game_players WHERE id = ?',
+        variables: [Variable(id)],
+        updates: {_db.gamePlayers},
+      );
     });
   }
 
@@ -394,7 +514,8 @@ class DriftPlayerRepository implements PlayerRepository {
   Future<List<String>> getAllNames() async {
     final rows = await _db
         .customSelect(
-            'SELECT name FROM players WHERE group_id IS NULL AND deleted_at IS NULL ORDER BY name ASC')
+          'SELECT name FROM players WHERE group_id IS NULL AND deleted_at IS NULL ORDER BY name ASC',
+        )
         .get();
     return rows.map((r) => r.data['name'] as String).toList();
   }
@@ -403,7 +524,8 @@ class DriftPlayerRepository implements PlayerRepository {
   Future<Map<String, int?>> getColorsByName() async {
     final rows = await _db
         .customSelect(
-            'SELECT name, colorValue FROM players WHERE group_id IS NULL AND deleted_at IS NULL ORDER BY name ASC')
+          'SELECT name, colorValue FROM players WHERE group_id IS NULL AND deleted_at IS NULL ORDER BY name ASC',
+        )
         .get();
     final map = <String, int?>{};
     for (final r in rows) {
@@ -417,8 +539,9 @@ class DriftPlayerRepository implements PlayerRepository {
     final now = _nowMs();
     final globals = await _db
         .customSelect(
-            'SELECT id FROM players WHERE group_id IS NULL AND name = ? COLLATE NOCASE',
-            variables: [Variable(oldName)])
+          'SELECT id FROM players WHERE group_id IS NULL AND name = ? COLLATE NOCASE',
+          variables: [Variable(oldName)],
+        )
         .get();
     final ids = globals.map((r) => r.data['id'] as int).toList();
     final count = await _db.customUpdate(
@@ -446,27 +569,61 @@ class DriftPlayerRepository implements PlayerRepository {
     return _db.transaction(() async {
       final globals = await _db
           .customSelect(
-              'SELECT id FROM players WHERE group_id IS NULL AND name = ? COLLATE NOCASE',
-              variables: [Variable(name)])
+            'SELECT id FROM players WHERE group_id IS NULL AND name = ? COLLATE NOCASE',
+            variables: [Variable(name)],
+          )
           .get();
       final ids = globals.map((r) => r.data['id'] as int).toList();
       if (ids.isEmpty) return 0;
       final ph = List.filled(ids.length, '?').join(',');
       final gps = await _db
-          .customSelect('SELECT id FROM game_players WHERE player_id IN ($ph)',
-              variables: ids.map((e) => Variable(e)).toList())
+          .customSelect(
+            'SELECT id, group_id FROM game_players WHERE player_id IN ($ph)',
+            variables: ids.map((e) => Variable(e)).toList(),
+          )
           .get();
-      final gpIds = gps.map((r) => r.data['id'] as int).toList();
-      if (gpIds.isNotEmpty) {
-        final gpph = List.filled(gpIds.length, '?').join(',');
+      final localGp = [
+        for (final r in gps)
+          if (r.data['group_id'] == null) r.data['id'] as int,
+      ];
+      final sharedGp = [
+        for (final r in gps)
+          if (r.data['group_id'] != null) r.data['id'] as int,
+      ];
+      if (localGp.isNotEmpty) {
+        final gpph = List.filled(localGp.length, '?').join(',');
         await _db.customStatement(
-            'DELETE FROM scores WHERE playerId IN ($gpph)', gpIds);
+          'DELETE FROM scores WHERE playerId IN ($gpph)',
+          localGp,
+        );
         await _db.customStatement(
-            'DELETE FROM game_players WHERE id IN ($gpph)', gpIds);
+          'DELETE FROM game_players WHERE id IN ($gpph)',
+          localGp,
+        );
       }
-      return _db.customUpdate('DELETE FROM players WHERE id IN ($ph)',
+      if (sharedGp.isEmpty) {
+        return _db.customUpdate(
+          'DELETE FROM players WHERE id IN ($ph)',
           variables: ids.map((e) => Variable(e)).toList(),
-          updates: {_db.players});
+          updates: {_db.players},
+        );
+      }
+      // Memberships in shared games are tombstoned, so the player row they
+      // reference is too rather than deleted from under them.
+      final now = _nowMs();
+      final gpph = List.filled(sharedGp.length, '?').join(',');
+      await _tombstone(_db, 'scores', 'playerId IN ($gpph)', sharedGp, now);
+      await _tombstone(_db, 'game_players', 'id IN ($gpph)', sharedGp, now);
+      return _db.customUpdate(
+        'UPDATE players SET deleted_at = ?, updated_at = ? '
+        'WHERE id IN ($ph) AND deleted_at IS NULL',
+        variables: [
+          Variable(now),
+          Variable(now),
+          ...ids.map((e) => Variable(e)),
+        ],
+        updates: {_db.players},
+      );
     });
   }
 
@@ -475,8 +632,9 @@ class DriftPlayerRepository implements PlayerRepository {
     final now = _nowMs();
     final globals = await _db
         .customSelect(
-            'SELECT id FROM players WHERE group_id IS NULL AND name = ? COLLATE NOCASE',
-            variables: [Variable(name)])
+          'SELECT id FROM players WHERE group_id IS NULL AND name = ? COLLATE NOCASE',
+          variables: [Variable(name)],
+        )
         .get();
     await _db.customUpdate(
       'UPDATE players SET colorValue = ?, updated_at = ? WHERE group_id IS NULL AND name = ? COLLATE NOCASE',
@@ -521,17 +679,22 @@ class DriftPlayerStatsRepository implements PlayerStatsRepository {
       }
       final globalId = globalRows.first.data['id'] as int;
 
-      final playerGames = await _db.customSelect('''
+      final playerGames = await _db
+          .customSelect(
+            '''
         SELECT g.id AS gameId, COALESCE(gt.name, 'Unknown') AS gameType,
                g.isLowestScoreWins AS isLowestScoreWins, gp.id AS gpId,
                COALESCE(SUM(s.value), 0) AS playerTotal
         FROM game_players gp
-        JOIN games g ON g.id = gp.gameId
+        JOIN games g ON g.id = gp.gameId AND g.deleted_at IS NULL
         LEFT JOIN game_types gt ON g.gameTypeId = gt.id
-        LEFT JOIN scores s ON s.playerId = gp.id
+        LEFT JOIN scores s ON s.playerId = gp.id AND s.deleted_at IS NULL
         WHERE gp.player_id = ? AND gp.deleted_at IS NULL
         GROUP BY g.id, gt.name, g.isLowestScoreWins, gp.id
-      ''', variables: [Variable(globalId)]).get();
+      ''',
+            variables: [Variable(globalId)],
+          )
+          .get();
 
       int totalWins = 0;
       final statsByGameType = <String, Map<String, int>>{};
@@ -542,13 +705,16 @@ class DriftPlayerStatsRepository implements PlayerStatsRepository {
         final isLowestWins = (game.data['isLowestScoreWins'] as int) == 1;
         final playerTotal = game.data['playerTotal'] as int;
 
-        final allTotals = await _db.customSelect(
-          'SELECT gp.id, COALESCE(SUM(s.value), 0) AS total '
-          'FROM game_players gp LEFT JOIN scores s ON s.playerId = gp.id '
-          'WHERE gp.gameId = ? AND gp.deleted_at IS NULL GROUP BY gp.id '
-          'ORDER BY total ${isLowestWins ? 'ASC' : 'DESC'}',
-          variables: [Variable(gameId)],
-        ).get();
+        final allTotals = await _db
+            .customSelect(
+              'SELECT gp.id, COALESCE(SUM(s.value), 0) AS total '
+              'FROM game_players gp '
+              'LEFT JOIN scores s ON s.playerId = gp.id AND s.deleted_at IS NULL '
+              'WHERE gp.gameId = ? AND gp.deleted_at IS NULL GROUP BY gp.id '
+              'ORDER BY total ${isLowestWins ? 'ASC' : 'DESC'}',
+              variables: [Variable(gameId)],
+            )
+            .get();
 
         bool hasWon = false;
         if (allTotals.isNotEmpty) {
@@ -558,7 +724,9 @@ class DriftPlayerStatsRepository implements PlayerStatsRepository {
         if (hasWon) totalWins++;
 
         statsByGameType.putIfAbsent(
-            gameType, () => {'gamesPlayed': 0, 'wins': 0});
+          gameType,
+          () => {'gamesPlayed': 0, 'wins': 0},
+        );
         statsByGameType[gameType]!['gamesPlayed'] =
             statsByGameType[gameType]!['gamesPlayed']! + 1;
         if (hasWon) {
@@ -590,8 +758,9 @@ class DriftGameAnalysisRepository implements GameAnalysisRepository {
   Future<GameAnalysis?> getByGame(int gameId) async {
     final row = await _db
         .customSelect(
-            'SELECT * FROM game_analyses WHERE gameId = ? AND deleted_at IS NULL LIMIT 1',
-            variables: [Variable(gameId)])
+          'SELECT * FROM game_analyses WHERE gameId = ? AND deleted_at IS NULL LIMIT 1',
+          variables: [Variable(gameId)],
+        )
         .getSingleOrNull();
     return row == null ? null : GameAnalysis.fromMap(row.data);
   }
@@ -600,8 +769,10 @@ class DriftGameAnalysisRepository implements GameAnalysisRepository {
   Future<int> upsert(GameAnalysis analysis) async {
     final now = _nowMs();
     final existing = await _db
-        .customSelect('SELECT id FROM game_analyses WHERE gameId = ?',
-            variables: [Variable(analysis.gameId)])
+        .customSelect(
+          'SELECT id FROM game_analyses WHERE gameId = ?',
+          variables: [Variable(analysis.gameId)],
+        )
         .getSingleOrNull();
     if (existing != null) {
       final id = existing.data['id'] as int;
@@ -631,8 +802,11 @@ class DriftGameAnalysisRepository implements GameAnalysisRepository {
 
   @override
   Future<int> deleteByGame(int gameId) {
-    return _db.customUpdate('DELETE FROM game_analyses WHERE gameId = ?',
-        variables: [Variable(gameId)], updates: {_db.gameAnalyses});
+    return _db.customUpdate(
+      'DELETE FROM game_analyses WHERE gameId = ?',
+      variables: [Variable(gameId)],
+      updates: {_db.gameAnalyses},
+    );
   }
 
   @override
@@ -664,9 +838,9 @@ class DriftGameAnalysisRepository implements GameAnalysisRepository {
              COALESCE(gt.name, 'Unknown') AS gameType, gp.id AS gpId,
              COALESCE(SUM(s.value), 0) AS playerTotal
       FROM game_players gp
-      JOIN games g ON g.id = gp.gameId
+      JOIN games g ON g.id = gp.gameId AND g.deleted_at IS NULL
       LEFT JOIN game_types gt ON g.gameTypeId = gt.id
-      LEFT JOIN scores s ON s.playerId = gp.id
+      LEFT JOIN scores s ON s.playerId = gp.id AND s.deleted_at IS NULL
       WHERE $whereClause
       GROUP BY g.id, g.name, g.createdAt, g.isLowestScoreWins, gt.name, gp.id
       ORDER BY g.createdAt DESC
@@ -680,20 +854,24 @@ class DriftGameAnalysisRepository implements GameAnalysisRepository {
       final isLowestWins = (row.data['isLowestScoreWins'] as int) == 1;
       final playerTotal = row.data['playerTotal'] as int;
 
-      final allTotals = await _db.customSelect(
-        'SELECT gp.id, COALESCE(SUM(s.value), 0) AS total '
-        'FROM game_players gp LEFT JOIN scores s ON s.playerId = gp.id '
-        'WHERE gp.gameId = ? AND gp.deleted_at IS NULL GROUP BY gp.id '
-        'ORDER BY total ${isLowestWins ? 'ASC' : 'DESC'}',
-        variables: [Variable(gameId)],
-      ).get();
+      final allTotals = await _db
+          .customSelect(
+            'SELECT gp.id, COALESCE(SUM(s.value), 0) AS total '
+            'FROM game_players gp '
+            'LEFT JOIN scores s ON s.playerId = gp.id AND s.deleted_at IS NULL '
+            'WHERE gp.gameId = ? AND gp.deleted_at IS NULL GROUP BY gp.id '
+            'ORDER BY total ${isLowestWins ? 'ASC' : 'DESC'}',
+            variables: [Variable(gameId)],
+          )
+          .get();
 
       var rank = 1;
       for (final t in allTotals) {
         if ((t.data['id'] as int) == gpId) break;
         if ((t.data['total'] as int) != playerTotal) rank++;
       }
-      final didWin = allTotals.isNotEmpty &&
+      final didWin =
+          allTotals.isNotEmpty &&
           (allTotals.first.data['total'] as int) == playerTotal;
 
       history.add({
