@@ -3,6 +3,7 @@
 Reads DATABASE_URL from environment (sync driver) and uses SQLModel metadata
 so that ``alembic revision --autogenerate`` picks up our models automatically.
 """
+
 from __future__ import annotations
 
 import os

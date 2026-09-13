@@ -1,4 +1,5 @@
 """FastAPI application entry point."""
+
 from __future__ import annotations
 
 import logging
@@ -120,9 +121,7 @@ def create_app() -> FastAPI:
                 "default-src 'none'; frame-ancestors 'none'"
             )
         if hsts_enabled:
-            response.headers["Strict-Transport-Security"] = (
-                "max-age=31536000; includeSubDomains"
-            )
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         return response
 
     app.include_router(groups.router)

@@ -37,7 +37,7 @@ Load this file first. Then read only the pages your task touches.
 
 | Page | Summary | Updated |
 |---|---|---|
-| [[Backend]] | Stack, module layout, settings, device-token auth | 2026-09-11 |
+| [[Backend]] | Stack, module layout, settings, device-token auth | 2026-09-13 |
 | [[Api]] | Every endpoint, its auth requirement and its failure modes | 2026-09-13 |
 | [[Sync]] | Delta-log + row-level LWW, outbox, WebSocket signalling | 2026-09-13 |
 | [[LlmProviders]] | ZapZap prompt, the pluggable provider factory, the separate Claude path | 2026-09-13 |

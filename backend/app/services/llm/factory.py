@@ -1,4 +1,5 @@
 """Provider selection: LLM_PROVIDER env var (default bedrock) or explicit name."""
+
 from __future__ import annotations
 
 from app.config import get_settings
@@ -30,9 +31,7 @@ def _build(name: str) -> LLMProvider:
             api_key=settings.mistral_api_key,
             model=settings.mistral_model,
         )
-    raise ValueError(
-        f"unknown LLM provider {name!r}; expected one of {', '.join(_PROVIDERS)}"
-    )
+    raise ValueError(f"unknown LLM provider {name!r}; expected one of {', '.join(_PROVIDERS)}")
 
 
 def get_llm_provider(name: str | None = None) -> LLMProvider:

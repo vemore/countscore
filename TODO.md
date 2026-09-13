@@ -104,13 +104,6 @@ Two cheap prerequisites fall out of the above and can be done independently:
 - ~~Land CI before the client, not after.~~ Done (2026-09-09): `.github/workflows/ci.yml`,
   see `DONE.md`.
 
-## `ruff format` has never been run on `backend/`
-
-**Status:** open — noted 2026-09-09, carried over from the Flutter 3.47 entry.
-
-It would rewrite 43 of 50 files. Left out of the 2026-09-09 backend pass on purpose, so
-the functional diff stayed readable. It wants its own `chore:` commit.
-
 ## Refresh the committed `web/drift_worker.js`
 
 **Status:** open — noted 2026-09-09, found while verifying the drift_dev CLI.

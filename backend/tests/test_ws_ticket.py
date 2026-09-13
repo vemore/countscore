@@ -1,4 +1,5 @@
 """Tests for the single-use WebSocket handshake tickets."""
+
 from __future__ import annotations
 
 import uuid

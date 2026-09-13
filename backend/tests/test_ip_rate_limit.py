@@ -1,4 +1,5 @@
 """Tests for the per-IP throttle on the public LLM endpoints and the body-size cap."""
+
 from __future__ import annotations
 
 from unittest.mock import AsyncMock
@@ -34,6 +35,7 @@ def mock_provider(monkeypatch):
         return_value=LLMResult(content="ok", model="m", tokens_in=1, tokens_out=1)
     )
     from app.routes import comments as comments_route
+
     monkeypatch.setattr(comments_route, "get_llm_provider", lambda: fake)
     return fake
 
@@ -68,6 +70,7 @@ async def test_mvp_rate_limited_per_ip(client, monkeypatch):
         )
     )
     from app.routes import comments as comments_route
+
     monkeypatch.setattr(comments_route, "get_anthropic_client", lambda: fake)
     monkeypatch.setattr(get_settings(), "ip_rl_per_minute", 1)
 

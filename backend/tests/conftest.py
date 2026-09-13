@@ -5,6 +5,7 @@ SQLite-compatible fallbacks SQLModel provides automatically. The integration tes
 that exercise the real Postgres features (NOTIFY, jsonb queries) should run against
 a real Postgres via docker-compose in CI.
 """
+
 from __future__ import annotations
 
 import os
@@ -38,6 +39,7 @@ from app.main import create_app  # noqa: E402
 def _reset_process_state():
     """The IP limiter and the WS ticket store hold process-global state; clear it."""
     from app.services import ip_rate_limiter, ws_ticket
+
     ip_rate_limiter.reset()
     ws_ticket.reset()
     yield

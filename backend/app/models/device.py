@@ -1,4 +1,5 @@
 """Device model — one per physical device that has joined a group."""
+
 from __future__ import annotations
 
 import uuid

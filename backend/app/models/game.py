@@ -1,4 +1,5 @@
 """Game-related models: GameType, Game, GamePlayer (join), Round, Score."""
+
 from __future__ import annotations
 
 import uuid
@@ -86,6 +87,7 @@ class Game(SQLModel, table=True):
 
 class GamePlayer(SQLModel, table=True):
     """Many-to-many join between games and players (with per-game ordering and color)."""
+
     __tablename__ = "game_players"
 
     game_id: uuid.UUID = Field(

@@ -14,6 +14,7 @@ Rejection cases:
 - Round upsert violates UNIQUE(game_id, round_number): rejected with status=rejected.
   The client must refresh from /sync/pull and retry with the merged state.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -272,9 +273,7 @@ async def push(
         )
         dup_seq = dup.scalar()
         if dup_seq is not None:
-            results.append(
-                DeltaResult(delta_idx=idx, status="duplicate", server_seq=dup_seq)
-            )
+            results.append(DeltaResult(delta_idx=idx, status="duplicate", server_seq=dup_seq))
             max_seq = max(max_seq, dup_seq)
             continue
 
@@ -377,6 +376,7 @@ async def stream(websocket: WebSocket, ticket: str = Query(default="")) -> None:
 
     async with listen_for_group(group_id) as queue:
         await websocket.accept()
+
         # Background task to detect client disconnect
         async def _receiver() -> None:
             try:

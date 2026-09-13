@@ -1,4 +1,5 @@
 """Claude-generated comment on a game."""
+
 from __future__ import annotations
 
 import uuid

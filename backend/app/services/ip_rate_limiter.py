@@ -12,6 +12,7 @@ State is process-local: the production deploy runs a single uvicorn worker
 (see docker-compose.prod.yml) so the window is authoritative. Behind Synology Web Station
 the real client address arrives in ``X-Forwarded-For``.
 """
+
 from __future__ import annotations
 
 import time

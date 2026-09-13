@@ -3,6 +3,7 @@
 Credentials live in backend env vars (never in the mobile APK). The sync boto3 call is
 wrapped with asyncio.to_thread so it fits the async provider contract.
 """
+
 from __future__ import annotations
 
 import asyncio

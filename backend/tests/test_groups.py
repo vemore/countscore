@@ -1,12 +1,11 @@
 """Tests for group CRUD + device lifecycle."""
+
 from __future__ import annotations
 
 
 async def test_create_group_and_join(client):
     # Create group → get share_token + device_token
-    r = await client.post(
-        "/groups", json={"name": "Famille", "device_label": "Tel Alice"}
-    )
+    r = await client.post("/groups", json={"name": "Famille", "device_label": "Tel Alice"})
     assert r.status_code == 201, r.text
     body = r.json()
     assert body["group"]["name"] == "Famille"
@@ -48,15 +47,11 @@ async def test_join_with_bad_token(client):
 
 
 async def test_revoke_device(client):
-    r = await client.post(
-        "/groups", json={"name": "g", "device_label": "creator"}
-    )
+    r = await client.post("/groups", json={"name": "g", "device_label": "creator"})
     alice_token = r.json()["device"]["token"]
     share = r.json()["group"]["share_token"]
 
-    r = await client.post(
-        "/groups/join", json={"share_token": share, "device_label": "joiner"}
-    )
+    r = await client.post("/groups/join", json={"share_token": share, "device_label": "joiner"})
     bob_device_id = r.json()["device"]["id"]
     bob_token = r.json()["device"]["token"]
 
@@ -86,9 +81,7 @@ async def test_rotate_share_token(client):
     assert new_share != old_share
 
     # Old share is no longer valid
-    r = await client.post(
-        "/groups/join", json={"share_token": old_share, "device_label": "late"}
-    )
+    r = await client.post("/groups/join", json={"share_token": old_share, "device_label": "late"})
     assert r.status_code == 404
 
 

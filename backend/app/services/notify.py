@@ -8,6 +8,7 @@ Why this and not Redis: the volume target is "tens to hundreds of groups, dozens
 concurrent devices per group". Postgres handles this in tens of µs per NOTIFY. Adding
 Redis would be infrastructure for no real benefit at this scale.
 """
+
 from __future__ import annotations
 
 import asyncio

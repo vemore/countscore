@@ -11,6 +11,7 @@ deploy runs a single uvicorn worker (see docker-compose.prod.yml), so a ticket i
 the worker is redeemable by that same worker. Do not raise the worker count without
 moving this state out of memory first.
 """
+
 from __future__ import annotations
 
 import secrets

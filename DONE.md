@@ -6,6 +6,13 @@ readable after the fact.
 
 ---
 
+## `ruff format` has never been run on `backend/`
+
+**Status:** done (2026-09-13) — run on `fix/backend-todo` in its own `chore:` commit: 47 files reformatted, 86 tests green, `ZAPZAP_SYSTEM_PROMPT` checked identical before and after. The hook that refused the command was removed at the user's request; `ruff format --check .` is now a commit gate and a CI step instead.
+
+It would rewrite 43 of 50 files. Left out of the 2026-09-09 backend pass on purpose, so
+the functional diff stayed readable. It wants its own `chore:` commit.
+
 ## `GEMINI_MODEL` defaults to a model that is quota-0 on the free tier
 
 **Status:** done (2026-09-13) — closed by `fix/backend-todo` (`3f04b3a`). Both tracked defaults, `.env.example` and `backend/README.md` now say `gemini-2.5-flash`, with a `/health` test on the default. The "production sets the bad value explicitly" finding below was wrong: the NAS `.env` had no `GEMINI_MODEL`; the value seen in the container was the compose default. Production now sets `GEMINI_MODEL=gemini-2.5-flash` explicitly anyway.
