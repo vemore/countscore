@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from unittest.mock import AsyncMock
 
 import pytest
+from httpx import ASGITransport, AsyncClient
 
 from app.config import get_settings
 from app.services.llm import LLMResult
@@ -28,6 +31,25 @@ def _payload() -> dict:
 
 
 @pytest.fixture
+def client_from(client):
+    """Open a client whose requests arrive from ``ip`` — the address uvicorn resolved.
+
+    Shares the app, and so the test database, of the ``client`` fixture; only the ASGI
+    peer differs. That is what a distinct caller looks like to the app in production,
+    and nothing else may look like one: a header must not.
+    """
+    app = client._transport.app
+
+    @asynccontextmanager
+    async def _open(ip: str) -> AsyncIterator[AsyncClient]:
+        transport = ASGITransport(app=app, client=(ip, 1234))
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            yield ac
+
+    return _open
+
+
+@pytest.fixture
 def mock_provider(monkeypatch):
     fake = AsyncMock()
     fake.available = True
@@ -40,26 +62,78 @@ def mock_provider(monkeypatch):
     return fake
 
 
-async def test_zapzap_rate_limited_per_ip(client, monkeypatch, mock_provider):
+async def test_zapzap_rate_limited_per_ip(client_from, monkeypatch, mock_provider):
     monkeypatch.setattr(get_settings(), "ip_rl_per_minute", 2)
-    headers = {"X-Forwarded-For": "1.2.3.4"}
 
-    for _ in range(2):
-        r = await client.post("/comments/zapzap-analysis", json=_payload(), headers=headers)
-        assert r.status_code == 200, r.text
+    async with client_from("1.2.3.4") as c:
+        for _ in range(2):
+            r = await c.post("/comments/zapzap-analysis", json=_payload())
+            assert r.status_code == 200, r.text
 
-    blocked = await client.post("/comments/zapzap-analysis", json=_payload(), headers=headers)
-    assert blocked.status_code == 429
-    assert blocked.headers.get("Retry-After")
+        blocked = await c.post("/comments/zapzap-analysis", json=_payload())
+        assert blocked.status_code == 429
+        assert blocked.headers.get("Retry-After")
 
     # A different client IP has its own bucket and is unaffected.
-    other = await client.post(
-        "/comments/zapzap-analysis", json=_payload(), headers={"X-Forwarded-For": "9.9.9.9"}
-    )
-    assert other.status_code == 200, other.text
+    async with client_from("9.9.9.9") as other:
+        r = await other.post("/comments/zapzap-analysis", json=_payload())
+        assert r.status_code == 200, r.text
 
 
-async def test_mvp_rate_limited_per_ip(client, monkeypatch):
+async def test_forwarded_for_header_does_not_open_a_new_bucket(
+    client_from, monkeypatch, mock_provider
+):
+    """The 2026-09-13 PoC, inverted: rotating X-Forwarded-For used to mint a bucket per call.
+
+    Behind the proxy the header is uvicorn's to resolve; the app sees one peer, so a
+    client writing the header itself stays in its own bucket.
+    """
+    from app.services import ip_rate_limiter
+
+    monkeypatch.setattr(get_settings(), "group_rl_per_minute", 3)
+
+    async with client_from("203.0.113.9") as c:
+        codes = [
+            (
+                await c.post(
+                    "/groups",
+                    json={"name": "g", "device_label": "d"},
+                    headers={"X-Forwarded-For": f"10.0.0.{i}"},
+                )
+            ).status_code
+            for i in range(6)
+        ]
+
+    assert codes == [201, 201, 201, 429, 429, 429]
+    assert list(ip_rate_limiter._buckets) == [("groups", "203.0.113.9")]
+
+
+async def test_uvicorn_resolves_the_hop_the_trusted_proxy_appended():
+    """The deployment contract behind docker-compose.prod.yml's FORWARDED_ALLOW_IPS.
+
+    Web Station appends the real address, so a spoofing client arrives as
+    ``<spoof>, <real>``. With the proxy's hop trusted, uvicorn must keep ``<real>``.
+    """
+    from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+
+    seen: dict = {}
+
+    async def app(scope, receive, send):
+        seen["client"] = scope["client"]
+
+    middleware = ProxyHeadersMiddleware(app, trusted_hosts="172.28.87.1")
+    scope = {
+        "type": "http",
+        "scheme": "http",
+        "client": ("172.28.87.1", 50000),
+        "headers": [(b"x-forwarded-for", b"6.6.6.6, 203.0.113.9")],
+    }
+    await middleware(scope, None, None)  # type: ignore[arg-type]
+
+    assert seen["client"][0] == "203.0.113.9"
+
+
+async def test_mvp_rate_limited_per_ip(client_from, monkeypatch):
     from app.services.anthropic_client import CommentResult
 
     fake = AsyncMock()
@@ -81,11 +155,11 @@ async def test_mvp_rate_limited_per_ip(client, monkeypatch):
         "players": [{"uuid": "p", "name": "Alice"}],
         "rounds": [{"n": 1, "scores": [{"player_uuid": "p", "value": 1}]}],
     }
-    headers = {"X-Forwarded-For": "2.2.2.2"}
-    r1 = await client.post("/comments/mvp", json=payload, headers=headers)
-    assert r1.status_code == 200, r1.text
-    r2 = await client.post("/comments/mvp", json=payload, headers=headers)
-    assert r2.status_code == 429
+    async with client_from("2.2.2.2") as c:
+        r1 = await c.post("/comments/mvp", json=payload)
+        assert r1.status_code == 200, r1.text
+        r2 = await c.post("/comments/mvp", json=payload)
+        assert r2.status_code == 429
 
 
 async def test_body_too_large_returns_413(client):

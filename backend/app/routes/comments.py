@@ -30,6 +30,7 @@ from app.schemas.comments import (
     GenerateCommentRequest,
     MvpCommentResponse,
     MvpGamePayload,
+    ZapZapPayload,
 )
 from app.services.anthropic_client import get_anthropic_client
 from app.services.budget import charge_budget, check_budget
@@ -116,7 +117,9 @@ async def generate_mvp_comment(
 
 
 @router.post("/comments/zapzap-analysis")
-async def generate_zapzap_analysis(body: dict, request: Request, response: Response) -> dict:
+async def generate_zapzap_analysis(
+    body: ZapZapPayload, request: Request, response: Response
+) -> dict:
     """Caustic ZapZap game analysis via the configured LLM provider.
 
     Provider chosen by the LLM_PROVIDER env var (bedrock | gemini | mistral, default
@@ -135,10 +138,9 @@ async def generate_zapzap_analysis(body: dict, request: Request, response: Respo
             "LLM provider not configured (API credentials missing)",
         )
 
-    try:
-        user_message = build_zapzap_user_message(body)
-    except (KeyError, TypeError) as e:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, f"invalid payload: {e}") from e
+    # The schema has already clipped the text and filtered the names; the builder reads
+    # the app's camelCase history keys, hence by_alias.
+    user_message = build_zapzap_user_message(body.model_dump(by_alias=True))
 
     try:
         result = await provider.generate(ZAPZAP_SYSTEM_PROMPT, user_message)
