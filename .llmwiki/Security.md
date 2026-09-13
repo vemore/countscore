@@ -166,11 +166,17 @@ proof-of-concept results are in `TODO.md`, *Backend security review — 2026-09-
   prompt injection gets through the other four layers, the worst outcome is one strange
   comment rather than a database action.
 - **Player names are validated at storage, not at prompt time.**
-  `length BETWEEN 1 AND 32` and `^[\p{L}\p{N} \-''.]+$` — filtering at the boundary means
-  every later consumer, prompt included, gets clean input. The allow-list is applied by
-  `is_valid_player_name` in `backend/app/models/player.py`, called from the sync apply
-  path; `PLAYER_NAME_REGEX` beside it is the written spec, since `\p{L}` needs the
-  third-party `regex` module the project does not depend on.
+  `length BETWEEN 1 AND 32` and `^(?:\p{L}\p{M}*|\p{N}|[ \-'.])+$` — filtering at the
+  boundary means every later consumer, prompt included, gets clean input. The allow-list is
+  applied by `is_valid_player_name` in `backend/app/models/player.py`, called from the sync
+  apply path; `PLAYER_NAME_REGEX` beside it is the written spec, since `\p{L}` needs the
+  third-party `regex` module the project does not depend on. Combining marks (`\p{M}`) are
+  accepted only right after a letter or another accepted mark — they are what "रवि" or
+  "محمَّد" are written with, and a mark standing alone carries no injection vector. The app
+  mirrors the rule in `isSyncablePlayerName` (`lib/services/sync/sync_ids.dart`).
+
+  > **Status: Outdated** (2026-09-13) — until this date the rule was `^[\p{L}\p{N} \-'.]+$`,
+  > which refused every combining mark, so Hindi and Arabic players could not be shared.
 
   > **Status: Outdated** (2026-09-09) — until this date the regex was declared but never
   > called anywhere, so only the length constraint was actually enforced. The claim above

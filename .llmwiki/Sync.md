@@ -82,7 +82,8 @@ asks, then leaves.
 **Sharing is per game.** On by default for a new game while in a group (switch on the
 create screen), or later from the board menu; never undone. `SyncStore.shareGame` sets
 `group_id` on the game and its children. Player names the server would refuse
-(`isSyncablePlayerName`, mirroring `is_valid_player_name`) block sharing up front.
+(`isSyncablePlayerName`, mirroring `is_valid_player_name`: letters with their combining
+marks, digits, space, `-`, `'`, `.`) block sharing up front.
 
 **Capture — SQLite triggers, not repository code** (`sync_schema.dart`, schema v11). Every
 INSERT/UPDATE on a row with `group_id` set appends `(entity_type, entity_uuid, op)` to
