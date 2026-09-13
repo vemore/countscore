@@ -104,34 +104,6 @@ Two cheap prerequisites fall out of the above and can be done independently:
 - ~~Land CI before the client, not after.~~ Done (2026-09-09): `.github/workflows/ci.yml`,
   see `DONE.md`.
 
-## Refresh the committed `web/drift_worker.js`
-
-**Status:** open — noted 2026-09-09, found while verifying the drift_dev CLI.
-
-`web/drift_worker.js` is 351,222 B; the worker drift 2.34.4 ships at its package root
-(`~/.pub-cache/hosted/pub.dev/drift-2.34.4/drift_worker.js`) is 355,222 B. The committed
-copy is an older build than the drift runtime the app is compiled against. The PWA works
-today, but a worker/runtime mismatch is exactly the class of bug that shows up as an
-inexplicable web-only failure.
-
-Copying the package's file over ours is a one-line change — but it must be followed by a
-real PWA launch and the web e2e run, not just a green build, because
-`connection_web.dart` failures surface only at runtime. That is why it was not folded into
-the SDK upgrade. See `.llmwiki/Web.md`.
-
-Note this also settles the old question of whether to untrack the two binaries: they stay
-tracked **by choice** (a fresh clone should not have to fetch binaries to run the PWA), not
-because the repo is their only source. It never was.
-
-## `web/CLAUDE.md` is published with the PWA
-
-**Status:** open — noted 2026-09-09, spotted while runtime-checking the web build.
-
-Flutter copies everything under `web/` into the build output, so `build/web/CLAUDE.md`
-ships to whoever serves the PWA — internal instructions on a public URL. Harmless today,
-but it should either move out of `web/` or be stripped by whatever deploy step the PWA
-eventually gets (see "The Flutter web app has no deployment path" below).
-
 ## `shared_preferences_android` still applies the Kotlin Gradle Plugin
 
 **Status:** open — noted 2026-09-09, during the Flutter 3.47 upgrade.
@@ -148,6 +120,21 @@ Nothing to do on our side — it needs an upstream release that migrates to AGP'
 Kotlin. Watch the `shared_preferences` changelog; this becomes a hard build failure on some
 future Flutter, not on 3.47.2.
 
+## The web e2e recipe assumes a matching `chromedriver` on the PATH
+
+**Status:** open — noted 2026-09-13, while running the web e2e for the drift worker refresh.
+
+`.llmwiki/Testing.md` says "`chromedriver --port=4444 &`" and that its major version must
+match Chrome. On the development machine there is no `chromedriver` on the PATH; the copy
+under `~/cft/` is 145 while Chrome is 153, so the recipe fails as written. It took a manual
+lookup in the Chrome for Testing `known-good-versions-with-downloads.json` and a download of
+the matching `chromedriver-linux64.zip` into the session scratchpad to run the suite.
+
+Proposal: a small `scripts/chromedriver.sh` that reads `google-chrome --version`, fetches
+the matching Chrome for Testing driver into a cache directory if absent, and starts it on
+4444 — and point the Testing recipe (and `.claude/rules/web.md`) at it instead of a bare
+`chromedriver`.
+
 ---
 
 ## Surfaced during the LLM-wiki migration
@@ -155,13 +142,6 @@ future Flutter, not on 3.47.2.
 **Status:** open — noted 2026-09-09, while decomposing `CLAUDE.md` and `ARCHITECTURE.md`
 into `.llmwiki/`. None of these were introduced by that change; they were found by reading
 the whole tree at once. Background for each lives in the wiki page named alongside it.
-
-### The Flutter web app has no deployment path
-
-`.llmwiki/Deployment.md` covers the FastAPI container completely. For the PWA there is
-nothing: no vhost, no Web Station config, no deploy script, no documented `--base-href`.
-The app is built and served by hand. Whoever deploys it next has to rediscover how.
-See `.llmwiki/Web.md`.
 
 ### Smaller, self-contained
 

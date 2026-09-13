@@ -45,6 +45,29 @@ outage — see [[LlmProviders]].
 There is **no deployment path for the Flutter web app** in this repo — no vhost, no
 hosting config. Only the backend container is covered. See [[Web]].
 
+> **Status: Outdated** (2026-09-13) — the PWA now has one; see *The PWA* below.
+
+### The PWA — `scripts/deploy_web.sh`
+
+Static files in a Synology **Web Station** folder, served under a **sub-path** of an
+existing site, over the same Let's Encrypt TLS. Procedure: the `web-deploy` skill.
+
+The target is untracked, like the backend's: `scripts/deploy_web.env` (template
+`scripts/deploy_web.env.example`) names `NAS_SSH`, `WEB_NAS_DIR`, `WEB_BASE_HREF` and
+`WEB_PUBLIC_URL`. The script builds with `--base-href=$WEB_BASE_HREF`, refuses a build that
+contains any `.md` file or lacks `sqlite3.wasm` / `drift_worker.js`, streams a tarball over
+ssh into `$WEB_NAS_DIR.new`, and swaps it in, keeping one `$WEB_NAS_DIR.prev`.
+`--rollback` swaps back; `--dry-run` builds and prints the remote commands.
+
+```bash
+scripts/deploy_web.sh --dry-run
+scripts/deploy_web.sh
+scripts/deploy_web.sh --rollback
+```
+
+The Web Station side (which site, which sub-path maps to the folder) is configured by hand
+in DSM and is not recorded here yet.
+
 ### Environment variables
 
 `.env` is never committed (`.gitignore`); `backend/.env.example` is the template.
@@ -92,6 +115,14 @@ hosting config. Only the backend container is covered. See [[Web]].
   on every local `docker compose up`. It now uses `env_file: .env`, as production effectively
   does, and overrides only `DATABASE_URL` to reach the `db` host. A hand-kept list drifted
   once; a file cannot.
+- **The PWA got a deploy script, not a container (2026-09-13).** It is static files; an
+  nginx image would add a registry push and a port for nothing Web Station does not already
+  do. It is served under a **sub-path** by the owner's choice, which is why `--base-href` is
+  a required setting rather than a default of `/`. Upload is a tarball over ssh because
+  `scp` is blocked on the NAS — the same constraint `deploy_nas.sh` works around — and it
+  lands in a sibling folder that is renamed into place, so a half-copied release is never
+  served and one rollback is a rename. The `.md` refusal exists because `web/CLAUDE.md` was
+  published with every build until the same day; it moved to `.claude/rules/web.md`.
 - **Backups are `pg_dump` on a cron sidecar with 7-day rotation**, not a managed service.
   The dataset is small and the recovery story is "copy a file back".
 - **`LLM_PROVIDER` defaults to `bedrock` in code**, but production has been run on
