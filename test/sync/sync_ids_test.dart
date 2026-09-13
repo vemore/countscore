@@ -36,4 +36,25 @@ void main() {
     expect(isSyncablePlayerName('Bob 🎲'), isFalse);
     expect(isSyncablePlayerName('<script>'), isFalse);
   });
+
+  // Mirrors _MARKED_NAMES / _ORPHAN_MARKS in backend/tests/test_sync.py.
+  test('letters carry their combining marks, other characters do not', () {
+    for (final name in [
+      'रवि', // Devanagari vowel sign (Mc)
+      'अर्जुन', // virama (Mn) then a vowel sign
+      'अँ', // candrabindu (Mn) straight on a letter
+      'محمَّد', // Arabic shadda + fatha, stacked
+      'Nguye\u0302\u0303n', // Vietnamese, decomposed
+    ]) {
+      expect(isSyncablePlayerName(name), isTrue, reason: name);
+    }
+    for (final name in [
+      '\u093f', // a vowel sign with nothing to combine with
+      '2\u0301', // after a digit
+      'a \u0301', // after a space
+      '\u{1f3b2}\u0301', // after a refused character
+    ]) {
+      expect(isSyncablePlayerName(name), isFalse, reason: name);
+    }
+  });
 }

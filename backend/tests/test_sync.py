@@ -5,10 +5,13 @@ We bypass the WebSocket NOTIFY (Postgres-only) since tests run on SQLite.
 
 from __future__ import annotations
 
+import unicodedata
 import uuid
 from unittest.mock import AsyncMock
 
 import pytest
+
+from app.models.player import is_valid_player_name, sanitize_player_name
 
 
 @pytest.fixture(autouse=True)
@@ -257,6 +260,54 @@ async def test_accented_player_names_are_still_accepted(client):
             "entity_uuid": str(uuid.uuid4()),
             "op": "upsert",
             "payload": {"name": "Zoé O'Brien-Lévy", "name_normalized": "zoé o'brien-lévy"},
+            "client_lamport": 1,
+        },
+    )
+
+    assert r.json()["results"][0]["status"] == "applied"
+
+
+# One name per script whose letters take combining marks, and the places a mark must
+# still be refused. Mirrored in test/sync/sync_ids_test.dart — keep both lists in step.
+_MARKED_NAMES = [
+    "रवि",  # Devanagari vowel sign (Mc)
+    "अर्जुन",  # virama (Mn) then a vowel sign
+    "अँ",  # candrabindu (Mn) straight on a letter
+    "محمَّد",  # Arabic shadda + fatha, stacked (Mn Mn)
+    unicodedata.normalize("NFD", "Nguyễn"),  # Vietnamese, decomposed
+]
+_ORPHAN_MARKS = [
+    "\u093f",  # a vowel sign with nothing to combine with
+    "2\u0301",  # after a digit
+    "a \u0301",  # after a space
+    "\U0001f3b2\u0301",  # after a refused character
+]
+
+
+@pytest.mark.parametrize("name", _MARKED_NAMES)
+def test_letters_with_combining_marks_are_names(name):
+    assert is_valid_player_name(name)
+    assert sanitize_player_name(name) == name
+
+
+@pytest.mark.parametrize("name", _ORPHAN_MARKS)
+def test_a_mark_that_combines_with_no_letter_is_refused(name):
+    assert not is_valid_player_name(name)
+    assert not any(unicodedata.category(c).startswith("M") for c in sanitize_player_name(name))
+
+
+@pytest.mark.parametrize("name", _MARKED_NAMES)
+async def test_marked_player_names_can_be_shared(client, name):
+    _group_id, token = await _make_group_and_token(client)
+
+    r = await _push(
+        client,
+        token,
+        {
+            "entity_type": "player",
+            "entity_uuid": str(uuid.uuid4()),
+            "op": "upsert",
+            "payload": {"name": name, "name_normalized": name.lower()},
             "client_lamport": 1,
         },
     )
