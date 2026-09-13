@@ -35,10 +35,11 @@ The system block is marked `cache_control: ephemeral`, so across a games evening
 
 `POST /comments/zapzap-analysis` — stateless, unauthenticated, unbudgeted.
 
-- **Prompt**: `app/services/zapzap_prompt.py` (158 l.). `ZAPZAP_SYSTEM_PROMPT` at line 17 is
-  the verbatim French "professeur Claude" persona, ported from the Flutter prototype
-  `lib/services/bedrock_analysis_service.dart`. `build_zapzap_user_message(payload)` at
-  line 78 builds the Markdown round table plus per-player history.
+- **Prompt**: `app/services/zapzap_prompt.py` (150 l.). `ZAPZAP_SYSTEM_PROMPT` at line 20 is
+  the French "professeur Claude" persona, ported from the Flutter prototype
+  `lib/services/bedrock_analysis_service.dart`, and names no real person.
+  `build_zapzap_user_message(payload)` at line 70 builds the Markdown round table plus
+  per-player history.
 - **Contract**: `app/services/llm/base.py` — `LLMProvider` Protocol (`available` and `model`
   properties, `async generate`), `LLMResult(content, model, tokens_in, tokens_out)`. Shared parameters:
   `DEFAULT_MAX_TOKENS = 8192`, `DEFAULT_TEMPERATURE = 0.4`, `DEFAULT_TOP_P = 0.9`.

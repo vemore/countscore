@@ -2,7 +2,7 @@
 
 > Scope: what is defended, and what is knowingly open.
 > Related: [[Backend]] · [[Api]] · [[LlmProviders]] · [[Deployment]] · [[KnownLimits]]
-> Updated: 2026-09-11
+> Updated: 2026-09-13
 
 ## Facts
 
@@ -70,16 +70,20 @@ server they chose, and carries no credential of ours.
 - **Every device in a group is equal.** There is no owner role on `Device`, so any member
   can rotate the share token or revoke a sibling device. Full lateral privilege within a
   group, which matches the household model but not a public one.
-- **The ZapZap system prompt names real people.** `backend/app/services/zapzap_prompt.py:52-59`
-  hard-codes eight first names and a reputation for each into `ZAPZAP_SYSTEM_PROMPT`, so
-  those names reach the third-party provider on **every** request, whoever is playing. The
-  compliance documents do not cover it, because they describe what leaves the *device*. See
-  `TODO.md`.
 - **In-memory state ties the service to one worker.** `ip_rate_limiter` and `ws_ticket`
   both live in process memory; horizontal scaling needs them moved to Redis or Postgres
   first. See rule 2 in `backend/CLAUDE.md`.
 
 ## Decisions & History
+
+- **The ZapZap system prompt no longer names anyone (2026-09-13).** It used to hard-code
+  eight first names and a reputation for each, so those names reached the third-party
+  provider on every request, whoever was playing — undisclosed, because the compliance
+  documents describe what leaves the *device* and this text never was on it. The section
+  and the "favourite player" line were removed rather than moved to per-group configuration:
+  the players and their history already arrive in the payload, which the user chose to send.
+  `test_system_prompt_names_no_real_person` keeps it that way. None of the three privacy
+  documents described the prompt's content, so none needed a change.
 
 - **The default is no backend at all (2026-09-11).** The URL used to be compiled in, so the
   published app sent every requested analysis to the author's NAS. Making it a setting with
