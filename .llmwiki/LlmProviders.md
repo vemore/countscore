@@ -107,7 +107,7 @@ text is local data a failed refresh never touched.
 - Group: `monthly_budget_cents`, default 100¢ ≈ 830 Haiku comments/month.
 - IP: 5/min, 30/h (`IP_RL_PER_*`), `app/services/ip_rate_limiter.py`, **process-local
   memory** — hence one uvicorn worker in production. Keyed on `request.client.host`, which
-  uvicorn resolves from `X-Forwarded-For` behind the trusted proxy only (see [[Deployment]]).
+  `TrustedProxyMiddleware` sets from `X-Real-IP` behind the trusted proxy only (see [[Deployment]]).
 
 ### Prompt-injection defence, 5 layers
 

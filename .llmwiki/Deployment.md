@@ -19,7 +19,7 @@ proxying to `http://127.0.0.1:8087`. Caddy was removed and is no longer part of 
 
 | Service | Detail |
 |---|---|
-| `api` | FastAPI/uvicorn, **1 worker**. Image from the local NAS registry, `$REGISTRY/countscore:latest`. Port `127.0.0.1:8087:8000`. Trusts `X-Forwarded-For` from `FORWARDED_ALLOW_IPS` only. |
+| `api` | FastAPI/uvicorn, **1 worker**. Image from the local NAS registry, `$REGISTRY/countscore:latest`. Port `127.0.0.1:8087:8000`. `--no-proxy-headers`; `X-Real-IP` believed from `TRUSTED_PROXY_IPS` only. |
 | `db` | Postgres 17-alpine, mounted volume. |
 | `db-backup` | Sidecar cron: `pg_dump → /backups`, 7-day rotation. |
 
@@ -36,17 +36,27 @@ cd backend
 
 **Client address.** Web Station reaches the API through the published port, so inside the
 container the peer is the compose network's gateway. The network is pinned to
-`172.28.87.0/24` so that gateway is a known `172.28.87.1`, and `FORWARDED_ALLOW_IPS` names
-it: uvicorn then keeps the rightmost untrusted `X-Forwarded-For` hop, the one Web Station
-appended. Never `*` — uvicorn would take the leftmost hop, which the client writes. The
-first deploy after the subnet was pinned needs `docker compose down && docker compose up -d`
-on the NAS (Compose will not change an existing network's IPAM), after checking that no
-other network there uses `172.28.87.0/24`. Verify from outside, since access logs
-are off (`uvicorn.access` at WARNING in `app/main.py`): four `POST /groups/join` with a bogus
-`share_token` and a different `X-Forwarded-For` each must answer `404, 404, 404, 429` — four
-`404`s mean the header is trusted again. Then, within the minute, one more from another network
-(a phone on mobile data) must answer `404`: a `429` there means every caller shares the
-gateway's bucket, i.e. `FORWARDED_ALLOW_IPS` does not match the peer.
+`172.28.87.0/24` so that gateway is a known `172.28.87.1`, and `TRUSTED_PROXY_IPS` names it.
+The portal config (`/usr/local/etc/nginx/conf.d-available/<uuid>.w3conf` on the NAS) sets
+`X-Real-IP $remote_addr` and `X-Forwarded-Proto $scheme` but **not** `X-Forwarded-For`, which
+therefore arrives exactly as the client wrote it. So the app believes `X-Real-IP` from the
+gateway only (`app/services/trusted_proxy.py`), and uvicorn runs with `--no-proxy-headers` so
+it never reads `X-Forwarded-For` at all.
+
+The first deploy after the subnet was pinned needed `docker compose down && docker compose up
+-d` on the NAS (Compose will not change an existing network's IPAM). Verify from outside,
+since access logs are off (`uvicorn.access` at WARNING in `app/main.py`): four `POST
+/groups/join` with a bogus `share_token` and a different `X-Forwarded-For` each must answer
+`404, 404, 404, 429` — four `404`s mean a client-written header is believed again. Then one
+bogus join from the NAS itself to `http://127.0.0.1:8087` (peer: the gateway, no `X-Real-IP`)
+must answer `404`: a `429` there means every caller shares the gateway's bucket, i.e.
+`TRUSTED_PROXY_IPS` does not match the peer.
+
+> **Status: Outdated** (2026-09-13) — the first fix, `fix/ip-spoofing-zapzap-payload`, set
+> `FORWARDED_ALLOW_IPS=172.28.87.1` on the belief that Web Station *appends* to
+> `X-Forwarded-For`. It does not set that header at all, so uvicorn took the client's value:
+> the check above answered `404` four times on the first production deploy. Replaced the same
+> day by `fix/trust-x-real-ip`.
 
 Dev uses `docker-compose.yml` (no TLS, local Postgres): `docker compose up -d` — db plus
 api on 8000 plus the backup sidecar.
@@ -115,7 +125,7 @@ scripts/deploy_web.sh --rollback   # swap pwa/current.prev back
 | `PWA_BASE_PATH` | Sub-path the api container serves the PWA under, e.g. `/countscore`. Empty = no PWA. Also read by `scripts/deploy_web.sh` for `--base-href` | `` |
 | `PWA_DIR` | Build folder inside the container. Compose pins it to `/srv/pwa/current` | `/srv/pwa/current` |
 | `LOG_LEVEL` | | — |
-| `FORWARDED_ALLOW_IPS` | Read by uvicorn, not by the app: the proxy hops whose `X-Forwarded-For` it believes. Never `*` | `172.28.87.1` in prod compose, uvicorn's `127.0.0.1` elsewhere |
+| `TRUSTED_PROXY_IPS` | Proxy addresses (CSV) whose `X-Real-IP` / `X-Forwarded-Proto` the app believes | `172.28.87.1` in prod compose, empty elsewhere |
 
 ## Decisions & History
 

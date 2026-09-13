@@ -70,6 +70,10 @@ class Settings(BaseSettings):
     # share a device, so more than one; a cap, so one member cannot hold hundreds.
     max_streams_per_device: int = 3
 
+    # Reverse-proxy addresses whose X-Real-IP / X-Forwarded-Proto are believed, CSV. Empty
+    # (dev, tests): no header is believed. See app/services/trusted_proxy.py.
+    trusted_proxy_ips: str = ""
+
     # Send Strict-Transport-Security. Off by default: local development is plain http
     # and an HSTS header there pins the browser to https for a year.
     hsts_enabled: bool = False
@@ -111,6 +115,10 @@ class Settings(BaseSettings):
     @property
     def effective_max_budget_cents(self) -> int:
         return self.default_budget_cents if self.max_budget_cents is None else self.max_budget_cents
+
+    @property
+    def trusted_proxy_ips_list(self) -> list[str]:
+        return [ip.strip() for ip in self.trusted_proxy_ips.split(",") if ip.strip()]
 
     @property
     def cors_origins_list(self) -> list[str]:

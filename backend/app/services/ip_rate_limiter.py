@@ -12,10 +12,9 @@ State is process-local: the production deploy runs a single uvicorn worker
 (see docker-compose.prod.yml) so the window is authoritative.
 
 The client address is ``request.client.host`` and nothing else. Behind Synology Web
-Station the real address arrives in ``X-Forwarded-For``, but resolving it is uvicorn's
-job, not ours: with ``FORWARDED_ALLOW_IPS`` naming the proxy's hop, uvicorn walks the
-header right-to-left and keeps the first untrusted address — the one the proxy appended.
-Reading the header here would take the leftmost hop, which the client writes itself.
+Station, ``TrustedProxyMiddleware`` (``app/services/trusted_proxy.py``) has already set it
+from the proxy's ``X-Real-IP``; ``X-Forwarded-For`` is never read, because Web Station
+passes it through exactly as the client wrote it.
 """
 
 from __future__ import annotations
@@ -43,7 +42,7 @@ _last_sweep = 0.0
 
 
 def client_ip(request: Request) -> str:
-    """Client IP as uvicorn resolved it — never a header, see the module docstring."""
+    """Client IP as the trusted-proxy middleware resolved it — see the module docstring."""
     return request.client.host if request.client else "unknown"
 
 

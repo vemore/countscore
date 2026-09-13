@@ -19,7 +19,7 @@
 | SQL injection | SQLModel/asyncpg parameterised throughout; no string concatenation. |
 | CSRF | Stateless API with a bearer token, so not applicable. |
 | CORS | Explicit origin whitelist in `config.py`; `*` is rejected at startup. |
-| Rate limiting | Per device, per group budget, and per IP — including group create/join. The IP is `request.client.host` only; uvicorn resolves it from `X-Forwarded-For` by trusting the compose network's gateway alone (`FORWARDED_ALLOW_IPS`, see [[Deployment]]), so the client cannot choose it. `backend/tests/test_ip_rate_limit.py`. |
+| Rate limiting | Per device, per group budget, and per IP — including group create/join. The IP is `request.client.host`, which `TrustedProxyMiddleware` (`app/services/trusted_proxy.py`) sets from `X-Real-IP` only when the peer is in `TRUSTED_PROXY_IPS` (the pinned compose gateway, see [[Deployment]]). `X-Forwarded-For` is read by nothing: Web Station passes it through as the client wrote it. `backend/tests/test_ip_rate_limit.py`. |
 | ZapZap payload | `ZapZapPayload` (`app/schemas/comments.py`): 422 on a wrong shape or a count out of bounds (12 players, 200 rounds, 10 history entries); text clipped, player names filtered through the sync allow-list. |
 | Body size | `limit_body_size` middleware, 413 above `MAX_BODY_BYTES` (262144); 411 when `Content-Length` is absent on a write. |
 | WebSocket auth | Single-use ticket from `POST /sync/ws-ticket`, 60 s TTL. `app/services/ws_ticket.py`. |
@@ -87,6 +87,10 @@ proof-of-concept results are in `TODO.md`, *Backend security review — 2026-09-
   > **Status: Outdated** (2026-09-13) — fixed by `fix/ip-spoofing-zapzap-payload`: the app
   > reads no header, and uvicorn trusts only the pinned gateway `172.28.87.1`, keeping the
   > hop Web Station appended. Regression tests in `backend/tests/test_ip_rate_limit.py`.
+
+  > **Status: Outdated** (2026-09-13) — that fix did not hold in production: Web Station does
+  > not set `X-Forwarded-For`, so uvicorn believed the client's. Replaced by
+  > `fix/trust-x-real-ip`: `--no-proxy-headers`, and `X-Real-IP` believed from the gateway only.
 - **The argon2 scan is a CPU denial of service, not only a scaling limit.** One verify
   (30 ms) per device row for any bearer token, valid or not, with no rate limit on 401s;
   combined with free group creation the single worker can be kept saturated.

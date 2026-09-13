@@ -56,6 +56,7 @@ token lets the revoked device re-join at once and get a fresh token. Proposed: r
 `share_token` inside `revoke_device` and return the new one, as `rotate-share-token` does —
 or, at minimum, document in `.llmwiki/Api.md` that a revoke is meaningless without a rotate.
 Belongs with the owner-role debt already listed in `.llmwiki/Security.md`.
+
 ## Backend review: every per-IP rate limit is bypassed by a client-supplied `X-Forwarded-For`
 
 **Status:** done (2026-09-13) — closed by `fix/ip-spoofing-zapzap-payload`. `client_ip()` now
@@ -65,6 +66,14 @@ Web Station appended. The PoC is inverted in `backend/tests/test_ip_rate_limit.p
 group creations with a rotating header → 201 ×3 then 429, one bucket), plus a test of
 uvicorn's resolution under that trusted list. The wiki blocks that pointed here are gone.
 Noted 2026-09-13 in the *Backend security review*.
+
+> **Reopened and closed again (2026-09-13)** — the production check after deploying it
+> answered `404` four times: Synology Web Station sets `X-Real-IP` and does not set
+> `X-Forwarded-For` at all, so uvicorn trusted the client's own header. `fix/trust-x-real-ip`
+> replaced `FORWARDED_ALLOW_IPS` with `TRUSTED_PROXY_IPS` and `TrustedProxyMiddleware`, which
+> believes `X-Real-IP` from the gateway only, and runs uvicorn with `--no-proxy-headers`. The
+> lesson: the fix was tested against how a reverse proxy usually behaves, not against the
+> portal config on the NAS — read that file before trusting any proxy header.
 
 > Also covers the `auth_fail` bucket added on 2026-09-13 in `app/auth.py`: until this lands,
 > a client rotating the header escapes the cap on failed token checks too. The cost per

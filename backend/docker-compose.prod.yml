@@ -29,7 +29,9 @@ services:
       db:
         condition: service_healthy
     # Single worker: the per-IP rate limiter keeps state in process memory.
-    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+    # --no-proxy-headers: uvicorn must not believe X-Forwarded-For, which Web Station passes
+    # through as the client wrote it. The app resolves the client (TRUSTED_PROXY_IPS below).
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--no-proxy-headers"]
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       LLM_PROVIDER: ${LLM_PROVIDER:-bedrock}
@@ -54,12 +56,11 @@ services:
       GROUP_RL_PER_HOUR: ${GROUP_RL_PER_HOUR:-10}
       HSTS_ENABLED: ${HSTS_ENABLED:-true}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
-      # Read by uvicorn itself: the only peer whose X-Forwarded-For it believes. Web Station
-      # reaches the API through the published port, so the peer is this network's gateway
-      # (pinned below). uvicorn then keeps the rightmost untrusted hop — the address Web
-      # Station appended. Never "*": uvicorn would take the leftmost hop, which the client
-      # writes, and every per-IP limit would be spoofable again (.llmwiki/Security.md).
-      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-172.28.87.1}
+      # The only peer whose X-Real-IP and X-Forwarded-Proto the app believes. Web Station
+      # reaches the API through the published port, so that peer is this network's gateway
+      # (pinned below); it overwrites X-Real-IP with the address it accepted, so the client
+      # cannot choose its rate-limit bucket (app/services/trusted_proxy.py).
+      TRUSTED_PROXY_IPS: ${TRUSTED_PROXY_IPS:-172.28.87.1}
       # Sub-path the PWA is served under, e.g. /countscore. Empty = no PWA. Read by
       # scripts/deploy_web.sh too, so the build's --base-href cannot disagree with it.
       PWA_BASE_PATH: ${PWA_BASE_PATH:-}
@@ -112,7 +113,7 @@ services:
 
 networks:
   default:
-    # Pinned so the gateway — the peer uvicorn trusts through FORWARDED_ALLOW_IPS — is a
+    # Pinned so the gateway — the peer the app trusts through TRUSTED_PROXY_IPS — is a
     # known address rather than whatever Docker picked when the network was created.
     ipam:
       config:
