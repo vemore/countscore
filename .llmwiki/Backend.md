@@ -2,7 +2,7 @@
 
 > Scope: the FastAPI service — stack, layout, configuration, auth.
 > Related: [[Api]] · [[Sync]] · [[LlmProviders]] · [[Deployment]] · [[Security]] · [[Testing]]
-> Updated: 2026-09-11
+> Updated: 2026-09-13
 
 ## Facts
 
@@ -75,6 +75,10 @@ on commas.
   the error code, so the checker keeps working on those lines.
 - **`ruff format` has never been run.** It would rewrite ~43 of 50 files; it is left for a
   dedicated `chore:` commit rather than riding along with functional changes.
+
+  > **Status: Outdated** (2026-09-13) — run in its own commit on `fix/backend-todo`
+  > (47 files, behaviour unchanged, `ZAPZAP_SYSTEM_PROMPT` verified identical). `ruff format
+  > --check .` is now a commit gate and a CI step.
 - **Ruff config is deliberately narrow**: line-length 100, select `E,F,I,B,UP,N,SIM,RUF`,
   ignore `B008` (FastAPI's `Depends()` in defaults is idiomatic) and `N805`. Per-file
   ignore on `app/services/zapzap_prompt.py` for `E501` and `RUF001`, because the prompt is

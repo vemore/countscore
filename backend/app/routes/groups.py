@@ -1,4 +1,5 @@
 """Group CRUD + device join/revoke endpoints."""
+
 from __future__ import annotations
 
 import uuid

@@ -1,4 +1,5 @@
 """Player model — global per group (one canonical entity per human player)."""
+
 from __future__ import annotations
 
 import uuid
@@ -33,9 +34,7 @@ def is_valid_player_name(name: str) -> bool:
     """
     if not 1 <= len(name) <= PLAYER_NAME_MAX_LENGTH:
         return False
-    return all(
-        c.isalpha() or c.isdigit() or c in PLAYER_NAME_PUNCTUATION for c in name
-    )
+    return all(c.isalpha() or c.isdigit() or c in PLAYER_NAME_PUNCTUATION for c in name)
 
 
 class Player(SQLModel, table=True):

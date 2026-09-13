@@ -1,4 +1,5 @@
 """SQLModel ORM models. Import all here so Alembic autogenerate sees them."""
+
 from app.models.change_log import ChangeLog
 from app.models.comment import Comment
 from app.models.device import Device

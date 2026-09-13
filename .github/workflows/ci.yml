@@ -50,10 +50,11 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked --extra dev
 
-      # ruff check only. `ruff format` has never been run on this codebase and
-      # would rewrite ~43 of 50 files; it is a separate deferred item in TODO.md.
       - name: ruff check
         run: uv run ruff check .
+
+      - name: ruff format
+        run: uv run ruff format --check .
 
       - name: mypy
         run: uv run mypy

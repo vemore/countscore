@@ -178,7 +178,7 @@ flutter test
 flutter test --coverage
 
 # Backend (from backend/)
-ruff check .
+ruff check . && ruff format --check .
 mypy
 pytest -m 'not integration' -q   # fast, no Docker; drop the marker to run everything
 ```
@@ -192,7 +192,7 @@ CI — it calls the production endpoint. See `.llmwiki/Testing.md`.
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs three jobs on every push to
 `main` and every pull request:
 
-- **Backend** — `ruff check`, `mypy`, `pytest` (integration tests included).
+- **Backend** — `ruff check`, `ruff format --check`, `mypy`, `pytest` (integration tests included).
 - **App** — codegen, `flutter analyze`, `flutter test`, release web build.
 - **Android** — debug APK from a clean checkout, as a fresh-clone build proof, plus an
   assertion that the release manifest still declares `INTERNET`.

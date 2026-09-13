@@ -5,6 +5,7 @@ Single source of truth: the ``rate_limits`` table. We use a windowed counter
 are coarse and the operational picture is easier to reason about (we can SELECT
 the table to see who is hot right now).
 """
+
 from __future__ import annotations
 
 import uuid
@@ -25,9 +26,7 @@ class RateLimitDecision:
     scope: str = ""  # 'minute' | 'hour' | 'day'
 
 
-async def check_and_increment(
-    session: AsyncSession, device_id: uuid.UUID
-) -> RateLimitDecision:
+async def check_and_increment(session: AsyncSession, device_id: uuid.UUID) -> RateLimitDecision:
     """Atomically check then increment counters. Returns whether the call may proceed.
 
     We do the read-modify-write inside the caller's transaction. On contention,

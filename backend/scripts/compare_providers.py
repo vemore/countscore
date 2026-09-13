@@ -10,6 +10,7 @@ Usage:
     python scripts/compare_providers.py --payload scripts/sample_payload.json
     python scripts/compare_providers.py --payload game.json --providers bedrock,gemini,mistral
 """
+
 from __future__ import annotations
 
 import argparse

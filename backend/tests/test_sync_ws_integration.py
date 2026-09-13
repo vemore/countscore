@@ -6,6 +6,7 @@ path without stubbing pg_notify.
 
 Marked ``@pytest.mark.integration``. Auto-skipped when Docker is unavailable.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -27,11 +28,10 @@ from sqlmodel import SQLModel
 # Docker guard
 # ---------------------------------------------------------------------------
 
+
 def _docker_available() -> bool:
     try:
-        return subprocess.run(
-            ["docker", "info"], capture_output=True, timeout=5
-        ).returncode == 0
+        return subprocess.run(["docker", "info"], capture_output=True, timeout=5).returncode == 0
     except Exception:
         return False
 
@@ -42,6 +42,7 @@ pytestmark = pytest.mark.integration
 # ---------------------------------------------------------------------------
 # Fixtures — all function-scoped to avoid asyncpg shared-connection bugs
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture(scope="session")
 def postgres_container():
@@ -90,9 +91,7 @@ async def pg_client(postgres_container, pg_engine) -> AsyncIterator[AsyncClient]
 
     get_settings.cache_clear()
 
-    session_factory = async_sessionmaker(
-        pg_engine, class_=AsyncSession, expire_on_commit=False
-    )
+    session_factory = async_sessionmaker(pg_engine, class_=AsyncSession, expire_on_commit=False)
 
     app = create_app()
 
@@ -122,6 +121,7 @@ async def pg_client(postgres_container, pg_engine) -> AsyncIterator[AsyncClient]
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 async def _make_group_and_token(client: AsyncClient) -> tuple[str, str]:
     r = await client.post(
         "/groups", json={"name": f"ws-test-{uuid.uuid4().hex[:8]}", "device_label": "d"}
@@ -142,6 +142,7 @@ async def _ws_url(client, token: str) -> str:
 # Tests
 # ---------------------------------------------------------------------------
 
+
 async def test_ws_receives_new_seq_after_push(pg_client):
     """push → pg_notify → WS client receives {"type":"new_seq","server_seq":1}."""
     _group_id, token = await _make_group_and_token(pg_client)
@@ -160,9 +161,7 @@ async def test_ws_receives_new_seq_after_push(pg_client):
     }
 
     async with aconnect_ws(ws_url, pg_client) as ws:
-        push_r = await pg_client.post(
-            "/sync/push", json={"deltas": [delta]}, headers=headers
-        )
+        push_r = await pg_client.post("/sync/push", json={"deltas": [delta]}, headers=headers)
         assert push_r.status_code == 200, push_r.text
         server_seq = push_r.json()["server_seq_max"]
         assert server_seq >= 1
@@ -190,18 +189,14 @@ async def test_ws_push_pull_full_cycle(pg_client):
     }
 
     async with aconnect_ws(ws_url, pg_client) as ws:
-        push_r = await pg_client.post(
-            "/sync/push", json={"deltas": [delta]}, headers=headers
-        )
+        push_r = await pg_client.post("/sync/push", json={"deltas": [delta]}, headers=headers)
         assert push_r.status_code == 200, push_r.text
 
         msg = json.loads(await asyncio.wait_for(ws.receive_text(), timeout=5.0))
         assert msg["type"] == "new_seq"
         notified_seq = msg["server_seq"]
 
-    pull_r = await pg_client.get(
-        f"/sync/pull?since_seq={notified_seq - 1}", headers=headers
-    )
+    pull_r = await pg_client.get(f"/sync/pull?since_seq={notified_seq - 1}", headers=headers)
     assert pull_r.status_code == 200, pull_r.text
     deltas = pull_r.json()["deltas"]
     assert any(d["entity_uuid"] == game_uuid for d in deltas)

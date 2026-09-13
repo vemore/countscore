@@ -8,6 +8,7 @@ Design choices (see .llmwiki/LlmProviders.md):
 - Names are XML-escaped (& < >) before insertion as defense-in-depth, even though the
   storage-level CHECK constraint already rejects most problematic characters.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -110,8 +111,7 @@ def build_system_prompt(
         "5. Réponds uniquement avec le commentaire, sans préambule du genre 'Voici "
         "le commentaire:'."
         if lang_key == "fr"
-        else
-        f"You are the play-by-play commentator for a tabletop game group.\n"
+        else f"You are the play-by-play commentator for a tabletop game group.\n"
         f"Response language: {language}.\n"
         f"{style_text}\n\n"
         "STRICT rules:\n"
@@ -184,9 +184,7 @@ def build_user_message(game: GameForPrompt) -> str:
     for _, scores in game.rounds:
         for pid, val in scores:
             totals[pid] = totals.get(pid, 0) + val
-    ranked = sorted(
-        totals.items(), key=lambda kv: (kv[1] if game.is_lowest_score_wins else -kv[1])
-    )
+    ranked = sorted(totals.items(), key=lambda kv: kv[1] if game.is_lowest_score_wins else -kv[1])
     lines.append("  <totals>")
     for rank, (pid, total) in enumerate(ranked, start=1):
         lines.append(f'    <total player_uuid="{pid}" final="{total}" rank="{rank}"/>')

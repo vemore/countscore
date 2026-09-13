@@ -1,4 +1,5 @@
 """Append-only change log — the source of truth for the delta-log sync."""
+
 from __future__ import annotations
 
 import uuid

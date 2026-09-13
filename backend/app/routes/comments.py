@@ -9,6 +9,7 @@ Two endpoints:
                                   rate-limit, budget, prompt caching. Wired to authed
                                   groups.
 """
+
 from __future__ import annotations
 
 import logging
@@ -69,6 +70,7 @@ def _enforce_ip_rate_limit(request: Request, response: Response) -> None:
 # MVP endpoint — stateless
 # ---------------------------------------------------------------------------
 
+
 @router.post("/comments/mvp", response_model=MvpCommentResponse)
 async def generate_mvp_comment(
     body: MvpGamePayload, request: Request, response: Response
@@ -88,9 +90,7 @@ async def generate_mvp_comment(
         game_type=body.game_type,
         is_lowest_score_wins=body.is_lowest_score_wins,
         players=[(p.uuid, p.name) for p in body.players],
-        rounds=[
-            (r.n, [(s.player_uuid, s.value) for s in r.scores]) for r in body.rounds
-        ],
+        rounds=[(r.n, [(s.player_uuid, s.value) for s in r.scores]) for r in body.rounds],
     )
     system_blocks = build_system_prompt(body.style, body.language, past_comments=[])
     user_message = build_user_message(game)
@@ -138,9 +138,7 @@ async def generate_zapzap_analysis(body: dict, request: Request, response: Respo
     try:
         user_message = build_zapzap_user_message(body)
     except (KeyError, TypeError) as e:
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_CONTENT, f"invalid payload: {e}"
-        ) from e
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, f"invalid payload: {e}") from e
 
     try:
         result = await provider.generate(ZAPZAP_SYSTEM_PROMPT, user_message)
@@ -214,6 +212,7 @@ async def _load_game_for_prompt(
     game_type_name = "Unknown"
     if game.game_type_id is not None:
         from app.models import GameType
+
         gt = await session.get(GameType, game.game_type_id)
         if gt is not None:
             game_type_name = gt.name

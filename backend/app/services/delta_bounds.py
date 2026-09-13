@@ -9,6 +9,7 @@ The bounds are deliberately generous. They are not gameplay rules; they exist so
 malformed or hostile payload is refused cleanly, as a ``rejected`` delta, at the API
 boundary rather than deep inside a transaction.
 """
+
 from __future__ import annotations
 
 from typing import Any

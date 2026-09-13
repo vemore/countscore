@@ -3,6 +3,7 @@
 The LLM provider is mocked — we exercise routing, validation, error mapping and
 the Markdown prompt construction, not the LLM itself.
 """
+
 from __future__ import annotations
 
 import re
@@ -77,6 +78,7 @@ def mock_provider(monkeypatch):
         )
     )
     from app.routes import comments as comments_route
+
     monkeypatch.setattr(comments_route, "get_llm_provider", lambda: fake)
     return fake
 
@@ -102,6 +104,7 @@ async def test_zapzap_missing_config_returns_503(client, monkeypatch):
     stub = AsyncMock()
     stub.available = False
     from app.routes import comments as comments_route
+
     monkeypatch.setattr(comments_route, "get_llm_provider", lambda: stub)
 
     r = await client.post("/comments/zapzap-analysis", json=_payload())
@@ -120,6 +123,7 @@ async def test_zapzap_upstream_error_returns_502(client, monkeypatch):
     fake.available = True
     fake.generate = AsyncMock(side_effect=RuntimeError("provider down"))
     from app.routes import comments as comments_route
+
     monkeypatch.setattr(comments_route, "get_llm_provider", lambda: fake)
 
     r = await client.post("/comments/zapzap-analysis", json=_payload())
@@ -136,6 +140,7 @@ async def test_zapzap_upstream_rate_limit_returns_503_with_retry_after(client, m
         side_effect=LLMRateLimitedError("mistral API rate-limited: Error code: 429")
     )
     from app.routes import comments as comments_route
+
     monkeypatch.setattr(comments_route, "get_llm_provider", lambda: fake)
 
     r = await client.post("/comments/zapzap-analysis", json=_payload())

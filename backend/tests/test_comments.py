@@ -3,6 +3,7 @@
 Anthropic API calls are mocked. The point is to exercise routing, validation,
 rate-limiting and budget logic — not to verify Claude itself.
 """
+
 from __future__ import annotations
 
 from unittest.mock import AsyncMock
@@ -27,6 +28,7 @@ def mock_anthropic(monkeypatch):
         )
     )
     from app.routes import comments as comments_route
+
     monkeypatch.setattr(comments_route, "get_anthropic_client", lambda: fake)
     return fake
 
@@ -76,10 +78,12 @@ async def test_mvp_validates_player_names(client, mock_anthropic):
 async def test_mvp_requires_anthropic_key(client, monkeypatch):
     """If ANTHROPIC_API_KEY missing, endpoint returns 503."""
     from app.services.anthropic_client import AnthropicClient
+
     stub = AnthropicClient.__new__(AnthropicClient)
     stub._client = None
     stub.model = "claude-haiku-4-5"
     from app.routes import comments as comments_route
+
     monkeypatch.setattr(comments_route, "get_anthropic_client", lambda: stub)
 
     payload = {

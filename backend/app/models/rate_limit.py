@@ -1,4 +1,5 @@
 """Sliding-window rate limit counters per device."""
+
 from __future__ import annotations
 
 import uuid

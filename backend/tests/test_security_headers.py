@@ -1,4 +1,5 @@
 """Tests for the security-header middleware and the body-size preconditions."""
+
 from __future__ import annotations
 
 import pytest

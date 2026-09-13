@@ -7,6 +7,7 @@ The user-message layout mirrors the mobile prototype (BedrockAnalysisService.bui
 a header block, a per-round score table with cumulative totals, and a per-player
 recent-history section.
 """
+
 from __future__ import annotations
 
 from typing import Any

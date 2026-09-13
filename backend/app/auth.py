@@ -9,6 +9,7 @@ Why argon2 over a faster hash: device_tokens are bearer credentials with high en
 a stolen DB dump impractical without measurable cost at request time (one verify ≈ 30ms
 with default params; we can tune ``time_cost`` if it becomes a bottleneck).
 """
+
 from __future__ import annotations
 
 import uuid

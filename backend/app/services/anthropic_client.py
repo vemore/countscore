@@ -9,6 +9,7 @@ We intentionally do NOT retry here: transient failures bubble up as 502 to the c
 they can show a user-facing retry button. Retrying silently on Anthropic 5xx can stack
 costs and mask outages.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -88,9 +89,7 @@ class AnthropicClient:
                 content = block.text
                 break
 
-        tokens_in = message.usage.input_tokens + (
-            message.usage.cache_read_input_tokens or 0
-        )
+        tokens_in = message.usage.input_tokens + (message.usage.cache_read_input_tokens or 0)
         tokens_out = message.usage.output_tokens
 
         return CommentResult(

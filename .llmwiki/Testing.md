@@ -113,7 +113,7 @@ toolchain table in [[MobileApp]] must move together.
 
 | Job | Steps |
 |---|---|
-| `backend` | `uv sync --locked --extra dev` → `ruff check .` → `mypy` → `pytest -v` |
+| `backend` | `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` |
 | `app` | `pub get` → `dart run build_runner build` → `analyze` → `test` → `build web --release` |
 | `android` | `pub get` → `dart run build_runner build` → `build apk --debug` |
 
@@ -134,8 +134,8 @@ committed file is not touched. It builds **debug** only — release signing read
 `android/key.properties`, absent in CI by design — and asserts afterwards that the Flutter
 tool injected the gitignored `gradlew` and `gradle-wrapper.jar`.
 
-Not in CI on purpose: the e2e suite (it calls the real production endpoint), the signed
-release APK/AAB (needs the keystore secrets), and `ruff format`.
+Not in CI on purpose: the e2e suite (it calls the real production endpoint) and the signed
+release APK/AAB (needs the keystore secrets).
 
 ### Gaps
 

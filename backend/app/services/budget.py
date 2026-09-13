@@ -8,6 +8,7 @@ more than one comment's worth.
 Reset: a monthly cron (or simply a check on each call) rolls the counter to 0
 when ``budget_resets_at`` has passed.
 """
+
 from __future__ import annotations
 
 import uuid
@@ -62,9 +63,7 @@ async def check_budget(session: AsyncSession, group_id: uuid.UUID) -> BudgetDeci
     )
 
 
-async def charge_budget(
-    session: AsyncSession, group_id: uuid.UUID, actual_cost_cents: int
-) -> None:
+async def charge_budget(session: AsyncSession, group_id: uuid.UUID, actual_cost_cents: int) -> None:
     """Increments the group's used_cents by the actual cost. Caller holds the tx."""
     group = await session.get(Group, group_id, with_for_update=True)
     if group is None:  # pragma: no cover — defensive

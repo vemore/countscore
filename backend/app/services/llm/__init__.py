@@ -1,4 +1,5 @@
 """Pluggable LLM providers for the ZapZap caustic analysis."""
+
 from __future__ import annotations
 
 from .base import LLMProvider, LLMRateLimitedError, LLMResult

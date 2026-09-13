@@ -1,4 +1,5 @@
 """Tests for the LLM provider abstraction: factory selection + OpenAI-compat client."""
+
 from __future__ import annotations
 
 from types import SimpleNamespace

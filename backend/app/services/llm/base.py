@@ -4,6 +4,7 @@ A provider takes a system prompt + a user message and returns generated text. Th
 prompt content is supplied by the caller and stays identical across providers — only
 the wire format (Llama-3 markers vs OpenAI chat messages) differs per implementation.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass

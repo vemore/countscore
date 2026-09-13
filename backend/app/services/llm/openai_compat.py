@@ -5,6 +5,7 @@ Mistral (https://api.mistral.ai/v1): only base_url, api_key and model differ. We
 only the common params (temperature, top_p, max_tokens) — Mistral rejects unknown
 fields and `max_completion_tokens` with HTTP 422.
 """
+
 from __future__ import annotations
 
 import openai
@@ -23,9 +24,7 @@ class OpenAICompatProvider:
     def __init__(self, *, label: str, base_url: str, api_key: str | None, model: str) -> None:
         self.label = label
         self.model = model
-        self._client = (
-            AsyncOpenAI(api_key=api_key, base_url=base_url) if api_key else None
-        )
+        self._client = AsyncOpenAI(api_key=api_key, base_url=base_url) if api_key else None
 
     @property
     def available(self) -> bool:
