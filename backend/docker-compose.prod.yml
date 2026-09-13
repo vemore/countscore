@@ -54,6 +54,12 @@ services:
       GROUP_RL_PER_HOUR: ${GROUP_RL_PER_HOUR:-10}
       HSTS_ENABLED: ${HSTS_ENABLED:-true}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      # Read by uvicorn itself: the only peer whose X-Forwarded-For it believes. Web Station
+      # reaches the API through the published port, so the peer is this network's gateway
+      # (pinned below). uvicorn then keeps the rightmost untrusted hop — the address Web
+      # Station appended. Never "*": uvicorn would take the leftmost hop, which the client
+      # writes, and every per-IP limit would be spoofable again (.llmwiki/Security.md).
+      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-172.28.87.1}
       # Sub-path the PWA is served under, e.g. /countscore. Empty = no PWA. Read by
       # scripts/deploy_web.sh too, so the build's --base-href cannot disagree with it.
       PWA_BASE_PATH: ${PWA_BASE_PATH:-}
@@ -103,6 +109,15 @@ services:
         echo 'Backup done: countscore_'$$ts'.sql.gz';
       done
       "
+
+networks:
+  default:
+    # Pinned so the gateway — the peer uvicorn trusts through FORWARDED_ALLOW_IPS — is a
+    # known address rather than whatever Docker picked when the network was created.
+    ipam:
+      config:
+        - subnet: 172.28.87.0/24
+          gateway: 172.28.87.1
 
 volumes:
   db_data:

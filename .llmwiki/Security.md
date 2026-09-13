@@ -19,14 +19,8 @@
 | SQL injection | SQLModel/asyncpg parameterised throughout; no string concatenation. |
 | CSRF | Stateless API with a bearer token, so not applicable. |
 | CORS | Explicit origin whitelist in `config.py`; `*` is rejected at startup. |
-| Rate limiting | Per device, per group budget, and per IP — including group create/join. |
-
-> **Status: Outdated** (2026-09-13) — the per-IP limit is not a defence: `client_ip()` in
-> `app/services/ip_rate_limiter.py` takes the *first* hop of `X-Forwarded-For`, which the
-> client chooses. A rotating header passed 20 group creations through a 3-per-minute limit.
-> Only the per-device and per-group-budget rows above hold. Fix proposed in `TODO.md`,
-> *Backend security review — 2026-09-13*.
-
+| Rate limiting | Per device, per group budget, and per IP — including group create/join. The IP is `request.client.host` only; uvicorn resolves it from `X-Forwarded-For` by trusting the compose network's gateway alone (`FORWARDED_ALLOW_IPS`, see [[Deployment]]), so the client cannot choose it. `backend/tests/test_ip_rate_limit.py`. |
+| ZapZap payload | `ZapZapPayload` (`app/schemas/comments.py`): 422 on a wrong shape or a count out of bounds (12 players, 200 rounds, 10 history entries); text clipped, player names filtered through the sync allow-list. |
 | Body size | `limit_body_size` middleware, 413 above `MAX_BODY_BYTES` (262144); 411 when `Content-Length` is absent on a write. |
 | WebSocket auth | Single-use ticket from `POST /sync/ws-ticket`, 60 s TTL. `app/services/ws_ticket.py`. |
 | WebSocket cost | One shared LISTEN connection for all streams (`app/services/notify.py`), at most `MAX_STREAMS_PER_DEVICE` (3) streams per device — a member can no longer exhaust Postgres connections. See [[Sync]]. |
@@ -86,18 +80,28 @@ proof-of-concept results are in `TODO.md`, *Backend security review — 2026-09-
   > with `not in group` unless owned by the caller's group (rounds and analyses through the
   > game, scores through round and game), and every parent a payload names must be in the
   > group (`parent_missing`). Regression tests: `backend/tests/test_sync_contract.py`.
-- **The per-IP limit is spoofable** through `X-Forwarded-For` — see the status block above.
+- **The per-IP limit is spoofable** through `X-Forwarded-For`: `client_ip()` took the
+  *first* hop, which the client writes. A rotating header passed 20 group creations
+  through a 3-per-minute limit.
+
+  > **Status: Outdated** (2026-09-13) — fixed by `fix/ip-spoofing-zapzap-payload`: the app
+  > reads no header, and uvicorn trusts only the pinned gateway `172.28.87.1`, keeping the
+  > hop Web Station appended. Regression tests in `backend/tests/test_ip_rate_limit.py`.
 - **The argon2 scan is a CPU denial of service, not only a scaling limit.** One verify
   (30 ms) per device row for any bearer token, valid or not, with no rate limit on 401s;
   combined with free group creation the single worker can be kept saturated.
 
   > **Status: Outdated** (2026-09-13) — fixed by `fix/sync-contract`: the token names its
   > device, so a request costs at most one verify, a junk token costs none, and failures
-  > are capped per IP (`backend/tests/test_auth.py`). The cap keys on `client_ip()`, so it
-  > stays spoofable until the `X-Forwarded-For` item is fixed.
+  > are capped per IP (`backend/tests/test_auth.py`), on the unspoofable `client_ip()`.
 - **`/comments/zapzap-analysis` takes an unvalidated `dict`.** No field bounds, no name
   allow-list, none of the five injection layers below apply to it — with the per-IP limit
   bypassable it is an open LLM proxy on the operator's key.
+
+  > **Status: Outdated** (2026-09-13) — fixed by `fix/ip-spoofing-zapzap-payload`: a
+  > `ZapZapPayload` schema bounds every count and clips every string; names go through the
+  > sync allow-list as a filter. The endpoint is still unauthenticated and unbudgeted —
+  > the per-IP limit is its only cost control. `backend/tests/test_zapzap_analysis.py`.
 
 
 - **Nothing pins the certificate or the identity of the configured backend.** The user

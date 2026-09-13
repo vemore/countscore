@@ -40,6 +40,12 @@ The system block is marked `cache_control: ephemeral`, so across a games evening
   `lib/services/bedrock_analysis_service.dart`, and names no real person.
   `build_zapzap_user_message(payload)` at line 70 builds the Markdown round table plus
   per-player history.
+- **Payload**: `ZapZapPayload` in `app/schemas/comments.py`. The app never bounded game
+  names, round comments or player names locally, so the schema does not refuse a game over
+  its text: strings are clipped (comment 200, names of games and types 64), player names
+  are filtered through `sanitize_player_name` (the sync allow-list as a filter, `Joueur N`
+  when nothing survives) and history is re-keyed to match. 422 only for a wrong shape or a
+  count out of bounds. The five layers below still do not apply to this path.
 - **Contract**: `app/services/llm/base.py` — `LLMProvider` Protocol (`available` and `model`
   properties, `async generate`), `LLMResult(content, model, tokens_in, tokens_out)`. Shared parameters:
   `DEFAULT_MAX_TOKENS = 8192`, `DEFAULT_TEMPERATURE = 0.4`, `DEFAULT_TOP_P = 0.9`.
@@ -100,7 +106,8 @@ text is local data a failed refresh never touched.
   atomic UPSERT + check, Postgres only, no Redis. `app/services/rate_limiter.py`.
 - Group: `monthly_budget_cents`, default 100¢ ≈ 830 Haiku comments/month.
 - IP: 5/min, 30/h (`IP_RL_PER_*`), `app/services/ip_rate_limiter.py`, **process-local
-  memory** on `X-Forwarded-For` — hence one uvicorn worker in production.
+  memory** — hence one uvicorn worker in production. Keyed on `request.client.host`, which
+  uvicorn resolves from `X-Forwarded-For` behind the trusted proxy only (see [[Deployment]]).
 
 ### Prompt-injection defence, 5 layers
 

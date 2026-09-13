@@ -19,7 +19,7 @@ proxying to `http://127.0.0.1:8087`. Caddy was removed and is no longer part of 
 
 | Service | Detail |
 |---|---|
-| `api` | FastAPI/uvicorn, **1 worker**. Image from the local NAS registry, `$REGISTRY/countscore:latest`. Port `127.0.0.1:8087:8000`. |
+| `api` | FastAPI/uvicorn, **1 worker**. Image from the local NAS registry, `$REGISTRY/countscore:latest`. Port `127.0.0.1:8087:8000`. Trusts `X-Forwarded-For` from `FORWARDED_ALLOW_IPS` only. |
 | `db` | Postgres 17-alpine, mounted volume. |
 | `db-backup` | Sidecar cron: `pg_dump → /backups`, 7-day rotation. |
 
@@ -33,6 +33,20 @@ cd backend
 ./scripts/deploy_nas.sh                    # build → push registry → up → alembic upgrade
 ./scripts/deploy_nas.sh --rollback <sha>   # roll back to a git sha
 ```
+
+**Client address.** Web Station reaches the API through the published port, so inside the
+container the peer is the compose network's gateway. The network is pinned to
+`172.28.87.0/24` so that gateway is a known `172.28.87.1`, and `FORWARDED_ALLOW_IPS` names
+it: uvicorn then keeps the rightmost untrusted `X-Forwarded-For` hop, the one Web Station
+appended. Never `*` — uvicorn would take the leftmost hop, which the client writes. The
+first deploy after the subnet was pinned needs `docker compose down && docker compose up -d`
+on the NAS (Compose will not change an existing network's IPAM), after checking that no
+other network there uses `172.28.87.0/24`. Verify from outside, since access logs
+are off (`uvicorn.access` at WARNING in `app/main.py`): four `POST /groups/join` with a bogus
+`share_token` and a different `X-Forwarded-For` each must answer `404, 404, 404, 429` — four
+`404`s mean the header is trusted again. Then, within the minute, one more from another network
+(a phone on mobile data) must answer `404`: a `429` there means every caller shares the
+gateway's bucket, i.e. `FORWARDED_ALLOW_IPS` does not match the peer.
 
 Dev uses `docker-compose.yml` (no TLS, local Postgres): `docker compose up -d` — db plus
 api on 8000 plus the backup sidecar.
@@ -101,6 +115,7 @@ scripts/deploy_web.sh --rollback   # swap pwa/current.prev back
 | `PWA_BASE_PATH` | Sub-path the api container serves the PWA under, e.g. `/countscore`. Empty = no PWA. Also read by `scripts/deploy_web.sh` for `--base-href` | `` |
 | `PWA_DIR` | Build folder inside the container. Compose pins it to `/srv/pwa/current` | `/srv/pwa/current` |
 | `LOG_LEVEL` | | — |
+| `FORWARDED_ALLOW_IPS` | Read by uvicorn, not by the app: the proxy hops whose `X-Forwarded-For` it believes. Never `*` | `172.28.87.1` in prod compose, uvicorn's `127.0.0.1` elsewhere |
 
 ## Decisions & History
 
