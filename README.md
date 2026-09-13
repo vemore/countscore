@@ -117,10 +117,11 @@ references and the build fails without the flag. It costs roughly 200 KB. See
 
 ### Publishing the PWA
 
-`scripts/deploy_web.sh` builds the web app for a sub-path and publishes it to a static
-folder over SSH (written for a Synology Web Station, usable with any host that serves a
-directory). The target is never in the repository: copy
-`scripts/deploy_web.env.example` to `scripts/deploy_web.env` and fill it in.
+The backend can serve the web app itself, under a sub-path of its own host (set
+`PWA_BASE_PATH`, e.g. `/countscore`, in the backend's `.env`) — same origin as the API, so no
+CORS setup. `scripts/deploy_web.sh` builds for that sub-path and publishes the build to the
+server over SSH; it reuses the backend's untracked `backend/scripts/deploy.env` and reads
+`PWA_BASE_PATH` from the server, so the deployment target never enters the repository.
 
 ```bash
 scripts/deploy_web.sh --dry-run   # build + checks, prints what it would run
@@ -165,6 +166,7 @@ your own, and your data stays on it. It exposes:
 | `/sync/push`, `/sync/pull` | Delta-log sync with row-level last-write-wins |
 | `/sync/stream` | WebSocket change signalling (Postgres `LISTEN/NOTIFY`) |
 | `/comments/*` | LLM game commentary, including the ZapZap analysis |
+| `$PWA_BASE_PATH/` | Optional: the web app itself, same origin as the API (off unless `PWA_BASE_PATH` is set) |
 
 **Current state, stated plainly:** the server side of groups and sync is implemented and
 tested, but **the Flutter client for it has not been written yet**. The app is therefore

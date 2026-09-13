@@ -1,16 +1,19 @@
 #!/bin/bash
-# Build and publish the CountScore PWA to a Synology Web Station folder, served
-# under a sub-path of an existing site.
+# Build the CountScore PWA and publish it to the NAS, where the backend container
+# serves it under PWA_BASE_PATH on the backend's own host — no Web Station change.
 #
-# The host and the folder are deliberately NOT in this file: they are one
-# person's infrastructure, and the repository is public. Put them in
-# scripts/deploy_web.env (gitignored) — copy scripts/deploy_web.env.example —
-# or export the same variables in the environment.
+# The target is the backend's: NAS_SSH, NAS_DEPLOY_DIR and PUBLIC_URL come from the
+# untracked backend/scripts/deploy.env (template: deploy.env.example), because this
+# repository is public. The build lands in $NAS_DEPLOY_DIR/pwa/current, which
+# docker-compose.prod.yml bind-mounts read-only into the api container.
+#
+# The sub-path is NOT configured here: it is read from PWA_BASE_PATH in the NAS .env,
+# the same value the backend mounts the PWA at, so the build's --base-href cannot
+# disagree with it. Export PWA_BASE_PATH to override (e.g. for --dry-run offline).
 #
 # Prereqs (one-time, see the web-deploy skill):
-#   - an SSH alias for the NAS, configured in ~/.ssh/config, whose user can
-#     write to the parent of $WEB_NAS_DIR
-#   - Web Station serving $WEB_NAS_DIR at $WEB_BASE_HREF over TLS
+#   - PWA_BASE_PATH set in $NAS_DEPLOY_DIR/.env, e.g. PWA_BASE_PATH=/countscore
+#   - the backend deployed with a docker-compose.prod.yml that has the pwa volume
 #
 # Usage:
 #   scripts/deploy_web.sh               # build + check + publish current tree
@@ -19,7 +22,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-CONFIG="$ROOT/scripts/deploy_web.env"
+CONFIG="$ROOT/backend/scripts/deploy.env"
 # shellcheck source=/dev/null
 [[ -f "$CONFIG" ]] && source "$CONFIG"
 
@@ -33,24 +36,17 @@ case "$MODE" in
 esac
 
 # Fail loudly and by name rather than deploying somewhere unintended.
-: "${NAS_SSH:?set NAS_SSH in scripts/deploy_web.env (see deploy_web.env.example)}"
-: "${WEB_NAS_DIR:?set WEB_NAS_DIR in scripts/deploy_web.env (see deploy_web.env.example)}"
-: "${WEB_BASE_HREF:?set WEB_BASE_HREF in scripts/deploy_web.env (see deploy_web.env.example)}"
-WEB_PUBLIC_URL="${WEB_PUBLIC_URL:-<your public URL>}"
+: "${NAS_SSH:?set NAS_SSH in backend/scripts/deploy.env (see deploy.env.example)}"
+: "${NAS_DEPLOY_DIR:?set NAS_DEPLOY_DIR in backend/scripts/deploy.env (see deploy.env.example)}"
+PUBLIC_URL="${PUBLIC_URL:-<your public URL>}"
 
 # The folder is interpolated into a remote shell and has rm -rf run on its
-# .new/.prev siblings: accept only a plain absolute path at least two levels deep.
-if [[ ! "$WEB_NAS_DIR" =~ ^/[A-Za-z0-9._-]+(/[A-Za-z0-9._-]+)+$ ]]; then
-    echo "WEB_NAS_DIR must be an absolute path, two levels deep or more, of [A-Za-z0-9._-] segments with no trailing slash: '$WEB_NAS_DIR'" >&2
+# .new/.prev siblings: accept only a plain absolute path.
+if [[ ! "$NAS_DEPLOY_DIR" =~ ^(/[A-Za-z0-9_-][A-Za-z0-9._-]*)+$ ]]; then
+    echo "NAS_DEPLOY_DIR must be a plain absolute path with no trailing slash: '$NAS_DEPLOY_DIR'" >&2
     exit 1
 fi
-# Flutter rejects a base href that does not start and end with a slash.
-if [[ ! "$WEB_BASE_HREF" =~ ^/([A-Za-z0-9._-]+/)*$ ]]; then
-    echo "WEB_BASE_HREF must start and end with '/', e.g. /countscore/: '$WEB_BASE_HREF'" >&2
-    exit 1
-fi
-
-D="$WEB_NAS_DIR"
+D="$NAS_DEPLOY_DIR/pwa/current"
 
 remote() {
     if [[ "$MODE" == "--dry-run" ]]; then
@@ -66,15 +62,29 @@ if [[ "$MODE" == "--rollback" ]]; then
     ssh "$NAS_SSH" \
         "set -e; test -d '$D.prev' || { echo 'no previous release at $D.prev' >&2; exit 1; }; \
          rm -rf '$D.failed'; mv '$D' '$D.failed'; mv '$D.prev' '$D'; mv '$D.failed' '$D.prev'"
-    echo "==> Rolled back. Check $WEB_PUBLIC_URL"
+    echo "==> Rolled back. No container restart needed: the backend reads the folder per request."
     exit 0
+fi
+
+if [[ -z "${PWA_BASE_PATH:-}" ]]; then
+    echo "==> Reading PWA_BASE_PATH from $NAS_SSH:$NAS_DEPLOY_DIR/.env"
+    PWA_BASE_PATH="$(ssh "$NAS_SSH" "sed -n 's/^PWA_BASE_PATH=//p' '$NAS_DEPLOY_DIR/.env'" \
+        | tail -n 1 | tr -d "\r\"'")"
+fi
+# Same rule as the backend's validator (app/config.py), so a value the backend would
+# refuse at startup is refused here before a build is wasted on it.
+if [[ ! "$PWA_BASE_PATH" =~ ^(/[A-Za-z0-9_-][A-Za-z0-9._-]*)+$ ]]; then
+    echo "PWA_BASE_PATH is unset or malformed ('$PWA_BASE_PATH')." >&2
+    echo "Set it in $NAS_DEPLOY_DIR/.env, e.g. PWA_BASE_PATH=/countscore, and recreate the" >&2
+    echo "api container (see the backend-deploy skill, 'Changing one variable in place')." >&2
+    exit 1
 fi
 
 cd "$ROOT"
 
-echo "==> Building the PWA for $WEB_BASE_HREF"
+echo "==> Building the PWA for $PWA_BASE_PATH/"
 # No BACKEND_URL: the backend is a user setting, never baked into a published build.
-flutter build web --release --no-tree-shake-icons --base-href="$WEB_BASE_HREF"
+flutter build web --release --no-tree-shake-icons --base-href="$PWA_BASE_PATH/"
 
 echo "==> Checking build/web"
 # Everything under web/ is published. A stray note or instructions file must
@@ -93,7 +103,7 @@ for f in index.html main.dart.js sqlite3.wasm drift_worker.js; do
 done
 
 if [[ "$MODE" == "--dry-run" ]]; then
-    echo "==> Dry run: would stream build/web to $NAS_SSH and run:"
+    echo "==> Dry run: nothing is sent; these are the remote commands"
 fi
 
 echo "==> Uploading to $NAS_SSH:$D.new (scp is blocked, so we pipe a tarball via ssh)"
@@ -112,6 +122,7 @@ if [[ "$MODE" == "--dry-run" ]]; then
     exit 0
 fi
 
-echo "==> Published $(git rev-parse --short HEAD) to $WEB_PUBLIC_URL"
-echo "    Check that sqlite3.wasm is served as application/wasm:"
-echo "      curl -sI $WEB_PUBLIC_URL/sqlite3.wasm | grep -i content-type"
+echo "==> Published $(git rev-parse --short HEAD) to $PUBLIC_URL$PWA_BASE_PATH/"
+echo "    Verify:"
+echo "      curl -sI $PUBLIC_URL$PWA_BASE_PATH/ | grep -i -e '^HTTP' -e content-security-policy"
+echo "      curl -sI $PUBLIC_URL$PWA_BASE_PATH/sqlite3.wasm | grep -i content-type"

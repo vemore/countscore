@@ -47,26 +47,30 @@ hosting config. Only the backend container is covered. See [[Web]].
 
 > **Status: Outdated** (2026-09-13) — the PWA now has one; see *The PWA* below.
 
-### The PWA — `scripts/deploy_web.sh`
+### The PWA — served by the `api` container, deployed by `scripts/deploy_web.sh`
 
-Static files in a Synology **Web Station** folder, served under a **sub-path** of an
-existing site, over the same Let's Encrypt TLS. Procedure: the `web-deploy` skill.
+The PWA lives on the **backend's own host**, under the sub-path `PWA_BASE_PATH` (e.g.
+`/countscore`). Web Station is untouched: its portal already proxies the whole host to
+`127.0.0.1:8087`, and FastAPI answers both the API and the static build. Same origin, so
+the PWA needs no `CORS_ORIGINS` entry and there is no mixed-content case. Procedure: the
+`web-deploy` skill. Route behaviour: [[Api]]; CSP: [[Security]].
 
-The target is untracked, like the backend's: `scripts/deploy_web.env` (template
-`scripts/deploy_web.env.example`) names `NAS_SSH`, `WEB_NAS_DIR`, `WEB_BASE_HREF` and
-`WEB_PUBLIC_URL`. The script builds with `--base-href=$WEB_BASE_HREF`, refuses a build that
-contains any `.md` file or lacks `sqlite3.wasm` / `drift_worker.js`, streams a tarball over
-ssh into `$WEB_NAS_DIR.new`, and swaps it in, keeping one `$WEB_NAS_DIR.prev`.
-`--rollback` swaps back; `--dry-run` builds and prints the remote commands.
+On the NAS the build lives in `$NAS_DEPLOY_DIR/pwa/current`, bind-mounted **read-only** as
+`/srv/pwa` (the parent — see Decisions) and served from `PWA_DIR=/srv/pwa/current`.
+`deploy_nas.sh` creates `pwa/` as the SSH user before `docker compose up`.
+
+`scripts/deploy_web.sh` has no config of its own: `NAS_SSH` and `NAS_DEPLOY_DIR` come from
+`backend/scripts/deploy.env`, and **`PWA_BASE_PATH` is read over ssh from the NAS `.env`**,
+the value the container mounts at, so the build's `--base-href` cannot disagree with it.
+It refuses a build containing any `.md` file or lacking `sqlite3.wasm` / `drift_worker.js`,
+streams a tarball into `pwa/current.new`, and renames it into place, keeping one
+`pwa/current.prev`. No container restart: the folder is read per request.
 
 ```bash
-scripts/deploy_web.sh --dry-run
+scripts/deploy_web.sh --dry-run    # build + checks, prints the remote commands
 scripts/deploy_web.sh
-scripts/deploy_web.sh --rollback
+scripts/deploy_web.sh --rollback   # swap pwa/current.prev back
 ```
-
-The Web Station side (which site, which sub-path maps to the folder) is configured by hand
-in DSM and is not recorded here yet.
 
 ### Environment variables
 
@@ -91,6 +95,8 @@ in DSM and is not recorded here yet.
 | `GROUP_RL_PER_MINUTE` / `GROUP_RL_PER_HOUR` | IP rate limit on group create/join, own bucket | `3` / `10` |
 | `HSTS_ENABLED` | Send `Strict-Transport-Security`. `true` in prod, `false` for local http | `false` |
 | `MAX_BODY_BYTES` | Request body cap (413 above) | `262144` |
+| `PWA_BASE_PATH` | Sub-path the api container serves the PWA under, e.g. `/countscore`. Empty = no PWA. Also read by `scripts/deploy_web.sh` for `--base-href` | `` |
+| `PWA_DIR` | Build folder inside the container. Compose pins it to `/srv/pwa/current` | `/srv/pwa/current` |
 | `LOG_LEVEL` | | — |
 
 ## Decisions & History
@@ -115,14 +121,27 @@ in DSM and is not recorded here yet.
   on every local `docker compose up`. It now uses `env_file: .env`, as production effectively
   does, and overrides only `DATABASE_URL` to reach the `db` host. A hand-kept list drifted
   once; a file cannot.
-- **The PWA got a deploy script, not a container (2026-09-13).** It is static files; an
-  nginx image would add a registry push and a port for nothing Web Station does not already
-  do. It is served under a **sub-path** by the owner's choice, which is why `--base-href` is
-  a required setting rather than a default of `/`. Upload is a tarball over ssh because
-  `scp` is blocked on the NAS — the same constraint `deploy_nas.sh` works around — and it
-  lands in a sibling folder that is renamed into place, so a half-copied release is never
-  served and one rollback is a rename. The `.md` refusal exists because `web/CLAUDE.md` was
-  published with every build until the same day; it moved to `.claude/rules/web.md`.
+- **The PWA is served by the backend, not by Web Station (2026-09-13).** The owner wanted
+  it on the backend's subdomain. A Web Station reverse-proxy portal maps a whole hostname
+  to one destination, with no per-path rule in the UI, and a second portal on the same
+  hostname and port is not allowed — so `/countscore/` on that host could only reach
+  FastAPI. The alternatives were a hand-written nginx `location` in the files Web Station
+  generates (root-only, and liable to vanish on a DSM update or the next portal edit, on a
+  NAS with no alerting) or moving the API under a path (breaking every configured app).
+  Serving static files from the one-worker uvicorn costs little for a handful of family
+  users, and buys same-origin: no CORS entry, no mixed content. A first version of this
+  change targeted a separate Web Station folder with its own untracked config; it was
+  replaced before merge.
+- **The build is mounted by its parent folder, and swapped by rename.** A bind mount pins
+  the inode of the directory it names: mounting `pwa/current` itself would keep serving the
+  old release after `mv`. Mounting `pwa/` makes a rename visible at once, so a half-copied
+  release is never served and a rollback is two renames. Upload is a tarball over ssh
+  because `scp` is blocked on the NAS — the constraint `deploy_nas.sh` already works around.
+- **`PWA_BASE_PATH` has a single home, the NAS `.env`.** The container needs it to mount
+  and the build needs it for `--base-href`; a copy in `deploy.env` would be a second value
+  free to drift, and a mismatch is a blank page. The deploy script reads it over ssh.
+- **The `.md` refusal exists because `web/CLAUDE.md` was published** with every build until
+  the same day; it moved to `.claude/rules/web.md`.
 - **Backups are `pg_dump` on a cron sidecar with 7-day rotation**, not a managed service.
   The dataset is small and the recovery story is "copy a file back".
 - **`LLM_PROVIDER` defaults to `bedrock` in code**, but production has been run on
