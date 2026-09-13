@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import unicodedata
 import uuid
+from collections.abc import Iterator
 from datetime import UTC, datetime
 
 from sqlalchemy import BigInteger, CheckConstraint, Column, DateTime, ForeignKey, Index
@@ -16,16 +18,24 @@ def _utcnow() -> datetime:
 
 
 # Player name allow-list — prevents prompt injection via player names.
-# Permits Unicode letters/numbers, spaces, hyphens, apostrophes, periods.
-# Length 1-32 enforced separately (and by ck_player_name_length below).
+# Permits Unicode letters (each followed by any combining marks), numbers, spaces,
+# hyphens, apostrophes, periods. Length 1-32 enforced separately (and by
+# ck_player_name_length below).
 #
-# Kept as the written spec: ``\p{L}``/``\p{N}`` need the third-party ``regex`` module,
-# which we do not depend on, so ``is_valid_player_name`` implements the same rule with
-# the stdlib. Change both together.
-PLAYER_NAME_REGEX = r"^[\p{L}\p{N} \-'.]+$"
+# The marks are what make "रवि" (Devanagari vowel sign), "محمَّد" (Arabic harakat) or a
+# decomposed "Nguyễn" a name: none of them is a letter on its own, so a mark is accepted
+# only where it combines with one — never at the start, nor after a digit or a space.
+#
+# Kept as the written spec: ``\p{L}``/``\p{M}``/``\p{N}`` need the third-party ``regex``
+# module, which we do not depend on, so ``is_valid_player_name`` implements the same rule
+# with the stdlib. The app mirrors it (``lib/services/sync/sync_ids.dart``,
+# ``isSyncablePlayerName``). Change all three together.
+PLAYER_NAME_REGEX = r"^(?:\p{L}\p{M}*|\p{N}|[ \-'.])+$"
 
 PLAYER_NAME_PUNCTUATION = frozenset(" -'.")
 PLAYER_NAME_MAX_LENGTH = 32
+
+_MARK_CATEGORIES = frozenset({"Mn", "Mc", "Me"})
 
 
 def is_valid_player_name(name: str) -> bool:
@@ -36,7 +46,7 @@ def is_valid_player_name(name: str) -> bool:
     """
     if not 1 <= len(name) <= PLAYER_NAME_MAX_LENGTH:
         return False
-    return all(_is_name_char(c) for c in name)
+    return all(kept for _, kept in _judged_chars(name))
 
 
 def sanitize_player_name(name: str) -> str:
@@ -45,12 +55,24 @@ def sanitize_player_name(name: str) -> str:
     For paths that must not refuse a game over a name the app never validated locally
     (the ZapZap prompt). May return an empty string; the caller picks a fallback.
     """
-    kept = "".join(c for c in name if _is_name_char(c))
+    kept = "".join(c for c, ok in _judged_chars(name) if ok)
     return " ".join(kept.split())[:PLAYER_NAME_MAX_LENGTH].strip()
 
 
-def _is_name_char(c: str) -> bool:
-    return c.isalpha() or c.isdigit() or c in PLAYER_NAME_PUNCTUATION
+def _judged_chars(name: str) -> Iterator[tuple[str, bool]]:
+    """Each character, with whether the rule accepts it where it stands.
+
+    A mark is judged by what precedes it: accepted after a letter or after a mark that
+    was itself accepted (stacked marks, as in "अँ"), refused anywhere else. A refused
+    character breaks the chain, so a mark after a dropped emoji is dropped too.
+    """
+    after_letter = False
+    for c in name:
+        if unicodedata.category(c) in _MARK_CATEGORIES:
+            yield c, after_letter
+            continue
+        after_letter = c.isalpha()
+        yield c, after_letter or c.isdigit() or c in PLAYER_NAME_PUNCTUATION
 
 
 class Player(SQLModel, table=True):

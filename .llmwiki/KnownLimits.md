@@ -25,8 +25,6 @@
   - *Player deletions stay local*: removing a player from this device's list does not remove
     them from the group; their memberships in shared games are tombstoned and do sync.
   - *A pulled rename onto a name this device uses for another player* keeps the local name.
-  - *Names with combining marks* (Devanagari vowel signs, Arabic diacritics) fail the
-    server's `isalpha` allow-list, so a game with such a player cannot be shared (`TODO.md`).
 - **No in-app way to discover or install a backend.** Settings takes a URL and tests it;
   finding a server, running `backend/` and getting TLS onto it are left to the user, and
   the app says so in one sentence rather than walking them through it.

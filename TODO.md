@@ -17,20 +17,6 @@ in order of value: a `GET /groups/me/devices` endpoint (id, label, joined, last 
 device list in Settings → Group with a revoke action; then group settings. Per-field LWW
 (`field_versions`, see `.llmwiki/Sync.md`) belongs to the same "v2 of groups" conversation.
 
-## The server's player-name rule refuses names with combining marks
-
-**Status:** open — noted 2026-09-13, while mirroring the rule on the client.
-
-`is_valid_player_name` (`backend/app/models/player.py`) accepts a character when
-`str.isalpha()` or `str.isdigit()` is true. Combining marks — Devanagari vowel signs such as
-the `ि` in "रवि", Arabic harakat, some Vietnamese forms written with combining accents — are
-categories Mn/Mc, for which `isalpha()` is false. A Hindi user's player "रवि" therefore
-cannot be shared with a group, although Hindi is one of the app's ten languages. The client
-mirrors the rule (`lib/services/sync/sync_ids.dart`, `isSyncablePlayerName`) so the user is
-told before sharing rather than meeting a rejected delta. Proposal: accept `Mn`/`Mc` after a
-letter (`unicodedata.category`), keep refusing everything the rule exists for (`<`, `>`,
-braces, control characters), and change both sides in one PR with a test per script.
-
 ## The two-device sync test does not run in CI
 
 **Status:** open — noted 2026-09-13, while writing `test/sync/sync_two_devices_test.dart`.

@@ -36,21 +36,13 @@ List<int> _uuidBytes(String uuid) {
   ];
 }
 
-/// Player names the server accepts: 1–32 characters, each a letter, a digit, a
-/// space, `-`, `'` or `.` (`backend/app/models/player.py`, `is_valid_player_name`).
+/// Player names the server accepts: 1–32 characters, each a letter (with any
+/// combining marks that follow it — the vowel signs of "रवि", Arabic harakat), a
+/// digit, a space, `-`, `'` or `.` (`backend/app/models/player.py`,
+/// `is_valid_player_name`). A mark with no letter to combine with is refused.
 /// Checked before a game is shared, so the user hears it from the app rather than
 /// as a rejected delta.
-bool isSyncablePlayerName(String name) {
-  if (name.isEmpty || name.length > 32) return false;
-  for (final rune in name.runes) {
-    final c = String.fromCharCode(rune);
-    if (" -'.".contains(c)) continue;
-    if (_isLetterOrDigit(c)) continue;
-    return false;
-  }
-  return true;
-}
+bool isSyncablePlayerName(String name) =>
+    name.isNotEmpty && name.length <= 32 && _playerName.hasMatch(name);
 
-final _letterOrDigit = RegExp(r'^[\p{L}\p{N}]$', unicode: true);
-
-bool _isLetterOrDigit(String c) => _letterOrDigit.hasMatch(c);
+final _playerName = RegExp(r"^(?:\p{L}\p{M}*|\p{N}|[ \-'.])+$", unicode: true);

@@ -45,6 +45,27 @@ two now disagree about what a failure looks like. The fix is `colorScheme.error`
 across the six `_snack` call sites. Not folded into the header fix because it changes the look
 of every settings confirmation, not just a label colour.
 
+## The server's player-name rule refuses names with combining marks
+
+**Status:** done (2026-09-13) — closed by `fix/player-name-combining-marks`. The rule is now
+`^(?:\p{L}\p{M}*|\p{N}|[ \-'.])+$` on both sides: a combining mark is accepted right after a
+letter (or a mark accepted before it) and refused anywhere else. `sanitize_player_name`, which
+filters names for the ZapZap prompt, follows the same walk, so "रवि" no longer reaches the
+prompt as "रव". Tests per script in `backend/tests/test_sync.py` and
+`test/sync/sync_ids_test.dart`.
+
+Noted 2026-09-13, while mirroring the rule on the client.
+
+`is_valid_player_name` (`backend/app/models/player.py`) accepts a character when
+`str.isalpha()` or `str.isdigit()` is true. Combining marks — Devanagari vowel signs such as
+the `ि` in "रवि", Arabic harakat, some Vietnamese forms written with combining accents — are
+categories Mn/Mc, for which `isalpha()` is false. A Hindi user's player "रवि" therefore
+cannot be shared with a group, although Hindi is one of the app's ten languages. The client
+mirrors the rule (`lib/services/sync/sync_ids.dart`, `isSyncablePlayerName`) so the user is
+told before sharing rather than meeting a rejected delta. Proposal: accept `Mn`/`Mc` after a
+letter (`unicodedata.category`), keep refusing everything the rule exists for (`<`, `>`,
+braces, control characters), and change both sides in one PR with a test per script.
+
 ## Backend review: any member may raise the group's LLM budget to 10 000 ¢ a month
 
 **Status:** done (2026-09-13) — closed by `fix/budget-ws-revocation`. `MAX_BUDGET_CENTS`
