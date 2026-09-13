@@ -394,5 +394,85 @@
   "serverUrlSaved": "Server saved",
   "analysisRequiresBackend": "This analysis needs a server. Configure one in the settings.",
   "openSettings": "Open settings",
-  "serverUrlCleared": "Server cleared"
+  "serverUrlCleared": "Server cleared",
+
+  "groupSection": "Group",
+
+  "groupDescription": "Share games with the other devices in your group. Shared games, their players, scores, comments and analyses are sent to your server; other games stay on this device.",
+
+  "groupNeedsServer": "Set up a server above first.",
+
+  "groupCreate": "Create a group",
+
+  "groupJoin": "Join a group",
+
+  "groupNameLabel": "Group name",
+
+  "deviceLabelLabel": "Name of this device",
+
+  "deviceLabelDefault": "My device",
+
+  "shareTokenLabel": "Invite code",
+
+  "shareTokenHint": "Paste the code a group member sent you",
+
+  "groupCurrent": "Group: {name}",
+
+  "shareTokenExplain": "Send this code to the devices that should join the group. Anyone who has it can join.",
+
+  "shareTokenCopy": "Copy code",
+
+  "shareTokenCopied": "Code copied",
+
+  "shareTokenRotate": "New code",
+
+  "shareTokenRotateConfirm": "The old code will no longer let anyone join. Devices already in the group are not affected.",
+
+  "groupLeave": "Leave group",
+
+  "groupLeaveConfirm": "This device leaves the group. Shared games stay on this device but will no longer sync.",
+
+  "groupLeft": "Left the group",
+
+  "groupJoined": "Joined the group",
+
+  "clearServerLeavesGroup": "Clearing the server leaves the group. Shared games stay on this device.",
+
+  "syncNow": "Sync now",
+
+  "syncStatusIdle": "Synced at {time}",
+
+  "syncStatusSyncing": "Syncing…",
+
+  "syncStatusOffline": "Server unreachable — changes will be sent later",
+
+  "syncStatusUnauthorized": "The server no longer accepts this device. Leave the group, then join it again.",
+
+  "syncStatusError": "Server error during sync",
+
+  "syncPending": "{count, plural, =1{1 change waiting} other{{count} changes waiting}}",
+
+  "syncRejected": "{count, plural, =1{1 change refused by the server} other{{count} changes refused by the server}}",
+
+  "groupErrorUnknownToken": "Unknown or replaced invite code",
+
+  "groupErrorRateLimited": "Too many attempts. Try again in a minute.",
+
+  "groupErrorUnreachable": "Server unreachable",
+
+  "groupErrorServer": "Server error",
+
+  "shareWithGroup": "Share with the group",
+
+  "shareWithGroupSubtitle": "Devices in {name} will see and edit this game",
+
+  "shareGameConfirm": "The game, its players, scores and comments will be sent to {name}. Sharing cannot be undone.",
+
+  "gameSharedDone": "Game shared with the group",
+
+  "gameSharedBadge": "Shared game",
+
+  "invalidPlayerNamesForSync": "These names cannot be shared: {names}. Use letters, digits, spaces, hyphens, apostrophes or periods (32 characters at most).",
+
+  "roundRenumbered": "That round had already been entered on another device, so it became round {number}."
 }

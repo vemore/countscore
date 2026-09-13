@@ -609,4 +609,161 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get serverUrlCleared => 'सर्वर हटा दिया गया';
+
+  @override
+  String get groupSection => 'समूह';
+
+  @override
+  String get groupDescription =>
+      'समूह के अन्य उपकरणों के साथ खेल साझा करें। साझा किए गए खेल, उनके खिलाड़ी, स्कोर, टिप्पणियाँ और विश्लेषण आपके सर्वर पर भेजे जाते हैं; बाकी खेल इसी उपकरण पर रहते हैं।';
+
+  @override
+  String get groupNeedsServer => 'पहले ऊपर एक सर्वर सेट करें।';
+
+  @override
+  String get groupCreate => 'समूह बनाएँ';
+
+  @override
+  String get groupJoin => 'समूह में शामिल हों';
+
+  @override
+  String get groupNameLabel => 'समूह का नाम';
+
+  @override
+  String get deviceLabelLabel => 'इस उपकरण का नाम';
+
+  @override
+  String get deviceLabelDefault => 'मेरा उपकरण';
+
+  @override
+  String get shareTokenLabel => 'आमंत्रण कोड';
+
+  @override
+  String get shareTokenHint => 'समूह के किसी सदस्य से मिला कोड चिपकाएँ';
+
+  @override
+  String groupCurrent(String name) {
+    return 'समूह: $name';
+  }
+
+  @override
+  String get shareTokenExplain =>
+      'यह कोड उन उपकरणों को भेजें जिन्हें समूह में शामिल होना है। जिसके पास यह कोड है, वह शामिल हो सकता है।';
+
+  @override
+  String get shareTokenCopy => 'कोड कॉपी करें';
+
+  @override
+  String get shareTokenCopied => 'कोड कॉपी हो गया';
+
+  @override
+  String get shareTokenRotate => 'नया कोड';
+
+  @override
+  String get shareTokenRotateConfirm =>
+      'पुराने कोड से अब कोई शामिल नहीं हो पाएगा। जो उपकरण पहले से समूह में हैं, उन पर असर नहीं पड़ेगा।';
+
+  @override
+  String get groupLeave => 'समूह छोड़ें';
+
+  @override
+  String get groupLeaveConfirm =>
+      'यह उपकरण समूह छोड़ देगा। साझा किए गए खेल इसी उपकरण पर रहेंगे, पर अब सिंक नहीं होंगे।';
+
+  @override
+  String get groupLeft => 'समूह छोड़ दिया';
+
+  @override
+  String get groupJoined => 'समूह में शामिल हो गए';
+
+  @override
+  String get clearServerLeavesGroup =>
+      'सर्वर हटाने से समूह छूट जाएगा। साझा किए गए खेल इसी उपकरण पर रहेंगे।';
+
+  @override
+  String get syncNow => 'अभी सिंक करें';
+
+  @override
+  String syncStatusIdle(String time) {
+    return '$time पर सिंक हुआ';
+  }
+
+  @override
+  String get syncStatusSyncing => 'सिंक हो रहा है…';
+
+  @override
+  String get syncStatusOffline =>
+      'सर्वर तक पहुँच नहीं — बदलाव बाद में भेजे जाएँगे';
+
+  @override
+  String get syncStatusUnauthorized =>
+      'सर्वर अब इस उपकरण को स्वीकार नहीं करता। समूह छोड़ें, फिर दोबारा शामिल हों।';
+
+  @override
+  String get syncStatusError => 'सिंक के दौरान सर्वर त्रुटि';
+
+  @override
+  String syncPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count बदलाव बाकी हैं',
+      one: '$count बदलाव बाकी है',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncRejected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'सर्वर ने $count बदलाव अस्वीकार किए',
+      one: 'सर्वर ने $count बदलाव अस्वीकार किया',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupErrorUnknownToken =>
+      'आमंत्रण कोड अज्ञात है या बदल दिया गया है';
+
+  @override
+  String get groupErrorRateLimited =>
+      'बहुत अधिक प्रयास। एक मिनट बाद फिर कोशिश करें।';
+
+  @override
+  String get groupErrorUnreachable => 'सर्वर तक पहुँच नहीं';
+
+  @override
+  String get groupErrorServer => 'सर्वर त्रुटि';
+
+  @override
+  String get shareWithGroup => 'समूह के साथ साझा करें';
+
+  @override
+  String shareWithGroupSubtitle(String name) {
+    return '$name के उपकरण यह खेल देख और बदल सकेंगे';
+  }
+
+  @override
+  String shareGameConfirm(String name) {
+    return 'यह खेल, इसके खिलाड़ी, स्कोर और टिप्पणियाँ $name को भेजे जाएँगे। साझा करना वापस नहीं लिया जा सकता।';
+  }
+
+  @override
+  String get gameSharedDone => 'खेल समूह के साथ साझा किया गया';
+
+  @override
+  String get gameSharedBadge => 'साझा खेल';
+
+  @override
+  String invalidPlayerNamesForSync(String names) {
+    return 'ये नाम साझा नहीं किए जा सकते: $names। अक्षर, अंक, स्पेस, हाइफ़न, एपॉस्ट्रॉफ़ी या पूर्णविराम का ही उपयोग करें (अधिकतम 32 वर्ण)।';
+  }
+
+  @override
+  String roundRenumbered(int number) {
+    return 'यह राउंड किसी दूसरे उपकरण पर पहले ही दर्ज हो चुका था, इसलिए यह राउंड $number बन गया।';
+  }
 }

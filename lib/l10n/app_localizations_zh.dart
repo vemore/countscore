@@ -594,4 +594,151 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get serverUrlCleared => '服务器已清除';
+
+  @override
+  String get groupSection => '群组';
+
+  @override
+  String get groupDescription =>
+      '与群组中的其他设备共享对局。共享的对局及其玩家、分数、评论和分析会发送到您的服务器；其他对局只保留在本设备上。';
+
+  @override
+  String get groupNeedsServer => '请先在上方配置服务器。';
+
+  @override
+  String get groupCreate => '创建群组';
+
+  @override
+  String get groupJoin => '加入群组';
+
+  @override
+  String get groupNameLabel => '群组名称';
+
+  @override
+  String get deviceLabelLabel => '本设备名称';
+
+  @override
+  String get deviceLabelDefault => '我的设备';
+
+  @override
+  String get shareTokenLabel => '邀请码';
+
+  @override
+  String get shareTokenHint => '粘贴群组成员发给您的邀请码';
+
+  @override
+  String groupCurrent(String name) {
+    return '群组：$name';
+  }
+
+  @override
+  String get shareTokenExplain => '把此邀请码发给要加入群组的设备。任何拿到它的人都可以加入。';
+
+  @override
+  String get shareTokenCopy => '复制邀请码';
+
+  @override
+  String get shareTokenCopied => '已复制邀请码';
+
+  @override
+  String get shareTokenRotate => '更换邀请码';
+
+  @override
+  String get shareTokenRotateConfirm => '旧邀请码将无法再用于加入群组。已在群组中的设备不受影响。';
+
+  @override
+  String get groupLeave => '退出群组';
+
+  @override
+  String get groupLeaveConfirm => '本设备将退出群组。共享的对局仍保留在本设备上，但不再同步。';
+
+  @override
+  String get groupLeft => '已退出群组';
+
+  @override
+  String get groupJoined => '已加入群组';
+
+  @override
+  String get clearServerLeavesGroup => '清除服务器会退出群组。共享的对局仍保留在本设备上。';
+
+  @override
+  String get syncNow => '立即同步';
+
+  @override
+  String syncStatusIdle(String time) {
+    return '已于 $time 同步';
+  }
+
+  @override
+  String get syncStatusSyncing => '正在同步…';
+
+  @override
+  String get syncStatusOffline => '无法连接服务器——更改将稍后发送';
+
+  @override
+  String get syncStatusUnauthorized => '服务器不再接受本设备。请退出群组后重新加入。';
+
+  @override
+  String get syncStatusError => '同步时服务器出错';
+
+  @override
+  String syncPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 项更改待发送',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncRejected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '服务器拒绝了 $count 项更改',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupErrorUnknownToken => '邀请码无效或已被更换';
+
+  @override
+  String get groupErrorRateLimited => '尝试次数过多，请一分钟后再试。';
+
+  @override
+  String get groupErrorUnreachable => '无法连接服务器';
+
+  @override
+  String get groupErrorServer => '服务器错误';
+
+  @override
+  String get shareWithGroup => '与群组共享';
+
+  @override
+  String shareWithGroupSubtitle(String name) {
+    return '$name 中的设备将能查看和编辑此对局';
+  }
+
+  @override
+  String shareGameConfirm(String name) {
+    return '此对局及其玩家、分数和评论将发送到 $name。共享后无法撤销。';
+  }
+
+  @override
+  String get gameSharedDone => '对局已与群组共享';
+
+  @override
+  String get gameSharedBadge => '共享对局';
+
+  @override
+  String invalidPlayerNamesForSync(String names) {
+    return '以下名称无法共享：$names。请只使用字母、数字、空格、连字符、撇号或句点（最多 32 个字符）。';
+  }
+
+  @override
+  String roundRenumbered(int number) {
+    return '该局已在另一台设备上录入，因此改为第 $number 局。';
+  }
 }

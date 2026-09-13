@@ -25,7 +25,7 @@ All three remaining roles are inside `lib/services/database_service.dart` (1468 
 - `lib/services/drift/tables.dart` (162 l.) — 9 table declarations mirroring the v9 sqflite
   schema, using `.named()` to keep the legacy mixed-case column names (`gameTypeId`,
   `orderIndex`, `created_at`).
-- `lib/services/drift/database.dart` — `AppDatabase`, `schemaVersion => 10`.
+- `lib/services/drift/database.dart` — `AppDatabase`, `schemaVersion => 11`.
   `onUpgrade` is **intentionally a no-op**: by the time Drift opens the file, sqflite has
   already brought it to 9, so Drift sees 9 == 9. `onCreate` (web, fresh install) builds v9
   directly: `m.createAll()` + `_createExtraIndexes()` (20 indexes) + `_insertDefaultGameTypes()`.
@@ -82,7 +82,13 @@ See [[Web]].
   > carries group sync. The two-release safety net is gone; what replaces it is
   > `test/migration_v5_to_v10_test.dart`, which upgrades a real v5 file and reads it back
   > through Drift. See [[SchemaV10]].
-- **`onUpgrade` is a no-op rather than a mirrored migration chain.** Maintaining the same
+- **`onUpgrade` is a no-op rather than a mirrored migration chain.**
+
+  > **Status: Outdated** (2026-09-13) — true for native, wrong for web: a browser that ran
+  > the v9 PWA upgrades through Drift alone. `onUpgrade` now replays the post-v9 steps from
+  > the SQL shared with sqflite (`lib/services/sync/sync_schema.dart`). Not a mirrored chain:
+  > only steps after v9, one source for both engines. See [[SchemaV10]].
+ Maintaining the same
   migration twice, once per engine, would guarantee the two drift apart. sqflite is the
   single source of migration truth on native; on web there is no legacy file, so `onCreate`
   is the only path that runs.

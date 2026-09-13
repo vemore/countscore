@@ -321,5 +321,85 @@
   "serverUrlSaved": "Servidor salvo",
   "analysisRequiresBackend": "Esta análise precisa de um servidor. Configure um nas configurações.",
   "openSettings": "Abrir configurações",
-  "serverUrlCleared": "Servidor removido"
+  "serverUrlCleared": "Servidor removido",
+
+  "groupSection": "Grupo",
+
+  "groupDescription": "Partilhe jogos com os outros dispositivos do grupo. Os jogos partilhados, os seus jogadores, pontuações, comentários e análises são enviados para o seu servidor; os restantes jogos ficam neste dispositivo.",
+
+  "groupNeedsServer": "Configure primeiro um servidor acima.",
+
+  "groupCreate": "Criar um grupo",
+
+  "groupJoin": "Entrar num grupo",
+
+  "groupNameLabel": "Nome do grupo",
+
+  "deviceLabelLabel": "Nome deste dispositivo",
+
+  "deviceLabelDefault": "O meu dispositivo",
+
+  "shareTokenLabel": "Código de convite",
+
+  "shareTokenHint": "Cole o código enviado por um membro do grupo",
+
+  "groupCurrent": "Grupo: {name}",
+
+  "shareTokenExplain": "Envie este código aos dispositivos que devem entrar no grupo. Quem o tiver pode entrar.",
+
+  "shareTokenCopy": "Copiar código",
+
+  "shareTokenCopied": "Código copiado",
+
+  "shareTokenRotate": "Novo código",
+
+  "shareTokenRotateConfirm": "O código antigo deixará de permitir entrar no grupo. Os dispositivos que já são membros não são afetados.",
+
+  "groupLeave": "Sair do grupo",
+
+  "groupLeaveConfirm": "Este dispositivo sai do grupo. Os jogos partilhados ficam neste dispositivo, mas deixam de ser sincronizados.",
+
+  "groupLeft": "Saiu do grupo",
+
+  "groupJoined": "Entrou no grupo",
+
+  "clearServerLeavesGroup": "Apagar o servidor faz sair do grupo. Os jogos partilhados ficam neste dispositivo.",
+
+  "syncNow": "Sincronizar",
+
+  "syncStatusIdle": "Sincronizado às {time}",
+
+  "syncStatusSyncing": "A sincronizar…",
+
+  "syncStatusOffline": "Servidor inacessível — as alterações serão enviadas mais tarde",
+
+  "syncStatusUnauthorized": "O servidor já não aceita este dispositivo. Saia do grupo e volte a entrar.",
+
+  "syncStatusError": "Erro do servidor durante a sincronização",
+
+  "syncPending": "{count, plural, =1{1 alteração pendente} other{{count} alterações pendentes}}",
+
+  "syncRejected": "{count, plural, =1{1 alteração recusada pelo servidor} other{{count} alterações recusadas pelo servidor}}",
+
+  "groupErrorUnknownToken": "Código de convite desconhecido ou substituído",
+
+  "groupErrorRateLimited": "Demasiadas tentativas. Tente novamente dentro de um minuto.",
+
+  "groupErrorUnreachable": "Servidor inacessível",
+
+  "groupErrorServer": "Erro do servidor",
+
+  "shareWithGroup": "Partilhar com o grupo",
+
+  "shareWithGroupSubtitle": "Os dispositivos de {name} vão ver e editar este jogo",
+
+  "shareGameConfirm": "O jogo, os seus jogadores, pontuações e comentários serão enviados para {name}. A partilha não pode ser anulada.",
+
+  "gameSharedDone": "Jogo partilhado com o grupo",
+
+  "gameSharedBadge": "Jogo partilhado",
+
+  "invalidPlayerNamesForSync": "Estes nomes não podem ser partilhados: {names}. Use letras, algarismos, espaços, hífenes, apóstrofos ou pontos (32 caracteres no máximo).",
+
+  "roundRenumbered": "Essa ronda já tinha sido registada noutro dispositivo, por isso passou a ser a ronda {number}."
 }

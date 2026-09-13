@@ -321,5 +321,85 @@
   "serverUrlSaved": "サーバーを保存しました",
   "analysisRequiresBackend": "この分析にはサーバーが必要です。設定から構成してください。",
   "openSettings": "設定を開く",
-  "serverUrlCleared": "サーバーを消去しました"
+  "serverUrlCleared": "サーバーを消去しました",
+
+  "groupSection": "グループ",
+
+  "groupDescription": "グループ内の他の端末とゲームを共有します。共有したゲームとそのプレイヤー、スコア、コメント、分析はあなたのサーバーに送信されます。それ以外のゲームはこの端末に残ります。",
+
+  "groupNeedsServer": "まず上でサーバーを設定してください。",
+
+  "groupCreate": "グループを作成",
+
+  "groupJoin": "グループに参加",
+
+  "groupNameLabel": "グループ名",
+
+  "deviceLabelLabel": "この端末の名前",
+
+  "deviceLabelDefault": "マイ端末",
+
+  "shareTokenLabel": "招待コード",
+
+  "shareTokenHint": "グループのメンバーから届いたコードを貼り付けてください",
+
+  "groupCurrent": "グループ：{name}",
+
+  "shareTokenExplain": "グループに参加する端末にこのコードを送ってください。コードを知っている人は誰でも参加できます。",
+
+  "shareTokenCopy": "コードをコピー",
+
+  "shareTokenCopied": "コードをコピーしました",
+
+  "shareTokenRotate": "新しいコード",
+
+  "shareTokenRotateConfirm": "古いコードでは参加できなくなります。すでにグループにいる端末には影響しません。",
+
+  "groupLeave": "グループを退出",
+
+  "groupLeaveConfirm": "この端末はグループを退出します。共有したゲームは端末に残りますが、同期されなくなります。",
+
+  "groupLeft": "グループを退出しました",
+
+  "groupJoined": "グループに参加しました",
+
+  "clearServerLeavesGroup": "サーバーを消去するとグループを退出します。共有したゲームはこの端末に残ります。",
+
+  "syncNow": "今すぐ同期",
+
+  "syncStatusIdle": "{time} に同期済み",
+
+  "syncStatusSyncing": "同期中…",
+
+  "syncStatusOffline": "サーバーに接続できません。変更は後で送信されます",
+
+  "syncStatusUnauthorized": "サーバーがこの端末を受け付けなくなりました。グループを退出してから参加し直してください。",
+
+  "syncStatusError": "同期中にサーバーエラーが発生しました",
+
+  "syncPending": "{count, plural, other{{count} 件の変更が送信待ち}}",
+
+  "syncRejected": "{count, plural, other{{count} 件の変更がサーバーに拒否されました}}",
+
+  "groupErrorUnknownToken": "招待コードが不明か、変更されています",
+
+  "groupErrorRateLimited": "試行回数が多すぎます。1分後にもう一度お試しください。",
+
+  "groupErrorUnreachable": "サーバーに接続できません",
+
+  "groupErrorServer": "サーバーエラー",
+
+  "shareWithGroup": "グループと共有",
+
+  "shareWithGroupSubtitle": "{name} の端末がこのゲームを閲覧・編集できます",
+
+  "shareGameConfirm": "このゲームとプレイヤー、スコア、コメントが {name} に送信されます。共有は取り消せません。",
+
+  "gameSharedDone": "ゲームをグループと共有しました",
+
+  "gameSharedBadge": "共有ゲーム",
+
+  "invalidPlayerNamesForSync": "次の名前は共有できません：{names}。文字、数字、スペース、ハイフン、アポストロフィ、ピリオドのみを使ってください（32文字以内）。",
+
+  "roundRenumbered": "そのラウンドは別の端末で入力済みだったため、ラウンド {number} になりました。"
 }

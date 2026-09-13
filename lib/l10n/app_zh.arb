@@ -321,5 +321,85 @@
   "serverUrlSaved": "服务器已保存",
   "analysisRequiresBackend": "此分析需要一台服务器。请在设置中配置。",
   "openSettings": "打开设置",
-  "serverUrlCleared": "服务器已清除"
+  "serverUrlCleared": "服务器已清除",
+
+  "groupSection": "群组",
+
+  "groupDescription": "与群组中的其他设备共享对局。共享的对局及其玩家、分数、评论和分析会发送到您的服务器；其他对局只保留在本设备上。",
+
+  "groupNeedsServer": "请先在上方配置服务器。",
+
+  "groupCreate": "创建群组",
+
+  "groupJoin": "加入群组",
+
+  "groupNameLabel": "群组名称",
+
+  "deviceLabelLabel": "本设备名称",
+
+  "deviceLabelDefault": "我的设备",
+
+  "shareTokenLabel": "邀请码",
+
+  "shareTokenHint": "粘贴群组成员发给您的邀请码",
+
+  "groupCurrent": "群组：{name}",
+
+  "shareTokenExplain": "把此邀请码发给要加入群组的设备。任何拿到它的人都可以加入。",
+
+  "shareTokenCopy": "复制邀请码",
+
+  "shareTokenCopied": "已复制邀请码",
+
+  "shareTokenRotate": "更换邀请码",
+
+  "shareTokenRotateConfirm": "旧邀请码将无法再用于加入群组。已在群组中的设备不受影响。",
+
+  "groupLeave": "退出群组",
+
+  "groupLeaveConfirm": "本设备将退出群组。共享的对局仍保留在本设备上，但不再同步。",
+
+  "groupLeft": "已退出群组",
+
+  "groupJoined": "已加入群组",
+
+  "clearServerLeavesGroup": "清除服务器会退出群组。共享的对局仍保留在本设备上。",
+
+  "syncNow": "立即同步",
+
+  "syncStatusIdle": "已于 {time} 同步",
+
+  "syncStatusSyncing": "正在同步…",
+
+  "syncStatusOffline": "无法连接服务器——更改将稍后发送",
+
+  "syncStatusUnauthorized": "服务器不再接受本设备。请退出群组后重新加入。",
+
+  "syncStatusError": "同步时服务器出错",
+
+  "syncPending": "{count, plural, other{{count} 项更改待发送}}",
+
+  "syncRejected": "{count, plural, other{服务器拒绝了 {count} 项更改}}",
+
+  "groupErrorUnknownToken": "邀请码无效或已被更换",
+
+  "groupErrorRateLimited": "尝试次数过多，请一分钟后再试。",
+
+  "groupErrorUnreachable": "无法连接服务器",
+
+  "groupErrorServer": "服务器错误",
+
+  "shareWithGroup": "与群组共享",
+
+  "shareWithGroupSubtitle": "{name} 中的设备将能查看和编辑此对局",
+
+  "shareGameConfirm": "此对局及其玩家、分数和评论将发送到 {name}。共享后无法撤销。",
+
+  "gameSharedDone": "对局已与群组共享",
+
+  "gameSharedBadge": "共享对局",
+
+  "invalidPlayerNamesForSync": "以下名称无法共享：{names}。请只使用字母、数字、空格、连字符、撇号或句点（最多 32 个字符）。",
+
+  "roundRenumbered": "该局已在另一台设备上录入，因此改为第 {number} 局。"
 }

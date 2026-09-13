@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/game_provider.dart';
+import '../providers/group_provider.dart';
 import '../providers/game_type_provider.dart';
 import '../models/game.dart';
 import '../models/game_type.dart';
@@ -359,9 +360,26 @@ class _HomeScreenState extends State<HomeScreen> {
               size: 40,
               color: cardColor,
             ),
-            title: Text(
-              game.name,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+            title: Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    game.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                if (game.isShared) ...[
+                  const SizedBox(width: 6),
+                  Tooltip(
+                    message: l10n.gameSharedBadge,
+                    child: Icon(
+                      Icons.cloud_done_outlined,
+                      size: 16,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ],
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -464,6 +482,7 @@ class _HomeScreenState extends State<HomeScreen> {
     GameProvider gameProvider,
   ) async {
     final l10n = AppLocalizations.of(context)!;
+    final group = context.read<GroupProvider>();
     if (value == 'new_same') {
       await gameProvider.loadGame(game.id!);
       final playerNames = gameProvider.currentPlayers.map((p) => p.name).toList();
@@ -481,6 +500,14 @@ class _HomeScreenState extends State<HomeScreen> {
         playerNames,
         playerColorsMap,
       );
+      // A rematch of a shared game is shared too; its players already are.
+      if (game.isShared && group.isJoined) {
+        try {
+          await group.shareGame(newGameId);
+        } on GroupActionException {
+          // Names the server refuses: the new game stays local.
+        }
+      }
 
       await gameProvider.loadGame(newGameId);
       if (context.mounted) {

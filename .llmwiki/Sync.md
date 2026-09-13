@@ -1,6 +1,6 @@
 # Sync
 
-> Scope: the offline-first sharing protocol. Server-side is done; the Flutter client is not.
+> Scope: the offline-first sharing protocol — server and Flutter client.
 > Related: [[Api]] · [[SchemaV10]] · [[Backend]] · [[KnownLimits]]
 > Updated: 2026-09-13
 
@@ -9,6 +9,9 @@
 **Status: the backend is complete and tested. There is no client.** `sync_service.dart` and
 `backend_client.dart` do not exist on disk, and nothing in `lib/` writes to `outbox`. The
 schema is ready and waiting — see [[SchemaV10]].
+
+> **Status: Outdated** (2026-09-13) — the client exists: `lib/services/sync/` and
+> `lib/providers/group_provider.dart`, described under **The client** below.
 
 > **Status: Outdated** (2026-09-09) — "complete and tested" overstates one area. The
 > endpoints, dedup, round conflicts and the WebSocket are implemented and covered; the
@@ -63,7 +66,67 @@ Synced entities: `player`, `game_type`, `game`, `game_player`, `round` (with `co
 - **Idempotence**: the server deduplicates on `(origin_device_id, client_lamport)`. A
   network retry of the same delta is a no-op.
 
+### The client (since 2026-09-13)
+
+Sync runs only while a server URL is configured **and** the device holds a device token —
+the user's design. One group per device.
+
+**Joining.** Settings → Group creates a group (`POST /groups`) or joins one with a pasted
+`share_token` (`POST /groups/join`). The device token and share token go to
+`flutter_secure_storage` (`sync_credentials.dart`); group id, name and device id go to
+`sync_state`. Leaving revokes the device when the server answers, then `SyncStore.leave`
+turns every shared row back into a local one and empties `outbox`, `group_links`,
+`entity_versions`, `sync_inbox` and `sync_state`. Clearing the server URL while in a group
+asks, then leaves.
+
+**Sharing is per game.** On by default for a new game while in a group (switch on the
+create screen), or later from the board menu; never undone. `SyncStore.shareGame` sets
+`group_id` on the game and its children. Player names the server would refuse
+(`isSyncablePlayerName`, mirroring `is_valid_player_name`) block sharing up front.
+
+**Capture — SQLite triggers, not repository code** (`sync_schema.dart`, schema v11). Every
+INSERT/UPDATE on a row with `group_id` set appends `(entity_type, entity_uuid, op)` to
+`outbox`, `op` read from `deleted_at`; players and game types are captured once they have a
+`group_links` row. Rows inserted under a shared game inherit its `group_id` through
+`*_inherit` triggers, so the repositories stay group-blind. `sync_flags.suppress` is raised
+while pulled deltas are applied, so nothing received is sent back.
+
+**Push** (`SyncStore.preparePush`, `SyncEngine`). Outbox rows are coalesced per entity, the
+payload is built from the row as it is *now*, and a lamport is stamped from
+`sync_state.last_lamport`; a prepared row keeps its lamport and payload until the server
+answers, so a retry is a `duplicate`, never a second apply. Players and game types are linked
+first: their server uuid is `uuid5(group_id, "<type>:<normalised name>")`, so every device
+computes the same identity for "Alice" and the server's unique name never collides. Batches of
+100, parents first (`game_type` → `player` → `game` → `game_player` → `round` → `score` →
+`game_analysis`). Strings are clipped to the server bounds. Player and game-type deletes are
+not sent: removing a player from this device's catalogue is not a group event.
+
+| Server answer | Client does |
+|---|---|
+| `applied`, `duplicate` | done; its lamport becomes the entity's known version |
+| `merged_lww` | done; the winner arrives with the next pull |
+| `round_number_taken` | pull, move the round to max+1, push again; `RoundRenumbered` → snackbar |
+| `score_exists`, `analysis_exists` | done; the pull adopts the server's uuid for that cell |
+| `parent_missing` | retried once, rejected the second time |
+| anything else | rejected, counted in Settings |
+
+**Pull** (`SyncStore.applyPulled`, one transaction per page). Own deltas skipped. Upserts
+are applied only when `(client_lamport, origin_device_id)` beats `entity_versions`; a delete
+always applies, tombstones the row and its children, and drops pending outbox rows for it.
+A pulled player or game type links to the local one of the same name or is created. A delta
+whose parent is not local yet waits in `sync_inbox`, replayed after every page. The local
+lamport is raised past every lamport seen.
+
+**Triggers** (`GroupProvider`): local writes (Drift table updates, debounced 1 s), the
+WebSocket `new_seq` signal (`sync_stream.dart`, fresh ticket per connection, backoff 1 s →
+60 s), app resume, a 60 s poll, and "Sync now". A 401 shows "no longer accepted"; no answer
+shows "offline" and keeps the outbox.
+
 ### Write path on a device
+
+> **Status: Outdated** (2026-09-13) — a design sketch. The client captures with triggers
+> rather than in `Repository.upsert`, stamps lamports at push time rather than at write time,
+> and handles four statuses (`duplicate` too). See **The client** above.
 
 ```
 1. UI → Provider → Repository
@@ -161,6 +224,17 @@ reason production runs a single uvicorn worker.
   client must renumber on a round clash and adopt the server's row on a score clash; it
   cannot tell those apart from one generic string, and parsing driver messages is exactly
   what the reason field exists to avoid.
+- **Change capture by SQLite trigger (2026-09-13).** Enqueuing from each repository method
+  would have touched about twenty methods, each one a way to forget a write (a rename, a
+  colour, a round comment). A trigger sees every write however it is made, and the
+  suppress flag keeps pulled changes from echoing. The price is SQL shared by two engines,
+  which `sync_schema.dart` keeps in one list.
+- **Payload built at push time, not at write time (2026-09-13).** Ten score edits to one
+  cell send one delta with the last value, and a delta can never describe a row that has
+  since changed again.
+- **Players merge by name through a deterministic uuid (2026-09-13).** Chosen with the user
+  over separate group players: stats stay keyed on the local global player, and two devices
+  that both have "Alice" converge without a join-time reconciliation step.
 - **Local and shared games coexist on one device.** `group_id TEXT NULL`; NULL means local
   and the sync worker only ever sends non-NULL rows. Existing users' games stay local with
   zero friction, and joining a group risks nothing. Multi-group per device was deferred on

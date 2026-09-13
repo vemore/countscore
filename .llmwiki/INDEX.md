@@ -20,17 +20,17 @@ Load this file first. Then read only the pages your task touches.
 
 | Page | Summary | Updated |
 |---|---|---|
-| [[Architecture]] | The three evolution axes, target topology, milestone status | 2026-09-09 |
+| [[Architecture]] | The three evolution axes, target topology, milestone status | 2026-09-13 |
 | [[KnownLimits]] | What is deliberately deferred, and what is simply missing | 2026-09-13 |
 
 ## Mobile (Flutter)
 
 | Page | Summary | Updated |
 |---|---|---|
-| [[MobileApp]] | `lib/` layout, providers, screens, the dynamic-icon constraint | 2026-09-11 |
+| [[MobileApp]] | `lib/` layout, providers, screens, the dynamic-icon constraint | 2026-09-13 |
 | [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-09-13 |
-| [[SchemaV10]] | The twelve tables, global player identity, sync bookkeeping, tombstones, the migration chain | 2026-09-13 |
-| [[I18n]] | 10 languages × 181 keys, French template, English fallback | 2026-09-13 |
+| [[SchemaV10]] | Schema v11: the twelve tables, sync bookkeeping and capture triggers, tombstones, the migration chain | 2026-09-13 |
+| [[I18n]] | 10 languages × 221 keys, French template, English fallback | 2026-09-13 |
 | [[Web]] | PWA specifics: sqlite3.wasm, OPFS, committed binaries, `kIsWeb` guards, base href | 2026-09-13 |
 
 ## Backend (FastAPI)
@@ -39,7 +39,7 @@ Load this file first. Then read only the pages your task touches.
 |---|---|---|
 | [[Backend]] | Stack, module layout, settings, device-token auth | 2026-09-13 |
 | [[Api]] | Every endpoint, its auth requirement and its failure modes | 2026-09-13 |
-| [[Sync]] | Delta-log + row-level LWW, outbox, WebSocket signalling | 2026-09-13 |
+| [[Sync]] | Delta-log + row-level LWW, the Flutter client (triggers, push/pull, conflicts), WebSocket | 2026-09-13 |
 | [[LlmProviders]] | ZapZap prompt, the pluggable provider factory, the separate Claude path | 2026-09-13 |
 
 ## Operations

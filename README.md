@@ -26,6 +26,11 @@ at your own server in Settings → Server if you want the connected features.
 - **ZapZap analysis** (optional, network, off until you configure a server): a long-form
   LLM commentary on a finished ZapZap game. Always user-initiated, never automatic, and
   cached locally once generated.
+- **Group sharing** (optional, network, off until you configure a server and join a group):
+  create a group or join one with an invite code, then share games with the group's other
+  devices — scores entered on one phone appear on the others within seconds, offline edits
+  catch up on reconnect, and players with the same name are merged. New games are shared by
+  default while you are in a group; games you do not share stay on the device.
 - **Bring your own backend**: the server address is a setting, empty by default. Run the
   FastAPI service in `backend/` on hardware you control and your data never touches anyone
   else's infrastructure.
@@ -44,8 +49,9 @@ at your own server in Settings → Server if you want the connected features.
 | Database | `drift` ^2.34.4 + `drift_flutter` ^0.3.1 over SQLite |
 | — on Android | native SQLite via FFI |
 | — on web | `sqlite3.wasm` persisted through OPFS |
-| Legacy migrator | `sqflite` ^2.4.3 — bootstraps an existing database to schema v9, then Drift takes over |
+| Legacy migrator | `sqflite` ^2.4.3 — bootstraps an existing database to schema v11, then Drift takes over |
 | UI | `flex_color_picker` ^4.0.0, `flutter_markdown_plus` |
+| Group sync | `web_socket_channel` ^3.0.3 (change signal), `flutter_secure_storage` ^11.1.1 (device token), `crypto` ^3.0.7 (name-based uuids) |
 | Utilities | `intl`, `http`, `wakelock_plus`, `shared_preferences`, `path_provider`, `file_picker` |
 
 Data access goes through the repository interfaces in `lib/repositories/`; screens never
@@ -139,7 +145,7 @@ countscore/
 │   ├── widgets/         # Reusable UI components
 │   ├── providers/       # Provider state management
 │   ├── repositories/    # Data-access interfaces + their Drift implementations
-│   ├── services/        # Drift database, sqflite bootstrap migrator, backend client
+│   ├── services/        # Drift database, sqflite bootstrap migrator, backend client, sync/
 │   ├── l10n/            # ARB files (10 languages) + generated localizations
 │   └── main.dart
 ├── backend/             # FastAPI service (groups, sync, LLM commentary)
@@ -240,9 +246,9 @@ attribution, or the built-in Flutter license viewer in the app.
 ## Privacy
 
 **No accounts, no analytics, no ads, no tracking.** By default **nothing leaves the device
-at all**: there is no server address in the app, so there is nowhere for data to go. One
-feature can send data off the device, and only after you have configured a server of your
-own and asked for it — described below.
+at all**: there is no server address in the app, so there is nowhere for data to go. Two
+features can send data off the device, and only after you have configured a server of your
+own — described below.
 
 - ✅ **No analytics, no tracking**: we don't track how you use the app.
 - ✅ **No ads**.
@@ -253,7 +259,7 @@ own and asked for it — described below.
 preferences are stored in a local SQLite database on your device. Delete a game or a player
 at any time; uninstalling removes everything permanently.
 
-**The one time data can leave your device**: asking for a **ZapZap analysis** sends that
+**When data can leave your device — 1, the ZapZap analysis**: asking for one sends that
 game's data — game type, player names, round scores and per-player history — to the
 CountScore backend **you configured in Settings → Server**, which forwards it to an LLM
 provider to generate the commentary. Two conditions, both yours: no server configured means
@@ -265,11 +271,16 @@ Because the server is one you run, the data goes to infrastructure you control �
 whichever LLM provider *your* server is configured to use. We operate no service on your
 behalf and receive nothing.
 
-Group sharing and sync exist on the server but are not reachable from the app yet, so no
-data leaves your device through them today.
+**2, group sharing**: once you have also created or joined a group (Settings → Group), the
+games you share — their name, type, player names and colours, round comments, scores and
+analysis — are uploaded to **your** server, which **stores** them with a log of every change,
+and downloaded by the group's other devices. Anyone with the group's invite code can join, so
+share it only with the people you mean to. Games you do not share never leave the device.
+Leaving the group keeps your copies as local games; it does not remove them from the server,
+whose operator — you — deletes them there.
 
-The release build declares one Android permission, `INTERNET`, for that request and nothing
-else. It is unused until you configure a server.
+The release build declares one Android permission, `INTERNET`, for these two features and
+nothing else. It is unused until you configure a server.
 
 **Privacy Policy**: [privacy_policy.md](privacy_policy.md) for complete details — published
 at https://vemore.github.io/countscore/privacy-policy.html — and

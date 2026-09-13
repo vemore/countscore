@@ -611,4 +611,165 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get serverUrlCleared => 'Сервер удалён';
+
+  @override
+  String get groupSection => 'Группа';
+
+  @override
+  String get groupDescription =>
+      'Делитесь партиями с другими устройствами группы. Общие партии, их игроки, очки, комментарии и анализы отправляются на ваш сервер; остальные партии остаются на этом устройстве.';
+
+  @override
+  String get groupNeedsServer => 'Сначала укажите сервер выше.';
+
+  @override
+  String get groupCreate => 'Создать группу';
+
+  @override
+  String get groupJoin => 'Присоединиться к группе';
+
+  @override
+  String get groupNameLabel => 'Название группы';
+
+  @override
+  String get deviceLabelLabel => 'Имя этого устройства';
+
+  @override
+  String get deviceLabelDefault => 'Моё устройство';
+
+  @override
+  String get shareTokenLabel => 'Код приглашения';
+
+  @override
+  String get shareTokenHint => 'Вставьте код, присланный участником группы';
+
+  @override
+  String groupCurrent(String name) {
+    return 'Группа: $name';
+  }
+
+  @override
+  String get shareTokenExplain =>
+      'Отправьте этот код устройствам, которые должны присоединиться. Любой, у кого он есть, может войти в группу.';
+
+  @override
+  String get shareTokenCopy => 'Скопировать код';
+
+  @override
+  String get shareTokenCopied => 'Код скопирован';
+
+  @override
+  String get shareTokenRotate => 'Новый код';
+
+  @override
+  String get shareTokenRotateConfirm =>
+      'По старому коду больше нельзя будет присоединиться. Устройства, уже состоящие в группе, это не затронет.';
+
+  @override
+  String get groupLeave => 'Покинуть группу';
+
+  @override
+  String get groupLeaveConfirm =>
+      'Это устройство покинет группу. Общие партии останутся на нём, но больше не будут синхронизироваться.';
+
+  @override
+  String get groupLeft => 'Вы покинули группу';
+
+  @override
+  String get groupJoined => 'Вы в группе';
+
+  @override
+  String get clearServerLeavesGroup =>
+      'Если удалить сервер, устройство покинет группу. Общие партии останутся на нём.';
+
+  @override
+  String get syncNow => 'Синхронизировать';
+
+  @override
+  String syncStatusIdle(String time) {
+    return 'Синхронизировано в $time';
+  }
+
+  @override
+  String get syncStatusSyncing => 'Синхронизация…';
+
+  @override
+  String get syncStatusOffline =>
+      'Сервер недоступен — изменения будут отправлены позже';
+
+  @override
+  String get syncStatusUnauthorized =>
+      'Сервер больше не принимает это устройство. Покиньте группу и присоединитесь снова.';
+
+  @override
+  String get syncStatusError => 'Ошибка сервера при синхронизации';
+
+  @override
+  String syncPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count изменения ожидают',
+      many: '$count изменений ожидают',
+      few: '$count изменения ожидают',
+      one: '$count изменение ожидает',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncRejected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count изменения отклонены сервером',
+      many: '$count изменений отклонено сервером',
+      few: '$count изменения отклонены сервером',
+      one: '$count изменение отклонено сервером',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupErrorUnknownToken =>
+      'Неизвестный или заменённый код приглашения';
+
+  @override
+  String get groupErrorRateLimited =>
+      'Слишком много попыток. Повторите через минуту.';
+
+  @override
+  String get groupErrorUnreachable => 'Сервер недоступен';
+
+  @override
+  String get groupErrorServer => 'Ошибка сервера';
+
+  @override
+  String get shareWithGroup => 'Поделиться с группой';
+
+  @override
+  String shareWithGroupSubtitle(String name) {
+    return 'Устройства группы $name увидят и смогут изменять эту партию';
+  }
+
+  @override
+  String shareGameConfirm(String name) {
+    return 'Партия, её игроки, очки и комментарии будут отправлены в группу $name. Отменить это нельзя.';
+  }
+
+  @override
+  String get gameSharedDone => 'Партия отправлена в группу';
+
+  @override
+  String get gameSharedBadge => 'Общая партия';
+
+  @override
+  String invalidPlayerNamesForSync(String names) {
+    return 'Эти имена нельзя передать: $names. Используйте буквы, цифры, пробелы, дефисы, апострофы или точки (не более 32 символов).';
+  }
+
+  @override
+  String roundRenumbered(int number) {
+    return 'Этот раунд уже ввели на другом устройстве, поэтому он стал раундом $number.';
+  }
 }

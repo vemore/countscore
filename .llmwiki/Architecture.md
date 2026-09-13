@@ -2,7 +2,7 @@
 
 > Scope: what CountScore is made of and how far each part has got.
 > Related: [[MobileApp]] · [[Backend]] · [[Web]] · [[Sync]] · [[Deployment]] · [[KnownLimits]]
-> Updated: 2026-09-11
+> Updated: 2026-09-13
 
 ## Facts
 
@@ -48,6 +48,10 @@ CountScore Mobile            CountScore Web
 | 7 | Full commentary API | Done | Pluggable LLM providers, IP rate limiting — see [[LlmProviders]] |
 | 8 | Web PWA | Done | Drift over `sqlite3.wasm` + OPFS, e2e in headless Chrome — see [[Web]] |
 | 9 | Backend production-readiness | Partial | Compose + TLS + daily `pg_dump`; **no monitoring or alerting** |
+
+> **Status: Outdated** (2026-09-13) — the sync client exists (`lib/services/sync/`,
+> `lib/providers/group_provider.dart`): groups, per-game sharing, push/pull, WebSocket, on
+> Android and the PWA. See [[Sync]].
 
 The server side of milestones 5–7 is complete, but **the Flutter client for sync does not
 exist**: `sync_service.dart` is designed and referenced but is not on disk.

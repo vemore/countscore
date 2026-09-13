@@ -598,4 +598,156 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get serverUrlCleared => 'サーバーを消去しました';
+
+  @override
+  String get groupSection => 'グループ';
+
+  @override
+  String get groupDescription =>
+      'グループ内の他の端末とゲームを共有します。共有したゲームとそのプレイヤー、スコア、コメント、分析はあなたのサーバーに送信されます。それ以外のゲームはこの端末に残ります。';
+
+  @override
+  String get groupNeedsServer => 'まず上でサーバーを設定してください。';
+
+  @override
+  String get groupCreate => 'グループを作成';
+
+  @override
+  String get groupJoin => 'グループに参加';
+
+  @override
+  String get groupNameLabel => 'グループ名';
+
+  @override
+  String get deviceLabelLabel => 'この端末の名前';
+
+  @override
+  String get deviceLabelDefault => 'マイ端末';
+
+  @override
+  String get shareTokenLabel => '招待コード';
+
+  @override
+  String get shareTokenHint => 'グループのメンバーから届いたコードを貼り付けてください';
+
+  @override
+  String groupCurrent(String name) {
+    return 'グループ：$name';
+  }
+
+  @override
+  String get shareTokenExplain =>
+      'グループに参加する端末にこのコードを送ってください。コードを知っている人は誰でも参加できます。';
+
+  @override
+  String get shareTokenCopy => 'コードをコピー';
+
+  @override
+  String get shareTokenCopied => 'コードをコピーしました';
+
+  @override
+  String get shareTokenRotate => '新しいコード';
+
+  @override
+  String get shareTokenRotateConfirm =>
+      '古いコードでは参加できなくなります。すでにグループにいる端末には影響しません。';
+
+  @override
+  String get groupLeave => 'グループを退出';
+
+  @override
+  String get groupLeaveConfirm =>
+      'この端末はグループを退出します。共有したゲームは端末に残りますが、同期されなくなります。';
+
+  @override
+  String get groupLeft => 'グループを退出しました';
+
+  @override
+  String get groupJoined => 'グループに参加しました';
+
+  @override
+  String get clearServerLeavesGroup =>
+      'サーバーを消去するとグループを退出します。共有したゲームはこの端末に残ります。';
+
+  @override
+  String get syncNow => '今すぐ同期';
+
+  @override
+  String syncStatusIdle(String time) {
+    return '$time に同期済み';
+  }
+
+  @override
+  String get syncStatusSyncing => '同期中…';
+
+  @override
+  String get syncStatusOffline => 'サーバーに接続できません。変更は後で送信されます';
+
+  @override
+  String get syncStatusUnauthorized =>
+      'サーバーがこの端末を受け付けなくなりました。グループを退出してから参加し直してください。';
+
+  @override
+  String get syncStatusError => '同期中にサーバーエラーが発生しました';
+
+  @override
+  String syncPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 件の変更が送信待ち',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncRejected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 件の変更がサーバーに拒否されました',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupErrorUnknownToken => '招待コードが不明か、変更されています';
+
+  @override
+  String get groupErrorRateLimited => '試行回数が多すぎます。1分後にもう一度お試しください。';
+
+  @override
+  String get groupErrorUnreachable => 'サーバーに接続できません';
+
+  @override
+  String get groupErrorServer => 'サーバーエラー';
+
+  @override
+  String get shareWithGroup => 'グループと共有';
+
+  @override
+  String shareWithGroupSubtitle(String name) {
+    return '$name の端末がこのゲームを閲覧・編集できます';
+  }
+
+  @override
+  String shareGameConfirm(String name) {
+    return 'このゲームとプレイヤー、スコア、コメントが $name に送信されます。共有は取り消せません。';
+  }
+
+  @override
+  String get gameSharedDone => 'ゲームをグループと共有しました';
+
+  @override
+  String get gameSharedBadge => '共有ゲーム';
+
+  @override
+  String invalidPlayerNamesForSync(String names) {
+    return '次の名前は共有できません：$names。文字、数字、スペース、ハイフン、アポストロフィ、ピリオドのみを使ってください（32文字以内）。';
+  }
+
+  @override
+  String roundRenumbered(int number) {
+    return 'そのラウンドは別の端末で入力済みだったため、ラウンド $number になりました。';
+  }
 }

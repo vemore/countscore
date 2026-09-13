@@ -4,8 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/backend_provider.dart';
+import '../providers/group_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/theme_provider.dart';
+import '../widgets/group_settings_section.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -32,6 +34,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ));
   }
 
+  /// Clearing the server while in a group leaves the group, after asking.
+  Future<bool> _clearServer() async {
+    final l10n = AppLocalizations.of(context)!;
+    final group = context.read<GroupProvider>();
+    if (group.isJoined) {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(l10n.confirmation),
+          content: Text(l10n.clearServerLeavesGroup),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l10n.clear),
+            ),
+          ],
+        ),
+      );
+      if (ok != true) return false;
+      await group.leave();
+    }
+    if (!mounted) return false;
+    await context.read<BackendProvider>().clear();
+    return true;
+  }
+
   /// Saves the typed URL, or clears the setting when the field is empty.
   Future<void> _saveBackendUrl() async {
     final l10n = AppLocalizations.of(context)!;
@@ -50,8 +82,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       // An empty field is how the user turns the connected features back off,
       // not a mistake to complain about.
       case BackendUrlError.empty:
-        await backend.clear();
-        if (!mounted) return;
+        if (!await _clearServer() || !mounted) return;
         _snack(l10n.serverUrlCleared);
       case BackendUrlError.malformed:
         _snack(l10n.backendUrlInvalid, ok: false);
@@ -189,7 +220,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           key: const Key('backend_url_clear'),
                           onPressed: backend.isConfigured && !_testingConnection
                               ? () async {
-                                  await backend.clear();
+                                  if (!await _clearServer()) return;
                                   if (!context.mounted) return;
                                   _backendUrlController.clear();
                                   _snack(l10n.serverUrlCleared);
@@ -204,6 +235,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
               );
             },
           ),
+          const Divider(),
+
+          // Section Groupe — sous le serveur, dont elle dépend.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              l10n.groupSection,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ),
+          const GroupSettingsSection(),
           const Divider(),
 
           // Section Écran

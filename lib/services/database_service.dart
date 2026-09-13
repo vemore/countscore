@@ -9,6 +9,7 @@ import '../models/player.dart';
 import '../models/game_analysis.dart';
 import '../models/round.dart';
 import '../models/score.dart';
+import 'sync/sync_schema.dart';
 
 class DatabaseService {
   static final DatabaseService instance = DatabaseService._init();
@@ -18,7 +19,7 @@ class DatabaseService {
 
   /// Must equal `AppDatabase.schemaVersion`: Drift adopts the file this chain
   /// produced and never migrates it itself.
-  static const schemaVersion = 10;
+  static const schemaVersion = 11;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -225,63 +226,27 @@ class DatabaseService {
 
     await _createGameAnalysesTable(db);
     await _createSyncV10Tables(db);
+    await _createSyncV11Capture(db);
 
     await _insertDefaultGameTypes(db);
   }
 
-  /// v10 — what the sync client needs beyond the v6 outbox and cursor. See
-  /// .llmwiki/SchemaV10.md. Also the whole of the v9 → v10 step: every change is
-  /// additive, so a fresh install and an upgraded one end up identical.
-  Future<void> _createSyncV10Tables(Database db) async {
-    // `outbox` and `sync_state` exist since v6 (or were repaired by
-    // [_ensureV6Shape]); only add what is missing.
-    final outbox = await _columnsOf(db, 'outbox');
-    if (!outbox.contains('rejected_at')) {
-      await db.execute('ALTER TABLE outbox ADD COLUMN rejected_at INTEGER');
+  /// v11 — change capture triggers and the suppress flag. Shared SQL with the
+  /// Drift `onCreate` in `lib/services/sync/sync_schema.dart`.
+  Future<void> _createSyncV11Capture(Database db) async {
+    for (final statement in syncV11Statements) {
+      await db.execute(statement);
     }
-    if (!outbox.contains('reject_reason')) {
-      await db.execute('ALTER TABLE outbox ADD COLUMN reject_reason TEXT');
-    }
-    final syncState = await _columnsOf(db, 'sync_state');
-    if (!syncState.contains('device_id')) {
-      await db.execute('ALTER TABLE sync_state ADD COLUMN device_id TEXT');
-    }
-    if (!syncState.contains('group_name')) {
-      await db.execute('ALTER TABLE sync_state ADD COLUMN group_name TEXT');
-    }
-
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS group_links (
-        group_id TEXT NOT NULL,
-        entity_type TEXT NOT NULL,
-        local_uuid TEXT NOT NULL,
-        remote_uuid TEXT NOT NULL,
-        PRIMARY KEY (group_id, entity_type, local_uuid),
-        UNIQUE (group_id, entity_type, remote_uuid)
-      )
-    ''');
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS entity_versions (
-        entity_type TEXT NOT NULL,
-        entity_uuid TEXT NOT NULL,
-        lamport INTEGER NOT NULL,
-        origin_device_id TEXT NOT NULL,
-        PRIMARY KEY (entity_type, entity_uuid)
-      )
-    ''');
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS sync_inbox (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        server_seq INTEGER NOT NULL,
-        delta TEXT NOT NULL,
-        reason TEXT NOT NULL,
-        created_at INTEGER NOT NULL
-      )
-    ''');
-    await db.execute(
-      'CREATE INDEX IF NOT EXISTS idx_sync_inbox_seq ON sync_inbox(server_seq)',
-    );
   }
+
+  /// v10 — what the sync client needs beyond the v6 outbox and cursor. The SQL
+  /// lives in `lib/services/sync/sync_schema.dart`, shared with Drift's web
+  /// upgrade path. Additive only, so a fresh install and an upgraded one end up
+  /// identical.
+  Future<void> _createSyncV10Tables(Database db) => applySyncV10(
+        db.execute,
+        (table) => _columnsOf(db, table),
+      );
 
   Future<void> _createGameAnalysesTable(Database db) async {
     await db.execute('''
@@ -502,6 +467,10 @@ class DatabaseService {
 
     if (oldVersion < 10) {
       await _createSyncV10Tables(db);
+    }
+
+    if (oldVersion < 11) {
+      await _createSyncV11Capture(db);
     }
   }
 

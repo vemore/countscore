@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../models/game_type.dart';
 import '../models/round.dart';
 import '../providers/backend_provider.dart';
+import '../providers/group_provider.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
 import '../repositories/drift/drift_repositories.dart';
@@ -46,6 +47,40 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     setState(() => _hasCachedAnalysis = has);
   }
 
+  Future<void> _shareGame(GameProvider gameProvider, GroupProvider group) async {
+    final l10n = AppLocalizations.of(context)!;
+    final game = gameProvider.currentGame;
+    if (game == null) return;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.shareWithGroup),
+        content: Text(l10n.shareGameConfirm(group.groupName ?? '')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.shareWithGroup),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await group.shareGame(game.id!);
+      await gameProvider.loadGame(game.id!);
+      messenger.showSnackBar(SnackBar(content: Text(l10n.gameSharedDone)));
+    } on GroupActionException catch (e) {
+      messenger.showSnackBar(SnackBar(
+        content: Text(l10n.invalidPlayerNamesForSync(e.detail.join(', '))),
+      ));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -53,7 +88,19 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
       appBar: AppBar(
         title: Consumer<GameProvider>(
           builder: (context, gameProvider, child) {
-            return Text(gameProvider.currentGame?.name ?? l10n.game);
+            final game = gameProvider.currentGame;
+            return Row(
+              children: [
+                Flexible(child: Text(game?.name ?? l10n.game, overflow: TextOverflow.ellipsis)),
+                if (game?.isShared ?? false) ...[
+                  const SizedBox(width: 8),
+                  Tooltip(
+                    message: l10n.gameSharedBadge,
+                    child: const Icon(Icons.cloud_done_outlined, size: 20),
+                  ),
+                ],
+              ],
+            );
           },
         ),
         actions: [
@@ -82,6 +129,9 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
               final canAnalyse = isZapZap &&
                   (context.watch<BackendProvider>().isConfigured ||
                       _hasCachedAnalysis);
+              final group = context.watch<GroupProvider>();
+              final canShare = group.isJoined &&
+                  !(gameProvider.currentGame?.isShared ?? true);
 
               return PopupMenuButton<String>(
                 itemBuilder: (context) => [
@@ -105,6 +155,17 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                       ],
                     ),
                   ),
+                  if (canShare)
+                    PopupMenuItem(
+                      value: 'share_game',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.cloud_upload_outlined),
+                          const SizedBox(width: 8),
+                          Text(l10n.shareWithGroup),
+                        ],
+                      ),
+                    ),
                   if (canAnalyse)
                     PopupMenuItem(
                       value: 'analyze_game',
@@ -144,6 +205,8 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                       final lastRound = gameProvider.currentRounds.last;
                       await gameProvider.deleteRound(lastRound.id!);
                     }
+                  } else if (value == 'share_game') {
+                    await _shareGame(gameProvider, group);
                   } else if (value == 'analyze_game') {
                     if (!context.mounted) return;
                     await Navigator.push(

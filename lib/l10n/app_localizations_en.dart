@@ -607,4 +607,160 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get serverUrlCleared => 'Server cleared';
+
+  @override
+  String get groupSection => 'Group';
+
+  @override
+  String get groupDescription =>
+      'Share games with the other devices in your group. Shared games, their players, scores, comments and analyses are sent to your server; other games stay on this device.';
+
+  @override
+  String get groupNeedsServer => 'Set up a server above first.';
+
+  @override
+  String get groupCreate => 'Create a group';
+
+  @override
+  String get groupJoin => 'Join a group';
+
+  @override
+  String get groupNameLabel => 'Group name';
+
+  @override
+  String get deviceLabelLabel => 'Name of this device';
+
+  @override
+  String get deviceLabelDefault => 'My device';
+
+  @override
+  String get shareTokenLabel => 'Invite code';
+
+  @override
+  String get shareTokenHint => 'Paste the code a group member sent you';
+
+  @override
+  String groupCurrent(String name) {
+    return 'Group: $name';
+  }
+
+  @override
+  String get shareTokenExplain =>
+      'Send this code to the devices that should join the group. Anyone who has it can join.';
+
+  @override
+  String get shareTokenCopy => 'Copy code';
+
+  @override
+  String get shareTokenCopied => 'Code copied';
+
+  @override
+  String get shareTokenRotate => 'New code';
+
+  @override
+  String get shareTokenRotateConfirm =>
+      'The old code will no longer let anyone join. Devices already in the group are not affected.';
+
+  @override
+  String get groupLeave => 'Leave group';
+
+  @override
+  String get groupLeaveConfirm =>
+      'This device leaves the group. Shared games stay on this device but will no longer sync.';
+
+  @override
+  String get groupLeft => 'Left the group';
+
+  @override
+  String get groupJoined => 'Joined the group';
+
+  @override
+  String get clearServerLeavesGroup =>
+      'Clearing the server leaves the group. Shared games stay on this device.';
+
+  @override
+  String get syncNow => 'Sync now';
+
+  @override
+  String syncStatusIdle(String time) {
+    return 'Synced at $time';
+  }
+
+  @override
+  String get syncStatusSyncing => 'Syncing…';
+
+  @override
+  String get syncStatusOffline =>
+      'Server unreachable — changes will be sent later';
+
+  @override
+  String get syncStatusUnauthorized =>
+      'The server no longer accepts this device. Leave the group, then join it again.';
+
+  @override
+  String get syncStatusError => 'Server error during sync';
+
+  @override
+  String syncPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes waiting',
+      one: '1 change waiting',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncRejected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes refused by the server',
+      one: '1 change refused by the server',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupErrorUnknownToken => 'Unknown or replaced invite code';
+
+  @override
+  String get groupErrorRateLimited =>
+      'Too many attempts. Try again in a minute.';
+
+  @override
+  String get groupErrorUnreachable => 'Server unreachable';
+
+  @override
+  String get groupErrorServer => 'Server error';
+
+  @override
+  String get shareWithGroup => 'Share with the group';
+
+  @override
+  String shareWithGroupSubtitle(String name) {
+    return 'Devices in $name will see and edit this game';
+  }
+
+  @override
+  String shareGameConfirm(String name) {
+    return 'The game, its players, scores and comments will be sent to $name. Sharing cannot be undone.';
+  }
+
+  @override
+  String get gameSharedDone => 'Game shared with the group';
+
+  @override
+  String get gameSharedBadge => 'Shared game';
+
+  @override
+  String invalidPlayerNamesForSync(String names) {
+    return 'These names cannot be shared: $names. Use letters, digits, spaces, hyphens, apostrophes or periods (32 characters at most).';
+  }
+
+  @override
+  String roundRenumbered(int number) {
+    return 'That round had already been entered on another device, so it became round $number.';
+  }
 }
