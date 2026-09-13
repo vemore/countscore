@@ -142,6 +142,16 @@ scripts/deploy_web.sh --rollback   # swap pwa/current.prev back
   free to drift, and a mismatch is a blank page. The deploy script reads it over ssh.
 - **The `.md` refusal exists because `web/CLAUDE.md` was published** with every build until
   the same day; it moved to `.claude/rules/web.md`.
+- **First production deploy of the PWA (2026-09-13), image `1570d90`.** Order that worked:
+  `PWA_BASE_PATH` appended to the NAS `.env` *before* `deploy_nas.sh`, so the recreated
+  container mounted it on its first start; then `scripts/deploy_web.sh`. Observed over
+  HTTPS through the existing Web Station portal, with no portal change: the sub-path
+  answers 200 with the PWA CSP and `Cache-Control: no-cache`, `sqlite3.wasm` is served as
+  `application/wasm`, `CLAUDE.md` is a 404, `/health` still reports `gemini` /
+  `gemini-2.5-flash`, and `/comments/zapzap-analysis` answered 200. In a browser: no console
+  error, a game created before a reload was there after it. `pwa/` came out owned by the
+  SSH user, and the container sees it read-only. The sub-path itself is in the NAS `.env`,
+  not here.
 - **Backups are `pg_dump` on a cron sidecar with 7-day rotation**, not a managed service.
   The dataset is small and the recovery story is "copy a file back".
 - **`LLM_PROVIDER` defaults to `bedrock` in code**, but production has been run on
