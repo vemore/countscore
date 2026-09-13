@@ -35,6 +35,9 @@ services:
       LLM_PROVIDER: ${LLM_PROVIDER:-bedrock}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       COMMENT_MODEL: ${COMMENT_MODEL:-claude-haiku-4-5}
+      # Empty = members may not raise a group's budget past DEFAULT_BUDGET_CENTS.
+      MAX_BUDGET_CENTS: ${MAX_BUDGET_CENTS:-}
+      MAX_STREAMS_PER_DEVICE: ${MAX_STREAMS_PER_DEVICE:-3}
       MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
       MISTRAL_MODEL: ${MISTRAL_MODEL:-mistral-medium-latest}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}

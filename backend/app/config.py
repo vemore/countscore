@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = None
     comment_model: str = "claude-haiku-4-5"
     default_budget_cents: int = 100
+    # Ceiling on what a member may set through PATCH /groups/me/settings. The budget is
+    # spent on the operator's key, so the operator owns the ceiling; unset, it is the
+    # default budget — members may lower theirs but not raise it.
+    max_budget_cents: int | None = None
     comment_memory_size: int = 5
 
     # LLM provider for the ZapZap analysis endpoint: bedrock | gemini | mistral
@@ -62,6 +66,10 @@ class Settings(BaseSettings):
     auth_fail_rl_per_minute: int = 10
     auth_fail_rl_per_hour: int = 60
 
+    # Concurrent /sync/stream connections one device may hold. Several tabs of the PWA
+    # share a device, so more than one; a cap, so one member cannot hold hundreds.
+    max_streams_per_device: int = 3
+
     # Send Strict-Transport-Security. Off by default: local development is plain http
     # and an HSTS header there pins the browser to https for a year.
     hsts_enabled: bool = False
@@ -87,12 +95,22 @@ class Settings(BaseSettings):
             )
         return v
 
+    @field_validator("max_budget_cents", mode="before")
+    @classmethod
+    def _empty_budget_ceiling_is_unset(cls, v: object) -> object:
+        # docker-compose.prod.yml passes ${MAX_BUDGET_CENTS:-}, an empty string when unset.
+        return None if v == "" else v
+
     @field_validator("cors_origins")
     @classmethod
     def _reject_cors_wildcard(cls, v: str) -> str:
         if "*" in v:
             raise ValueError("CORS wildcard '*' is not allowed; list explicit origins")
         return v
+
+    @property
+    def effective_max_budget_cents(self) -> int:
+        return self.default_budget_cents if self.max_budget_cents is None else self.max_budget_cents
 
     @property
     def cors_origins_list(self) -> list[str]:

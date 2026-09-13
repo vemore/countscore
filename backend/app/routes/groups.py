@@ -148,6 +148,12 @@ async def update_settings(
     auth: AuthContext = Depends(require_device),
     session: AsyncSession = Depends(get_session),
 ) -> GroupPayload:
+    ceiling = get_settings().effective_max_budget_cents
+    if body.monthly_budget_cents is not None and body.monthly_budget_cents > ceiling:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            f"monthly_budget_cents is capped at {ceiling} by the operator",
+        )
     group = await session.get(Group, auth.group.id, with_for_update=True)
     assert group is not None
     if body.comment_style is not None:
@@ -171,19 +177,43 @@ async def get_usage(auth: AuthContext = Depends(require_device)) -> UsagePayload
     )
 
 
-@router.post("/me/devices/{device_id}/revoke", status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/me/devices/{device_id}/revoke",
+    response_model=GroupWithShareToken,
+    responses={204: {"description": "The caller revoked itself: it left the group."}},
+)
 async def revoke_device(
     device_id: uuid.UUID,
     auth: AuthContext = Depends(require_device),
     session: AsyncSession = Depends(get_session),
-) -> None:
+) -> GroupWithShareToken | Response:
+    """Revoke a device. Revoking another one also rotates the share token.
+
+    Every device learns the share token when it joins, so a revoke alone let the revoked
+    device join again at once. The new token goes back to the caller only, as
+    ``rotate-share-token`` does. A device revoking itself is leaving (the app's
+    ``GroupProvider.leave``): nothing to shut out, so no rotation and no token — 204.
+    """
     target = await session.get(Device, device_id)
     if target is None or target.group_id != auth.group.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "device not in this group")
-    if target.revoked_at is not None:
-        return
-    target.revoked_at = datetime.now(UTC)
-    await session.commit()
+    if target.id == auth.device.id:
+        if target.revoked_at is None:
+            target.revoked_at = datetime.now(UTC)
+            await session.commit()
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+    group = await session.get(Group, auth.group.id, with_for_update=True)
+    assert group is not None
+    # Already revoked: its token was rotated then, so the current one is safe to return.
+    if target.revoked_at is None:
+        now = datetime.now(UTC)
+        target.revoked_at = now
+        group.share_token = uuid.uuid4()
+        group.updated_at = now
+        await session.commit()
+        await session.refresh(group)
+    return _group_payload_with_token(group)
 
 
 @router.post("/me/rotate-share-token", response_model=GroupWithShareToken)

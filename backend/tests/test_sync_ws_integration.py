@@ -116,6 +116,11 @@ async def pg_client(postgres_container, pg_engine) -> AsyncIterator[AsyncClient]
     sync_route.AsyncSessionLocal = original_sl  # restore
     db_module.AsyncSessionLocal = original_sl
 
+    # The shared LISTEN connection belongs to this test's event loop.
+    from app.services.notify import close_broker
+
+    await close_broker()
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -289,3 +294,47 @@ async def test_concurrent_pushes_to_one_group_get_distinct_server_seqs(pg_client
         headers={"Authorization": f"Bearer {tokens[0]}"},
     )
     assert [d["server_seq"] for d in pull.json()["deltas"]] == list(range(1, 41))
+
+
+async def test_streams_share_one_listen_connection(pg_client, pg_engine):
+    """One Postgres connection per stream let a single device exhaust max_connections."""
+    from httpx_ws import aconnect_ws  # type: ignore[import]
+    from sqlalchemy import text
+
+    from app.services.notify import LISTEN_APPLICATION_NAME
+
+    _g1, token1 = await _make_group_and_token(pg_client)
+    _g2, token2 = await _make_group_and_token(pg_client)
+    headers2 = {"Authorization": f"Bearer {token2}"}
+    delta = {
+        "entity_type": "player",
+        "entity_uuid": str(uuid.uuid4()),
+        "op": "upsert",
+        "payload": {"name": "Shared", "name_normalized": "shared"},
+        "client_lamport": 1,
+    }
+
+    async with (
+        aconnect_ws(await _ws_url(pg_client, token1), pg_client) as a,
+        aconnect_ws(await _ws_url(pg_client, token2), pg_client) as b,
+        aconnect_ws(await _ws_url(pg_client, token2), pg_client) as c,
+    ):
+        async with pg_engine.connect() as conn:
+            listeners = (
+                await conn.execute(
+                    text("SELECT count(*) FROM pg_stat_activity WHERE application_name = :n"),
+                    {"n": LISTEN_APPLICATION_NAME},
+                )
+            ).scalar_one()
+        assert listeners == 1
+
+        push = await pg_client.post("/sync/push", json={"deltas": [delta]}, headers=headers2)
+        assert push.status_code == 200, push.text
+        seq = push.json()["server_seq_max"]
+
+        # Both streams of group 2 hear it; group 1's stream does not.
+        for ws in (b, c):
+            msg = json.loads(await asyncio.wait_for(ws.receive_text(), timeout=5.0))
+            assert msg == {"type": "new_seq", "server_seq": seq}
+        with pytest.raises(TimeoutError):
+            await asyncio.wait_for(a.receive_text(), timeout=1.0)
