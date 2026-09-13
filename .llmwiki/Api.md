@@ -15,9 +15,9 @@
 | POST | `` | none | Create a group + its first device. 201. IP rate limited. |
 | POST | `/join` | none | Join via `share_token`. 201. IP rate limited. |
 | GET | `/me` | device | Returns the group. **No `share_token`** — see below. |
-| PATCH | `/me/settings` | device | |
+| PATCH | `/me/settings` | device | 422 when `monthly_budget_cents` exceeds the operator's `MAX_BUDGET_CENTS` (unset: `DEFAULT_BUDGET_CENTS`) — members may lower their budget, not raise it past that. |
 | GET | `/me/usage` | device | Budget consumption. |
-| POST | `/me/devices/{device_id}/revoke` | device | 204. |
+| POST | `/me/devices/{device_id}/revoke` | device | Another device: revokes it **and rotates `share_token`**, 200 with `GroupWithShareToken` — the revoked device learnt the old token when it joined. Again on a revoked device: the current token, no new one. The caller's own id: leaving (`GroupProvider.leave`), 204, no rotation. |
 | POST | `/me/rotate-share-token` | device | Invalidates the old share link. Returns `share_token`. |
 
 ### `app/routes/sync.py` — prefix `/sync`, tag `sync`
@@ -27,7 +27,7 @@
 | POST | `/push` | device | Max **500 deltas** per request. Values bounded per entity. Serialised per group (row lock); one savepoint per delta. |
 | GET | `/pull?since_seq=N` | device | |
 | POST | `/ws-ticket` | device | Mints a single-use ticket, 60 s TTL, for the stream below. |
-| WS | `/stream?ticket=…` | ticket | Signal only — see [[Sync]]. |
+| WS | `/stream?ticket=…` | ticket | Signal only — see [[Sync]]. 1008 on a bad ticket or a revoked device; 1013 past `MAX_STREAMS_PER_DEVICE` (3) open streams; 1012 when the shared LISTEN connection drops. |
 
 Internals: `_apply_delta`, `_apply_game_player`, `_owned_by`, `_check_parents`,
 `_check_unique`, `_was_deleted`, `_coerce_payload`, `_logged_payload`.

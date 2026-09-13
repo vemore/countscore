@@ -36,6 +36,7 @@ from sqlalchemy.sql.base import ReadOnlyColumnCollection
 from sqlmodel import SQLModel, col
 
 from app.auth import AuthContext, require_device
+from app.config import get_settings
 from app.db import AsyncSessionLocal, get_session
 from app.models import (
     ChangeLog,
@@ -523,6 +524,10 @@ async def create_ws_ticket(auth: AuthContext = Depends(require_device)) -> WsTic
     return WsTicketResponse(ticket=ticket, expires_in=WS_TICKET_TTL_SECONDS)
 
 
+# Open /sync/stream connections per device. Process-local, like the WS tickets.
+_open_streams: dict[uuid.UUID, int] = {}
+
+
 @router.websocket("/stream")
 async def stream(websocket: WebSocket, ticket: str = Query(default="")) -> None:
     """WS handshake auth: query param ``?ticket=<value from POST /sync/ws-ticket>``.
@@ -538,6 +543,21 @@ async def stream(websocket: WebSocket, ticket: str = Query(default="")) -> None:
         return
     device_id, group_id = redeemed
 
+    # Each stream costs a queue and a coroutine, no longer a Postgres connection, but one
+    # device must still not hold hundreds. Refused before accept(), like a bad ticket.
+    if _open_streams.get(device_id, 0) >= get_settings().max_streams_per_device:
+        await websocket.close(code=status.WS_1013_TRY_AGAIN_LATER)
+        return
+    _open_streams[device_id] = _open_streams.get(device_id, 0) + 1
+    try:
+        await _serve_stream(websocket, device_id, group_id)
+    finally:
+        _open_streams[device_id] -= 1
+        if not _open_streams[device_id]:
+            del _open_streams[device_id]
+
+
+async def _serve_stream(websocket: WebSocket, device_id: uuid.UUID, group_id: uuid.UUID) -> None:
     async with listen_for_group(group_id) as queue:
         await websocket.accept()
 
@@ -556,6 +576,11 @@ async def stream(websocket: WebSocket, ticket: str = Query(default="")) -> None:
                     return
                 try:
                     server_seq = await asyncio.wait_for(queue.get(), timeout=30.0)
+                    if server_seq is None:
+                        # The shared LISTEN connection dropped: close, and the client's
+                        # reconnect-then-pull catches up on whatever it missed.
+                        await websocket.close(code=status.WS_1012_SERVICE_RESTART)
+                        return
                     await websocket.send_json({"type": "new_seq", "server_seq": server_seq})
                 except TimeoutError:
                     # Heartbeat — keeps proxies (Caddy/Nginx) from closing idle conns,

@@ -6,6 +6,56 @@ readable after the fact.
 
 ---
 
+## Backend review: any member may raise the group's LLM budget to 10 000 ¢ a month
+
+**Status:** done (2026-09-13) — closed by `fix/budget-ws-revocation`. `MAX_BUDGET_CENTS`
+(`app/config.py`, unset = `DEFAULT_BUDGET_CENTS`, and an empty value from compose counts as
+unset) is enforced in `update_settings` with a 422. Listed in `.env.example`,
+`docker-compose.prod.yml` and `.llmwiki/Deployment.md`. Tests in `backend/tests/test_groups.py`.
+A group already above the ceiling keeps its budget until someone changes it. Noted
+2026-09-13 in the *Backend security review*.
+
+`backend/app/schemas/groups.py:60` lets `PATCH /groups/me/settings` set
+`monthly_budget_cents` up to 10 000; the operator only controls the *initial* value through
+`DEFAULT_BUDGET_CENTS`. Proposed: a `MAX_BUDGET_CENTS` setting — an operator-owned ceiling,
+defaulting to `DEFAULT_BUDGET_CENTS` — enforced in the route, and listed in
+`.env.example` and `.llmwiki/Deployment.md`.
+
+## Backend review: one Postgres connection per WebSocket, no per-device cap
+
+**Status:** done (2026-09-13) — closed by `fix/budget-ws-revocation`. `app/services/notify.py`
+holds one LISTEN connection for the process and fans notifications out to a queue per
+stream; a lost connection closes every stream with 1012 so clients reconnect and pull.
+`/sync/stream` refuses a device's fourth concurrent stream with 1013 before `accept()`
+(`MAX_STREAMS_PER_DEVICE`). Tests: `backend/tests/test_sync_stream_cap.py` and, on real
+Postgres, `test_streams_share_one_listen_connection` (three streams, one `countscore-listen`
+row in `pg_stat_activity`). `POST /sync/ws-ticket` still has no rate limit of its own —
+tickets cost a dict entry for 60 s, and the stream cap bounds what they can open. Noted
+2026-09-13 in the *Backend security review*.
+
+`backend/app/services/notify.py:49` opens a dedicated `asyncpg.connect` for every
+`/sync/stream`, and `POST /sync/ws-ticket` has no rate limit. One authenticated device can
+open hundreds of streams and exhaust Postgres `max_connections` (default 100, of which the
+app's own pool wants 30) — a service-wide outage from inside one household. Proposed: a
+single shared LISTEN connection with an in-process fan-out (`dict[group_id, set[Queue]]`),
+and a cap of about three concurrent streams per device.
+
+## Backend review: revocation is reversible by the revoked party
+
+**Status:** done (2026-09-13) — closed by `fix/budget-ws-revocation`. Revoking *another* device
+now rotates `share_token` and returns it (200, `GroupWithShareToken`), like
+`rotate-share-token`. Revoking the caller's own device stays a 204 without rotation: that is
+how the app leaves a group (`GroupProvider.leave`), and rotating there would stale everyone
+else's invite link for nothing — the plan's first idea, a 400 on self-revoke, would have
+broken leaving. Tests in `backend/tests/test_groups.py`. Noted 2026-09-13 in the *Backend
+security review*.
+
+`POST /groups/join` returns `share_token` to the joiner (`backend/app/routes/groups.py:132`),
+so every device holds it for good. Revoking a device (`groups.py:171`) without rotating the
+token lets the revoked device re-join at once and get a fresh token. Proposed: rotate
+`share_token` inside `revoke_device` and return the new one, as `rotate-share-token` does —
+or, at minimum, document in `.llmwiki/Api.md` that a revoke is meaningless without a rotate.
+Belongs with the owner-role debt already listed in `.llmwiki/Security.md`.
 ## Backend review: every per-IP rate limit is bypassed by a client-supplied `X-Forwarded-For`
 
 **Status:** done (2026-09-13) — closed by `fix/ip-spoofing-zapzap-payload`. `client_ip()` now

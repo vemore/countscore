@@ -15,6 +15,7 @@ from app import __version__
 from app.config import get_settings
 from app.routes import comments, groups, sync
 from app.services.llm import get_llm_provider
+from app.services.notify import close_broker
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +83,7 @@ async def lifespan(app: FastAPI):
     )
     logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
     yield
+    await close_broker()
 
 
 class LlmHealth(BaseModel):

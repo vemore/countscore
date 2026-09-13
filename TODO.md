@@ -62,7 +62,8 @@ starts a Postgres through testcontainers. Proposal: a CI job with a `postgres:17
 **Status:** open — noted 2026-09-13, during a cyber-security review of `backend/` requested
 by the user. The two HIGH items on sync scoping and the argon2 scan, and the `server_seq`
 race, were closed the same day by `fix/sync-contract` and moved to `DONE.md`; the
-`X-Forwarded-For` spoof and the open ZapZap proxy by `fix/ip-spoofing-zapzap-payload`. Nothing else
+`X-Forwarded-For` spoof and the open ZapZap proxy by `fix/ip-spoofing-zapzap-payload`; the
+revocation, WebSocket-connection and budget items by `fix/budget-ws-revocation`. Nothing else
 below was fixed; the items are ordered by severity, each with the evidence and the
 proposed fix. The three HIGH items were **confirmed by running
 proof-of-concept tests** against the project's own SQLite fixtures (`tests/conftest.py`);
@@ -78,31 +79,6 @@ database not published; the API bound to `127.0.0.1`; the WS ticket redeemed bef
 `accept()`; the PWA mount refusing traversal; argon2 on device tokens; `share_token` kept out
 of routine reads.
 
-### MEDIUM — Revocation is reversible by the revoked party
-
-`POST /groups/join` returns `share_token` to the joiner (`backend/app/routes/groups.py:132`),
-so every device holds it for good. Revoking a device (`groups.py:171`) without rotating the
-token lets the revoked device re-join at once and get a fresh token. Proposed: rotate
-`share_token` inside `revoke_device` and return the new one, as `rotate-share-token` does —
-or, at minimum, document in `.llmwiki/Api.md` that a revoke is meaningless without a rotate.
-Belongs with the owner-role debt already listed in `.llmwiki/Security.md`.
-
-### MEDIUM — One Postgres connection per WebSocket, no per-device cap
-
-`backend/app/services/notify.py:49` opens a dedicated `asyncpg.connect` for every
-`/sync/stream`, and `POST /sync/ws-ticket` has no rate limit. One authenticated device can
-open hundreds of streams and exhaust Postgres `max_connections` (default 100, of which the
-app's own pool wants 30) — a service-wide outage from inside one household. Proposed: a
-single shared LISTEN connection with an in-process fan-out (`dict[group_id, set[Queue]]`),
-and a cap of about three concurrent streams per device.
-
-### MEDIUM — Any member may raise the group's LLM budget to 10 000 ¢ a month
-
-`backend/app/schemas/groups.py:60` lets `PATCH /groups/me/settings` set
-`monthly_budget_cents` up to 10 000; the operator only controls the *initial* value through
-`DEFAULT_BUDGET_CENTS`. Proposed: a `MAX_BUDGET_CENTS` setting — an operator-owned ceiling,
-defaulting to `DEFAULT_BUDGET_CENTS` — enforced in the route, and listed in
-`.env.example` and `.llmwiki/Deployment.md`.
 
 ### LOW — No rate limit on authenticated writes; the raw payload is persisted and replayed
 

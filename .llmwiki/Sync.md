@@ -185,6 +185,17 @@ reconnection is safe — fetch a fresh ticket, then reconnect. Backoff is expone
 Tickets live in process memory (`backend/app/services/ws_ticket.py`), which is one more
 reason production runs a single uvicorn worker.
 
+**One LISTEN connection for the whole process** (`backend/app/services/notify.py`, since
+2026-09-13). Every stream used to open its own asyncpg connection, so one device could
+exhaust Postgres `max_connections`. A module-level broker now holds a single connection
+(`application_name` `countscore-listen`), adds a channel listener for the first stream of a
+group and removes it after the last, and fans each `NOTIFY` out to one in-process queue per
+stream. If that connection drops, every stream is closed with 1012 and the client's usual
+reconnect-then-pull recovers; the next stream opens a new connection. On top of that a
+device may hold at most `MAX_STREAMS_PER_DEVICE` (3, for PWA tabs) streams — the next is
+closed with 1013 before `accept()`. The counter is process memory too (`_open_streams` in
+`app/routes/sync.py`).
+
 ### Server schema
 
 `backend/app/models/*.py` is the source of truth, `alembic/versions/` the exact DDL

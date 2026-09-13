@@ -23,6 +23,9 @@
 | ZapZap payload | `ZapZapPayload` (`app/schemas/comments.py`): 422 on a wrong shape or a count out of bounds (12 players, 200 rounds, 10 history entries); text clipped, player names filtered through the sync allow-list. |
 | Body size | `limit_body_size` middleware, 413 above `MAX_BODY_BYTES` (262144); 411 when `Content-Length` is absent on a write. |
 | WebSocket auth | Single-use ticket from `POST /sync/ws-ticket`, 60 s TTL. `app/services/ws_ticket.py`. |
+| WebSocket cost | One shared LISTEN connection for all streams (`app/services/notify.py`), at most `MAX_STREAMS_PER_DEVICE` (3) streams per device — a member can no longer exhaust Postgres connections. See [[Sync]]. |
+| LLM budget | Members set `monthly_budget_cents` only up to the operator's `MAX_BUDGET_CENTS` (unset: `DEFAULT_BUDGET_CENTS`). |
+| Revocation | Revoking another device rotates `share_token`, so the revoked device cannot rejoin with the token it learnt when joining. |
 | Sync payload values | Per-entity bounds in `app/services/delta_bounds.py`, enforced before write. |
 | Security headers | `security_headers` middleware in `app/main.py:main`; HSTS behind `HSTS_ENABLED`. API responses get `default-src 'none'`; `/docs` a Swagger CSP; paths under `PWA_BASE_PATH` get `_PWA_CSP` (self, `'wasm-unsafe-eval'`, CanvasKit from `www.gstatic.com`, fonts from `fonts.gstatic.com`, `connect-src 'self' https: wss:`) plus `Cache-Control: no-cache`. |
 | PWA static files | Read-only bind mount; Starlette `StaticFiles` rejects traversal out of `PWA_DIR`; `deploy_web.sh` refuses a build containing any `.md`. |
@@ -112,9 +115,11 @@ proof-of-concept results are in `TODO.md`, *Backend security review — 2026-09-
   > **Status: Outdated** (2026-09-13) — O(1) since `fix/sync-contract`; see above.
 - **Every device in a group is equal.** There is no owner role on `Device`, so any member
   can rotate the share token or revoke a sibling device. Full lateral privilege within a
-  group, which matches the household model but not a public one.
-- **In-memory state ties the service to one worker.** `ip_rate_limiter` and `ws_ticket`
-  both live in process memory; horizontal scaling needs them moved to Redis or Postgres
+  group, which matches the household model but not a public one. Since a revoke rotates the
+  share token, the members who stay hold a stale invite link until they rotate it again
+  (`GET /groups/me` never returns the token).
+- **In-memory state ties the service to one worker.** `ip_rate_limiter`, `ws_ticket`, the
+  per-device stream counter and the LISTEN broker all live in process memory; horizontal scaling needs them moved to Redis or Postgres
   first. See rule 2 in `backend/CLAUDE.md`.
 
 ## Decisions & History

@@ -60,11 +60,52 @@ async def test_revoke_device(client):
         f"/groups/me/devices/{bob_device_id}/revoke",
         headers={"Authorization": f"Bearer {alice_token}"},
     )
-    assert r.status_code == 204
+    assert r.status_code == 200
 
     # Bob's token no longer works
     r = await client.get("/groups/me", headers={"Authorization": f"Bearer {bob_token}"})
     assert r.status_code == 401
+
+
+async def test_revoking_another_device_rotates_the_share_token(client):
+    """Bob learnt the share token when he joined: a revoke alone let him straight back in."""
+    r = await client.post("/groups", json={"name": "g", "device_label": "alice"})
+    alice = {"Authorization": f"Bearer {r.json()['device']['token']}"}
+    old_share = r.json()["group"]["share_token"]
+    r = await client.post("/groups/join", json={"share_token": old_share, "device_label": "bob"})
+    bob_device_id = r.json()["device"]["id"]
+
+    r = await client.post(f"/groups/me/devices/{bob_device_id}/revoke", headers=alice)
+    assert r.status_code == 200
+    new_share = r.json()["share_token"]
+    assert new_share != old_share
+
+    rejoin = await client.post(
+        "/groups/join", json={"share_token": old_share, "device_label": "bob again"}
+    )
+    assert rejoin.status_code == 404
+
+    # Idempotent: a second revoke returns the current token and mints no other.
+    again = await client.post(f"/groups/me/devices/{bob_device_id}/revoke", headers=alice)
+    assert again.status_code == 200
+    assert again.json()["share_token"] == new_share
+
+
+async def test_revoking_itself_is_leaving_and_keeps_the_share_token(client):
+    """GroupProvider.leave revokes its own device; the members who stay keep their link."""
+    r = await client.post("/groups", json={"name": "g", "device_label": "alice"})
+    share = r.json()["group"]["share_token"]
+    r = await client.post("/groups/join", json={"share_token": share, "device_label": "bob"})
+    bob = {"Authorization": f"Bearer {r.json()['device']['token']}"}
+    bob_device_id = r.json()["device"]["id"]
+
+    r = await client.post(f"/groups/me/devices/{bob_device_id}/revoke", headers=bob)
+    assert r.status_code == 204
+    assert r.content == b""
+
+    assert (await client.get("/groups/me", headers=bob)).status_code == 401
+    carol = await client.post("/groups/join", json={"share_token": share, "device_label": "carol"})
+    assert carol.status_code == 201
 
 
 async def test_rotate_share_token(client):
@@ -106,6 +147,42 @@ async def test_update_settings(client):
         headers={"Authorization": f"Bearer {token}"},
     )
     assert r.status_code == 422
+
+
+async def test_budget_is_capped_by_the_operator(client, monkeypatch):
+    """The budget is spent on the operator's key: a member must not raise it at will."""
+    from app.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "default_budget_cents", 100)
+    r = await client.post("/groups", json={"name": "g", "device_label": "d"})
+    headers = {"Authorization": f"Bearer {r.json()['device']['token']}"}
+
+    # Unset MAX_BUDGET_CENTS: the default budget is the ceiling.
+    r = await client.patch(
+        "/groups/me/settings", json={"monthly_budget_cents": 101}, headers=headers
+    )
+    assert r.status_code == 422
+    r = await client.patch(
+        "/groups/me/settings", json={"monthly_budget_cents": 100}, headers=headers
+    )
+    assert r.status_code == 200
+    assert r.json()["monthly_budget_cents"] == 100
+    r = await client.patch(
+        "/groups/me/settings", json={"monthly_budget_cents": 20}, headers=headers
+    )
+    assert r.status_code == 200
+
+    monkeypatch.setattr(get_settings(), "max_budget_cents", 500)
+    r = await client.patch(
+        "/groups/me/settings", json={"monthly_budget_cents": 500}, headers=headers
+    )
+    assert r.status_code == 200
+    r = await client.patch(
+        "/groups/me/settings", json={"monthly_budget_cents": 501}, headers=headers
+    )
+    assert r.status_code == 422
+    # A refused request changes nothing else either.
+    assert (await client.get("/groups/me", headers=headers)).json()["monthly_budget_cents"] == 500
 
 
 async def test_get_me_does_not_leak_the_share_token(client):
@@ -177,3 +254,12 @@ async def test_join_is_rate_limited_so_share_tokens_cannot_be_ground(client):
 
     # The LLM quota lives in its own bucket and must be untouched by the above.
     assert ip_rate_limiter.check_ip_rate_limit("testclient").allowed
+
+
+def test_an_empty_budget_ceiling_is_unset(monkeypatch):
+    """docker-compose.prod.yml passes MAX_BUDGET_CENTS as "" when the operator sets none."""
+    from app.config import Settings
+
+    monkeypatch.setenv("MAX_BUDGET_CENTS", "")
+    monkeypatch.setenv("DEFAULT_BUDGET_CENTS", "250")
+    assert Settings().effective_max_budget_cents == 250
