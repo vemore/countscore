@@ -72,6 +72,21 @@ def test_factory_unknown_provider_raises():
 # --- OpenAICompatProvider ------------------------------------------------------
 
 
+def test_sdk_clients_give_up_when_the_app_does():
+    """The openai and anthropic SDKs default to 600 s; the app stops waiting at 90."""
+    from app.services.anthropic_client import AnthropicClient
+    from app.services.llm.base import LLM_TIMEOUT_SECONDS
+
+    p = OpenAICompatProvider(label="gemini", base_url="http://x", api_key="k", model="m")
+    assert p._client is not None
+    assert p._client.timeout == LLM_TIMEOUT_SECONDS == 90
+
+    get_settings().anthropic_api_key = "k"
+    client = AnthropicClient()
+    assert client._client is not None
+    assert client._client.timeout == LLM_TIMEOUT_SECONDS
+
+
 def test_openai_compat_unavailable_without_key():
     p = OpenAICompatProvider(label="gemini", base_url="http://x", api_key=None, model="m")
     assert p.available is False

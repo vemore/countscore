@@ -34,8 +34,23 @@ async def test_hsts_is_absent_by_default(client):
     assert "Strict-Transport-Security" not in r.headers
 
 
-async def test_docs_get_a_csp_that_lets_swagger_load(client):
-    r = await client.get("/docs")
+@pytest.fixture
+def _docs_on(monkeypatch):
+    """Docs are opt-in; flip the setting and drop the lru_cache around it."""
+    get_settings.cache_clear()
+    monkeypatch.setenv("EXPOSE_DOCS", "true")
+    yield
+    get_settings.cache_clear()
+
+
+async def test_docs_get_a_csp_that_lets_swagger_load(_docs_on):
+    from httpx import ASGITransport, AsyncClient
+
+    app = create_app()
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        r = await ac.get("/docs")
+
+    assert r.status_code == 200
 
     csp = r.headers["Content-Security-Policy"]
     assert "default-src 'none'" not in csp
@@ -72,3 +87,9 @@ async def test_oversized_body_is_still_refused(client):
     r = await client.post("/groups", json=body)
 
     assert r.status_code == 413
+
+
+async def test_docs_are_not_served_by_default(client):
+    for path in ("/docs", "/redoc", "/openapi.json"):
+        r = await client.get(path)
+        assert r.status_code == 404, path

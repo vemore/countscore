@@ -124,6 +124,9 @@ def create_app() -> FastAPI:
         title="CountScore Backend",
         version=__version__,
         lifespan=lifespan,
+        docs_url="/docs" if settings.expose_docs else None,
+        redoc_url="/redoc" if settings.expose_docs else None,
+        openapi_url="/openapi.json" if settings.expose_docs else None,
     )
 
     app.add_middleware(
@@ -218,6 +221,9 @@ def create_app() -> FastAPI:
     if pwa_base_path:
         api_paths = [r.path for router in api_routers for r in router.routes if hasattr(r, "path")]
         api_paths += [r.path for r in app.routes if hasattr(r, "path")]
+        # Reserved whether EXPOSE_DOCS is on or not, so turning the docs on later cannot
+        # make a PWA_BASE_PATH that started fine collide.
+        api_paths += sorted(_DOCS_PATHS)
         _mount_pwa(app, pwa_base_path, settings.pwa_dir, api_paths)
 
     return app

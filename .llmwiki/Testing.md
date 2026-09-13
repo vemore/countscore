@@ -44,7 +44,7 @@ docker run -d --rm --name cs-sync-pg -e POSTGRES_PASSWORD=pw -e POSTGRES_USER=cs
   -e POSTGRES_DB=cs -p 55433:5432 postgres:17-alpine
 cd backend && DATABASE_URL=postgresql://cs:pw@localhost:55433/cs uv run alembic upgrade head
 DATABASE_URL=postgresql+asyncpg://cs:pw@localhost:55433/cs GROUP_RL_PER_MINUTE=1000 \
-  GROUP_RL_PER_HOUR=10000 uv run uvicorn app.main:app --port 8765 &
+  GROUP_RL_PER_HOUR=10000 SYNC_PUSH_RL_PER_MINUTE=1000 uv run uvicorn app.main:app --port 8765 &
 cd .. && SYNC_BACKEND_URL=http://127.0.0.1:8765 flutter test test/sync/sync_two_devices_test.dart
 ```
 

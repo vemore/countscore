@@ -15,6 +15,7 @@ from .base import (
     DEFAULT_MAX_TOKENS,
     DEFAULT_TEMPERATURE,
     DEFAULT_TOP_P,
+    LLM_TIMEOUT_SECONDS,
     LLMRateLimitedError,
     LLMResult,
 )
@@ -24,7 +25,11 @@ class OpenAICompatProvider:
     def __init__(self, *, label: str, base_url: str, api_key: str | None, model: str) -> None:
         self.label = label
         self.model = model
-        self._client = AsyncOpenAI(api_key=api_key, base_url=base_url) if api_key else None
+        self._client = (
+            AsyncOpenAI(api_key=api_key, base_url=base_url, timeout=LLM_TIMEOUT_SECONDS)
+            if api_key
+            else None
+        )
 
     @property
     def available(self) -> bool:

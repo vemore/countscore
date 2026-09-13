@@ -18,6 +18,7 @@ import anthropic
 from anthropic.types import TextBlock, TextBlockParam
 
 from app.config import get_settings
+from app.services.llm.base import LLM_TIMEOUT_SECONDS
 
 # Haiku 4.5 pricing — $0.80 / Mtok input, $4.00 / Mtok output (as of 2026-05).
 # We store ``cost_cents`` as integer cents in the DB. To avoid losing precision on
@@ -52,7 +53,9 @@ class AnthropicClient:
         self.model = settings.comment_model
         self._client: anthropic.AsyncAnthropic | None = None
         if settings.anthropic_api_key:
-            self._client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
+            self._client = anthropic.AsyncAnthropic(
+                api_key=settings.anthropic_api_key, timeout=LLM_TIMEOUT_SECONDS
+            )
 
     @property
     def available(self) -> bool:

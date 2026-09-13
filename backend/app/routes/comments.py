@@ -15,7 +15,7 @@ from __future__ import annotations
 import logging
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col
@@ -348,7 +348,7 @@ async def generate_comment(
 )
 async def list_comments(
     game_id: uuid.UUID,
-    limit: int = 10,
+    limit: int = Query(10, ge=1, le=100),
     auth: AuthContext = Depends(require_device),
     session: AsyncSession = Depends(get_session),
 ) -> list[CommentPayload]:
