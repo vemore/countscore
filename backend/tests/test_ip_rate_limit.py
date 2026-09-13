@@ -32,7 +32,7 @@ def _payload() -> dict:
 
 @pytest.fixture
 def client_from(client):
-    """Open a client whose requests arrive from ``ip`` — the address uvicorn resolved.
+    """Open a client whose requests arrive from ``ip`` — the address the app rate-limits on.
 
     Shares the app, and so the test database, of the ``client`` fixture; only the ASGI
     peer differs. That is what a distinct caller looks like to the app in production,
@@ -85,8 +85,8 @@ async def test_forwarded_for_header_does_not_open_a_new_bucket(
 ):
     """The 2026-09-13 PoC, inverted: rotating X-Forwarded-For used to mint a bucket per call.
 
-    Behind the proxy the header is uvicorn's to resolve; the app sees one peer, so a
-    client writing the header itself stays in its own bucket.
+    Nothing reads the header any more — not the app, not uvicorn — so a client writing it
+    itself stays in its own bucket.
     """
     from app.services import ip_rate_limiter
 
@@ -108,29 +108,115 @@ async def test_forwarded_for_header_does_not_open_a_new_bucket(
     assert list(ip_rate_limiter._buckets) == [("groups", "203.0.113.9")]
 
 
-async def test_uvicorn_resolves_the_hop_the_trusted_proxy_appended():
-    """The deployment contract behind docker-compose.prod.yml's FORWARDED_ALLOW_IPS.
+GATEWAY = "172.28.87.1"  # the peer Web Station arrives from, docker-compose.prod.yml
 
-    Web Station appends the real address, so a spoofing client arrives as
-    ``<spoof>, <real>``. With the proxy's hop trusted, uvicorn must keep ``<real>``.
+
+@pytest.fixture
+def behind_proxy(client):
+    """A client that arrives the way Web Station does: from the trusted gateway.
+
+    Wraps the ``client`` fixture's app in the middleware exactly as ``create_app`` does
+    with ``TRUSTED_PROXY_IPS`` set, so the test database is shared.
     """
-    from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+    from app.services.trusted_proxy import TrustedProxyMiddleware
+
+    app = TrustedProxyMiddleware(client._transport.app, trusted_ips=[GATEWAY])
+
+    @asynccontextmanager
+    async def _open(peer: str = GATEWAY) -> AsyncIterator[AsyncClient]:
+        transport = ASGITransport(app=app, client=(peer, 50000))
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            yield ac
+
+    return _open
+
+
+async def _join_codes(c: AsyncClient, headers: list[dict]) -> list[int]:
+    bogus = {"share_token": "00000000-0000-0000-0000-000000000000", "device_label": "d"}
+    return [(await c.post("/groups/join", json=bogus, headers=h)).status_code for h in headers]
+
+
+async def test_behind_the_proxy_buckets_follow_x_real_ip_not_x_forwarded_for(behind_proxy):
+    """The 2026-09-13 production check, which the FORWARDED_ALLOW_IPS fix failed.
+
+    Web Station sets X-Real-IP and passes X-Forwarded-For through as the client wrote it,
+    so a rotating X-Forwarded-For must not open a new bucket, and X-Real-IP must.
+    """
+    from app.services import ip_rate_limiter
+
+    async with behind_proxy() as c:
+        spoofing = [
+            {"X-Real-IP": "203.0.113.9", "X-Forwarded-For": f"10.9.9.{i}"} for i in range(4)
+        ]
+        assert await _join_codes(c, spoofing) == [404, 404, 404, 429]
+        assert await _join_codes(c, [{"X-Real-IP": "198.51.100.7"}]) == [404]
+
+    assert set(ip_rate_limiter._buckets) == {("groups", "203.0.113.9"), ("groups", "198.51.100.7")}
+
+
+async def test_x_real_ip_from_an_untrusted_peer_is_ignored(behind_proxy):
+    """Reaching the port without the proxy must not let a caller name its own address."""
+    from app.services import ip_rate_limiter
+
+    async with behind_proxy(peer="192.0.2.50") as c:
+        codes = await _join_codes(c, [{"X-Real-IP": f"10.0.0.{i}"} for i in range(4)])
+
+    assert codes == [404, 404, 404, 429]
+    assert list(ip_rate_limiter._buckets) == [("groups", "192.0.2.50")]
+
+
+@pytest.mark.parametrize("value", ["", "not-an-ip", "1.2.3.4, 5.6.7.8"])
+async def test_a_malformed_x_real_ip_keeps_the_proxy_address(value):
+    from app.services.trusted_proxy import TrustedProxyMiddleware
 
     seen: dict = {}
 
     async def app(scope, receive, send):
-        seen["client"] = scope["client"]
+        seen.update(client=scope["client"], scheme=scope["scheme"])
 
-    middleware = ProxyHeadersMiddleware(app, trusted_hosts="172.28.87.1")
+    middleware = TrustedProxyMiddleware(app, trusted_ips=[GATEWAY])
     scope = {
         "type": "http",
         "scheme": "http",
-        "client": ("172.28.87.1", 50000),
-        "headers": [(b"x-forwarded-for", b"6.6.6.6, 203.0.113.9")],
+        "client": (GATEWAY, 50000),
+        "headers": [(b"x-real-ip", value.encode()), (b"x-forwarded-proto", b"https")],
     }
     await middleware(scope, None, None)  # type: ignore[arg-type]
 
-    assert seen["client"][0] == "203.0.113.9"
+    assert seen == {"client": (GATEWAY, 50000), "scheme": "https"}
+
+
+async def test_forwarded_proto_sets_the_websocket_scheme():
+    from app.services.trusted_proxy import TrustedProxyMiddleware
+
+    seen: dict = {}
+
+    async def app(scope, receive, send):
+        seen.update(client=scope["client"], scheme=scope["scheme"])
+
+    middleware = TrustedProxyMiddleware(app, trusted_ips=[GATEWAY])
+    scope = {
+        "type": "websocket",
+        "scheme": "ws",
+        "client": (GATEWAY, 50000),
+        "headers": [(b"x-real-ip", b"2001:db8::1"), (b"x-forwarded-proto", b"https")],
+    }
+    await middleware(scope, None, None)  # type: ignore[arg-type]
+
+    assert seen == {"client": ("2001:db8::1", 50000), "scheme": "wss"}
+
+
+def test_create_app_runs_the_trusted_proxy_middleware_first(monkeypatch):
+    """Outermost, so the rate limits — and every other middleware — see the real client."""
+    from app.main import create_app
+    from app.services.trusted_proxy import TrustedProxyMiddleware
+
+    monkeypatch.setattr(get_settings(), "trusted_proxy_ips", f" {GATEWAY} , 10.0.0.1")
+    app = create_app()
+
+    first = app.user_middleware[0]
+    assert first.cls is TrustedProxyMiddleware
+    assert first.kwargs == {"trusted_ips": [GATEWAY, "10.0.0.1"]}
 
 
 async def test_mvp_rate_limited_per_ip(client_from, monkeypatch):

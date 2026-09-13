@@ -114,7 +114,7 @@ an API route (`/groups`, `/sync/app`, `/health`, `/docs`…) refuses to start. C
 - **`POST /groups` and `/groups/join` are IP rate limited** (`GROUP_RL_PER_MINUTE` 3,
   `GROUP_RL_PER_HOUR` 10) in a bucket of their own, so group spam cannot consume the LLM
   quota. On `/join` the same limit is what caps `share_token` guessing: a 201 and a 404
-  tell a valid token from an invalid one. The IP is the one uvicorn resolved behind the
+  tell a valid token from an invalid one. The IP is the proxy's `X-Real-IP`, believed from the
   trusted proxy, never a header the client wrote — see [[Security]].
 - **The stream is authenticated by ticket, not by the device token.** The ticket is
   redeemed before `websocket.accept()`, so an unauthenticated peer cannot make the server

@@ -16,6 +16,7 @@ from app.config import get_settings
 from app.routes import comments, groups, sync
 from app.services.llm import get_llm_provider
 from app.services.notify import close_broker
+from app.services.trusted_proxy import TrustedProxyMiddleware
 
 logger = logging.getLogger(__name__)
 
@@ -188,6 +189,10 @@ def create_app() -> FastAPI:
         if hsts_enabled:
             response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         return response
+
+    # Added last, so it runs first: every middleware and route after it, the rate limits
+    # included, sees the client address the trusted proxy vouched for.
+    app.add_middleware(TrustedProxyMiddleware, trusted_ips=settings.trusted_proxy_ips_list)
 
     api_routers = (groups.router, sync.router, comments.router)
     for router in api_routers:
