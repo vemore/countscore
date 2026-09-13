@@ -143,6 +143,6 @@ firebase_options.dart
 # state, which is personal to whoever opened the vault.
 .obsidian/
 
-# Deployment target for backend/scripts/deploy_nas.sh: one person's NAS
-# hostname, registry and SSH alias. deploy.env.example is the tracked template.
+# Deployment target for backend/scripts/deploy_nas.sh and scripts/deploy_web.sh:
+# one person's NAS hostname, registry and SSH alias. deploy.env.example is the tracked template.
 backend/scripts/deploy.env

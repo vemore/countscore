@@ -31,7 +31,7 @@ Load this file first. Then read only the pages your task touches.
 | [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-09-09 |
 | [[SchemaV9]] | The nine tables, global player identity, the migration chain | 2026-09-09 |
 | [[I18n]] | 10 languages × 181 keys, French template, English fallback | 2026-09-13 |
-| [[Web]] | PWA specifics: sqlite3.wasm, OPFS, committed binaries, `kIsWeb` guards | 2026-09-09 |
+| [[Web]] | PWA specifics: sqlite3.wasm, OPFS, committed binaries, `kIsWeb` guards, base href | 2026-09-13 |
 
 ## Backend (FastAPI)
 
@@ -46,7 +46,7 @@ Load this file first. Then read only the pages your task touches.
 
 | Page | Summary | Updated |
 |---|---|---|
-| [[Deployment]] | Synology NAS, Web Station TLS, `deploy_nas.sh`, environment | 2026-09-13 |
+| [[Deployment]] | Synology NAS, Web Station TLS, `deploy_nas.sh`, `deploy_web.sh`, environment | 2026-09-13 |
 | [[Hooks]] | What Claude Code refuses mechanically, and why each rule left CLAUDE.md | 2026-09-13 |
 | [[Security]] | Defended surfaces, and the security debt that is knowingly open | 2026-09-13 |
 | [[Testing]] | Unit, Drift, migration, e2e web and device; backend pytest | 2026-09-13 |
@@ -55,4 +55,5 @@ Load this file first. Then read only the pages your task touches.
 ## Procedures live in skills, not here
 
 These pages describe *what is*. For *how to do*, use the skills in `.claude/skills/`:
-`i18n-add-string`, `db-migration`, `release-android`, `backend-deploy`, `flutter-device-test`.
+`i18n-add-string`, `db-migration`, `release-android`, `backend-deploy`, `web-deploy`,
+`flutter-device-test`.

@@ -22,7 +22,8 @@
 | Body size | `limit_body_size` middleware, 413 above `MAX_BODY_BYTES` (262144); 411 when `Content-Length` is absent on a write. |
 | WebSocket auth | Single-use ticket from `POST /sync/ws-ticket`, 60 s TTL. `app/services/ws_ticket.py`. |
 | Sync payload values | Per-entity bounds in `app/services/delta_bounds.py`, enforced before write. |
-| Security headers | `security_headers` middleware in `app/main.py:main`; HSTS behind `HSTS_ENABLED`. |
+| Security headers | `security_headers` middleware in `app/main.py:main`; HSTS behind `HSTS_ENABLED`. API responses get `default-src 'none'`; `/docs` a Swagger CSP; paths under `PWA_BASE_PATH` get `_PWA_CSP` (self, `'wasm-unsafe-eval'`, CanvasKit from `www.gstatic.com`, fonts from `fonts.gstatic.com`, `connect-src 'self' https:`) plus `Cache-Control: no-cache`. |
+| PWA static files | Read-only bind mount; Starlette `StaticFiles` rejects traversal out of `PWA_DIR`; `deploy_web.sh` refuses a build containing any `.md`. |
 | Backups | Daily `pg_dump`, 7-day rotation. |
 
 ### Disclosure — what the app admits to sending, and to whom
@@ -75,6 +76,14 @@ server they chose, and carries no credential of ours.
   first. See rule 2 in `backend/CLAUDE.md`.
 
 ## Decisions & History
+
+- **The PWA's CSP allows `connect-src https:` (2026-09-13).** The backend URL is a user
+  setting, so a PWA served by one backend may legitimately be pointed at another; pinning
+  `connect-src` to `'self'` would break that with nothing but a console line. Scripts stay
+  pinned to `'self'` and `www.gstatic.com`, which is what an XSS would need. Measured, not
+  guessed: a `--base-href=/countscore/` release build served by uvicorn under this policy
+  loaded CanvasKit, the Roboto fallback font and the Drift worker with no violation, and
+  persisted a game across a reload.
 
 - **The ZapZap system prompt no longer names anyone (2026-09-13).** It used to hard-code
   eight first names and a reputation for each, so those names reached the third-party

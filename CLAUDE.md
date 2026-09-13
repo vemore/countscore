@@ -23,9 +23,10 @@ rather than a silent rewrite.
 
 Repeatable procedures are **skills**, not wiki pages — check `.claude/skills/` before
 writing steps out by hand: `i18n-add-string`, `db-migration`, `release-android`,
-`backend-deploy`, `flutter-device-test`.
+`backend-deploy`, `web-deploy`, `flutter-device-test`.
 
-Scoped instructions: `backend/CLAUDE.md` (Python/FastAPI) and `web/CLAUDE.md` (PWA).
+Scoped instructions: `backend/CLAUDE.md` (Python/FastAPI) and `.claude/rules/web.md` (PWA —
+not in `web/`, because everything under `web/` is published with the build).
 
 ## Non-negotiables
 

@@ -2,7 +2,7 @@
 
 > Scope: everything specific to the PWA build.
 > Related: [[DataLayer]] · [[MobileApp]] · [[Testing]] · [[LlmProviders]] · [[KnownLimits]]
-> Updated: 2026-09-11
+> Updated: 2026-09-13
 
 ## Facts
 
@@ -12,7 +12,11 @@
 `flutter_bootstrap.js async`, no custom loader or service-worker code) · `manifest.json`
 (CountScore, standalone, portrait-primary, theme `#673AB7`) · `favicon.png` · `icons/`
 (4 PNGs) · and the two Drift runtime binaries: **`sqlite3.wasm` (744 KB)** and
-**`drift_worker.js` (351 KB)**.
+**`drift_worker.js` (355 KB, the prebuilt worker from drift 2.34.4)**.
+
+Nothing else belongs in `web/`: Flutter copies the whole directory into `build/web/`, so
+any file placed there is published. The Claude Code instructions for the PWA live in
+`.claude/rules/web.md` for that reason.
 
 ### Persistence
 
@@ -61,6 +65,14 @@ Add `--base-href=/subpath/` if not served from the domain root.
 There is **no committed hosting configuration for the Flutter web app** — no nginx or
 Caddy vhost anywhere in the repo. [[Deployment]] covers only the FastAPI container.
 
+> **Status: Outdated** (2026-09-13) — the backend container serves the PWA under
+> `PWA_BASE_PATH` on its own host, and `scripts/deploy_web.sh` publishes the build; see
+> [[Deployment]] and the `web-deploy` skill. Same origin as the API, so the CORS caveat
+> below does not apply to that deployment. The
+> drift URIs in `connection_web.dart` are relative, so they follow `--base-href`: checked
+> by serving a `--base-href=/countscore/` build under that path — from a plain static
+> server and from uvicorn with the PWA CSP — creating a game and reloading.
+
 ### CORS and mixed content
 
 The backend a user configures must whitelist the origin serving the PWA in its
@@ -90,6 +102,15 @@ address for the Android case; on web that URL still only works from an http orig
   > the PWA — but that is now a choice, not a workaround. **The committed
   > `drift_worker.js` is stale**: 351,222 B against the 355,222 B drift 2.34.4 ships.
   > Refreshing it is its own change, tracked in `TODO.md`.
+- **The worker was refreshed from the drift 2.34.4 package (2026-09-13).** Byte-identical
+  to `~/.pub-cache/hosted/pub.dev/drift-2.34.4/drift_worker.js`; validated by the web e2e
+  and a manual launch under a sub-path. Whenever drift is bumped, copy the worker from the
+  new version's package root in the same change. `sqlite3.wasm` was left alone: it embeds
+  SQLite 3.53.1 and works with `sqlite3` 3.5.2.
+- **`web/CLAUDE.md` moved to `.claude/rules/web.md` (2026-09-13).** It was being shipped in
+  every `build/web/`. A path-scoped rule loads when the same files are touched, and lives
+  outside the tree Flutter copies. `scripts/deploy_web.sh` refuses any `.md` in the build
+  so the class of leak cannot return through that path.
 - **The Server section of Settings is *not* `kIsWeb`-guarded**, unlike wakelock and
   export/import. The PWA needs a configured backend exactly as the Android app does, and a
   browser user has no other way to supply one.

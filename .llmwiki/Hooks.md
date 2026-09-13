@@ -59,7 +59,7 @@ a superset costs seconds and never blocks wrongly.
   made inside a script invoked as `bash scripts/foo.sh`: the hook only sees the command
   string it was given.
 - **`git checkout` / `git restore` / a `Write` overwriting the web binaries** — only
-  removal and gitignoring are guarded. `web/CLAUDE.md` still states the rule.
+  removal and gitignoring are guarded. `.claude/rules/web.md` still states the rule.
 - **A stale `*.g.dart`.** `session-start.sh` only notices when *no* generated file exists.
   This is why the codegen rule stays in `CLAUDE.md`.
 - **Freshness of `origin/main`.** The hooks never fetch: no network in a hook. Everything

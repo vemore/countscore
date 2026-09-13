@@ -115,6 +115,20 @@ built from codepoints stored in the database, so Flutter's icon tree-shaker cann
 references and the build fails without the flag. It costs roughly 200 KB. See
 [CLAUDE.md](CLAUDE.md).
 
+### Publishing the PWA
+
+The backend can serve the web app itself, under a sub-path of its own host (set
+`PWA_BASE_PATH`, e.g. `/countscore`, in the backend's `.env`) — same origin as the API, so no
+CORS setup. `scripts/deploy_web.sh` builds for that sub-path and publishes the build to the
+server over SSH; it reuses the backend's untracked `backend/scripts/deploy.env` and reads
+`PWA_BASE_PATH` from the server, so the deployment target never enters the repository.
+
+```bash
+scripts/deploy_web.sh --dry-run   # build + checks, prints what it would run
+scripts/deploy_web.sh             # publish, keeping the previous release
+scripts/deploy_web.sh --rollback  # swap the previous release back
+```
+
 ## Project structure
 
 ```
@@ -135,7 +149,7 @@ countscore/
 ├── integration_test/    # End-to-end suite (web + real device)
 ├── store_listing/       # Play Store assets and the per-locale listing text
 ├── docs/                # Published by GitHub Pages — the privacy policy Play links to
-├── scripts/             # Keystore, screenshots, privacy page, hook self-test
+├── scripts/             # Keystore, screenshots, privacy page, PWA deploy, hook self-test
 ├── .llmwiki/            # Durable project knowledge — start at INDEX.md
 └── pubspec.yaml
 ```
@@ -152,6 +166,7 @@ your own, and your data stays on it. It exposes:
 | `/sync/push`, `/sync/pull` | Delta-log sync with row-level last-write-wins |
 | `/sync/stream` | WebSocket change signalling (Postgres `LISTEN/NOTIFY`) |
 | `/comments/*` | LLM game commentary, including the ZapZap analysis |
+| `$PWA_BASE_PATH/` | Optional: the web app itself, same origin as the API (off unless `PWA_BASE_PATH` is set) |
 
 **Current state, stated plainly:** the server side of groups and sync is implemented and
 tested, but **the Flutter client for it has not been written yet**. The app is therefore
