@@ -8,7 +8,7 @@ readable after the fact.
 
 ## The Flutter web app has no deployment path
 
-**Status:** done (2026-09-13) — closed by `chore/pwa-deploy`: `scripts/deploy_web.sh` builds for a sub-path and publishes to a Web Station folder over ssh with an atomic swap and a one-step rollback; the target lives in the untracked `scripts/deploy_web.env`. Procedure in the `web-deploy` skill, facts in `.llmwiki/Deployment.md`. Noted 2026-09-09 during the LLM-wiki migration.
+**Status:** done (2026-09-13) — closed by `chore/pwa-deploy`: the backend container serves the PWA under `PWA_BASE_PATH` on its own host (no Web Station change, same origin as the API), and `scripts/deploy_web.sh` builds for that sub-path, reading it from the NAS `.env`, then publishes over ssh with a rename swap and a one-step rollback. The target stays in the untracked `backend/scripts/deploy.env`. Procedure in the `web-deploy` skill, facts in `.llmwiki/Deployment.md`. Noted 2026-09-09 during the LLM-wiki migration.
 
 `.llmwiki/Deployment.md` covers the FastAPI container completely. For the PWA there is
 nothing: no vhost, no Web Station config, no deploy script, no documented `--base-href`.

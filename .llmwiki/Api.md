@@ -55,6 +55,17 @@ It answers **200 even when the LLM is misconfigured** — an unknown `LLM_PROVID
 `"model": null` rather than a 5xx. Failing the probe would restart-loop a container whose
 group and sync routes are healthy. See [[LlmProviders]].
 
+### The PWA — `GET $PWA_BASE_PATH/…`
+
+When `PWA_BASE_PATH` is set (e.g. `/countscore`), `create_app` mounts the Flutter web build
+from `PWA_DIR` there, **after** every API route (`_mount_pwa` in `app/main.py`). GET/HEAD
+only (405 otherwise), no auth, `html=True` so `…/` answers `index.html`; the bare prefix
+redirects to the trailing slash. A missing build folder is a **404, not a 500** (`_PwaFiles`
+skips StaticFiles' one-off directory check), and a folder swapped in by
+`scripts/deploy_web.sh` is served without a restart. A prefix whose first segment matches
+an API route (`/groups`, `/sync/app`, `/health`, `/docs`…) refuses to start. Covered by
+`tests/test_pwa.py`.
+
 ## Decisions & History
 
 - **An upstream quota is a 503, not a 429 and not a 502 (2026-09-13).** On 2026-09-11 the

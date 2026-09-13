@@ -1,50 +1,57 @@
 ---
 name: web-deploy
-description: Build and publish the CountScore PWA (Flutter web) to a Synology Web Station folder served under a sub-path — base href, leak and binary checks, tar-over-ssh upload, atomic swap, rollback. Use when shipping the web app, changing where it is served, rolling back a bad web release, or diagnosing a PWA that loads blank or 404s its assets in production. Triggers: "deploy the PWA", "déployer la PWA", "publish the web app", "deploy_web", "base-href", "web rollback", "Web Station web app".
+description: Build and publish the CountScore PWA (Flutter web), which the backend container serves under PWA_BASE_PATH on its own host — base href read from the NAS .env, leak and binary checks, tar-over-ssh upload, rename swap, rollback. Use when shipping the web app, changing its sub-path, rolling back a bad web release, or diagnosing a PWA that loads blank, 404s its assets or hits a CSP error in production. Triggers: "deploy the PWA", "déployer la PWA", "publish the web app", "deploy_web", "base-href", "PWA_BASE_PATH", "web rollback".
 ---
 
 # Deploying the CountScore PWA
 
-Target: the folder, sub-path and SSH alias named in `scripts/deploy_web.env` — untracked,
-because it is one person's infrastructure and this repository is public. Copy
-`scripts/deploy_web.env.example` if it is missing. **Never commit a real host, path or URL**
-into the script, this skill, the wiki or the README: they carry placeholders only.
+The PWA is served **by the backend's `api` container**, under `PWA_BASE_PATH` (e.g.
+`/countscore`) on the backend's own host. Web Station is not involved beyond the portal
+that already proxies that host to the container. Same origin as the API: no `CORS_ORIGINS`
+entry, no mixed content.
 
-Web-specific rules (the tracked binaries, `DriftWebOptions`, `kIsWeb`) are in
-`.claude/rules/web.md`; the facts are in `.llmwiki/Web.md` and `.llmwiki/Deployment.md`.
-The backend is a separate deploy — see the `backend-deploy` skill.
+The target is the backend's: `NAS_SSH`, `NAS_DEPLOY_DIR` and `PUBLIC_URL` come from the
+untracked `backend/scripts/deploy.env`. **Never commit a real host, path or URL** into the
+script, this skill, the wiki or the README — placeholders only.
 
-## What the script does
+Facts: `.llmwiki/Deployment.md` (topology, decisions), `.llmwiki/Api.md` (route behaviour),
+`.llmwiki/Security.md` (CSP). Web rules: `.claude/rules/web.md`. Backend procedure:
+`backend-deploy`.
 
-`scripts/deploy_web.sh`:
+## How the pieces fit
 
-1. Validates `WEB_NAS_DIR` (plain absolute path, ≥ 2 levels) and `WEB_BASE_HREF`
-   (leading and trailing `/`).
-2. `flutter build web --release --no-tree-shake-icons --base-href=$WEB_BASE_HREF` — no
-   `BACKEND_URL`, the backend is a user setting.
-3. Refuses to publish if `build/web` holds any `.md` file, or lacks `index.html`,
-   `main.dart.js`, `sqlite3.wasm` or `drift_worker.js`.
-4. Streams `build/web` as a tarball over ssh (scp is blocked on the NAS) into
-   `$WEB_NAS_DIR.new`, makes it world-readable, then swaps: current → `.prev`, `.new` →
-   current. One previous release is kept.
+| Piece | Where | Role |
+|---|---|---|
+| `PWA_BASE_PATH` | NAS `$NAS_DEPLOY_DIR/.env` — **its only home** | The container mounts the PWA there; `deploy_web.sh` reads it over ssh for `--base-href` |
+| `pwa/current` | `$NAS_DEPLOY_DIR/pwa/` on the NAS | The live build. `pwa/` is bind-mounted read-only at `/srv/pwa` |
+| `_mount_pwa` / `_PWA_CSP` | `backend/app/main.py` | Static mount + the CSP and `Cache-Control: no-cache` for those paths |
+| `scripts/deploy_web.sh` | repo | Build, check, upload to `pwa/current.new`, rename swap, keep `pwa/current.prev` |
 
 ## 1. One-time setup
 
-- `scripts/deploy_web.env` filled in from the example.
-- The SSH user behind `NAS_SSH` can create and rename directories in the **parent** of
-  `WEB_NAS_DIR` (the swap renames the folder itself, not only its contents).
-- Web Station serves `WEB_NAS_DIR` at `WEB_BASE_HREF`, over the existing TLS certificate.
-  **The sub-path and the folder must agree**: a build whose base href differs from the
-  path it is served at loads `index.html` and then 404s every asset — a blank page.
-  The DSM steps are not scripted; record them in `.llmwiki/Deployment.md` the first time
-  they are done rather than rediscovering them.
+1. **Deploy a backend that has the PWA mount** (`docker-compose.prod.yml` with the `./pwa`
+   volume, an image with `_mount_pwa`) — the `backend-deploy` skill. `deploy_nas.sh` creates
+   `pwa/` as the SSH user; if it ever gets created by Docker instead, it is root-owned and
+   the upload fails with a permission error.
+2. **Set the sub-path in the NAS `.env`**, following *Changing one variable in place* in
+   `backend-deploy` (read first, then append, then `docker compose up -d`):
+
+   ```bash
+   source backend/scripts/deploy.env
+   ssh "$NAS_SSH" "grep -n PWA_BASE_PATH $NAS_DEPLOY_DIR/.env" || echo "not set"
+   echo 'PWA_BASE_PATH=/countscore' | ssh "$NAS_SSH" "cat >> $NAS_DEPLOY_DIR/.env"
+   ```
+
+   Leading slash, no trailing slash. A value the backend refuses (malformed, or whose first
+   segment is an API route such as `/groups` or `/health`) stops the container from
+   starting — check `/health` right after.
 
 ## 2. Pre-flight
 
 ```bash
 flutter analyze
 flutter test
-scripts/deploy_web.sh --dry-run    # builds, runs the checks, prints the remote commands
+scripts/deploy_web.sh --dry-run    # reads PWA_BASE_PATH, builds, checks, prints remote commands
 ```
 
 If `web/drift_worker.js` or `web/sqlite3.wasm` changed since the last release, run the web
@@ -56,29 +63,33 @@ e2e first (`.llmwiki/Testing.md`) — their failures only surface at runtime.
 scripts/deploy_web.sh
 ```
 
-This is outward-facing: it replaces what users load. Confirm with the user before running it.
+Outward-facing: it replaces what users load. **Confirm with the user before running it.**
+No container restart is needed — the backend reads the folder on every request.
 
 ## 4. Verify
 
 ```bash
-source scripts/deploy_web.env
-curl -sI "$WEB_PUBLIC_URL"                  # 200
-curl -sI "${WEB_PUBLIC_URL}sqlite3.wasm" | grep -i content-type   # application/wasm
-curl -sI "${WEB_PUBLIC_URL}drift_worker.js" # 200
+source backend/scripts/deploy.env
+BASE=/countscore   # the PWA_BASE_PATH you set
+curl -sI "$PUBLIC_URL$BASE/" | grep -i -e '^HTTP' -e content-security-policy   # 200 + wasm-unsafe-eval
+curl -sI "$PUBLIC_URL$BASE/sqlite3.wasm" | grep -i content-type               # application/wasm
+curl -s  "$PUBLIC_URL/health"                                                 # API unaffected
 ```
 
-Then open the URL in a browser: the home screen renders, the console shows no drift or wasm
-error, and a game created before a reload is still there after it. A blank page with
-asset 404s is a base-href/sub-path mismatch; a crash at startup with assets loading fine
-points at `connection_web.dart` (see `.claude/rules/web.md`).
+Then open `$PUBLIC_URL$BASE/` in a browser: home screen renders, no CSP or wasm error in the
+console, and a game created before a reload is still there after it.
 
-Things that look like a failed deploy and are not:
+Symptoms and causes:
 
-- **An old version keeps loading.** Flutter's service worker serves the cached release;
-  a second reload, or closing the installed PWA, picks up the new one.
-- **The ZapZap analysis fails in the browser only.** The backend's `CORS_ORIGINS` must list
-  the PWA's **origin** (scheme + host + port, no path). A PWA on the API's own host is
-  same-origin and needs nothing. An `https` PWA cannot call an `http` backend at all.
+- **404 on `$BASE/`** — `PWA_BASE_PATH` not set in the container (`docker compose up -d`
+  after editing `.env`), or no build in `pwa/current` yet.
+- **Blank page, assets 404** — the build's base href differs from the served path. Cannot
+  happen through the script (it reads the same value); a hand-built upload can do it.
+- **CSP violation in the console** — Flutter started loading something `_PWA_CSP` does not
+  allow (a new CDN host after an SDK upgrade, typically). Fix the policy in
+  `backend/app/main.py` with a test, not by loosening `default-src`.
+- **An old version keeps loading** — Flutter's service worker; a second reload picks up the
+  new release. Responses carry `Cache-Control: no-cache`, so HTTP caching is not the cause.
 
 ## 5. Rollback
 
@@ -86,16 +97,17 @@ Things that look like a failed deploy and are not:
 scripts/deploy_web.sh --rollback
 ```
 
-Swaps `.prev` back in; the release it replaces becomes `.prev`, so running it twice returns
-to where you started. There is no history beyond one release — to go further back, check
-out the commit and deploy it.
+Swaps `pwa/current.prev` back; the release it replaces becomes `.prev`, so running it twice
+returns to where you started. One release of history only — to go further back, check out
+the commit and deploy it. A backend rollback (`deploy_nas.sh --rollback`) does not touch the
+PWA folder, but an image older than the PWA mount stops serving it.
 
 ## Checklist
 
 - [ ] `flutter analyze` and `flutter test` green
-- [ ] `--dry-run` passes: no `.md` in the build, both binaries present
+- [ ] `--dry-run` passes: base path read from the NAS, no `.md` in the build, both binaries present
 - [ ] Web e2e run if either web binary changed
 - [ ] User confirmed before the real deploy
-- [ ] `sqlite3.wasm` served as `application/wasm`
+- [ ] `$BASE/` answers 200 with the PWA CSP, `sqlite3.wasm` as `application/wasm`, `/health` still ok
 - [ ] Data survives a reload on the deployed URL
 - [ ] No host, path or URL of the real deployment added to a tracked file

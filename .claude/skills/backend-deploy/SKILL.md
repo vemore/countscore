@@ -149,6 +149,7 @@ The dev compose file and Dockerfile default to 2 workers, which is fine locally.
 - [ ] Any new Alembic revision read, not just generated
 - [ ] `.env.example` updated if `app/config.py` gained a setting
 - [ ] `CORS_ORIGINS` correct, never `*`
+- [ ] `PWA_BASE_PATH` still set in the NAS `.env` if the PWA is published (see `web-deploy`)
 - [ ] Still exactly 1 uvicorn worker in `docker-compose.prod.yml`
 - [ ] `/health` returns ok **and names the intended `llm.provider` and `llm.model`**
 - [ ] A real endpoint exercised, not just `/health` — only a real call proves the account's

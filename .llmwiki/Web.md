@@ -65,11 +65,13 @@ Add `--base-href=/subpath/` if not served from the domain root.
 There is **no committed hosting configuration for the Flutter web app** — no nginx or
 Caddy vhost anywhere in the repo. [[Deployment]] covers only the FastAPI container.
 
-> **Status: Outdated** (2026-09-13) — `scripts/deploy_web.sh` publishes the PWA to a Web
-> Station folder under a sub-path; see [[Deployment]] and the `web-deploy` skill. The
+> **Status: Outdated** (2026-09-13) — the backend container serves the PWA under
+> `PWA_BASE_PATH` on its own host, and `scripts/deploy_web.sh` publishes the build; see
+> [[Deployment]] and the `web-deploy` skill. Same origin as the API, so the CORS caveat
+> below does not apply to that deployment. The
 > drift URIs in `connection_web.dart` are relative, so they follow `--base-href`: checked
-> by serving a `--base-href=/countscore/` build under that path, creating a game and
-> reloading.
+> by serving a `--base-href=/countscore/` build under that path — from a plain static
+> server and from uvicorn with the PWA CSP — creating a game and reloading.
 
 ### CORS and mixed content
 

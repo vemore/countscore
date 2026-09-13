@@ -158,6 +158,9 @@ Voir `.env.example`. Critiques :
   l'origine qui sert le client — et, si vous hébergez le backend pour d'autres, chacune des
   origines qui doivent pouvoir l'appeler
 - `IP_RL_PER_MINUTE` / `IP_RL_PER_HOUR` : plafond par IP des endpoints LLM non authentifiés
+- `PWA_BASE_PATH` : sous-chemin (ex. `/countscore`) sous lequel le conteneur sert aussi la PWA,
+  depuis `PWA_DIR`. Vide = pas de PWA. Même origine que l'API, donc aucune entrée CORS. Voir
+  `../scripts/deploy_web.sh` et `../.llmwiki/Deployment.md`
 
 ## Sécurité
 
@@ -186,6 +189,10 @@ Voir `../.llmwiki/Security.md`. Points critiques :
 - **En-têtes de sécurité** posés par l'application (`X-Content-Type-Options`,
   `X-Frame-Options`, `Referrer-Policy`, `Cross-Origin-Opener-Policy`, CSP), HSTS derrière
   `HSTS_ENABLED`. Web Station reste le terminateur TLS.
+- **PWA servie par l'API** (2026-09-13) : les chemins sous `PWA_BASE_PATH` reçoivent leur
+  propre CSP (CanvasKit et polices depuis gstatic, `'wasm-unsafe-eval'`) au lieu de
+  `default-src 'none'` ; montage en lecture seule, un préfixe qui masquerait une route de
+  l'API empêche le démarrage.
 
 ### Dette sécurité restante
 - Les deux endpoints `/comments` sans authentification restent protégés par le seul

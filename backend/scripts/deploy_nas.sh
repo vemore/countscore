@@ -56,7 +56,9 @@ docker push "$IMAGE:$VERSION"
 docker push "$IMAGE:latest"
 
 echo "==> Copying compose.yaml to the NAS (scp is blocked, so we pipe via ssh)"
-ssh "$NAS_SSH" "mkdir -p $NAS_DEPLOY_DIR/backups"
+# pwa/ is created here, as the SSH user, so Docker does not create it root-owned on
+# first start and lock scripts/deploy_web.sh out of it.
+ssh "$NAS_SSH" "mkdir -p $NAS_DEPLOY_DIR/backups $NAS_DEPLOY_DIR/pwa"
 cat docker-compose.prod.yml | ssh "$NAS_SSH" "cat > $NAS_DEPLOY_DIR/compose.yaml"
 
 echo "==> Pulling and starting on the NAS"

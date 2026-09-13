@@ -3,6 +3,7 @@
 # reverse-proxies your public URL -> http://localhost:8087. The URL itself lives in
 # the untracked scripts/deploy.env, not in the repository.
 # The API is bound to 127.0.0.1 so only Web Station (on the NAS) can reach it.
+# The same container serves the PWA under $PWA_BASE_PATH, from ./pwa (scripts/deploy_web.sh).
 services:
   db:
     image: postgres:17-alpine
@@ -50,6 +51,14 @@ services:
       GROUP_RL_PER_HOUR: ${GROUP_RL_PER_HOUR:-10}
       HSTS_ENABLED: ${HSTS_ENABLED:-true}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      # Sub-path the PWA is served under, e.g. /countscore. Empty = no PWA. Read by
+      # scripts/deploy_web.sh too, so the build's --base-href cannot disagree with it.
+      PWA_BASE_PATH: ${PWA_BASE_PATH:-}
+      PWA_DIR: /srv/pwa/current
+    volumes:
+      # The parent, not pwa/current: deploy_web.sh swaps releases by renaming folders
+      # inside it, and a bind mount of the folder itself would keep the old inode.
+      - ./pwa:/srv/pwa:ro
     ports:
       - "127.0.0.1:8087:8000"
     healthcheck:

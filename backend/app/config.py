@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from functools import lru_cache
 
 from pydantic import field_validator
@@ -62,6 +63,24 @@ class Settings(BaseSettings):
 
     # Max accepted request body size (bytes); larger requests are rejected with 413.
     max_body_bytes: int = 262144  # 256 KiB
+
+    # The PWA build, served by this app under a sub-path of its own host — same origin as
+    # the API, so it needs no CORS entry. Off while pwa_base_path is empty. pwa_dir is a
+    # path inside the container; production bind-mounts the NAS folder there.
+    pwa_base_path: str = ""
+    pwa_dir: str = "/srv/pwa/current"
+
+    @field_validator("pwa_base_path")
+    @classmethod
+    def _check_pwa_base_path(cls, v: str) -> str:
+        # Flutter's --base-href is this value plus a trailing slash, so it must be a
+        # plain path: leading slash, no trailing slash, no dot-only segments.
+        if v and not re.fullmatch(r"(/[A-Za-z0-9_-][A-Za-z0-9._-]*)+", v):
+            raise ValueError(
+                f"PWA_BASE_PATH must look like /countscore (leading slash, no trailing "
+                f"slash): {v!r}"
+            )
+        return v
 
     @field_validator("cors_origins")
     @classmethod
