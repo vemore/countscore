@@ -770,20 +770,28 @@ class DriftGameAnalysisRepository implements GameAnalysisRepository {
     final now = _nowMs();
     final existing = await _db
         .customSelect(
-          'SELECT id FROM game_analyses WHERE gameId = ?',
+          'SELECT id, uuid, group_id, deleted_at FROM game_analyses WHERE gameId = ?',
           variables: [Variable(analysis.gameId)],
         )
         .getSingleOrNull();
     if (existing != null) {
       final id = existing.data['id'] as int;
+      // A shared analysis that was deleted is a tombstone the whole group knows,
+      // and the server ignores any later write to that uuid: a new analysis of
+      // the same game is a new entity.
+      final uuid = existing.data['group_id'] != null &&
+              existing.data['deleted_at'] != null
+          ? newUuid()
+          : existing.data['uuid'] as String;
       return _db.customUpdate(
         'UPDATE game_analyses SET content = ?, modelId = ?, generatedAt = ?, '
-        'updated_at = ?, deleted_at = NULL WHERE id = ?',
+        'updated_at = ?, deleted_at = NULL, uuid = ? WHERE id = ?',
         variables: [
           Variable(analysis.content),
           Variable(analysis.modelId),
           Variable(analysis.generatedAt.toIso8601String()),
           Variable(now),
+          Variable(uuid),
           Variable(id),
         ],
         updates: {_db.gameAnalyses},
@@ -801,9 +809,18 @@ class DriftGameAnalysisRepository implements GameAnalysisRepository {
   }
 
   @override
-  Future<int> deleteByGame(int gameId) {
+  Future<int> deleteByGame(int gameId) async {
+    final now = _nowMs();
+    // Shared: tombstone, so the delete reaches the group. Local: gone.
+    final tombstoned = await _db.customUpdate(
+      'UPDATE game_analyses SET deleted_at = ?, updated_at = ? '
+      'WHERE gameId = ? AND group_id IS NOT NULL AND deleted_at IS NULL',
+      variables: [Variable(now), Variable(now), Variable(gameId)],
+      updates: {_db.gameAnalyses},
+    );
+    if (tombstoned > 0) return tombstoned;
     return _db.customUpdate(
-      'DELETE FROM game_analyses WHERE gameId = ?',
+      'DELETE FROM game_analyses WHERE gameId = ? AND group_id IS NULL',
       variables: [Variable(gameId)],
       updates: {_db.gameAnalyses},
     );

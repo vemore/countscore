@@ -18,6 +18,32 @@ class BackendException implements Exception {
   String toString() => 'BackendException($statusCode): $body';
 }
 
+/// A group this device belongs to, as `POST /groups` and `/groups/join` return it.
+///
+/// [deviceToken] is a bearer credential: it goes to secure storage and nowhere
+/// else. [shareToken] is what another device pastes to join.
+typedef GroupMembership = ({
+  String groupId,
+  String groupName,
+  String shareToken,
+  String deviceId,
+  String deviceToken,
+});
+
+/// One delta as `/sync/pull` returns it.
+typedef PulledDelta = ({
+  String entityType,
+  String entityUuid,
+  String op,
+  Map<String, dynamic> payload,
+  int clientLamport,
+  String originDeviceId,
+  int serverSeq,
+});
+
+/// The server's verdict on one pushed delta.
+typedef PushResult = ({String status, int? serverSeq, String? reason});
+
 /// The single place that knows how to turn a backend base URL into a request.
 ///
 /// The base URL is supplied by the user at runtime (see [BackendProvider]);
@@ -36,6 +62,10 @@ class BackendClient {
 
   /// Short on purpose — this one answers a user waiting on a button.
   static const healthTimeout = Duration(seconds: 10);
+
+  /// Group and sync calls: small JSON both ways, but a pull page can be 500 deltas
+  /// over a phone network.
+  static const syncTimeout = Duration(seconds: 30);
 
   /// `true` when the server answers `GET /health` with 200.
   ///
@@ -78,6 +108,128 @@ class BackendClient {
     return (
       content: body['content'] as String,
       model: body['model'] as String?,
+    );
+  }
+
+  // ── Groups ────────────────────────────────────────────────────────────────
+
+  /// `POST /groups`: creates a group with this device as its first member.
+  Future<GroupMembership> createGroup(String name, String deviceLabel) async {
+    final body = await _send('POST', '/groups', body: {
+      'name': name,
+      'device_label': deviceLabel,
+    });
+    return _membership(body);
+  }
+
+  /// `POST /groups/join`. A 404 means the share token is unknown or was rotated.
+  Future<GroupMembership> joinGroup(String shareToken, String deviceLabel) async {
+    final body = await _send('POST', '/groups/join', body: {
+      'share_token': shareToken,
+      'device_label': deviceLabel,
+    });
+    return _membership(body);
+  }
+
+  /// `POST /groups/me/rotate-share-token`: invalidates the old link, returns the new.
+  Future<String> rotateShareToken(String deviceToken) async {
+    final body = await _send('POST', '/groups/me/rotate-share-token',
+        token: deviceToken);
+    return body['share_token'] as String;
+  }
+
+  /// `POST /groups/me/devices/{id}/revoke`, used on this device's own id to leave.
+  Future<void> revokeDevice(String deviceToken, String deviceId) =>
+      _send('POST', '/groups/me/devices/$deviceId/revoke', token: deviceToken);
+
+  // ── Sync ──────────────────────────────────────────────────────────────────
+
+  /// `POST /sync/push`. Results come back in the order of [deltas].
+  Future<List<PushResult>> push(
+      String deviceToken, List<Map<String, dynamic>> deltas) async {
+    final body = await _send('POST', '/sync/push',
+        token: deviceToken, body: {'deltas': deltas});
+    return [
+      for (final r in body['results'] as List)
+        (
+          status: r['status'] as String,
+          serverSeq: r['server_seq'] as int?,
+          reason: r['reason'] as String?,
+        ),
+    ];
+  }
+
+  /// `GET /sync/pull?since_seq=…`.
+  Future<({List<PulledDelta> deltas, int serverSeqMax, bool hasMore})> pull(
+      String deviceToken, int sinceSeq, {int limit = 500}) async {
+    final body = await _send('GET', '/sync/pull?since_seq=$sinceSeq&limit=$limit',
+        token: deviceToken);
+    return (
+      deltas: [
+        for (final d in body['deltas'] as List)
+          (
+            entityType: d['entity_type'] as String,
+            entityUuid: d['entity_uuid'] as String,
+            op: d['op'] as String,
+            payload: (d['payload'] as Map).cast<String, dynamic>(),
+            clientLamport: d['client_lamport'] as int,
+            originDeviceId: d['origin_device_id'] as String,
+            serverSeq: d['server_seq'] as int,
+          ),
+      ],
+      serverSeqMax: body['server_seq_max'] as int,
+      hasMore: body['has_more'] as bool,
+    );
+  }
+
+  /// `POST /sync/ws-ticket`, then the URL to open with it. The device token never
+  /// appears in the stream URL; the ticket dies on first use.
+  Future<Uri> streamUri(String deviceToken) async {
+    final body = await _send('POST', '/sync/ws-ticket', token: deviceToken);
+    final base = Uri.parse(baseUrl);
+    return base.replace(
+      scheme: base.scheme == 'https' ? 'wss' : 'ws',
+      path: '${base.path}/sync/stream',
+      queryParameters: {'ticket': body['ticket'] as String},
+    );
+  }
+
+  Future<Map<String, dynamic>> _send(
+    String method,
+    String path, {
+    String? token,
+    Map<String, dynamic>? body,
+  }) async {
+    final request = http.Request(method, Uri.parse('$baseUrl$path'));
+    if (token != null) request.headers['Authorization'] = 'Bearer $token';
+    // Every write needs a body the server can measure: it answers 411 to a POST
+    // without Content-Length (backend/app/main.py, limit_body_size).
+    if (method != 'GET') {
+      request.headers['Content-Type'] = 'application/json';
+      request.body = jsonEncode(body ?? const {});
+    }
+    final response = await http.Response.fromStream(
+      await _client.send(request).timeout(syncTimeout),
+    ).timeout(syncTimeout);
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw BackendException(
+        response.statusCode,
+        utf8.decode(response.bodyBytes, allowMalformed: true),
+      );
+    }
+    if (response.bodyBytes.isEmpty) return const {};
+    return jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+  }
+
+  static GroupMembership _membership(Map<String, dynamic> body) {
+    final group = body['group'] as Map<String, dynamic>;
+    final device = body['device'] as Map<String, dynamic>;
+    return (
+      groupId: group['id'] as String,
+      groupName: group['name'] as String,
+      shareToken: group['share_token'] as String,
+      deviceId: device['id'] as String,
+      deviceToken: device['token'] as String,
     );
   }
 }

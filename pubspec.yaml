@@ -52,6 +52,9 @@ dependencies:
   flutter_markdown_plus: ^1.0.12
   drift: ^2.34.4
   drift_flutter: ^0.3.1
+  flutter_secure_storage: ^11.1.1
+  web_socket_channel: ^3.0.3
+  crypto: ^3.0.7
 
 dev_dependencies:
   flutter_test:

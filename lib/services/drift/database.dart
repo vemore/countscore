@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../../models/game_type.dart';
+import '../sync/sync_schema.dart';
 import '../uuid.dart';
 import 'connection/connection.dart' as conn;
 import 'tables.dart';
@@ -30,23 +31,42 @@ class AppDatabase extends _$AppDatabase {
   static final AppDatabase instance = AppDatabase();
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
           await m.createAll();
           await _createExtraIndexes();
+          for (final statement in syncV11Statements) {
+            await customStatement(statement);
+          }
           await _insertDefaultGameTypes();
         },
         onUpgrade: (m, from, to) async {
           // Native: the legacy sqflite layer already migrated the file to the
           // current version before Drift opened it (see
           // DatabaseService.bootstrapMigrate), so Drift sees the same version on
-          // both sides and never runs onUpgrade. Web has no
-          // legacy DB, so onCreate covers fresh installs. Nothing to do.
+          // both sides and never gets here.
+          //
+          // Web does get here: the PWA has been in production since 2026-09-13
+          // at v9, and a browser keeps its database between releases. Only the
+          // steps after v9 are needed, and they are the same SQL sqflite runs.
+          if (from < 10) {
+            await applySyncV10(customStatement, _columnsOf);
+          }
+          if (from < 11) {
+            for (final statement in syncV11Statements) {
+              await customStatement(statement);
+            }
+          }
         },
       );
+
+  Future<Set<String>> _columnsOf(String table) async {
+    final rows = await customSelect('PRAGMA table_info($table)').get();
+    return {for (final r in rows) r.data['name'] as String};
+  }
 
   Future<void> _createExtraIndexes() async {
     const stmts = [

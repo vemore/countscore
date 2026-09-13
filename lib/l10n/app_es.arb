@@ -321,5 +321,85 @@
   "serverUrlSaved": "Servidor guardado",
   "analysisRequiresBackend": "Este análisis requiere un servidor. Configura uno en los ajustes.",
   "openSettings": "Abrir ajustes",
-  "serverUrlCleared": "Servidor borrado"
+  "serverUrlCleared": "Servidor borrado",
+
+  "groupSection": "Grupo",
+
+  "groupDescription": "Comparte partidas con los demás dispositivos del grupo. Las partidas compartidas, sus jugadores, puntuaciones, comentarios y análisis se envían a tu servidor; las demás partidas se quedan en este dispositivo.",
+
+  "groupNeedsServer": "Primero configura un servidor arriba.",
+
+  "groupCreate": "Crear un grupo",
+
+  "groupJoin": "Unirse a un grupo",
+
+  "groupNameLabel": "Nombre del grupo",
+
+  "deviceLabelLabel": "Nombre de este dispositivo",
+
+  "deviceLabelDefault": "Mi dispositivo",
+
+  "shareTokenLabel": "Código de invitación",
+
+  "shareTokenHint": "Pega el código que te envió un miembro del grupo",
+
+  "groupCurrent": "Grupo: {name}",
+
+  "shareTokenExplain": "Envía este código a los dispositivos que deban unirse al grupo. Cualquiera que lo tenga puede unirse.",
+
+  "shareTokenCopy": "Copiar código",
+
+  "shareTokenCopied": "Código copiado",
+
+  "shareTokenRotate": "Nuevo código",
+
+  "shareTokenRotateConfirm": "El código anterior dejará de servir para unirse. Los dispositivos que ya están en el grupo no se ven afectados.",
+
+  "groupLeave": "Salir del grupo",
+
+  "groupLeaveConfirm": "Este dispositivo sale del grupo. Las partidas compartidas se quedan en este dispositivo, pero dejarán de sincronizarse.",
+
+  "groupLeft": "Has salido del grupo",
+
+  "groupJoined": "Te has unido al grupo",
+
+  "clearServerLeavesGroup": "Borrar el servidor hace salir del grupo. Las partidas compartidas se quedan en este dispositivo.",
+
+  "syncNow": "Sincronizar",
+
+  "syncStatusIdle": "Sincronizado a las {time}",
+
+  "syncStatusSyncing": "Sincronizando…",
+
+  "syncStatusOffline": "Servidor inaccesible: los cambios se enviarán más tarde",
+
+  "syncStatusUnauthorized": "El servidor ya no acepta este dispositivo. Sal del grupo y vuelve a unirte.",
+
+  "syncStatusError": "Error del servidor durante la sincronización",
+
+  "syncPending": "{count, plural, =1{1 cambio pendiente} other{{count} cambios pendientes}}",
+
+  "syncRejected": "{count, plural, =1{1 cambio rechazado por el servidor} other{{count} cambios rechazados por el servidor}}",
+
+  "groupErrorUnknownToken": "Código de invitación desconocido o reemplazado",
+
+  "groupErrorRateLimited": "Demasiados intentos. Vuelve a intentarlo en un minuto.",
+
+  "groupErrorUnreachable": "Servidor inaccesible",
+
+  "groupErrorServer": "Error del servidor",
+
+  "shareWithGroup": "Compartir con el grupo",
+
+  "shareWithGroupSubtitle": "Los dispositivos de {name} verán y editarán esta partida",
+
+  "shareGameConfirm": "La partida, sus jugadores, puntuaciones y comentarios se enviarán a {name}. No se puede deshacer.",
+
+  "gameSharedDone": "Partida compartida con el grupo",
+
+  "gameSharedBadge": "Partida compartida",
+
+  "invalidPlayerNamesForSync": "Estos nombres no se pueden compartir: {names}. Usa letras, dígitos, espacios, guiones, apóstrofos o puntos (32 caracteres como máximo).",
+
+  "roundRenumbered": "Esa ronda ya se había introducido en otro dispositivo, así que pasa a ser la ronda {number}."
 }

@@ -6,6 +6,12 @@ class Game {
   final DateTime createdAt;
   final DateTime? lastModified;
 
+  /// The group this game is shared with, or null for a local game. Read-only here:
+  /// sharing goes through `SyncStore.shareGame`, never through [toMap].
+  final String? groupId;
+
+  bool get isShared => groupId != null;
+
   Game({
     this.id,
     required this.name,
@@ -13,6 +19,7 @@ class Game {
     required this.isLowestScoreWins,
     DateTime? createdAt,
     this.lastModified,
+    this.groupId,
   }) : createdAt = createdAt ?? DateTime.now();
 
   Map<String, dynamic> toMap() {
@@ -36,6 +43,7 @@ class Game {
       lastModified: map['lastModified'] != null
           ? DateTime.parse(map['lastModified'] as String)
           : null,
+      groupId: map['group_id'] as String?,
     );
   }
 
@@ -54,6 +62,7 @@ class Game {
       isLowestScoreWins: isLowestScoreWins ?? this.isLowestScoreWins,
       createdAt: createdAt ?? this.createdAt,
       lastModified: lastModified ?? this.lastModified,
+      groupId: groupId,
     );
   }
 }

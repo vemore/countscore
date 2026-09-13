@@ -12,6 +12,21 @@
   ready; `sync_service.dart`, the outbox drain and the WebSocket client are not written.
   Nothing in `lib/` writes to `outbox` today. `lib/services/backend_client.dart` exists but
   covers only the two analysis-related calls. See [[Sync]].
+
+  > **Status: Outdated** (2026-09-13) — written; see [[Sync]]. What it knowingly leaves out
+  > is listed under **Group sync** below.
+- **Group sync — deliberate limits of v1** (2026-09-13):
+  - *One group per device*, no device list, no revoking another device, no group settings
+    or group comments in the app (`TODO.md`).
+  - *Row-level LWW*: two devices editing different fields of one row concurrently keep one
+    edit, the server's rule. Scores are one row each, so this rarely shows.
+  - *No sync in the background*: only while the app (or the PWA tab) is open.
+  - *Unsharing is not offered*; deleting a shared game deletes it everywhere.
+  - *Player deletions stay local*: removing a player from this device's list does not remove
+    them from the group; their memberships in shared games are tombstoned and do sync.
+  - *A pulled rename onto a name this device uses for another player* keeps the local name.
+  - *Names with combining marks* (Devanagari vowel signs, Arabic diacritics) fail the
+    server's `isalpha` allow-list, so a game with such a player cannot be shared (`TODO.md`).
 - **No in-app way to discover or install a backend.** Settings takes a URL and tests it;
   finding a server, running `backend/` and getting TLS onto it are left to the user, and
   the app says so in one sentence rather than walking them through it.

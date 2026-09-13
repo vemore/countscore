@@ -321,5 +321,85 @@
   "serverUrlSaved": "تم حفظ الخادم",
   "analysisRequiresBackend": "يتطلب هذا التحليل خادمًا. قم بإعداد واحد من الإعدادات.",
   "openSettings": "فتح الإعدادات",
-  "serverUrlCleared": "تم مسح الخادم"
+  "serverUrlCleared": "تم مسح الخادم",
+
+  "groupSection": "المجموعة",
+
+  "groupDescription": "شارك الألعاب مع الأجهزة الأخرى في مجموعتك. تُرسل الألعاب المشتركة ولاعبوها ونتائجها وتعليقاتها وتحليلاتها إلى خادمك؛ أما باقي الألعاب فتبقى على هذا الجهاز.",
+
+  "groupNeedsServer": "اضبط خادمًا أعلاه أولًا.",
+
+  "groupCreate": "إنشاء مجموعة",
+
+  "groupJoin": "الانضمام إلى مجموعة",
+
+  "groupNameLabel": "اسم المجموعة",
+
+  "deviceLabelLabel": "اسم هذا الجهاز",
+
+  "deviceLabelDefault": "جهازي",
+
+  "shareTokenLabel": "رمز الدعوة",
+
+  "shareTokenHint": "الصق الرمز الذي أرسله إليك أحد أعضاء المجموعة",
+
+  "groupCurrent": "المجموعة: {name}",
+
+  "shareTokenExplain": "أرسل هذا الرمز إلى الأجهزة التي ينبغي أن تنضم إلى المجموعة. يمكن لأي شخص يملكه الانضمام.",
+
+  "shareTokenCopy": "نسخ الرمز",
+
+  "shareTokenCopied": "تم نسخ الرمز",
+
+  "shareTokenRotate": "رمز جديد",
+
+  "shareTokenRotateConfirm": "لن يسمح الرمز القديم بالانضمام بعد الآن. لا يتأثر الأجهزة الموجودة في المجموعة بالفعل.",
+
+  "groupLeave": "مغادرة المجموعة",
+
+  "groupLeaveConfirm": "سيغادر هذا الجهاز المجموعة. تبقى الألعاب المشتركة على هذا الجهاز لكنها لن تُزامَن بعد الآن.",
+
+  "groupLeft": "غادرت المجموعة",
+
+  "groupJoined": "انضممت إلى المجموعة",
+
+  "clearServerLeavesGroup": "مسح الخادم يعني مغادرة المجموعة. تبقى الألعاب المشتركة على هذا الجهاز.",
+
+  "syncNow": "مزامنة الآن",
+
+  "syncStatusIdle": "تمت المزامنة في {time}",
+
+  "syncStatusSyncing": "جارٍ المزامنة…",
+
+  "syncStatusOffline": "تعذّر الوصول إلى الخادم — ستُرسل التغييرات لاحقًا",
+
+  "syncStatusUnauthorized": "لم يعد الخادم يقبل هذا الجهاز. غادر المجموعة ثم انضم إليها من جديد.",
+
+  "syncStatusError": "خطأ في الخادم أثناء المزامنة",
+
+  "syncPending": "{count, plural, zero{لا تغييرات معلقة} one{تغيير واحد معلق} two{تغييران معلقان} few{{count} تغييرات معلقة} many{{count} تغييرًا معلقًا} other{{count} تغيير معلق}}",
+
+  "syncRejected": "{count, plural, zero{لم يرفض الخادم أي تغيير} one{رفض الخادم تغييرًا واحدًا} two{رفض الخادم تغييرين} few{رفض الخادم {count} تغييرات} many{رفض الخادم {count} تغييرًا} other{رفض الخادم {count} تغيير}}",
+
+  "groupErrorUnknownToken": "رمز دعوة غير معروف أو تم استبداله",
+
+  "groupErrorRateLimited": "محاولات كثيرة جدًا. أعد المحاولة بعد دقيقة.",
+
+  "groupErrorUnreachable": "تعذّر الوصول إلى الخادم",
+
+  "groupErrorServer": "خطأ في الخادم",
+
+  "shareWithGroup": "مشاركة مع المجموعة",
+
+  "shareWithGroupSubtitle": "ستتمكن أجهزة {name} من رؤية هذه اللعبة وتعديلها",
+
+  "shareGameConfirm": "ستُرسل اللعبة ولاعبوها ونتائجها وتعليقاتها إلى {name}. لا يمكن التراجع عن المشاركة.",
+
+  "gameSharedDone": "تمت مشاركة اللعبة مع المجموعة",
+
+  "gameSharedBadge": "لعبة مشتركة",
+
+  "invalidPlayerNamesForSync": "لا يمكن مشاركة هذه الأسماء: {names}. استخدم الحروف أو الأرقام أو المسافات أو الشرطات أو الفواصل العلوية أو النقاط (32 حرفًا كحد أقصى).",
+
+  "roundRenumbered": "سبق إدخال هذه الجولة على جهاز آخر، لذا أصبحت الجولة رقم {number}."
 }

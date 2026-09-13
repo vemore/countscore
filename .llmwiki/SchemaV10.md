@@ -5,11 +5,12 @@
 > Updated: 2026-09-13
 
 This page was `SchemaV9` until v10 landed on 2026-09-13; links were renamed with it.
+v11 followed the same day and is described here too.
 
 ## Facts
 
-Schema version **10**, declared in two places that must stay in sync:
-`lib/services/drift/database.dart` (`schemaVersion => 10`) and
+Schema version **11**, declared in two places that must stay in sync:
+`lib/services/drift/database.dart` (`schemaVersion => 11`) and
 `DatabaseService.schemaVersion` in `lib/services/database_service.dart`, which both
 `openDatabase` calls use.
 
@@ -37,6 +38,14 @@ wrong.
 
 The device token is **not** in the database: it belongs in platform secure storage.
 
+### Upgrades on web (since v11)
+
+Drift's `onUpgrade` is **not** a no-op any more. Native still never reaches it — sqflite has
+migrated the file first — but a browser keeps its database across PWA releases, and the PWA
+has been in production at v9 since 2026-09-13. `onUpgrade` runs `applySyncV10` for
+`from < 10` and the v11 statements for `from < 11`: the same SQL sqflite runs, from
+`sync_schema.dart`. Covered by `test/drift/web_upgrade_test.dart`.
+
 ### Tombstones (since v10)
 
 `deleted_at` is live. `lib/repositories/drift/drift_repositories.dart` deletes a row
@@ -56,7 +65,8 @@ and scores. Deleting a game type ignores tombstoned games and clears their `game
 | v7 | `game_analyses` table (ZapZap cache). |
 | v8 | `game_analyses` recreated to add the sync columns missing from the Bedrock prototype. |
 | v9 | Global players. |
-| **v10** | **Sync bookkeeping**: `group_links`, `entity_versions`, `sync_inbox`; `outbox.rejected_at` / `reject_reason`; `sync_state.device_id` / `group_name`. Additive only — `_createSyncV10Tables` is the fresh-install and the upgrade path at once. |
+| **v11** | **Change capture**: `sync_flags` (one row, `suppress`), `trg_sync_*` capture triggers on games, game_players, rounds, scores, game_analyses (insert/update when `group_id` is set) and on players, game_types (update when linked), and `*_inherit` triggers that give a row inserted under a shared parent its `group_id`. SQL in `lib/services/sync/sync_schema.dart`, shared by both engines. |
+| v10 | **Sync bookkeeping**: `group_links`, `entity_versions`, `sync_inbox`; `outbox.rejected_at` / `reject_reason`; `sync_state.device_id` / `group_name`. Additive only — `_createSyncV10Tables` is the fresh-install and the upgrade path at once. |
 
 ### The v9 migration in detail
 

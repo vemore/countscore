@@ -10,8 +10,9 @@
 
 | Surface | Measure |
 |---|---|
+| Device token on the client | `flutter_secure_storage`: Android Keystore; on web, encrypted in localStorage. Never in the database, SharedPreferences or an export (`lib/services/sync/sync_credentials.dart`). |
 | `device_token` | `<device id hex>.<secret>`, 128 bits of secret. Stored argon2-hashed server-side; one verify per request, failures capped per IP. |
-| `share_token` | uuid4, rotatable. Unused once a device has joined. |
+| `share_token` | uuid4, rotatable. Unused once a device has joined. Shown in Settings → Group so it can be passed on; kept in secure storage on the device. |
 | `ANTHROPIC_API_KEY`, AWS keys | Environment only, never logged, never bundled in the APK. |
 | TLS | Synology Web Station, integrated Let's Encrypt. |
 | Prompt injection | 5 layers — see [[LlmProviders]]. |
@@ -29,7 +30,7 @@
 | Body size | `limit_body_size` middleware, 413 above `MAX_BODY_BYTES` (262144); 411 when `Content-Length` is absent on a write. |
 | WebSocket auth | Single-use ticket from `POST /sync/ws-ticket`, 60 s TTL. `app/services/ws_ticket.py`. |
 | Sync payload values | Per-entity bounds in `app/services/delta_bounds.py`, enforced before write. |
-| Security headers | `security_headers` middleware in `app/main.py:main`; HSTS behind `HSTS_ENABLED`. API responses get `default-src 'none'`; `/docs` a Swagger CSP; paths under `PWA_BASE_PATH` get `_PWA_CSP` (self, `'wasm-unsafe-eval'`, CanvasKit from `www.gstatic.com`, fonts from `fonts.gstatic.com`, `connect-src 'self' https:`) plus `Cache-Control: no-cache`. |
+| Security headers | `security_headers` middleware in `app/main.py:main`; HSTS behind `HSTS_ENABLED`. API responses get `default-src 'none'`; `/docs` a Swagger CSP; paths under `PWA_BASE_PATH` get `_PWA_CSP` (self, `'wasm-unsafe-eval'`, CanvasKit from `www.gstatic.com`, fonts from `fonts.gstatic.com`, `connect-src 'self' https: wss:`) plus `Cache-Control: no-cache`. |
 | PWA static files | Read-only bind mount; Starlette `StaticFiles` rejects traversal out of `PWA_DIR`; `deploy_web.sh` refuses a build containing any `.md`. |
 | Backups | Daily `pg_dump`, 7-day rotation. |
 

@@ -966,5 +966,253 @@
   "serverUrlCleared": "Serveur effacé",
   "@serverUrlCleared": {
     "description": "Snackbar shown after the backend URL is cleared"
+  },
+
+  "groupSection": "Groupe",
+  "@groupSection": {
+    "description": "Section title for group sharing in Settings"
+  },
+
+  "groupDescription": "Partagez des parties avec les autres appareils du groupe. Les parties partagées, leurs joueurs, scores, commentaires et analyses sont envoyés à votre serveur ; les autres parties restent sur cet appareil.",
+  "@groupDescription": {
+    "description": "Explains group sharing and what it sends to the user's server"
+  },
+
+  "groupNeedsServer": "Configurez d'abord un serveur ci-dessus.",
+  "@groupNeedsServer": {
+    "description": "Shown in the group section when no server URL is configured"
+  },
+
+  "groupCreate": "Créer un groupe",
+  "@groupCreate": {
+    "description": "Button: create a new group"
+  },
+
+  "groupJoin": "Rejoindre un groupe",
+  "@groupJoin": {
+    "description": "Button: join an existing group with an invite code"
+  },
+
+  "groupNameLabel": "Nom du groupe",
+  "@groupNameLabel": {
+    "description": "Text field label: name of the group being created"
+  },
+
+  "deviceLabelLabel": "Nom de cet appareil",
+  "@deviceLabelLabel": {
+    "description": "Text field label: how this device is named in the group"
+  },
+
+  "deviceLabelDefault": "Mon appareil",
+  "@deviceLabelDefault": {
+    "description": "Default value of the device name field"
+  },
+
+  "shareTokenLabel": "Code d'invitation",
+  "@shareTokenLabel": {
+    "description": "Label of the group invite code (the share token)"
+  },
+
+  "shareTokenHint": "Collez le code reçu d'un membre du groupe",
+  "@shareTokenHint": {
+    "description": "Hint inside the invite code field when joining"
+  },
+
+  "groupCurrent": "Groupe : {name}",
+  "@groupCurrent": {
+    "description": "Shows which group this device is in",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Famille"
+      }
+    }
+  },
+
+  "shareTokenExplain": "Envoyez ce code aux appareils qui doivent rejoindre le groupe. Toute personne qui l'a peut le rejoindre.",
+  "@shareTokenExplain": {
+    "description": "Explains what to do with the invite code"
+  },
+
+  "shareTokenCopy": "Copier le code",
+  "@shareTokenCopy": {
+    "description": "Button: copy the invite code"
+  },
+
+  "shareTokenCopied": "Code copié",
+  "@shareTokenCopied": {
+    "description": "Snackbar after copying the invite code"
+  },
+
+  "shareTokenRotate": "Nouveau code",
+  "@shareTokenRotate": {
+    "description": "Button: replace the invite code with a new one"
+  },
+
+  "shareTokenRotateConfirm": "L'ancien code ne permettra plus de rejoindre le groupe. Les appareils déjà membres ne sont pas concernés.",
+  "@shareTokenRotateConfirm": {
+    "description": "Confirmation before replacing the invite code"
+  },
+
+  "groupLeave": "Quitter le groupe",
+  "@groupLeave": {
+    "description": "Button: leave the group"
+  },
+
+  "groupLeaveConfirm": "Cet appareil quitte le groupe. Les parties partagées restent sur cet appareil mais ne seront plus synchronisées.",
+  "@groupLeaveConfirm": {
+    "description": "Confirmation before leaving the group"
+  },
+
+  "groupLeft": "Groupe quitté",
+  "@groupLeft": {
+    "description": "Snackbar after leaving the group"
+  },
+
+  "groupJoined": "Groupe rejoint",
+  "@groupJoined": {
+    "description": "Snackbar after creating or joining a group"
+  },
+
+  "clearServerLeavesGroup": "Effacer le serveur fait quitter le groupe. Les parties partagées restent sur cet appareil.",
+  "@clearServerLeavesGroup": {
+    "description": "Confirmation when clearing the server URL while in a group"
+  },
+
+  "syncNow": "Synchroniser",
+  "@syncNow": {
+    "description": "Button: sync with the server now"
+  },
+
+  "syncStatusIdle": "Synchronisé à {time}",
+  "@syncStatusIdle": {
+    "description": "Sync status: up to date, with the time of the last successful sync",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "18:42"
+      }
+    }
+  },
+
+  "syncStatusSyncing": "Synchronisation…",
+  "@syncStatusSyncing": {
+    "description": "Sync status: in progress"
+  },
+
+  "syncStatusOffline": "Serveur injoignable — les modifications seront envoyées plus tard",
+  "@syncStatusOffline": {
+    "description": "Sync status: server unreachable, changes kept for later"
+  },
+
+  "syncStatusUnauthorized": "Le serveur n'accepte plus cet appareil. Quittez le groupe puis rejoignez-le à nouveau.",
+  "@syncStatusUnauthorized": {
+    "description": "Sync status: the server no longer accepts this device"
+  },
+
+  "syncStatusError": "Erreur du serveur pendant la synchronisation",
+  "@syncStatusError": {
+    "description": "Sync status: the server answered with an error"
+  },
+
+  "syncPending": "{count, plural, =1{1 modification en attente} other{{count} modifications en attente}}",
+  "@syncPending": {
+    "description": "Number of local changes not yet sent to the server",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+
+  "syncRejected": "{count, plural, =1{1 modification refusée par le serveur} other{{count} modifications refusées par le serveur}}",
+  "@syncRejected": {
+    "description": "Number of local changes the server refused for good",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+
+  "groupErrorUnknownToken": "Code d'invitation inconnu ou remplacé",
+  "@groupErrorUnknownToken": {
+    "description": "Join failed: the invite code is unknown or was replaced"
+  },
+
+  "groupErrorRateLimited": "Trop de tentatives. Réessayez dans une minute.",
+  "@groupErrorRateLimited": {
+    "description": "Create/join refused by the server's rate limit"
+  },
+
+  "groupErrorUnreachable": "Serveur injoignable",
+  "@groupErrorUnreachable": {
+    "description": "Group action failed: no answer from the server"
+  },
+
+  "groupErrorServer": "Erreur du serveur",
+  "@groupErrorServer": {
+    "description": "Group action failed: the server answered with an error"
+  },
+
+  "shareWithGroup": "Partager avec le groupe",
+  "@shareWithGroup": {
+    "description": "Switch on game creation and menu entry on the game board: share this game"
+  },
+
+  "shareWithGroupSubtitle": "Les appareils du groupe {name} verront et modifieront cette partie",
+  "@shareWithGroupSubtitle": {
+    "description": "Subtitle of the share switch when creating a game",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Famille"
+      }
+    }
+  },
+
+  "shareGameConfirm": "La partie, ses joueurs, scores et commentaires seront envoyés au groupe {name}. Le partage ne peut pas être annulé.",
+  "@shareGameConfirm": {
+    "description": "Confirmation before sharing an existing game",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Famille"
+      }
+    }
+  },
+
+  "gameSharedDone": "Partie partagée avec le groupe",
+  "@gameSharedDone": {
+    "description": "Snackbar after a game was shared"
+  },
+
+  "gameSharedBadge": "Partie partagée",
+  "@gameSharedBadge": {
+    "description": "Tooltip of the icon marking a shared game"
+  },
+
+  "invalidPlayerNamesForSync": "Ces noms ne peuvent pas être partagés : {names}. Utilisez des lettres, chiffres, espaces, tirets, apostrophes ou points (32 caractères au plus).",
+  "@invalidPlayerNamesForSync": {
+    "description": "Sharing refused because some player names use characters the server does not accept",
+    "placeholders": {
+      "names": {
+        "type": "String",
+        "example": "Bob 🎲"
+      }
+    }
+  },
+
+  "roundRenumbered": "Cette manche avait déjà été saisie sur un autre appareil : elle devient la manche {number}.",
+  "@roundRenumbered": {
+    "description": "Snackbar: a round entered here clashed with one entered on another device and was moved",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "example": "6"
+      }
+    }
   }
 }

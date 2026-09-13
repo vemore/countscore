@@ -99,7 +99,11 @@ class GameProvider with ChangeNotifier {
   Future<void> addRound() async {
     if (_currentGame == null) return;
 
-    final roundNumber = _currentRounds.length + 1;
+    // Max, not count: after a round in the middle is deleted, count + 1 names a
+    // round that still exists — which a shared game's server refuses.
+    final roundNumber = _currentRounds.fold<int>(
+            0, (m, r) => r.roundNumber > m ? r.roundNumber : m) +
+        1;
     final roundId = await _roundRepo.create(Round(
       gameId: _currentGame!.id!,
       roundNumber: roundNumber,
@@ -208,6 +212,23 @@ class GameProvider with ChangeNotifier {
     }
 
     return ranking;
+  }
+
+  /// Reloads what is on screen after group sync changed the database underneath.
+  Future<void> refreshFromSync() async {
+    await loadGames();
+    final current = _currentGame;
+    if (current == null) return;
+    if (await _gameRepo.getById(current.id!) == null) {
+      // Deleted on another device.
+      _currentGame = null;
+      _currentPlayers = [];
+      _currentRounds = [];
+      _scores.clear();
+      notifyListeners();
+      return;
+    }
+    await loadGame(current.id!);
   }
 
   Future<void> deleteGame(int gameId) async {

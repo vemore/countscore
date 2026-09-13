@@ -1199,6 +1199,246 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Serveur effacé'**
   String get serverUrlCleared;
+
+  /// Section title for group sharing in Settings
+  ///
+  /// In fr, this message translates to:
+  /// **'Groupe'**
+  String get groupSection;
+
+  /// Explains group sharing and what it sends to the user's server
+  ///
+  /// In fr, this message translates to:
+  /// **'Partagez des parties avec les autres appareils du groupe. Les parties partagées, leurs joueurs, scores, commentaires et analyses sont envoyés à votre serveur ; les autres parties restent sur cet appareil.'**
+  String get groupDescription;
+
+  /// Shown in the group section when no server URL is configured
+  ///
+  /// In fr, this message translates to:
+  /// **'Configurez d\'abord un serveur ci-dessus.'**
+  String get groupNeedsServer;
+
+  /// Button: create a new group
+  ///
+  /// In fr, this message translates to:
+  /// **'Créer un groupe'**
+  String get groupCreate;
+
+  /// Button: join an existing group with an invite code
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejoindre un groupe'**
+  String get groupJoin;
+
+  /// Text field label: name of the group being created
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom du groupe'**
+  String get groupNameLabel;
+
+  /// Text field label: how this device is named in the group
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom de cet appareil'**
+  String get deviceLabelLabel;
+
+  /// Default value of the device name field
+  ///
+  /// In fr, this message translates to:
+  /// **'Mon appareil'**
+  String get deviceLabelDefault;
+
+  /// Label of the group invite code (the share token)
+  ///
+  /// In fr, this message translates to:
+  /// **'Code d\'invitation'**
+  String get shareTokenLabel;
+
+  /// Hint inside the invite code field when joining
+  ///
+  /// In fr, this message translates to:
+  /// **'Collez le code reçu d\'un membre du groupe'**
+  String get shareTokenHint;
+
+  /// Shows which group this device is in
+  ///
+  /// In fr, this message translates to:
+  /// **'Groupe : {name}'**
+  String groupCurrent(String name);
+
+  /// Explains what to do with the invite code
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoyez ce code aux appareils qui doivent rejoindre le groupe. Toute personne qui l\'a peut le rejoindre.'**
+  String get shareTokenExplain;
+
+  /// Button: copy the invite code
+  ///
+  /// In fr, this message translates to:
+  /// **'Copier le code'**
+  String get shareTokenCopy;
+
+  /// Snackbar after copying the invite code
+  ///
+  /// In fr, this message translates to:
+  /// **'Code copié'**
+  String get shareTokenCopied;
+
+  /// Button: replace the invite code with a new one
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau code'**
+  String get shareTokenRotate;
+
+  /// Confirmation before replacing the invite code
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'ancien code ne permettra plus de rejoindre le groupe. Les appareils déjà membres ne sont pas concernés.'**
+  String get shareTokenRotateConfirm;
+
+  /// Button: leave the group
+  ///
+  /// In fr, this message translates to:
+  /// **'Quitter le groupe'**
+  String get groupLeave;
+
+  /// Confirmation before leaving the group
+  ///
+  /// In fr, this message translates to:
+  /// **'Cet appareil quitte le groupe. Les parties partagées restent sur cet appareil mais ne seront plus synchronisées.'**
+  String get groupLeaveConfirm;
+
+  /// Snackbar after leaving the group
+  ///
+  /// In fr, this message translates to:
+  /// **'Groupe quitté'**
+  String get groupLeft;
+
+  /// Snackbar after creating or joining a group
+  ///
+  /// In fr, this message translates to:
+  /// **'Groupe rejoint'**
+  String get groupJoined;
+
+  /// Confirmation when clearing the server URL while in a group
+  ///
+  /// In fr, this message translates to:
+  /// **'Effacer le serveur fait quitter le groupe. Les parties partagées restent sur cet appareil.'**
+  String get clearServerLeavesGroup;
+
+  /// Button: sync with the server now
+  ///
+  /// In fr, this message translates to:
+  /// **'Synchroniser'**
+  String get syncNow;
+
+  /// Sync status: up to date, with the time of the last successful sync
+  ///
+  /// In fr, this message translates to:
+  /// **'Synchronisé à {time}'**
+  String syncStatusIdle(String time);
+
+  /// Sync status: in progress
+  ///
+  /// In fr, this message translates to:
+  /// **'Synchronisation…'**
+  String get syncStatusSyncing;
+
+  /// Sync status: server unreachable, changes kept for later
+  ///
+  /// In fr, this message translates to:
+  /// **'Serveur injoignable — les modifications seront envoyées plus tard'**
+  String get syncStatusOffline;
+
+  /// Sync status: the server no longer accepts this device
+  ///
+  /// In fr, this message translates to:
+  /// **'Le serveur n\'accepte plus cet appareil. Quittez le groupe puis rejoignez-le à nouveau.'**
+  String get syncStatusUnauthorized;
+
+  /// Sync status: the server answered with an error
+  ///
+  /// In fr, this message translates to:
+  /// **'Erreur du serveur pendant la synchronisation'**
+  String get syncStatusError;
+
+  /// Number of local changes not yet sent to the server
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 modification en attente} other{{count} modifications en attente}}'**
+  String syncPending(int count);
+
+  /// Number of local changes the server refused for good
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 modification refusée par le serveur} other{{count} modifications refusées par le serveur}}'**
+  String syncRejected(int count);
+
+  /// Join failed: the invite code is unknown or was replaced
+  ///
+  /// In fr, this message translates to:
+  /// **'Code d\'invitation inconnu ou remplacé'**
+  String get groupErrorUnknownToken;
+
+  /// Create/join refused by the server's rate limit
+  ///
+  /// In fr, this message translates to:
+  /// **'Trop de tentatives. Réessayez dans une minute.'**
+  String get groupErrorRateLimited;
+
+  /// Group action failed: no answer from the server
+  ///
+  /// In fr, this message translates to:
+  /// **'Serveur injoignable'**
+  String get groupErrorUnreachable;
+
+  /// Group action failed: the server answered with an error
+  ///
+  /// In fr, this message translates to:
+  /// **'Erreur du serveur'**
+  String get groupErrorServer;
+
+  /// Switch on game creation and menu entry on the game board: share this game
+  ///
+  /// In fr, this message translates to:
+  /// **'Partager avec le groupe'**
+  String get shareWithGroup;
+
+  /// Subtitle of the share switch when creating a game
+  ///
+  /// In fr, this message translates to:
+  /// **'Les appareils du groupe {name} verront et modifieront cette partie'**
+  String shareWithGroupSubtitle(String name);
+
+  /// Confirmation before sharing an existing game
+  ///
+  /// In fr, this message translates to:
+  /// **'La partie, ses joueurs, scores et commentaires seront envoyés au groupe {name}. Le partage ne peut pas être annulé.'**
+  String shareGameConfirm(String name);
+
+  /// Snackbar after a game was shared
+  ///
+  /// In fr, this message translates to:
+  /// **'Partie partagée avec le groupe'**
+  String get gameSharedDone;
+
+  /// Tooltip of the icon marking a shared game
+  ///
+  /// In fr, this message translates to:
+  /// **'Partie partagée'**
+  String get gameSharedBadge;
+
+  /// Sharing refused because some player names use characters the server does not accept
+  ///
+  /// In fr, this message translates to:
+  /// **'Ces noms ne peuvent pas être partagés : {names}. Utilisez des lettres, chiffres, espaces, tirets, apostrophes ou points (32 caractères au plus).'**
+  String invalidPlayerNamesForSync(String names);
+
+  /// Snackbar: a round entered here clashed with one entered on another device and was moved
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette manche avait déjà été saisie sur un autre appareil : elle devient la manche {number}.'**
+  String roundRenumbered(int number);
 }
 
 class _AppLocalizationsDelegate

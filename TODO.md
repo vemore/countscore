@@ -18,114 +18,44 @@ two now disagree about what a failure looks like. The fix is `colorScheme.error`
 across the six `_snack` call sites. Not folded into the header fix because it changes the look
 of every settings confirmation, not just a label colour.
 
-## The Flutter sync client does not exist
+## Group management beyond joining and leaving
 
-**Status:** open — noted 2026-09-09, during a branch/commit review. In progress since
-2026-09-13, in three pull requests to `main`: **A** `fix/sync-contract` (backend, done),
-**B** `feat/schema-v10` (local schema, soft deletes, a real v5→v9 upgrade test), **C**
-`feat/group-sync` (client, UI, privacy documents). C waits for A and B.
+**Status:** open — noted 2026-09-13, deliberately out of scope for the sync client (decided
+with the user).
 
-> **Design settled with the user (2026-09-13).** Sync runs only once a server URL is set
-> *and* the device has created or joined a group from Settings (the `share_token` is pasted
-> once, `/groups/join` returns the device token, kept in `flutter_secure_storage`). Sharing
-> is **per game**, on by default for new games; an existing game can be shared later, never
-> unshared. Players and game types are **merged by normalised name** through a local link
-> table — local players stay global (`group_id IS NULL`), so point 4 below no longer reopens
-> the player queries — and their first server UUID is a uuid5 of group and name, so every
-> device computes the same one. `rounds.comment`, `game_analyses` and the game dates sync.
-> A delete propagates and wins. Leaving revokes the device and turns shared games back into
-> local ones. A round-number conflict renumbers the loser to the next free number and says
-> so. WebSocket plus polling, Android and PWA. All of it ships in 1.1.0 with the Drift switch.
->
-> **What A changed on the server contract.** Each delta runs in its own savepoint; entities
-> and parents are group-scoped; reasons a client branches on are stable codes
-> (`round_number_taken`, `score_exists`, `name_taken`, `analysis_exists`, `parent_missing`,
-> `not in group`); a delete beats any later upsert; unique rules ignore tombstones; colours
-> are `BIGINT`; `rounds.comment` and the `game_analysis` entity exist; the log stores only
-> client columns; device tokens are `<device id hex>.<secret>`. See [[Sync]] and [[Api]].
-> Points 2 and 3 below are answered by the above; point 1 and the quarantine are C's work.
+The server has endpoints the app does not use: `GET/PATCH /groups/me` (comment style,
+language, LLM budget), `GET /groups/me/usage`, the group-scoped comments, and revoking
+*another* device (`POST /groups/me/devices/{id}/revoke`). The last one has no way to list
+devices first, so a lost phone can only be shut out by rotating the invite code and — once
+the backend review's MEDIUM *Revocation is reversible* item lands — by revoking it. Proposed,
+in order of value: a `GET /groups/me/devices` endpoint (id, label, joined, last seen) and a
+device list in Settings → Group with a revoke action; then group settings. Per-field LWW
+(`field_versions`, see `.llmwiki/Sync.md`) belongs to the same "v2 of groups" conversation.
 
-Milestones 5 to 7 are marked Done in `.llmwiki/Architecture.md`, and on the server they
-are: groups, delta-log sync with row-level LWW, and `/sync/stream` over Postgres
-LISTEN/NOTIFY are implemented and tested. **Nothing in the app consumes any of it.**
+## The server's player-name rule refuses names with combining marks
 
-`lib/services/sync_service.dart` is referenced by the documentation but is not on disk.
-`lib/services/backend_client.dart` now exists (2026-09-11) but covers only two calls,
-`zapzapAnalysis` and `health`; it holds the base URL and is where a sync client would land.
-The single feature in `lib/` that makes a network call is still the ZapZap analysis — and
-only once the user has configured a backend, since there is no default URL.
+**Status:** open — noted 2026-09-13, while mirroring the rule on the client.
 
-So the backend is a working service with no client, and both the mobile app and the PWA are
-still purely local. This is the largest gap between what the wiki says the project is and
-what it does, and it is the thing that would make group sharing real.
+`is_valid_player_name` (`backend/app/models/player.py`) accepts a character when
+`str.isalpha()` or `str.isdigit()` is true. Combining marks — Devanagari vowel signs such as
+the `ि` in "रवि", Arabic harakat, some Vietnamese forms written with combining accents — are
+categories Mn/Mc, for which `isalpha()` is false. A Hindi user's player "रवि" therefore
+cannot be shared with a group, although Hindi is one of the app's ten languages. The client
+mirrors the rule (`lib/services/sync/sync_ids.dart`, `isSyncablePlayerName`) so the user is
+told before sharing rather than meeting a rejected delta. Proposal: accept `Mn`/`Mc` after a
+letter (`unicodedata.category`), keep refusing everything the rule exists for (`<`, `>`,
+braces, control characters), and change both sides in one PR with a test per script.
 
-It needs its own design pass, not a quick patch: an outbox on the Drift side, conflict
-handling that matches the server's LWW rules — **row-level**, not per field, whatever
-`.llmwiki/Sync.md` used to say (`backend/app/routes/sync.py:184-199`) — device-token
-storage, and a reconnect policy for the WebSocket. See [[Sync]] and [[Architecture]].
+## The two-device sync test does not run in CI
 
-### What the design pass must settle first
+**Status:** open — noted 2026-09-13, while writing `test/sync/sync_two_devices_test.dart`.
 
-Reviewed 2026-09-09 against both sides of the wire. The four items below are not
-implementation detail — each one can invalidate code written before it is answered, and
-none of them was visible in the sketch above. Together they are most of the work.
-
-**1. Local `int` primary keys against server `UUID` primary keys.** The local schema keys
-every table on `integer().autoIncrement()` and carries its foreign keys as *local* ints —
-`rounds.gameId`, `scores.playerId`/`roundId`, `games.gameTypeId`, `game_players.gameId`/
-`player_id` (`lib/services/drift/tables.dart`). The server keys everything on UUID, foreign
-keys included (`backend/app/models/game.py`). So a delta cannot be built by serialising a
-local row, and cannot be applied by writing a pulled payload: it needs a bidirectional
-id↔uuid resolution layer over six entity types, in both directions. It also needs an answer
-for **deltas that arrive before their parent** — a `score` whose `round` is not local yet —
-which means a quarantine queue and a replay, not a straight apply loop. This is the largest
-single piece and it was missing from the estimate; `.llmwiki/Sync.md` still says "roughly
-500 LOC of client".
-
-**2. Local fields that have no server column would vanish silently.** `_coerce_payload`
-drops every key that is not a mapped column (`backend/app/routes/sync.py:77`, `if key not in
-columns: continue`) — no error, no rejected status. Today that means:
-
-- `rounds.comment` exists locally and **not** in the server `Round` model. Round comments
-  would not survive a round trip.
-- `game_analyses` is not in `_ENTITY_MAP` at all (the six types are `player`, `game_type`,
-  `game`, `game_player`, `round`, `score`), so ZapZap analyses never sync.
-- `game_players` carries `name` and `uuid` locally; the server row has a composite PK, no
-  `uuid` and no `deleted_at`, so its delete is a hard delete with no tombstone.
-- `games` keeps `createdAt`/`lastModified` as ISO text locally against `started_at`/
-  `ended_at` on the server — a modelling difference, not a mapping.
-
-Decide per field: add the column server-side, or accept it as device-local and say so. A
-"shared game" that is silently only partly shared is worse than one that refuses to share.
-
-**3. Merging pre-existing local data at join time is undefined, and the common case
-fails.** The server holds `uq_players_group_name` on `(group_id, name_normalized)`
-(`backend/app/models/player.py:44`). Two phones that each already have a local "Alice" —
-different UUIDs, same name — join the same group; the second push hits `IntegrityError` and
-comes back `rejected` with "integrity constraint violation". Reading the status is not the
-hard part: the question is what the app does next. Adopting the server's UUID rewrites the
-player's identity, and **player stats have been keyed by player UUID since v9**
-([[SchemaV10]]), so that reindexes the whole statistics history. Options worth costing —
-dedupe by normalised name at join, keep a local↔server player mapping table, or (cheapest)
-do not sync the global player catalogue at all in v1 and create group players fresh, which
-sidesteps the constraint and leaves stats identity untouched.
-
-**4. The repositories are group-blind by construction.** `group_id IS NULL` is hardcoded in
-about a dozen player queries in `lib/repositories/drift/drift_repositories.dart` (lines 288,
-320, 397, 406, 420, 425, 449, 478, 482, 511, 646). A player with a non-NULL `group_id` is
-invisible to the player list, the picker and the stats. So this is not an additive feature:
-it reopens the repository layer that was just ported to Drift and **has not shipped yet**
-(production still runs sqflite v9 — see [[DataLayer]]). Sequencing matters; shipping the
-engine swap and the first network write path in one release doubles the blast radius on a
-project with no backend alerting (CI exists since 2026-09-09).
-
-Two cheap prerequisites fall out of the above and can be done independently:
-
-- ~~Extract a `BackendClient` from `lib/screens/game_analysis_screen.dart`.~~ Done
-  (2026-09-11): `lib/services/backend_client.dart`; the screen only injects an `http.Client`
-  for tests.
-- ~~Land CI before the client, not after.~~ Done (2026-09-09): `.github/workflows/ci.yml`,
-  see `DONE.md`.
+That test is the only one that exercises the client against the real server contract, and it
+is skipped unless `SYNC_BACKEND_URL` is set, so CI never runs it. The `backend` job already
+starts a Postgres through testcontainers. Proposal: a CI job with a `postgres:17` service,
+`alembic upgrade head`, uvicorn in the background with a raised group rate limit, then
+`SYNC_BACKEND_URL=… flutter test test/sync/sync_two_devices_test.dart` — the recipe in
+`.llmwiki/Testing.md`, *Group sync against a local backend*.
 
 ## Backend security review — 2026-09-13
 

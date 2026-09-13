@@ -14,6 +14,10 @@
 | `test/migration_v8_to_v9_test.dart` (4) | Hand-written v8 fixture; cross-game dedup and intra-game disambiguation. |
 | `test/migration_v5_to_v10_test.dart` (2) | The production upgrade: a real v5 file from tag `1.0.1+3`'s DDL, upgraded with the production callbacks (`DatabaseService.openForTesting`), then read back through Drift — games, merged players, scores, stats — and written to. |
 | `test/drift/drift_repositories_test.dart` (17) | Full lifecycle through the Drift repositories over `AppDatabase.forTesting(NativeDatabase.memory())`; Drift `onCreate` builds the v10 tables; shared rows are tombstoned (game, round, membership, `deleteByName`), local ones deleted, and tombstones count in no statistic. |
+| `test/sync/sync_store_test.dart` (15) | Group sync without a network: capture triggers (local games capture nothing, sharing captures a game and its children, inherited `group_id`, deletes captured as deletes), `preparePush` (coalescing, uuid5 player links, parent-first order, stable lamports on retry, refused names), `applyPulled` (a full game from another device, merge by name, quarantine and replay, LWW, delete wins, own deltas skipped, score-cell adoption), `renumberRound`, `leave`. |
+| `test/sync/sync_ids_test.dart` (3) | uuid5 against Python's `uuid.uuid5` vector, name normalisation, the player-name allow-list. |
+| `test/sync/sync_two_devices_test.dart` (5, `integration`) | Two in-memory devices through a **real** backend: a shared game and its scores both ways, the same round entered on both (renumbered, nothing lost), delete wins, same-name players merged, leaving. Skipped unless `SYNC_BACKEND_URL` is set — recipe below. |
+| `test/drift/web_upgrade_test.dart` (1) | A v9 database (v10/v11 stripped, `user_version` 9) reopened through Drift gets the sync tables, columns and triggers from `onUpgrade` — the PWA's upgrade path. |
 | `test/widget_test.dart` (8) | Model serialisation only — it pumps no widgets, despite the name. |
 | `test/providers/theme_provider_test.dart` (7) | `ThemeMode` decode fallbacks and the SharedPreferences round-trip. |
 | `test/providers/backend_provider_test.dart` (10) | Backend URL validation — https anywhere, http only on a private or loopback host — and the persistence round-trip, including that a cleared setting is not re-seeded from `--dart-define`. |
@@ -29,7 +33,23 @@ _hasCachedAnalysis`) has **no** widget test: pumping the board needs a loaded ga
 repositories. It was verified on device on 2026-09-11 — both directions, and the p171 case
 where neither condition holds.
 
-68 tests in nine files.
+87 tests pass in thirteen files; `sync_two_devices_test.dart` is skipped unless a backend is given.
+
+### Group sync against a local backend
+
+```bash
+docker run -d --rm --name cs-sync-pg -e POSTGRES_PASSWORD=pw -e POSTGRES_USER=cs \
+  -e POSTGRES_DB=cs -p 55433:5432 postgres:17-alpine
+cd backend && DATABASE_URL=postgresql://cs:pw@localhost:55433/cs uv run alembic upgrade head
+DATABASE_URL=postgresql+asyncpg://cs:pw@localhost:55433/cs GROUP_RL_PER_MINUTE=1000 \
+  GROUP_RL_PER_HOUR=10000 uv run uvicorn app.main:app --port 8765 &
+cd .. && SYNC_BACKEND_URL=http://127.0.0.1:8765 flutter test test/sync/sync_two_devices_test.dart
+```
+
+Raise the group rate limit: every test creates a group. Adding
+`PWA_BASE_PATH=/countscore PWA_DIR=$PWD/build/web` after a
+`flutter build web --base-href /countscore/` serves the PWA on the same host, which is how the
+two-browser check of 2026-09-13 ran (Playwright, one context per device).
 
 ### End-to-end — `integration_test/app_test.dart`
 

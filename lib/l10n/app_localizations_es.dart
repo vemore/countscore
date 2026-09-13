@@ -611,4 +611,162 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get serverUrlCleared => 'Servidor borrado';
+
+  @override
+  String get groupSection => 'Grupo';
+
+  @override
+  String get groupDescription =>
+      'Comparte partidas con los demás dispositivos del grupo. Las partidas compartidas, sus jugadores, puntuaciones, comentarios y análisis se envían a tu servidor; las demás partidas se quedan en este dispositivo.';
+
+  @override
+  String get groupNeedsServer => 'Primero configura un servidor arriba.';
+
+  @override
+  String get groupCreate => 'Crear un grupo';
+
+  @override
+  String get groupJoin => 'Unirse a un grupo';
+
+  @override
+  String get groupNameLabel => 'Nombre del grupo';
+
+  @override
+  String get deviceLabelLabel => 'Nombre de este dispositivo';
+
+  @override
+  String get deviceLabelDefault => 'Mi dispositivo';
+
+  @override
+  String get shareTokenLabel => 'Código de invitación';
+
+  @override
+  String get shareTokenHint =>
+      'Pega el código que te envió un miembro del grupo';
+
+  @override
+  String groupCurrent(String name) {
+    return 'Grupo: $name';
+  }
+
+  @override
+  String get shareTokenExplain =>
+      'Envía este código a los dispositivos que deban unirse al grupo. Cualquiera que lo tenga puede unirse.';
+
+  @override
+  String get shareTokenCopy => 'Copiar código';
+
+  @override
+  String get shareTokenCopied => 'Código copiado';
+
+  @override
+  String get shareTokenRotate => 'Nuevo código';
+
+  @override
+  String get shareTokenRotateConfirm =>
+      'El código anterior dejará de servir para unirse. Los dispositivos que ya están en el grupo no se ven afectados.';
+
+  @override
+  String get groupLeave => 'Salir del grupo';
+
+  @override
+  String get groupLeaveConfirm =>
+      'Este dispositivo sale del grupo. Las partidas compartidas se quedan en este dispositivo, pero dejarán de sincronizarse.';
+
+  @override
+  String get groupLeft => 'Has salido del grupo';
+
+  @override
+  String get groupJoined => 'Te has unido al grupo';
+
+  @override
+  String get clearServerLeavesGroup =>
+      'Borrar el servidor hace salir del grupo. Las partidas compartidas se quedan en este dispositivo.';
+
+  @override
+  String get syncNow => 'Sincronizar';
+
+  @override
+  String syncStatusIdle(String time) {
+    return 'Sincronizado a las $time';
+  }
+
+  @override
+  String get syncStatusSyncing => 'Sincronizando…';
+
+  @override
+  String get syncStatusOffline =>
+      'Servidor inaccesible: los cambios se enviarán más tarde';
+
+  @override
+  String get syncStatusUnauthorized =>
+      'El servidor ya no acepta este dispositivo. Sal del grupo y vuelve a unirte.';
+
+  @override
+  String get syncStatusError => 'Error del servidor durante la sincronización';
+
+  @override
+  String syncPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cambios pendientes',
+      one: '1 cambio pendiente',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncRejected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cambios rechazados por el servidor',
+      one: '1 cambio rechazado por el servidor',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupErrorUnknownToken =>
+      'Código de invitación desconocido o reemplazado';
+
+  @override
+  String get groupErrorRateLimited =>
+      'Demasiados intentos. Vuelve a intentarlo en un minuto.';
+
+  @override
+  String get groupErrorUnreachable => 'Servidor inaccesible';
+
+  @override
+  String get groupErrorServer => 'Error del servidor';
+
+  @override
+  String get shareWithGroup => 'Compartir con el grupo';
+
+  @override
+  String shareWithGroupSubtitle(String name) {
+    return 'Los dispositivos de $name verán y editarán esta partida';
+  }
+
+  @override
+  String shareGameConfirm(String name) {
+    return 'La partida, sus jugadores, puntuaciones y comentarios se enviarán a $name. No se puede deshacer.';
+  }
+
+  @override
+  String get gameSharedDone => 'Partida compartida con el grupo';
+
+  @override
+  String get gameSharedBadge => 'Partida compartida';
+
+  @override
+  String invalidPlayerNamesForSync(String names) {
+    return 'Estos nombres no se pueden compartir: $names. Usa letras, dígitos, espacios, guiones, apóstrofos o puntos (32 caracteres como máximo).';
+  }
+
+  @override
+  String roundRenumbered(int number) {
+    return 'Esa ronda ya se había introducido en otro dispositivo, así que pasa a ser la ronda $number.';
+  }
 }

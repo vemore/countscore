@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../models/game_type.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
+import '../providers/group_provider.dart';
 import '../widgets/player_picker_dialog.dart';
 import 'game_board_screen.dart';
 
@@ -31,6 +32,8 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
   final List<_SelectedPlayer> _selectedPlayers = [];
   List<String> _availablePlayerNames = [];
   Map<String, int?> _playerColors = {};
+  // On by default while this device is in a group — the user's design choice.
+  bool _shareWithGroup = true;
 
   @override
   void initState() {
@@ -148,6 +151,9 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
       playerColorsMap[player.name] = player.colorValue;
     }
 
+    final group = context.read<GroupProvider>();
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
     final gameId = await gameProvider.createGame(
       _gameNameController.text.trim(),
       _selectedGameTypeId,
@@ -155,6 +161,17 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
       playerNames,
       playerColorsMap,
     );
+
+    if (group.isJoined && _shareWithGroup) {
+      try {
+        await group.shareGame(gameId);
+      } on GroupActionException catch (e) {
+        // The game exists either way; it just stays local.
+        messenger.showSnackBar(SnackBar(
+          content: Text(l10n.invalidPlayerNamesForSync(e.detail.join(', '))),
+        ));
+      }
+    }
 
     await gameProvider.loadGame(gameId);
 
@@ -351,6 +368,21 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                   ),
                 );
               }),
+
+            Consumer<GroupProvider>(
+              builder: (context, group, child) {
+                if (!group.isJoined) return const SizedBox.shrink();
+                return SwitchListTile(
+                  key: const Key('create_share_with_group'),
+                  contentPadding: EdgeInsets.zero,
+                  secondary: const Icon(Icons.cloud_upload_outlined),
+                  title: Text(l10n.shareWithGroup),
+                  subtitle: Text(l10n.shareWithGroupSubtitle(group.groupName ?? '')),
+                  value: _shareWithGroup,
+                  onChanged: (value) => setState(() => _shareWithGroup = value),
+                );
+              },
+            ),
 
             const SizedBox(height: 24),
 

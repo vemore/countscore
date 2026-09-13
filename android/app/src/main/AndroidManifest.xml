@@ -1,7 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Required by the ZapZap analysis, the only network call the app makes
-         (lib/screens/game_analysis_screen.dart) and always user-initiated. It
-         reaches a backend the user configures themselves in Settings; with none
+    <!-- Required by the two features that reach a backend the user configures
+         themselves in Settings: the ZapZap analysis (user-initiated,
+         lib/screens/game_analysis_screen.dart) and group sharing of the games the
+         user shares (lib/services/sync/, while the app is open). With no server
          configured — the default — the app issues no request at all.
          src/debug and src/profile declare it too, for hot reload — but a release
          build merges neither, so it gets no permission that is not declared here. -->

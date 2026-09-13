@@ -41,6 +41,16 @@ the web app dies on launch with nothing wrong at compile time, look here first.
 There is no legacy database on web, so `bootstrapMigrate()` never runs: Drift's `onCreate`
 builds schema v9 directly. See [[DataLayer]].
 
+> **Status: Outdated** (2026-09-13) — `onCreate` builds the current schema (v11), and a
+> browser that already holds a database from an earlier PWA release upgrades through Drift's
+> `onUpgrade`. See [[SchemaV10]].
+
+Group sync works in the PWA as on Android: `flutter_secure_storage` keeps the device token
+encrypted in localStorage, and the stream is `ws(s)://` on the configured server, allowed by
+`connect-src 'self' https: wss:`. Verified on 2026-09-13 with two browser contexts against a
+local backend serving the PWA on its own host: create, join, share, and a score entered in
+one appearing on the other's open board within seconds.
+
 ### Feature guards
 
 `kIsWeb` appears in only two files, plus the conditional export in `connection.dart`:

@@ -321,5 +321,85 @@
   "serverUrlSaved": "Server gespeichert",
   "analysisRequiresBackend": "Diese Analyse benötigt einen Server. Richte einen in den Einstellungen ein.",
   "openSettings": "Einstellungen öffnen",
-  "serverUrlCleared": "Server gelöscht"
+  "serverUrlCleared": "Server gelöscht",
+
+  "groupSection": "Gruppe",
+
+  "groupDescription": "Teile Spiele mit den anderen Geräten deiner Gruppe. Geteilte Spiele mit ihren Spielern, Punkten, Kommentaren und Analysen werden an deinen Server gesendet; alle anderen Spiele bleiben auf diesem Gerät.",
+
+  "groupNeedsServer": "Richte zuerst oben einen Server ein.",
+
+  "groupCreate": "Gruppe erstellen",
+
+  "groupJoin": "Gruppe beitreten",
+
+  "groupNameLabel": "Gruppenname",
+
+  "deviceLabelLabel": "Name dieses Geräts",
+
+  "deviceLabelDefault": "Mein Gerät",
+
+  "shareTokenLabel": "Einladungscode",
+
+  "shareTokenHint": "Füge den Code ein, den dir ein Gruppenmitglied geschickt hat",
+
+  "groupCurrent": "Gruppe: {name}",
+
+  "shareTokenExplain": "Sende diesen Code an die Geräte, die der Gruppe beitreten sollen. Wer ihn hat, kann beitreten.",
+
+  "shareTokenCopy": "Code kopieren",
+
+  "shareTokenCopied": "Code kopiert",
+
+  "shareTokenRotate": "Neuer Code",
+
+  "shareTokenRotateConfirm": "Mit dem alten Code kann niemand mehr beitreten. Geräte, die bereits in der Gruppe sind, sind nicht betroffen.",
+
+  "groupLeave": "Gruppe verlassen",
+
+  "groupLeaveConfirm": "Dieses Gerät verlässt die Gruppe. Geteilte Spiele bleiben auf diesem Gerät, werden aber nicht mehr synchronisiert.",
+
+  "groupLeft": "Gruppe verlassen",
+
+  "groupJoined": "Gruppe beigetreten",
+
+  "clearServerLeavesGroup": "Wenn du den Server löschst, verlässt du die Gruppe. Geteilte Spiele bleiben auf diesem Gerät.",
+
+  "syncNow": "Jetzt synchronisieren",
+
+  "syncStatusIdle": "Synchronisiert um {time}",
+
+  "syncStatusSyncing": "Synchronisiere…",
+
+  "syncStatusOffline": "Server nicht erreichbar – Änderungen werden später gesendet",
+
+  "syncStatusUnauthorized": "Der Server akzeptiert dieses Gerät nicht mehr. Verlasse die Gruppe und tritt ihr erneut bei.",
+
+  "syncStatusError": "Serverfehler bei der Synchronisierung",
+
+  "syncPending": "{count, plural, =1{1 Änderung ausstehend} other{{count} Änderungen ausstehend}}",
+
+  "syncRejected": "{count, plural, =1{1 Änderung vom Server abgelehnt} other{{count} Änderungen vom Server abgelehnt}}",
+
+  "groupErrorUnknownToken": "Unbekannter oder ersetzter Einladungscode",
+
+  "groupErrorRateLimited": "Zu viele Versuche. Versuche es in einer Minute erneut.",
+
+  "groupErrorUnreachable": "Server nicht erreichbar",
+
+  "groupErrorServer": "Serverfehler",
+
+  "shareWithGroup": "Mit der Gruppe teilen",
+
+  "shareWithGroupSubtitle": "Die Geräte in {name} sehen und bearbeiten dieses Spiel",
+
+  "shareGameConfirm": "Das Spiel mit seinen Spielern, Punkten und Kommentaren wird an {name} gesendet. Das Teilen kann nicht rückgängig gemacht werden.",
+
+  "gameSharedDone": "Spiel mit der Gruppe geteilt",
+
+  "gameSharedBadge": "Geteiltes Spiel",
+
+  "invalidPlayerNamesForSync": "Diese Namen können nicht geteilt werden: {names}. Verwende Buchstaben, Ziffern, Leerzeichen, Bindestriche, Apostrophe oder Punkte (höchstens 32 Zeichen).",
+
+  "roundRenumbered": "Diese Runde wurde bereits auf einem anderen Gerät eingetragen und ist jetzt Runde {number}."
 }

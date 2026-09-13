@@ -2,14 +2,15 @@
 
 Complete guide for filling out the Data Safety section in Google Play Console for CountScore.
 
-**Last Updated**: September 11, 2026
+**Last Updated**: September 13, 2026
 **Applies to**: CountScore v1.1.0 and later
 **Privacy Policy**: `privacy_policy.md`, published at
 https://vemore.github.io/countscore/privacy-policy.html
 
 > **This guide changed materially in September 2026.** Versions 1.0.x contained no networking
 > code, and the declaration for them was correctly "no data collected". **Version 1.1.0 adds
-> the ZapZap analysis**, which transmits game data off the device. The form must be updated
+> the ZapZap analysis and group sharing**, which transmit game data off the device — and group
+> sharing **stores** it on the server the user configures. The form must be updated
 > **before** 1.1.0 is submitted — a declaration that does not match app behaviour is a Play
 > policy violation and a common cause of suspension.
 
@@ -17,13 +18,20 @@ https://vemore.github.io/countscore/privacy-policy.html
 
 ## Quick Summary
 
-**CountScore can share a small amount of data, and only after the user has configured a
-server of their own and asked for an analysis.**
+**CountScore can collect and share game data, and only after the user has configured a server
+of their own.**
 
-Everything the app does normally — creating games, entering scores, viewing statistics — is
-local to the device. One optional feature (the **ZapZap analysis**) sends that game's player
-names, scores and round comments to a backend, which forwards them to an LLM provider to
-generate the analysis text. Nothing is stored on that backend.
+Everything the app does by default — creating games, entering scores, viewing statistics — is
+local to the device. Two optional features use the server the user configures:
+
+- the **ZapZap analysis** sends one game's player names, scores and round comments to that
+  backend, which forwards them to an LLM provider to generate the analysis text. Nothing is
+  stored on the backend for this feature;
+- **group sharing**, once the user has created or joined a group, sends the games the user
+  shares — name, type, player names and colours, round comments, scores, analysis — plus the
+  group name and a user-chosen device name to that backend, which **stores** them (with a
+  change log) and serves them to the group's other devices. The server also issues the device
+  a random identifier and access token.
 
 **The app ships with no backend address.** There is no default and none is compiled in: the
 user enters one in Settings → Server, pointing at a server they host themselves from the
@@ -49,6 +57,30 @@ describes capability rather than the default — see below.
 ---
 
 ## What Changed and Why
+
+### Group sharing (sync client, September 13, 2026)
+
+`lib/providers/group_provider.dart` and `lib/services/sync/` implement the group sync client
+against `POST /groups`, `POST /groups/join`, `POST /sync/push`, `GET /sync/pull`,
+`POST /sync/ws-ticket` and the `/sync/stream` WebSocket. A game the user shares (on by default
+for new games while the device is in a group, per game otherwise) is uploaded with:
+
+| Entity | Content |
+|---|---|
+| `game` | Name, game type, scoring rule, start date |
+| `game_type` | Name, icon, colour, elimination / game-over rules |
+| `player` | **Player name**, colour |
+| `round` | Number, **free-text comment** |
+| `score` | Score value |
+| `game_analysis` | **Generated analysis text**, model id, date |
+| group create/join | **Group name**, **device name** typed by the user |
+
+The server persists all of it, and a `change_log` of every change, until its operator deletes
+it; other devices in the group download it. The device receives a server-generated identifier
+and a secret token (stored argon2-hashed on the server, in Keystore / encrypted browser storage
+on the device). No LLM provider is involved.
+
+### ZapZap analysis
 
 The ZapZap analysis feature (`lib/screens/game_analysis_screen.dart`, issuing the request via
 `lib/services/backend_client.dart`) posts a JSON payload to `POST /comments/zapzap-analysis`
@@ -117,10 +149,12 @@ release manifest, because release signing needs the gitignored `android/key.prop
 
 **Answer**: ✅ **Yes**
 
-**Explanation**: When the user has configured a backend server of their own and then
-explicitly requests a ZapZap analysis, the app transmits that game's player names, scores and
-round comments to that server and on to an LLM provider. No server is configured by default,
-so a user who never sets one up transmits nothing. All other app data stays on the device.
+**Explanation**: When the user has configured a backend server of their own, (a) explicitly
+requesting a ZapZap analysis transmits that game's player names, scores and round comments to
+that server and on to an LLM provider, and (b) joining a group and sharing a game uploads that
+game — player names, scores, comments, analysis — to that server, which stores it and serves it
+to the group's other devices. No server is configured by default, so a user who never sets one
+up transmits nothing. Unshared games stay on the device.
 
 ---
 
@@ -128,7 +162,8 @@ so a user who never sets one up transmits nothing. All other app data stays on t
 
 **Answer**: ✅ **Yes**
 
-**Explanation**: The request is sent over HTTPS/TLS to the server address the user configured.
+**Explanation**: Requests are sent over HTTPS/TLS (and the sync signal over a TLS WebSocket) to
+the server address the user configured.
 The app refuses to store an `http://` address unless its host is a private or loopback address
 (`192.168.x.x`, `10.x.x.x`, `172.16–31.x.x`, `127.x.x.x`, `localhost`, `*.local`), so the only
 unencrypted path possible is one that never leaves the user's own local network, to a server
@@ -153,7 +188,11 @@ queries the manifest.
    deleting a game also deletes its cached analysis.
 2. **Clear app data** — Android Settings → Apps → CountScore → Storage → Clear Data.
 3. **Uninstall** — removes all app data permanently.
-4. **Server-side** — nothing to delete: the analysis endpoint stores no game data.
+4. **Shared games** — deleting a shared game deletes it on every device of the group and marks
+   it deleted on the server; leaving the group revokes the device. Removing the stored data
+   from the server is done by its operator (the user, for a self-hosted server): deleting the
+   group row cascades to everything it holds.
+5. **Analysis** — nothing to delete server-side: the analysis endpoint stores no game data.
 
 ---
 
@@ -164,7 +203,7 @@ queries the manifest.
 **Answer**: `https://vemore.github.io/countscore/privacy-policy.html`
 
 That page is `docs/privacy-policy.html`, a static rendering of the **current**
-`privacy_policy.md` (v2.1, September 9, 2026), which describes the analysis feature.
+`privacy_policy.md` (v2.3, September 13, 2026), which describes the analysis feature and group sharing.
 Publishing the older v1.0 text alongside a "Yes" declaration is exactly the mismatch
 reviewers look for, so the two must be regenerated together — see `docs/README.md`.
 
@@ -178,15 +217,15 @@ publicly, in a private window, before pasting it into the Console.
 
 ## Data Types to Declare
 
-Declare **two** data types. For both, the answers to the sub-questions are the same:
+Declare **three** data types. For all three, the answers to the sub-questions are the same:
 
 | Sub-question | Answer | Why |
 |---|---|---|
 | Collected? | **Yes** | It is transmitted off the device |
 | Shared? | **Yes** | Forwarded to a third-party LLM provider |
-| Processed ephemerally? | **No** | Not claimed — see [What Changed and Why](#what-changed-and-why) |
-| Required or optional? | **Optional** | The app is fully usable without ever generating an analysis |
-| Purpose | **App functionality** | Only to produce the requested analysis text |
+| Processed ephemerally? | **No** | Group sharing stores it; for the analysis the exemption is not claimed — see [What Changed and Why](#what-changed-and-why) |
+| Required or optional? | **Optional** | The app is fully usable without a server, a group or an analysis |
+| Purpose | **App functionality** | Only to produce the requested analysis text and to keep shared games in sync |
 | Linked to the user's identity? | **No** | No accounts, no device or advertising identifiers, nothing to link to |
 | Used for tracking? | **No** | No cross-app or cross-site tracking of any kind |
 
@@ -198,16 +237,24 @@ anonymous.
 
 ### 2. App activity → Other user-generated content
 
-Game names, round comments (free text the user types), score values, and per-player history
-from previous games.
+Game names, round comments (free text the user types), score values, per-player history from
+previous games (analysis), and for group sharing: game-type settings, generated analysis text,
+the group name and the device name the user types.
+
+### 3. Device or other IDs
+
+Group sharing assigns the app installation a random identifier and access token when it joins
+a group, sent with every sync request. It is not a hardware or advertising identifier, but it
+identifies an app instance, which is what this category covers — declared on the conservative
+reading. Not linked to identity (there are no accounts), not used for tracking.
 
 ### Do NOT declare
 
 - **Location, Financial info, Health, Contacts, Calendar, Photos, Audio, Files** — never
   accessed.
-- **Device or other IDs** — none collected. The user's own backend inspects the requesting IP
-  address in memory for rate limiting (5/min, 30/h) and never stores it; transient anti-abuse
-  use of an IP address is not a declarable data type.
+- **IP address** — the user's own backend inspects the requesting IP address in memory for rate
+  limiting and never stores it; transient anti-abuse use of an IP address is not a declarable
+  data type.
 - **App info and performance** — no crash reporting, no diagnostics, no analytics SDK.
 
 ---
@@ -220,11 +267,11 @@ from previous games.
 permission the app declares — see [Check Before Submitting](#check-before-submitting).
 
 **Justification**:
-"The INTERNET permission is used for a single, optional, user-initiated feature: generating a
-written analysis of a completed game, against a server the user configures themselves. The app
-ships with no server address, so the permission goes unused until the user supplies one. The
-app makes no other network requests. No background networking, telemetry, analytics or
-advertising traffic occurs."
+"The INTERNET permission is used for two optional features, both against a server the user
+configures themselves: generating a written analysis of a completed game on request, and
+synchronising the games the user chooses to share with a group of their own devices while the
+app is open. The app ships with no server address, so the permission goes unused until the user
+supplies one. No telemetry, analytics or advertising traffic occurs."
 
 ### 2. WAKE_LOCK
 
@@ -262,14 +309,15 @@ Before submitting:
       `strings build/app/outputs/flutter-apk/app-release.apk` — or grep the sources for a
       `defaultValue` on `BACKEND_URL`, which must not exist
 - [ ] **Q1**: answered "Yes" for data collection/sharing
-- [ ] **Data types**: Personal info → Name, and App activity → Other user-generated content
-- [ ] Both marked **Optional**, purpose **App functionality**, **not** linked to identity,
+- [ ] **Data types**: Personal info → Name, App activity → Other user-generated content, and
+      Device or other IDs
+- [ ] All three marked **Optional**, purpose **App functionality**, **not** linked to identity,
       **not** used for tracking
 - [ ] **Q2**: answered "Yes" for encryption in transit
 - [ ] **Q3**: answered "Yes" for data deletion
 - [ ] **GitHub Pages enabled** (Settings → Pages → `main` / `docs`)
 - [ ] **Privacy Policy**: https://vemore.github.io/countscore/privacy-policy.html live over
-      HTTPS, publicly accessible in a private window, and serving the **v2.1** text
+      HTTPS, publicly accessible in a private window, and serving the **v2.3** text
 - [ ] Policy content matches the declaration — no leftover "no data is transmitted" claims
 - [ ] Data Safety preview reviewed in Play Console
 - [ ] Changes saved
@@ -317,9 +365,9 @@ explanations, not a reason to answer "no data collected".
 
 ### Q: "What about the group sharing and sync endpoints in the backend?"
 
-**A**: Not declarable yet — the app contains no client code for them, so no user data reaches
-them. When a sync client ships, this guide and the privacy policy must be updated **before**
-that release.
+**A**: Declared, since 1.1.0: the app contains the client (`lib/services/sync/`). Shared games
+are **stored** on the user's server, so the ephemeral-processing exemption does not apply to
+them in any reading. (Until 2026-09-13 this answer said there was no client.)
 
 ### Q: "What if I add analytics later?"
 
@@ -337,7 +385,8 @@ Hello Google Play Review Team,
 Thank you for reviewing CountScore. Our data handling is as follows:
 
 1. All game data (game types, players, scores, preferences) is stored locally on the
-   device using SQLite and SharedPreferences.
+   device using SQLite and SharedPreferences, unless the user shares a game with a
+   group (point 6).
 2. One optional feature ("ZapZap analysis") transmits a single game's player names,
    scores and round comments over HTTPS to a backend server. The app ships with no
    server address and none is compiled into it: the user must first enter the address
@@ -347,12 +396,18 @@ Thank you for reviewing CountScore. Our data handling is as follows:
    configured and the user explicitly taps the generate button.
 3. That backend stores none of this data; it is stateless for this endpoint. We operate
    no server that the published app communicates with.
-4. We use no analytics, advertising or tracking SDKs, and collect no device identifiers.
+4. We use no analytics, advertising or tracking SDKs, and collect no hardware or
+   advertising identifiers.
 5. The app is open source and can be audited at:
    https://github.com/vemore/countscore
    The network request in question is in lib/services/backend_client.dart, and the
    address it uses comes from lib/providers/backend_provider.dart, which has no
    default value.
+6. Optional group sharing: after configuring that same self-hosted server and creating
+   or joining a group, the user can share games. A shared game's name, player names,
+   scores, round comments and analysis are stored on that server and synchronised to the
+   group's other devices, with a random per-installation identifier and access token.
+   Games that are not shared never leave the device.
 
 Our privacy policy at [PRIVACY_POLICY_URL] describes this in detail.
 
@@ -372,11 +427,13 @@ CountScore is a score-tracking application that:
 - Allows users to delete their data at any time
 - Is open-source software (MIT License)
 
-One optional feature, generated only at the user's explicit request, sends a single
-game's player names, scores and round comments over an encrypted connection to the
-developer's backend and on to a large language model provider, solely to produce a
-written analysis of that game. That data is not stored on the backend, is not linked
-to any identity, and is not used for tracking or advertising.
+Two optional features use a server the user hosts and configures. One, at the user's
+explicit request, sends a single game's player names, scores and round comments over an
+encrypted connection to that server and on to a large language model provider, solely
+to produce a written analysis; that data is not stored on the server. The other, group
+sharing, stores the games the user chooses to share on that server and synchronises
+them to the group's other devices. Neither is linked to any identity or used for
+tracking or advertising.
 ```
 
 ---
@@ -384,7 +441,7 @@ to any identity, and is not used for tracking or advertising.
 ## Updates and Maintenance
 
 **When to update the Data Safety form**:
-- ✅ Before shipping the sync/group client
+- ✅ Before changing what group sharing sends (a new synced field or entity)
 - ✅ Before adding analytics or advertising
 - ✅ Before changing the LLM provider in a way that changes retention
 - ✅ When adding new permissions
@@ -408,9 +465,10 @@ the app update. All three must be consistent.
 ```
 DATA SAFETY QUICK REFERENCE — CountScore v1.1.0+
 
-Q: Collect or share data?        A: YES (optional, user-initiated analysis only,
-                                    and only to a server the user configures;
-                                    no server address ships with the app)
+Q: Collect or share data?        A: YES (optional: user-initiated analysis, and
+                                    games the user shares with a group; only to a
+                                    server the user configures; no server address
+                                    ships with the app)
 Q: Data encrypted in transit?    A: YES (HTTPS/TLS; http:// accepted only for a
                                     private/loopback host, i.e. the user's own LAN)
 Q: Data deletion available?      A: YES
@@ -418,17 +476,20 @@ Privacy Policy URL:              https://vemore.github.io/countscore/privacy-pol
 
 Data types declared:
 - Personal info > Name .................. player names
-- App activity > Other user-generated ... game names, round comments, scores
-Both: collected YES, shared YES, optional, App functionality,
+- App activity > Other user-generated ... game names, round comments, scores,
+                                          analyses, group and device names
+- Device or other IDs ................... per-installation group device id
+All three: collected YES, shared YES, optional, App functionality,
       NOT linked to identity, NOT used for tracking.
 
 Permissions: INTERNET (declared in the main manifest; the only one)
              No WAKE_LOCK, no storage permissions.
              networkSecurityConfig points at res/xml/network_security_config.xml.
 
-Summary: local-only by default, with no backend address shipped at all; one
-         optional feature transmits one game's data to a server the user
-         configures, and on to an LLM provider, at their explicit request.
+Summary: local-only by default, with no backend address shipped at all; two
+         optional features use a server the user configures: an analysis
+         (forwarded to an LLM provider, not stored) and group sharing (shared
+         games stored on that server and synced to the group's devices).
 ```
 
 ---

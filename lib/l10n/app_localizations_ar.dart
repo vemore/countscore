@@ -608,4 +608,168 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get serverUrlCleared => 'تم مسح الخادم';
+
+  @override
+  String get groupSection => 'المجموعة';
+
+  @override
+  String get groupDescription =>
+      'شارك الألعاب مع الأجهزة الأخرى في مجموعتك. تُرسل الألعاب المشتركة ولاعبوها ونتائجها وتعليقاتها وتحليلاتها إلى خادمك؛ أما باقي الألعاب فتبقى على هذا الجهاز.';
+
+  @override
+  String get groupNeedsServer => 'اضبط خادمًا أعلاه أولًا.';
+
+  @override
+  String get groupCreate => 'إنشاء مجموعة';
+
+  @override
+  String get groupJoin => 'الانضمام إلى مجموعة';
+
+  @override
+  String get groupNameLabel => 'اسم المجموعة';
+
+  @override
+  String get deviceLabelLabel => 'اسم هذا الجهاز';
+
+  @override
+  String get deviceLabelDefault => 'جهازي';
+
+  @override
+  String get shareTokenLabel => 'رمز الدعوة';
+
+  @override
+  String get shareTokenHint => 'الصق الرمز الذي أرسله إليك أحد أعضاء المجموعة';
+
+  @override
+  String groupCurrent(String name) {
+    return 'المجموعة: $name';
+  }
+
+  @override
+  String get shareTokenExplain =>
+      'أرسل هذا الرمز إلى الأجهزة التي ينبغي أن تنضم إلى المجموعة. يمكن لأي شخص يملكه الانضمام.';
+
+  @override
+  String get shareTokenCopy => 'نسخ الرمز';
+
+  @override
+  String get shareTokenCopied => 'تم نسخ الرمز';
+
+  @override
+  String get shareTokenRotate => 'رمز جديد';
+
+  @override
+  String get shareTokenRotateConfirm =>
+      'لن يسمح الرمز القديم بالانضمام بعد الآن. لا يتأثر الأجهزة الموجودة في المجموعة بالفعل.';
+
+  @override
+  String get groupLeave => 'مغادرة المجموعة';
+
+  @override
+  String get groupLeaveConfirm =>
+      'سيغادر هذا الجهاز المجموعة. تبقى الألعاب المشتركة على هذا الجهاز لكنها لن تُزامَن بعد الآن.';
+
+  @override
+  String get groupLeft => 'غادرت المجموعة';
+
+  @override
+  String get groupJoined => 'انضممت إلى المجموعة';
+
+  @override
+  String get clearServerLeavesGroup =>
+      'مسح الخادم يعني مغادرة المجموعة. تبقى الألعاب المشتركة على هذا الجهاز.';
+
+  @override
+  String get syncNow => 'مزامنة الآن';
+
+  @override
+  String syncStatusIdle(String time) {
+    return 'تمت المزامنة في $time';
+  }
+
+  @override
+  String get syncStatusSyncing => 'جارٍ المزامنة…';
+
+  @override
+  String get syncStatusOffline =>
+      'تعذّر الوصول إلى الخادم — ستُرسل التغييرات لاحقًا';
+
+  @override
+  String get syncStatusUnauthorized =>
+      'لم يعد الخادم يقبل هذا الجهاز. غادر المجموعة ثم انضم إليها من جديد.';
+
+  @override
+  String get syncStatusError => 'خطأ في الخادم أثناء المزامنة';
+
+  @override
+  String syncPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count تغيير معلق',
+      many: '$count تغييرًا معلقًا',
+      few: '$count تغييرات معلقة',
+      two: 'تغييران معلقان',
+      one: 'تغيير واحد معلق',
+      zero: 'لا تغييرات معلقة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncRejected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'رفض الخادم $count تغيير',
+      many: 'رفض الخادم $count تغييرًا',
+      few: 'رفض الخادم $count تغييرات',
+      two: 'رفض الخادم تغييرين',
+      one: 'رفض الخادم تغييرًا واحدًا',
+      zero: 'لم يرفض الخادم أي تغيير',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupErrorUnknownToken => 'رمز دعوة غير معروف أو تم استبداله';
+
+  @override
+  String get groupErrorRateLimited =>
+      'محاولات كثيرة جدًا. أعد المحاولة بعد دقيقة.';
+
+  @override
+  String get groupErrorUnreachable => 'تعذّر الوصول إلى الخادم';
+
+  @override
+  String get groupErrorServer => 'خطأ في الخادم';
+
+  @override
+  String get shareWithGroup => 'مشاركة مع المجموعة';
+
+  @override
+  String shareWithGroupSubtitle(String name) {
+    return 'ستتمكن أجهزة $name من رؤية هذه اللعبة وتعديلها';
+  }
+
+  @override
+  String shareGameConfirm(String name) {
+    return 'ستُرسل اللعبة ولاعبوها ونتائجها وتعليقاتها إلى $name. لا يمكن التراجع عن المشاركة.';
+  }
+
+  @override
+  String get gameSharedDone => 'تمت مشاركة اللعبة مع المجموعة';
+
+  @override
+  String get gameSharedBadge => 'لعبة مشتركة';
+
+  @override
+  String invalidPlayerNamesForSync(String names) {
+    return 'لا يمكن مشاركة هذه الأسماء: $names. استخدم الحروف أو الأرقام أو المسافات أو الشرطات أو الفواصل العلوية أو النقاط (32 حرفًا كحد أقصى).';
+  }
+
+  @override
+  String roundRenumbered(int number) {
+    return 'سبق إدخال هذه الجولة على جهاز آخر، لذا أصبحت الجولة رقم $number.';
+  }
 }

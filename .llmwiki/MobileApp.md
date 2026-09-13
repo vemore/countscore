@@ -2,7 +2,7 @@
 
 > Scope: the Flutter app's own structure — entry point, state, screens, models.
 > Related: [[DataLayer]] · [[SchemaV10]] · [[I18n]] · [[Web]] · [[Testing]]
-> Updated: 2026-09-11
+> Updated: 2026-09-13
 
 ## Facts
 
@@ -10,7 +10,7 @@
 
 ### Entry point
 
-`lib/main.dart` — `MyApp` wraps a `MultiProvider` (5 providers) around a `MaterialApp`.
+`lib/main.dart` — `MyApp` wraps a `MultiProvider` (6 providers) around a `MaterialApp`.
 Material 3, seed colour `Colors.deepPurple`. 10 `supportedLocales` with a
 `localeResolutionCallback` falling back to `en`. Home is `HomeScreen`.
 There is no DI container. `main()` is `async` and calls
@@ -26,6 +26,7 @@ themed and already knows whether the connected features exist.
 | `game_type_provider.dart` (46 l.) | Game-type list CRUD, `getGameTypeById`. |
 | `settings_provider.dart` (72 l.) | Wakelock toggle (SharedPreferences-backed) and DB export/import. The **only** caller of `DatabaseService` for I/O. Exposes `supportsDbExportImport => !kIsWeb`. |
 | `theme_provider.dart` (33 l.) | `ThemeMode` only, persisted to SharedPreferences under `themeMode` as `ThemeMode.name`. `load()` is called from `main()` before `runApp`. |
+| `group_provider.dart` | Group membership and the sync loop — create/join/leave/rotate, `shareGame`, `syncNow`, `SyncStatus`, and a `SyncEvent` stream shown as snackbars by `_SyncEventListener` in `main.dart`. A `ChangeNotifierProxyProvider` over `BackendProvider`: runs only with a URL **and** a device token. Calls `GameProvider.refreshFromSync` after remote changes. See [[Sync]]. |
 | `backend_provider.dart` | The self-hosted backend base URL, SharedPreferences key `backendUrl`, **no default**. `check()` validates and canonicalises what the user typed; `isConfigured` gates every connected feature. `load()` is called from `main()` before `runApp`. |
 
 ### Screens — `lib/screens/` (10)
