@@ -115,8 +115,10 @@ curl -s -X POST "$PUBLIC_URL/comments/zapzap-analysis" \
   -d @scripts/sample_payload.json | head -20
 ```
 
-A `503` means the configured provider reports itself unavailable — almost always missing
-credentials for the selected `LLM_PROVIDER`. A `502` is an upstream provider error.
+A `503` has two causes, told apart by the body: `LLM provider not configured` is missing
+credentials for the selected `LLM_PROVIDER`; `upstream LLM rate-limited` (with `Retry-After`)
+means the configuration is right but the provider account is out of quota. A `502` is any
+other upstream provider error.
 
 Logs: `ssh nas` then `docker logs -f <api-container>`. There is **no monitoring or
 alerting** — logs are all there is.

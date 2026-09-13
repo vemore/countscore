@@ -305,6 +305,7 @@
   "confirmDeleteAnalysis": "Удалить анализ этой игры?",
   "analysisError": "Не удалось создать анализ",
   "analysisErrorStatus": "Не удалось создать анализ (HTTP {status})",
+  "analysisErrorUnavailable": "Сервер анализа временно недоступен. Повторите попытку позже.",
   "retry": "Повторить",
   "analysisGeneratedAt": "Создано {date}",
   "serverSection": "Сервер",

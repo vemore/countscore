@@ -2,7 +2,7 @@
 
 > Scope: the HTTP and WebSocket surface. Source of truth is `backend/app/routes/`.
 > Related: [[Backend]] · [[Sync]] · [[LlmProviders]] · [[Security]]
-> Updated: 2026-09-11
+> Updated: 2026-09-13
 
 ## Facts
 
@@ -36,7 +36,7 @@ Internals: `_next_server_seq`, `_apply_delta`, `_apply_game_player`, `_coerce_pa
 | Method | Path | Auth | Notes |
 |---|---|---|---|
 | POST | `/comments/mvp` | **none** | Stateless. Anthropic path. IP rate limited. |
-| POST | `/comments/zapzap-analysis` | **none** | Stateless. Pluggable provider. IP rate limited. 503 if the provider is unavailable, 422 on an invalid payload, 502 on an upstream error. |
+| POST | `/comments/zapzap-analysis` | **none** | Stateless. Pluggable provider. IP rate limited (429). 503 if the provider is unavailable **or rate-limited upstream** (the latter with `Retry-After: 60` and the detail `upstream LLM rate-limited`, `app/routes/comments.py`), 422 on an invalid payload, 502 on any other upstream error. |
 | POST | `/groups/me/games/{game_id}/comments` | device | Group-scoped, budgeted. |
 | GET | `/groups/me/games/{game_id}/comments` | device | |
 
@@ -56,6 +56,16 @@ It answers **200 even when the LLM is misconfigured** — an unknown `LLM_PROVID
 group and sync routes are healthy. See [[LlmProviders]].
 
 ## Decisions & History
+
+- **An upstream quota is a 503, not a 429 and not a 502 (2026-09-13).** On 2026-09-11 the
+  Mistral account ran out of quota and every client saw "HTTP 502", the code for "something
+  broke upstream". Providers now raise `LLMRateLimitedError` (`app/services/llm/base.py`) on an
+  OpenAI-compatible `RateLimitError` or a Bedrock `ThrottlingException` /
+  `ServiceQuotaExceededException`, and the route answers 503 + `Retry-After`. Not 429: that
+  code already means *this client* hit our per-IP limit, and the two call for different
+  reactions. The detail stays generic, so no provider name or message reaches the client.
+  The app words every 503 as "temporarily unavailable, try again later"
+  (`analysisErrorUnavailable`).
 
 - **The two stateless comment endpoints have no auth on purpose** — they predate groups and
   let the mobile app call the analysis without an account. The cost control is IP rate

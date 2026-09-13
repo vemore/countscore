@@ -305,6 +305,7 @@
   "confirmDeleteAnalysis": "Analyse für diese Partie löschen?",
   "analysisError": "Analyse konnte nicht erstellt werden",
   "analysisErrorStatus": "Analyse konnte nicht erstellt werden (HTTP {status})",
+  "analysisErrorUnavailable": "Der Analyseserver ist vorübergehend nicht verfügbar. Versuchen Sie es später erneut.",
   "retry": "Erneut versuchen",
   "analysisGeneratedAt": "Erstellt am {date}",
   "serverSection": "Server",

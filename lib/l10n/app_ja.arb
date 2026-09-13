@@ -305,6 +305,7 @@
   "confirmDeleteAnalysis": "このゲームの分析を削除しますか？",
   "analysisError": "分析の生成に失敗しました",
   "analysisErrorStatus": "分析の生成に失敗しました (HTTP {status})",
+  "analysisErrorUnavailable": "分析サーバーは一時的に利用できません。しばらくしてからもう一度お試しください。",
   "retry": "再試行",
   "analysisGeneratedAt": "{date} に生成",
   "serverSection": "サーバー",

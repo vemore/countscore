@@ -1092,6 +1092,12 @@ abstract class AppLocalizations {
   /// **'Échec de la génération de l\'analyse'**
   String get analysisError;
 
+  /// Analysis failure when the server answers 503: its LLM provider is unavailable or out of quota. Temporary, so it tells the user to retry later rather than showing an HTTP code
+  ///
+  /// In fr, this message translates to:
+  /// **'Le serveur d\'analyse est momentanément indisponible. Réessayez plus tard.'**
+  String get analysisErrorUnavailable;
+
   /// Analysis failure carrying the HTTP status returned by the user's own server
   ///
   /// In fr, this message translates to:

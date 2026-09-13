@@ -538,6 +538,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get analysisError => '分析の生成に失敗しました';
 
   @override
+  String get analysisErrorUnavailable =>
+      '分析サーバーは一時的に利用できません。しばらくしてからもう一度お試しください。';
+
+  @override
   String analysisErrorStatus(int status) {
     return '分析の生成に失敗しました (HTTP $status)';
   }

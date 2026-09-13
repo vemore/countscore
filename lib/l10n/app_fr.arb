@@ -869,6 +869,10 @@
 
   "analysisError": "Échec de la génération de l'analyse",
 
+  "analysisErrorUnavailable": "Le serveur d'analyse est momentanément indisponible. Réessayez plus tard.",
+  "@analysisErrorUnavailable": {
+    "description": "Analysis failure when the server answers 503: its LLM provider is unavailable or out of quota. Temporary, so it tells the user to retry later rather than showing an HTTP code"
+  },
   "analysisErrorStatus": "Échec de la génération de l'analyse (HTTP {status})",
 
   "@analysisErrorStatus": {

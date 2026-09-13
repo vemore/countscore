@@ -149,8 +149,13 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
     } on BackendException catch (e) {
       if (!mounted) return;
       debugPrint('zapzap analysis failed: $e'); // status + body stay in the log
+      final l10n = AppLocalizations.of(context)!;
+      // 503 is temporary by contract — no LLM credentials, or the provider's
+      // quota is exhausted — so it gets words a user can act on: try later.
       _reportFailure(
-        AppLocalizations.of(context)!.analysisErrorStatus(e.statusCode),
+        e.statusCode == 503
+            ? l10n.analysisErrorUnavailable
+            : l10n.analysisErrorStatus(e.statusCode),
       );
     } catch (e) {
       if (!mounted) return;

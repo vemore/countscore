@@ -81,12 +81,14 @@ Widget _wrap(Widget child, {String? backendUrl, GameProvider? gameProvider}) {
 
 /// A backend that always refuses. `Response.bytes` keeps the fixture out of
 /// http's latin-1 fallback.
-MockClient _failing502() => MockClient(
+MockClient _failing(int status, String detail) => MockClient(
       (_) async => http.Response.bytes(
-        utf8.encode('{"detail":"upstream LLM error: RuntimeError"}'),
-        502,
+        utf8.encode(jsonEncode({'detail': detail})),
+        status,
       ),
     );
+
+MockClient _failing502() => _failing(502, 'upstream LLM error: RuntimeError');
 
 /// Drives the screen from tapped button to settled failure.
 ///
@@ -201,5 +203,31 @@ void main() {
     // The leak: the screen used to append the Dart exception verbatim.
     expect(find.textContaining('Exception'), findsNothing);
     expect(find.textContaining('upstream LLM error'), findsNothing);
+  });
+
+  testWidgets('a 503 tells the user to retry later instead of showing a code',
+      (tester) async {
+    // The server answers 503 when its LLM provider is out of quota — the
+    // 2026-09-11 Mistral outage showed users a bare "HTTP 502" for that.
+    await tester.pumpWidget(_wrap(
+      GameAnalysisScreen(
+        repository: _FakeAnalysisRepository(),
+        httpClient: _failing(503, 'upstream LLM rate-limited'),
+      ),
+      backendUrl: 'https://countscore.example.com',
+      gameProvider: _GameProviderWithCurrentGame(),
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('analysis_generate')));
+    await _pumpFailure(tester);
+
+    expect(
+      find.text(
+          'The analysis server is temporarily unavailable. Try again later.'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('HTTP'), findsNothing);
+    expect(find.textContaining('rate-limited'), findsNothing);
   });
 }

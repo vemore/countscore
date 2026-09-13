@@ -536,6 +536,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get analysisError => '生成分析失败';
 
   @override
+  String get analysisErrorUnavailable => '分析服务器暂时不可用，请稍后再试。';
+
+  @override
   String analysisErrorStatus(int status) {
     return '生成分析失败 (HTTP $status)';
   }

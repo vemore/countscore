@@ -11,10 +11,20 @@ from typing import Any
 
 import boto3
 from botocore.config import Config as BotoConfig
+from botocore.exceptions import ClientError
 
 from app.config import get_settings
 
-from .base import DEFAULT_MAX_TOKENS, DEFAULT_TEMPERATURE, DEFAULT_TOP_P, LLMResult
+from .base import (
+    DEFAULT_MAX_TOKENS,
+    DEFAULT_TEMPERATURE,
+    DEFAULT_TOP_P,
+    LLMRateLimitedError,
+    LLMResult,
+)
+
+# Bedrock error codes that mean "no capacity right now", not "bad request".
+_THROTTLING_CODES = frozenset({"ThrottlingException", "ServiceQuotaExceededException"})
 
 
 class BedrockProvider:
@@ -91,9 +101,14 @@ class BedrockProvider:
                 "Bedrock provider not configured "
                 "(AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY missing)"
             )
-        payload = await asyncio.to_thread(
-            self._invoke_sync, system_prompt, user_message, max_tokens, temperature, top_p
-        )
+        try:
+            payload = await asyncio.to_thread(
+                self._invoke_sync, system_prompt, user_message, max_tokens, temperature, top_p
+            )
+        except ClientError as e:
+            if e.response.get("Error", {}).get("Code") in _THROTTLING_CODES:
+                raise LLMRateLimitedError(f"Bedrock API rate-limited: {e}") from e
+            raise
         content = (payload.get("generation") or "").strip()
         return LLMResult(
             content=content,

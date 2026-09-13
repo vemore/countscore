@@ -5,7 +5,7 @@ description: Add, rename, or remove a user-facing string in the CountScore Flutt
 
 # Adding a localized string to CountScore
 
-Ten ARB files must stay in lockstep: **180 keys each**, no gaps. A missing key in one
+Ten ARB files must stay in lockstep: **the same key set in each**, no gaps. A missing key in one
 language is a silent English fallback for those users.
 
 ## Layout
@@ -120,7 +120,7 @@ flutter test
 
 ## Adding a whole new language
 
-1. Copy `app_en.arb` to `lib/l10n/app_XX.arb` and translate all 180 strings.
+1. Copy `app_en.arb` to `lib/l10n/app_XX.arb` and translate every string.
 2. Apply that language's plural categories from the table above.
 3. **Add the locale to `main.dart` `supportedLocales`** — the list is duplicated there, and
    an ARB alone will never be selected.

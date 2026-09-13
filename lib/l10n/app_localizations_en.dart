@@ -546,6 +546,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get analysisError => 'Failed to generate analysis';
 
   @override
+  String get analysisErrorUnavailable =>
+      'The analysis server is temporarily unavailable. Try again later.';
+
+  @override
   String analysisErrorStatus(int status) {
     return 'Failed to generate analysis (HTTP $status)';
   }
