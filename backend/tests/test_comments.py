@@ -6,6 +6,7 @@ rate-limiting and budget logic — not to verify Claude itself.
 
 from __future__ import annotations
 
+import uuid
 from unittest.mock import AsyncMock
 
 import pytest
@@ -95,3 +96,18 @@ async def test_mvp_requires_anthropic_key(client, monkeypatch):
     }
     r = await client.post("/comments/mvp", json=payload)
     assert r.status_code == 503
+
+
+@pytest.mark.parametrize("limit", [-1, 0, 101])
+async def test_listing_comments_bounds_the_limit(client, limit):
+    """A negative LIMIT was a Postgres error and a 500; an unbounded one a full scan."""
+    r = await client.post("/groups", json={"name": "g", "device_label": "d"})
+    token = r.json()["device"]["token"]
+
+    r = await client.get(
+        f"/groups/me/games/{uuid.uuid4()}/comments",
+        params={"limit": limit},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert r.status_code == 422

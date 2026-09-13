@@ -19,6 +19,11 @@ DEFAULT_MAX_TOKENS = 8192
 DEFAULT_TEMPERATURE = 0.4
 DEFAULT_TOP_P = 0.9
 
+# How long one provider call may take. The app gives up on an analysis after 90 s, so an
+# SDK left on its own default (600 s for openai and anthropic) would keep working for a
+# client that is gone.
+LLM_TIMEOUT_SECONDS = 90
+
 
 class LLMRateLimitedError(RuntimeError):
     """The provider refused the call on quota or rate grounds (HTTP 429, throttling).

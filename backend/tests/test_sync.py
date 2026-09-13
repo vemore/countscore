@@ -446,3 +446,31 @@ async def test_lww_equal_lamport_is_broken_by_origin_device_id(client, session_f
     r = await _push(client, lo_token, _player_upsert(player, 4, name="Bas", name_normalized="bas"))
     assert r.json()["results"][0]["status"] == "merged_lww"
     assert (await _stored_player(session_factory, player)).name == "Haut"
+
+
+async def test_push_is_rate_limited_per_device(client, monkeypatch):
+    """Every push lands in change_log and reaches every member — a device may not flood it."""
+    from app.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "sync_push_rl_per_minute", 2)
+    _g1, token = await _make_group_and_token(client)
+    _g2, other_token = await _make_group_and_token(client)
+
+    def player(lamport):
+        return {
+            "entity_type": "player",
+            "entity_uuid": str(uuid.uuid4()),
+            "op": "upsert",
+            "payload": {"name": f"P{lamport}", "name_normalized": f"p{lamport}"},
+            "client_lamport": lamport,
+        }
+
+    for lamport in (1, 2):
+        assert (await _push(client, token, player(lamport))).status_code == 200
+
+    blocked = await _push(client, token, player(3))
+    assert blocked.status_code == 429
+    assert int(blocked.headers["Retry-After"]) >= 1
+
+    # The counter is the device's, not the address's: another device still pushes.
+    assert (await _push(client, other_token, player(1))).status_code == 200

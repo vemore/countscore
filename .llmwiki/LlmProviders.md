@@ -54,7 +54,8 @@ The system block is marked `cache_control: ephemeral`, so across a games evening
   `settings.llm_provider` (default `bedrock`), caches instances, `_PROVIDERS = ("bedrock",
   "gemini", "mistral")`, raises `ValueError` on an unknown name.
 - **Implementations**: `bedrock.py` (`BedrockProvider`, boto3 `bedrock-runtime`, Llama-3
-  wire format, wrapped in `asyncio.to_thread`, `read_timeout=90`, no retries; `available`
+  wire format, wrapped in `asyncio.to_thread`, `read_timeout=LLM_TIMEOUT_SECONDS` (90, `llm/base.py` — also passed to
+  `AsyncOpenAI` and `AsyncAnthropic`, whose own default is 600 s), no retries; `available`
   iff the AWS key and secret are set) and `openai_compat.py`
   (`OpenAICompatProvider(label, base_url, api_key, model)` — one class serving both Gemini
   and Mistral over OpenAI Chat Completions).

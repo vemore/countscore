@@ -6,7 +6,8 @@
 
 ## Facts
 
-`/docs` serves the generated OpenAPI when the server is running.
+`/docs`, `/redoc` and `/openapi.json` serve the generated OpenAPI only with `EXPOSE_DOCS=true`
+(off by default, so off in production); otherwise they are 404.
 
 ### `app/routes/groups.py` — prefix `/groups`, tag `groups`
 
@@ -24,7 +25,7 @@
 
 | Method | Path | Auth | Notes |
 |---|---|---|---|
-| POST | `/push` | device | Max **500 deltas** per request. Values bounded per entity. Serialised per group (row lock); one savepoint per delta. |
+| POST | `/push` | device | Max **500 deltas** per request. Values bounded per entity. Serialised per group (row lock); one savepoint per delta. **429** + `Retry-After` past `SYNC_PUSH_RL_PER_MINUTE` / `_PER_HOUR` (60 / 1200) calls per device — in-memory, keyed by device id. |
 | GET | `/pull?since_seq=N` | device | |
 | POST | `/ws-ticket` | device | Mints a single-use ticket, 60 s TTL, for the stream below. |
 | WS | `/stream?ticket=…` | ticket | Signal only — see [[Sync]]. 1008 on a bad ticket or a revoked device; 1013 past `MAX_STREAMS_PER_DEVICE` (3) open streams; 1012 when the shared LISTEN connection drops. |
@@ -61,7 +62,7 @@ checks gets **429** before any hashing.
 | POST | `/comments/mvp` | **none** | Stateless. Anthropic path. IP rate limited. |
 | POST | `/comments/zapzap-analysis` | **none** | Stateless. Pluggable provider. IP rate limited (429). 503 if the provider is unavailable **or rate-limited upstream** (the latter with `Retry-After: 60` and the detail `upstream LLM rate-limited`, `app/routes/comments.py`), 422 on a wrong shape or a count out of bounds (`ZapZapPayload`: 1–12 players, ≤ 200 rounds, ≤ 10 history entries per player; long text is clipped and player names filtered, never refused), 502 on any other upstream error. |
 | POST | `/groups/me/games/{game_id}/comments` | device | Group-scoped, budgeted. |
-| GET | `/groups/me/games/{game_id}/comments` | device | |
+| GET | `/groups/me/games/{game_id}/comments` | device | `limit` 1–100 (default 10), 422 outside. |
 
 Both stateless endpoints pass through `_enforce_ip_rate_limit`.
 
@@ -86,7 +87,8 @@ only (405 otherwise), no auth, `html=True` so `…/` answers `index.html`; the b
 redirects to the trailing slash. A missing build folder is a **404, not a 500** (`_PwaFiles`
 skips StaticFiles' one-off directory check), and a folder swapped in by
 `scripts/deploy_web.sh` is served without a restart. A prefix whose first segment matches
-an API route (`/groups`, `/sync/app`, `/health`, `/docs`…) refuses to start. Covered by
+an API route (`/groups`, `/sync/app`, `/health`, `/docs`…) refuses to start — the docs paths stay reserved
+even with `EXPOSE_DOCS` off, so turning them on cannot break a deploy that started. Covered by
 `tests/test_pwa.py`.
 
 ## Decisions & History

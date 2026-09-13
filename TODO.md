@@ -3,21 +3,6 @@
 Open work only. A finished item moves to `DONE.md` — see the workflow section of
 `CLAUDE.md`.
 
-## `_snack` hardcodes `Colors.green` / `Colors.red`
-
-**Status:** open — noted 2026-09-11, while fixing the section-header colours in the same file.
-
-`lib/screens/settings_screen.dart:28-33` picks its snackbar background from
-`ok ? Colors.green : Colors.red` — the same theme-blindness just fixed four lines below, in the
-section headers. Saturated red and green sit badly on the dark theme's surfaces and ignore the
-scheme entirely.
-
-The analysis screen's new failure snackbar uses `Theme.of(context).colorScheme.error`, so the
-two now disagree about what a failure looks like. The fix is `colorScheme.error` /
-`onError` for the failure case and `colorScheme.primary` (or a tertiary) for the success one,
-across the six `_snack` call sites. Not folded into the header fix because it changes the look
-of every settings confirmation, not just a label colour.
-
 ## Group management beyond joining and leaving
 
 **Status:** open — noted 2026-09-13, deliberately out of scope for the sync client (decided
@@ -66,38 +51,23 @@ database not published; the API bound to `127.0.0.1`; the WS ticket redeemed bef
 of routine reads.
 
 
-### LOW — No rate limit on authenticated writes; the raw payload is persisted and replayed
-
-> **Partly done** (2026-09-13, `fix/sync-contract`) — `change_log.payload` now holds only the
-> payload's known client columns (`_logged_payload` in `sync.py`), never unknown keys nor
-> `id`/`group_id`/timestamps. The per-device limiter on `/sync/push` and the `list_comments`
-> bound are still open.
-
-`/sync/push` stores `delta.payload` verbatim in `change_log` (`sync.py:291`), unknown keys
-included, up to 256 KiB per request and 500 deltas, and `/sync/pull` serves it back to every
-member. A member can bloat the NAS disk and every sibling device. Proposed: persist only the
-coerced, known columns; a per-device limiter on `/sync/push` (reuse `check_and_increment`
-with a scope of its own). Also `list_comments` (`backend/app/routes/comments.py:349`) takes
-`limit: int = 10` unbounded — a negative value is a Postgres error and a 500:
-`Query(ge=1, le=100)`.
-
 ### LOW — Hardening bundle
 
 None of these is exploitable on its own; together they are the usual production checklist.
 
-- `/docs`, `/redoc` and `/openapi.json` are public in production, under a CSP that allows
-  `'unsafe-inline'`: `docs_url=None` unless an `EXPOSE_DOCS` setting is true.
+> **Partly done** (2026-09-13, `fix/p1-hardening-quick`) — `/docs`, `/redoc` and
+> `/openapi.json` only exist with `EXPOSE_DOCS=true`; `AsyncOpenAI` and `AsyncAnthropic` get
+> `timeout=LLM_TIMEOUT_SECONDS` (90) like Bedrock; the integrity-error log line uses `%r`, so a
+> newline in the driver text cannot forge a log line. The `f"invalid payload: {e}"` echo was
+> already gone (the ZapZap payload is a schema since `fix/ip-spoofing-zapzap-payload`). What
+> is left below is the infrastructure half.
+
 - `backend/Dockerfile` runs as root, keeps `build-essential` in the final image, and
   installs from `pyproject.toml` — not from `uv.lock`, which only CI honours
   (`uv sync --locked`), so production resolves its own dependency set. Multi-stage build,
   a `USER`, and `uv sync --locked --no-dev`.
 - No dependency vulnerability scan anywhere: a `pip-audit` (or `uv` equivalent) step in
   `.github/workflows/ci.yml` and a `.github/dependabot.yml`.
-- `AsyncOpenAI` and `AsyncAnthropic` are built without a timeout (600 s by default) while
-  the app gives up after 90 s: pass `timeout=90`, as `bedrock.py` already does.
-- `f"invalid payload: {e}"` (`comments.py:141`) echoes internal key names to the client, and
-  `logger.warning("... %s", e.orig)` in `sync.py:181` writes driver error text containing
-  user data — newlines included — to the log. Generic detail out; sanitise before logging.
 - The daily backups (`./backups`, plain gzip) hold every live `share_token`: say so in
   `.llmwiki/Deployment.md`, or encrypt them.
 

@@ -25,7 +25,7 @@ cp .env.example .env          # then fill it in; .env is never committed
 
 # Run
 export DATABASE_URL=postgresql+asyncpg://countscore:...@localhost/countscore
-uvicorn app.main:app --reload           # docs at /docs
+EXPOSE_DOCS=true uvicorn app.main:app --reload   # docs at /docs
 docker compose up -d                    # or: db + api on :8000 + backup sidecar
 
 # Test

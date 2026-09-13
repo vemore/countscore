@@ -27,10 +27,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.dispose();
   }
 
+  /// Colours from the scheme, so a confirmation reads on the dark theme too and a
+  /// failure looks like the analysis screen's.
   void _snack(String message, {bool ok = true}) {
+    final scheme = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(message),
-      backgroundColor: ok ? Colors.green : Colors.red,
+      content: Text(
+        message,
+        style: TextStyle(color: ok ? scheme.onPrimary : scheme.onError),
+      ),
+      backgroundColor: ok ? scheme.primary : scheme.error,
     ));
   }
 

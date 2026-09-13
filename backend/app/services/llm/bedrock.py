@@ -20,6 +20,7 @@ from .base import (
     DEFAULT_MAX_TOKENS,
     DEFAULT_TEMPERATURE,
     DEFAULT_TOP_P,
+    LLM_TIMEOUT_SECONDS,
     LLMRateLimitedError,
     LLMResult,
 )
@@ -43,7 +44,7 @@ class BedrockProvider:
                 aws_access_key_id=settings.aws_access_key_id,
                 aws_secret_access_key=settings.aws_secret_access_key,
                 aws_session_token=settings.aws_session_token,
-                config=BotoConfig(read_timeout=90, retries={"max_attempts": 0}),
+                config=BotoConfig(read_timeout=LLM_TIMEOUT_SECONDS, retries={"max_attempts": 0}),
             )
 
     @property

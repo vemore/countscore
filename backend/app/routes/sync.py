@@ -27,7 +27,15 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
-from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    Query,
+    WebSocket,
+    WebSocketDisconnect,
+    status,
+)
 from sqlalchemy import Column, DateTime, select
 from sqlalchemy import inspect as sa_inspect
 from sqlalchemy.exc import IntegrityError
@@ -60,6 +68,7 @@ from app.schemas.sync import (
     WsTicketResponse,
 )
 from app.services.delta_bounds import check_payload as check_payload_bounds
+from app.services.ip_rate_limiter import check_ip_rate_limit
 from app.services.notify import listen_for_group, notify_new_seq
 from app.services.ws_ticket import TICKET_TTL_SECONDS as WS_TICKET_TTL_SECONDS
 from app.services.ws_ticket import consume as consume_ws_ticket
@@ -400,12 +409,34 @@ def _logged_payload(delta: DeltaIn) -> dict[str, Any]:
     return _client_payload(cls, delta.payload)
 
 
+def _enforce_push_rate_limit(device_id: uuid.UUID) -> None:
+    """Per-device throttle on /sync/push.
+
+    The in-memory limiter, keyed by device rather than address: the ``rate_limits`` table
+    is the LLM quota, and one row per device leaves no room for a second scope.
+    """
+    settings = get_settings()
+    dec = check_ip_rate_limit(
+        str(device_id),
+        bucket="sync_push",
+        per_minute=settings.sync_push_rl_per_minute,
+        per_hour=settings.sync_push_rl_per_hour,
+    )
+    if not dec.allowed:
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            f"rate-limited at {dec.scope} scope",
+            headers={"Retry-After": str(dec.retry_after_seconds)},
+        )
+
+
 @router.post("/push", response_model=PushResponse)
 async def push(
     body: PushRequest,
     auth: AuthContext = Depends(require_device),
     session: AsyncSession = Depends(get_session),
 ) -> PushResponse:
+    _enforce_push_rate_limit(auth.device.id)
     results: list[DeltaResult] = []
     max_seq = 0
 
@@ -452,7 +483,9 @@ async def push(
             # keeps its row and its log entry. The driver message names tables and
             # constraints — useful in the log, not something to hand back to a client.
             await savepoint.rollback()
-            logger.warning("delta rejected on integrity error: %s", e.orig)
+            # %r, not %s: the driver text quotes the payload, newlines included, and a
+            # raw newline would forge a log line.
+            logger.warning("delta rejected on integrity error: %r", e.orig)
             outcome = _rejected(REASON_INTEGRITY)
 
         outcome.delta_idx = idx
