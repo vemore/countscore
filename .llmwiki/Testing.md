@@ -17,6 +17,8 @@
 | `test/sync/sync_store_test.dart` (15) | Group sync without a network: capture triggers (local games capture nothing, sharing captures a game and its children, inherited `group_id`, deletes captured as deletes), `preparePush` (coalescing, uuid5 player links, parent-first order, stable lamports on retry, refused names), `applyPulled` (a full game from another device, merge by name, quarantine and replay, LWW, delete wins, own deltas skipped, score-cell adoption), `renumberRound`, `leave`. |
 | `test/sync/sync_ids_test.dart` (3) | uuid5 against Python's `uuid.uuid5` vector, name normalisation, the player-name allow-list. |
 | `test/sync/sync_two_devices_test.dart` (5, `integration`) | Two in-memory devices through a **real** backend: a shared game and its scores both ways, the same round entered on both (renumbered, nothing lost), delete wins, same-name players merged, leaving. Skipped unless `SYNC_BACKEND_URL` is set — recipe below. |
+| `test/widgets/group_settings_section_test.dart` (1) | Settings → Group pumped with asserts on: create a group through the dialog against a `MockClient` server, and the group and its invite code appear. Guards the dialog that disposed its controllers during its exit transition (`_dependents.isEmpty`, found on a Pixel on 2026-09-13, invisible in release builds). |
+| `test/providers/game_provider_sync_test.dart` (1) | A current game deleted by sync is reported once (`takeRemotelyDeletedGameName`), which the board uses to close itself. |
 | `test/drift/web_upgrade_test.dart` (1) | A v9 database (v10/v11 stripped, `user_version` 9) reopened through Drift gets the sync tables, columns and triggers from `onUpgrade` — the PWA's upgrade path. |
 | `test/widget_test.dart` (8) | Model serialisation only — it pumps no widgets, despite the name. |
 | `test/providers/theme_provider_test.dart` (7) | `ThemeMode` decode fallbacks and the SharedPreferences round-trip. |
@@ -33,7 +35,7 @@ _hasCachedAnalysis`) has **no** widget test: pumping the board needs a loaded ga
 repositories. It was verified on device on 2026-09-11 — both directions, and the p171 case
 where neither condition holds.
 
-87 tests pass in thirteen files; `sync_two_devices_test.dart` is skipped unless a backend is given.
+89 tests pass in fifteen files; `sync_two_devices_test.dart` is skipped unless a backend is given.
 
 ### Group sync against a local backend
 
@@ -50,6 +52,13 @@ Raise the group rate limit: every test creates a group. Adding
 `PWA_BASE_PATH=/countscore PWA_DIR=$PWD/build/web` after a
 `flutter build web --base-href /countscore/` serves the PWA on the same host, which is how the
 two-browser check of 2026-09-13 ran (Playwright, one context per device).
+
+**On a real phone against production** (2026-09-13, Pixel 9 Pro XL, debug build): a v9
+database with 64 real games upgraded to v11 intact; create a group, the production PWA
+joins; a shared game created on the phone reaches the PWA, scores entered on either side
+appear on the other's open board within seconds; a delete propagates; leaving revokes the
+device. A **debug** build is what found the dialog assertion — the PWA runs release, with
+asserts compiled out — so run a debug APK on a device before calling a UI change done.
 
 ### End-to-end — `integration_test/app_test.dart`
 

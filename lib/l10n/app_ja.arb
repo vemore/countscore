@@ -401,5 +401,7 @@
 
   "invalidPlayerNamesForSync": "次の名前は共有できません：{names}。文字、数字、スペース、ハイフン、アポストロフィ、ピリオドのみを使ってください（32文字以内）。",
 
-  "roundRenumbered": "そのラウンドは別の端末で入力済みだったため、ラウンド {number} になりました。"
+  "roundRenumbered": "そのラウンドは別の端末で入力済みだったため、ラウンド {number} になりました。",
+
+  "gameDeletedElsewhere": "「{name}」は別の端末で削除されました"
 }

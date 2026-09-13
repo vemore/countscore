@@ -1214,5 +1214,16 @@
         "example": "6"
       }
     }
+  },
+
+  "gameDeletedElsewhere": "La partie « {name} » a été supprimée sur un autre appareil",
+  "@gameDeletedElsewhere": {
+    "description": "Snackbar when the open shared game was deleted on another device, which closes the board",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Partie 1"
+      }
+    }
   }
 }

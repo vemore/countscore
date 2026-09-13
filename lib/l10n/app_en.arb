@@ -474,5 +474,7 @@
 
   "invalidPlayerNamesForSync": "These names cannot be shared: {names}. Use letters, digits, spaces, hyphens, apostrophes or periods (32 characters at most).",
 
-  "roundRenumbered": "That round had already been entered on another device, so it became round {number}."
+  "roundRenumbered": "That round had already been entered on another device, so it became round {number}.",
+
+  "gameDeletedElsewhere": "\"{name}\" was deleted on another device"
 }

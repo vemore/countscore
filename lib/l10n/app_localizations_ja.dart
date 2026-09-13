@@ -750,4 +750,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String roundRenumbered(int number) {
     return 'そのラウンドは別の端末で入力済みだったため、ラウンド $number になりました。';
   }
+
+  @override
+  String gameDeletedElsewhere(String name) {
+    return '「$name」は別の端末で削除されました';
+  }
 }

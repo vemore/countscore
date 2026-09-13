@@ -401,5 +401,7 @@
 
   "invalidPlayerNamesForSync": "Estes nomes não podem ser partilhados: {names}. Use letras, algarismos, espaços, hífenes, apóstrofos ou pontos (32 caracteres no máximo).",
 
-  "roundRenumbered": "Essa ronda já tinha sido registada noutro dispositivo, por isso passou a ser a ronda {number}."
+  "roundRenumbered": "Essa ronda já tinha sido registada noutro dispositivo, por isso passou a ser a ronda {number}.",
+
+  "gameDeletedElsewhere": "O jogo «{name}» foi eliminado noutro dispositivo"
 }

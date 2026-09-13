@@ -1439,6 +1439,12 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Cette manche avait déjà été saisie sur un autre appareil : elle devient la manche {number}.'**
   String roundRenumbered(int number);
+
+  /// Snackbar when the open shared game was deleted on another device, which closes the board
+  ///
+  /// In fr, this message translates to:
+  /// **'La partie « {name} » a été supprimée sur un autre appareil'**
+  String gameDeletedElsewhere(String name);
 }
 
 class _AppLocalizationsDelegate

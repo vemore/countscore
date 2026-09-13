@@ -117,6 +117,9 @@ A pulled player or game type links to the local one of the same name or is creat
 whose parent is not local yet waits in `sync_inbox`, replayed after every page. The local
 lamport is raised past every lamport seen.
 
+**A game deleted elsewhere while open** closes its board: `GameProvider.refreshFromSync`
+notices the current game is gone and the board pops with a snackbar naming it.
+
 **Triggers** (`GroupProvider`): local writes (Drift table updates, debounced 1 s), the
 WebSocket `new_seq` signal (`sync_stream.dart`, fresh ticket per connection, backoff 1 s →
 60 s), app resume, a 60 s poll, and "Sync now". A 401 shows "no longer accepted"; no answer

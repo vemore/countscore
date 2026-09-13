@@ -53,53 +53,11 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
   Future<List<String>?> _ask({
     required String title,
     required List<({String label, String initial, String? hint})> fields,
-  }) async {
-    final l10n = AppLocalizations.of(context)!;
-    final controllers = [for (final f in fields) TextEditingController(text: f.initial)];
-    final result = await showDialog<List<String>>(
+  }) {
+    return showDialog<List<String>>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (var i = 0; i < fields.length; i++) ...[
-              if (i > 0) const SizedBox(height: 12),
-              TextField(
-                key: Key('group_field_$i'),
-                controller: controllers[i],
-                autofocus: i == 0,
-                maxLength: 64,
-                decoration: InputDecoration(
-                  labelText: fields[i].label,
-                  hintText: fields[i].hint,
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            key: const Key('group_dialog_ok'),
-            onPressed: () {
-              final values = [for (final c in controllers) c.text.trim()];
-              if (values.any((v) => v.isEmpty)) return;
-              Navigator.pop(context, values);
-            },
-            child: Text(l10n.ok),
-          ),
-        ],
-      ),
+      builder: (context) => _TextFieldsDialog(title: title, fields: fields),
     );
-    for (final c in controllers) {
-      c.dispose();
-    }
-    return result;
   }
 
   Future<bool> _confirm(String message, String action) async {
@@ -269,6 +227,79 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: children),
+    );
+  }
+}
+
+
+/// A dialog of one or more text fields that owns its controllers.
+///
+/// The controllers must outlive the dialog's exit transition, which keeps
+/// rebuilding the fields after `showDialog` has returned: disposing them in the
+/// caller as soon as the future completes trips `_dependents.isEmpty` in debug
+/// builds. Here they are disposed with the dialog's own state.
+class _TextFieldsDialog extends StatefulWidget {
+  const _TextFieldsDialog({required this.title, required this.fields});
+
+  final String title;
+  final List<({String label, String initial, String? hint})> fields;
+
+  @override
+  State<_TextFieldsDialog> createState() => _TextFieldsDialogState();
+}
+
+class _TextFieldsDialogState extends State<_TextFieldsDialog> {
+  late final List<TextEditingController> _controllers = [
+    for (final f in widget.fields) TextEditingController(text: f.initial),
+  ];
+
+  @override
+  void dispose() {
+    for (final c in _controllers) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return AlertDialog(
+      title: Text(widget.title),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < widget.fields.length; i++) ...[
+            if (i > 0) const SizedBox(height: 12),
+            TextField(
+              key: Key('group_field_$i'),
+              controller: _controllers[i],
+              autofocus: i == 0,
+              maxLength: 64,
+              decoration: InputDecoration(
+                labelText: widget.fields[i].label,
+                hintText: widget.fields[i].hint,
+                border: const OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          key: const Key('group_dialog_ok'),
+          onPressed: () {
+            final values = [for (final c in _controllers) c.text.trim()];
+            if (values.any((v) => v.isEmpty)) return;
+            Navigator.pop(context, values);
+          },
+          child: Text(l10n.ok),
+        ),
+      ],
     );
   }
 }

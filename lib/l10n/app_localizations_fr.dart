@@ -766,4 +766,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String roundRenumbered(int number) {
     return 'Cette manche avait déjà été saisie sur un autre appareil : elle devient la manche $number.';
   }
+
+  @override
+  String gameDeletedElsewhere(String name) {
+    return 'La partie « $name » a été supprimée sur un autre appareil';
+  }
 }
