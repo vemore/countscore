@@ -401,5 +401,7 @@
 
   "invalidPlayerNamesForSync": "以下名称无法共享：{names}。请只使用字母、数字、空格、连字符、撇号或句点（最多 32 个字符）。",
 
-  "roundRenumbered": "该局已在另一台设备上录入，因此改为第 {number} 局。"
+  "roundRenumbered": "该局已在另一台设备上录入，因此改为第 {number} 局。",
+
+  "gameDeletedElsewhere": "对局“{name}”已在另一台设备上删除"
 }

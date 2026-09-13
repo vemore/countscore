@@ -769,4 +769,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String roundRenumbered(int number) {
     return 'Esa ronda ya se había introducido en otro dispositivo, así que pasa a ser la ronda $number.';
   }
+
+  @override
+  String gameDeletedElsewhere(String name) {
+    return 'La partida «$name» se eliminó en otro dispositivo';
+  }
 }

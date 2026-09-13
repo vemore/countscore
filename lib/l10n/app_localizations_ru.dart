@@ -772,4 +772,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String roundRenumbered(int number) {
     return 'Этот раунд уже ввели на другом устройстве, поэтому он стал раундом $number.';
   }
+
+  @override
+  String gameDeletedElsewhere(String name) {
+    return 'Партия «$name» удалена на другом устройстве';
+  }
 }

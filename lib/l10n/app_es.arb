@@ -401,5 +401,7 @@
 
   "invalidPlayerNamesForSync": "Estos nombres no se pueden compartir: {names}. Usa letras, dígitos, espacios, guiones, apóstrofos o puntos (32 caracteres como máximo).",
 
-  "roundRenumbered": "Esa ronda ya se había introducido en otro dispositivo, así que pasa a ser la ronda {number}."
+  "roundRenumbered": "Esa ronda ya se había introducido en otro dispositivo, así que pasa a ser la ronda {number}.",
+
+  "gameDeletedElsewhere": "La partida «{name}» se eliminó en otro dispositivo"
 }

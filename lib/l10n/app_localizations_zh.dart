@@ -741,4 +741,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String roundRenumbered(int number) {
     return '该局已在另一台设备上录入，因此改为第 $number 局。';
   }
+
+  @override
+  String gameDeletedElsewhere(String name) {
+    return '对局“$name”已在另一台设备上删除';
+  }
 }

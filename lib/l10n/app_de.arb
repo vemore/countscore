@@ -401,5 +401,7 @@
 
   "invalidPlayerNamesForSync": "Diese Namen können nicht geteilt werden: {names}. Verwende Buchstaben, Ziffern, Leerzeichen, Bindestriche, Apostrophe oder Punkte (höchstens 32 Zeichen).",
 
-  "roundRenumbered": "Diese Runde wurde bereits auf einem anderen Gerät eingetragen und ist jetzt Runde {number}."
+  "roundRenumbered": "Diese Runde wurde bereits auf einem anderen Gerät eingetragen und ist jetzt Runde {number}.",
+
+  "gameDeletedElsewhere": "„{name}“ wurde auf einem anderen Gerät gelöscht"
 }

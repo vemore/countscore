@@ -33,10 +33,29 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
   /// local data, and this screen is the only way to reach it.
   bool _hasCachedAnalysis = false;
 
+  late final GameProvider _gameProvider = context.read<GameProvider>();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _refreshCachedAnalysis());
+    _gameProvider.addListener(_closeIfDeletedElsewhere);
+  }
+
+  @override
+  void dispose() {
+    _gameProvider.removeListener(_closeIfDeletedElsewhere);
+    super.dispose();
+  }
+
+  /// A shared game deleted on another device leaves nothing to show here.
+  void _closeIfDeletedElsewhere() {
+    final name = _gameProvider.takeRemotelyDeletedGameName();
+    if (name == null || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    Navigator.of(context).pop();
+    messenger.showSnackBar(SnackBar(content: Text(l10n.gameDeletedElsewhere(name))));
   }
 
   Future<void> _refreshCachedAnalysis() async {

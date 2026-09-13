@@ -772,4 +772,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String roundRenumbered(int number) {
     return 'سبق إدخال هذه الجولة على جهاز آخر، لذا أصبحت الجولة رقم $number.';
   }
+
+  @override
+  String gameDeletedElsewhere(String name) {
+    return 'حُذفت اللعبة «$name» على جهاز آخر';
+  }
 }

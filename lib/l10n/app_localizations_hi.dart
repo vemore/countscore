@@ -766,4 +766,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String roundRenumbered(int number) {
     return 'यह राउंड किसी दूसरे उपकरण पर पहले ही दर्ज हो चुका था, इसलिए यह राउंड $number बन गया।';
   }
+
+  @override
+  String gameDeletedElsewhere(String name) {
+    return '\"$name\" किसी दूसरे उपकरण पर हटा दिया गया';
+  }
 }

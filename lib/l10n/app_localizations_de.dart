@@ -766,4 +766,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String roundRenumbered(int number) {
     return 'Diese Runde wurde bereits auf einem anderen Gerät eingetragen und ist jetzt Runde $number.';
   }
+
+  @override
+  String gameDeletedElsewhere(String name) {
+    return '„$name“ wurde auf einem anderen Gerät gelöscht';
+  }
 }

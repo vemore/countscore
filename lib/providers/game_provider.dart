@@ -214,13 +214,24 @@ class GameProvider with ChangeNotifier {
     return ranking;
   }
 
+  String? _remotelyDeletedGameName;
+
+  /// The name of the open game another device deleted, returned once: the board
+  /// screen reads it to close itself and say why.
+  String? takeRemotelyDeletedGameName() {
+    final name = _remotelyDeletedGameName;
+    _remotelyDeletedGameName = null;
+    return name;
+  }
+
   /// Reloads what is on screen after group sync changed the database underneath.
   Future<void> refreshFromSync() async {
     await loadGames();
     final current = _currentGame;
     if (current == null) return;
     if (await _gameRepo.getById(current.id!) == null) {
-      // Deleted on another device.
+      // Deleted on another device. The board watches for this and closes.
+      _remotelyDeletedGameName = current.name;
       _currentGame = null;
       _currentPlayers = [];
       _currentRounds = [];
