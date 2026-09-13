@@ -50,7 +50,7 @@ Load this file first. Then read only the pages your task touches.
 | [[Hooks]] | What Claude Code refuses mechanically, and why each rule left CLAUDE.md | 2026-09-13 |
 | [[Security]] | Defended surfaces, and the security debt that is knowingly open | 2026-09-13 |
 | [[Testing]] | Unit, Drift, migration, e2e web and device; backend pytest | 2026-09-13 |
-| [[Release]] | Play Store signing state, icons, target API | 2026-09-09 |
+| [[Release]] | Play Store signing state, target API, 2026 Play policy constraints | 2026-09-13 |
 
 ## Procedures live in skills, not here
 

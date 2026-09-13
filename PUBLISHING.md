@@ -1,6 +1,6 @@
 # CountScore — Play Store Submission Guide
 
-**Last Updated**: September 9, 2026
+**Last Updated**: September 13, 2026
 **Scope**: what happens in the **Play Console**, for a release that is already built.
 
 Everything on the machine — keystore, signing, version bump, icons, the App Bundle — is the
@@ -22,11 +22,13 @@ the reader to answer "no data collected" about an app that transmits game data.
 
 ## Before you open the Console
 
-Four things must be true. Each is a rejection or a policy violation if it is not.
+These must be true. Each is a rejection, a blocked update or a policy violation if it is not.
 
-1. **The AAB is built and signed with the upload key.** `release-android` §5–6.
-2. **The release manifest declares `INTERNET`.** The ZapZap analysis is the app's only
-   network call and it fails silently without it — see
+1. **The AAB is built and passes `verify_aab.sh`** — upload key, version code, target API ≥ 36
+   (required for every update since 2026-08-31), 16 KB page-size alignment of the native
+   libraries. `release-android` §6–7.
+2. **The release manifest declares `INTERNET`.** The ZapZap analysis and group sharing both
+   need it and fail silently without it — see
    [Check Before Submitting](PLAY_STORE_DATA_SAFETY.md#check-before-submitting). It is not
    enough that debug builds work; they merge a different manifest.
 3. **The privacy policy is live** at
@@ -36,6 +38,15 @@ Four things must be true. Each is a rejection or a policy violation if it is not
    describes the ZapZap analysis and says data leaves the device when the user asks. Store
    copy claiming "no data collection" beside a Data Safety form saying "Yes" is the exact
    contradiction reviewers look for.
+5. **AI-generated content can be reported from inside the app.** Play's AI-Generated Content
+   policy applies to the ZapZap commentary. `.llmwiki/Release.md` records whether the app
+   has that control.
+6. **The app is registered in the Console** (Android developer verification). Unregistered
+   apps are removed from Google Play from 2026-09-30.
+
+The Console work in §5 can be delegated to Claude Cowork or Claude in Chrome: the
+`release-android` skill (§8) stages the bundle and a brief, `HANDOFF.md`, that surveys the
+Console, creates the release and stops before anything is sent for review.
 
 ---
 
@@ -122,15 +133,20 @@ What testers must exercise, because no automated gate covers it:
 - [ ] Install over the **store** version — the database must survive the upgrade
 - [ ] The **ZapZap analysis** returns real commentary in the release build (this is the one
       that was broken by the missing permission, and it works in debug either way)
+- [ ] Creating, joining and leaving a group, and a score syncing between two devices
 - [ ] Export and import a game
 - [ ] The wakelock toggle keeps the screen on
 - [ ] The app follows the system language
 
+**Personal developer accounts created after 2023-11-13** cannot open production until a
+**closed test** has had at least 12 testers opted in for 14 consecutive days. The Production
+page says so if it applies.
+
 Then **Production → Create new release**. Staged rollout: 10–20% first, watch Crashes & ANRs
 for 48 hours, then 50%, then 100%.
 
-Release notes go in `store_listing/<locale>/release_notes_<version>.txt`, one file per
-locale, committed alongside the release.
+Release notes go in `store_listing/<locale>/release_notes_v<x.y.z>.txt`, one file per
+locale, committed alongside the release — **500 characters at most** each, Play's limit.
 
 Google's review is typically 2–5 business days and checks policy compliance, privacy-policy
 completeness, **data safety accuracy** and content rating accuracy.
@@ -141,7 +157,7 @@ First 48 hours: Play Console dashboard, Crashes & ANRs, ratings and reviews. Ins
 rate should be >98%, crash rate <1%, ANR rate <0.5%. Reply to reviews within a day or two.
 
 Any later release that changes what leaves the device — a new field in the analysis payload,
-a new recipient, or the sync client when it exists — reopens §3 before it ships. That rule
+a new recipient, a new entity carried by group sync — reopens §3 before it ships. That rule
 is in `CLAUDE.md` under "A new outbound data flow is a change to three documents".
 
 ---

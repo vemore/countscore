@@ -2,7 +2,7 @@
 
 > Scope: the Play Store configuration state. For the procedure, use the `release-android` skill.
 > Related: [[MobileApp]] · [[Testing]] · [[KnownLimits]]
-> Updated: 2026-09-09
+> Updated: 2026-09-13
 
 ## Facts
 
@@ -16,9 +16,14 @@ repo root; the build procedure is the `release-android` skill.
 - `android/key.properties` is created from `android/key.properties.template`.
 - Both the keystore and `key.properties` are excluded from version control. **Losing the
   keystore means the app can never be updated again** — back it up somewhere durable.
-- ProGuard/R8 is **enabled**: `android/app/build.gradle.kts:53-54` sets
+- ProGuard/R8 is **enabled**: `android/app/build.gradle.kts:54-55` sets
   `isMinifyEnabled = true` and `isShrinkResources = true`, with rules in
   `android/app/proguard-rules.pro`.
+
+> **Status: Outdated** (2026-09-13) — "Losing the keystore means the app can never be updated
+> again" holds only without Play App Signing. `PUBLISHING.md` §4 keeps Play App Signing
+> enabled, so Google holds the app signing key and a lost *upload* key can be reset through
+> Play support. That reset takes days, so the backup rule stands.
 
 > **Status: Outdated** (2026-09-09) — this bullet previously read "ProGuard/R8 is
 > **disabled**: the app is open source, so obfuscation buys nothing and costs
@@ -41,7 +46,7 @@ flutter build appbundle --release --no-tree-shake-icons
 `flutter_launcher_icons` (dev dependency) generates every Android density from
 `store_listing/assets/icon_512.png` (512×512 PNG). Adaptive icon on a white `#FFFFFF`
 background. To change it: replace that PNG and run
-`flutter pub run flutter_launcher_icons`.
+`dart run flutter_launcher_icons`.
 
 ### Target
 
@@ -56,8 +61,15 @@ is `flutter.minSdkVersion` = 24. See the toolchain table in [[MobileApp]]. App n
 ### Permissions
 
 The release build declares exactly one: `INTERNET`, in
-`android/app/src/main/AndroidManifest.xml`. It exists for the ZapZap analysis, the app's only
-network call ([[LlmProviders]]). A step in the `android` CI job asserts it is still there.
+`android/app/src/main/AndroidManifest.xml`. It exists for the two network features, both
+aimed at the server the user configures in Settings → Server: the ZapZap analysis
+([[LlmProviders]]) and group sharing and sync ([[Sync]]). The merged release manifest also
+carries the AndroidX-generated `com.vemore.countscore.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`.
+A step in the `android` CI job asserts `INTERNET` in the main manifest, and the
+`release-android` skill's `verify_aab.sh` asserts it in the built bundle.
+
+> **Status: Outdated** (2026-09-13) — this paragraph said the analysis was "the app's only
+> network call". That stopped being true when the sync client shipped (`33cc484`).
 
 > **Status: Outdated** (2026-09-09) — until this date the main manifest declared no
 > permissions at all. `INTERNET` was present only in `src/debug` and `src/profile`, which a
@@ -72,11 +84,30 @@ under `en-US/` and `fr-FR/`. `scripts/capture_screenshots.sh` pulls screenshots 
 compliance documents; `scripts/build_privacy_page.py` renders the policy to
 `docs/privacy-policy.html`, which GitHub Pages serves as the URL the Play Console holds.
 
+### Play policy constraints (checked 2026-09-13)
+
+| Constraint | Source of the date | CountScore |
+|---|---|---|
+| New apps and updates must target API **36** since 2026-08-31 (extension to 2026-11-01 on request) | Play Console Help, target API requirements | 36 — met. `verify_aab.sh` checks it. |
+| Native libraries must support **16 KB page sizes** for apps targeting Android 15+ | Android Developers, "Support 16 KB page sizes" | Met on the 1.1.0+4 bundle (every 64-bit `.so` aligned `0x4000`). `verify_aab.sh` checks it. |
+| Apps must be **registered** (Android developer verification) by 2026-09-30, or they are removed | Android Developers Blog, 2026-06; Policy announcement 2026-07-15 | Not visible from the repository — Part A of the Console brief reads it. |
+| **AI-Generated Content**: in-app reporting or flagging of offensive generated content | Play policy "AI-Generated Content"; the 2026-07-15 announcement brings third-party AI integrations under User Data | The ZapZap commentary is LLM output and the app has **no** report control — `TODO.md`. |
+| Unrated apps are not permitted | Policy announcement 2026-07-15 | IARC answers in `PUBLISHING.md` §3. |
+| Personal accounts created after 2023-11-13: closed test, 12 testers, 14 consecutive days, before production | Play Console Help, testing requirements for new personal accounts | Unknown from the repository; the Console says so on the Production page. |
+| Release notes ≤ 500 characters per language | Play Console | `stage_handoff.sh` refuses longer notes. |
+
 ### Submission state
 
 Nothing blocks a 1.1.0 submission in the repository any more. What is left is on the
 Console and the GitHub account, not in the code: enable GitHub Pages so the policy URL
 resolves, then fill the form as `PLAY_STORE_DATA_SAFETY.md` describes.
+
+> **Status: Outdated** (2026-09-13) — the repository blocks 1.1.0 again. Group sharing
+> shipped, and `store_listing/*/full_description.txt` still says "No accounts, no cloud sync"
+> and calls the analysis "the one feature that uses the internet". The app also has no in-app
+> report control for AI-generated content, and there are no 1.1.0 release notes. Each is
+> recorded in `TODO.md`. A signed 1.1.0+4 bundle built from `origin/main` passes
+> `verify_aab.sh`.
 
 ## Decisions & History
 
@@ -98,3 +129,17 @@ resolves, then fill the form as `PLAY_STORE_DATA_SAFETY.md` describes.
   correcting the copies. The same pass found the published listing text in
   `store_listing/*/full_description.txt` claiming "no data collection" and requiring
   "Android 5.0" against a `minSdk` of 24; both were corrected.
+- **The Console steps are delegated to a browser agent, not automated through the Play
+  Developer API (2026-09-13).** The user did the Console work by hand and asked for Claude
+  Cowork / Claude in Chrome to take it over. The `release-android` skill therefore stages a
+  brief (`references/play-console-handoff.md`) whose agent may survey, upload and fill in,
+  but must stop before sending anything for review or starting a rollout. The API route —
+  fastlane `supply` or Gradle Play Publisher with a service account — would make the upload
+  scriptable from this machine; it is proposed in `TODO.md`, not adopted.
+- **No account-deletion flow is required.** Play's account-deletion policy applies to apps
+  that let users create an account. CountScore has none: creating or joining a group issues
+  a device token, and Settings → Group → Leave revokes it. Server-side history belongs to
+  whoever operates the server the group chose, not to the developer ([[Sync]], `privacy_policy.md`).
+- **Releases are built in a dedicated worktree.** `key.properties`, `*.g.dart` and
+  `local.properties` are all gitignored, and the main checkout is routinely in use by another
+  session; building a release there would ship its uncommitted work.
