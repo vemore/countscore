@@ -2,7 +2,7 @@
 
 > Scope: what is deliberately deferred, and what is simply missing.
 > Related: [[Architecture]] · [[Sync]] · [[Security]] · [[Testing]] · [[Web]]
-> Updated: 2026-09-11
+> Updated: 2026-09-13
 
 ## Facts
 
@@ -42,6 +42,11 @@
   authenticated HTTP request. Fine at current scale; above ~1000 devices, index a short
   token prefix. See `backend/app/auth.py`. The WebSocket handshake used to duplicate this
   scan inline and no longer does — it redeems a ticket instead. See [[Sync]].
+
+  > **Status: Outdated** (2026-09-13) — "fine at current scale" undersells it: the scan
+  > runs for *any* bearer token, valid or not, and group creation is free, so it is a CPU
+  > denial of service at any size, not a limit reached at ~1 000 devices. See [[Security]]
+  > and `TODO.md`, *Backend security review — 2026-09-13*.
 - **Flutter SDK upgrade blocked.** Six packages are pinned back, and `dart run drift_dev`
   does not compile at all at drift 2.34.4 / drift_dev 2.34.0. Full analysis and the plan
   live in `TODO.md` at the repo root — that file is the source of truth for this item.
