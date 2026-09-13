@@ -2,7 +2,7 @@
 
 > Scope: what is tested, how to run it, and the traps.
 > Related: [[MobileApp]] · [[DataLayer]] · [[SchemaV9]] · [[Backend]] · [[Web]] · [[KnownLimits]]
-> Updated: 2026-09-11
+> Updated: 2026-09-13
 
 ## Facts
 
@@ -83,13 +83,19 @@ work, use the `flutter-device-test` skill.
 ### Backend — `pytest`
 
 `tests/test_groups.py` (create, join, revoke, rotate) · `test_sync.py` (push/pull,
-idempotence, round conflicts, payload bounds, player-name allow-list — SQLite in memory,
-`pg_notify` stubbed) ·
+idempotence, round conflicts, payload bounds, player-name allow-list, and row-level LWW
+between two devices — SQLite in memory, `pg_notify` stubbed) ·
 `test_sync_ws_integration.py` (WS handshake + push → NOTIFY → new_seq → pull on a **real
 Postgres** via testcontainers) · `test_comments.py` (mocked Anthropic, rate limit, budget,
 prompt injection) · `test_zapzap_analysis.py` · `test_llm_providers.py` ·
 `test_ip_rate_limit.py` · `test_health.py` (the `/health` shape, including that the resolved
 LLM model is reported and that an unknown `LLM_PROVIDER` still answers 200).
+
+**Tests never read `backend/.env`.** `tests/conftest.py` sets `Settings.model_config["env_file"]`
+to `None` before `app.db` builds its settings at import, so a developer's local `.env` cannot
+make a code-default assertion pass in CI and fail locally
+(`test_settings_ignore_a_local_env_file`). Set per-test values with `monkeypatch.setenv`, then
+`get_settings.cache_clear()`.
 
 ```bash
 cd backend
@@ -138,11 +144,14 @@ network call against production, so it stays a manual step — on web via chrome
 device via the `flutter-device-test` skill. Export/import and the wakelock toggle have no
 automated coverage at all and must be checked on a device.
 
-**The sync conflict branch is untested.** `merged_lww` appears nowhere under
-`backend/tests/` — `test_sync.py` covers push/pull, dedup and the round-uniqueness
-rejection, but never drives two competing writers at the same entity. So the one piece of
-`/sync/push` that decides who wins (`backend/app/routes/sync.py:184-199`) is unguarded,
-and this page claimed until 2026-09-09 that it was covered. See [[Sync]].
+**The sync conflict branch is untested.**
+
+> **Status: Outdated** (2026-09-13) — covered now. Three tests in `test_sync.py` drive two
+> devices of one group at the same `entity_uuid`: an older lamport answers `merged_lww` and
+> contributes nothing, including a field only the loser set (the row-level fact); a newer
+> lamport from the other device wins; an equal lamport is broken by the greater
+> `origin_device_id`. Each fails when its half of the comparison at
+> `backend/app/routes/sync.py` is removed.
 
 ## Decisions & History
 

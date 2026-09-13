@@ -277,3 +277,95 @@ async def test_integrity_rejection_does_not_leak_driver_detail(client):
     result = r.json()["results"][0]
     assert result["status"] == "rejected"
     assert result["reason"] == "integrity constraint violation"
+
+
+# --- Row-level LWW (app/routes/sync.py, the `merged_lww` branch) ---------------
+
+
+async def _make_two_devices(client):
+    """One group, two member devices: (device_id, token) for each."""
+    r = await client.post("/groups", json={"name": "g", "device_label": "A"})
+    created = r.json()
+    r = await client.post(
+        "/groups/join",
+        json={"share_token": created["group"]["share_token"], "device_label": "B"},
+    )
+    joined = r.json()
+    return (
+        (uuid.UUID(created["device"]["id"]), created["device"]["token"]),
+        (uuid.UUID(joined["device"]["id"]), joined["device"]["token"]),
+    )
+
+
+def _player_upsert(entity_uuid, lamport, **payload):
+    return {
+        "entity_type": "player",
+        "entity_uuid": entity_uuid,
+        "op": "upsert",
+        "payload": payload,
+        "client_lamport": lamport,
+    }
+
+
+async def _stored_player(session_factory, entity_uuid):
+    from app.models import Player
+
+    async with session_factory() as s:
+        return await s.get(Player, uuid.UUID(entity_uuid))
+
+
+async def test_lww_older_lamport_loses_the_whole_row(client, session_factory):
+    """Row-level, not per-field: a losing delta contributes nothing, not even a field
+    the winner never touched. This is the fact .llmwiki/Sync.md once had wrong."""
+    (_a_id, a_token), (_b_id, b_token) = await _make_two_devices(client)
+    player = str(uuid.uuid4())
+
+    # A creates the player without a colour.
+    r = await _push(
+        client, a_token, _player_upsert(player, 5, name="Alice", name_normalized="alice")
+    )
+    assert r.json()["results"][0]["status"] == "applied"
+
+    # B, behind, renames it and sets the colour A never touched.
+    r = await _push(
+        client,
+        b_token,
+        _player_upsert(player, 3, name="Alicia", name_normalized="alicia", color_value=42),
+    )
+    assert r.json()["results"][0]["status"] == "merged_lww"
+
+    stored = await _stored_player(session_factory, player)
+    assert stored.name == "Alice"
+    assert stored.color_value is None  # the loser's only-its-own field is NOT merged in
+
+
+async def test_lww_newer_lamport_from_another_device_wins(client, session_factory):
+    (_a_id, a_token), (_b_id, b_token) = await _make_two_devices(client)
+    player = str(uuid.uuid4())
+
+    await _push(client, a_token, _player_upsert(player, 5, name="Alice", name_normalized="alice"))
+    r = await _push(
+        client,
+        b_token,
+        _player_upsert(player, 7, name="Alicia", name_normalized="alicia", color_value=42),
+    )
+    assert r.json()["results"][0]["status"] == "applied"
+
+    stored = await _stored_player(session_factory, player)
+    assert (stored.name, stored.color_value) == ("Alicia", 42)
+
+
+async def test_lww_equal_lamport_is_broken_by_origin_device_id(client, session_factory):
+    """Same lamport from two devices: the greater device id wins, whichever arrives last."""
+    (a_id, a_token), (b_id, b_token) = await _make_two_devices(client)
+    (_hi_id, hi_token), (_lo_id, lo_token) = sorted(
+        [(a_id, a_token), (b_id, b_token)], key=lambda d: d[0].bytes, reverse=True
+    )
+    player = str(uuid.uuid4())
+
+    await _push(client, hi_token, _player_upsert(player, 4, name="Haut", name_normalized="haut"))
+
+    # The lower device id arrives last with the same lamport: it must still lose.
+    r = await _push(client, lo_token, _player_upsert(player, 4, name="Bas", name_normalized="bas"))
+    assert r.json()["results"][0]["status"] == "merged_lww"
+    assert (await _stored_player(session_factory, player)).name == "Haut"
