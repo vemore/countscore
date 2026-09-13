@@ -2,7 +2,7 @@
 
 > Scope: the offline-first sharing protocol. Server-side is done; the Flutter client is not.
 > Related: [[Api]] · [[SchemaV9]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-09-09
+> Updated: 2026-09-13
 
 ## Facts
 
@@ -14,6 +14,9 @@ schema is ready and waiting — see [[SchemaV9]].
 > endpoints, dedup, round conflicts and the WebSocket are implemented and covered; the
 > **conflict-resolution branch is neither what this page describes nor tested at all**.
 > See the block under **Model** below, and the gap noted in [[Testing]].
+>
+> **Status: Outdated** (2026-09-13) — the conflict branch is tested now: row-level LWW, the
+> loser dropped whole, ties broken by `origin_device_id` (`backend/tests/test_sync.py`).
 
 ### Model
 
