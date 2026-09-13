@@ -5,6 +5,7 @@ the Markdown prompt construction, not the LLM itself.
 """
 from __future__ import annotations
 
+import re
 from unittest.mock import AsyncMock
 
 import pytest
@@ -142,6 +143,21 @@ async def test_zapzap_upstream_rate_limit_returns_503_with_retry_after(client, m
     assert r.headers["Retry-After"] == "60"
     # Generic on purpose: neither the provider name nor its message reaches the client.
     assert r.json() == {"detail": "upstream LLM rate-limited"}
+
+
+@pytest.mark.parametrize(
+    "name", ["Thibaut", "Vincent", "Lionel", "Laurent", "Guillaume", "Simon", "Nadia", "Ben"]
+)
+def test_system_prompt_names_no_real_person(name):
+    """The constant prompt reaches the provider on every request, whoever is playing.
+
+    Real people belong in the payload, which the user chose to send — never in a prompt
+    that a stranger's server transmits too.
+    """
+    from app.services.zapzap_prompt import ZAPZAP_SYSTEM_PROMPT
+
+    assert re.search(rf"\b{name}\b", ZAPZAP_SYSTEM_PROMPT) is None
+    assert "chouchou" not in ZAPZAP_SYSTEM_PROMPT
 
 
 # --- Prompt builder unit tests -------------------------------------------------
