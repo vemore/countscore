@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -203,6 +204,180 @@ void main() {
 
       await analysisRepo.deleteByGame(gId);
       expect(await analysisRepo.getByGame(gId), isNull);
+    });
+  });
+
+  // ── v10: fresh Drift schema (the web install path) ─────────────────────────
+  test('onCreate builds the v10 sync tables', () async {
+    for (final table in ['group_links', 'entity_versions', 'sync_inbox']) {
+      await db.customSelect('SELECT COUNT(*) FROM $table').getSingle();
+    }
+    await db.customStatement(
+      "INSERT INTO group_links VALUES ('g', 'player', 'l', 'r')",
+    );
+    expect(
+      () => db.customStatement(
+        "INSERT INTO group_links VALUES ('g', 'player', 'l2', 'r')",
+      ),
+      throwsA(anything),
+      reason: 'a remote uuid links to one local row per group and type',
+    );
+    await db.customSelect(
+      'SELECT rejected_at, reject_reason FROM outbox',
+    ).get();
+    await db.customSelect('SELECT device_id, group_name FROM sync_state').get();
+  });
+
+  // ── v10: shared rows are tombstoned, local rows deleted ───────────────────
+  group('Soft delete of shared rows', () {
+    const group = 'g-1';
+    late int gameId;
+    late int aliceGp;
+    late int bobGp;
+    late int roundId;
+
+    Future<void> share(int id) async {
+      for (final table in ['games']) {
+        await db.customStatement(
+            'UPDATE $table SET group_id = ? WHERE id = ?', [group, id]);
+      }
+      for (final table in ['rounds', 'game_players', 'game_analyses']) {
+        await db.customStatement(
+            'UPDATE $table SET group_id = ? WHERE gameId = ?', [group, id]);
+      }
+      await db.customStatement(
+          'UPDATE scores SET group_id = ? '
+          'WHERE roundId IN (SELECT id FROM rounds WHERE gameId = ?)',
+          [group, id]);
+    }
+
+    Future<int> count(String table, {bool tombstoned = false}) async {
+      final row = await db
+          .customSelect('SELECT COUNT(*) AS c FROM $table '
+              'WHERE deleted_at IS ${tombstoned ? 'NOT ' : ''}NULL')
+          .getSingle();
+      return row.data['c'] as int;
+    }
+
+    setUp(() async {
+      gameId = await gameRepo.create(
+        Game(name: 'Partagée', isLowestScoreWins: false),
+      );
+      aliceGp = await playerRepo
+          .create(Player(gameId: gameId, name: 'Alice', orderIndex: 0));
+      bobGp = await playerRepo
+          .create(Player(gameId: gameId, name: 'Bob', orderIndex: 1));
+      roundId = await roundRepo.create(Round(gameId: gameId, roundNumber: 1));
+      await scoreRepo.create(Score(playerId: aliceGp, roundId: roundId, value: 10));
+      await scoreRepo.create(Score(playerId: bobGp, roundId: roundId, value: 4));
+      await analysisRepo.upsert(_makeAnalysis(gameId, 'analyse', DateTime.now()));
+      await share(gameId);
+    });
+
+    test('deleting a shared game tombstones it and everything under it', () async {
+      await gameRepo.delete(gameId);
+
+      expect(await gameRepo.getById(gameId), isNull);
+      expect(await gameRepo.getAll(), isEmpty);
+      expect(await roundRepo.getByGame(gameId), isEmpty);
+      expect(await playerRepo.getByGame(gameId), isEmpty);
+      expect(await scoreRepo.getByPlayer(aliceGp), isEmpty);
+      expect(await analysisRepo.getByGame(gameId), isNull);
+
+      expect(await count('games', tombstoned: true), 1);
+      expect(await count('rounds', tombstoned: true), 1);
+      expect(await count('game_players', tombstoned: true), 2);
+      expect(await count('scores', tombstoned: true), 2);
+      expect(await count('game_analyses', tombstoned: true), 1);
+    });
+
+    test('a tombstoned game counts in no statistic', () async {
+      expect((await statsRepo.getStatsByName('Alice'))['gamesPlayed'], 1);
+
+      await gameRepo.delete(gameId);
+
+      expect((await statsRepo.getStatsByName('Alice'))['gamesPlayed'], 0);
+      expect(
+        await analysisRepo.getRecentPlayerHistory('Alice'),
+        isEmpty,
+      );
+    });
+
+    test('deleting a shared round tombstones its scores only', () async {
+      final round2 = await roundRepo.create(Round(gameId: gameId, roundNumber: 2));
+      await share(gameId);
+
+      await roundRepo.delete(roundId);
+
+      expect((await roundRepo.getByGame(gameId)).map((r) => r.id), [round2]);
+      expect(await scoreRepo.getByPlayerAndRound(aliceGp, roundId), isNull);
+      expect(await count('rounds', tombstoned: true), 1);
+      expect(await count('scores', tombstoned: true), 2);
+    });
+
+    test('deleting a player from a shared game tombstones the membership', () async {
+      await playerRepo.delete(bobGp);
+
+      expect((await playerRepo.getByGame(gameId)).map((p) => p.name), ['Alice']);
+      expect(await count('game_players', tombstoned: true), 1);
+      expect(await count('scores', tombstoned: true), 1);
+    });
+
+    test('deleteByName keeps a player row a shared membership still references',
+        () async {
+      final localGame = await gameRepo.create(
+        Game(name: 'Locale', isLowestScoreWins: false),
+      );
+      final localBob = await playerRepo
+          .create(Player(gameId: localGame, name: 'Bob', orderIndex: 0));
+
+      await playerRepo.deleteByName('Bob');
+
+      expect(await playerRepo.getAllNames(), ['Alice']);
+      expect(await playerRepo.getByGame(localGame), isEmpty);
+      // The local membership is gone for good, the shared one is a tombstone.
+      final rows = await db
+          .customSelect('SELECT id, deleted_at FROM game_players WHERE name = ?',
+              variables: [Variable('Bob')])
+          .get();
+      expect(rows.map((r) => r.data['id']), [bobGp]);
+      expect(rows.single.data['deleted_at'], isNotNull);
+      expect(localBob, isNot(bobGp));
+      expect(await count('players', tombstoned: true), 1);
+    });
+
+    test('a local game is still deleted outright', () async {
+      final local = await gameRepo.create(
+        Game(name: 'Locale', isLowestScoreWins: false),
+      );
+      await roundRepo.create(Round(gameId: local, roundNumber: 1));
+
+      await gameRepo.delete(local);
+
+      final rows = await db
+          .customSelect('SELECT COUNT(*) AS c FROM games WHERE id = ?',
+              variables: [Variable(local)])
+          .getSingle();
+      expect(rows.data['c'], 0);
+      expect(await count('rounds', tombstoned: true), 0);
+    });
+
+    test('a game type used only by tombstoned games can be deleted', () async {
+      final typeId = await gameTypeRepo.create(GameType(
+        name: 'Éphémère',
+        iconCodePoint: 0,
+        cardColorValue: 0,
+        isLowestScoreWins: false,
+      ));
+      final g = await gameRepo.create(
+        Game(name: 'G', isLowestScoreWins: false, gameTypeId: typeId),
+      );
+      await share(g);
+      await gameRepo.delete(g);
+
+      await gameTypeRepo.delete(typeId);
+
+      expect(await gameTypeRepo.getById(typeId), isNull);
     });
   });
 }

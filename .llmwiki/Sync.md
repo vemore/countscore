@@ -1,14 +1,14 @@
 # Sync
 
 > Scope: the offline-first sharing protocol. Server-side is done; the Flutter client is not.
-> Related: [[Api]] · [[SchemaV9]] · [[Backend]] · [[KnownLimits]]
+> Related: [[Api]] · [[SchemaV10]] · [[Backend]] · [[KnownLimits]]
 > Updated: 2026-09-13
 
 ## Facts
 
 **Status: the backend is complete and tested. There is no client.** `sync_service.dart` and
 `backend_client.dart` do not exist on disk, and nothing in `lib/` writes to `outbox`. The
-schema is ready and waiting — see [[SchemaV9]].
+schema is ready and waiting — see [[SchemaV10]].
 
 > **Status: Outdated** (2026-09-09) — "complete and tested" overstates one area. The
 > endpoints, dedup, round conflicts and the WebSocket are implemented and covered; the

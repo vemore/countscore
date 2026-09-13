@@ -1,7 +1,7 @@
 # Testing
 
 > Scope: what is tested, how to run it, and the traps.
-> Related: [[MobileApp]] · [[DataLayer]] · [[SchemaV9]] · [[Backend]] · [[Web]] · [[KnownLimits]]
+> Related: [[MobileApp]] · [[DataLayer]] · [[SchemaV10]] · [[Backend]] · [[Web]] · [[KnownLimits]]
 > Updated: 2026-09-13
 
 ## Facts
@@ -10,9 +10,10 @@
 
 | File | Coverage |
 |---|---|
-| `test/database_service_test.dart` (9) | Fresh v9 schema, CRUD via the singleton, v8→v9 migration, model serialisation. `sqflite_common_ffi` in memory (`sqfliteFfiInit()`), schema built via `DatabaseService.instance.createDB`. |
+| `test/database_service_test.dart` (10) | Fresh current schema (v10 tables and columns included), CRUD via the singleton, v8→v9 migration, model serialisation. `sqflite_common_ffi` in memory (`sqfliteFfiInit()`), schema built via `DatabaseService.instance.createDB`. |
 | `test/migration_v8_to_v9_test.dart` (4) | Hand-written v8 fixture; cross-game dedup and intra-game disambiguation. |
-| `test/drift/drift_repositories_test.dart` (9) | Full lifecycle through the Drift repositories over `AppDatabase.forTesting(NativeDatabase.memory())`. |
+| `test/migration_v5_to_v10_test.dart` (2) | The production upgrade: a real v5 file from tag `1.0.1+3`'s DDL, upgraded with the production callbacks (`DatabaseService.openForTesting`), then read back through Drift — games, merged players, scores, stats — and written to. |
+| `test/drift/drift_repositories_test.dart` (17) | Full lifecycle through the Drift repositories over `AppDatabase.forTesting(NativeDatabase.memory())`; Drift `onCreate` builds the v10 tables; shared rows are tombstoned (game, round, membership, `deleteByName`), local ones deleted, and tombstones count in no statistic. |
 | `test/widget_test.dart` (8) | Model serialisation only — it pumps no widgets, despite the name. |
 | `test/providers/theme_provider_test.dart` (7) | `ThemeMode` decode fallbacks and the SharedPreferences round-trip. |
 | `test/providers/backend_provider_test.dart` (10) | Backend URL validation — https anywhere, http only on a private or loopback host — and the persistence round-trip, including that a cleared setting is not re-seeded from `--dart-define`. |
@@ -28,7 +29,7 @@ _hasCachedAnalysis`) has **no** widget test: pumping the board needs a loaded ga
 repositories. It was verified on device on 2026-09-11 — both directions, and the p171 case
 where neither condition holds.
 
-56 tests in eight files.
+68 tests in nine files.
 
 ### End-to-end — `integration_test/app_test.dart`
 

@@ -1,7 +1,7 @@
 # Mobile App
 
 > Scope: the Flutter app's own structure — entry point, state, screens, models.
-> Related: [[DataLayer]] · [[SchemaV9]] · [[I18n]] · [[Web]] · [[Testing]]
+> Related: [[DataLayer]] · [[SchemaV10]] · [[I18n]] · [[Web]] · [[Testing]]
 > Updated: 2026-09-11
 
 ## Facts
@@ -45,7 +45,7 @@ themed and already knows whether the connected features exist.
 
 `game`, `game_type`, `player`, `round`, `score`, `game_analysis`. Plain classes with
 `toMap`/`fromMap`. `player.dart` has no `gameId` since v9 — its `id` is a
-`game_players.id`. See [[SchemaV9]].
+`game_players.id`. See [[SchemaV10]].
 
 ### Toolchain
 

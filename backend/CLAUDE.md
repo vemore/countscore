@@ -57,7 +57,7 @@ alembic revision --autogenerate -m "add x"
    verbatim French prose and must not be reflowed.
 5. **No tool use in LLM calls.** That is a prompt-injection control, not a limitation.
 6. **New entity?** Use the `db-migration` skill — the mobile and server schemas move
-   together, and `ENTITY_HANDLERS` in the sync service is easy to forget.
+   together, and `_ENTITY_MAP` in `app/routes/sync.py` is easy to forget.
 
 ## Gotchas
 

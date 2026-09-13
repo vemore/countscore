@@ -17,6 +17,9 @@ part 'database.g.dart';
   Outbox,
   SyncState,
   GameAnalyses,
+  GroupLinks,
+  EntityVersions,
+  SyncInbox,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(conn.openConnection());
@@ -27,7 +30,7 @@ class AppDatabase extends _$AppDatabase {
   static final AppDatabase instance = AppDatabase();
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -37,9 +40,10 @@ class AppDatabase extends _$AppDatabase {
           await _insertDefaultGameTypes();
         },
         onUpgrade: (m, from, to) async {
-          // Native: the legacy sqflite layer already migrated the file to v9
-          // before Drift opened it (see DatabaseService.bootstrapMigrate), so
-          // Drift sees schema 9 == 9 and never runs onUpgrade. Web has no
+          // Native: the legacy sqflite layer already migrated the file to the
+          // current version before Drift opened it (see
+          // DatabaseService.bootstrapMigrate), so Drift sees the same version on
+          // both sides and never runs onUpgrade. Web has no
           // legacy DB, so onCreate covers fresh installs. Nothing to do.
         },
       );
@@ -64,6 +68,7 @@ class AppDatabase extends _$AppDatabase {
       'CREATE INDEX IF NOT EXISTS idx_scores_roundId ON scores(roundId)',
       'CREATE UNIQUE INDEX IF NOT EXISTS idx_scores_uuid ON scores(uuid)',
       'CREATE INDEX IF NOT EXISTS idx_outbox_unsent ON outbox(sent_at, id)',
+      'CREATE INDEX IF NOT EXISTS idx_sync_inbox_seq ON sync_inbox(server_seq)',
       'CREATE UNIQUE INDEX IF NOT EXISTS idx_game_analyses_uuid ON game_analyses(uuid)',
       'CREATE UNIQUE INDEX IF NOT EXISTS idx_game_analyses_gameId ON game_analyses(gameId)',
     ];

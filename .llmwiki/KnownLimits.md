@@ -22,6 +22,10 @@
   `test/fixtures/v8_user_snapshot.db` and exercised. Today the v8 fixture is hand-written.
 - **Drift rollout.** Production currently ships sqflite v9; Drift activates on the next
   release. See [[DataLayer]].
+
+  > **Status: Outdated** (2026-09-13) — production ships sqflite **v5** (1.0.1). The next
+  > release migrates v5 → v10 and turns Drift on together; covered by
+  > `test/migration_v5_to_v10_test.dart`. See [[DataLayer]].
 - **Multi-group per device.** The schema supports it (`group_id` per row); the UX was not
   designed, so one device maps to one group.
 

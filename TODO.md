@@ -105,7 +105,7 @@ different UUIDs, same name — join the same group; the second push hits `Integr
 comes back `rejected` with "integrity constraint violation". Reading the status is not the
 hard part: the question is what the app does next. Adopting the server's UUID rewrites the
 player's identity, and **player stats have been keyed by player UUID since v9**
-([[SchemaV9]]), so that reindexes the whole statistics history. Options worth costing —
+([[SchemaV10]]), so that reindexes the whole statistics history. Options worth costing —
 dedupe by normalised name at join, keep a local↔server player mapping table, or (cheapest)
 do not sync the global player catalogue at all in v1 and create group players fresh, which
 sidesteps the constraint and leaves stats identity untouched.

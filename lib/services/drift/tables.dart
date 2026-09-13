@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 
 // Drift tables mirroring the sqflite v9 schema EXACTLY (column names use the
 // existing mixed casing via `.named()` so Drift can open a database created /
-// migrated by the legacy sqflite layer). See .llmwiki/SchemaV9.md.
+// migrated by the legacy sqflite layer). See .llmwiki/SchemaV10.md.
 
 @DataClassName('GameTypeRow')
 class GameTypes extends Table {
@@ -127,6 +127,9 @@ class Outbox extends Table {
   IntColumn get clientLamport => integer().named('client_lamport')();
   IntColumn get createdAt => integer().named('created_at')();
   IntColumn get sentAt => integer().named('sent_at').nullable()();
+  // v10: a delta the server refused for good. Kept, not deleted, so the UI can say so.
+  IntColumn get rejectedAt => integer().named('rejected_at').nullable()();
+  TextColumn get rejectReason => text().named('reject_reason').nullable()();
 }
 
 @DataClassName('SyncStateRow')
@@ -139,6 +142,10 @@ class SyncState extends Table {
       integer().named('last_server_seq').withDefault(const Constant(0))();
   IntColumn get lastLamport =>
       integer().named('last_lamport').withDefault(const Constant(0))();
+  // v10: this device's id in the group (the server's origin_device_id) and the
+  // group's display name. The device token itself is never stored in the database.
+  TextColumn get deviceId => text().named('device_id').nullable()();
+  TextColumn get groupName => text().named('group_name').nullable()();
 
   @override
   Set<Column> get primaryKey => {groupId};
@@ -159,4 +166,58 @@ class GameAnalyses extends Table {
   IntColumn get updatedAt => integer().named('updated_at')();
   IntColumn get deletedAt => integer().named('deleted_at').nullable()();
   TextColumn get groupId => text().named('group_id').nullable()();
+}
+
+/// v10: how a local player or game type is known in a group.
+///
+/// Players and game types are merged by name when a game is shared, so a local row
+/// and its server twin can carry different uuids. Games, rounds, scores and analyses
+/// keep their local uuid on the server and need no link.
+@DataClassName('GroupLinkRow')
+class GroupLinks extends Table {
+  @override
+  String get tableName => 'group_links';
+
+  TextColumn get groupId => text().named('group_id')();
+  TextColumn get entityType => text().named('entity_type')();
+  TextColumn get localUuid => text().named('local_uuid')();
+  TextColumn get remoteUuid => text().named('remote_uuid')();
+
+  @override
+  Set<Column> get primaryKey => {groupId, entityType, localUuid};
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+        {groupId, entityType, remoteUuid},
+      ];
+}
+
+/// v10: the (lamport, origin device) that last wrote each synced entity, so a pulled
+/// delta is applied only when it wins the server's row-level LWW order.
+@DataClassName('EntityVersionRow')
+class EntityVersions extends Table {
+  @override
+  String get tableName => 'entity_versions';
+
+  TextColumn get entityType => text().named('entity_type')();
+  TextColumn get entityUuid => text().named('entity_uuid')();
+  IntColumn get lamport => integer()();
+  TextColumn get originDeviceId => text().named('origin_device_id')();
+
+  @override
+  Set<Column> get primaryKey => {entityType, entityUuid};
+}
+
+/// v10: pulled deltas that cannot be applied yet — a score whose round has not
+/// arrived. Replayed after every pull page.
+@DataClassName('SyncInboxRow')
+class SyncInbox extends Table {
+  @override
+  String get tableName => 'sync_inbox';
+
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get serverSeq => integer().named('server_seq')();
+  TextColumn get delta => text()();
+  TextColumn get reason => text()();
+  IntColumn get createdAt => integer().named('created_at')();
 }

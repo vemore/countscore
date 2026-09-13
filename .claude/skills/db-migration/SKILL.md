@@ -5,15 +5,15 @@ description: Change the CountScore database schema — add a table, add a column
 
 # Changing the CountScore schema
 
-The mobile schema is **v9** and lives in two engines at once. The server schema is separate
-and moves with it. Read `.llmwiki/SchemaV9.md` and `.llmwiki/DataLayer.md` before starting.
+The mobile schema is **v10** and lives in two engines at once. The server schema is separate
+and moves with it. Read `.llmwiki/SchemaV10.md` and `.llmwiki/DataLayer.md` before starting.
 
 ## The trap
 
 `schemaVersion` is declared **twice** and both must be bumped together:
 
-- `lib/services/drift/database.dart:30` → `int get schemaVersion => 9;`
-- `lib/services/database_service.dart:51` → `version: 9,`
+- `lib/services/drift/database.dart` → `int get schemaVersion => 10;`
+- `lib/services/database_service.dart` → `static const schemaVersion = 10;`
 
 sqflite owns the migration chain on native. Drift's `onUpgrade` is **intentionally a
 no-op** — by the time Drift opens the file, sqflite has already migrated it. Do not "fix"
@@ -46,6 +46,8 @@ On web there is no legacy file, so Drift's `onCreate` builds the current version
    - fresh-schema and CRUD in `test/database_service_test.dart`
    - a migration test modelled on `test/migration_v8_to_v9_test.dart` — build the *old*
      schema by hand, migrate, assert the data survived
+   - extend `test/migration_v5_to_v10_test.dart`: it upgrades the schema production
+     users actually have, through the production callbacks, and reads it back via Drift
    - repository lifecycle in `test/drift/drift_repositories_test.dart`
 
 ## Server procedure
@@ -64,8 +66,8 @@ Only needed if the entity syncs.
    Autogenerate works because `alembic/env.py` imports `app.models`. **Read the generated
    revision before applying it** — autogenerate misses renames and reads them as
    drop-plus-add, which loses data.
-4. **Sync handler** — register the entity's `apply_delta` handler in `ENTITY_HANDLERS`
-   (`backend/app/routes/sync.py`). Easy to forget, and the entity silently never syncs
+4. **Sync handler** — register the entity's model in `_ENTITY_MAP` and its name in
+   `EntityType` (`backend/app/routes/sync.py`, `backend/app/schemas/sync.py`). Easy to forget, and the entity silently never syncs
    without it.
 5. **Tests** — `backend/tests/test_sync.py` for push/pull, LWW and idempotence.
 
@@ -80,7 +82,7 @@ cd backend && ruff check . && pytest -m 'not integration' -q
 Then confirm both engines agree:
 ```bash
 grep -n "schemaVersion" lib/services/drift/database.dart
-grep -n "version: " lib/services/database_service.dart
+grep -n "schemaVersion = " lib/services/database_service.dart
 ```
 
 ## Rules
@@ -89,5 +91,5 @@ grep -n "version: " lib/services/database_service.dart
   lose data is not shippable — see the two-release strategy in `.llmwiki/DataLayer.md`.
 - `group_id IS NULL` means a local, unsynced row. Every new table must tolerate NULL.
 - Local key is `INTEGER AUTOINCREMENT`; the UUID is the logical key for sync.
-- Update `.llmwiki/SchemaV9.md` (rename the page if the version changes) and its
+- Update `.llmwiki/SchemaV10.md` (rename the page if the version changes) and its
   `Updated:` date in the same commit.

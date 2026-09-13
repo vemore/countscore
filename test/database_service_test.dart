@@ -13,10 +13,10 @@ import 'package:countscore/services/database_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-// Build the v9 schema via DatabaseService.createDB (exposed @visibleForTesting).
+// Build the current schema via DatabaseService.createDB (exposed @visibleForTesting).
 Future<Database> _openV9() async => openDatabase(
       inMemoryDatabasePath,
-      version: 9,
+      version: DatabaseService.schemaVersion,
       onCreate: (db, v) => DatabaseService.instance.createDB(db, v),
     );
 
@@ -30,7 +30,7 @@ void main() {
   tearDown(() => DatabaseService.debugDatabase = null);
 
   // ── v9 fresh-install schema ───────────────────────────────────────────────
-  group('v9 schema (fresh install)', () {
+  group('current schema (fresh install)', () {
     late Database db;
 
     setUp(() async => db = await _openV9());
@@ -44,17 +44,29 @@ void main() {
       expect(
         names,
         containsAll([
+          'entity_versions',
           'game_analyses',
           'game_players',
           'game_types',
           'games',
+          'group_links',
           'outbox',
           'players',
           'rounds',
           'scores',
+          'sync_inbox',
           'sync_state',
         ]),
       );
+    });
+
+    test('v10 sync columns exist on outbox and sync_state', () async {
+      Future<Set<String>> columns(String table) async =>
+          (await db.rawQuery('PRAGMA table_info($table)'))
+              .map((r) => r['name'] as String)
+              .toSet();
+      expect(await columns('outbox'), containsAll(['rejected_at', 'reject_reason']));
+      expect(await columns('sync_state'), containsAll(['device_id', 'group_name']));
     });
 
     test('default game types seeded', () async {
