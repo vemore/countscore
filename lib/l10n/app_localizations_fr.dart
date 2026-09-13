@@ -549,6 +549,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get analysisError => 'Échec de la génération de l\'analyse';
 
   @override
+  String get analysisErrorUnavailable =>
+      'Le serveur d\'analyse est momentanément indisponible. Réessayez plus tard.';
+
+  @override
   String analysisErrorStatus(int status) {
     return 'Échec de la génération de l\'analyse (HTTP $status)';
   }

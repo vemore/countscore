@@ -19,6 +19,15 @@ DEFAULT_TEMPERATURE = 0.4
 DEFAULT_TOP_P = 0.9
 
 
+class LLMRateLimitedError(RuntimeError):
+    """The provider refused the call on quota or rate grounds (HTTP 429, throttling).
+
+    Distinct from any other upstream failure because it is not a defect: the call is
+    well formed, the account simply has no capacity left right now. The route maps it to
+    503 + Retry-After instead of a bare 502. See .llmwiki/Api.md.
+    """
+
+
 @dataclass(slots=True)
 class LLMResult:
     content: str

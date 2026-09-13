@@ -305,6 +305,7 @@
   "confirmDeleteAnalysis": "¿Eliminar el análisis de esta partida?",
   "analysisError": "Error al generar el análisis",
   "analysisErrorStatus": "Error al generar el análisis (HTTP {status})",
+  "analysisErrorUnavailable": "El servidor de análisis no está disponible temporalmente. Inténtelo más tarde.",
   "retry": "Reintentar",
   "analysisGeneratedAt": "Generado el {date}",
   "serverSection": "Servidor",

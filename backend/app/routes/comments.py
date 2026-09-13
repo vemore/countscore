@@ -33,7 +33,7 @@ from app.schemas.comments import (
 from app.services.anthropic_client import get_anthropic_client
 from app.services.budget import charge_budget, check_budget
 from app.services.ip_rate_limiter import check_ip_rate_limit, client_ip
-from app.services.llm import get_llm_provider
+from app.services.llm import LLMRateLimitedError, get_llm_provider
 from app.services.prompt_builder import (
     GameForPrompt,
     PastCommentSummary,
@@ -46,6 +46,10 @@ from app.services.rate_limiter import check_and_increment
 from app.services.zapzap_prompt import ZAPZAP_SYSTEM_PROMPT, build_zapzap_user_message
 
 router = APIRouter(tags=["comments"])
+
+# Providers do not say when their quota frees up in a form we can rely on; a minute is
+# a polite floor for a client that retries.
+_UPSTREAM_RETRY_AFTER_SECONDS = 60
 logger = logging.getLogger(__name__)
 
 
@@ -140,6 +144,16 @@ async def generate_zapzap_analysis(body: dict, request: Request, response: Respo
 
     try:
         result = await provider.generate(ZAPZAP_SYSTEM_PROMPT, user_message)
+    except LLMRateLimitedError as e:
+        # The provider account is out of quota, not broken. 503 + Retry-After lets the
+        # client say "try later" instead of showing an opaque 502; 429 stays reserved for
+        # our own per-IP limit above. The detail names no provider (see .llmwiki/Api.md).
+        logger.warning("zapzap-analysis upstream LLM rate-limited: %s", e)
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            "upstream LLM rate-limited",
+            headers={"Retry-After": str(_UPSTREAM_RETRY_AFTER_SECONDS)},
+        ) from e
     except Exception as e:
         logger.exception("zapzap-analysis upstream LLM error")
         raise HTTPException(

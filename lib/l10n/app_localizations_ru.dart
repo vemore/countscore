@@ -550,6 +550,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get analysisError => 'Не удалось создать анализ';
 
   @override
+  String get analysisErrorUnavailable =>
+      'Сервер анализа временно недоступен. Повторите попытку позже.';
+
+  @override
   String analysisErrorStatus(int status) {
     return 'Не удалось создать анализ (HTTP $status)';
   }

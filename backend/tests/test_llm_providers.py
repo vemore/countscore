@@ -4,12 +4,15 @@ from __future__ import annotations
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
+import httpx
 import openai
 import pytest
+from botocore.exceptions import ClientError
 
 from app.config import get_settings
 from app.services.llm import (
     BedrockProvider,
+    LLMRateLimitedError,
     OpenAICompatProvider,
     factory,
     get_llm_provider,
@@ -118,3 +121,41 @@ async def test_openai_compat_wraps_api_error():
 
     with pytest.raises(RuntimeError, match="gemini API call failed"):
         await p.generate("sys", "user")
+
+
+def _rate_limit_error() -> openai.RateLimitError:
+    request = httpx.Request("POST", "http://x/chat/completions")
+    response = httpx.Response(429, request=request, json={"message": "Rate limit exceeded"})
+    return openai.RateLimitError("Rate limit exceeded", response=response, body=None)
+
+
+async def test_openai_compat_rate_limit_is_distinct():
+    """The 2026-09-11 Mistral 429 must surface as LLMRateLimitedError, not a plain failure."""
+    p = OpenAICompatProvider(label="mistral", base_url="http://x", api_key="k", model="m")
+    create = AsyncMock(side_effect=_rate_limit_error())
+    p._client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+
+    with pytest.raises(LLMRateLimitedError, match="mistral API rate-limited"):
+        await p.generate("sys", "user")
+
+
+def _bedrock_with_client(invoke) -> BedrockProvider:
+    provider = BedrockProvider()
+    provider._client = SimpleNamespace(invoke_model=invoke)  # type: ignore[assignment]
+    return provider
+
+
+async def test_bedrock_throttling_is_rate_limited():
+    def invoke(**_kwargs):
+        raise ClientError({"Error": {"Code": "ThrottlingException"}}, "InvokeModel")
+
+    with pytest.raises(LLMRateLimitedError, match="Bedrock API rate-limited"):
+        await _bedrock_with_client(invoke).generate("sys", "user")
+
+
+async def test_bedrock_other_client_errors_propagate_unchanged():
+    def invoke(**_kwargs):
+        raise ClientError({"Error": {"Code": "AccessDeniedException"}}, "InvokeModel")
+
+    with pytest.raises(ClientError):
+        await _bedrock_with_client(invoke).generate("sys", "user")

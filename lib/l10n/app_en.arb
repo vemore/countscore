@@ -361,6 +361,7 @@
   "analysisError": "Failed to generate analysis",
 
   "analysisErrorStatus": "Failed to generate analysis (HTTP {status})",
+  "analysisErrorUnavailable": "The analysis server is temporarily unavailable. Try again later.",
   "@analysisError": {
     "description": "Error message when LLM call fails"
   },

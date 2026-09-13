@@ -305,6 +305,7 @@
   "confirmDeleteAnalysis": "इस खेल का विश्लेषण हटाएँ?",
   "analysisError": "विश्लेषण उत्पन्न करने में विफल",
   "analysisErrorStatus": "विश्लेषण उत्पन्न करने में विफल (HTTP {status})",
+  "analysisErrorUnavailable": "विश्लेषण सर्वर अस्थायी रूप से उपलब्ध नहीं है। कृपया बाद में पुनः प्रयास करें।",
   "retry": "पुनः प्रयास करें",
   "analysisGeneratedAt": "{date} को उत्पन्न",
   "serverSection": "सर्वर",

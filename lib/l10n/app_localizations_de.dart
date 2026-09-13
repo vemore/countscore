@@ -547,6 +547,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get analysisError => 'Analyse konnte nicht erstellt werden';
 
   @override
+  String get analysisErrorUnavailable =>
+      'Der Analyseserver ist vorübergehend nicht verfügbar. Versuchen Sie es später erneut.';
+
+  @override
   String analysisErrorStatus(int status) {
     return 'Analyse konnte nicht erstellt werden (HTTP $status)';
   }

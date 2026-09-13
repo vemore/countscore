@@ -305,6 +305,7 @@
   "confirmDeleteAnalysis": "حذف تحليل هذه المباراة؟",
   "analysisError": "فشل إنشاء التحليل",
   "analysisErrorStatus": "فشل إنشاء التحليل (HTTP {status})",
+  "analysisErrorUnavailable": "خادم التحليل غير متاح مؤقتًا. حاول مرة أخرى لاحقًا.",
   "retry": "إعادة المحاولة",
   "analysisGeneratedAt": "تم الإنشاء في {date}",
   "serverSection": "الخادم",

@@ -10,7 +10,13 @@ from __future__ import annotations
 import openai
 from openai import AsyncOpenAI
 
-from .base import DEFAULT_MAX_TOKENS, DEFAULT_TEMPERATURE, DEFAULT_TOP_P, LLMResult
+from .base import (
+    DEFAULT_MAX_TOKENS,
+    DEFAULT_TEMPERATURE,
+    DEFAULT_TOP_P,
+    LLMRateLimitedError,
+    LLMResult,
+)
 
 
 class OpenAICompatProvider:
@@ -47,6 +53,8 @@ class OpenAICompatProvider:
                 top_p=top_p,
                 max_tokens=max_tokens,
             )
+        except openai.RateLimitError as e:
+            raise LLMRateLimitedError(f"{self.label} API rate-limited: {e}") from e
         except openai.OpenAIError as e:
             raise RuntimeError(f"{self.label} API call failed: {type(e).__name__}: {e}") from e
 

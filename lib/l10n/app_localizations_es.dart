@@ -550,6 +550,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get analysisError => 'Error al generar el análisis';
 
   @override
+  String get analysisErrorUnavailable =>
+      'El servidor de análisis no está disponible temporalmente. Inténtelo más tarde.';
+
+  @override
   String analysisErrorStatus(int status) {
     return 'Error al generar el análisis (HTTP $status)';
   }

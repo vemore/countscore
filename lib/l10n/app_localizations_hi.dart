@@ -548,6 +548,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get analysisError => 'विश्लेषण उत्पन्न करने में विफल';
 
   @override
+  String get analysisErrorUnavailable =>
+      'विश्लेषण सर्वर अस्थायी रूप से उपलब्ध नहीं है। कृपया बाद में पुनः प्रयास करें।';
+
+  @override
   String analysisErrorStatus(int status) {
     return 'विश्लेषण उत्पन्न करने में विफल (HTTP $status)';
   }
