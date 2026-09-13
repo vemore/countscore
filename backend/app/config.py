@@ -29,7 +29,7 @@ class Settings(BaseSettings):
 
     # Google Gemini (OpenAI-compatible endpoint)
     gemini_api_key: str | None = None
-    gemini_model: str = "gemini-2.5-pro"
+    gemini_model: str = "gemini-2.5-flash"
     gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai/"
 
     # Mistral (OpenAI-compatible endpoint)

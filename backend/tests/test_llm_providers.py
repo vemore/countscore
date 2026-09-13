@@ -40,7 +40,8 @@ def test_factory_returns_gemini_from_env(monkeypatch):
     provider = get_llm_provider()
     assert isinstance(provider, OpenAICompatProvider)
     assert provider.label == "gemini"
-    assert provider.model == "gemini-2.5-pro"
+    # Flash, not Pro: gemini-2.5-pro has a quota of 0 on the free tier.
+    assert provider.model == "gemini-2.5-flash"
     assert provider.available is True
 
 

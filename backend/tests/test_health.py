@@ -79,3 +79,19 @@ async def test_health_survives_an_unknown_provider(client, monkeypatch):
         "model": None,
         "credentials": False,
     }
+
+
+async def test_health_gemini_defaults_to_flash(client, monkeypatch):
+    """Without GEMINI_MODEL, the default must be a model the free tier can call.
+
+    gemini-2.5-pro has a quota of 0 on a free-tier key, so a bare LLM_PROVIDER=gemini
+    used to swap one outage for another.
+    """
+    monkeypatch.setenv("LLM_PROVIDER", "gemini")
+    monkeypatch.setenv("GEMINI_API_KEY", "test-key")
+    monkeypatch.delenv("GEMINI_MODEL", raising=False)
+    get_settings.cache_clear()
+    factory._cache.clear()
+
+    llm = (await client.get("/health")).json()["llm"]
+    assert llm == {"provider": "gemini", "model": "gemini-2.5-flash", "credentials": True}
