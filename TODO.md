@@ -20,7 +20,30 @@ of every settings confirmation, not just a label colour.
 
 ## The Flutter sync client does not exist
 
-**Status:** open — noted 2026-09-09, during a branch/commit review.
+**Status:** open — noted 2026-09-09, during a branch/commit review. In progress since
+2026-09-13, in three pull requests to `main`: **A** `fix/sync-contract` (backend, done),
+**B** `feat/schema-v10` (local schema, soft deletes, a real v5→v9 upgrade test), **C**
+`feat/group-sync` (client, UI, privacy documents). C waits for A and B.
+
+> **Design settled with the user (2026-09-13).** Sync runs only once a server URL is set
+> *and* the device has created or joined a group from Settings (the `share_token` is pasted
+> once, `/groups/join` returns the device token, kept in `flutter_secure_storage`). Sharing
+> is **per game**, on by default for new games; an existing game can be shared later, never
+> unshared. Players and game types are **merged by normalised name** through a local link
+> table — local players stay global (`group_id IS NULL`), so point 4 below no longer reopens
+> the player queries — and their first server UUID is a uuid5 of group and name, so every
+> device computes the same one. `rounds.comment`, `game_analyses` and the game dates sync.
+> A delete propagates and wins. Leaving revokes the device and turns shared games back into
+> local ones. A round-number conflict renumbers the loser to the next free number and says
+> so. WebSocket plus polling, Android and PWA. All of it ships in 1.1.0 with the Drift switch.
+>
+> **What A changed on the server contract.** Each delta runs in its own savepoint; entities
+> and parents are group-scoped; reasons a client branches on are stable codes
+> (`round_number_taken`, `score_exists`, `name_taken`, `analysis_exists`, `parent_missing`,
+> `not in group`); a delete beats any later upsert; unique rules ignore tombstones; colours
+> are `BIGINT`; `rounds.comment` and the `game_analysis` entity exist; the log stores only
+> client columns; device tokens are `<device id hex>.<secret>`. See [[Sync]] and [[Api]].
+> Points 2 and 3 below are answered by the above; point 1 and the quarantine are C's work.
 
 Milestones 5 to 7 are marked Done in `.llmwiki/Architecture.md`, and on the server they
 are: groups, delta-log sync with row-level LWW, and `/sync/stream` over Postgres
@@ -107,8 +130,10 @@ Two cheap prerequisites fall out of the above and can be done independently:
 ## Backend security review — 2026-09-13
 
 **Status:** open — noted 2026-09-13, during a cyber-security review of `backend/` requested
-by the user. Nothing below was fixed; the items are ordered by severity, each with the
-evidence and the proposed fix. The three HIGH items were **confirmed by running
+by the user. The two HIGH items on sync scoping and the argon2 scan, and the `server_seq`
+race, were closed the same day by `fix/sync-contract` and moved to `DONE.md`. Nothing else
+below was fixed; the items are ordered by severity, each with the evidence and the
+proposed fix. The three HIGH items were **confirmed by running
 proof-of-concept tests** against the project's own SQLite fixtures (`tests/conftest.py`);
 the PoC file is not committed because it asserts the *presence* of the flaws — the results
 quoted below are the acceptance criteria to invert when each fix lands. Everything the
@@ -122,38 +147,11 @@ database not published; the API bound to `127.0.0.1`; the WS ticket redeemed bef
 `accept()`; the PWA mount refusing traversal; argon2 on device tokens; `share_token` kept out
 of routine reads.
 
-### HIGH — Cross-group data tampering through `POST /sync/push`
-
-Broken object-level authorisation. `backend/app/routes/sync.py:152` looks an entity up **by
-UUID only**, with no group filter. For `player`, `game_type` and `game` an existing row from
-*another* group is then overwritten (`sync.py:204-209`) and its `group_id` is **reassigned to
-the caller's group** — the comment at `sync.py:144` ("clients cannot move entities across
-groups") states the opposite of what the code does. `delete` (`sync.py:156`) tombstones any
-UUID. `round` and `score` carry no `group_id` at all, and their `game_id` / `round_id` /
-`player_id` payload keys go through `_coerce_payload` unchecked, so a round can be attached
-to any group's game. Only `game_player` verifies ownership (`_apply_game_player`).
-
-PoC: a device in group B, knowing only the UUID of a game in group A, pushed four deltas —
-rename it, which also moved it to B; attach a round to it; tombstone it. All answered
-`applied`; the row ended up named by B, owned by B, deleted, with B's round on it.
-
-The realistic attacker is a **revoked device**: it holds every UUID of its former group,
-creating a new group is free and unauthenticated, so revocation does not protect the
-group's data at all. This is a prerequisite for the sync client above, not a follow-up to it.
-
-Proposed fix:
-- Scope the lookup at `sync.py:152` with `col(cls.group_id) == auth.group.id` for the three
-  group-bearing entities. A UUID that exists in another group must come back `rejected`,
-  never adopted: with the lookup scoped, the create path hits the primary key and the
-  existing `IntegrityError` branch already maps that to "integrity constraint violation".
-- Parent checks for the two child entities, mirroring `_apply_game_player`: `round.game_id`
-  must name a `Game` in the group; `score.round_id` a `Round` whose game is in the group and
-  `score.player_id` a `Player` in the group; `game.game_type_id`, when present, a `GameType`
-  in the group. Reject otherwise.
-- Scope the LWW lookup on `change_log` (`sync.py:191`) by `group_id` as well.
-- Regression tests in `backend/tests/test_sync.py` — the PoC inverted — and fix the comment.
-
 ### HIGH — Every per-IP rate limit is bypassed by a client-supplied `X-Forwarded-For`
+
+> Also covers the `auth_fail` bucket added on 2026-09-13 in `app/auth.py`: until this lands,
+> a client rotating the header escapes the cap on failed token checks too. The cost per
+> attempt is one argon2 verify against a real device id, no longer a scan.
 
 `backend/app/services/ip_rate_limiter.py:40-45` takes the **first** hop of
 `X-Forwarded-For`. A reverse proxy — Web Station's nginx included — *appends* the real
@@ -184,24 +182,6 @@ Proposed fix:
   clients; rewrite it to set the ASGI `client` address instead.
 - Wiki: the `Status: Outdated` blocks in `.llmwiki/Security.md` and `.llmwiki/Api.md` point
   here; remove them when this lands.
-
-### HIGH — The O(N) argon2 scan is an unauthenticated CPU denial of service
-
-`backend/app/auth.py:74-77` runs one argon2 verify — 30 ms measured on the dev machine —
-per non-revoked device row for **any** bearer token, valid or not, before answering 401, and
-nothing rate-limits that path. Measured: 20 devices → 609 ms per bogus request; 1 000
-devices → about 30 s. The item above lets an attacker create devices without bound, so the
-chain is: spam `POST /groups`, then a trickle of requests with a junk token keeps the single
-worker saturated. `.llmwiki/KnownLimits.md` lists this as a scaling limit at ~1 000 devices;
-it is also an attack at any size. The WebSocket handshake stopped paying this on 2026-09-09;
-the HTTP path never did.
-
-Proposed fix: no shipped client exists, so the token format is free to change. Issue tokens
-as `<device_id hex>.<secret>`: `require_device` parses the id, fetches **one** row, does
-**one** verify. The alternative that keeps the opaque format is a `token_lookup` column
-holding the SHA-256 of the raw token, indexed, then one argon2 verify on the candidate row
-— an Alembic revision, via the `db-migration` skill. Either way, add a per-IP bucket on
-401s as defence in depth, and update `KnownLimits.md` and `Security.md`.
 
 ### MEDIUM — `POST /comments/zapzap-analysis` takes an unvalidated `dict` and is an open LLM proxy
 
@@ -249,6 +229,11 @@ defaulting to `DEFAULT_BUDGET_CENTS` — enforced in the route, and listed in
 
 ### LOW — No rate limit on authenticated writes; the raw payload is persisted and replayed
 
+> **Partly done** (2026-09-13, `fix/sync-contract`) — `change_log.payload` now holds only the
+> payload's known client columns (`_logged_payload` in `sync.py`), never unknown keys nor
+> `id`/`group_id`/timestamps. The per-device limiter on `/sync/push` and the `list_comments`
+> bound are still open.
+
 `/sync/push` stores `delta.payload` verbatim in `change_log` (`sync.py:291`), unknown keys
 included, up to 256 KiB per request and 500 deltas, and `/sync/pull` serves it back to every
 member. A member can bloat the NAS disk and every sibling device. Proposed: persist only the
@@ -277,15 +262,40 @@ None of these is exploitable on its own; together they are the usual production 
 - The daily backups (`./backups`, plain gzip) hold every live `share_token`: say so in
   `.llmwiki/Deployment.md`, or encrypt them.
 
-### Not security: `server_seq` can collide under concurrent pushes
+## The commit hook ignores git worktrees
 
-`_next_server_seq` (`backend/app/routes/sync.py:115`) is `max + 1` inside the transaction
-with no lock, and `ix_change_log_group_seq` is not unique, so two pushes in the same group
-at the same moment can share a `server_seq` — and a puller paging with `> since_seq` can
-skip one of them. Same class as the dedup index: a concurrent retry of one delta hits the
-unique `(origin_device_id, client_lamport)` index and comes back as a 500 instead of
-`duplicate`. Fix: `SELECT … FOR UPDATE` on the group row (or a per-group sequence) and a
-unique index on `(group_id, server_seq)`; catch the dedup `IntegrityError`.
+**Status:** open — noted 2026-09-13, while committing `fix/sync-contract`.
+
+`.claude/hooks/guard-bash.sh:16` resolves the repository as `$CLAUDE_PROJECT_DIR` first,
+then `cd "$ROOT"` (`:41`) for every check and every gate. `CLAUDE_PROJECT_DIR` is the
+directory the session was launched in and stays so after `EnterWorktree`. So a `git commit`
+run inside a worktree is judged on the **main checkout's** branch — here another session's
+merged, remote-deleted branch, so the commit was refused as "stale" — and, had it passed,
+`flutter test` / `pytest` would have run against the main checkout's files, not the ones
+being committed. Two sessions on one repository therefore cannot use worktrees to stay out
+of each other's way, which is exactly what worktrees are for; the work had to wait for the
+other session and then move back into the main checkout.
+
+Proposal: resolve `ROOT` from the command's own working directory — `git -C "<cwd of the
+command>" rev-parse --show-toplevel`, taking the cwd from the hook payload (or from a
+leading `cd <dir> &&` that `parse_command.py` already tokenises) — and fall back to
+`CLAUDE_PROJECT_DIR` only when that fails. Add a case to `scripts/hooks_selftest.sh` that
+commits from a worktree whose branch differs from the main checkout's.
+
+## `alembic check` reports drift that predates the sync contract
+
+**Status:** open — noted 2026-09-13, while validating `0002_sync_contract` on Postgres.
+
+After `alembic upgrade head` on a fresh Postgres 17, `alembic check` still reports four type
+differences between the models and the DDL, none of them from `0002`: `change_log.id`,
+`change_log.client_lamport` and `change_log.server_seq` are `BIGINT` in
+`alembic/versions/0001_initial.py` but plain `int` fields in `app/models/change_log.py`, and
+`comments.content` is `TEXT` in the DDL but an `AutoString` in `app/models/comment.py`. The
+database is the wider type in every case, so nothing is lost today — but `alembic revision
+--autogenerate` will propose narrowing them, and the test suite (which builds the schema
+from the models) runs on the narrower types. Fix: give those four fields an explicit
+`sa_column` matching the DDL, then make `alembic check` a CI step on the Postgres job so
+drift fails the build instead of surfacing in a hand check.
 
 ## `shared_preferences_android` still applies the Kotlin Gradle Plugin
 

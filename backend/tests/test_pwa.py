@@ -62,6 +62,9 @@ async def test_index_is_served_with_the_pwa_csp(pwa_client):
     assert "'wasm-unsafe-eval'" in csp
     assert "https://www.gstatic.com" in csp
     assert "frame-ancestors 'none'" in csp
+    # The sync stream: https: does not match wss:, so a PWA pointed at another server
+    # could not open its WebSocket without this.
+    assert "connect-src 'self' https: wss:;" in csp
     assert r.headers["Cache-Control"] == "no-cache"
     assert r.headers["X-Content-Type-Options"] == "nosniff"
 

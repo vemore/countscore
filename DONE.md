@@ -6,6 +6,74 @@ readable after the fact.
 
 ---
 
+## Backend security review — HIGH: cross-group data tampering through `POST /sync/push`
+
+**Status:** done (2026-09-13) — closed by `fix/sync-contract`, the backend half of the sync client work. `_apply_delta` loads the entity and refuses it (`not in group`) unless it belongs to the caller's group — directly for players, game types and games, through the game for rounds and analyses, through round and game for scores; every parent a payload names must be in the group or the delta is `rejected` with `parent_missing`; the LWW lookup is scoped by `group_id`. The PoC is inverted in `backend/tests/test_sync_contract.py` (`test_a_device_cannot_touch_another_groups_game`, `test_child_entities_are_scoped_through_their_parents`). Noted 2026-09-13 in the backend security review (`TODO.md`, *Backend security review — 2026-09-13*).
+
+Broken object-level authorisation. `backend/app/routes/sync.py:152` looks an entity up **by
+UUID only**, with no group filter. For `player`, `game_type` and `game` an existing row from
+*another* group is then overwritten (`sync.py:204-209`) and its `group_id` is **reassigned to
+the caller's group** — the comment at `sync.py:144` ("clients cannot move entities across
+groups") states the opposite of what the code does. `delete` (`sync.py:156`) tombstones any
+UUID. `round` and `score` carry no `group_id` at all, and their `game_id` / `round_id` /
+`player_id` payload keys go through `_coerce_payload` unchecked, so a round can be attached
+to any group's game. Only `game_player` verifies ownership (`_apply_game_player`).
+
+PoC: a device in group B, knowing only the UUID of a game in group A, pushed four deltas —
+rename it, which also moved it to B; attach a round to it; tombstone it. All answered
+`applied`; the row ended up named by B, owned by B, deleted, with B's round on it.
+
+The realistic attacker is a **revoked device**: it holds every UUID of its former group,
+creating a new group is free and unauthenticated, so revocation does not protect the
+group's data at all. This is a prerequisite for the sync client above, not a follow-up to it.
+
+Proposed fix:
+- Scope the lookup at `sync.py:152` with `col(cls.group_id) == auth.group.id` for the three
+  group-bearing entities. A UUID that exists in another group must come back `rejected`,
+  never adopted: with the lookup scoped, the create path hits the primary key and the
+  existing `IntegrityError` branch already maps that to "integrity constraint violation".
+- Parent checks for the two child entities, mirroring `_apply_game_player`: `round.game_id`
+  must name a `Game` in the group; `score.round_id` a `Round` whose game is in the group and
+  `score.player_id` a `Player` in the group; `game.game_type_id`, when present, a `GameType`
+  in the group. Reject otherwise.
+- Scope the LWW lookup on `change_log` (`sync.py:191`) by `group_id` as well.
+- Regression tests in `backend/tests/test_sync.py` — the PoC inverted — and fix the comment.
+
+
+## Backend security review — HIGH: the O(N) argon2 scan is an unauthenticated CPU denial of service
+
+**Status:** done (2026-09-13) — closed by `fix/sync-contract`, the backend half of the sync client work. Tokens are now `<device id hex>.<secret>`: `require_device` fetches one row and runs at most one argon2 verify; a malformed token or an unknown device is refused without hashing; failed checks count in a per-IP `auth_fail` bucket (`AUTH_FAIL_RL_PER_MINUTE` 10 / `AUTH_FAIL_RL_PER_HOUR` 60) that answers 429 before any hashing. Alembic `0002_sync_contract` revokes every device holding an old opaque token. That bucket keys on `client_ip()` and so inherits the open `X-Forwarded-For` finding until it is fixed. Tests: `backend/tests/test_auth.py`. Noted 2026-09-13 in the backend security review (`TODO.md`, *Backend security review — 2026-09-13*).
+
+`backend/app/auth.py:74-77` runs one argon2 verify — 30 ms measured on the dev machine —
+per non-revoked device row for **any** bearer token, valid or not, before answering 401, and
+nothing rate-limits that path. Measured: 20 devices → 609 ms per bogus request; 1 000
+devices → about 30 s. The item above lets an attacker create devices without bound, so the
+chain is: spam `POST /groups`, then a trickle of requests with a junk token keeps the single
+worker saturated. `.llmwiki/KnownLimits.md` lists this as a scaling limit at ~1 000 devices;
+it is also an attack at any size. The WebSocket handshake stopped paying this on 2026-09-09;
+the HTTP path never did.
+
+Proposed fix: no shipped client exists, so the token format is free to change. Issue tokens
+as `<device_id hex>.<secret>`: `require_device` parses the id, fetches **one** row, does
+**one** verify. The alternative that keeps the opaque format is a `token_lookup` column
+holding the SHA-256 of the raw token, indexed, then one argon2 verify on the candidate row
+— an Alembic revision, via the `db-migration` skill. Either way, add a per-IP bucket on
+401s as defence in depth, and update `KnownLimits.md` and `Security.md`.
+
+
+## Backend security review — not security: `server_seq` can collide under concurrent pushes
+
+**Status:** done (2026-09-13) — closed by `fix/sync-contract`, the backend half of the sync client work. `push` reads the group row `FOR UPDATE` and hands out sequence numbers from the new `groups.last_server_seq`; `ix_change_log_group_seq` is unique; each delta runs in its own savepoint, so an `IntegrityError` rejects that delta alone instead of rolling back the batch. Tested on Postgres in `backend/tests/test_sync_ws_integration.py` (`test_concurrent_pushes_to_one_group_get_distinct_server_seqs`). Noted 2026-09-13 in the backend security review (`TODO.md`, *Backend security review — 2026-09-13*).
+
+`_next_server_seq` (`backend/app/routes/sync.py:115`) is `max + 1` inside the transaction
+with no lock, and `ix_change_log_group_seq` is not unique, so two pushes in the same group
+at the same moment can share a `server_seq` — and a puller paging with `> since_seq` can
+skip one of them. Same class as the dedup index: a concurrent retry of one delta hits the
+unique `(origin_device_id, client_lamport)` index and comes back as a 500 instead of
+`duplicate`. Fix: `SELECT … FOR UPDATE` on the group row (or a per-group sequence) and a
+unique index on `(group_id, server_seq)`; catch the dedup `IntegrityError`.
+
+
 ## The Flutter web app has no deployment path
 
 **Status:** done (2026-09-13) — closed by `chore/pwa-deploy`: the backend container serves the PWA under `PWA_BASE_PATH` on its own host (no Web Station change, same origin as the API), and `scripts/deploy_web.sh` builds for that sub-path, reading it from the NAS `.env`, then publishes over ssh with a rename swap and a one-step rollback. The target stays in the untracked `backend/scripts/deploy.env`. Procedure in the `web-deploy` skill, facts in `.llmwiki/Deployment.md`. Noted 2026-09-09 during the LLM-wiki migration.

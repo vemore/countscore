@@ -51,10 +51,9 @@ def _group_payload_with_token(g: Group) -> GroupWithShareToken:
 def _enforce_group_rate_limit(request: Request, response: Response) -> None:
     """Per-IP throttle on the two unauthenticated group endpoints.
 
-    Creating a group is free and inserts a Device row, and every Device row makes the
-    O(N) argon2 scan in ``require_device`` slower for everyone — so create spam degrades
-    latency service-wide, not just storage. On ``/join`` the same limit is what stops a
-    caller from grinding share_tokens: a 201 and a 404 tell valid from invalid.
+    Creating a group is free and inserts a Device row, so create spam costs storage. On
+    ``/join`` the same limit is what stops a caller from grinding share_tokens: a 201 and
+    a 404 tell valid from invalid.
     """
     settings = get_settings()
     dec = check_ip_rate_limit(
@@ -88,8 +87,10 @@ async def create_group(
     session.add(group)
     await session.flush()
 
-    raw_token = generate_token()
+    device_id = uuid.uuid4()
+    raw_token = generate_token(device_id)
     device = Device(
+        id=device_id,
         group_id=group.id,
         token_hash=hash_token(raw_token),
         label=body.device_label,
@@ -118,8 +119,10 @@ async def join_group(
     if group is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "unknown share token")
 
-    raw_token = generate_token()
+    device_id = uuid.uuid4()
+    raw_token = generate_token(device_id)
     device = Device(
+        id=device_id,
         group_id=group.id,
         token_hash=hash_token(raw_token),
         label=body.device_label,

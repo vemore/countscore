@@ -21,7 +21,7 @@ def _utcnow() -> datetime:
 class ChangeLog(SQLModel, table=True):
     __tablename__ = "change_log"
     __table_args__ = (
-        Index("ix_change_log_group_seq", "group_id", "server_seq"),
+        Index("ix_change_log_group_seq", "group_id", "server_seq", unique=True),
         Index("ix_change_log_dedup", "origin_device_id", "client_lamport", unique=True),
         Index("ix_change_log_entity", "entity_type", "entity_uuid", "client_lamport"),
     )
