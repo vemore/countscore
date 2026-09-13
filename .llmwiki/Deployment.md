@@ -41,8 +41,11 @@ it: uvicorn then keeps the rightmost untrusted `X-Forwarded-For` hop, the one We
 appended. Never `*` — uvicorn would take the leftmost hop, which the client writes. The
 first deploy after the subnet was pinned needs `docker compose down && docker compose up -d`
 on the NAS (Compose will not change an existing network's IPAM), after checking that no
-other network there uses `172.28.87.0/24`. Verify with a call from outside: the log line
-must show the public address, not `172.28.87.1`.
+other network there uses `172.28.87.0/24`. Verify from outside, since access logs
+are off (`uvicorn.access` at WARNING in `app/main.py`): four `POST /groups/join` with a bogus
+`share_token` and a different `X-Forwarded-For` each must answer `404, 404, 404, 429`. Four
+`404`s mean every caller shares the gateway's bucket — `FORWARDED_ALLOW_IPS` does not match the
+peer — and a `404` that never turns into a `429` means the header is trusted again.
 
 Dev uses `docker-compose.yml` (no TLS, local Postgres): `docker compose up -d` — db plus
 api on 8000 plus the backup sidecar.
