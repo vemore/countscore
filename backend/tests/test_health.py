@@ -35,8 +35,8 @@ async def test_health_reports_resolved_llm_config(client, monkeypatch):
     /health answered {"status": "ok"} for two days while every analysis 502'd on a
     model the account's tier rejected. The model id is what makes a curl conclusive.
 
-    Every value is set explicitly: pydantic-settings reads backend/.env, so asserting
-    an ambient default would pass in CI and fail on a developer machine.
+    Every value is set explicitly, so the assertion does not depend on the code defaults.
+    (backend/.env is no longer read in tests: see conftest.py.)
     """
     monkeypatch.setenv("LLM_PROVIDER", "bedrock")
     monkeypatch.setenv("BEDROCK_MODEL_ID", "us.meta.llama3-3-70b-instruct-v1:0")
@@ -95,3 +95,13 @@ async def test_health_gemini_defaults_to_flash(client, monkeypatch):
 
     llm = (await client.get("/health")).json()["llm"]
     assert llm == {"provider": "gemini", "model": "gemini-2.5-flash", "credentials": True}
+
+
+def test_settings_ignore_a_local_env_file(tmp_path, monkeypatch):
+    """A developer's backend/.env must not leak into the test run."""
+    (tmp_path / ".env").write_text("GEMINI_MODEL=gemini-2.5-pro\n")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("GEMINI_MODEL", raising=False)
+    get_settings.cache_clear()
+
+    assert get_settings().gemini_model == "gemini-2.5-flash"
