@@ -19,12 +19,19 @@ from sqlmodel import SQLModel
 os.environ.setdefault("ANTHROPIC_API_KEY", "")  # tests can run without it; MVP/group tests skip
 os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 
+# Never read backend/.env in tests. pytest runs from backend/, so pydantic-settings would
+# otherwise pick up the developer's untracked .env: an assertion on a code default then
+# passes in CI (no .env) and fails locally. Set before any Settings() is built.
+from app.config import Settings
+
+Settings.model_config["env_file"] = None
+
 # Import after env is set
-from app import db as db_module
+from app import db as db_module  # noqa: E402
 
 # Ensure models are loaded before metadata creation
-from app import models  # noqa: F401
-from app.main import create_app
+from app import models  # noqa: E402, F401
+from app.main import create_app  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
