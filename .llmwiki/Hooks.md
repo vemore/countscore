@@ -3,7 +3,7 @@
 > Scope: the Claude Code hooks that enforce project rules mechanically, and the reasoning
 > that used to live in `CLAUDE.md`.
 > Related: [[Web]] · [[I18n]] · [[Testing]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-09-09
+> Updated: 2026-09-13
 
 ## Facts
 
@@ -35,12 +35,11 @@ first step of the `app` job in `.github/workflows/ci.yml`.
 | Rule | Evidence used |
 |---|---|
 | `flutter build <target>` without `--no-tree-shake-icons` | tokenised command; `--help` and a bare `flutter build` produce no artifact and pass |
-| `ruff format` | any `ruff` on the line followed by `format`; `--check` and `--diff` pass |
 | Deleting or moving `web/sqlite3.wasm`, `web/drift_worker.js`, or `web/` itself | each argument resolved against a notional cwd that follows `cd`; copies under `build/` pass |
 | A `.gitignore` matching either binary | `git check-ignore --no-index`, one path per call |
 | Committing a keystore, `key.properties` or a `.env` | staged path list; `*.template` and `.env.example` pass |
 | Committing on `main`, on a detached HEAD, or on a stale branch | `%(upstream:track)` = `[gone]`, then `git cherry origin/main HEAD` |
-| Committing with red gates | `flutter analyze`, `flutter test` if app paths are involved; `ruff`/`mypy`/`pytest -m 'not integration'` if `backend/` is |
+| Committing with red gates | `flutter analyze`, `flutter test` if app paths are involved; `ruff check`/`ruff format --check`/`mypy`/`pytest -m 'not integration'` if `backend/` is |
 | Committing divergent ARB files, or a stale `app_localizations*.dart` | key sets against the template from `l10n.yaml`, then `flutter gen-l10n` |
 | Ending a turn with commits that no pull request covers, whose pull request was closed unmerged, or whose checks are failing | `gh pr list --head <branch> --state all`, then `gh pr checks` |
 | `gh pr create --base <anything but main>` | the parsed `--base` argument; unlocked per repository by `countscore.allowStackedPr` |
@@ -61,7 +60,6 @@ a superset costs seconds and never blocks wrongly.
   string it was given.
 - **`git checkout` / `git restore` / a `Write` overwriting the web binaries** — only
   removal and gitignoring are guarded. `web/CLAUDE.md` still states the rule.
-- **`ruff check --fix`**, which also rewrites files.
 - **A stale `*.g.dart`.** `session-start.sh` only notices when *no* generated file exists.
   This is why the codegen rule stays in `CLAUDE.md`.
 - **Freshness of `origin/main`.** The hooks never fetch: no network in a hook. Everything
@@ -143,3 +141,9 @@ a superset costs seconds and never blocks wrongly.
 - **Why the self-test is in CI.** The interesting cases are the ones that look like a
   violation and are not. Without a table exercised on every push, the first rule change
   breaks a guard silently — and a broken guard is indistinguishable from a passing one.
+- **The `ruff format` refusal was lifted (2026-09-13).** It existed so that formatting 47
+  files would not ride along inside a functional diff. The user judged that it did not
+  justify refusing the command: it forced a formatter, which is safe to run, to go through a
+  manual `!` step, and it would have kept refusing to format new code once the debt was
+  paid. Formatting is now enforced the other way round: `ruff format --check .` is a
+  commit-time gate and a CI step, so unformatted code is refused rather than the formatter.

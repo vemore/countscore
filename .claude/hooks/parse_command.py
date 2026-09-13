@@ -200,26 +200,6 @@ def check_flutter_build(tokens):
     }
 
 
-def check_ruff_format(tokens):
-    for index, token in enumerate(tokens[:-1]):
-        if base(token) == "ruff" and tokens[index + 1] == "format":
-            if "--check" in tokens or "--diff" in tokens:
-                return None  # measuring the debt is exactly how you prepare the fix
-            return {
-                "rule": "ruff-format",
-                "message": (
-                    "Refused: `ruff format` has never been run on backend/ and would rewrite "
-                    "43 of 50 files.\n"
-                    "Running it as a side effect of another change buries that diff. It is an "
-                    "open entry in TODO.md and deserves its own `chore:` commit.\n"
-                    "`ruff format --check` and `--diff` are allowed -- use them to measure. "
-                    "If this IS the dedicated commit, ask the user to run the command "
-                    "themselves with the `!` prefix."
-                ),
-            }
-    return None
-
-
 def check_stacked_pr(tokens):
     """A pull request whose base is not `main` merges into that base, not into main."""
     if not tokens or base(tokens[0]) != "gh":
@@ -378,7 +358,6 @@ def main():
             continue
         for finding in (
             check_flutter_build(tokens_of_segment),
-            check_ruff_format(tokens_of_segment),
             check_stacked_pr(tokens_of_segment),
             check_web_binaries(tokens_of_segment, notional_cwd),
         ):

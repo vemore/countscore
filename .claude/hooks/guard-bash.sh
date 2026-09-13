@@ -179,10 +179,12 @@ if printf '%s\n' "$paths" | grep -qE '^backend/'; then
     if [ -x "$ROOT/backend/.venv/bin/ruff" ]; then
         bin="$ROOT/backend/.venv/bin"
         run_gate "ruff check ." bash -c "cd '$ROOT/backend' && '$bin/ruff' check ."
+        run_gate "ruff format --check ." bash -c "cd '$ROOT/backend' && '$bin/ruff' format --check ."
         run_gate "mypy" bash -c "cd '$ROOT/backend' && '$bin/mypy'"
         run_gate "pytest -m 'not integration'" bash -c "cd '$ROOT/backend' && '$bin/pytest' -m 'not integration' -q"
     elif command -v uv >/dev/null 2>&1; then
         run_gate "ruff check ." bash -c "cd '$ROOT/backend' && uv run ruff check ."
+        run_gate "ruff format --check ." bash -c "cd '$ROOT/backend' && uv run ruff format --check ."
         run_gate "mypy" bash -c "cd '$ROOT/backend' && uv run mypy"
         run_gate "pytest -m 'not integration'" bash -c "cd '$ROOT/backend' && uv run pytest -m 'not integration' -q"
     else
