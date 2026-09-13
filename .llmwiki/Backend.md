@@ -27,12 +27,12 @@ present. `backend/README.md` is the fullest existing prose doc.
 | `app/main.py` | `create_app()` factory + module-level `app`. CORS from settings, a `limit_body_size` middleware (413 above `max_body_bytes`, 411 with no `Content-Length` on a write), a `security_headers` middleware, `lifespan` sets logging, includes the three routers, defines `GET /health` (`HealthResponse`: status, version, and the active LLM provider/model resolved without calling it — see [[Api]]). |
 | `app/config.py` | pydantic-settings `Settings` + `@lru_cache get_settings()`. |
 | `app/db.py` | Async engine, `AsyncSessionLocal`, `get_session()` dependency. Skips `pool_size`/`max_overflow` when the URL contains `sqlite`. |
-| `app/auth.py` | argon2 device tokens: `hash_token`, `verify_token`, `generate_token`, `AuthContext`, and the `require_device` dependency reading `Authorization: Bearer`. |
+| `app/auth.py` | argon2 device tokens: `hash_token`, `verify_token`, `generate_token(device_id)`, `parse_token`, `AuthContext`, and the `require_device` dependency reading `Authorization: Bearer`. |
 | `app/models/` | SQLModel tables: `group`, `device`, `player`, `game` (game_types, games, game_players, rounds, scores), `change_log`, `comment`, `rate_limit`. |
 | `app/schemas/` | Pydantic DTOs: `groups`, `sync`, `comments`. |
 | `app/routes/` | `groups`, `sync`, `comments` — see [[Api]]. |
 | `app/services/` | `zapzap_prompt`, `prompt_builder`, `anthropic_client`, `budget`, `rate_limiter`, `ip_rate_limiter`, `ws_ticket`, `delta_bounds`, `notify`, and the `llm/` package — see [[LlmProviders]]. |
-| `alembic/` | `env.py` (SQLModel metadata, reads `DATABASE_URL`/`ALEMBIC_DATABASE_URL`, strips `+asyncpg`) and a single revision `versions/0001_initial.py`. |
+| `alembic/` | `env.py` (SQLModel metadata, reads `DATABASE_URL`/`ALEMBIC_DATABASE_URL`, strips `+asyncpg`) and two revisions: `versions/0001_initial.py` and `versions/0002_sync_contract.py`. |
 
 ### Database
 
@@ -51,9 +51,16 @@ Autogenerate works because `alembic/env.py` imports `app.models` and uses
 
 ### Auth
 
-A device bearer token: a raw uuid4 hex issued at group create or join, stored argon2-hashed.
-`require_device` guards everything except create, join, and the two stateless comment
-endpoints. Revoked devices are refused.
+A device bearer token, `<device id hex>.<32 hex secret>`, issued at group create or join and
+stored argon2-hashed. `require_device` guards everything except create, join, and the two
+stateless comment endpoints: it parses the device id, loads that one row, and runs one
+verify. Malformed tokens and unknown devices are refused without hashing; failed checks
+count per client IP in an `auth_fail` bucket that answers 429 once exhausted. Revoked
+devices are refused.
+
+> **Status: Outdated** (2026-09-13) — this read "a raw uuid4 hex", verified by scanning every
+> device row. Changed by `0002_sync_contract`, which revokes every device holding the old
+> format: no shipped client ever stored one.
 
 ### Configuration
 

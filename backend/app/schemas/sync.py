@@ -8,7 +8,9 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
-EntityType = Literal["player", "game_type", "game", "game_player", "round", "score"]
+EntityType = Literal[
+    "player", "game_type", "game", "game_player", "round", "score", "game_analysis"
+]
 DeltaOp = Literal["upsert", "delete"]
 DeltaStatus = Literal["applied", "merged_lww", "rejected", "duplicate"]
 

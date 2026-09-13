@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import Column, DateTime, Index
+from sqlalchemy import BigInteger, Column, DateTime, Index
 from sqlmodel import Field, SQLModel
 
 
@@ -20,6 +20,12 @@ class Group(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     name: str = Field(max_length=64)
     share_token: uuid.UUID = Field(default_factory=uuid.uuid4)
+
+    # The last server_seq handed out in this group. Read under a row lock at the start of
+    # every push, so two concurrent pushes cannot mint the same sequence number.
+    last_server_seq: int = Field(
+        default=0, sa_column=Column(BigInteger, nullable=False, server_default="0")
+    )
 
     # Comment generation settings
     comment_style: str = Field(default="narrative", max_length=16)

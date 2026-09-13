@@ -5,8 +5,10 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import CheckConstraint, Column, DateTime, ForeignKey, Index
+from sqlalchemy import BigInteger, CheckConstraint, Column, DateTime, ForeignKey, Index
 from sqlmodel import Field, SQLModel
+
+from app.models._indexes import live_unique
 
 
 def _utcnow() -> datetime:
@@ -41,7 +43,7 @@ class Player(SQLModel, table=True):
     __tablename__ = "players"
     __table_args__ = (
         Index("ix_players_group_id", "group_id"),
-        Index("uq_players_group_name", "group_id", "name_normalized", unique=True),
+        live_unique("uq_players_group_name", "group_id", "name_normalized"),
         CheckConstraint("length(name) BETWEEN 1 AND 32", name="ck_player_name_length"),
     )
 
@@ -52,7 +54,7 @@ class Player(SQLModel, table=True):
     name: str = Field(max_length=32)
     # lower(trim(name)) — for the UNIQUE(group, name) constraint without imposing case sensitivity
     name_normalized: str = Field(max_length=32)
-    color_value: int | None = Field(default=None)
+    color_value: int | None = Field(default=None, sa_column=Column(BigInteger, nullable=True))
 
     created_at: datetime = Field(
         default_factory=_utcnow,
