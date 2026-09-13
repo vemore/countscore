@@ -2,7 +2,7 @@
 
 > Scope: production topology and environment. For the procedure, use the `backend-deploy` skill.
 > Related: [[Backend]] · [[Security]] · [[Web]] · [[LlmProviders]]
-> Updated: 2026-09-11
+> Updated: 2026-09-13
 
 ## Facts
 
@@ -60,7 +60,7 @@ hosting config. Only the backend container is covered. See [[Web]].
 | `LLM_PROVIDER` | ZapZap provider: `bedrock` \| `gemini` \| `mistral` | `bedrock` |
 | `BEDROCK_MODEL_ID` | Bedrock model | `us.meta.llama3-3-70b-instruct-v1:0` |
 | `AWS_REGION` / `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` | Bedrock credentials | required if bedrock |
-| `GEMINI_API_KEY` / `GEMINI_MODEL` / `GEMINI_BASE_URL` | Gemini | — / `gemini-2.5-pro` / — |
+| `GEMINI_API_KEY` / `GEMINI_MODEL` / `GEMINI_BASE_URL` | Gemini | — / `gemini-2.5-flash` / — |
 | `MISTRAL_API_KEY` / `MISTRAL_MODEL` / `MISTRAL_BASE_URL` | Mistral | — / `mistral-medium-latest` / — |
 | `CORS_ORIGINS` | Allowed origins, CSV. `*` is rejected at startup | prod URL |
 | `RL_PER_MINUTE` / `RL_PER_HOUR` / `RL_PER_DAY` | Per-device rate limit | `6` / `30` / `100` |
@@ -84,6 +84,14 @@ hosting config. Only the backend container is covered. See [[Web]].
   owner's NAS hostname and LAN registry IP alongside it served nothing. They moved to the
   untracked `backend/scripts/deploy.env`. Git history still carries them — rewriting it is
   forbidden by `CLAUDE.md`, and the point is that nothing published *from here on* does.
+  **Accepted as is (2026-09-13):** a hostname behind TLS and an RFC 1918 address, not a
+  credential. Renaming the DDNS host was the cheap way to kill the old name; it was not
+  judged worth a certificate re-issue.
+- **The dev compose file reads the whole `.env` (2026-09-13).** Its `api` service used to
+  list six variables by hand and none of the LLM ones, so the ZapZap endpoint answered 503
+  on every local `docker compose up`. It now uses `env_file: .env`, as production effectively
+  does, and overrides only `DATABASE_URL` to reach the `db` host. A hand-kept list drifted
+  once; a file cannot.
 - **Backups are `pg_dump` on a cron sidecar with 7-day rotation**, not a managed service.
   The dataset is small and the recovery story is "copy a file back".
 - **`LLM_PROVIDER` defaults to `bedrock` in code**, but production has been run on

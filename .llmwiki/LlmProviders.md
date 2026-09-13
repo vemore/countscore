@@ -2,7 +2,7 @@
 
 > Scope: both LLM paths — Claude for short comments, a pluggable provider for ZapZap.
 > Related: [[Api]] · [[Backend]] · [[Security]] · [[MobileApp]] · [[Deployment]]
-> Updated: 2026-09-11
+> Updated: 2026-09-13
 
 ## Facts
 
@@ -121,6 +121,11 @@ text is local data a failed refresh never touched.
   that it also sets `GEMINI_MODEL=gemini-2.5-pro`, which is quota-0 on the free tier — so the
   Gemini escape hatch exists but is armed to fail until that value becomes
   `gemini-2.5-flash`. See `TODO.md`.
+
+  > **Status: Outdated** (2026-09-13) — the NAS `.env` never set `GEMINI_MODEL`: the
+  > `gemini-2.5-pro` seen inside the container was the *compose* default. Both tracked
+  > defaults (`app/config.py`, `docker-compose.prod.yml`) are now `gemini-2.5-flash`, so a
+  > bare `LLM_PROVIDER=gemini` works on a free-tier key.
 - **Production is deployed on `mistral-medium-latest` but currently rate-limited
   (2026-09-11).** The `tier_not_allowed` outage is closed: `eb9ba02` is live, `/health`
   reports the model, and the models listing run with the production key shows
@@ -128,6 +133,11 @@ text is local data a failed refresh never touched.
   with **429 `rate_limited`** instead — account-wide, reproduced by a 5-token request to
   `mistral-small-latest`, so it is neither the model nor the payload. That is an account
   quota, not a repository fact; see `TODO.md`.
+- **Production moves to `gemini-2.5-flash` (decided 2026-09-13).** The Mistral account's
+  429 did not clear, and Gemini needs no code: a Gemini key was already in production and
+  Google was already a declared recipient in all three privacy documents. Flash, because Pro
+  is quota-0 without billing. Flash's free tier has its own per-minute and per-day caps; when
+  one is hit, the analysis now answers 503 + `Retry-After` rather than 502 ([[Api]]).
 - **`mistral-medium-latest` is the default, not `mistral-large-latest` (2026-09-11).** The
   account's tier rejects `large` with 403 `tier_not_allowed`, which returned 502 to every
   client from 2026-09-09 to 2026-09-11. `medium` was chosen over `small` and
