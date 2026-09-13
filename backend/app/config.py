@@ -66,6 +66,13 @@ class Settings(BaseSettings):
     auth_fail_rl_per_minute: int = 10
     auth_fail_rl_per_hour: int = 60
 
+    # Per-device cap on /sync/push. Each call can carry 500 deltas and 256 KiB, all of it
+    # written to change_log and served to every member, so a member must not be able to
+    # push without bound. The app sends batches of 100, so 60 a minute still lets a first
+    # share of a long history through in a few minutes.
+    sync_push_rl_per_minute: int = 60
+    sync_push_rl_per_hour: int = 1200
+
     # Concurrent /sync/stream connections one device may hold. Several tabs of the PWA
     # share a device, so more than one; a cap, so one member cannot hold hundreds.
     max_streams_per_device: int = 3
@@ -77,6 +84,10 @@ class Settings(BaseSettings):
     # Send Strict-Transport-Security. Off by default: local development is plain http
     # and an HSTS header there pins the browser to https for a year.
     hsts_enabled: bool = False
+
+    # Serve /docs, /redoc and /openapi.json. Off by default: in production they map the
+    # whole API for anyone, under a CSP that has to allow 'unsafe-inline' for Swagger.
+    expose_docs: bool = False
 
     # Max accepted request body size (bytes); larger requests are rejected with 413.
     max_body_bytes: int = 262144  # 256 KiB

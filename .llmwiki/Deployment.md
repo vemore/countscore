@@ -120,6 +120,8 @@ scripts/deploy_web.sh --rollback   # swap pwa/current.prev back
 | `IP_RL_PER_MINUTE` / `IP_RL_PER_HOUR` | Anonymous IP rate limit on the LLM endpoints | `5` / `30` |
 | `GROUP_RL_PER_MINUTE` / `GROUP_RL_PER_HOUR` | IP rate limit on group create/join, own bucket | `3` / `10` |
 | `AUTH_FAIL_RL_PER_MINUTE` / `AUTH_FAIL_RL_PER_HOUR` | Failed device-token checks per IP before a 429 | `10` / `60` |
+| `SYNC_PUSH_RL_PER_MINUTE` / `SYNC_PUSH_RL_PER_HOUR` | `/sync/push` calls per device before a 429 (the app pushes batches of 100) | `60` / `1200` |
+| `EXPOSE_DOCS` | Serve `/docs`, `/redoc`, `/openapi.json`. Leave off in production | `false` |
 | `HSTS_ENABLED` | Send `Strict-Transport-Security`. `true` in prod, `false` for local http | `false` |
 | `MAX_BODY_BYTES` | Request body cap (413 above) | `262144` |
 | `PWA_BASE_PATH` | Sub-path the api container serves the PWA under, e.g. `/countscore`. Empty = no PWA. Also read by `scripts/deploy_web.sh` for `--base-href` | `` |
