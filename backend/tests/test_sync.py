@@ -286,31 +286,19 @@ async def test_malformed_game_player_ids_do_not_crash(client):
 async def test_integrity_rejection_does_not_leak_driver_detail(client):
     """The reason is returned to the client; table and constraint names are not for it."""
     _group_id, token = await _make_group_and_token(client)
-    game_uuid = str(uuid.uuid4())
 
-    await _push(
+    # No name: the NOT NULL column refuses the row at flush, past every pre-check.
+    r = await _push(
         client,
         token,
         {
             "entity_type": "game",
-            "entity_uuid": game_uuid,
+            "entity_uuid": str(uuid.uuid4()),
             "op": "upsert",
-            "payload": {"name": "G"},
+            "payload": {},
             "client_lamport": 1,
         },
     )
-    for lamport in (2, 3):
-        r = await _push(
-            client,
-            token,
-            {
-                "entity_type": "round",
-                "entity_uuid": str(uuid.uuid4()),
-                "op": "upsert",
-                "payload": {"game_id": game_uuid, "round_number": 1},
-                "client_lamport": lamport,
-            },
-        )
 
     result = r.json()["results"][0]
     assert result["status"] == "rejected"

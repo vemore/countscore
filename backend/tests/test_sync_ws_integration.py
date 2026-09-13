@@ -200,3 +200,92 @@ async def test_ws_push_pull_full_cycle(pg_client):
     assert pull_r.status_code == 200, pull_r.text
     deltas = pull_r.json()["deltas"]
     assert any(d["entity_uuid"] == game_uuid for d in deltas)
+
+
+# ---------------------------------------------------------------------------
+# Postgres-only halves of the sync contract (see tests/test_sync_contract.py)
+# ---------------------------------------------------------------------------
+
+
+async def test_opaque_argb_colours_fit_on_postgres(pg_client):
+    """int4 overflowed at 0x80000000; every opaque Flutter colour is above it."""
+    _group_id, token = await _make_group_and_token(pg_client)
+    headers = {"Authorization": f"Bearer {token}"}
+    player = str(uuid.uuid4())
+
+    r = await pg_client.post(
+        "/sync/push",
+        json={
+            "deltas": [
+                {
+                    "entity_type": "player",
+                    "entity_uuid": player,
+                    "op": "upsert",
+                    "payload": {
+                        "name": "Ambre",
+                        "name_normalized": "ambre",
+                        "color_value": 0xFFFFC107,
+                    },
+                    "client_lamport": 1,
+                },
+                {
+                    "entity_type": "game_type",
+                    "entity_uuid": str(uuid.uuid4()),
+                    "op": "upsert",
+                    "payload": {
+                        "name": "ZapZap",
+                        "icon_code_point": 0xE000,
+                        "card_color_value": 0xFFFFFFFF,
+                    },
+                    "client_lamport": 2,
+                },
+            ]
+        },
+        headers=headers,
+    )
+
+    assert r.status_code == 200, r.text
+    assert [x["status"] for x in r.json()["results"]] == ["applied", "applied"]
+
+
+async def test_concurrent_pushes_to_one_group_get_distinct_server_seqs(pg_client):
+    r = await pg_client.post(
+        "/groups", json={"name": f"race-{uuid.uuid4().hex[:8]}", "device_label": "A"}
+    )
+    created = r.json()
+    r = await pg_client.post(
+        "/groups/join",
+        json={"share_token": created["group"]["share_token"], "device_label": "B"},
+    )
+    tokens = [created["device"]["token"], r.json()["device"]["token"]]
+
+    async def push_games(token: str) -> list[int]:
+        deltas = [
+            {
+                "entity_type": "game",
+                "entity_uuid": str(uuid.uuid4()),
+                "op": "upsert",
+                "payload": {"name": f"G{i}"},
+                "client_lamport": i + 1,
+            }
+            for i in range(20)
+        ]
+        resp = await pg_client.post(
+            "/sync/push",
+            json={"deltas": deltas},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp.status_code == 200, resp.text
+        return [x["server_seq"] for x in resp.json()["results"]]
+
+    seqs = await asyncio.gather(*(push_games(t) for t in tokens * 2))
+
+    flat = sorted(s for batch in seqs for s in batch)
+    # Lamports repeat per device across the two rounds, so half the deltas are duplicates
+    # that echo an earlier seq; the distinct values must still be exactly 1..40.
+    assert sorted(set(flat)) == list(range(1, 41))
+    pull = await pg_client.get(
+        "/sync/pull?since_seq=0&limit=2000",
+        headers={"Authorization": f"Bearer {tokens[0]}"},
+    )
+    assert [d["server_seq"] for d in pull.json()["deltas"]] == list(range(1, 41))

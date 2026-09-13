@@ -3,7 +3,7 @@
 from app.models.change_log import ChangeLog
 from app.models.comment import Comment
 from app.models.device import Device
-from app.models.game import Game, GamePlayer, GameType, Round, Score
+from app.models.game import Game, GameAnalysis, GamePlayer, GameType, Round, Score
 from app.models.group import Group
 from app.models.player import Player
 from app.models.rate_limit import RateLimit
@@ -13,6 +13,7 @@ __all__ = [
     "Comment",
     "Device",
     "Game",
+    "GameAnalysis",
     "GamePlayer",
     "GameType",
     "Group",

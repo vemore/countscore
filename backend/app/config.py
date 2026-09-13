@@ -57,6 +57,11 @@ class Settings(BaseSettings):
     group_rl_per_minute: int = 3
     group_rl_per_hour: int = 10
 
+    # Per-IP cap on *failed* device-token checks. A token names its device, so a failure
+    # costs one argon2 verify; this bounds how many a single address can make us run.
+    auth_fail_rl_per_minute: int = 10
+    auth_fail_rl_per_hour: int = 60
+
     # Send Strict-Transport-Security. Off by default: local development is plain http
     # and an HSTS header there pins the browser to https for a year.
     hsts_enabled: bool = False

@@ -47,6 +47,9 @@
   > runs for *any* bearer token, valid or not, and group creation is free, so it is a CPU
   > denial of service at any size, not a limit reached at ~1 000 devices. See [[Security]]
   > and `TODO.md`, *Backend security review — 2026-09-13*.
+  >
+  > **Status: Outdated** (2026-09-13) — no longer a limit: tokens name their device, so a
+  > request runs one verify whatever the number of devices (`backend/app/auth.py`).
 - **Flutter SDK upgrade blocked.** Six packages are pinned back, and `dart run drift_dev`
   does not compile at all at drift 2.34.4 / drift_dev 2.34.0. Full analysis and the plan
   live in `TODO.md` at the repo root — that file is the source of truth for this item.

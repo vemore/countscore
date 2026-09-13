@@ -10,7 +10,7 @@
 
 | Surface | Measure |
 |---|---|
-| `device_token` | uuid4, 122 bits of entropy. Stored argon2-hashed server-side. |
+| `device_token` | `<device id hex>.<secret>`, 128 bits of secret. Stored argon2-hashed server-side; one verify per request, failures capped per IP. |
 | `share_token` | uuid4, rotatable. Unused once a device has joined. |
 | `ANTHROPIC_API_KEY`, AWS keys | Environment only, never logged, never bundled in the APK. |
 | TLS | Synology Web Station, integrated Let's Encrypt. |
@@ -77,10 +77,20 @@ proof-of-concept results are in `TODO.md`, *Backend security review — 2026-09-
   `round` and `score` have no `group_id` and their parent ids are written unchecked. A
   revoked device knows every UUID of its former group, so revocation protects nothing.
   Confirmed by a proof of concept: rename, steal, attach a round, tombstone — all `applied`.
+
+  > **Status: Outdated** (2026-09-13) — fixed by `fix/sync-contract`. Entities are refused
+  > with `not in group` unless owned by the caller's group (rounds and analyses through the
+  > game, scores through round and game), and every parent a payload names must be in the
+  > group (`parent_missing`). Regression tests: `backend/tests/test_sync_contract.py`.
 - **The per-IP limit is spoofable** through `X-Forwarded-For` — see the status block above.
 - **The argon2 scan is a CPU denial of service, not only a scaling limit.** One verify
   (30 ms) per device row for any bearer token, valid or not, with no rate limit on 401s;
   combined with free group creation the single worker can be kept saturated.
+
+  > **Status: Outdated** (2026-09-13) — fixed by `fix/sync-contract`: the token names its
+  > device, so a request costs at most one verify, a junk token costs none, and failures
+  > are capped per IP (`backend/tests/test_auth.py`). The cap keys on `client_ip()`, so it
+  > stays spoofable until the `X-Forwarded-For` item is fixed.
 - **`/comments/zapzap-analysis` takes an unvalidated `dict`.** No field bounds, no name
   allow-list, none of the five injection layers below apply to it — with the per-IP limit
   bypassable it is an open LLM proxy on the operator's key.
@@ -93,6 +103,8 @@ proof-of-concept results are in `TODO.md`, *Backend security review — 2026-09-
   only by an in-memory per-IP limit that a single worker makes coherent — see [[Api]].
 - **Argon2 verification is O(N) in devices** — one verify per row on every authenticated
   HTTP request. The WebSocket handshake no longer pays it. See [[KnownLimits]].
+
+  > **Status: Outdated** (2026-09-13) — O(1) since `fix/sync-contract`; see above.
 - **Every device in a group is equal.** There is no owner role on `Device`, so any member
   can rotate the share token or revoke a sibling device. Full lateral privilege within a
   group, which matches the household model but not a public one.
@@ -101,6 +113,12 @@ proof-of-concept results are in `TODO.md`, *Backend security review — 2026-09-
   first. See rule 2 in `backend/CLAUDE.md`.
 
 ## Decisions & History
+
+- **The device id travels inside the device token (2026-09-13).** The alternative kept the
+  opaque format and added an indexed SHA-256 lookup column. Putting the id in the token was
+  chosen because no client had ever stored a token, so the format was free to change, and
+  it needs no second hash to keep in step with the argon2 one. The id is not a secret —
+  every member pulls it as `origin_device_id` — so exposing it costs nothing.
 
 - **Second review, 2026-09-13.** The whole of `backend/` was read again after the PWA
   deploy, this time asking what an attacker holding a former device or no credential at

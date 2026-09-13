@@ -26,14 +26,16 @@ _BODY_METHODS = frozenset({"POST", "PUT", "PATCH"})
 # from www.gstatic.com and the fallback fonts from fonts.gstatic.com; sqlite3.wasm and
 # CanvasKit need 'wasm-unsafe-eval'; the Drift worker and the service worker are
 # same-origin. connect-src allows any https origin because the backend URL is a user
-# setting: a PWA served here may still be pointed at another server.
+# setting: a PWA served here may still be pointed at another server. wss: for the same
+# reason — CSP 'self' covers a same-host WebSocket, but https: does not cover wss:, so
+# the sync stream of such a server would otherwise be blocked.
 _PWA_CSP = (
     "default-src 'self'; "
     "script-src 'self' 'wasm-unsafe-eval' https://www.gstatic.com; "
     "style-src 'self' 'unsafe-inline'; "
     "img-src 'self' data: blob:; "
     "font-src 'self' data: https://fonts.gstatic.com; "
-    "connect-src 'self' https:; "
+    "connect-src 'self' https: wss:; "
     "worker-src 'self' blob:; "
     "manifest-src 'self'; "
     "object-src 'none'; base-uri 'self'; frame-ancestors 'none'"

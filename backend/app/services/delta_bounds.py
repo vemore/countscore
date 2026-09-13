@@ -19,6 +19,8 @@ from app.models.player import PLAYER_NAME_MAX_LENGTH, is_valid_player_name
 _COLOR_MAX = 0xFFFFFFFF  # ARGB, as Flutter's Color.value
 _UNICODE_MAX = 0x10FFFF  # highest valid code point, for icon_code_point
 _SCORE_ABS_MAX = 1_000_000
+ROUND_COMMENT_MAX_LENGTH = 500
+ANALYSIS_CONTENT_MAX_LENGTH = 20_000
 
 # entity_type → field → (min, max), both inclusive.
 NUMERIC_BOUNDS: dict[str, dict[str, tuple[int, int]]] = {
@@ -41,6 +43,8 @@ NUMERIC_BOUNDS: dict[str, dict[str, tuple[int, int]]] = {
 STRING_MAX_LENGTHS: dict[str, dict[str, int]] = {
     "player": {"name": PLAYER_NAME_MAX_LENGTH, "name_normalized": PLAYER_NAME_MAX_LENGTH},
     "game": {"name": 64},
+    "round": {"comment": ROUND_COMMENT_MAX_LENGTH},
+    "game_analysis": {"content": ANALYSIS_CONTENT_MAX_LENGTH, "model_id": 128},
     "game_type": {
         "name": 64,
         "player_dead_condition_type": 16,

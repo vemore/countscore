@@ -24,12 +24,35 @@
 
 | Method | Path | Auth | Notes |
 |---|---|---|---|
-| POST | `/push` | device | Max **500 deltas** per request. Values bounded per entity. |
+| POST | `/push` | device | Max **500 deltas** per request. Values bounded per entity. Serialised per group (row lock); one savepoint per delta. |
 | GET | `/pull?since_seq=N` | device | |
 | POST | `/ws-ticket` | device | Mints a single-use ticket, 60 s TTL, for the stream below. |
 | WS | `/stream?ticket=…` | ticket | Signal only — see [[Sync]]. |
 
-Internals: `_next_server_seq`, `_apply_delta`, `_apply_game_player`, `_coerce_payload`.
+Internals: `_apply_delta`, `_apply_game_player`, `_owned_by`, `_check_parents`,
+`_check_unique`, `_was_deleted`, `_coerce_payload`, `_logged_payload`.
+
+Entity types: `player`, `game_type`, `game`, `game_player`, `round`, `score`,
+`game_analysis`. Per-delta status: `applied`, `merged_lww`, `duplicate`, `rejected`. A
+rejected delta carries a `reason`; the conflict codes a client branches on are constants at
+the top of `app/routes/sync.py`:
+
+| Reason | When |
+|---|---|
+| `not in group` | The entity uuid exists and belongs to another group |
+| `parent_missing` | A named parent (`game_id`, `round_id`, `player_id`, `game_type_id`) is absent or in another group — the two are indistinguishable on purpose |
+| `round_number_taken` | Another live round of the game has that number |
+| `score_exists` | Another live score exists for that player and round |
+| `name_taken` | Another live player (normalised name) or game type (name) of the group |
+| `analysis_exists` | The game already has another live analysis |
+| `integrity constraint violation` | Anything the pre-checks missed, e.g. a NOT NULL column absent on create |
+
+Bounds failures keep their prose (`value out of bounds (…)`, `comment longer than 500
+characters`, …) — see `app/services/delta_bounds.py`.
+
+Device tokens are `<device id hex>.<secret>` (`app/auth.py`). `require_device` runs at most
+one argon2 verify; a client address over `AUTH_FAIL_RL_PER_MINUTE` / `_PER_HOUR` failed
+checks gets **429** before any hashing.
 
 ### `app/routes/comments.py` — no prefix, tag `comments`
 

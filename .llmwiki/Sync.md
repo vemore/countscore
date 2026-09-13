@@ -34,6 +34,30 @@ field**, ordered lexicographically by `(client_lamport, origin_device_id)`.
 > fields of the same row do not merge; the loser is discarded. The ordering rule itself is
 > unchanged — lexicographic on `(client_lamport, origin_device_id)`.
 
+### Push, as the server applies it (since 2026-09-13)
+
+`backend/app/routes/sync.py`, module docstring and `push`:
+
+1. The group row is read `FOR UPDATE`: pushes to one group run one at a time, and
+   `groups.last_server_seq` hands out each `server_seq` once. `(group_id, server_seq)` is
+   unique in `change_log`.
+2. Dedup on `(origin_device_id, client_lamport)` → `duplicate`, with the original seq.
+3. Each remaining delta runs in **its own savepoint**. A rejection — or an `IntegrityError`
+   the pre-checks missed — undoes that delta alone; the rest of the batch keeps its rows,
+   its log entries and its seqs. Rejected deltas consume no seq.
+4. **Group scoping.** An existing uuid of another group is `rejected` (`not in group`);
+   every parent a payload names must be in the caller's group (`parent_missing`).
+5. **A delete wins.** An upsert on a tombstoned row, or on a uuid the group's log holds a
+   delete for, is `merged_lww` and writes nothing, whatever its lamport. A payload cannot
+   set `deleted_at`, `group_id`, `id`, `created_at` or `updated_at`.
+6. Unique rules (round number, score slot, player and game-type names, one analysis per
+   game) apply to **live rows only** and are checked before the write, so a clash comes
+   back as a stable reason code rather than a driver error — codes in [[Api]].
+7. The log stores the payload's known client columns only; that is what other devices pull.
+
+Synced entities: `player`, `game_type`, `game`, `game_player`, `round` (with `comment`),
+`score`, `game_analysis`. `game_player` still has no uuid and is hard-deleted.
+
 - `client_lamport` is a monotone integer per device, a logical clock. On write:
   `lamport = max(local_max, last_server_seq_received) + 1`.
 - **Idempotence**: the server deduplicates on `(origin_device_id, client_lamport)`. A
@@ -97,10 +121,11 @@ reason production runs a single uvicorn worker.
 
 ### Server schema
 
-`backend/app/models/*.py` is the source of truth, `alembic/versions/0001_initial.py` the
-exact DDL. Tables: `groups`, `devices`, `players`, `game_types`, `games`, `game_players`,
-`rounds`, `scores`, `comments` (with `scores_hash`, `prompt_hash`, `tokens_in/out`,
-`cost_cents`), `change_log`, `rate_limits`.
+`backend/app/models/*.py` is the source of truth, `alembic/versions/` the exact DDL
+(`0001_initial`, `0002_sync_contract`). Tables: `groups` (with `last_server_seq`),
+`devices`, `players`, `game_types`, `games`, `game_players`, `rounds`, `scores`,
+`game_analyses`, `comments` (with `scores_hash`, `prompt_hash`, `tokens_in/out`,
+`cost_cents`), `change_log`, `rate_limits`. Colour columns are `BIGINT`.
 
 ## Decisions & History
 
@@ -127,6 +152,15 @@ exact DDL. Tables: `groups`, `devices`, `players`, `game_types`, `games`, `game_
   ("Round 5 was entered on another device — here are its scores"). The consequence is that
   the client outbox must handle three per-delta statuses: `applied`, `merged_lww`,
   `rejected`.
+- **A delete wins over a concurrent edit (2026-09-13).** Chosen with the user for the
+  client design: deleting a shared game removes it for the whole group. Row-level LWW alone
+  would let a late upsert with a higher lamport resurrect a game somebody deleted, which
+  reads as a bug to everyone at the table. Tombstones therefore also free their unique
+  slots — otherwise a deleted round 5 would block the next round 5 forever.
+- **Stable reason codes instead of "integrity constraint violation" (2026-09-13).** The
+  client must renumber on a round clash and adopt the server's row on a score clash; it
+  cannot tell those apart from one generic string, and parsing driver messages is exactly
+  what the reason field exists to avoid.
 - **Local and shared games coexist on one device.** `group_id TEXT NULL`; NULL means local
   and the sync worker only ever sends non-NULL rows. Existing users' games stay local with
   zero friction, and joining a group risks nothing. Multi-group per device was deferred on

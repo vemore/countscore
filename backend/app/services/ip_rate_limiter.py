@@ -63,6 +63,21 @@ def _sweep(now: float) -> None:
         del _buckets[key]
 
 
+def is_exhausted(ip: str, *, bucket: str, per_minute: int, per_hour: int) -> bool:
+    """Whether ``(bucket, ip)`` is already over a threshold, without counting a call.
+
+    For buckets that count failures rather than attempts: the caller checks before doing
+    the expensive work and only calls ``check_ip_rate_limit`` once the attempt has failed.
+    """
+    now = time.monotonic()
+    w = _buckets.get((bucket, ip))
+    if w is None:
+        return False
+    if now - w.minute_start < 60 and w.minute_count >= per_minute:
+        return True
+    return now - w.hour_start < 3600 and w.hour_count >= per_hour
+
+
 def check_ip_rate_limit(
     ip: str,
     *,

@@ -1,18 +1,21 @@
 """Delta-log sync endpoints — see .llmwiki/Sync.md.
 
 Apply order on push:
-1. Dedup: skip deltas whose (origin_device_id, client_lamport) is already in change_log.
-2. Append-to-log: every accepted delta becomes a change_log row with a serial server_seq.
-3. Materialize: apply the delta to the per-entity table using row-level LWW — the
-   highest (client_lamport, origin_device_id) wins the whole entity, and a losing delta
-   is discarded with status=merged_lww. Per-field LWW is designed but not built; see
-   the comment at the update branch below, and .llmwiki/Sync.md.
-4. Notify: pg_notify('group_<uuid>', {server_seq}) before commit so listening
+1. Lock: the group row is read FOR UPDATE, so pushes to one group are serialised and
+   ``groups.last_server_seq`` hands out each sequence number exactly once.
+2. Dedup: skip deltas whose (origin_device_id, client_lamport) is already in change_log.
+3. Materialize, inside a savepoint per delta: check that the entity and every parent it
+   names belong to the caller's group, then apply with row-level LWW — the highest
+   (client_lamport, origin_device_id) wins the whole entity, and a losing delta is
+   discarded with status=merged_lww. A delete always wins: a tombstoned entity ignores
+   every later upsert.
+4. Append-to-log: an accepted delta becomes a change_log row carrying the known columns
+   of its payload, never the server-controlled ones.
+5. Notify: pg_notify('group_<uuid>', {server_seq}) before commit so listening
    WebSockets are woken.
 
-Rejection cases:
-- Round upsert violates UNIQUE(game_id, round_number): rejected with status=rejected.
-  The client must refresh from /sync/pull and retry with the merged state.
+A rejected delta rolls back its own savepoint and nothing else. Its reason is one of the
+stable codes below, so a client can act on it without parsing prose.
 """
 
 from __future__ import annotations
@@ -34,7 +37,18 @@ from sqlmodel import SQLModel, col
 
 from app.auth import AuthContext, require_device
 from app.db import AsyncSessionLocal, get_session
-from app.models import ChangeLog, Device, Game, GamePlayer, GameType, Player, Round, Score
+from app.models import (
+    ChangeLog,
+    Device,
+    Game,
+    GameAnalysis,
+    GamePlayer,
+    GameType,
+    Group,
+    Player,
+    Round,
+    Score,
+)
 from app.schemas.sync import (
     DeltaIn,
     DeltaOut,
@@ -54,6 +68,16 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/sync", tags=["sync"])
 
+# Reject reasons a client is expected to branch on. Bounds failures keep their
+# human-readable text (app/services/delta_bounds.py); these are the conflict codes.
+REASON_NOT_IN_GROUP = "not in group"
+REASON_PARENT_MISSING = "parent_missing"
+REASON_ROUND_NUMBER_TAKEN = "round_number_taken"
+REASON_SCORE_EXISTS = "score_exists"
+REASON_NAME_TAKEN = "name_taken"
+REASON_ANALYSIS_EXISTS = "analysis_exists"
+REASON_INTEGRITY = "integrity constraint violation"
+
 # Map entity_type → SQLModel class. Limiting writes to known types is part of the
 # auth boundary: a malicious client cannot trick us into writing to arbitrary tables.
 _ENTITY_MAP: dict[str, type[SQLModel]] = {
@@ -63,7 +87,11 @@ _ENTITY_MAP: dict[str, type[SQLModel]] = {
     "round": Round,
     "score": Score,
     "game_player": GamePlayer,
+    "game_analysis": GameAnalysis,
 }
+
+# Columns the server owns. They are never taken from a payload and never logged.
+_SERVER_COLUMNS = frozenset({"id", "group_id", "created_at", "updated_at", "deleted_at"})
 
 
 def _columns(cls: type[SQLModel]) -> ReadOnlyColumnCollection[str, Column[Any]]:
@@ -75,6 +103,12 @@ def _columns(cls: type[SQLModel]) -> ReadOnlyColumnCollection[str, Column[Any]]:
     mapper = sa_inspect(cls)
     assert mapper is not None  # every _ENTITY_MAP value is a mapped table class
     return mapper.columns
+
+
+def _client_payload(cls: type[SQLModel], payload: dict) -> dict:
+    """The part of a payload a client may set: known columns, minus the server's own."""
+    columns = _columns(cls)
+    return {k: v for k, v in payload.items() if k in columns and k not in _SERVER_COLUMNS}
 
 
 def _coerce_payload(cls: type[SQLModel], payload: dict) -> dict:
@@ -112,15 +146,117 @@ def _coerce_payload(cls: type[SQLModel], payload: dict) -> dict:
     return out
 
 
-async def _next_server_seq(session: AsyncSession, group_id: uuid.UUID) -> int:
+def _as_uuid(value: Any) -> uuid.UUID | None:
+    if isinstance(value, uuid.UUID):
+        return value
+    try:
+        return uuid.UUID(str(value))
+    except ValueError:
+        return None
+
+
+async def _game_in_group(session: AsyncSession, game_id: Any, group_id: uuid.UUID) -> bool:
+    gid = _as_uuid(game_id)
+    if gid is None:
+        return False
+    game = await session.get(Game, gid)
+    return game is not None and game.group_id == group_id
+
+
+async def _round_in_group(session: AsyncSession, round_id: Any, group_id: uuid.UUID) -> bool:
+    rid = _as_uuid(round_id)
+    if rid is None:
+        return False
+    rnd = await session.get(Round, rid)
+    return rnd is not None and await _game_in_group(session, rnd.game_id, group_id)
+
+
+async def _owned_by(
+    session: AsyncSession, cls: type[SQLModel], obj: Any, group_id: uuid.UUID
+) -> bool:
+    """Whether an existing row belongs to ``group_id``, directly or through its parents."""
+    if cls in (Player, GameType, Game):
+        return bool(obj.group_id == group_id)
+    if cls in (Round, GameAnalysis):
+        return await _game_in_group(session, obj.game_id, group_id)
+    if cls is Score:
+        return await _round_in_group(session, obj.round_id, group_id)
+    return False
+
+
+async def _check_parents(
+    session: AsyncSession, cls: type[SQLModel], values: dict, group_id: uuid.UUID
+) -> str | None:
+    """Every parent a payload names must exist in the caller's group.
+
+    A parent in another group answers exactly like a missing one: the caller learns
+    nothing about other groups' ids.
+    """
+    checks: list[tuple[str, type[SQLModel]]] = []
+    if cls is Game and values.get("game_type_id") is not None:
+        checks.append(("game_type_id", GameType))
+    if cls in (Round, GameAnalysis) and "game_id" in values:
+        checks.append(("game_id", Game))
+    if cls is Score:
+        if "round_id" in values:
+            checks.append(("round_id", Round))
+        if "player_id" in values:
+            checks.append(("player_id", Player))
+    for key, parent_cls in checks:
+        parent_id = _as_uuid(values[key])
+        if parent_id is None:
+            return REASON_PARENT_MISSING
+        parent = await session.get(parent_cls, parent_id)
+        if parent is None or not await _owned_by(session, parent_cls, parent, group_id):
+            return REASON_PARENT_MISSING
+    return None
+
+
+async def _check_unique(
+    session: AsyncSession, cls: type[SQLModel], entity_uuid: uuid.UUID, row: dict
+) -> str | None:
+    """Name the live-row uniqueness rule a write would break, before the flush does.
+
+    ``row`` holds the values the row will have after the write. The unique indexes stay
+    the backstop; this only turns their violation into a reason a client can act on.
+    """
+    rules: dict[type[SQLModel], tuple[tuple[str, ...], str]] = {
+        Round: (("game_id", "round_number"), REASON_ROUND_NUMBER_TAKEN),
+        Score: (("player_id", "round_id"), REASON_SCORE_EXISTS),
+        GameAnalysis: (("game_id",), REASON_ANALYSIS_EXISTS),
+        Player: (("group_id", "name_normalized"), REASON_NAME_TAKEN),
+        GameType: (("group_id", "name"), REASON_NAME_TAKEN),
+    }
+    rule = rules.get(cls)
+    if rule is None:
+        return None
+    keys, reason = rule
+    if any(row.get(k) is None for k in keys):
+        return None
+    columns = _columns(cls)
+    query = select(columns["id"]).where(
+        columns["id"] != entity_uuid, columns["deleted_at"].is_(None)
+    )
+    for k in keys:
+        query = query.where(columns[k] == row[k])
+    clash = await session.execute(query.limit(1))
+    return reason if clash.first() is not None else None
+
+
+async def _was_deleted(session: AsyncSession, group_id: uuid.UUID, entity_uuid: uuid.UUID) -> bool:
+    """Whether the group's log holds a delete for this entity. A delete always wins."""
     result = await session.execute(
-        select(col(ChangeLog.server_seq))
+        select(col(ChangeLog.id))
         .where(col(ChangeLog.group_id) == group_id)
-        .order_by(col(ChangeLog.server_seq).desc())
+        .where(col(ChangeLog.entity_uuid) == entity_uuid)
+        .where(col(ChangeLog.op) == "delete")
         .limit(1)
     )
-    last = result.scalar()
-    return (last or 0) + 1
+    return result.first() is not None
+
+
+def _rejected(reason: str) -> DeltaResult:
+    return DeltaResult(delta_idx=-1, status="rejected", reason=reason)
 
 
 async def _apply_delta(
@@ -128,68 +264,66 @@ async def _apply_delta(
 ) -> DeltaResult:
     cls = _ENTITY_MAP.get(delta.entity_type)
     if cls is None:
-        return DeltaResult(delta_idx=-1, status="rejected", reason="unknown entity type")
+        return _rejected("unknown entity type")
 
     # Bound the values before anything reaches a column. Placed ahead of the game_player
     # branch so both apply paths are covered by one check.
     reason = check_payload_bounds(delta.entity_type, delta.payload)
     if reason is not None:
-        return DeltaResult(delta_idx=-1, status="rejected", reason=reason)
+        return _rejected(reason)
 
     # GamePlayer has a composite PK and no uuid; we handle it specially.
     if delta.entity_type == "game_player":
         return await _apply_game_player(session, auth, delta, server_seq)
 
-    payload = dict(delta.payload)
-    # Force the server-side group_id (clients cannot move entities across groups).
+    group_id = auth.group.id
     has_group_col = "group_id" in _columns(cls)
-    if has_group_col:
-        payload["group_id"] = auth.group.id
-    else:
-        payload.pop("group_id", None)
+    applied = DeltaResult(delta_idx=-1, status="applied", server_seq=server_seq)
 
-    # Look up by entity_uuid (the logical key for sync).
-    existing = await session.execute(select(cls).where(_columns(cls)["id"] == delta.entity_uuid))
-    obj = existing.scalar_one_or_none()
+    # Look up by entity_uuid (the logical key for sync), then check the row is ours. A
+    # row of another group is refused, never adopted: clients cannot move entities
+    # across groups, and a revoked device cannot reach its former group's data.
+    obj = await session.get(cls, delta.entity_uuid)
+    if obj is not None and not await _owned_by(session, cls, obj, group_id):
+        return _rejected(REASON_NOT_IN_GROUP)
 
     now = datetime.now(UTC)
     if delta.op == "delete":
-        if obj is None:
-            # Idempotent — create a tombstone for the future
-            return DeltaResult(delta_idx=-1, status="applied", server_seq=server_seq)
-        obj.deleted_at = now
-        obj.updated_at = now
-        return DeltaResult(delta_idx=-1, status="applied", server_seq=server_seq)
+        if obj is not None and obj.deleted_at is None:  # type: ignore[attr-defined]
+            obj.deleted_at = now
+            obj.updated_at = now
+        # A delete for an unknown uuid is still logged: it stops a later upsert of that
+        # uuid from resurrecting it (see _was_deleted).
+        return applied
 
-    # upsert
+    # Delete wins, whichever lamport the upsert carries.
+    if (obj is not None and obj.deleted_at is not None) or await _was_deleted(  # type: ignore[attr-defined]
+        session, group_id, delta.entity_uuid
+    ):
+        return DeltaResult(delta_idx=-1, status="merged_lww", server_seq=server_seq)
+
+    values = _coerce_payload(cls, _client_payload(cls, delta.payload))
+    reason = await _check_parents(session, cls, values, group_id)
+    if reason is not None:
+        return _rejected(reason)
+
     if obj is None:
-        # Build a fresh row from payload, with server-controlled fields.
-        clean = _coerce_payload(cls, payload)
-        clean["id"] = delta.entity_uuid
-        clean.setdefault("created_at", now)
-        clean.setdefault("updated_at", now)
+        row = {**values, "id": delta.entity_uuid}
         if has_group_col:
-            clean["group_id"] = auth.group.id
-        try:
-            obj = cls(**clean)
-            session.add(obj)
-            await session.flush()
-        except IntegrityError as e:
-            await session.rollback()
-            # The driver message names tables, columns and constraints — useful in the
-            # log, not something to hand back to a client.
-            logger.warning("delta rejected on integrity error: %s", e.orig)
-            return DeltaResult(
-                delta_idx=-1, status="rejected", reason="integrity constraint violation"
-            )
-        return DeltaResult(delta_idx=-1, status="applied", server_seq=server_seq)
+            row["group_id"] = group_id
+        reason = await _check_unique(session, cls, delta.entity_uuid, row)
+        if reason is not None:
+            return _rejected(reason)
+        row["created_at"] = row["updated_at"] = now
+        session.add(cls(**row))
+        await session.flush()
+        return applied
 
-    # Update with LWW-per-field — we don't track per-field lamport yet in v1, so
-    # we use a simpler row-level LWW: the highest (client_lamport, origin_device_id)
-    # wins on the whole entity. Per-field LWW is a future enhancement (it would
-    # require a field_versions table or denormalized columns).
+    # Row-level LWW: the highest (client_lamport, origin_device_id) wins the whole
+    # entity. Per-field LWW would need a field_versions table; see .llmwiki/Sync.md.
     last_log = await session.execute(
         select(col(ChangeLog.client_lamport), col(ChangeLog.origin_device_id))
+        .where(col(ChangeLog.group_id) == group_id)
         .where(col(ChangeLog.entity_uuid) == delta.entity_uuid)
         .where(col(ChangeLog.op) == "upsert")
         .order_by(col(ChangeLog.client_lamport).desc(), col(ChangeLog.origin_device_id).desc())
@@ -201,13 +335,15 @@ async def _apply_delta(
         if (delta.client_lamport, auth.device.id.bytes) < (prev_lamport, prev_device.bytes):
             return DeltaResult(delta_idx=-1, status="merged_lww", server_seq=server_seq)
 
-    for key, value in _coerce_payload(cls, payload).items():
-        if key != "id":
-            setattr(obj, key, value)
+    current = {c.key: getattr(obj, c.key) for c in _columns(cls) if c.key}
+    reason = await _check_unique(session, cls, delta.entity_uuid, {**current, **values})
+    if reason is not None:
+        return _rejected(reason)
+    for key, value in values.items():
+        setattr(obj, key, value)
     obj.updated_at = now
-    if has_group_col:
-        obj.group_id = auth.group.id
-    return DeltaResult(delta_idx=-1, status="applied", server_seq=server_seq)
+    await session.flush()
+    return applied
 
 
 async def _apply_game_player(
@@ -217,18 +353,18 @@ async def _apply_game_player(
     game_id = delta.payload.get("game_id")
     player_id = delta.payload.get("player_id")
     if not game_id or not player_id:
-        return DeltaResult(delta_idx=-1, status="rejected", reason="missing game_id/player_id")
+        return _rejected("missing game_id/player_id")
     try:
         game_uuid, player_uuid = uuid.UUID(str(game_id)), uuid.UUID(str(player_id))
     except ValueError:
-        return DeltaResult(delta_idx=-1, status="rejected", reason="malformed game_id/player_id")
+        return _rejected("malformed game_id/player_id")
     # Verify both belong to this group
     game = await session.get(Game, game_uuid)
     player = await session.get(Player, player_uuid)
     if game is None or game.group_id != auth.group.id:
-        return DeltaResult(delta_idx=-1, status="rejected", reason="game not in group")
+        return _rejected("game not in group")
     if player is None or player.group_id != auth.group.id:
-        return DeltaResult(delta_idx=-1, status="rejected", reason="player not in group")
+        return _rejected("player not in group")
     existing = await session.execute(
         select(GamePlayer).where(
             col(GamePlayer.game_id) == game.id, col(GamePlayer.player_id) == player.id
@@ -251,7 +387,16 @@ async def _apply_game_player(
         row.order_index = delta.payload.get("order_index", row.order_index)
         if "color_value" in delta.payload:
             row.color_value = delta.payload["color_value"]
+    await session.flush()
     return DeltaResult(delta_idx=-1, status="applied", server_seq=server_seq)
+
+
+def _logged_payload(delta: DeltaIn) -> dict[str, Any]:
+    """What other devices pull: the payload's known client columns, JSON as sent."""
+    cls = _ENTITY_MAP[delta.entity_type]
+    if delta.entity_type == "game_player":
+        return {k: v for k, v in delta.payload.items() if k in _columns(cls)}
+    return _client_payload(cls, delta.payload)
 
 
 @router.post("/push", response_model=PushResponse)
@@ -262,6 +407,13 @@ async def push(
 ) -> PushResponse:
     results: list[DeltaResult] = []
     max_seq = 0
+
+    # Serialises pushes to this group, which is what makes last_server_seq safe to bump.
+    # populate_existing: require_device already loaded this row into the session, and
+    # the value that counts is the one read under the lock, not that earlier copy.
+    group = await session.get(Group, auth.group.id, with_for_update=True, populate_existing=True)
+    assert group is not None  # require_device just loaded it
+    next_seq = group.last_server_seq + 1
 
     for idx, delta in enumerate(body.deltas):
         # Idempotence: skip already-applied (device, lamport) pairs.
@@ -277,28 +429,40 @@ async def push(
             max_seq = max(max_seq, dup_seq)
             continue
 
-        server_seq = await _next_server_seq(session, auth.group.id)
-        outcome = await _apply_delta(session, auth, delta, server_seq)
+        savepoint = await session.begin_nested()
+        try:
+            outcome = await _apply_delta(session, auth, delta, next_seq)
+            if outcome.status in ("applied", "merged_lww"):
+                session.add(
+                    ChangeLog(
+                        group_id=group.id,
+                        origin_device_id=auth.device.id,
+                        entity_type=delta.entity_type,
+                        entity_uuid=delta.entity_uuid,
+                        op=delta.op,
+                        payload=_logged_payload(delta),
+                        client_lamport=delta.client_lamport,
+                        server_seq=next_seq,
+                    )
+                )
+            await savepoint.commit()
+        except IntegrityError as e:
+            # Only this delta's savepoint is undone: every earlier delta of the batch
+            # keeps its row and its log entry. The driver message names tables and
+            # constraints — useful in the log, not something to hand back to a client.
+            await savepoint.rollback()
+            logger.warning("delta rejected on integrity error: %s", e.orig)
+            outcome = _rejected(REASON_INTEGRITY)
+
         outcome.delta_idx = idx
-
         if outcome.status in ("applied", "merged_lww"):
-            log = ChangeLog(
-                group_id=auth.group.id,
-                origin_device_id=auth.device.id,
-                entity_type=delta.entity_type,
-                entity_uuid=delta.entity_uuid,
-                op=delta.op,
-                payload=delta.payload,
-                client_lamport=delta.client_lamport,
-                server_seq=server_seq,
-            )
-            session.add(log)
-            max_seq = max(max_seq, server_seq)
-
+            max_seq = next_seq
+            next_seq += 1
         results.append(outcome)
 
+    group.last_server_seq = next_seq - 1
     if max_seq > 0:
-        await notify_new_seq(session, auth.group.id, max_seq)
+        await notify_new_seq(session, group.id, max_seq)
     await session.commit()
 
     return PushResponse(results=results, server_seq_max=max_seq)
