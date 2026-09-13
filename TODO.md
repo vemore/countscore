@@ -18,165 +18,6 @@ two now disagree about what a failure looks like. The fix is `colorScheme.error`
 across the six `_snack` call sites. Not folded into the header fix because it changes the look
 of every settings confirmation, not just a label colour.
 
-## `GEMINI_MODEL` defaults to a model that is quota-0 on the free tier
-
-**Status:** open — noted 2026-09-11, while closing the Mistral default.
-
-`gemini_model: str = "gemini-2.5-pro"` (`backend/app/config.py:32`), duplicated as
-`${GEMINI_MODEL:-gemini-2.5-pro}` in `docker-compose.prod.yml:40`. On a free-tier Google key
-`gemini-2.5-pro` has a quota of **0**, so switching `LLM_PROVIDER=gemini` without also setting
-`GEMINI_MODEL` fails immediately — exactly the class of trap just closed for Mistral, on the
-provider next door. `gemini-2.5-flash` works without billing enabled.
-
-**Worse than a bad default: production sets the bad value explicitly.** Checked inside the
-container on 2026-09-11 — the NAS `.env` carries `GEMINI_MODEL=gemini-2.5-pro` alongside a
-valid `GEMINI_API_KEY`. So the ready-made escape hatch from the Mistral rate limit
-(see below) is armed to fail: flipping `LLM_PROVIDER=gemini` alone would swap a 429 for a
-quota-0 error. Whoever switches must set `gemini-2.5-flash` in the same edit.
-
-Not fixed inline because nothing currently runs on gemini, and because picking the default is
-the same product decision the Mistral one was. When it is fixed, remember the default lives in
-**two** tracked places, the compose one wins in production — and that the NAS `.env` overrides
-both, so fixing the repository alone would not fix this deployment.
-
-## Backend tests read the developer's local `backend/.env`
-
-**Status:** open — noted 2026-09-11, found when a new `/health` test passed in CI's shape and
-failed locally.
-
-`Settings` has `env_file=".env"` (`backend/app/config.py:11`) and pytest runs from `backend/`,
-so every test that touches `get_settings()` picks up the untracked local `.env`. A machine with
-`BEDROCK_MODEL_ID=us.meta.llama3-1-70b-instruct-v1:0` in it makes an assertion on the code
-default fail, while CI — which has no `.env` — passes. The tests are therefore not reproducible
-across machines.
-
-`conftest.py:19-20` already neutralises `ANTHROPIC_API_KEY` and `DATABASE_URL` with
-`os.environ.setdefault`, which does not help: the `.env` file is read regardless. The fix is to
-point `Settings.model_config["env_file"]` at nothing during tests, or to have `conftest.py`
-construct settings with `_env_file=None`. Worked around for now by setting every value the new
-tests assert (`tests/test_health.py`), which is correct but does not protect the next test.
-
-## The dev `docker-compose.yml` cannot serve the ZapZap endpoint
-
-**Status:** open — noted 2026-09-11, while setting up an on-device test of the configurable
-backend URL.
-
-`backend/docker-compose.yml:22-35` passes six variables into the `api` container —
-`DATABASE_URL`, `ANTHROPIC_API_KEY`, `COMMENT_MODEL`, `DEFAULT_BUDGET_CENTS`, `CORS_ORIGINS`,
-`LOG_LEVEL` — and **none** of `LLM_PROVIDER`, `AWS_*`, `BEDROCK_MODEL_ID`, `GEMINI_*` or
-`MISTRAL_*`. So `POST /comments/zapzap-analysis` on a local `docker compose up` always answers
-503 "LLM provider not configured", whatever `backend/.env` holds.
-
-`docker-compose.prod.yml` does not have the problem: the NAS `.env` is mounted as a file, so
-the whole environment reaches the container.
-
-The workaround used on 2026-09-11 was `.venv/bin/uvicorn app.main:app --port 8000`, which
-loads `.env` through pydantic-settings and needs no Postgres — the endpoint is stateless
-(`app/routes/comments.py:114-132`, no `session` parameter) and `Settings.database_url` has a
-default. That works, but it means the documented local stack cannot exercise the one feature
-the app actually calls.
-
-Fix: add the provider variables to the `api` service's `environment:` block, or switch it to
-`env_file: .env` like production. The second is smaller and cannot drift again.
-
-## The NAS hostname is still in git history
-
-**Status:** open — noted 2026-09-11, while making the backend URL configurable.
-
-`feat/configurable-backend-url` removed `countscore.ombivince.synology.me` and the LAN
-registry address `192.168.1.25:5050` from the working tree: they now live in the untracked
-`backend/scripts/deploy.env`. **Every commit before that one still contains them**, and the
-repository is public, so `git log -p` and the GitHub UI still show them.
-
-Nothing was rewritten on purpose: `CLAUDE.md` forbids force-pushing and rewriting commits
-already on `origin/main`, and a rewrite would break every existing clone and every link to a
-commit. The exposure is a hostname and an RFC 1918 address, not a credential — the values are
-not secret, they are simply personal infrastructure that no longer belongs in a public tree.
-
-If that is judged worth closing, the options, worst to best:
-
-1. Leave it. The host is behind TLS with its own auth surface; knowing the name buys an
-   attacker a target list entry and nothing else.
-2. Rename the Synology DDNS host, making the old name dead. Cheap, and it invalidates the
-   history without touching git. Requires re-issuing the Let's Encrypt certificate and
-   updating `deploy.env` — the app no longer needs updating, which is the point of this
-   change.
-3. `git filter-repo` over the history plus a force-push. Correct in principle, forbidden by
-   `CLAUDE.md`, and it rewrites every sha in the project.
-
-Option 2 is the one worth doing if it is done at all.
-
-## The Mistral account is rate-limited, so the analysis still 502s
-
-**Status:** open — noted 2026-09-11, immediately after the deploy that closed the
-`tier_not_allowed` outage (see `DONE.md`).
-
-`POST /comments/zapzap-analysis` in production returns 502 with:
-
-```
-RuntimeError: mistral API call failed: RateLimitError: Error code: 429 -
-{'message': 'Rate limit exceeded', 'type': 'rate_limited', 'code': '1300'}
-```
-
-**Not a throttle we can wait out between calls.** Two attempts 75 s apart both failed, and a
-minimal 5-token request to `mistral-small-latest`, issued from inside the container, returns
-the same 429. The limit is account-wide — independent of the model and of our payload size —
-so it is an exhausted free-tier quota or an account-level cap, not something the code can
-retry around.
-
-The configuration is provably correct: `/health` reports
-`{"provider":"mistral","model":"mistral-medium-latest","credentials":true}`, and the models
-listing confirms the account may use that model. Nothing in this repository is wrong.
-
-**Decision (2026-09-11): wait.** If this is a monthly cap it resets on the billing cycle.
-Re-check with a real `POST`; `/health` will keep saying the configuration is fine, because it
-is — that is the one thing this endpoint deliberately cannot tell you.
-
-The two other ways out, if waiting does not resolve it:
-
-1. **Add billing to the Mistral account**, lifting the free-tier quota.
-2. **Switch to Gemini.** This needs **no code** — `LLM_PROVIDER` is already pluggable
-   (`app/services/llm/factory.py`), `docker-compose.prod.yml` already passes `GEMINI_API_KEY`
-   and `GEMINI_MODEL`, and production **already holds a Gemini key**. It is two variables in
-   `$NAS_DEPLOY_DIR/.env` plus `docker compose up -d` — §2 of the `backend-deploy` skill.
-
-   **But it would fail as currently configured.** Production explicitly sets
-   `GEMINI_MODEL=gemini-2.5-pro`, which is quota-0 on the free tier, so the switch must set
-   `gemini-2.5-flash` in the same edit. See the entry above.
-
-   Switching also changes the tone of every analysis and sends the payload to a different
-   third party, so it implicates [[Security]] and the privacy documents if the recipient
-   changes.
-
-Worth doing regardless of which is chosen: **the client shows the user a bare HTTP 502 for
-what is really "the server's LLM quota is exhausted"**. The server deliberately returns only
-`type(e).__name__` to avoid leaking provider detail ([[Api]]), which is right, but a 429 from
-upstream could reasonably map to a distinct status the app can word better than "HTTP 502".
-
-## The ZapZap system prompt hard-codes eight real people's names
-
-**Status:** open — noted 2026-09-09, while tracing the analysis payload for the data safety
-pass.
-
-`backend/app/services/zapzap_prompt.py:52-59` writes eight first names — Thibaut, Vincent,
-Lionel, Laurent, Guillaume, Simon, Nadia, Ben — and a one-line reputation for each directly
-into `ZAPZAP_SYSTEM_PROMPT`. The prompt is constant, so **those names and characterisations
-are sent to the third-party LLM provider on every single request**, whoever is actually
-playing, and they reach a provider whose retention we do not control ([[Security]]).
-
-Two separate problems. The privacy one: none of the compliance documents mentions it,
-because all three describe what leaves the *device*, and this text never was on the device.
-A stranger who installs the app and generates one analysis transmits eight real people's
-names without any of it being disclosed. The quality one: the model is being told about
-players who are not in the game, which is a strange thing to ask it to write around.
-
-The fix is to move the personalities out of the constant prompt and into per-group
-configuration, or to drop them. Either way it is a change to what the provider receives, so
-`.llmwiki/Security.md` and the three privacy documents are implicated — see the outbound
-data flow rule in `CLAUDE.md`. Not fixed inline because it changes the tone of every
-generated analysis, which is a product decision, and the personalities are presumably there
-on purpose.
-
 ## The Flutter sync client does not exist
 
 **Status:** open — noted 2026-09-09, during a branch/commit review.
@@ -253,31 +94,15 @@ invisible to the player list, the picker and the stats. So this is not an additi
 it reopens the repository layer that was just ported to Drift and **has not shipped yet**
 (production still runs sqflite v9 — see [[DataLayer]]). Sequencing matters; shipping the
 engine swap and the first network write path in one release doubles the blast radius on a
-project with no CI and no backend alerting.
+project with no backend alerting (CI exists since 2026-09-09).
 
 Two cheap prerequisites fall out of the above and can be done independently:
 
-- Extract a `BackendClient` from `lib/screens/game_analysis_screen.dart`. It is useful on
-  its own, and it removes a raw network call from a screen — which the `Code style` rule in
-  `CLAUDE.md` forbids.
-- Land CI before the client, not after (see the CI entry below).
-
-## The sync conflict branch has no test
-
-**Status:** open — noted 2026-09-09, while reviewing the sync-client entry.
-
-`merged_lww` appears nowhere under `backend/tests/`. `test_sync.py` covers push/pull,
-idempotence, the round-uniqueness rejection and the payload bounds, but never drives two
-devices writing the same entity, so the branch that decides who wins
-(`backend/app/routes/sync.py:184-199`) has never run in a test. `.llmwiki/Testing.md`
-asserted it was covered until this was checked; the page is corrected.
-
-Cheap to close and worth closing before any client exists, because the client's outbox is
-written against whatever this branch actually does: push the same `entity_uuid` from two
-device tokens with competing `(client_lamport, origin_device_id)` pairs, assert the loser
-comes back `merged_lww` and that the stored row is the winner's — including that a field
-only the loser touched is **not** merged in. That last assertion is the one that pins the
-row-level behaviour down, and it is exactly the fact the wiki got wrong. See [[Sync]].
+- ~~Extract a `BackendClient` from `lib/screens/game_analysis_screen.dart`.~~ Done
+  (2026-09-11): `lib/services/backend_client.dart`; the screen only injects an `http.Client`
+  for tests.
+- ~~Land CI before the client, not after.~~ Done (2026-09-09): `.github/workflows/ci.yml`,
+  see `DONE.md`.
 
 ## `ruff format` has never been run on `backend/`
 
