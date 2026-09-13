@@ -36,7 +36,21 @@ def is_valid_player_name(name: str) -> bool:
     """
     if not 1 <= len(name) <= PLAYER_NAME_MAX_LENGTH:
         return False
-    return all(c.isalpha() or c.isdigit() or c in PLAYER_NAME_PUNCTUATION for c in name)
+    return all(_is_name_char(c) for c in name)
+
+
+def sanitize_player_name(name: str) -> str:
+    """The same rule applied as a filter: drop what it refuses, then trim and clip.
+
+    For paths that must not refuse a game over a name the app never validated locally
+    (the ZapZap prompt). May return an empty string; the caller picks a fallback.
+    """
+    kept = "".join(c for c in name if _is_name_char(c))
+    return " ".join(kept.split())[:PLAYER_NAME_MAX_LENGTH].strip()
+
+
+def _is_name_char(c: str) -> bool:
+    return c.isalpha() or c.isdigit() or c in PLAYER_NAME_PUNCTUATION
 
 
 class Player(SQLModel, table=True):

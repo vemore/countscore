@@ -61,7 +61,8 @@ starts a Postgres through testcontainers. Proposal: a CI job with a `postgres:17
 
 **Status:** open — noted 2026-09-13, during a cyber-security review of `backend/` requested
 by the user. The two HIGH items on sync scoping and the argon2 scan, and the `server_seq`
-race, were closed the same day by `fix/sync-contract` and moved to `DONE.md`. Nothing else
+race, were closed the same day by `fix/sync-contract` and moved to `DONE.md`; the
+`X-Forwarded-For` spoof and the open ZapZap proxy by `fix/ip-spoofing-zapzap-payload`. Nothing else
 below was fixed; the items are ordered by severity, each with the evidence and the
 proposed fix. The three HIGH items were **confirmed by running
 proof-of-concept tests** against the project's own SQLite fixtures (`tests/conftest.py`);
@@ -76,60 +77,6 @@ secrets in env only, and none in git history (grepped for `sk-ant-`, `AKIA`, `AI
 database not published; the API bound to `127.0.0.1`; the WS ticket redeemed before
 `accept()`; the PWA mount refusing traversal; argon2 on device tokens; `share_token` kept out
 of routine reads.
-
-### HIGH — Every per-IP rate limit is bypassed by a client-supplied `X-Forwarded-For`
-
-> Also covers the `auth_fail` bucket added on 2026-09-13 in `app/auth.py`: until this lands,
-> a client rotating the header escapes the cap on failed token checks too. The cost per
-> attempt is one argon2 verify against a real device id, no longer a scan.
-
-`backend/app/services/ip_rate_limiter.py:40-45` takes the **first** hop of
-`X-Forwarded-For`. A reverse proxy — Web Station's nginx included — *appends* the real
-address, so a client sending `X-Forwarded-For: <anything>` arrives as `<anything>, <real>`
-and the first hop is attacker-chosen. That header is the **only** guard on the two
-unauthenticated paid LLM endpoints (cost abuse), on `POST /groups` (unbounded device
-creation, which feeds the next item) and on `POST /groups/join` — `.llmwiki/Api.md` says
-this limit "caps `share_token` guessing", which is therefore false. Each spoofed value also
-creates a fresh `_buckets` entry that the hourly sweep is the only thing bounding.
-
-PoC: 20 `POST /groups` with a rotating header against a 3-per-minute limit → 20 × 201, and
-22 buckets in memory.
-
-Why it "works" today: uvicorn's `ProxyHeadersMiddleware` (0.52.4) trusts `127.0.0.1` only,
-and inside the container the peer is the Docker bridge gateway, so `request.client.host` is
-the gateway for everyone. The app compensates by parsing the raw header itself, and that
-parsing is the flaw.
-
-Proposed fix:
-- Delete the header parsing in `client_ip()`; use `request.client.host` and nothing else.
-- Let uvicorn resolve the client: `--forwarded-allow-ips=<docker bridge subnet>` (or the
-  `FORWARDED_ALLOW_IPS` env var) in `docker-compose.prod.yml` and the Dockerfile `CMD`.
-  With a *specific* trusted list uvicorn walks the chain right-to-left and returns the first
-  untrusted hop (`uvicorn/middleware/proxy_headers.py`, `get_trusted_client_address`),
-  which cannot be spoofed as long as the port stays bound to `127.0.0.1` — it is. Never
-  `*`: with `always_trust` uvicorn takes the leftmost hop again.
-- `backend/tests/test_ip_rate_limit.py` currently *relies* on the spoof to simulate distinct
-  clients; rewrite it to set the ASGI `client` address instead.
-- Wiki: the `Status: Outdated` blocks in `.llmwiki/Security.md` and `.llmwiki/Api.md` point
-  here; remove them when this lands.
-
-### MEDIUM — `POST /comments/zapzap-analysis` takes an unvalidated `dict` and is an open LLM proxy
-
-`backend/app/routes/comments.py:119` declares `body: dict`. `build_zapzap_user_message`
-(`backend/app/services/zapzap_prompt.py:71`) interpolates every field verbatim — player
-names, each round's free-text `comment`, every history entry, the game name — with no
-length or count limits beyond the 256 KiB body cap, no player-name allow-list (the sync
-path has `is_valid_player_name`; this path does not), and none of the five injection layers
-`.llmwiki/LlmProviders.md` documents for the Claude path. With `max_tokens = 8192` and the
-per-IP limit bypassable, anyone who knows the URL has unlimited generations on the
-operator's key, and the free-text fields steer the prompt at will.
-
-Proposed fix: a Pydantic `ZapZapPayload` in `backend/app/schemas/comments.py` — players ≤
-12 with names through `is_valid_player_name`, rounds ≤ 200, `comment` ≤ 200 characters,
-history ≤ 10 entries per player with bounded fields, game name ≤ 64 — returning 422 on
-violation, and the mobile payload (`lib/screens/game_analysis_screen.dart`) checked against
-it. Longer term, what `LlmProviders.md` already calls "to harden": device auth and the
-`rate_limits` budget on this endpoint.
 
 ### MEDIUM — Revocation is reversible by the revoked party
 

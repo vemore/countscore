@@ -59,7 +59,7 @@ checks gets **429** before any hashing.
 | Method | Path | Auth | Notes |
 |---|---|---|---|
 | POST | `/comments/mvp` | **none** | Stateless. Anthropic path. IP rate limited. |
-| POST | `/comments/zapzap-analysis` | **none** | Stateless. Pluggable provider. IP rate limited (429). 503 if the provider is unavailable **or rate-limited upstream** (the latter with `Retry-After: 60` and the detail `upstream LLM rate-limited`, `app/routes/comments.py`), 422 on an invalid payload, 502 on any other upstream error. |
+| POST | `/comments/zapzap-analysis` | **none** | Stateless. Pluggable provider. IP rate limited (429). 503 if the provider is unavailable **or rate-limited upstream** (the latter with `Retry-After: 60` and the detail `upstream LLM rate-limited`, `app/routes/comments.py`), 422 on a wrong shape or a count out of bounds (`ZapZapPayload`: 1–12 players, ≤ 200 rounds, ≤ 10 history entries per player; long text is clipped and player names filtered, never refused), 502 on any other upstream error. |
 | POST | `/groups/me/games/{game_id}/comments` | device | Group-scoped, budgeted. |
 | GET | `/groups/me/games/{game_id}/comments` | device | |
 
@@ -114,12 +114,8 @@ an API route (`/groups`, `/sync/app`, `/health`, `/docs`…) refuses to start. C
 - **`POST /groups` and `/groups/join` are IP rate limited** (`GROUP_RL_PER_MINUTE` 3,
   `GROUP_RL_PER_HOUR` 10) in a bucket of their own, so group spam cannot consume the LLM
   quota. On `/join` the same limit is what caps `share_token` guessing: a 201 and a 404
-  tell a valid token from an invalid one.
-
-  > **Status: Outdated** (2026-09-13) — it caps nothing: the limit keys on the first hop of
-  > `X-Forwarded-For`, which the client sets. `share_token` guessing is bounded only by the
-  > 122 bits of a uuid4. See [[Security]] and `TODO.md`, *Backend security review —
-  > 2026-09-13*.
+  tell a valid token from an invalid one. The IP is the one uvicorn resolved behind the
+  trusted proxy, never a header the client wrote — see [[Security]].
 - **The stream is authenticated by ticket, not by the device token.** The ticket is
   redeemed before `websocket.accept()`, so an unauthenticated peer cannot make the server
   do work. See [[Sync]] and [[Security]].
