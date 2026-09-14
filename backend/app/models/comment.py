@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import Column, DateTime, ForeignKey, Index
+from sqlalchemy import Column, DateTime, ForeignKey, Index, Text
 from sqlmodel import Field, SQLModel
 
 
@@ -31,7 +31,8 @@ class Comment(SQLModel, table=True):
         sa_column=Column(ForeignKey("devices.id", ondelete="SET NULL"), nullable=True)
     )
 
-    content: str
+    # TEXT, as alembic/versions/0001_initial.py creates it (not a bounded VARCHAR).
+    content: str = Field(sa_column=Column(Text(), nullable=False))
     style: str = Field(max_length=16)
     language: str = Field(max_length=8)
     # SHA-256 of the rounds+scores at generation time. Allows UI to flag stale comments.

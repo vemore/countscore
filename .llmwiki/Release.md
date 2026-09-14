@@ -41,6 +41,14 @@ flutter build appbundle --release --no-tree-shake-icons
 
 `--no-tree-shake-icons` is mandatory — see [[MobileApp]] for why.
 
+### Tags
+
+A released commit gets an **annotated** tag named exactly as `version:` in `pubspec.yaml`,
+`<x.y.z+n>` — the `release-android` skill §10 creates it once the rollout is live. On
+`origin`: `1.0.0+1` → `4e52a54`, `1.0.1+2` → `1614707`, `1.0.1+3` → `ee3ff1b` (lightweight,
+predates the rule). `1.1.0+4` is not tagged until its rollout is live. A local `1.0.1` tag on
+`1614707` (the older scheme) was never pushed and is not part of the scheme.
+
 ### Icons
 
 `flutter_launcher_icons` (dev dependency) generates every Android density from

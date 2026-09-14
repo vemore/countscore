@@ -215,13 +215,18 @@ CI — it calls the production endpoint. See `.llmwiki/Testing.md`.
 [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs five jobs on every push to
 `main` and every pull request:
 
-- **Backend** — `ruff check`, `ruff format --check`, `mypy`, `pytest` (integration tests included).
+- **Backend** — `ruff check`, `ruff format --check`, `mypy`, `pytest` (integration tests included),
+  `alembic upgrade head && alembic check` on a real Postgres (the models and the migrations
+  must describe the same schema), and a `pip-audit` of every package locked in `backend/uv.lock`.
 - **Backend image** — builds `backend/Dockerfile` (dependencies locked to `uv.lock`) and
   checks that the container runs as a non-root user, with no compiler and no dev dependencies.
 - **App** — codegen, `flutter analyze`, `flutter test`, release web build.
 - **Android** — debug APK from a clean checkout, as a fresh-clone build proof, plus an
   assertion that the release manifest still declares `INTERNET`.
 - **Sync** — the backend on a real Postgres, then the two-device group sync test against it.
+
+[`.github/dependabot.yml`](.github/dependabot.yml) opens weekly, grouped update pull requests
+for the backend (`uv`), the app (`pub`) and the GitHub Actions.
 
 ### Contributing
 

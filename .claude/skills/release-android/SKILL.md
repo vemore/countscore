@@ -52,7 +52,8 @@ Signing and R8 shrinking are already wired in `android/app/build.gradle.kts` (`s
 
 `version:` in `pubspec.yaml` is `x.y.z+build`; `build` becomes the `versionCode` and must be
 **higher than every version code on every track**, not just production. Tags so far
-(`git tag`): `1.0.1`, `1.0.1+3` — the Console's *Release explorer* is the authority.
+(`git ls-remote --tags origin`): `1.0.0+1`, `1.0.1+2`, `1.0.1+3` — the Console's *Release
+explorer* is the authority.
 
 Commit the bump on the release branch; the hook refuses commits on `main`. The commit hook
 judges the worktree the command runs in and runs the gates there (fixed 2026-09-14,
@@ -176,12 +177,13 @@ watch Crashes & ANRs for 48 h before widening.
 - The release branch's PR is merged (the user's call). Tag the released commit — pushing a tag
   is outward-facing, so ask first:
   ```bash
-  git tag <x.y.z+n> <commit> && git push origin <x.y.z+n>
+  git tag -a <x.y.z+n> <commit> -m "<x.y.z+n>" && git push origin <x.y.z+n>
   ```
 - Update **Submission state** in `.llmwiki/Release.md` (what is live on which track) and its
   `Updated:` date.
-- `git worktree remove ../countscore-release-<version>` once the branch is pushed — it takes
-  the copied `key.properties` with it.
+- Once the release pull request is merged: `scripts/cleanup_local.sh --apply` removes the
+  release worktree (and the `key.properties` link with it) and the local release branch. Run it
+  dry first; a `keep` line means something from the release is not on GitHub yet.
 - Delete the Windows hand-off folder: it holds a signed bundle.
 
 ## Icons — only if the artwork changed

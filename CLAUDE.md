@@ -129,6 +129,12 @@ here and, more usefully, with what those hooks do *not* cover.
   or a rebase merge, never a push to `main` (a hook refuses all three). A Play Store release
   is **not** part of this: only when the user asks, through `release-android`.
 
+- **Leave the local environment clean.** Work is over when the main checkout is back on a
+  fast-forwarded `main` and no worktree or local branch is left that no longer serves:
+  `scripts/cleanup_local.sh` (dry run), then `--apply`, once no agent is still working. It only
+  deletes what has no commit of its own or whose pull request GitHub reports merged; what it
+  keeps, you report.
+
 - **Several tasks at once are several pull requests, in parallel.** When the user hands you a
   set of tasks, follow the `ship-parallel` skill: group the entries by theme, one pull request
   per theme, each implemented by its own agent in its own git worktree, then merged one at a

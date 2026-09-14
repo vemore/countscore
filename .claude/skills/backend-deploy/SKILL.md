@@ -15,8 +15,9 @@ this app, the `deploy-nas` skill covers the machine itself.
 
 Synology **Web Station** terminates TLS (integrated Let's Encrypt) and reverse-proxies to
 `http://127.0.0.1:8087` → the `api` container (uvicorn, **1 worker**), alongside
-`db` (Postgres 17-alpine) and a `db-backup` sidecar doing a daily `pg_dump` with 7-day
-rotation. Caddy is no longer used.
+`db` (Postgres 17-alpine) and a `db-backup` sidecar (its own image,
+`backend/Dockerfile.backup`) writing a daily age-encrypted `pg_dump` with 7-day rotation.
+Caddy is no longer used.
 
 ## The one rule you cannot break
 
@@ -55,7 +56,26 @@ whichever `LLM_PROVIDER` is selected (`AWS_*` for bedrock, `GEMINI_API_KEY`,
 `MISTRAL_API_KEY`). `CORS_ORIGINS` must list the real PWA origin — a validator rejects `*`
 at startup, so a wrong value fails fast rather than opening the API.
 
+Also required: **`BACKUP_AGE_RECIPIENT`**, the age public key the `db-backup` sidecar
+encrypts every dump to. Without it the sidecar refuses to run (restart loop, reason in its
+logs) and `deploy_nas.sh` refuses to deploy.
+
 Keep `.env.example` in sync with `app/config.py` whenever a setting is added.
+
+### The backup key pair — first deploy of encrypted backups, or a key rotation
+
+Generate the pair **off the NAS** and never copy the private key there:
+
+```bash
+age-keygen -o countscore-backup.key      # prints "Public key: age1..."; keep this file safe
+source scripts/deploy.env
+ssh "$NAS_SSH" "grep -n BACKUP_AGE_RECIPIENT $NAS_DEPLOY_DIR/.env" || echo "not set"
+echo 'BACKUP_AGE_RECIPIENT=age1...' | ssh "$NAS_SSH" "cat >> $NAS_DEPLOY_DIR/.env"
+```
+
+Then deploy (section 3): the recipient must be in the `.env` *before* the new sidecar starts.
+Losing the private key loses every backup; rotating it means older dumps still need the old
+key until they age out (7 days).
 
 ### Changing one variable in place, without a rebuild
 
@@ -87,8 +107,11 @@ cd backend
 ./scripts/deploy_nas.sh
 ```
 
-The script builds the image, pushes it to the registry named by `$REGISTRY`, SSHes to
-`$NAS_SSH`, brings the compose stack up, and runs `alembic upgrade head`. All three come
+The script checks that the NAS `.env` has `BACKUP_AGE_RECIPIENT=age1…`, builds two images
+from `HEAD` — `countscore` (`Dockerfile`) and `countscore-backup` (`Dockerfile.backup`),
+both tagged `<short sha>` and `latest` — pushes them to the registry named by `$REGISTRY`,
+SSHes to `$NAS_SSH`, brings the compose stack up, prints the `db-backup` status and last log
+lines, and runs `alembic upgrade head`. All three come
 from `scripts/deploy.env`; the script exits naming the variable if one is missing.
 
 ## 4. Verify
@@ -120,6 +143,20 @@ credentials for the selected `LLM_PROVIDER`; `upstream LLM rate-limited` (with `
 means the configuration is right but the provider account is out of quota. A `502` is any
 other upstream provider error.
 
+Check the backup sidecar is up, not restarting, and can actually write a dump:
+
+```bash
+NAS_PATH='export PATH=/var/packages/ContainerManager/target/usr/bin:$PATH'
+ssh "$NAS_SSH" "$NAS_PATH; cd $NAS_DEPLOY_DIR && docker compose ps db-backup && \
+  docker compose logs --tail 5 db-backup && \
+  docker compose exec -T db-backup countscore-backup --once && ls -l backups | tail -3"
+```
+
+Expect `encrypting to age1…` in the logs, `backup done: countscore_<ts>.dump.gz.age`, and
+that file in `backups/` with mode `-rw-------`. Prove it decrypts **on the machine holding
+the private key**, never on the NAS:
+`ssh "$NAS_SSH" "cat $NAS_DEPLOY_DIR/backups/<file>" | age -d -i countscore-backup.key | gunzip | pg_restore --list | head`.
+
 Logs: `ssh nas` then `docker logs -f <api-container>`. There is **no monitoring or
 alerting** — logs are all there is.
 
@@ -131,14 +168,24 @@ alerting** — logs are all there is.
 
 **Alembic does not roll back with it.** If the bad deploy applied a migration, downgrade
 deliberately (`alembic downgrade -1`) and only after checking the revision's `downgrade()`
-actually preserves data. When in doubt, restore from the latest `pg_dump` in `/backups`
-instead.
+actually preserves data. When in doubt, restore from the latest dump in `backups/`
+instead — they are age-encrypted, so decrypt with the private key, off the NAS:
+
+```bash
+age -d -i countscore-backup.key countscore_<ts>.dump.gz.age | gunzip | pg_restore -h … -U … -d …
+```
+
+Dumps written before 2026-09-14 are plaintext `countscore_<ts>.sql.gz`:
+`gunzip -c <file> | pg_restore …`.
+
+`--rollback` only retags the `api` image: `db-backup` stays on `countscore-backup:latest`.
+Rolling back to a sha older than encrypted backups still keeps them encrypted.
 
 ## Local development
 
 ```bash
 cd backend
-docker compose up -d          # db + api on :8000 + backup sidecar
+docker compose up -d          # db + api on :8000 + backup sidecar (needs BACKUP_AGE_RECIPIENT in .env)
 EXPOSE_DOCS=true uvicorn app.main:app --reload # or run it directly; docs at /docs
 ```
 The Dockerfile runs one worker and the dev compose file inherits it — the same as production.
@@ -149,6 +196,8 @@ The Dockerfile runs one worker and the dev compose file inherits it — the same
 - [ ] Any new Alembic revision read, not just generated
 - [ ] `.env.example` updated if `app/config.py` gained a setting
 - [ ] `CORS_ORIGINS` correct, never `*`
+- [ ] `BACKUP_AGE_RECIPIENT` set in the NAS `.env` (public key only), and `db-backup` running,
+      not restarting — `countscore-backup --once` wrote a `.dump.gz.age`
 - [ ] `PWA_BASE_PATH` still set in the NAS `.env` if the PWA is published (see `web-deploy`)
 - [ ] Still exactly 1 uvicorn worker in `docker-compose.prod.yml`
 - [ ] `/health` returns ok **and names the intended `llm.provider` and `llm.model`**
