@@ -90,6 +90,28 @@ sleep 5
 ssh "$NAS_SSH" \
     "$NAS_PATH_EXPORT && cd $NAS_DEPLOY_DIR && docker compose ps db-backup && docker compose logs --tail 5 db-backup"
 
+# A pending revision gets its own dump first: --rollback retags the image but never the
+# schema, and the daily dump may be a day old. Taken by the db-backup sidecar (pg_dump 17
+# + age, connection from its PG* env) so it is encrypted like every other dump, and named
+# outside the sidecar's countscore_* retention glob so it is kept. No dump, no upgrade.
+nas_alembic() {
+    ssh "$NAS_SSH" "$NAS_PATH_EXPORT && cd $NAS_DEPLOY_DIR && docker compose exec -T api alembic $1" \
+        2>/dev/null | awk 'NF { r = $1 } END { print r }'
+}
+CURRENT_REV=$(nas_alembic current)
+HEAD_REV=$(nas_alembic heads)
+[[ -n "$HEAD_REV" ]] || { echo "error: could not read alembic heads from the new api container" >&2; exit 1; }
+if [[ "$CURRENT_REV" != "$HEAD_REV" ]]; then
+    DUMP="premigration_$(date -u +%Y%m%d_%H%M%S)_${CURRENT_REV:-base}-to-${HEAD_REV}.dump.gz.age"
+    echo "==> Pending migration ${CURRENT_REV:-base} -> $HEAD_REV: dumping to backups/$DUMP"
+    ssh "$NAS_SSH" "$NAS_PATH_EXPORT && cd $NAS_DEPLOY_DIR && docker compose exec -T db-backup sh -euc '
+        set -o pipefail; umask 077
+        pg_dump -Fc | gzip | age -r \"\$BACKUP_AGE_RECIPIENT\" > /backups/.$DUMP.partial
+        [ -s /backups/.$DUMP.partial ] && mv /backups/.$DUMP.partial /backups/$DUMP'"
+else
+    echo "==> Schema already at $HEAD_REV: no pre-migration dump"
+fi
+
 echo "==> Applying database migrations"
 ssh "$NAS_SSH" \
     "$NAS_PATH_EXPORT && cd $NAS_DEPLOY_DIR && docker compose exec -T api alembic upgrade head"

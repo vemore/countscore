@@ -47,6 +47,10 @@ alembic revision --autogenerate -m "add x"        # create
 alembic check                                     # models == migrated schema (a CI step)
 ```
 
+CI runs `upgrade head`, `downgrade base`, `upgrade head`, `check`, so every `downgrade()` must
+run. In production a pending revision is preceded by an encrypted `premigration_*` dump, and
+that dump — not `downgrade` — is the rollback ([[Deployment]]).
+
 Autogenerate works because `alembic/env.py` imports `app.models` and uses
 `SQLModel.metadata`.
 

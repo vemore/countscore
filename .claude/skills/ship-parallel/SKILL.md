@@ -36,7 +36,8 @@ an explicit request, through `release-android`.
      files → merge them into one pull request, or run them in two waves;
    - a group that needs another's result (a schema, an endpoint) → a later wave, started
      after the first merges. Never a stacked pull request (the hook refuses `--base`).
-   - one pull request stays reviewable: roughly a day of work, one reason to revert.
+   - one pull request stays reviewable: roughly a day of work, one reason to revert, and
+     under the 1 500-line cap §3 checks before merging.
 3. Order the merges: schema and backend first, then app, then docs and listing.
 4. Present the plan in **one** `AskUserQuestion` — for each pull request: branch name, entries,
    likely files, wave, merge order — and wait for the answer. The user's go-ahead covers the
@@ -86,13 +87,19 @@ blocked twice — read why before relaunching.
 
 ## 3. Merge, one pull request at a time
 
-`main` requires an up-to-date branch, three green checks and a linear history
+`main` requires an up-to-date branch, all five CI checks green and a linear history
 (`.llmwiki/ParallelDelivery.md`). So merges are serial. For each pull request, in the planned
 order:
 
 1. `gh pr view <n> --json state,mergeable,mergeStateStatus,headRefName` and read the diff
    (`gh pr diff <n>`) — you are the only reviewer. Check it closes its entries and touches
-   what its report says.
+   what its report says. Then its size, generated, lock and binary files left out:
+   ```bash
+   gh pr view <n> --json files --jq '[.files[] | select(.path | test("\\.g\\.dart$|^lib/l10n/app_localizations.*\\.dart$|^pubspec\\.lock$|^backend/uv\\.lock$|^web/sqlite3\\.wasm$|^web/drift_worker\\.js$") | not) | .additions + .deletions] | add'
+   ```
+   Above **1 500** lines, do not merge without the user's go-ahead: #21 (+6.9 k) needed six
+   fix pull requests the same day. (`files` stops at 100 entries: a pull request that long
+   needs the go-ahead anyway.)
 2. Bring it up to date: `gh api -X PUT repos/{owner}/{repo}/pulls/<n>/update-branch`. (`gh pr update-branch`
    needs gh ≥ 2.49; this machine has 2.45). It merges `main` into the branch on GitHub — no rebase, no force-push, and the agent's worktree stays valid.
 3. If GitHub reports a conflict, resolve it in that pull request's worktree:
@@ -164,3 +171,8 @@ and one local branch per merged pull request.
 - `git worktree list` and `git branch -vv` must then show only `main` and work in flight.
 - Report to the user: each pull request (URL, merged or not), each deploy and its smoke test,
   the entries created on the way, and what is left (`scripts/wip.sh list`).
+- And an **Android** line — how far the Play Store lags production: the last release tag
+  (`git describe --tags --abbrev=0 origin/main`), the commits since
+  (`git rev-list --count <tag>..origin/main`), and the open `wip/todo/` entries
+  (`scripts/wip.sh list todo`). Once `wip/todo/` is empty, propose a `release-android` run
+  (`.llmwiki/Release.md`); run it only when the user asks.

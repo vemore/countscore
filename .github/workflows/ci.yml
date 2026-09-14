@@ -82,13 +82,17 @@ jobs:
       - name: pytest
         run: uv run pytest -v
 
-      # The migrations and the SQLModel models must describe the same schema: migrate
-      # an empty Postgres to head, then let autogenerate compare. Any diff fails, which
-      # is what `alembic revision --autogenerate` would otherwise propose silently.
-      - name: alembic upgrade head && alembic check
+      # Every downgrade() must run, and the migrations and the SQLModel models must
+      # describe the same schema: migrate an empty Postgres up, all the way down and up
+      # again, then let autogenerate compare. Any diff fails, which is what
+      # `alembic revision --autogenerate` would otherwise propose silently. Production has
+      # no staging: this round trip and backend-deploy's pre-migration dump stand in.
+      - name: alembic upgrade, downgrade base, upgrade, check
         env:
           DATABASE_URL: postgresql://cs:pw@localhost:5432/cs
         run: |
+          uv run alembic upgrade head
+          uv run alembic downgrade base
           uv run alembic upgrade head
           uv run alembic check
 

@@ -1,5 +1,9 @@
 # The image and two-device sync checks do not block a merge
 
+**Status:** done (2026-09-14) — closed by chore/merge-safety. Neither job has a path filter
+(checked, kept that way); `.llmwiki/ParallelDelivery.md` and `ship-parallel` §3 now list all
+five checks as required. The orchestrator PATCHes the branch protection once this merges.
+
 - **Noted:** 2026-09-14 — while reviewing the two weeks of work since 2026-09-09
 - **Theme:** merge-safety
 - **Area:** tooling

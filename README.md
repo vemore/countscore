@@ -216,8 +216,9 @@ CI — it calls the production endpoint. See `.llmwiki/Testing.md`.
 `main` and every pull request:
 
 - **Backend** — `ruff check`, `ruff format --check`, `mypy`, `pytest` (integration tests included),
-  `alembic upgrade head && alembic check` on a real Postgres (the models and the migrations
-  must describe the same schema), and a `pip-audit` of every package locked in `backend/uv.lock`.
+  an Alembic round trip on a real Postgres — upgrade, `downgrade base`, upgrade, then
+  `alembic check` (every downgrade runs, and the models and the migrations describe the same
+  schema) — and a `pip-audit` of every package locked in `backend/uv.lock`.
 - **Backend image** — builds `backend/Dockerfile` (dependencies locked to `uv.lock`) and
   checks that the container runs as a non-root user, with no compiler and no dev dependencies.
 - **App** — codegen, `flutter analyze`, `flutter test`, release web build.
