@@ -63,7 +63,8 @@ e2e first (`.llmwiki/Testing.md`) — their failures only surface at runtime.
 scripts/deploy_web.sh
 ```
 
-Outward-facing: it replaces what users load. **Confirm with the user before running it.**
+Outward-facing: it replaces what users load. **Confirm with the user before running it, unless deploying under `ship-parallel`, which
+`CLAUDE.md` already authorises.**
 No container restart is needed — the backend reads the folder on every request.
 
 ## 4. Verify
@@ -107,7 +108,7 @@ PWA folder, but an image older than the PWA mount stops serving it.
 - [ ] `flutter analyze` and `flutter test` green
 - [ ] `--dry-run` passes: base path read from the NAS, no `.md` in the build, both binaries present
 - [ ] Web e2e run if either web binary changed
-- [ ] User confirmed before the real deploy
+- [ ] User confirmed before the real deploy, unless deploying under `ship-parallel`, which `CLAUDE.md` already authorises
 - [ ] `$BASE/` answers 200 with the PWA CSP, `sqlite3.wasm` as `application/wasm`, `/health` still ok
 - [ ] Data survives a reload on the deployed URL
 - [ ] No host, path or URL of the real deployment added to a tracked file

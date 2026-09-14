@@ -38,7 +38,10 @@ an explicit request, through `release-android`.
      after the first merges. Never a stacked pull request (the hook refuses `--base`).
    - one pull request stays reviewable: roughly a day of work, one reason to revert, and
      under the 1 500-line cap §3 checks before merging.
-3. Order the merges: schema and backend first, then app, then docs and listing.
+3. Order the merges: schema and backend first, then app, then docs and listing. A pull request
+   touching `.claude/` (hooks, settings, skills the hooks rely on) merges **last in its wave**,
+   once every agent of that wave has reported: hooks are read from the main checkout, so
+   merging it earlier changes the rules under running agents.
 4. Present the plan in **one** `AskUserQuestion` — for each pull request: branch name, entries,
    likely files, wave, merge order — and wait for the answer. The user's go-ahead covers the
    whole loop below, merges and deploys included.
@@ -104,7 +107,10 @@ order:
    needs gh ≥ 2.49; this machine has 2.45). It merges `main` into the branch on GitHub — no rebase, no force-push, and the agent's worktree stays valid.
 3. If GitHub reports a conflict, resolve it in that pull request's worktree:
    `git -C <worktree> fetch origin && git -C <worktree> merge origin/main`, fix, commit (the
-   hook runs the gates), `git push`. Recipes:
+   hook runs the gates), `git push`. A merge commit is gated only on what differs from `main`,
+   so a worktree set up with `--no-app`/`--no-backend` usually needs no extra install; if the
+   hook asks for one, run the install and `git add` as calls separate from `git commit`.
+   Recipes:
    - **`lib/l10n/*.arb`** — keep the union of the keys, valid JSON, same order as the
      template; then `flutter gen-l10n`. Never hand-merge `app_localizations*.dart`: take either
      side and regenerate.

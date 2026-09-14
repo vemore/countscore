@@ -1,5 +1,7 @@
 # Resolving a merge conflict in an app-only worktree trips the backend gate
 
+**Status:** done (2026-09-14) — closed by fix/hooks-gates. A merge commit is now gated on its diff against `MERGE_HEAD`, the commit hook keeps only `flutter analyze`/`ruff`/`mypy` (tests run in CI), and a missing tool is a refusal naming the setup command to run as its own call; `ship-parallel` §3 and `web-deploy` §3 were aligned.
+
 - **Noted:** 2026-09-14 — merging `main` into `feat/ai-commentary-report` (#38) during `ship-parallel` §3
 - **Theme:** hooks
 - **Area:** tooling

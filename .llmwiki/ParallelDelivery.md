@@ -101,3 +101,8 @@ is never part of the loop: `release-android`, on request.
   checkout's older copies: they judged its `[gone]` branch and refused the worktree's commits.
   Keeping the main checkout on a fast-forwarded `main` means the hooks are always the merged
   ones, and nothing ever commits there.
+- **A pull request touching `.claude/` merges last in its wave (2026-09-14).** The flip side of
+  the previous point: fast-forwarding the main checkout after a merge that changes a hook
+  changes the rules under agents still running. Such a pull request waits until every agent of
+  its wave has reported. Recording the hooks' commit per session and warning on change was
+  rejected as more process for the same result.

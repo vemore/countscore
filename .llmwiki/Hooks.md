@@ -36,7 +36,7 @@ Acknowledge one that reached `main` another way with
 `git config --add countscore.deliveryAcknowledged <number>`.
 
 `parse_command.py` and `arb_keys.py` are helpers, not handlers.
-`scripts/hooks_selftest.sh` exercises all of them, and `scripts/cleanup_local.sh`, from a table of 110 cases and runs as the
+`scripts/hooks_selftest.sh` exercises all of them, and `scripts/cleanup_local.sh`, from a table of 114 cases and runs as the
 first step of the `app` job in `.github/workflows/ci.yml`.
 
 ### What is refused, and on what evidence
@@ -49,7 +49,7 @@ first step of the `app` job in `.github/workflows/ci.yml`.
 | Committing a keystore, `key.properties` or a `.env` | staged path list; `*.template` and `.env.example` pass |
 | Committing on `main`, on a detached HEAD, or on a stale branch | `%(upstream:track)` = `[gone]`, then `git cherry origin/main HEAD`, in the repository the command runs in |
 | Committing a root `TODO.md` or `DONE.md` next to `wip/`, or editing `wip/done/ARCHIVE-*.md` | committed path list; the file exists in the tree / the archive exists in `HEAD`; only in a tree that has `wip/done/` |
-| Committing with red gates | `flutter analyze`, `flutter test` if app paths are involved; `ruff check`/`ruff format --check`/`mypy`/`pytest -m 'not integration'` if `backend/` is |
+| Committing with red gates, or with a gate's tool not installed | `flutter analyze` if app paths are involved; `ruff check`/`ruff format --check`/`mypy` if `backend/` is. No `flutter`, no `.dart_tool` or no `backend/.venv` tools is a refusal naming the setup command, never a skipped gate |
 | Committing divergent ARB files, or a stale `app_localizations*.dart` | key sets against the template from `l10n.yaml`, then `flutter gen-l10n` |
 | Ending a turn with commits that no pull request covers, whose pull request was closed unmerged, or whose checks are failing | `gh pr list --head <branch> --state all`, then `gh pr checks` |
 | `gh pr create --base <anything but main>` | the parsed `--base` argument; unlocked per repository by `countscore.allowStackedPr` |
@@ -61,7 +61,11 @@ The path set that decides which gates run is a union, not `git diff --cached` al
 `git commit -a` stages tracked changes *after* the hook has read the index, so `--cached`
 would report nothing and the filter would conclude "documentation only". `--amend` adds
 `HEAD`'s files, and trailing pathspecs are added too. The gates are project-wide anyway, so
-a superset costs seconds and never blocks wrongly.
+a superset costs seconds and never blocks wrongly. During a merge (`MERGE_HEAD` exists) the
+diffs are taken against `MERGE_HEAD`: what differs from the merged-in `main` — the branch's
+own changes and the resolutions — not everything the merge brings in. A missing tool's
+refusal says to run the install as its own Bash call: the hook judges the whole command line
+before any of it runs, so `install && git commit` never installs.
 
 ### What the hooks do not cover
 
@@ -124,9 +128,15 @@ a superset costs seconds and never blocks wrongly.
   state — and `generate: true` in `pubspec.yaml` already regenerates on `pub get`, `run`,
   `test` and `build`. The commit-time check runs it once and refuses if the committed
   generated files would be stale.
-- **Why the gates are cheap enough to block on.** Measured warm on the development machine:
-  `flutter analyze` 3.2 s, `flutter test` 3.6 s, `ruff` 0.1 s, `mypy` 1.6 s,
-  `pytest -m 'not integration'` 6.7 s.
+- **Fast gates at commit, test suites in CI (2026-09-14).** The commit hook also ran
+  `flutter test` and `pytest -m 'not integration'`: every change paid for its tests twice,
+  at each commit and again in CI, and a merge commit in a half set-up worktree had to install
+  a whole side to land a one-line resolution. The user decided the commit keeps the static
+  checks (`flutter analyze`, `ruff`, `mypy` — seconds, warm) and CI keeps the tests. Nothing
+  goes undelivered red: `require-pull-request.sh` refuses to end a turn while the pull
+  request's checks fail. The same change gated a merge commit on its diff against
+  `MERGE_HEAD`, and turned a missing tool — a `Failed to spawn` lint failure, or a silent
+  skip — into a refusal naming the setup command.
 - **Why a `Stop` hook for the pull request (2026-09-09).** A commit that never becomes a
   pull request is not delivered: nobody reviewed it, CI never ran on it, and it is
   invisible to everyone but the machine that holds it. `Stop` is the only event that fires

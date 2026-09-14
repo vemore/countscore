@@ -239,6 +239,35 @@ out=$(payload "git commit -m x" "$TREE" | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/gua
 report "a new wip/done entry" 0 "$?"
 git -C "$TREE" reset -q HEAD~1 && rm -rf "$TREE/wip"
 
+# Gates: which paths select them, and a missing tool named with its setup command.
+tree_commit() {  # description, expected exit, [text the refusal must contain]
+    local err rc
+    err=$(payload "git commit -m x" "$TREE" | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/guard-bash.sh" 2>&1 >/dev/null)
+    rc=$?
+    [ -n "${3:-}" ] && [[ "$err" != *"$3"* ]] && rc="$rc without '$3'"
+    report "$1" "$2" "$rc"
+}
+mkdir -p "$WORK/backend"
+echo "x = 1" > "$WORK/backend/app.py"
+git -C "$WORK" add backend && git -C "$WORK" commit -qm "backend on main"
+git -C "$WORK" push -q origin main 2>/dev/null
+git -C "$TREE" fetch -q origin 2>/dev/null
+git -C "$TREE" merge -q --no-ff --no-commit origin/main >/dev/null 2>&1
+tree_commit "a merge bringing in backend files runs no backend gate" 0
+echo "x = 2" > "$TREE/backend/app.py" && git -C "$TREE" add backend
+tree_commit "a merge resolution in backend/ without tools" 2 "uv sync --locked --extra dev"
+git -C "$TREE" merge --abort
+mkdir -p "$TREE/backend/.venv/bin"
+printf '#!/bin/sh\nexit 0\n' > "$TREE/backend/.venv/bin/ruff"
+cp "$TREE/backend/.venv/bin/ruff" "$TREE/backend/.venv/bin/mypy"
+chmod +x "$TREE/backend/.venv/bin/"*
+echo "y = 1" > "$TREE/backend/new.py" && git -C "$TREE" add backend/new.py
+tree_commit "a backend change with its tools installed" 0
+git -C "$TREE" rm -q --cached backend/new.py && rm -rf "$TREE/backend"
+mkdir -p "$TREE/lib" && echo "void main() {}" > "$TREE/lib/a.dart" && git -C "$TREE" add lib
+tree_commit "an app change in a tree never set up" 2 "commit again"
+git -C "$TREE" rm -q --cached lib/a.dart && rm -rf "$TREE/lib"
+
 echo "== pull request ==============================================="
 stop_case() {  # description, expected (silent|block), [stop_hook_active]
     local out got

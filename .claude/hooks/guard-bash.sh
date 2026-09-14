@@ -70,8 +70,12 @@ commit_amend=$(printf '%s' "$verdict" | jq -r '.commit.amend')
 # Which files will this commit contain? `git commit -a` stages tracked changes
 # AFTER this hook inspects the index, so --cached alone reports nothing and the
 # filter below would wrongly conclude "documentation only, no gates needed".
-paths=$(git diff --cached --name-only 2>/dev/null)
-[ "$commit_all" = "true" ] && paths="$paths"$'\n'"$(git diff --name-only 2>/dev/null)"
+# A merge commit is judged on what differs from the merged-in branch -- this branch's
+# own changes and the resolutions -- not on everything the merge brings in.
+base=()
+git rev-parse -q --verify MERGE_HEAD >/dev/null 2>&1 && base=(MERGE_HEAD)
+paths=$(git diff --cached --name-only "${base[@]}" 2>/dev/null)
+[ "$commit_all" = "true" ] && paths="$paths"$'\n'"$(git diff --name-only "${base[@]}" 2>/dev/null)"
 if [ "$commit_amend" = "true" ] && git rev-parse --verify -q HEAD >/dev/null; then
     paths="$paths"$'\n'"$(git show --name-only --pretty=format: HEAD 2>/dev/null)"
 fi
@@ -201,6 +205,17 @@ and remove it. See .llmwiki/Web.md."
 fi
 
 # 6. Quality gates ---------------------------------------------------------
+# Only the fast static checks run here; the test suites run in CI, and
+# require-pull-request.sh refuses to finish while those checks are red.
+needs_setup() {  # what is missing, setup command
+    refuse "Refused: $1, so the gates this commit needs cannot run.
+
+Run this as its own Bash call, then commit again:
+    $2
+The hook judges the whole command line before any of it runs, so \`install && git commit\`
+or \`git add ... && git commit\` in one call never gets past this point."
+}
+
 run_gate() {  # name, then the command
     local name="$1"; shift
     local output
@@ -214,29 +229,18 @@ Fix it, then commit again. Reproduce with: $name"
 }
 
 if printf '%s\n' "$paths" | grep -qE '^(lib|test|integration_test)/|^pubspec\.(yaml|lock)$|^analysis_options\.yaml$|^l10n\.yaml$|\.arb$'; then
-    if command -v flutter >/dev/null 2>&1; then
-        run_gate "flutter analyze" flutter analyze
-        run_gate "flutter test" flutter test
-    else
-        echo "note: flutter is not on PATH, the app gates were skipped" >&2
-    fi
+    command -v flutter >/dev/null 2>&1 || needs_setup "flutter is not on PATH" "install Flutter (.llmwiki/MobileApp.md)"
+    [ -d "$ROOT/.dart_tool" ] || needs_setup "this tree has no .dart_tool (never set up)" "scripts/worktree_setup.sh $ROOT"
+    run_gate "flutter analyze" flutter analyze
 fi
 
 if printf '%s\n' "$paths" | grep -qE '^backend/'; then
-    if [ -x "$ROOT/backend/.venv/bin/ruff" ]; then
-        bin="$ROOT/backend/.venv/bin"
-        run_gate "ruff check ." bash -c "cd '$ROOT/backend' && '$bin/ruff' check ."
-        run_gate "ruff format --check ." bash -c "cd '$ROOT/backend' && '$bin/ruff' format --check ."
-        run_gate "mypy" bash -c "cd '$ROOT/backend' && '$bin/mypy'"
-        run_gate "pytest -m 'not integration'" bash -c "cd '$ROOT/backend' && '$bin/pytest' -m 'not integration' -q"
-    elif command -v uv >/dev/null 2>&1; then
-        run_gate "ruff check ." bash -c "cd '$ROOT/backend' && uv run ruff check ."
-        run_gate "ruff format --check ." bash -c "cd '$ROOT/backend' && uv run ruff format --check ."
-        run_gate "mypy" bash -c "cd '$ROOT/backend' && uv run mypy"
-        run_gate "pytest -m 'not integration'" bash -c "cd '$ROOT/backend' && uv run pytest -m 'not integration' -q"
-    else
-        echo "note: neither backend/.venv nor uv is available, the backend gates were skipped" >&2
-    fi
+    bin="$ROOT/backend/.venv/bin"
+    [ -x "$bin/ruff" ] && [ -x "$bin/mypy" ] \
+        || needs_setup "backend/.venv has no ruff or mypy" "(cd $ROOT/backend && uv sync --locked --extra dev)"
+    run_gate "ruff check ." bash -c "cd '$ROOT/backend' && '$bin/ruff' check ."
+    run_gate "ruff format --check ." bash -c "cd '$ROOT/backend' && '$bin/ruff' format --check ."
+    run_gate "mypy" bash -c "cd '$ROOT/backend' && '$bin/mypy'"
 fi
 
 exit 0
