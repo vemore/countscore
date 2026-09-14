@@ -2,7 +2,7 @@
 
 > Scope: production topology and environment. For the procedure, use the `backend-deploy` skill.
 > Related: [[Backend]] · [[Security]] · [[Web]] · [[LlmProviders]]
-> Updated: 2026-09-13
+> Updated: 2026-09-14
 
 ## Facts
 
@@ -21,7 +21,7 @@ proxying to `http://127.0.0.1:8087`. Caddy was removed and is no longer part of 
 |---|---|
 | `api` | FastAPI/uvicorn, **1 worker**. Image from the local NAS registry, `$REGISTRY/countscore:latest`. Port `127.0.0.1:8087:8000`. `--no-proxy-headers`; `X-Real-IP` believed from `TRUSTED_PROXY_IPS` only. |
 | `db` | Postgres 17-alpine, mounted volume. |
-| `db-backup` | Sidecar cron: `pg_dump → /backups`, 7-day rotation. |
+| `db-backup` | Sidecar cron: `pg_dump → /backups`, 7-day rotation. **Unencrypted — see *Backups* below.** |
 
 The single worker is **not** a resource decision: `ip_rate_limiter.py` holds its state in
 process memory, so more than one worker would silently multiply the effective rate limit.
@@ -70,6 +70,34 @@ There is **no deployment path for the Flutter web app** in this repo — no vhos
 hosting config. Only the backend container is covered. See [[Web]].
 
 > **Status: Outdated** (2026-09-13) — the PWA now has one; see *The PWA* below.
+
+### Backups — plain files that let their reader join every group
+
+The `db-backup` sidecar (`docker-compose.prod.yml`, `docker-compose.yml`) runs at 03:00 UTC
+`pg_dump -Fc | gzip` into `./backups` — `$NAS_DEPLOY_DIR/backups` on the NAS — as
+`countscore_<timestamp>.sql.gz`, and deletes files older than 7 days. **Nothing encrypts
+them.** A dump holds the whole database, which includes:
+
+- **every group's `share_token` in clear** (`groups.share_token`). The invite code is the only
+  thing `POST /groups/join` asks for, so anyone holding a backup — the NAS account that can
+  read the folder, a copy on another disk, a cloud sync of `docker/` — can join any group
+  and pull its games. This is the part that turns a backup leak into access.
+- all shared games, rounds, scores, player names, analyses and group comments, and the
+  `change_log` payloads that repeat them;
+- device labels and `last_seen_at`. Device tokens are **not** usable: only their argon2
+  hash (`devices.token_hash`) is stored.
+
+What an operator should do, until the backups are encrypted (`TODO.md`):
+
+- treat `backups/` and every copy of it as a secret, like `.env`. The sidecar sets no
+  `umask`, so the files get the container's default mode; check who else on the NAS can read
+  the folder;
+- after a backup has leaked, rotate the invite code of every group (Settings → Group →
+  *New code*, or `POST /groups/me/rotate-share-token` from one device per group), then
+  re-share it. Rotating invalidates the leaked codes; devices already joined are unaffected.
+
+Despite the `.sql.gz` name the content is `pg_dump`'s **custom format**, gzipped: restore
+with `gunzip -c <file> | pg_restore -h … -U … -d …`, not with `psql`.
 
 ### The PWA — served by the `api` container, deployed by `scripts/deploy_web.sh`
 
@@ -184,6 +212,11 @@ scripts/deploy_web.sh --rollback   # swap pwa/current.prev back
   not here.
 - **Backups are `pg_dump` on a cron sidecar with 7-day rotation**, not a managed service.
   The dataset is small and the recovery story is "copy a file back".
+- **The backups' contents were written down before being encrypted (2026-09-14).** The
+  2026-09-13 security review flagged that they carry every live `share_token`. Documenting it
+  took minutes and tells each self-hosting operator what they are storing; encrypting them
+  (a public key in the sidecar, the private key off the NAS) changes the restore procedure
+  and stays open in `TODO.md`.
 - **`LLM_PROVIDER` defaults to `bedrock` in code**, but production has been run on
   `mistral`; `backend/README.md` describes only the default. Check the actual `.env` on the
   NAS before assuming which provider answered a given request. **This bit (2026-09-09 →

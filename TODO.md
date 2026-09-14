@@ -57,8 +57,12 @@ None of these is exploitable on its own; together they are the usual production 
   a `USER`, and `uv sync --locked --no-dev`.
 - No dependency vulnerability scan anywhere: a `pip-audit` (or `uv` equivalent) step in
   `.github/workflows/ci.yml` and a `.github/dependabot.yml`.
-- The daily backups (`./backups`, plain gzip) hold every live `share_token`: say so in
-  `.llmwiki/Deployment.md`, or encrypt them.
+- The daily backups (`./backups`, plain gzip) hold every live `share_token`. **Documented**
+  on 2026-09-14 (`.llmwiki/Deployment.md`, *Backups*); still to do: encrypt them. Proposal:
+  pipe the dump through `age -r <public key>` in the `db-backup` sidecar (recipient in the
+  NAS `.env`, private key kept off the NAS), name the files `.dump.gz.age`, and rewrite the
+  restore line in `Deployment.md` to `age -d -i <key> | gunzip | pg_restore`. Needs an image
+  that ships `age`, since `postgres:17-alpine` does not.
 
 ## The commit hook ignores git worktrees
 
@@ -83,6 +87,12 @@ commits from a worktree whose branch differs from the main checkout's.
 Hit again on 2026-09-13 by `docs/release-android-skill`. The user asked for a worktree because
 another session held the main checkout. The `release-android` skill now builds every release
 in a worktree, so until this is fixed its §2 tells the reader to run the gates by hand.
+
+Hit again on 2026-09-14 by `docs/backup-share-token-warning`, `chore/backend-dockerfile-hardening`
+and `feat/group-device-list`, worked from `../countscore-wt` while another session held the
+main checkout. The opposite failure this time: the main checkout had nothing staged, so the
+hook read every commit as "documentation only" and ran **no** gate. The gates were run by hand
+in the worktree before each commit.
 
 ## `alembic check` reports drift that predates the sync contract
 
