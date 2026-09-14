@@ -36,6 +36,16 @@
 - `gh` on the development machine is 2.45, which has no `gh pr update-branch`; the REST
   call `gh api -X PUT repos/{owner}/{repo}/pulls/<n>/update-branch` does the same.
 
+### Cleaning up — `scripts/cleanup_local.sh`
+
+Dry run by default, `--apply` to act. A local branch goes when it has no commit ahead of
+`origin/main`, or when `gh pr list --head <branch> --state merged` finds a pull request and
+GitHub's compare of its head against the local tip says `identical` or `behind`. A worktree
+(never the main checkout) goes when `git status --porcelain` is empty and its branch goes, or
+when it is detached on a commit in `origin/main`. Everything else is printed as `keep` with
+the reason. `session-start.sh` points at it whenever a worktree or a `[gone]` branch exists.
+Exercised offline by `scripts/hooks_selftest.sh` through a stubbed `gh`.
+
 ### Work tracking — `wip/`
 
 `wip/todo/` (release in progress), `wip/todo_nr/` (next release), `wip/done/` (closed), one
@@ -77,6 +87,15 @@ is never part of the loop: `release-android`, on request.
 - **`--admin` and pushes to `main` are refused by hook, not by protection.** `enforce_admins`
   is off, so the owner's own token — the one the agents use — could skip every check. The hook
   closes that for Claude without changing what the user can do by hand.
+- **Cleanup became part of the loop (2026-09-14).** The first clean-up, done by hand the day
+  the loop was adopted, found 20 local branches whose pull requests had merged and two stale
+  worktrees. Proving each branch safe took three passes: `git cherry` flags every
+  squash-merged branch as unmerged; comparing against the pull request head fails locally
+  because heads updated on GitHub were never fetched; and `git merge-tree` against `main`
+  reports "changes" that are only older versions of lines since rewritten. GitHub's compare of
+  the merged head against the local tip is the one test that answers the real question —
+  "did every local commit go into what merged?" — so the script uses it, and anything it
+  cannot prove is kept.
 - **The main checkout stays on `main`.** On 2026-09-14 this very change was built in a worktree
   while the main checkout sat on another session's merged branch. The hooks in force were that
   checkout's older copies: they judged its `[gone]` branch and refused the worktree's commits.

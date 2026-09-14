@@ -181,8 +181,9 @@ watch Crashes & ANRs for 48 h before widening.
   ```
 - Update **Submission state** in `.llmwiki/Release.md` (what is live on which track) and its
   `Updated:` date.
-- `git worktree remove ../countscore-release-<version>` once the branch is pushed — it takes
-  the copied `key.properties` with it.
+- Once the release pull request is merged: `scripts/cleanup_local.sh --apply` removes the
+  release worktree (and the `key.properties` link with it) and the local release branch. Run it
+  dry first; a `keep` line means something from the release is not on GitHub yet.
 - Delete the Windows hand-off folder: it holds a signed bundle.
 
 ## Icons — only if the artwork changed

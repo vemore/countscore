@@ -55,13 +55,20 @@ delivery_check() {
 worktrees_report() {
     local lines
     lines=$(git worktree list --porcelain 2>/dev/null | awk -v root="$ROOT" '
-        /^worktree / { path = substr($0, 10) }
-        /^branch /   { if (path != root) print path "\t" substr($0, 19) }')
-    [ -z "$lines" ] && return
-    echo "Other worktrees of this repository (\`git worktree remove <path>\` once merged):"
-    printf '%s\n' "$lines" | while IFS=$'\t' read -r path branch; do
-        echo "  $branch  ->  $path"
-    done
+        /^worktree / { if (p != "" && p != root) print p "\t" b; p = substr($0, 10); b = "(detached)" }
+        /^branch /   { b = substr($0, 19) }
+        END          { if (p != "" && p != root) print p "\t" b }')
+    local gone
+    gone=$(git for-each-ref --format='%(upstream:track)' refs/heads 2>/dev/null | grep -c '^\[gone\]$')
+    [ -z "$lines" ] && [ "${gone:-0}" -eq 0 ] && return
+    if [ -n "$lines" ]; then
+        echo "Other worktrees of this repository:"
+        printf '%s\n' "$lines" | while IFS=$'\t' read -r path branch; do
+            echo "  $branch  ->  $path"
+        done
+    fi
+    [ "${gone:-0}" -gt 0 ] && echo "$gone local branch(es) whose remote branch was deleted."
+    echo "Once no agent is working in them: scripts/cleanup_local.sh (dry run), then --apply."
 }
 
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
@@ -84,8 +91,8 @@ if git rev-parse --verify -q origin/main >/dev/null 2>&1; then
     echo "Branch: $branch (${ahead:-0} ahead, ${behind:-0} behind origin/main)"
     if [ "$branch" = "main" ] || [ -n "$stale" ]; then
         [ -n "$stale" ] && echo "This branch is not safe to commit on -- $stale."
-        echo "Start the session's work on a fresh branch:"
-        echo "  git fetch --prune origin && git switch -c <type>/<short-topic> origin/main"
+        echo "Start the work in its own worktree, on a fresh branch (the main checkout stays on main):"
+        echo "  git fetch --prune origin && git worktree add ../countscore-<topic> -b <type>/<topic> origin/main"
     fi
 fi
 exit 0
