@@ -62,10 +62,6 @@ None of these is exploitable on its own; together they are the usual production 
 > already gone (the ZapZap payload is a schema since `fix/ip-spoofing-zapzap-payload`). What
 > is left below is the infrastructure half.
 
-- `backend/Dockerfile` runs as root, keeps `build-essential` in the final image, and
-  installs from `pyproject.toml` — not from `uv.lock`, which only CI honours
-  (`uv sync --locked`), so production resolves its own dependency set. Multi-stage build,
-  a `USER`, and `uv sync --locked --no-dev`.
 - No dependency vulnerability scan anywhere: a `pip-audit` (or `uv` equivalent) step in
   `.github/workflows/ci.yml` and a `.github/dependabot.yml`.
 - The daily backups (`./backups`, plain gzip) hold every live `share_token`: say so in

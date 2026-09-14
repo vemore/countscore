@@ -2,7 +2,7 @@
 
 > Scope: what is defended, and what is knowingly open.
 > Related: [[Backend]] · [[Api]] · [[LlmProviders]] · [[Deployment]] · [[KnownLimits]]
-> Updated: 2026-09-13
+> Updated: 2026-09-14
 
 ## Facts
 
@@ -28,6 +28,7 @@
 | Revocation | Revoking another device rotates `share_token`, so the revoked device cannot rejoin with the token it learnt when joining. |
 | Sync payload values | Per-entity bounds in `app/services/delta_bounds.py`, enforced before write. |
 | Security headers | `security_headers` middleware in `app/main.py:main`; HSTS behind `HSTS_ENABLED`. API responses get `default-src 'none'`; `/docs` a Swagger CSP, and only exists with `EXPOSE_DOCS=true`; paths under `PWA_BASE_PATH` get `_PWA_CSP` (self, `'wasm-unsafe-eval'`, CanvasKit from `www.gstatic.com`, fonts from `fonts.gstatic.com`, `connect-src 'self' https: wss:`) plus `Cache-Control: no-cache`. |
+| Container | `backend/Dockerfile`: multi-stage, `USER app` (uid 10001), code and venv owned by root, no compiler, dependencies exactly `uv.lock` (`--locked --no-dev`). Checked by the `image` CI job. See [[Deployment]]. |
 | PWA static files | Read-only bind mount; Starlette `StaticFiles` rejects traversal out of `PWA_DIR`; `deploy_web.sh` refuses a build containing any `.md`. |
 | Backups | Daily `pg_dump`, 7-day rotation. |
 

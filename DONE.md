@@ -6,6 +6,22 @@ readable after the fact.
 
 ---
 
+## Backend review (hardening bundle): the Docker image runs as root, unlocked
+
+**Status:** done (2026-09-14) — closed by `chore/backend-dockerfile-hardening`. The
+`Dockerfile` has two stages. The builder runs `uv sync --locked --no-dev --no-install-project`
+with a pinned `uv`. The runtime `python:3.13-slim` holds only that venv and the code, both
+owned by root, with no apt packages, and runs as `USER app` (uid 10001). Size went from
+600 MB to 271 MB. Checked against Postgres 17: `alembic upgrade head`, `/health`, the PWA
+mount, and the compose healthcheck. A new `image` CI job builds it and checks non-root, no
+compiler, no dev dependencies and read-only code. The other two bullets of the bundle (a
+dependency scan, encrypted backups) stay in `TODO.md`.
+
+- `backend/Dockerfile` runs as root, keeps `build-essential` in the final image, and
+  installs from `pyproject.toml` — not from `uv.lock`, which only CI honours
+  (`uv sync --locked`), so production resolves its own dependency set. Multi-stage build,
+  a `USER`, and `uv sync --locked --no-dev`.
+
 ## Backend review: no rate limit on authenticated writes; the raw payload is persisted and replayed
 
 **Status:** done (2026-09-13) — closed by `fix/p1-hardening-quick`. `/sync/push` is limited
