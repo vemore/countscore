@@ -210,7 +210,7 @@ CI — it calls the production endpoint. See `.llmwiki/Testing.md`.
 
 ### Continuous integration
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs these jobs on every push to
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs five jobs on every push to
 `main` and every pull request:
 
 - **Backend** — `ruff check`, `ruff format --check`, `mypy`, `pytest` (integration tests included).
@@ -219,6 +219,7 @@ CI — it calls the production endpoint. See `.llmwiki/Testing.md`.
 - **App** — codegen, `flutter analyze`, `flutter test`, release web build.
 - **Android** — debug APK from a clean checkout, as a fresh-clone build proof, plus an
   assertion that the release manifest still declares `INTERNET`.
+- **Sync** — the backend on a real Postgres, then the two-device group sync test against it.
 
 ### Contributing
 

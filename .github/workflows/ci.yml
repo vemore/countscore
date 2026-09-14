@@ -136,6 +136,93 @@ jobs:
       - name: Build web (release)
         run: flutter build web --release --no-tree-shake-icons
 
+  # The only test that drives the Flutter client against the real server contract:
+  # FastAPI on a real Postgres (LISTEN/NOTIFY, JSONB), migrated by Alembic, two
+  # in-memory devices. Mirrors .llmwiki/Testing.md, "Group sync against a local backend".
+  sync:
+    name: Sync — two devices against a real backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: cs
+          POSTGRES_PASSWORD: pw
+          POSTGRES_DB: cs
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cs -d cs"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+          enable-cache: true
+          cache-dependency-glob: "backend/uv.lock"
+
+      # Runtime dependencies only: uvicorn, alembic and both Postgres drivers are
+      # in [project].dependencies.
+      - name: Install backend dependencies
+        working-directory: backend
+        run: uv sync --locked
+
+      - name: Migrate the database
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://cs:pw@localhost:5432/cs
+        run: uv run alembic upgrade head
+
+      # Every test creates a group and pushes several batches from one address, so
+      # the per-IP group limit (3/min) and the push limit would refuse the suite.
+      - name: Start the backend
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://cs:pw@localhost:5432/cs
+          GROUP_RL_PER_MINUTE: "1000"
+          GROUP_RL_PER_HOUR: "10000"
+          SYNC_PUSH_RL_PER_MINUTE: "1000"
+        run: |
+          nohup uv run uvicorn app.main:app --port 8765 > uvicorn.log 2>&1 &
+          for _ in $(seq 60); do
+            curl -fsS http://127.0.0.1:8765/health && exit 0
+            sleep 1
+          done
+          echo "::error::the backend did not answer /health within 60 s"
+          cat uvicorn.log
+          exit 1
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: flutter pub get
+        run: flutter pub get
+
+      - name: Code generation (drift)
+        run: dart run build_runner build
+
+      # SYNC_TEST_REQUIRED turns the test's skip-without-URL into a failure, so this
+      # job cannot pass green having run nothing.
+      - name: Two-device sync test
+        env:
+          SYNC_BACKEND_URL: http://127.0.0.1:8765
+          SYNC_TEST_REQUIRED: "true"
+        run: flutter test test/sync/sync_two_devices_test.dart
+
+      - name: Backend log
+        if: failure()
+        run: cat backend/uvicorn.log || true
+
   android:
     name: Android debug APK — fresh-clone build proof
     runs-on: ubuntu-latest
