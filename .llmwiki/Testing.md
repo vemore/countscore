@@ -149,7 +149,7 @@ toolchain table in [[MobileApp]] must move together.
 | `image` | `docker build backend` → runs as non-root, no compiler, no dev dependencies, read-only code |
 | `app` | `pub get` → `dart run build_runner build` → `analyze` → `test` → `build web --release` |
 | `android` | `pub get` → `dart run build_runner build` → `build apk --debug` |
-| `sync` | `postgres:17-alpine` service → `uv sync --locked` → `alembic upgrade head` → uvicorn on 8765 (waits on `/health`) → `pub get` → `build_runner build` → `flutter test test/sync/sync_two_devices_test.dart` |
+| `sync` | `postgres:17-alpine` service → `uv sync --locked` → `alembic upgrade head` → `.venv/bin/uvicorn` on 8765 (waits on `/health`; never `uv run`, whose parent process holds the uv cache lock and makes setup-uv's post-job `uv cache prune` time out whenever `uv.lock` changed) → `pub get` → `build_runner build` → `flutter test test/sync/sync_two_devices_test.dart` |
 
 **Codegen comes before analyze, test and every build.** `*.g.dart` is gitignored, so
 `lib/services/drift/database.g.dart` does not exist in a fresh clone; skipping the step

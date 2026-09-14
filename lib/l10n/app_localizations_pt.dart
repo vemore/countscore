@@ -801,4 +801,21 @@ class AppLocalizationsPt extends AppLocalizations {
   String groupDeviceRevoked(String label) {
     return '“$label” foi removido. O código de convite mudou.';
   }
+
+  @override
+  String get reportCommentary => 'Denunciar este comentário';
+
+  @override
+  String get reportCommentarySubject =>
+      'CountScore — denúncia de comentário de IA';
+
+  @override
+  String reportCommentaryBody(String reference, String commentary) {
+    return 'Qual é o problema deste comentário gerado por IA?\n\n\n---\nReferência: $reference\nComentário:\n$commentary';
+  }
+
+  @override
+  String reportCommentaryNoMailApp(String email) {
+    return 'Nenhum app de e-mail encontrado. Escreva para $email para denunciar este comentário.';
+  }
 }

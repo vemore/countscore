@@ -782,4 +782,20 @@ class AppLocalizationsJa extends AppLocalizations {
   String groupDeviceRevoked(String label) {
     return '「$label」を削除しました。招待コードが変更されました。';
   }
+
+  @override
+  String get reportCommentary => 'このコメントを報告';
+
+  @override
+  String get reportCommentarySubject => 'CountScore — AI コメントの報告';
+
+  @override
+  String reportCommentaryBody(String reference, String commentary) {
+    return 'この AI 生成コメントのどこに問題がありますか？\n\n\n---\n参照：$reference\nコメント：\n$commentary';
+  }
+
+  @override
+  String reportCommentaryNoMailApp(String email) {
+    return 'メールアプリが見つかりません。このコメントを報告するには $email までご連絡ください。';
+  }
 }

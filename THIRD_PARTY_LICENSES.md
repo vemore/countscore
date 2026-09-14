@@ -31,6 +31,12 @@ All dependencies use **permissive open-source licenses** (MIT and BSD variants).
 **Repository:** https://github.com/rrousselGit/provider
 **Description:** A wrapper around InheritedWidget for state management
 
+### url_launcher (^6.3.2)
+**License:** BSD-3-Clause
+**Copyright:** Copyright 2013 The Flutter Authors
+**Repository:** https://github.com/flutter/packages/tree/main/packages/url_launcher/url_launcher
+**Description:** Opens URLs — used for the prefilled "Report this commentary" email
+
 ### sqflite (^2.4.1)
 **License:** BSD-2-Clause
 **Copyright:** Copyright (c) 2019 Alexandre Roux Tekartik

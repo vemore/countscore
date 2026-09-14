@@ -21,7 +21,7 @@ proxying to `http://127.0.0.1:8087`. Caddy was removed and is no longer part of 
 |---|---|
 | `api` | FastAPI/uvicorn, **1 worker**. Image from the local NAS registry, `$REGISTRY/countscore:latest`. Port `127.0.0.1:8087:8000`. `--no-proxy-headers`; `X-Real-IP` believed from `TRUSTED_PROXY_IPS` only. |
 | `db` | Postgres 17-alpine, mounted volume. |
-| `db-backup` | Sidecar cron: `pg_dump → /backups`, 7-day rotation. **Unencrypted — see *Backups* below.** |
+| `db-backup` | Sidecar: daily `pg_dump \| gzip \| age` → `/backups/*.dump.gz.age`, 7-day rotation. Image `localhost:5050/countscore-backup:latest` (`backend/Dockerfile.backup`). Refuses to run without `BACKUP_AGE_RECIPIENT` — see *Backups* below. |
 
 The single worker is **not** a resource decision: `ip_rate_limiter.py` holds its state in
 process memory, so more than one worker would silently multiply the effective rate limit.
@@ -60,7 +60,7 @@ uid ≠ 0, no compiler, no pytest, and that the app imports.
 
 ```bash
 cd backend
-./scripts/deploy_nas.sh                    # build → push registry → up → alembic upgrade
+./scripts/deploy_nas.sh                    # check BACKUP_AGE_RECIPIENT → build api + backup images → push → up → alembic upgrade
 ./scripts/deploy_nas.sh --rollback <sha>   # roll back to a git sha
 ```
 
@@ -101,33 +101,67 @@ hosting config. Only the backend container is covered. See [[Web]].
 
 > **Status: Outdated** (2026-09-13) — the PWA now has one; see *The PWA* below.
 
-### Backups — plain files that let their reader join every group
+### Backups — age-encrypted, and refused without a key
 
-The `db-backup` sidecar (`docker-compose.prod.yml`, `docker-compose.yml`) runs at 03:00 UTC
-`pg_dump -Fc | gzip` into `./backups` — `$NAS_DEPLOY_DIR/backups` on the NAS — as
-`countscore_<timestamp>.sql.gz`, and deletes files older than 7 days. **Nothing encrypts
-them.** A dump holds the whole database, which includes:
+The `db-backup` sidecar (`docker-compose.prod.yml`, `docker-compose.yml`) runs
+`backend/backup/countscore-backup.sh`, baked into its own image, `backend/Dockerfile.backup`
+(`postgres:17-alpine3.23` plus Alpine's `age~1.2`; `postgres:17-alpine` has no `age`). In
+production the image is `localhost:5050/countscore-backup:latest`, built and pushed by
+`deploy_nas.sh` next to the api image and tagged with the same short sha; the dev compose file
+builds it. It runs as `1027:100` in production, as before.
 
-- **every group's `share_token` in clear** (`groups.share_token`). The invite code is the only
-  thing `POST /groups/join` asks for, so anyone holding a backup — the NAS account that can
-  read the folder, a copy on another disk, a cloud sync of `docker/` — can join any group
-  and pull its games. This is the part that turns a backup leak into access.
-- all shared games, rounds, scores, player names, analyses and group comments, and the
-  `change_log` payloads that repeat them;
-- device labels and `last_seen_at`. Device tokens are **not** usable: only their argon2
-  hash (`devices.token_hash`) is stored.
+Every day at 03:00 UTC (`BACKUP_AT_SECONDS`, default `10800`) it writes
+`pg_dump -Fc | gzip | age -r "$BACKUP_AGE_RECIPIENT"` into `./backups` —
+`$NAS_DEPLOY_DIR/backups` on the NAS — as `countscore_<UTC timestamp>.dump.gz.age`, mode
+`0600` (`umask 077`). Guarantees, each covered by `backend/tests/test_backup_script.py`
+against stub `pg_dump`/`age`:
 
-What an operator should do, until the backups are encrypted (`wip/todo/2026-09-13-encrypt-backups.md`):
+- **No recipient, no dump.** An empty `BACKUP_AGE_RECIPIENT`, or one `age` rejects, makes the
+  script exit non-zero *at container start* — the container restart-loops with the reason in
+  `docker compose logs db-backup` — and refuse each run. There is no plaintext fallback.
+- **No truncated file.** The pipe runs under `set -o pipefail` into a hidden
+  `.countscore_<ts>.dump.gz.age.partial`, renamed into place only when all three stages
+  succeed and the file is non-empty; otherwise it is deleted and the run logs `backup FAILED`.
+  A failed run never stops the loop: the next attempt is the next day.
+- **Retention.** Files older than 7 days (`BACKUP_RETENTION_DAYS`) are deleted, matching
+  `countscore_*.dump.gz.age` and the plaintext `countscore_*.sql.gz` / `countscore_*.dump.gz`
+  written before encryption, so the last plaintext dumps on the NAS age out by themselves a
+  week after the first encrypted deploy. The sweep runs after the rename, with `-exec rm`
+  (Ubuntu's BusyBox `find` has no `-delete`); a failed sweep is logged, not a failed backup.
+- `docker compose stop` is immediate: the script traps `TERM` and sleeps in the background.
+- `countscore-backup --once` takes one backup now and exits:
+  `docker compose exec db-backup countscore-backup --once`.
 
-- treat `backups/` and every copy of it as a secret, like `.env`. The sidecar sets no
-  `umask`, so the files get the container's default mode; check who else on the NAS can read
-  the folder;
-- after a backup has leaked, rotate the invite code of every group (Settings → Group →
-  *New code*, or `POST /groups/me/rotate-share-token` from one device per group), then
-  re-share it. Rotating invalidates the leaked codes; devices already joined are unaffected.
+The connection comes from libpq's variables, which the compose file sets from the
+`POSTGRES_*` values: `PGHOST=db`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`.
 
-Despite the `.sql.gz` name the content is `pg_dump`'s **custom format**, gzipped: restore
-with `gunzip -c <file> | pg_restore -h … -U … -d …`, not with `psql`.
+**The key pair.** Only the public key (`age1…`) is on the server, in the NAS `.env`. The
+private key (`AGE-SECRET-KEY-…`) is generated and kept off the NAS
+(`age-keygen -o countscore-backup.key`); without it the backups cannot be read by anyone,
+the operator included. `deploy_nas.sh` refuses to deploy when the NAS `.env` has no
+`BACKUP_AGE_RECIPIENT=age1…` line.
+
+**Restore**, on the machine holding the private key (the content is `pg_dump`'s custom
+format, so `pg_restore`, not `psql`):
+
+```bash
+age -d -i countscore-backup.key countscore_<ts>.dump.gz.age | gunzip | pg_restore -h … -U … -d …
+```
+
+A dump still holds the whole database — every group's `share_token` in clear, all shared
+games, rounds, scores, player names, analyses and comments, the `change_log` payloads, device
+labels and `last_seen_at` (device tokens only as argon2 hashes). Encryption moves the secret
+from the backup files to the private key: **a leaked private key is a leaked backup.** Then
+rotate every group's invite code (Settings → Group → *New code*, or
+`POST /groups/me/rotate-share-token` from one device per group) and re-share it; devices
+already joined are unaffected.
+
+> **Status: Outdated** (2026-09-14) — until `feat/encrypted-backups` this section was titled
+> *Backups — plain files that let their reader join every group*: the sidecar ran an inline
+> `sh -c` loop on `postgres:17-alpine`, writing unencrypted `countscore_<ts>.sql.gz` with no
+> `umask` and no temp file, restored with `gunzip -c <file> | pg_restore`. Its loop compared
+> the time with `-le`, so a dump failing within its first second would have run again for
+> the rest of that second; the script uses `-lt`.
 
 ### The PWA — served by the `api` container, deployed by `scripts/deploy_web.sh`
 
@@ -186,6 +220,7 @@ scripts/deploy_web.sh --rollback   # swap pwa/current.prev back
 | `PWA_DIR` | Build folder inside the container. Compose pins it to `/srv/pwa/current` | `/srv/pwa/current` |
 | `LOG_LEVEL` | | — |
 | `TRUSTED_PROXY_IPS` | Proxy addresses (CSV) whose `X-Real-IP` / `X-Forwarded-Proto` the app believes | `172.28.87.1` in prod compose, empty elsewhere |
+| `BACKUP_AGE_RECIPIENT` | `db-backup` only: the age public key (`age1…`) every dump is encrypted to. Unset = the sidecar refuses to run and `deploy_nas.sh` refuses to deploy. Never the private key | required |
 
 ## Decisions & History
 
@@ -248,13 +283,23 @@ scripts/deploy_web.sh --rollback   # swap pwa/current.prev back
   uid 10001 is outside the range a NAS or desktop hands to real accounts, so a host file
   that happens to match it is unlikely. It does not need to match the NAS user: the container
   writes nothing to a bind mount.
+- **Backups are encrypted with age to a public key, and refused without one (2026-09-14).**
+  Closed `wip/done/2026-09-13-encrypt-backups.md`. age over gpg: one static binary in Alpine,
+  a one-line recipient, no keyring or trust model to get wrong on a NAS. Asymmetric over a
+  passphrase: the server that writes the dumps never holds what decrypts them, so reading the
+  NAS is no longer reading every group. Refusal over a plaintext fallback: a silent fallback
+  is the state being fixed, and a restart-looping container is visible where a missing
+  variable is not. The loop moved from an inline compose `command` into a script so the
+  refusal and the no-truncated-file rule could be tested without Postgres. The gzip stage is
+  kept (custom format already compresses) so the restore line stays the obvious one.
 - **Backups are `pg_dump` on a cron sidecar with 7-day rotation**, not a managed service.
   The dataset is small and the recovery story is "copy a file back".
 - **The backups' contents were written down before being encrypted (2026-09-14).** The
   2026-09-13 security review flagged that they carry every live `share_token`. Documenting it
   took minutes and tells each self-hosting operator what they are storing; encrypting them
   (a public key in the sidecar, the private key off the NAS) changes the restore procedure
-  and stays open in `wip/todo/2026-09-13-encrypt-backups.md`.
+  and stayed open in `wip/done/2026-09-13-encrypt-backups.md` until `feat/encrypted-backups`
+  closed it the same day (above).
 - **`LLM_PROVIDER` defaults to `bedrock` in code**, but production has been run on
   `mistral`; `backend/README.md` describes only the default. Check the actual `.env` on the
   NAS before assuming which provider answered a given request. **This bit (2026-09-09 →

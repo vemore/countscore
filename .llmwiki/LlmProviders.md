@@ -2,7 +2,7 @@
 
 > Scope: both LLM paths — Claude for short comments, a pluggable provider for ZapZap.
 > Related: [[Api]] · [[Backend]] · [[Security]] · [[MobileApp]] · [[Deployment]]
-> Updated: 2026-09-13
+> Updated: 2026-09-14
 
 ## Facts
 
@@ -101,6 +101,20 @@ status alone (`analysisErrorStatus`) and sends the body to `debugPrint`, never t
 failure with an analysis already on screen is a snackbar, not the error state — the cached
 text is local data a failed refresh never touched.
 
+**Reporting a commentary** (Play AI-Generated Content policy, [[Release]]): the flag action
+in the analysis app bar (`Key('analysis_report')`, `reportCommentary`) is enabled whenever
+an analysis is on screen, including a cached one with no server configured. It opens a
+`mailto:` to the listing contact `scribio.ai@gmail.com` (`PUBLISHING.md`) through
+`url_launcher`, prefilled with `reportCommentarySubject` and `reportCommentaryBody`: a blank
+area for the user, then a reference (local analysis id · model · generation time) and the
+commentary truncated to `1500` code points. The URI is built by
+`buildCommentaryReportUri` in `lib/services/commentary_report.dart`, with
+`Uri.encodeComponent` rather than `queryParameters`, which would turn spaces into `+`. When
+nothing handles the `mailto:` the screen shows `reportCommentaryNoMailApp`, which names the
+address. Android 11+ package visibility needs the `SENDTO`/`mailto` `<queries>` entry in
+`android/app/src/main/AndroidManifest.xml`. The app sends nothing itself — the user sends
+the email from their own mail app — so this is not an outbound data flow.
+
 ### Rate limiting and budget
 
 - Device: 6/min, 30/h, 100/day (`RL_PER_*`). Sliding window in the `rate_limits` table,
@@ -120,6 +134,13 @@ text is local data a failed refresh never touched.
 5. Light output guardrail: warn if tokens > 500 or suspicious markers appear.
 
 ## Decisions & History
+
+- **The report control is an email, not an endpoint (2026-09-14).** A
+  `POST /comments/{id}/report` would be a new outbound flow — three privacy documents and a
+  data-safety change — and the server keeps no copy of an analysis to attach a report to
+  anyway. A prefilled `mailto:` satisfies the policy's "report from inside the app" with
+  nothing leaving the device unless the user sends it. The reference quotes the *local*
+  analysis id because no server id exists; model and timestamp are what make it useful.
 
 - **Switching provider is a configuration change, not a code change.** `LLM_PROVIDER` picks
   between `bedrock`, `gemini` and `mistral` at first use; `docker-compose.prod.yml` passes

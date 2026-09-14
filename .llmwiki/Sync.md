@@ -83,8 +83,8 @@ asks, then leaves.
 `GET /groups/me/devices` and offers a revoke on every device but this one — this one leaves
 instead. `GroupProvider.revokeDevice` stores the rotated `share_token` the server returns, so
 the section shows the new invite code at once. The revoked device learns of it on its next
-request: a 401, shown as `SyncStatus.unauthorized` (its open stream closes at the next idle
-heartbeat — see *WebSocket*). Its local copies of the games stay where they are.
+request: a 401, shown as `SyncStatus.unauthorized` (its open stream closes with 1008 at the
+next push to the group or the next idle heartbeat, whichever comes first — see *WebSocket*). Its local copies of the games stay where they are.
 
 **Sharing is per game.** On by default for a new game while in a group (switch on the
 create screen), or later from the board menu; never undone. `SyncStore.shareGame` sets
@@ -185,8 +185,11 @@ handshake is accepted, so the long-lived credential never reaches a URL and an
 unauthenticated peer gets nothing but a 1008 close.
 
 The server pushes exactly `{"type": "new_seq", "server_seq": N}`; the client reacts by
-calling `/sync/pull`. Every 30 s of silence it sends `{"type": "ping"}` and re-checks that
-the device is still not revoked, closing the stream if it is. No server-side buffer, so
+calling `/sync/pull`. Every 30 s of silence it sends `{"type": "ping"}`. Before every frame —
+`new_seq` or `ping` — it re-checks that the device is still not revoked (one primary-key read,
+`_is_revoked`) and closes the stream with 1008 if it is, so a revoked device gives its
+`MAX_STREAMS_PER_DEVICE` slot back at the group's next push. Until 2026-09-14 the check ran
+on the idle heartbeat only, which a busy group never reaches. No server-side buffer, so
 reconnection is safe — fetch a fresh ticket, then reconnect. Backoff is exponential 1s, 2s,
 4s … capped at 60s; on reconnect `since_seq` recovers whatever was missed.
 

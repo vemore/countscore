@@ -1487,6 +1487,30 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'« {label} » a été exclu. Le code d\'invitation a changé.'**
   String groupDeviceRevoked(String label);
+
+  /// App bar action on the AI analysis screen that opens an email to report offensive or wrong generated content (Play AI-Generated Content policy)
+  ///
+  /// In fr, this message translates to:
+  /// **'Signaler ce commentaire'**
+  String get reportCommentary;
+
+  /// Subject of the prefilled report email for an AI commentary
+  ///
+  /// In fr, this message translates to:
+  /// **'CountScore — signalement d\'un commentaire IA'**
+  String get reportCommentarySubject;
+
+  /// Body of the prefilled report email. The blank lines are where the user writes; reference and commentary are filled in by the app
+  ///
+  /// In fr, this message translates to:
+  /// **'Qu\'est-ce qui pose problème dans ce commentaire généré par IA ?\n\n\n---\nRéférence : {reference}\nCommentaire :\n{commentary}'**
+  String reportCommentaryBody(String reference, String commentary);
+
+  /// Snackbar when no email app can open the report email
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune application e-mail trouvée. Écrivez à {email} pour signaler ce commentaire.'**
+  String reportCommentaryNoMailApp(String email);
 }
 
 class _AppLocalizationsDelegate

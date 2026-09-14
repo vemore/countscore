@@ -805,4 +805,20 @@ class AppLocalizationsRu extends AppLocalizations {
   String groupDeviceRevoked(String label) {
     return '«$label» исключено. Код приглашения изменён.';
   }
+
+  @override
+  String get reportCommentary => 'Пожаловаться на комментарий';
+
+  @override
+  String get reportCommentarySubject => 'CountScore — жалоба на комментарий ИИ';
+
+  @override
+  String reportCommentaryBody(String reference, String commentary) {
+    return 'Что не так с этим комментарием, созданным ИИ?\n\n\n---\nСсылка: $reference\nКомментарий:\n$commentary';
+  }
+
+  @override
+  String reportCommentaryNoMailApp(String email) {
+    return 'Почтовое приложение не найдено. Напишите на $email, чтобы пожаловаться на этот комментарий.';
+  }
 }

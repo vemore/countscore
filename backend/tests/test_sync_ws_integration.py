@@ -338,3 +338,56 @@ async def test_streams_share_one_listen_connection(pg_client, pg_engine):
             assert msg == {"type": "new_seq", "server_seq": seq}
         with pytest.raises(TimeoutError):
             await asyncio.wait_for(a.receive_text(), timeout=1.0)
+
+
+async def test_a_device_revoked_while_its_group_pushes_loses_its_stream(pg_client):
+    """Revocation used to be re-checked only after 30 s without a signal, so a busy group
+    kept the revoked device's stream — and its MAX_STREAMS_PER_DEVICE slot — alive."""
+    from fastapi import status
+    from httpx_ws import WebSocketDisconnect, aconnect_ws  # type: ignore[import]
+
+    from app.routes import sync as sync_route
+
+    r = await pg_client.post(
+        "/groups", json={"name": f"revoke-{uuid.uuid4().hex[:8]}", "device_label": "A"}
+    )
+    created = r.json()
+    alice = {"Authorization": f"Bearer {created['device']['token']}"}
+    r = await pg_client.post(
+        "/groups/join",
+        json={"share_token": created["group"]["share_token"], "device_label": "B"},
+    )
+    bob = r.json()["device"]
+    bob_id = uuid.UUID(bob["id"])
+
+    def delta(lamport: int) -> dict:
+        return {
+            "entity_type": "player",
+            "entity_uuid": str(uuid.uuid4()),
+            "op": "upsert",
+            "payload": {"name": f"P{lamport}", "name_normalized": f"p{lamport}"},
+            "client_lamport": lamport,
+        }
+
+    async with aconnect_ws(await _ws_url(pg_client, bob["token"]), pg_client) as ws:
+        push = await pg_client.post("/sync/push", json={"deltas": [delta(1)]}, headers=alice)
+        assert push.status_code == 200, push.text
+        msg = json.loads(await asyncio.wait_for(ws.receive_text(), timeout=5.0))
+        assert msg["type"] == "new_seq"
+
+        r = await pg_client.post(f"/groups/me/devices/{bob_id}/revoke", headers=alice)
+        assert r.status_code == 200, r.text
+
+        push = await pg_client.post("/sync/push", json={"deltas": [delta(2)]}, headers=alice)
+        assert push.status_code == 200, push.text
+        # Well under the 30 s idle heartbeat: the signal itself must close the stream.
+        with pytest.raises(WebSocketDisconnect) as closed:
+            await asyncio.wait_for(ws.receive_text(), timeout=5.0)
+        assert closed.value.code == status.WS_1008_POLICY_VIOLATION
+
+    # The slot is given back once the handler has unwound.
+    for _ in range(50):
+        if bob_id not in sync_route._open_streams:
+            break
+        await asyncio.sleep(0.05)
+    assert bob_id not in sync_route._open_streams

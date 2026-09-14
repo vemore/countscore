@@ -219,6 +219,10 @@ jobs:
 
       # Every test creates a group and pushes several batches from one address, so
       # the per-IP group limit (3/min) and the push limit would refuse the suite.
+      # The venv's uvicorn, not `uv run uvicorn`: a `uv run` parent stays alive with the
+      # server and holds the uv cache lock, so setup-uv's post-job `uv cache prune --ci`
+      # (run whenever uv.lock changed and the cache is re-saved) waited 300 s and failed
+      # the job. The server is also stopped explicitly in the last step.
       - name: Start the backend
         working-directory: backend
         env:
@@ -227,7 +231,8 @@ jobs:
           GROUP_RL_PER_HOUR: "10000"
           SYNC_PUSH_RL_PER_MINUTE: "1000"
         run: |
-          nohup uv run uvicorn app.main:app --port 8765 > uvicorn.log 2>&1 &
+          nohup .venv/bin/uvicorn app.main:app --port 8765 > uvicorn.log 2>&1 &
+          echo $! > uvicorn.pid
           for _ in $(seq 60); do
             curl -fsS http://127.0.0.1:8765/health && exit 0
             sleep 1
@@ -260,6 +265,10 @@ jobs:
       - name: Backend log
         if: failure()
         run: cat backend/uvicorn.log || true
+
+      - name: Stop the backend
+        if: always()
+        run: kill "$(cat backend/uvicorn.pid)" 2>/dev/null || true
 
   android:
     name: Android debug APK — fresh-clone build proof
