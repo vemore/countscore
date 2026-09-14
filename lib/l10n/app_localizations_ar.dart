@@ -805,4 +805,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String groupDeviceRevoked(String label) {
     return 'تمت إزالة «$label». تغيّر رمز الدعوة.';
   }
+
+  @override
+  String get reportCommentary => 'الإبلاغ عن هذا التعليق';
+
+  @override
+  String get reportCommentarySubject =>
+      'CountScore — بلاغ عن تعليق ذكاء اصطناعي';
+
+  @override
+  String reportCommentaryBody(String reference, String commentary) {
+    return 'ما المشكلة في هذا التعليق المُنشأ بالذكاء الاصطناعي؟\n\n\n---\nالمرجع: $reference\nالتعليق:\n$commentary';
+  }
+
+  @override
+  String reportCommentaryNoMailApp(String email) {
+    return 'لم يتم العثور على تطبيق بريد إلكتروني. راسلنا على $email للإبلاغ عن هذا التعليق.';
+  }
 }

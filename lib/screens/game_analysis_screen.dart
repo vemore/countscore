@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/game_analysis.dart';
@@ -14,18 +15,28 @@ import '../providers/game_type_provider.dart';
 import '../repositories/drift/drift_repositories.dart';
 import '../repositories/game_analysis_repository.dart';
 import '../services/backend_client.dart';
+import '../services/commentary_report.dart';
 import '../services/drift/database.dart';
 import 'settings_screen.dart';
 
 class GameAnalysisScreen extends StatefulWidget {
   // Public so it stays usable as an injection seam from outside this library.
-  const GameAnalysisScreen({super.key, this.repository, this.httpClient});
+  const GameAnalysisScreen({
+    super.key,
+    this.repository,
+    this.httpClient,
+    this.launcher,
+  });
 
   final GameAnalysisRepository? repository;
 
   /// Injection seam for tests, exactly like [repository]: the screen otherwise
   /// builds its own client. The app never passes one.
   final http.Client? httpClient;
+
+  /// Injection seam for tests: opens the report `mailto:` and answers whether
+  /// something handled it. Defaults to url_launcher's [launchUrl].
+  final Future<bool> Function(Uri uri)? launcher;
 
   @override
   State<GameAnalysisScreen> createState() => _GameAnalysisScreenState();
@@ -40,6 +51,7 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
   String? _error;
   DateTime? _generatedAt;
   String? _modelId;
+  int? _analysisId;
 
   @override
   void initState() {
@@ -60,6 +72,7 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
       _analysisText = saved.content;
       _generatedAt = saved.generatedAt;
       _modelId = saved.modelId;
+      _analysisId = saved.id;
     });
   }
 
@@ -135,12 +148,17 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
         generatedAt: now,
       ));
 
+      // Re-read rather than trust upsert's return value: it is the new row id
+      // on insert but the affected-row count on update.
+      final analysisId = (await _repo.getByGame(game.id!))?.id;
+
       if (!mounted) return;
       setState(() {
         _isLoading = false;
         _analysisText = text;
         _generatedAt = now;
         _modelId = modelId;
+        _analysisId = analysisId;
         _error = null;
       });
     } on TimeoutException {
@@ -182,6 +200,37 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
       content: Text(message),
       backgroundColor: Theme.of(context).colorScheme.error,
     ));
+  }
+
+  /// Opens a prefilled email reporting the commentary on screen. The user sends
+  /// it from their own mail app; the app itself transmits nothing.
+  Future<void> _report() async {
+    final text = _analysisText;
+    if (text == null) return;
+    final l10n = AppLocalizations.of(context)!;
+    final uri = buildCommentaryReportUri(
+      subject: l10n.reportCommentarySubject,
+      body: l10n.reportCommentaryBody(
+        commentaryReportReference(
+          analysisId: _analysisId,
+          modelId: _modelId,
+          generatedAt: _generatedAt,
+        ),
+        truncateForReport(text),
+      ),
+    );
+    final messenger = ScaffoldMessenger.of(context);
+    final noMailApp = l10n.reportCommentaryNoMailApp(commentaryReportEmail);
+
+    bool opened;
+    try {
+      opened = await (widget.launcher ?? launchUrl)(uri);
+    } catch (e) {
+      debugPrint('commentary report: no handler for mailto: $e');
+      opened = false;
+    }
+    if (opened || !mounted) return;
+    messenger.showSnackBar(SnackBar(content: Text(noMailApp)));
   }
 
   Future<void> _regenerate() async {
@@ -238,6 +287,7 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
       _analysisText = null;
       _generatedAt = null;
       _modelId = null;
+      _analysisId = null;
       _error = null;
     });
   }
@@ -254,6 +304,12 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
       appBar: AppBar(
         title: Text(l10n.analysisTitle),
         actions: [
+          IconButton(
+            key: const Key('analysis_report'),
+            icon: const Icon(Icons.flag_outlined),
+            tooltip: l10n.reportCommentary,
+            onPressed: hasContent && !_isLoading ? _report : null,
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: l10n.regenerateAnalysis,

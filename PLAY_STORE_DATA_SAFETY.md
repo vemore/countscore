@@ -88,6 +88,15 @@ server already stored both dates. The recipients are the devices of the group th
 to join — the same audience that already receives the shared games — so the answers below are
 unchanged.
 
+### Report control for AI commentary (September 14, 2026)
+
+The analysis screen's **Report this commentary** action (Play AI-Generated Content policy)
+opens a `mailto:` to the listing contact in the **user's own email app**, prefilled with the
+analysis text, its model id and generation time. The app makes no network request for it and
+receives nothing back; the user reviews the message and sends it — or not — from another app.
+Data a user chooses to send by email from a separate app is not collected *by this app*, so
+nothing in the form below changes.
+
 ### ZapZap analysis
 
 The ZapZap analysis feature (`lib/screens/game_analysis_screen.dart`, issuing the request via

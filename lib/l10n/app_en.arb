@@ -483,5 +483,13 @@
   "groupDeviceLastSeen": "Last seen {date}",
   "groupDeviceRevoke": "Remove",
   "groupDeviceRevokeConfirm": "Remove “{label}” from the group? It will no longer sync. The invite code changes too: members keep their access, but you will need to share the new code to invite anyone.",
-  "groupDeviceRevoked": "“{label}” was removed. The invite code has changed."
+  "groupDeviceRevoked": "“{label}” was removed. The invite code has changed.",
+
+  "reportCommentary": "Report this commentary",
+
+  "reportCommentarySubject": "CountScore — AI commentary report",
+
+  "reportCommentaryBody": "What is wrong with this AI-generated commentary?\n\n\n---\nReference: {reference}\nCommentary:\n{commentary}",
+
+  "reportCommentaryNoMailApp": "No email app found. Write to {email} to report this commentary."
 }

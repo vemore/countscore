@@ -773,4 +773,20 @@ class AppLocalizationsZh extends AppLocalizations {
   String groupDeviceRevoked(String label) {
     return '已移除“$label”。邀请码已更换。';
   }
+
+  @override
+  String get reportCommentary => '举报此评论';
+
+  @override
+  String get reportCommentarySubject => 'CountScore — 举报 AI 评论';
+
+  @override
+  String reportCommentaryBody(String reference, String commentary) {
+    return '这条 AI 生成的评论有什么问题？\n\n\n---\n参考：$reference\n评论：\n$commentary';
+  }
+
+  @override
+  String reportCommentaryNoMailApp(String email) {
+    return '未找到电子邮件应用。请发送邮件至 $email 举报此评论。';
+  }
 }

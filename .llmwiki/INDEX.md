@@ -30,7 +30,7 @@ Load this file first. Then read only the pages your task touches.
 | [[MobileApp]] | `lib/` layout, providers, screens, the dynamic-icon constraint | 2026-09-14 |
 | [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-09-13 |
 | [[SchemaV10]] | Schema v11: the twelve tables, sync bookkeeping and capture triggers, tombstones, the migration chain | 2026-09-13 |
-| [[I18n]] | 10 languages × 229 keys, French template, English fallback | 2026-09-14 |
+| [[I18n]] | 10 languages × 233 keys, French template, English fallback | 2026-09-14 |
 | [[Web]] | PWA specifics: sqlite3.wasm, OPFS, committed binaries, `kIsWeb` guards, base href | 2026-09-13 |
 
 ## Backend (FastAPI)
@@ -40,7 +40,7 @@ Load this file first. Then read only the pages your task touches.
 | [[Backend]] | Stack, module layout, settings, device-token auth | 2026-09-13 |
 | [[Api]] | Every endpoint, its auth requirement and its failure modes | 2026-09-14 |
 | [[Sync]] | Delta-log + row-level LWW, the Flutter client (triggers, push/pull, conflicts), WebSocket | 2026-09-14 |
-| [[LlmProviders]] | ZapZap prompt, the pluggable provider factory, the separate Claude path | 2026-09-13 |
+| [[LlmProviders]] | ZapZap prompt, the pluggable provider factory, the separate Claude path, the report control | 2026-09-14 |
 
 ## Operations
 
@@ -51,7 +51,7 @@ Load this file first. Then read only the pages your task touches.
 | [[ParallelDelivery]] | Worktrees, one PR per theme, serial squash merges, deploy after each merge, `wip/` tracking | 2026-09-14 |
 | [[Security]] | Defended surfaces, and the security debt that is knowingly open | 2026-09-14 |
 | [[Testing]] | Unit, Drift, migration, e2e web and device; backend pytest | 2026-09-13 |
-| [[Release]] | Play Store signing state, target API, 2026 Play policy constraints | 2026-09-13 |
+| [[Release]] | Play Store signing state, target API, 2026 Play policy constraints | 2026-09-14 |
 
 ## Procedures live in skills, not here
 

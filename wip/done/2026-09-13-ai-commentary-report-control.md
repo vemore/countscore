@@ -1,5 +1,7 @@
 # No in-app report control for AI-generated commentary
 
+**Status:** done (2026-09-14) — closed by feat/ai-commentary-report. The analysis app bar has a "Report this commentary" action opening a prefilled `mailto:` to the listing contact via `url_launcher` (`lib/services/commentary_report.dart`); privacy documents note the user-sent email, and `.llmwiki/Release.md` marks the policy row met.
+
 - **Noted:** 2026-09-13 — while checking current Play policy for the release skill
 - **Theme:** ai-report
 - **Area:** app

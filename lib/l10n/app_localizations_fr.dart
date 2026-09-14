@@ -799,4 +799,21 @@ class AppLocalizationsFr extends AppLocalizations {
   String groupDeviceRevoked(String label) {
     return '« $label » a été exclu. Le code d\'invitation a changé.';
   }
+
+  @override
+  String get reportCommentary => 'Signaler ce commentaire';
+
+  @override
+  String get reportCommentarySubject =>
+      'CountScore — signalement d\'un commentaire IA';
+
+  @override
+  String reportCommentaryBody(String reference, String commentary) {
+    return 'Qu\'est-ce qui pose problème dans ce commentaire généré par IA ?\n\n\n---\nRéférence : $reference\nCommentaire :\n$commentary';
+  }
+
+  @override
+  String reportCommentaryNoMailApp(String email) {
+    return 'Aucune application e-mail trouvée. Écrivez à $email pour signaler ce commentaire.';
+  }
 }

@@ -410,5 +410,13 @@
   "groupDeviceLastSeen": "Zuletzt gesehen: {date}",
   "groupDeviceRevoke": "Entfernen",
   "groupDeviceRevokeConfirm": "„{label}“ aus der Gruppe entfernen? Es wird nicht mehr synchronisiert. Der Einladungscode ändert sich ebenfalls: Mitglieder behalten ihren Zugang, aber zum Einladen muss der neue Code geteilt werden.",
-  "groupDeviceRevoked": "„{label}“ wurde entfernt. Der Einladungscode hat sich geändert."
+  "groupDeviceRevoked": "„{label}“ wurde entfernt. Der Einladungscode hat sich geändert.",
+
+  "reportCommentary": "Diesen Kommentar melden",
+
+  "reportCommentarySubject": "CountScore — Meldung eines KI-Kommentars",
+
+  "reportCommentaryBody": "Was ist an diesem KI-generierten Kommentar problematisch?\n\n\n---\nReferenz: {reference}\nKommentar:\n{commentary}",
+
+  "reportCommentaryNoMailApp": "Keine E-Mail-App gefunden. Schreibe an {email}, um diesen Kommentar zu melden."
 }
