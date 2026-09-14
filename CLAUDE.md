@@ -99,8 +99,8 @@ here and, more usefully, with what those hooks do *not* cover.
 
 - **Nothing is finished until it is tested and committed.** A feature or a bugfix is done
   only once the automated gates covering the code it touches are green *and* the change is
-  committed; a hook runs those gates at commit time and refuses the commit while they are
-  red (`.llmwiki/Hooks.md`). Green gates with no commit, or a commit with no green gates,
+  committed; a hook runs the fast gates (analyze, lint, types) at commit time and refuses
+  the commit while they are red, and CI runs the test suites (`.llmwiki/Hooks.md`). Green gates with no commit, or a commit with no green gates,
   are both incomplete. Documentation the change falsifies — a wiki page, `README.md`, or
   the privacy documents — belongs in that same commit, not in a follow-up.
 

@@ -1,5 +1,7 @@
 # Parallel agents share the main checkout's hooks, which a merge changes under them
 
+**Status:** done (2026-09-14) — closed by fix/hooks-gates. `ship-parallel` §1 now merges a pull request touching `.claude/` last in its wave, once every agent has reported; tracking the hooks' commit per session was rejected as more process.
+
 - **Noted:** 2026-09-14 — while reviewing the two weeks of work since 2026-09-09
 - **Theme:** hooks
 - **Area:** tooling
