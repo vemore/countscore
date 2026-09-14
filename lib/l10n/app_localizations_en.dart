@@ -796,4 +796,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String groupDeviceRevoked(String label) {
     return '“$label” was removed. The invite code has changed.';
   }
+
+  @override
+  String get reportCommentary => 'Report this commentary';
+
+  @override
+  String get reportCommentarySubject => 'CountScore — AI commentary report';
+
+  @override
+  String reportCommentaryBody(String reference, String commentary) {
+    return 'What is wrong with this AI-generated commentary?\n\n\n---\nReference: $reference\nCommentary:\n$commentary';
+  }
+
+  @override
+  String reportCommentaryNoMailApp(String email) {
+    return 'No email app found. Write to $email to report this commentary.';
+  }
 }

@@ -1,4 +1,4 @@
-// The analysis is the app's only network call. With no server configured it
+// With no server configured it
 // must not be offerable at all — and a previously cached analysis must still
 // be readable, because that text is local data.
 
@@ -18,6 +18,7 @@ import 'package:countscore/providers/game_provider.dart';
 import 'package:countscore/providers/game_type_provider.dart';
 import 'package:countscore/repositories/game_analysis_repository.dart';
 import 'package:countscore/screens/game_analysis_screen.dart';
+import 'package:countscore/services/commentary_report.dart';
 
 /// In-memory stand-in: the screen is the subject here, not persistence.
 class _FakeAnalysisRepository implements GameAnalysisRepository {
@@ -203,6 +204,94 @@ void main() {
     // The leak: the screen used to append the Dart exception verbatim.
     expect(find.textContaining('Exception'), findsNothing);
     expect(find.textContaining('upstream LLM error'), findsNothing);
+  });
+
+  testWidgets('a shown commentary can be reported by email', (tester) async {
+    // Play's AI-Generated Content policy: the report control must be there
+    // whenever generated text is on screen.
+    final cached = GameAnalysis(
+      id: 7,
+      gameId: 1,
+      content: 'Le professeur a parlé & bien parlé.',
+      modelId: 'test-model',
+      generatedAt: DateTime(2026, 9, 11, 14, 30),
+    );
+    final launched = <Uri>[];
+    await tester.pumpWidget(_wrap(
+      GameAnalysisScreen(
+        repository: _FakeAnalysisRepository(cached),
+        launcher: (uri) async {
+          launched.add(uri);
+          return true;
+        },
+      ),
+      gameProvider: _GameProviderWithCurrentGame(),
+    ));
+    await tester.pumpAndSettle();
+
+    final report = find.byKey(const Key('analysis_report'));
+    expect(report, findsOneWidget);
+    expect(tester.widget<IconButton>(report).tooltip, 'Report this commentary');
+
+    await tester.tap(report);
+    await tester.pumpAndSettle();
+
+    expect(launched, hasLength(1));
+    final context = tester.element(find.byType(GameAnalysisScreen));
+    final l10n = AppLocalizations.of(context)!;
+    expect(
+      launched.single,
+      buildCommentaryReportUri(
+        subject: l10n.reportCommentarySubject,
+        body: l10n.reportCommentaryBody(
+          '#7 · test-model · 2026-09-11T14:30:00.000',
+          'Le professeur a parlé & bien parlé.',
+        ),
+      ),
+    );
+    expect(launched.single.toString(),
+        startsWith('mailto:$commentaryReportEmail?subject='));
+    expect(find.byType(SnackBar), findsNothing);
+  });
+
+  testWidgets('with nothing to report, the control is disabled',
+      (tester) async {
+    await tester.pumpWidget(_wrap(
+      GameAnalysisScreen(repository: _FakeAnalysisRepository()),
+      backendUrl: 'https://countscore.example.com',
+    ));
+    await tester.pump();
+
+    final report = find.byKey(const Key('analysis_report'));
+    expect(tester.widget<IconButton>(report).onPressed, isNull);
+  });
+
+  testWidgets('with no mail app, reporting explains where to write',
+      (tester) async {
+    final cached = GameAnalysis(
+      gameId: 1,
+      content: 'Le professeur a parlé.',
+      generatedAt: DateTime(2026, 9, 11, 14, 30),
+    );
+    await tester.pumpWidget(_wrap(
+      GameAnalysisScreen(
+        repository: _FakeAnalysisRepository(cached),
+        launcher: (_) async => throw Exception('no activity for mailto'),
+      ),
+      gameProvider: _GameProviderWithCurrentGame(),
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('analysis_report')));
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(
+      find.text('No email app found. Write to $commentaryReportEmail '
+          'to report this commentary.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('a 503 tells the user to retry later instead of showing a code',

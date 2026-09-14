@@ -410,5 +410,13 @@
   "groupDeviceLastSeen": "आख़िरी बार देखा गया: {date}",
   "groupDeviceRevoke": "हटाएँ",
   "groupDeviceRevokeConfirm": "“{label}” को समूह से हटाएँ? यह अब सिंक नहीं होगा। आमंत्रण कोड भी बदल जाएगा: सदस्यों की पहुँच बनी रहेगी, लेकिन किसी को आमंत्रित करने के लिए नया कोड साझा करना होगा।",
-  "groupDeviceRevoked": "“{label}” हटा दिया गया। आमंत्रण कोड बदल गया है।"
+  "groupDeviceRevoked": "“{label}” हटा दिया गया। आमंत्रण कोड बदल गया है।",
+
+  "reportCommentary": "इस टिप्पणी की रिपोर्ट करें",
+
+  "reportCommentarySubject": "CountScore — AI टिप्पणी की रिपोर्ट",
+
+  "reportCommentaryBody": "इस AI-जनित टिप्पणी में क्या समस्या है?\n\n\n---\nसंदर्भ: {reference}\nटिप्पणी:\n{commentary}",
+
+  "reportCommentaryNoMailApp": "कोई ईमेल ऐप नहीं मिला। इस टिप्पणी की रिपोर्ट करने के लिए {email} पर लिखें।"
 }

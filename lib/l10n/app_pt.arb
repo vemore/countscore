@@ -410,5 +410,13 @@
   "groupDeviceLastSeen": "Visto pela última vez: {date}",
   "groupDeviceRevoke": "Remover",
   "groupDeviceRevokeConfirm": "Remover “{label}” do grupo? Ele deixará de sincronizar. O código de convite também muda: os membros mantêm o acesso, mas será preciso compartilhar o novo código para convidar alguém.",
-  "groupDeviceRevoked": "“{label}” foi removido. O código de convite mudou."
+  "groupDeviceRevoked": "“{label}” foi removido. O código de convite mudou.",
+
+  "reportCommentary": "Denunciar este comentário",
+
+  "reportCommentarySubject": "CountScore — denúncia de comentário de IA",
+
+  "reportCommentaryBody": "Qual é o problema deste comentário gerado por IA?\n\n\n---\nReferência: {reference}\nComentário:\n{commentary}",
+
+  "reportCommentaryNoMailApp": "Nenhum app de e-mail encontrado. Escreva para {email} para denunciar este comentário."
 }

@@ -1278,5 +1278,45 @@
         "example": "Tel Bob"
       }
     }
+  },
+
+  "reportCommentary": "Signaler ce commentaire",
+
+  "@reportCommentary": {
+    "description": "App bar action on the AI analysis screen that opens an email to report offensive or wrong generated content (Play AI-Generated Content policy)"
+  },
+
+  "reportCommentarySubject": "CountScore — signalement d'un commentaire IA",
+
+  "@reportCommentarySubject": {
+    "description": "Subject of the prefilled report email for an AI commentary"
+  },
+
+  "reportCommentaryBody": "Qu'est-ce qui pose problème dans ce commentaire généré par IA ?\n\n\n---\nRéférence : {reference}\nCommentaire :\n{commentary}",
+
+  "@reportCommentaryBody": {
+    "description": "Body of the prefilled report email. The blank lines are where the user writes; reference and commentary are filled in by the app",
+    "placeholders": {
+      "reference": {
+        "type": "String",
+        "example": "gemini-2.5-flash · 2026-09-11T14:30:00.000"
+      },
+      "commentary": {
+        "type": "String",
+        "example": "Le professeur a parlé."
+      }
+    }
+  },
+
+  "reportCommentaryNoMailApp": "Aucune application e-mail trouvée. Écrivez à {email} pour signaler ce commentaire.",
+
+  "@reportCommentaryNoMailApp": {
+    "description": "Snackbar when no email app can open the report email",
+    "placeholders": {
+      "email": {
+        "type": "String",
+        "example": "contact@example.com"
+      }
+    }
   }
 }

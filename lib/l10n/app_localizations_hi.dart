@@ -799,4 +799,20 @@ class AppLocalizationsHi extends AppLocalizations {
   String groupDeviceRevoked(String label) {
     return '“$label” हटा दिया गया। आमंत्रण कोड बदल गया है।';
   }
+
+  @override
+  String get reportCommentary => 'इस टिप्पणी की रिपोर्ट करें';
+
+  @override
+  String get reportCommentarySubject => 'CountScore — AI टिप्पणी की रिपोर्ट';
+
+  @override
+  String reportCommentaryBody(String reference, String commentary) {
+    return 'इस AI-जनित टिप्पणी में क्या समस्या है?\n\n\n---\nसंदर्भ: $reference\nटिप्पणी:\n$commentary';
+  }
+
+  @override
+  String reportCommentaryNoMailApp(String email) {
+    return 'कोई ईमेल ऐप नहीं मिला। इस टिप्पणी की रिपोर्ट करने के लिए $email पर लिखें।';
+  }
 }

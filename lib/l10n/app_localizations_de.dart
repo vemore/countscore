@@ -799,4 +799,21 @@ class AppLocalizationsDe extends AppLocalizations {
   String groupDeviceRevoked(String label) {
     return '„$label“ wurde entfernt. Der Einladungscode hat sich geändert.';
   }
+
+  @override
+  String get reportCommentary => 'Diesen Kommentar melden';
+
+  @override
+  String get reportCommentarySubject =>
+      'CountScore — Meldung eines KI-Kommentars';
+
+  @override
+  String reportCommentaryBody(String reference, String commentary) {
+    return 'Was ist an diesem KI-generierten Kommentar problematisch?\n\n\n---\nReferenz: $reference\nKommentar:\n$commentary';
+  }
+
+  @override
+  String reportCommentaryNoMailApp(String email) {
+    return 'Keine E-Mail-App gefunden. Schreibe an $email, um diesen Kommentar zu melden.';
+  }
 }

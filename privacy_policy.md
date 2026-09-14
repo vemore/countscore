@@ -4,7 +4,7 @@
 
 **Effective Date**: Applies to CountScore v1.1.0 and later
 
-**Previous versions**: v2.3 (September 13, 2026), v2.2 (September 11, 2026), v2.1 and v2.0 (September 9, 2026) and v1.0 (November 9, 2025). v1.0
+**Previous versions**: v2.4 (September 14, 2026), v2.3 (September 13, 2026), v2.2 (September 11, 2026), v2.1 and v2.0 (September 9, 2026) and v1.0 (November 9, 2025). v1.0
 applies to CountScore 1.0.x — the versions currently on the Play Store. See
 [Version History](#version-history).
 
@@ -199,6 +199,20 @@ No LLM provider is involved in group sharing, and nothing is sent to us.
 Consent, given by configuring a server, joining a group and sharing a game — and withdrawn by
 leaving the group or clearing the server address.
 
+## Reporting an AI Commentary
+
+A ZapZap analysis is written by an LLM and can be wrong or offensive. The analysis screen has
+a **Report this commentary** action. It does not send anything itself: it opens **your own
+email app** with a message to scribio.ai@gmail.com already filled in — a space for you to
+explain the problem, the analysis's local reference (a number, the model that wrote it and
+when), and the analysis text. You can edit or delete any of it, and nothing is sent unless
+you press send in your email app.
+
+If you do send it, we receive what the email contains, including your email address, and use
+it only to review the report and improve how analyses are generated. We keep it in that
+mailbox for as long as the report is being handled, and you can ask us to delete it at the
+same address. Legal basis: your consent, given by sending the email.
+
 ## Information We Do NOT Collect
 
 CountScore does **not** collect, transmit, store, or share:
@@ -360,6 +374,9 @@ changes are announced through app updates on the Google Play Store.
 
 ### Version History
 
+- **v2.5** (September 14, 2026): Adds **Reporting an AI Commentary**. The analysis screen can
+  open a prefilled email to the developer to report generated text; the app itself sends
+  nothing, and the developer receives the report only if you send it from your email app.
 - **v2.4** (September 14, 2026): Group sharing now shows each device of a group the list of
   the group's devices — their names, when they joined and when they were last seen — and lets
   any of them remove another one. That information was already stored by the server (v2.3);

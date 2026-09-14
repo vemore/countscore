@@ -25,7 +25,8 @@ at your own server in Settings → Server if you want the connected features.
 - **Offline-first**: everything works with no network. Data lives on the device.
 - **ZapZap analysis** (optional, network, off until you configure a server): a long-form
   LLM commentary on a finished ZapZap game. Always user-initiated, never automatic, and
-  cached locally once generated.
+  cached locally once generated. A **Report this commentary** action opens a prefilled email
+  to the developer if the generated text is offensive or wrong.
 - **Group sharing** (optional, network, off until you configure a server and join a group):
   create a group or join one with an invite code, then share games with the group's other
   devices — scores entered on one phone appear on the others within seconds, offline edits
@@ -53,7 +54,7 @@ at your own server in Settings → Server if you want the connected features.
 | Legacy migrator | `sqflite` ^2.4.3 — bootstraps an existing database to schema v11, then Drift takes over |
 | UI | `flex_color_picker` ^4.0.0, `flutter_markdown_plus` |
 | Group sync | `web_socket_channel` ^3.0.3 (change signal), `flutter_secure_storage` ^11.1.1 (device token), `crypto` ^3.0.7 (name-based uuids) |
-| Utilities | `intl`, `http`, `wakelock_plus`, `shared_preferences`, `path_provider`, `file_picker` |
+| Utilities | `intl`, `http`, `url_launcher` (report email), `wakelock_plus`, `shared_preferences`, `path_provider`, `file_picker` |
 
 Data access goes through the repository interfaces in `lib/repositories/`; screens never
 touch the database directly.
@@ -278,7 +279,9 @@ generated once.
 
 Because the server is one you run, the data goes to infrastructure you control — and on to
 whichever LLM provider *your* server is configured to use. We operate no service on your
-behalf and receive nothing.
+behalf and receive nothing. The one exception is yours to make: **Report this commentary**
+opens your own email app with a message to the developer, prefilled with the analysis text —
+we receive it only if you press send.
 
 **2, group sharing**: once you have also created or joined a group (Settings → Group), the
 games you share — their name, type, player names and colours, round comments, scores and
