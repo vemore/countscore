@@ -40,7 +40,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   provider: ^6.1.2
-  sqflite: ^2.4.3
+  sqflite: ^2.4.4
   path_provider: ^2.1.6
   wakelock_plus: ^1.8.0
   flex_color_picker: ^4.0.0
@@ -50,7 +50,7 @@ dependencies:
   path: ^1.9.0
   http: ^1.6.0
   flutter_markdown_plus: ^1.0.12
-  drift: ^2.34.4
+  drift: ^2.35.0
   drift_flutter: ^0.3.1
   flutter_secure_storage: ^11.1.1
   web_socket_channel: ^3.0.3
@@ -64,7 +64,7 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   # In-memory SQLite for desktop/CI tests (avoids Android/iOS device dependency).
-  sqflite_common_ffi: ^2.4.2
+  sqflite_common_ffi: ^2.4.3
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
