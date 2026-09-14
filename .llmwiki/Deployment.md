@@ -60,9 +60,18 @@ uid ≠ 0, no compiler, no pytest, and that the app imports.
 
 ```bash
 cd backend
-./scripts/deploy_nas.sh                    # check BACKUP_AGE_RECIPIENT → build api + backup images → push → up → alembic upgrade
-./scripts/deploy_nas.sh --rollback <sha>   # roll back to a git sha
+./scripts/deploy_nas.sh                    # check BACKUP_AGE_RECIPIENT → build api + backup images → push → up → [pre-migration dump] → alembic upgrade
+./scripts/deploy_nas.sh --rollback <sha>   # roll back to a git sha (the image only, never the schema)
 ```
+
+**Migrations have no staging** (decided 2026-09-14: the owner is production's sole user, and
+the daily dump exists). Two things stand in for one. CI's `backend` job migrates an empty
+Postgres up, `downgrade base`, up again, then `alembic check`. And when `alembic current`
+differs from `alembic heads`, `deploy_nas.sh` has the `db-backup` sidecar write
+`backups/premigration_<UTC ts>_<from>-to-<to>.dump.gz.age` before upgrading — encrypted,
+outside the 7-day retention glob, and no upgrade if it fails. A bad migration is undone by
+restoring that dump over an emptied `public` schema, not by `alembic downgrade`
+(`backend-deploy` §5).
 
 **Client address.** Web Station reaches the API through the published port, so inside the
 container the peer is the compose network's gateway. The network is pinned to

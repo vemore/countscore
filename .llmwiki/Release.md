@@ -49,6 +49,14 @@ A released commit gets an **annotated** tag named exactly as `version:` in `pubs
 predates the rule). `1.1.0+4` is not tagged until its rollout is live. A local `1.0.1` tag on
 `1614707` (the older scheme) was never pushed and is not part of the scheme.
 
+### Cadence
+
+Decided 2026-09-14: the merge-and-deploy loop ships the backend and the PWA after every pull
+request, the Android app only on request, so the gap is made visible rather than automatic.
+`ship-parallel` §6 reports the last tag, the commits on `main` since, and the open `wip/todo/`
+entries; once `wip/todo/` is empty, that report proposes a `release-android` run. The
+release itself still happens only when the user asks.
+
 ### Icons
 
 `flutter_launcher_icons` (dev dependency) generates every Android density from

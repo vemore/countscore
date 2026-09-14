@@ -66,8 +66,9 @@ Only needed if the entity syncs.
    Autogenerate works because `alembic/env.py` imports `app.models`. **Read the generated
    revision before applying it** — autogenerate misses renames and reads them as
    drop-plus-add, which loses data. Then `alembic check` must print
-   `No new upgrade operations detected.` — the CI backend job runs it on a fresh Postgres,
-   and a model whose type differs from the revision's DDL fails there.
+   `No new upgrade operations detected.` — the CI backend job runs upgrade, `downgrade base`,
+   upgrade, then `check` on a fresh Postgres, so a `downgrade()` that does not run, or a model
+   whose type differs from the revision's DDL, fails there.
 4. **Sync handler** — register the entity's model in `_ENTITY_MAP` and its name in
    `EntityType` (`backend/app/routes/sync.py`, `backend/app/schemas/sync.py`). Easy to forget, and the entity silently never syncs
    without it.

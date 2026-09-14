@@ -1,5 +1,13 @@
 # Large pull requests go straight to production, with no staging and gates run twice
 
+**Status:** done (2026-09-14) — closed by chore/merge-safety. Size: `ship-parallel` §3 step 1
+counts changed lines outside generated, lock and binary files and needs the user's go-ahead
+above 1 500. Staging: not built (user decision — sole production user, daily dumps exist);
+instead CI runs upgrade / `downgrade base` / upgrade / `check`, and `deploy_nas.sh` writes an
+encrypted `premigration_*` dump before any pending revision, which `backend-deploy` §5
+restores to undo a schema change. Gates run twice: implemented by fix/hooks-gates
+(`flutter test` and `pytest` leave the commit hook, CI keeps them).
+
 - **Noted:** 2026-09-14 — while reviewing the two weeks of work since 2026-09-09
 - **Theme:** deploy-safety
 - **Area:** backend
