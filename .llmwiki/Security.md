@@ -108,6 +108,9 @@ proof-of-concept results are in `TODO.md`, *Backend security review — 2026-09-
   > the per-IP limit is its only cost control. `backend/tests/test_zapzap_analysis.py`.
 
 
+- **Backups are plain gzip and hold every `share_token` (2026-09-14).** Anyone who reads a
+  daily dump can join every group. Documented for operators, with the recovery step (rotate
+  every invite code), in [[Deployment]] *Backups*; encryption is open in `TODO.md`.
 - **Nothing pins the certificate or the identity of the configured backend.** The user
   types a URL and the app trusts the system trust store for it. Deliberate: a self-hosted
   service cannot be pinned in advance.
@@ -122,9 +125,6 @@ proof-of-concept results are in `TODO.md`, *Backend security review — 2026-09-
   group, which matches the household model but not a public one. Since a revoke rotates the
   share token, the members who stay hold a stale invite link until they rotate it again
   (`GET /groups/me` never returns the token).
-- **Backups are plain gzip and hold every `share_token` (2026-09-14).** Anyone who reads a
-  daily dump can join every group. Documented for operators, with the recovery step (rotate
-  every invite code), in [[Deployment]] *Backups*; encryption is open in `TODO.md`.
 - **In-memory state ties the service to one worker.** `ip_rate_limiter`, `ws_ticket`, the
   per-device stream counter and the LISTEN broker all live in process memory; horizontal scaling needs them moved to Redis or Postgres
   first. See rule 2 in `backend/CLAUDE.md`.
