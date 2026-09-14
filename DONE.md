@@ -36,6 +36,27 @@ starts a Postgres through testcontainers. Proposal: a CI job with a `postgres:17
 `SYNC_BACKEND_URL=… flutter test test/sync/sync_two_devices_test.dart` — the recipe in
 `.llmwiki/Testing.md`, *Group sync against a local backend*.
 
+## Group management: no device list, no way to remove a lost phone
+
+**Status:** done (2026-09-14) — closed by `feat/group-device-list`, for the device half only.
+`GET /groups/me/devices` lists the group's active devices (id, label, joined, last seen).
+Settings → Group → *Devices* shows them, marks this device, and removes any other one after a
+confirmation. That goes through the existing revoke route, which also rotates the invite code,
+and the app shows the new code at once. The group settings half stays in `TODO.md` as
+*Group settings in the app — for 1.2*. The revoke-another-device prerequisite mentioned
+below had already landed on 2026-09-13 (`fix/budget-ws-revocation`). The user reopened the
+2026-09-13 scope decision because a lost phone could otherwise only be shut out by rotating
+the invite code.
+
+The server has endpoints the app does not use: `GET/PATCH /groups/me` (comment style,
+language, LLM budget), `GET /groups/me/usage`, the group-scoped comments, and revoking
+*another* device (`POST /groups/me/devices/{id}/revoke`). The last one has no way to list
+devices first, so a lost phone can only be shut out by rotating the invite code and — once
+the backend review's MEDIUM *Revocation is reversible* item lands — by revoking it. Proposed,
+in order of value: a `GET /groups/me/devices` endpoint (id, label, joined, last seen) and a
+device list in Settings → Group with a revoke action; then group settings. Per-field LWW
+(`field_versions`, see `.llmwiki/Sync.md`) belongs to the same "v2 of groups" conversation.
+
 ## Backend review: no rate limit on authenticated writes; the raw payload is persisted and replayed
 
 **Status:** done (2026-09-13) — closed by `fix/p1-hardening-quick`. `/sync/push` is limited

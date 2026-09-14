@@ -403,5 +403,12 @@
 
   "roundRenumbered": "यह राउंड किसी दूसरे उपकरण पर पहले ही दर्ज हो चुका था, इसलिए यह राउंड {number} बन गया।",
 
-  "gameDeletedElsewhere": "\"{name}\" किसी दूसरे उपकरण पर हटा दिया गया"
+  "gameDeletedElsewhere": "\"{name}\" किसी दूसरे उपकरण पर हटा दिया गया",
+  "groupDevices": "डिवाइस",
+  "groupDevicesExplain": "खोया या बेचा गया फ़ोन यहाँ से समूह से हटाया जा सकता है।",
+  "groupDeviceThisOne": "यह डिवाइस",
+  "groupDeviceLastSeen": "आख़िरी बार देखा गया: {date}",
+  "groupDeviceRevoke": "हटाएँ",
+  "groupDeviceRevokeConfirm": "“{label}” को समूह से हटाएँ? यह अब सिंक नहीं होगा। आमंत्रण कोड भी बदल जाएगा: सदस्यों की पहुँच बनी रहेगी, लेकिन किसी को आमंत्रित करने के लिए नया कोड साझा करना होगा।",
+  "groupDeviceRevoked": "“{label}” हटा दिया गया। आमंत्रण कोड बदल गया है।"
 }

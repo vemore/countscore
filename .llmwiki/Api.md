@@ -2,7 +2,7 @@
 
 > Scope: the HTTP and WebSocket surface. Source of truth is `backend/app/routes/`.
 > Related: [[Backend]] · [[Sync]] · [[LlmProviders]] · [[Security]]
-> Updated: 2026-09-13
+> Updated: 2026-09-14
 
 ## Facts
 
@@ -18,6 +18,7 @@
 | GET | `/me` | device | Returns the group. **No `share_token`** — see below. |
 | PATCH | `/me/settings` | device | 422 when `monthly_budget_cents` exceeds the operator's `MAX_BUDGET_CENTS` (unset: `DEFAULT_BUDGET_CENTS`) — members may lower their budget, not raise it past that. |
 | GET | `/me/usage` | device | Budget consumption. |
+| GET | `/me/devices` | device | The group's **active** devices, oldest first: `{"devices": [{id, label, joined_at, last_seen_at}]}`. Revoked devices are left out; no token or hash. Feeds Settings → Group → Devices. |
 | POST | `/me/devices/{device_id}/revoke` | device | Another device: revokes it **and rotates `share_token`**, 200 with `GroupWithShareToken` — the revoked device learnt the old token when it joined. Again on a revoked device: the current token, no new one. The caller's own id: leaving (`GroupProvider.leave`), 204, no rotation. |
 | POST | `/me/rotate-share-token` | device | Invalidates the old share link. Returns `share_token`. |
 

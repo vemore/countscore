@@ -403,5 +403,12 @@
 
   "roundRenumbered": "そのラウンドは別の端末で入力済みだったため、ラウンド {number} になりました。",
 
-  "gameDeletedElsewhere": "「{name}」は別の端末で削除されました"
+  "gameDeletedElsewhere": "「{name}」は別の端末で削除されました",
+  "groupDevices": "デバイス",
+  "groupDevicesExplain": "紛失または売却したスマートフォンをここでグループから削除できます。",
+  "groupDeviceThisOne": "このデバイス",
+  "groupDeviceLastSeen": "最終確認：{date}",
+  "groupDeviceRevoke": "削除",
+  "groupDeviceRevokeConfirm": "「{label}」をグループから削除しますか？今後は同期されません。招待コードも変更されます。メンバーのアクセスはそのままですが、招待するには新しいコードを共有する必要があります。",
+  "groupDeviceRevoked": "「{label}」を削除しました。招待コードが変更されました。"
 }

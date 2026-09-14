@@ -30,6 +30,14 @@ typedef GroupMembership = ({
   String deviceToken,
 });
 
+/// A member device of the caller's group, as `GET /groups/me/devices` lists it.
+typedef GroupDevice = ({
+  String id,
+  String label,
+  DateTime joinedAt,
+  DateTime lastSeenAt,
+});
+
 /// One delta as `/sync/pull` returns it.
 typedef PulledDelta = ({
   String entityType,
@@ -138,9 +146,29 @@ class BackendClient {
     return body['share_token'] as String;
   }
 
-  /// `POST /groups/me/devices/{id}/revoke`, used on this device's own id to leave.
-  Future<void> revokeDevice(String deviceToken, String deviceId) =>
-      _send('POST', '/groups/me/devices/$deviceId/revoke', token: deviceToken);
+  /// `GET /groups/me/devices`: the group's active devices, oldest first.
+  Future<List<GroupDevice>> listDevices(String deviceToken) async {
+    final body = await _send('GET', '/groups/me/devices', token: deviceToken);
+    return [
+      for (final d in body['devices'] as List)
+        (
+          id: d['id'] as String,
+          label: d['label'] as String,
+          joinedAt: DateTime.parse(d['joined_at'] as String),
+          lastSeenAt: DateTime.parse(d['last_seen_at'] as String),
+        ),
+    ];
+  }
+
+  /// `POST /groups/me/devices/{id}/revoke`.
+  ///
+  /// On another device's id the server also rotates the invite code and returns
+  /// the new one. On this device's own id it is leaving: 204, and null here.
+  Future<String?> revokeDevice(String deviceToken, String deviceId) async {
+    final body = await _send('POST', '/groups/me/devices/$deviceId/revoke',
+        token: deviceToken);
+    return body['share_token'] as String?;
+  }
 
   // ── Sync ──────────────────────────────────────────────────────────────────
 

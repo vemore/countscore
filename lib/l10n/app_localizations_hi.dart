@@ -771,4 +771,32 @@ class AppLocalizationsHi extends AppLocalizations {
   String gameDeletedElsewhere(String name) {
     return '\"$name\" किसी दूसरे उपकरण पर हटा दिया गया';
   }
+
+  @override
+  String get groupDevices => 'डिवाइस';
+
+  @override
+  String get groupDevicesExplain =>
+      'खोया या बेचा गया फ़ोन यहाँ से समूह से हटाया जा सकता है।';
+
+  @override
+  String get groupDeviceThisOne => 'यह डिवाइस';
+
+  @override
+  String groupDeviceLastSeen(String date) {
+    return 'आख़िरी बार देखा गया: $date';
+  }
+
+  @override
+  String get groupDeviceRevoke => 'हटाएँ';
+
+  @override
+  String groupDeviceRevokeConfirm(String label) {
+    return '“$label” को समूह से हटाएँ? यह अब सिंक नहीं होगा। आमंत्रण कोड भी बदल जाएगा: सदस्यों की पहुँच बनी रहेगी, लेकिन किसी को आमंत्रित करने के लिए नया कोड साझा करना होगा।';
+  }
+
+  @override
+  String groupDeviceRevoked(String label) {
+    return '“$label” हटा दिया गया। आमंत्रण कोड बदल गया है।';
+  }
 }

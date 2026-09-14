@@ -403,5 +403,12 @@
 
   "roundRenumbered": "该局已在另一台设备上录入，因此改为第 {number} 局。",
 
-  "gameDeletedElsewhere": "对局“{name}”已在另一台设备上删除"
+  "gameDeletedElsewhere": "对局“{name}”已在另一台设备上删除",
+  "groupDevices": "设备",
+  "groupDevicesExplain": "可在此将丢失或出售的手机移出群组。",
+  "groupDeviceThisOne": "本设备",
+  "groupDeviceLastSeen": "最近在线：{date}",
+  "groupDeviceRevoke": "移除",
+  "groupDeviceRevokeConfirm": "将“{label}”移出群组？它将无法再同步。邀请码也会更换：现有成员不受影响，但邀请他人时需分享新的邀请码。",
+  "groupDeviceRevoked": "已移除“{label}”。邀请码已更换。"
 }

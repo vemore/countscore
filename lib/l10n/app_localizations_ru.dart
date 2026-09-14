@@ -777,4 +777,32 @@ class AppLocalizationsRu extends AppLocalizations {
   String gameDeletedElsewhere(String name) {
     return 'Партия «$name» удалена на другом устройстве';
   }
+
+  @override
+  String get groupDevices => 'Устройства';
+
+  @override
+  String get groupDevicesExplain =>
+      'Здесь можно исключить из группы потерянный или проданный телефон.';
+
+  @override
+  String get groupDeviceThisOne => 'Это устройство';
+
+  @override
+  String groupDeviceLastSeen(String date) {
+    return 'Последняя активность: $date';
+  }
+
+  @override
+  String get groupDeviceRevoke => 'Исключить';
+
+  @override
+  String groupDeviceRevokeConfirm(String label) {
+    return 'Исключить «$label» из группы? Устройство больше не будет синхронизироваться. Код приглашения тоже изменится: участники сохранят доступ, но для приглашения нужно будет отправить новый код.';
+  }
+
+  @override
+  String groupDeviceRevoked(String label) {
+    return '«$label» исключено. Код приглашения изменён.';
+  }
 }

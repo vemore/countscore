@@ -746,4 +746,31 @@ class AppLocalizationsZh extends AppLocalizations {
   String gameDeletedElsewhere(String name) {
     return '对局“$name”已在另一台设备上删除';
   }
+
+  @override
+  String get groupDevices => '设备';
+
+  @override
+  String get groupDevicesExplain => '可在此将丢失或出售的手机移出群组。';
+
+  @override
+  String get groupDeviceThisOne => '本设备';
+
+  @override
+  String groupDeviceLastSeen(String date) {
+    return '最近在线：$date';
+  }
+
+  @override
+  String get groupDeviceRevoke => '移除';
+
+  @override
+  String groupDeviceRevokeConfirm(String label) {
+    return '将“$label”移出群组？它将无法再同步。邀请码也会更换：现有成员不受影响，但邀请他人时需分享新的邀请码。';
+  }
+
+  @override
+  String groupDeviceRevoked(String label) {
+    return '已移除“$label”。邀请码已更换。';
+  }
 }

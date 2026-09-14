@@ -1225,5 +1225,58 @@
         "example": "Partie 1"
       }
     }
+  },
+
+  "groupDevices": "Appareils",
+  "@groupDevices": {
+    "description": "Button in Settings → Group, and title of the sheet listing the group's devices"
+  },
+
+  "groupDevicesExplain": "Un téléphone perdu ou vendu peut être exclu du groupe ici.",
+  "@groupDevicesExplain": {
+    "description": "Explanation under the title of the devices sheet"
+  },
+
+  "groupDeviceThisOne": "Cet appareil",
+  "@groupDeviceThisOne": {
+    "description": "Marks the current device in the group's device list"
+  },
+
+  "groupDeviceLastSeen": "Vu pour la dernière fois : {date}",
+  "@groupDeviceLastSeen": {
+    "description": "When a device last talked to the server",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "14 sept. 2026 18:42"
+      }
+    }
+  },
+
+  "groupDeviceRevoke": "Exclure",
+  "@groupDeviceRevoke": {
+    "description": "Action removing another device from the group"
+  },
+
+  "groupDeviceRevokeConfirm": "Exclure « {label} » du groupe ? Il ne pourra plus synchroniser. Le code d'invitation change aussi : les membres gardent leur accès, mais il faudra partager le nouveau code pour inviter quelqu'un.",
+  "@groupDeviceRevokeConfirm": {
+    "description": "Confirmation before removing a device; the invite code is rotated at the same time",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Tel Bob"
+      }
+    }
+  },
+
+  "groupDeviceRevoked": "« {label} » a été exclu. Le code d'invitation a changé.",
+  "@groupDeviceRevoked": {
+    "description": "Shown after a device was removed",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Tel Bob"
+      }
+    }
   }
 }

@@ -17,6 +17,8 @@ from app.models import Device, Group
 from app.schemas.groups import (
     CreateGroupRequest,
     CreateGroupResponse,
+    DeviceInfo,
+    DeviceListResponse,
     DevicePayload,
     GroupPayload,
     GroupWithShareToken,
@@ -174,6 +176,29 @@ async def get_usage(auth: AuthContext = Depends(require_device)) -> UsagePayload
         current_month_used_cents=auth.group.current_month_used_cents,
         budget_cents=auth.group.monthly_budget_cents,
         resets_at=auth.group.budget_resets_at,
+    )
+
+
+@router.get("/me/devices", response_model=DeviceListResponse)
+async def list_devices(
+    auth: AuthContext = Depends(require_device),
+    session: AsyncSession = Depends(get_session),
+) -> DeviceListResponse:
+    """The group's active devices, oldest first — what a member needs to pick one to revoke.
+
+    Revoked devices are left out: they cannot come back, and listing them would only offer
+    a revoke that does nothing.
+    """
+    rows = await session.execute(
+        select(Device)
+        .where(col(Device.group_id) == auth.group.id, col(Device.revoked_at).is_(None))
+        .order_by(col(Device.joined_at), col(Device.id))
+    )
+    return DeviceListResponse(
+        devices=[
+            DeviceInfo(id=d.id, label=d.label, joined_at=d.joined_at, last_seen_at=d.last_seen_at)
+            for d in rows.scalars()
+        ]
     )
 
 

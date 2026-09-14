@@ -78,4 +78,44 @@ void main() {
       expect(result.model, 'mistral-medium-latest');
     });
   });
+
+  group('group devices', () {
+    test('listDevices parses the list and sends the device token', () async {
+      late http.BaseRequest seen;
+      final client = BackendClient(
+        'https://countscore.example.com',
+        httpClient: MockClient((request) async {
+          seen = request;
+          return http.Response.bytes(
+            utf8.encode('{"devices":[{"id":"a","label":"Tél Zoé",'
+                '"joined_at":"2026-09-14T10:00:00Z","last_seen_at":"2026-09-14T10:05:00+00:00"}]}'),
+            200,
+          );
+        }),
+      );
+
+      final devices = await client.listDevices('tok');
+
+      expect(seen.method, 'GET');
+      expect(seen.url.path, '/groups/me/devices');
+      expect(seen.headers['Authorization'], 'Bearer tok');
+      expect(devices, hasLength(1));
+      expect(devices.single.label, 'Tél Zoé');
+      expect(devices.single.lastSeenAt, DateTime.utc(2026, 9, 14, 10, 5));
+    });
+
+    test('revoking another device returns the rotated invite code', () async {
+      final client = BackendClient(
+        'https://countscore.example.com',
+        httpClient: _answering('{"id":"g","name":"n","share_token":"new-code"}', 200),
+      );
+      expect(await client.revokeDevice('tok', 'other'), 'new-code');
+    });
+
+    test('revoking this device is leaving: 204 and no code', () async {
+      final client = BackendClient('https://countscore.example.com',
+          httpClient: MockClient((_) async => http.Response.bytes(const [], 204)));
+      expect(await client.revokeDevice('tok', 'self'), isNull);
+    });
+  });
 }

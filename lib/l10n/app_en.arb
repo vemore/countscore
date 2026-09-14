@@ -476,5 +476,12 @@
 
   "roundRenumbered": "That round had already been entered on another device, so it became round {number}.",
 
-  "gameDeletedElsewhere": "\"{name}\" was deleted on another device"
+  "gameDeletedElsewhere": "\"{name}\" was deleted on another device",
+  "groupDevices": "Devices",
+  "groupDevicesExplain": "A lost or sold phone can be removed from the group here.",
+  "groupDeviceThisOne": "This device",
+  "groupDeviceLastSeen": "Last seen {date}",
+  "groupDeviceRevoke": "Remove",
+  "groupDeviceRevokeConfirm": "Remove “{label}” from the group? It will no longer sync. The invite code changes too: members keep their access, but you will need to share the new code to invite anyone.",
+  "groupDeviceRevoked": "“{label}” was removed. The invite code has changed."
 }

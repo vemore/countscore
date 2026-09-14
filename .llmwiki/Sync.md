@@ -2,7 +2,7 @@
 
 > Scope: the offline-first sharing protocol — server and Flutter client.
 > Related: [[Api]] · [[SchemaV10]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-09-13
+> Updated: 2026-09-14
 
 ## Facts
 
@@ -78,6 +78,13 @@ the user's design. One group per device.
 turns every shared row back into a local one and empties `outbox`, `group_links`,
 `entity_versions`, `sync_inbox` and `sync_state`. Clearing the server URL while in a group
 asks, then leaves.
+
+**Removing another device.** Settings → Group → *Devices* (`group_devices_sheet.dart`) lists
+`GET /groups/me/devices` and offers a revoke on every device but this one — this one leaves
+instead. `GroupProvider.revokeDevice` stores the rotated `share_token` the server returns, so
+the section shows the new invite code at once. The revoked device learns of it on its next
+request: a 401, shown as `SyncStatus.unauthorized` (its open stream closes at the next idle
+heartbeat — see *WebSocket*). Its local copies of the games stay where they are.
 
 **Sharing is per game.** On by default for a new game while in a group (switch on the
 create screen), or later from the board menu; never undone. `SyncStore.shareGame` sets

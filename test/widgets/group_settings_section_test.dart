@@ -41,50 +41,91 @@ MockClient _server(List<http.BaseRequest> seen) => MockClient((request) async {
             },
           },
         '/sync/pull' => {'deltas': [], 'server_seq_max': 0, 'has_more': false},
+        '/groups/me/devices' => {
+            'devices': [
+              {
+                'id': '33333333-3333-4333-8333-333333333333',
+                'label': 'd',
+                'joined_at': '2026-09-14T10:00:00Z',
+                'last_seen_at': '2026-09-14T10:05:00Z',
+              },
+              if (!seen.any((r) => r.url.path.endsWith('/revoke')))
+                {
+                  'id': '44444444-4444-4444-8444-444444444444',
+                  'label': 'Lost phone',
+                  'joined_at': '2026-09-14T10:01:00Z',
+                  'last_seen_at': '2026-09-14T10:02:00Z',
+                },
+            ],
+          },
+        '/groups/me/devices/44444444-4444-4444-8444-444444444444/revoke' => {
+            'id': '11111111-1111-4111-8111-111111111111',
+            'name': 'Famille',
+            'comment_style': 'narrative',
+            'comment_language': 'fr',
+            'monthly_budget_cents': 100,
+            'current_month_used_cents': 0,
+            'share_token': '55555555-5555-4555-8555-555555555555',
+          },
         _ => <String, dynamic>{},
       };
       return http.Response.bytes(utf8.encode(jsonEncode(body)), 200);
     });
 
+/// Pumps Settings → Group on a provider already pointed at [_server].
+Future<GroupProvider> _pumpSection(WidgetTester tester, List<http.BaseRequest> seen) async {
+  final db = AppDatabase.forTesting(NativeDatabase.memory());
+  addTearDown(db.close);
+  final group = GroupProvider(
+    db: db,
+    credentials: MemorySyncCredentials(),
+    httpClient: _server(seen),
+    enableStream: false,
+    pollInterval: const Duration(hours: 1),
+  );
+  await tester.runAsync(() => group.updateBackend('https://countscore.example.com'));
+
+  await tester.pumpWidget(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => BackendProvider('https://countscore.example.com')),
+      ChangeNotifierProvider.value(value: group),
+    ],
+    child: const MaterialApp(
+      locale: Locale('en'),
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: [Locale('en')],
+      home: Scaffold(body: SingleChildScrollView(child: GroupSettingsSection())),
+    ),
+  ));
+  return group;
+}
+
+/// Lets the mock server's real futures complete, then settles the frames.
+Future<void> _settle(WidgetTester tester) async {
+  await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _createGroup(WidgetTester tester) async {
+  await tester.tap(find.byKey(const Key('group_create')));
+  await tester.pumpAndSettle();
+  await tester.enterText(find.byKey(const Key('group_field_0')), 'Famille');
+  await tester.tap(find.byKey(const Key('group_dialog_ok')));
+  // The exit transition runs here: this is where the disposed controllers used
+  // to trip the framework.
+  await _settle(tester);
+}
+
 void main() {
   testWidgets('creating a group through the dialog shows the group and its code', (tester) async {
-    final db = AppDatabase.forTesting(NativeDatabase.memory());
-    addTearDown(db.close);
     final seen = <http.BaseRequest>[];
-    final group = GroupProvider(
-      db: db,
-      credentials: MemorySyncCredentials(),
-      httpClient: _server(seen),
-      enableStream: false,
-      pollInterval: const Duration(hours: 1),
-    );
-    await tester.runAsync(() => group.updateBackend('https://countscore.example.com'));
+    final group = await _pumpSection(tester, seen);
 
-    await tester.pumpWidget(MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => BackendProvider('https://countscore.example.com')),
-        ChangeNotifierProvider.value(value: group),
-      ],
-      child: const MaterialApp(
-        locale: Locale('en'),
-        localizationsDelegates: [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-        ],
-        supportedLocales: [Locale('en')],
-        home: Scaffold(body: SingleChildScrollView(child: GroupSettingsSection())),
-      ),
-    ));
-
-    await tester.tap(find.byKey(const Key('group_create')));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(const Key('group_field_0')), 'Famille');
-    await tester.tap(find.byKey(const Key('group_dialog_ok')));
-    // The exit transition runs here: this is where the disposed controllers used
-    // to trip the framework.
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
-    await tester.pumpAndSettle();
+    await _createGroup(tester);
 
     expect(tester.takeException(), isNull);
     expect(seen.map((r) => r.url.path), contains('/groups'));
@@ -92,6 +133,43 @@ void main() {
     expect(find.byKey(const Key('group_share_token')), findsOneWidget);
 
     // Stop the poll timer before the binding checks for pending timers.
+    await tester.pumpWidget(const SizedBox());
+    group.dispose();
+  });
+
+  testWidgets('removing a lost device shows the rotated invite code', (tester) async {
+    const own = '33333333-3333-4333-8333-333333333333';
+    const lost = '44444444-4444-4444-8444-444444444444';
+    final seen = <http.BaseRequest>[];
+    final group = await _pumpSection(tester, seen);
+    await _createGroup(tester);
+
+    await tester.tap(find.byKey(const Key('group_devices')));
+    await _settle(tester);
+
+    expect(find.text('Lost phone'), findsOneWidget);
+    expect(find.text('This device'), findsOneWidget);
+    // Leaving is the section's own button: this device offers no revoke.
+    expect(find.byKey(const Key('group_device_revoke_$own')), findsNothing);
+
+    await tester.tap(find.byKey(const Key('group_device_revoke_$lost')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('group_device_revoke_confirm')));
+    await _settle(tester);
+
+    expect(tester.takeException(), isNull);
+    expect(
+      seen.where((r) => r.method == 'POST').map((r) => r.url.path),
+      contains('/groups/me/devices/$lost/revoke'),
+    );
+    expect(find.text('Lost phone'), findsNothing);
+    expect(find.text('“Lost phone” was removed. The invite code has changed.'), findsOneWidget);
+    expect(group.shareToken, '55555555-5555-4555-8555-555555555555');
+
+    Navigator.of(tester.element(find.byType(GroupSettingsSection))).pop();
+    await tester.pumpAndSettle();
+    expect(find.text('55555555-5555-4555-8555-555555555555'), findsOneWidget);
+
     await tester.pumpWidget(const SizedBox());
     group.dispose();
   });

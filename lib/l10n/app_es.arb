@@ -403,5 +403,12 @@
 
   "roundRenumbered": "Esa ronda ya se había introducido en otro dispositivo, así que pasa a ser la ronda {number}.",
 
-  "gameDeletedElsewhere": "La partida «{name}» se eliminó en otro dispositivo"
+  "gameDeletedElsewhere": "La partida «{name}» se eliminó en otro dispositivo",
+  "groupDevices": "Dispositivos",
+  "groupDevicesExplain": "Aquí puedes quitar del grupo un teléfono perdido o vendido.",
+  "groupDeviceThisOne": "Este dispositivo",
+  "groupDeviceLastSeen": "Visto por última vez: {date}",
+  "groupDeviceRevoke": "Quitar",
+  "groupDeviceRevokeConfirm": "¿Quitar «{label}» del grupo? Dejará de sincronizar. El código de invitación también cambia: los miembros conservan el acceso, pero habrá que compartir el nuevo código para invitar a alguien.",
+  "groupDeviceRevoked": "«{label}» se ha quitado. El código de invitación ha cambiado."
 }

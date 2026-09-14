@@ -6,9 +6,19 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/backend_provider.dart';
 import '../providers/group_provider.dart';
+import 'group_devices_sheet.dart';
 
-/// Settings → Group: create or join a group, show its invite code, leave it, and
-/// say where sync stands. Only usable once a server URL is set.
+/// The message shown for a failed group action.
+String groupActionErrorText(AppLocalizations l10n, GroupActionException e) => switch (e.error) {
+      GroupActionError.unknownShareToken => l10n.groupErrorUnknownToken,
+      GroupActionError.rateLimited => l10n.groupErrorRateLimited,
+      GroupActionError.unreachable => l10n.groupErrorUnreachable,
+      GroupActionError.server => l10n.groupErrorServer,
+      GroupActionError.invalidPlayerNames => l10n.invalidPlayerNamesForSync(e.detail.join(', ')),
+    };
+
+/// Settings → Group: create or join a group, show its invite code and devices,
+/// leave it, and say where sync stands. Only usable once a server URL is set.
 class GroupSettingsSection extends StatefulWidget {
   const GroupSettingsSection({super.key});
 
@@ -27,15 +37,6 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
     ));
   }
 
-  String _errorText(AppLocalizations l10n, GroupActionException e) => switch (e.error) {
-        GroupActionError.unknownShareToken => l10n.groupErrorUnknownToken,
-        GroupActionError.rateLimited => l10n.groupErrorRateLimited,
-        GroupActionError.unreachable => l10n.groupErrorUnreachable,
-        GroupActionError.server => l10n.groupErrorServer,
-        GroupActionError.invalidPlayerNames =>
-          l10n.invalidPlayerNamesForSync(e.detail.join(', ')),
-      };
-
   Future<void> _run(Future<void> Function() action, {String? done}) async {
     final l10n = AppLocalizations.of(context)!;
     setState(() => _busy = true);
@@ -43,7 +44,7 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
       await action();
       if (mounted && done != null) _snack(done);
     } on GroupActionException catch (e) {
-      if (mounted) _snack(_errorText(l10n, e), ok: false);
+      if (mounted) _snack(groupActionErrorText(l10n, e), ok: false);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -195,6 +196,12 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
                   if (mounted) _snack(l10n.shareTokenCopied);
                 },
               ),
+            TextButton.icon(
+              key: const Key('group_devices'),
+              icon: const Icon(Icons.devices),
+              label: Text(l10n.groupDevices),
+              onPressed: () => GroupDevicesSheet.show(context),
+            ),
             TextButton.icon(
               icon: const Icon(Icons.autorenew),
               label: Text(l10n.shareTokenRotate),

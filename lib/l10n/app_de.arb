@@ -403,5 +403,12 @@
 
   "roundRenumbered": "Diese Runde wurde bereits auf einem anderen Gerät eingetragen und ist jetzt Runde {number}.",
 
-  "gameDeletedElsewhere": "„{name}“ wurde auf einem anderen Gerät gelöscht"
+  "gameDeletedElsewhere": "„{name}“ wurde auf einem anderen Gerät gelöscht",
+  "groupDevices": "Geräte",
+  "groupDevicesExplain": "Ein verlorenes oder verkauftes Handy kann hier aus der Gruppe entfernt werden.",
+  "groupDeviceThisOne": "Dieses Gerät",
+  "groupDeviceLastSeen": "Zuletzt gesehen: {date}",
+  "groupDeviceRevoke": "Entfernen",
+  "groupDeviceRevokeConfirm": "„{label}“ aus der Gruppe entfernen? Es wird nicht mehr synchronisiert. Der Einladungscode ändert sich ebenfalls: Mitglieder behalten ihren Zugang, aber zum Einladen muss der neue Code geteilt werden.",
+  "groupDeviceRevoked": "„{label}“ wurde entfernt. Der Einladungscode hat sich geändert."
 }

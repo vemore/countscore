@@ -2,7 +2,7 @@
 
 Complete guide for filling out the Data Safety section in Google Play Console for CountScore.
 
-**Last Updated**: September 13, 2026
+**Last Updated**: September 14, 2026
 **Applies to**: CountScore v1.1.0 and later
 **Privacy Policy**: `privacy_policy.md`, published at
 https://vemore.github.io/countscore/privacy-policy.html
@@ -79,6 +79,14 @@ The server persists all of it, and a `change_log` of every change, until its ope
 it; other devices in the group download it. The device receives a server-generated identifier
 and a secret token (stored argon2-hashed on the server, in Keystore / encrypted browser storage
 on the device). No LLM provider is involved.
+
+**Device list (September 14, 2026).** `GET /groups/me/devices` returns to every device of a
+group the other devices' **device name**, join date and last-seen date, so a member can remove
+a lost phone (`POST /groups/me/devices/{id}/revoke`). No new data type and no new recipient
+outside the group: the device name is already declared above under App activity, and the
+server already stored both dates. The recipients are the devices of the group the user chose
+to join — the same audience that already receives the shared games — so the answers below are
+unchanged.
 
 ### ZapZap analysis
 
@@ -203,7 +211,7 @@ queries the manifest.
 **Answer**: `https://vemore.github.io/countscore/privacy-policy.html`
 
 That page is `docs/privacy-policy.html`, a static rendering of the **current**
-`privacy_policy.md` (v2.3, September 13, 2026), which describes the analysis feature and group sharing.
+`privacy_policy.md` (v2.4, September 14, 2026), which describes the analysis feature and group sharing.
 Publishing the older v1.0 text alongside a "Yes" declaration is exactly the mismatch
 reviewers look for, so the two must be regenerated together — see `docs/README.md`.
 
