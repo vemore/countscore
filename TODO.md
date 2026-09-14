@@ -91,6 +91,10 @@ leading `cd <dir> &&` that `parse_command.py` already tokenises) — and fall ba
 `CLAUDE_PROJECT_DIR` only when that fails. Add a case to `scripts/hooks_selftest.sh` that
 commits from a worktree whose branch differs from the main checkout's.
 
+Hit again on 2026-09-13 by `docs/release-android-skill`. The user asked for a worktree because
+another session held the main checkout. The `release-android` skill now builds every release
+in a worktree, so until this is fixed its §2 tells the reader to run the gates by hand.
+
 ## `alembic check` reports drift that predates the sync contract
 
 **Status:** open — noted 2026-09-13, while validating `0002_sync_contract` on Postgres.
@@ -136,6 +140,90 @@ Proposal: a small `scripts/chromedriver.sh` that reads `google-chrome --version`
 the matching Chrome for Testing driver into a cache directory if absent, and starts it on
 4444 — and point the Testing recipe (and `.claude/rules/web.md`) at it instead of a bare
 `chromedriver`.
+
+## The store listing text denies group sharing — blocks the 1.1.0 submission
+
+**Status:** open — noted 2026-09-13, while rewriting the `release-android` skill.
+
+Both `store_listing/en-US/full_description.txt` and `store_listing/fr-FR/full_description.txt`
+still describe the pre-sync app. Line 21 calls the ZapZap analysis "the one feature that uses
+the internet" and says scores go "to our server". Line 36 says "No accounts, no cloud sync".
+Group sharing now stores game data on the server the user configures, and the app ships no
+server of ours. The Data Safety declaration (`PLAY_STORE_DATA_SAFETY.md`) is already right,
+so the listing now contradicts it — the mismatch reviewers look for. Rewrite both locales
+from `privacy_policy.md`, keeping the 4000-character limit. A "Group sharing" paragraph
+belongs in the features list too.
+
+## No in-app report control for AI-generated commentary
+
+**Status:** open — noted 2026-09-13, while checking current Play policy for the release skill.
+
+Play's AI-Generated Content policy requires apps that generate content with AI to let users
+report or flag offensive output from inside the app, without leaving it. The 2026-07-15
+policy announcement also brings third-party AI integrations explicitly under the User Data
+policy. The ZapZap analysis screen shows LLM text and offers no such control. That is a
+rejection risk on the next review.
+
+Proposal: a "Report this commentary" action on the analysis screen that opens a `mailto:` to
+the listing contact with the comment id and text prefilled, so no new data flow is needed.
+Or, if a server-side flag is preferred, a `POST /comments/{id}/report` — but that is a new
+outbound flow and needs the three privacy documents (rule in `CLAUDE.md`). New strings go
+through `i18n-add-string`.
+
+## No feature graphic in `store_listing/assets/`
+
+**Status:** open — noted 2026-09-13, while listing the store assets for the Console brief.
+
+Play requires a 1024×500 feature graphic, and `PUBLISHING.md` §2 names it, but
+`store_listing/assets/` has only `icon_512.png` and the phone screenshots. None of the eight
+screenshots shows group sharing either. `store_listing/FEATURE_GRAPHIC_TEMPLATES.md` has the
+brief. Commit the graphic as `store_listing/assets/feature_graphic.png`, and add it to what
+`.claude/skills/release-android/scripts/stage_handoff.sh` copies into the hand-off folder.
+
+## `PLAY_STORE_DATA_SAFETY.md` still says "the form must be updated"
+
+**Status:** open — noted 2026-09-13.
+
+The banner at `PLAY_STORE_DATA_SAFETY.md:10-14` tells the reader the form "must be updated
+**before** 1.1.0 is submitted". The guide below it is the updated form. Once the Console form
+actually matches, turn the banner into a dated history note, so a reader can tell whether the
+Console is done.
+
+## Release tags are inconsistent, and 1.1.0 has none
+
+**Status:** open — noted 2026-09-13.
+
+`git tag` gives `1.0.1` (on `1614707`) and `1.0.1+3` (on `ee3ff1b`): two naming schemes, both
+lightweight. `1.0.0+1` and `1.1.0+4` are untagged. The `release-android` skill (§10) now tags
+`<x.y.z+n>` after a rollout. Tag `1.0.0+1` on `4e52a54` and `1.0.1+2` beside the existing
+`1.0.1`, so the history reads one way. Tag `1.1.0+4` once it is live.
+
+## `proguard-rules.pro` header contradicts itself
+
+**Status:** open — noted 2026-09-13.
+
+`android/app/proguard-rules.pro:3-22` says R8 is ENABLED, then lists "Benefits of keeping it
+disabled" and "To enable ProGuard/R8 in the future". It is the same drift `.llmwiki/Release.md`
+records for the docs, which were fixed on 2026-09-09 while this comment was missed. Cut the
+header down to what is true: enabled, for size, rules below.
+
+## Play Console upload is a browser step, not a script
+
+**Status:** open — noted 2026-09-13, tooling. The `release-android` skill stops at a staged
+hand-off folder, and a person or a browser agent (Cowork / Claude in Chrome) must drive the
+Console to upload the bundle and paste the notes.
+
+Proposal: add the Play Developer Publishing API for the mechanical part only — upload the AAB
+to a track as a **draft** release with the notes. Gradle Play Publisher
+(`com.github.triplet.play`) fits the existing Gradle build; fastlane `supply` is the
+alternative. This needs:
+
+- a service account with release permission on the app only;
+- its JSON key outside the repository, plus a `.gitignore` pattern for it (there is none today);
+- a hook rule refusing to stage it.
+
+The browser brief would then shrink to the parts the API cannot do or should not do
+unattended: the policy survey, Data Safety, Content rating, and sending for review.
 
 ---
 

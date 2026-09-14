@@ -1,131 +1,206 @@
 ---
 name: release-android
-description: Build and publish a CountScore release to the Google Play Store — keystore setup, signed App Bundle, launcher icons, store assets, and the pre-submission checklist. Use when preparing a release, cutting a new version, building a signed AAB or APK, regenerating the app icon, or verifying an artifact's signature. Triggers: "build a release", "publier sur le Play Store", "release build", "appbundle", "sign the app", "keystore", "new version", "bump version".
+description: Build and publish a CountScore release to the Google Play Store — release worktree, keystore, version bump, release notes, Play policy gate, signed App Bundle, artifact verification (upload key, versionCode, target API 36, INTERNET, 16 KB pages), then a filled-in brief that lets Claude Cowork or Claude in Chrome do the Play Console steps. Use when preparing a release, cutting a new version, building or verifying a signed AAB, uploading to a Play track, handing the Console work to a browser agent, or regenerating the app icon. Triggers: "build a release", "publier sur le Play Store", "release build", "appbundle", "sign the app", "keystore", "new version", "bump version", "upload to Play Console", "internal testing", "Cowork", "Claude in Chrome".
 ---
 
 # Releasing CountScore to the Play Store
 
-The full narrative guide is `PUBLISHING.md`. This is the executable path. State facts are
-in `.llmwiki/Release.md`.
+This is the executable path, from a clean worktree to a release sitting on a Play track.
+State facts — signing, target, policy constraints — are in `.llmwiki/Release.md`. What each
+Console form must say is in `PUBLISHING.md` and `PLAY_STORE_DATA_SAFETY.md`; this skill does
+not repeat their answers.
 
-## Before anything
+`--no-tree-shake-icons` is **mandatory on every build** (a hook refuses a `flutter build`
+without it): game-type icons are `IconData` codepoints stored in the database, invisible to
+the tree-shaker.
 
-`--no-tree-shake-icons` is **mandatory on every build**. Game-type icons are built from
-`IconData` codepoints stored in the database, so the tree-shaker cannot see them and the
-build fails without the flag. It costs ~200 KB.
+## 0. Build in a release worktree
+
+Never build a release in a checkout another session is editing — the bundle would ship
+whatever is half-done there. Branch the release off `origin/main`:
+
+```bash
+git fetch --prune origin
+git worktree add ../countscore-release-<version> -b chore/release-<version> origin/main
+cd ../countscore-release-<version>
+git branch --unset-upstream          # it tracks origin/main; push it under its own name later
+cp ../countscore/android/key.properties android/key.properties
+git check-ignore -q android/key.properties && echo "ignored — good"
+flutter pub get
+dart run build_runner build          # *.g.dart is gitignored: a worktree has none
+flutter gen-l10n
+```
+
+`key.properties` is gitignored, so a worktree does not have it — and without it the release
+build has no signing config. Its `storeFile` is absolute, so the copy works as is.
 
 ## 1. Signing setup — first time only
 
 ```bash
-./scripts/generate_keystore.sh
-cp android/key.properties.template android/key.properties
-# fill in storePassword, keyPassword, keyAlias, storeFile
+./scripts/generate_keystore.sh       # → $HOME/countscore-upload-keystore.jks, alias countscore-upload
+cp android/key.properties.template android/key.properties   # fill in the two passwords
 ```
 
-**Back the keystore up somewhere durable and off this machine. Losing it means the app can
-never be updated again** — Play will not accept a differently-signed upload.
+**Back the keystore up off this machine, with its passwords in a password manager.** Play App
+Signing holds the *app signing* key, so a lost *upload* key can be reset through Play support
+— but that takes days during which nothing ships.
 
-Neither the keystore nor `key.properties` may be committed. Confirm before every release:
-
-```bash
-git check-ignore -v android/key.properties && echo "ignored — good"
-git status --porcelain | grep -Ei 'keystore|\.jks|key\.properties' && echo "STOP: staged secret"
-```
-
-Release signing is already configured in `android/app/build.gradle.kts`, which also enables
-R8 shrinking (`isMinifyEnabled`/`isShrinkResources`, rules in `android/app/proguard-rules.pro`).
-It is on for the size saving, not for obfuscation — the app is open source. This skill said
-"disabled" until 2026-09-09; see [[Release]].
+Signing and R8 shrinking are already wired in `android/app/build.gradle.kts` (`signingConfigs`,
+`isMinifyEnabled`/`isShrinkResources`). Shrinking is on for size, not obfuscation.
 
 ## 2. Version bump
 
-Bump `version:` in `pubspec.yaml` (`x.y.z+build`). The build number must **increase** on
-every upload or Play rejects it.
+`version:` in `pubspec.yaml` is `x.y.z+build`; `build` becomes the `versionCode` and must be
+**higher than every version code on every track**, not just production. Tags so far
+(`git tag`): `1.0.1`, `1.0.1+3` — the Console's *Release explorer* is the authority.
 
-## 3. Icons — only if the artwork changed
+Commit the bump on the release branch; the hook refuses commits on `main`. **The commit hook
+does not see worktrees yet** (`TODO.md`, "The commit hook ignores git worktrees"): it judges
+the branch and runs the gates in the *main* checkout. Run `flutter analyze` and `flutter test`
+in the release worktree yourself before committing, and do not read a silent pass as green.
+
+## 3. Release notes
+
+One file per locale: `store_listing/en-US/release_notes_v<x.y.z>.txt` and
+`store_listing/fr-FR/release_notes_v<x.y.z>.txt` (the `v` matches the existing files).
+
+- **At most 500 characters each** — Play's limit. `wc -m` them; `stage_handoff.sh` refuses
+  longer ones.
+- No claim that contradicts the Data Safety declaration ("no data collection", "fully
+  offline").
+
+## 4. Policy gate — before building
+
+Each of these is a rejection, a removal or a blocked update if it is false. Check against the
+code, not against the previous release.
+
+| Check | How |
+|---|---|
+| **Listing text matches the app** | `store_listing/*/full_description.txt` vs what leaves the device: the ZapZap analysis, plus group sharing and sync (`lib/services/sync/`, `/sync/stream` WebSocket) — both to the server the **user** configures in Settings → Server; the app ships no server URL. |
+| **Data Safety and privacy policy match** | `PLAY_STORE_DATA_SAFETY.md`, `privacy_policy.md`, README Privacy — a new flow means all three plus the manifest (rule in `CLAUDE.md`). If the policy changed: `python3 scripts/build_privacy_page.py`, and the page is live: `curl -sI https://vemore.github.io/countscore/privacy-policy.html` → `200`. |
+| **AI-generated content is reportable in the app** | Play's AI-Generated Content policy requires an in-app way to flag offensive generated content; ZapZap commentary is LLM output. See `.llmwiki/Release.md` for whether the app has it yet. |
+| **Target API ≥ 36** | Required for every update since 2026-08-31. `verify_aab.sh` checks it. |
+| **16 KB page size** | Required for apps targeting Android 15+ with native code (`libflutter`, `libsqlite3`, …). `verify_aab.sh` checks it. |
+| **App registered** in the Console | Unregistered apps are removed from 2026-09-30. Part A of the brief reads the status. |
+
+A failure here is not fixed inside the release: stop, add a `TODO.md` entry, tell the user
+and let them decide whether it blocks.
+
+## 5. Pre-flight
 
 ```bash
-# replace store_listing/assets/icon_512.png (512x512 PNG) first
-flutter pub run flutter_launcher_icons
-```
-Adaptive icon on white `#FFFFFF`; all densities are generated.
-
-## 4. Pre-flight
-
-```bash
-flutter clean
-flutter pub get
-dart run build_runner build   # *.g.dart is gitignored
-flutter gen-l10n
+flutter clean && flutter pub get && dart run build_runner build && flutter gen-l10n
 flutter analyze
 flutter test
 ```
 
-Then test on a real device — the `flutter-device-test` skill. **Export/import and the
-wakelock toggle have no automated coverage**; they must be exercised by hand.
+Then a real device — the `flutter-device-test` skill. **Export/import, the wakelock toggle,
+the ZapZap analysis and group join/leave have no automated coverage in a release build**;
+exercise them on the release APK:
 
-## 5. Build
+```bash
+flutter build apk --release --no-tree-shake-icons && adb install -r build/app/outputs/flutter-apk/app-release.apk
+```
+
+Install it **over the store version**, not over a debug build: the database must survive the
+upgrade.
+
+## 6. Build
 
 ```bash
 flutter build appbundle --release --no-tree-shake-icons
 # → build/app/outputs/bundle/release/app-release.aab
 ```
 
-An APK for sideload testing:
-```bash
-flutter build apk --release --no-tree-shake-icons
-```
-
-## 6. Verify the artifact
+## 7. Verify the artifact
 
 ```bash
-ls -la build/app/outputs/bundle/release/app-release.aab
-jarsigner -verify -verbose -certs build/app/outputs/bundle/release/app-release.aab | head -20
+.claude/skills/release-android/scripts/verify_aab.sh
 ```
-Confirm the certificate is the upload key and **not** a debug key. Install the release APK
-on a device and check it launches, the database survives an upgrade from the store version,
-and the locale follows the system language.
 
-## 7. Play Console
+One line per check, non-zero on the first failure:
 
-Target **API level 36** (Android 16) — it follows `flutter.targetSdkVersion`, so check
-[[Release]] rather than assuming. Compliance documents that must match what ships:
-`privacy_policy.md`, `PLAY_STORE_DATA_SAFETY.md`, `THIRD_PARTY_LICENSES.md`, and the
-per-locale listing text in `store_listing/en-US/` and `store_listing/fr-FR/`.
-`scripts/capture_screenshots.sh` pulls fresh screenshots over ADB.
+- the bundle verifies and is signed with the **upload** key — its SHA-256 compared with the
+  keystore named by `key.properties`, debug key refused;
+- the bundle manifest declares `INTERNET` (it shipped missing once — `DONE.md`, 2026-09-09);
+- `versionCode` equals the `pubspec.yaml` build number, read from a merged manifest no staler
+  than the bundle;
+- `targetSdk` ≥ 36;
+- every 64-bit `.so` has LOAD segments aligned ≥ 16384.
 
-The Console walkthrough — form answers, tracks, rollout — is `PUBLISHING.md`. Roll out to
-internal testing first, then staged production.
+A stale `build/` fails the freshness or `INTERNET` check — rebuild rather than work around it.
 
-## Check every time
-
-**Does the merged release manifest still declare `INTERNET`?**
+## 8. Stage the hand-off
 
 ```bash
-grep uses-permission build/app/intermediates/merged_manifests/release/*/AndroidManifest.xml
+.claude/skills/release-android/scripts/stage_handoff.sh internal
+#   or: closed · production 20 · production 20 "store listing, screenshots"
 ```
 
-The ZapZap analysis is the app's only network call and it needs that permission. It lives in
-`android/app/src/main/AndroidManifest.xml`; the debug and profile manifests declare it too,
-which is why a missing release declaration is invisible to every debug build and to the e2e
-suite. It shipped missing once — see `DONE.md` (2026-09-09).
+It re-runs `verify_aab.sh`, then creates `C:\Users\<you>\Downloads\countscore-release-<x.y.z+n>\`
+with the bundle, `HANDOFF.md` (filled in from `references/play-console-handoff.md`: version
+code, upload key fingerprint, track, rollout, release notes in Play's `<en-US>…</en-US>`
+block), the listing text, the phone screenshots, `PLAY_STORE_DATA_SAFETY.md` and
+`PUBLISHING.md`.
 
-**Did anything change what leaves the device?** A new field in the analysis payload, a new
-recipient, or the sync client when it exists means `README.md`, `privacy_policy.md`,
-`PLAY_STORE_DATA_SAFETY.md` and the store listing text move first — the rule is in
-`CLAUDE.md`, and what we currently disclose is in `.llmwiki/Security.md`. Regenerate the
-published policy with `python3 scripts/build_privacy_page.py` if the policy changed.
+Windows, because Cowork and Claude in Chrome run there and their upload only sees folders the
+user grants.
+
+## 9. Play Console — delegated or by hand
+
+**Delegated.** Hand `HANDOFF.md` to the user with the two lines the script prints — **Claude
+Cowork** (grant the folder, "Read HANDOFF.md and carry it out") or **Claude in Chrome** (paste
+it into the side panel on play.google.com/console). The brief has:
+
+- **Part A**, read-only survey: banners, app registration, pending changes, whether production
+  still needs a **12-tester / 14-day closed test** (personal accounts created after
+  2023-11-13), version codes per track, incomplete App content;
+- **Part B**: create the release on the track, upload, check the version code, paste the
+  notes, copy every error and warning — **then stop**;
+- **Part C**: only the optional tasks named on the command line.
+
+The agent is forbidden to send for review, start a rollout, or save Data Safety / Content
+rating changes without the user's explicit go; to accept terms; or to touch signing, pricing,
+users or verification. The user handles sign-in and 2FA.
+
+You cannot drive the Console from this session and should not relay the browser agent's
+questions on its behalf: give the user the brief and the folder path, and wait for their report.
+
+**By hand.** `PUBLISHING.md` §5.
+
+Either way: **internal → closed (if required) → production at a staged percentage**, and
+watch Crashes & ANRs for 48 h before widening.
+
+## 10. After the rollout
+
+- The release branch's PR is merged (the user's call). Tag the released commit — pushing a tag
+  is outward-facing, so ask first:
+  ```bash
+  git tag <x.y.z+n> <commit> && git push origin <x.y.z+n>
+  ```
+- Update **Submission state** in `.llmwiki/Release.md` (what is live on which track) and its
+  `Updated:` date.
+- `git worktree remove ../countscore-release-<version>` once the branch is pushed — it takes
+  the copied `key.properties` with it.
+- Delete the Windows hand-off folder: it holds a signed bundle.
+
+## Icons — only if the artwork changed
+
+```bash
+# replace store_listing/assets/icon_512.png (512×512 PNG) first
+dart run flutter_launcher_icons
+```
+Adaptive icon on white `#FFFFFF`; every density is generated.
 
 ## Checklist
 
-- [ ] Version and build number bumped
-- [ ] `flutter analyze` and `flutter test` clean
-- [ ] Tested on a real device, including export/import and wakelock
-- [ ] Built with `--no-tree-shake-icons`
-- [ ] Signature verified as the upload key
+- [ ] Built in a release worktree off `origin/main`, not in a shared checkout
+- [ ] Version code above every track's; bump committed on `chore/release-<version>`
+- [ ] Release notes en-US and fr-FR, ≤ 500 characters, no claim contradicting Data Safety
+- [ ] Policy gate (§4) passed, or its failures in `TODO.md` and cleared by the user
+- [ ] `flutter analyze` and `flutter test` clean; release APK exercised on a device over the store version
+- [ ] `verify_aab.sh` all OK
 - [ ] No keystore, `key.properties` or `.env` staged
-- [ ] Merged **release** manifest declares `INTERNET`
-- [ ] Data Safety declaration matches what the build actually does
-- [ ] Store listing text matches the declaration (`store_listing/*/full_description.txt`)
-- [ ] Privacy policy URL live and serving the current text (`docs/`)
+- [ ] Hand-off staged; Console report received; review/rollout started by the user or on their explicit go
+- [ ] Tag pushed, `Release.md` Submission state updated, worktree and hand-off folder removed
 - [ ] Keystore backup exists and is current
