@@ -2,7 +2,7 @@
 
 > Scope: what is defended, and what is knowingly open.
 > Related: [[Backend]] · [[Api]] · [[LlmProviders]] · [[Deployment]] · [[KnownLimits]]
-> Updated: 2026-09-13
+> Updated: 2026-09-14
 
 ## Facts
 
@@ -29,7 +29,7 @@
 | Sync payload values | Per-entity bounds in `app/services/delta_bounds.py`, enforced before write. |
 | Security headers | `security_headers` middleware in `app/main.py:main`; HSTS behind `HSTS_ENABLED`. API responses get `default-src 'none'`; `/docs` a Swagger CSP, and only exists with `EXPOSE_DOCS=true`; paths under `PWA_BASE_PATH` get `_PWA_CSP` (self, `'wasm-unsafe-eval'`, CanvasKit from `www.gstatic.com`, fonts from `fonts.gstatic.com`, `connect-src 'self' https: wss:`) plus `Cache-Control: no-cache`. |
 | PWA static files | Read-only bind mount; Starlette `StaticFiles` rejects traversal out of `PWA_DIR`; `deploy_web.sh` refuses a build containing any `.md`. |
-| Backups | Daily `pg_dump`, 7-day rotation. |
+| Backups | Daily `pg_dump`, 7-day rotation. **Not encrypted**, and they contain every `share_token` — see the debt below. |
 
 ### Disclosure — what the app admits to sending, and to whom
 
@@ -122,6 +122,9 @@ proof-of-concept results are in `TODO.md`, *Backend security review — 2026-09-
   group, which matches the household model but not a public one. Since a revoke rotates the
   share token, the members who stay hold a stale invite link until they rotate it again
   (`GET /groups/me` never returns the token).
+- **Backups are plain gzip and hold every `share_token` (2026-09-14).** Anyone who reads a
+  daily dump can join every group. Documented for operators, with the recovery step (rotate
+  every invite code), in [[Deployment]] *Backups*; encryption is open in `TODO.md`.
 - **In-memory state ties the service to one worker.** `ip_rate_limiter`, `ws_ticket`, the
   per-device stream counter and the LISTEN broker all live in process memory; horizontal scaling needs them moved to Redis or Postgres
   first. See rule 2 in `backend/CLAUDE.md`.
