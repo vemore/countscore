@@ -34,7 +34,7 @@
 
 ### Disclosure — what the app admits to sending, and to whom
 
-[[Release]] and `DONE.md` point here for "what those declarations would have to disclose",
+[[Release]] and `wip/done/ARCHIVE-2026-09.md` point here for "what those declarations would have to disclose",
 so it is stated once, here, and the compliance documents are written from it.
 
 | Question | Answer, and where it is verified |
@@ -69,7 +69,7 @@ server they chose, and carries no credential of ours.
 
 The four items found by the 2026-09-13 review are **not** deliberate; they are open
 because they were found after the 2026-09-09 hardening. Proposed fixes, evidence and the
-proof-of-concept results are in `TODO.md`, *Backend security review — 2026-09-13*.
+proof-of-concept results are in `wip/done/2026-09-13-backend-security-review.md`; what is still open is in `wip/todo/` (`scripts/wip.sh list`, theme `backend-hardening`).
 
 - **`POST /sync/push` is not group-scoped.** `app/routes/sync.py:152` finds an entity by
   UUID alone and then overwrites it and reassigns its `group_id` to the caller's group;
@@ -111,7 +111,7 @@ proof-of-concept results are in `TODO.md`, *Backend security review — 2026-09-
 
 - **Backups are plain gzip and hold every `share_token` (2026-09-14).** Anyone who reads a
   daily dump can join every group. Documented for operators, with the recovery step (rotate
-  every invite code), in [[Deployment]] *Backups*; encryption is open in `TODO.md`.
+  every invite code), in [[Deployment]] *Backups*; encryption is open in `wip/todo/2026-09-13-encrypt-backups.md`.
 - **Nothing pins the certificate or the identity of the configured backend.** The user
   types a URL and the app trusts the system trust store for it. Deliberate: a self-hosted
   service cannot be pinned in advance.
@@ -147,7 +147,7 @@ proof-of-concept results are in `TODO.md`, *Backend security review — 2026-09-
   all could do. The three HIGH findings were confirmed by proof-of-concept tests run on the
   SQLite fixtures, not committed — a test that asserts a flaw is present would be red the
   day the flaw is fixed. Nothing was changed in the code: the user asked for the findings
-  and the proposed fixes in `TODO.md`, and the fixes are each a change of their own.
+  and the proposed fixes in `TODO.md` (now `wip/done/2026-09-13-backend-security-review.md` and the entries it names), and the fixes are each a change of their own.
 - **The PWA's CSP allows `connect-src https:` (2026-09-13).** The backend URL is a user
   setting, so a PWA served by one backend may legitimately be pointed at another; pinning
   `connect-src` to `'self'` would break that with nothing but a console line. Scripts stay

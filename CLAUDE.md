@@ -23,7 +23,7 @@ rather than a silent rewrite.
 
 Repeatable procedures are **skills**, not wiki pages — check `.claude/skills/` before
 writing steps out by hand: `i18n-add-string`, `db-migration`, `release-android`,
-`backend-deploy`, `web-deploy`, `flutter-device-test`.
+`backend-deploy`, `web-deploy`, `flutter-device-test`, `ship-parallel`.
 
 Scoped instructions: `backend/CLAUDE.md` (Python/FastAPI) and `.claude/rules/web.md` (PWA —
 not in `web/`, because everything under `web/` is published with the build).
@@ -42,25 +42,30 @@ here and, more usefully, with what those hooks do *not* cover.
 
 ## Workflow
 
-- **A problem you find but were not asked to fix goes in `TODO.md`.** When a task surfaces
-  something unrelated to it, do not fix it inline and do not drop it: add an entry to
-  `TODO.md`, dated, with enough context to act on it later — then carry on with the task
-  at hand.
-- **Tooling that fights you is a `TODO.md` item too.** A skill, a hook, a slash command, a
+- **Work is tracked one file per entry under `wip/`, never in a shared list.** `wip/todo/`
+  is open work for the release in progress, `wip/todo_nr/` for the next one, `wip/done/` is
+  closed work. The format, and the frozen archive of the old `DONE.md`, are in
+  `wip/README.md`; `scripts/wip.sh list` is the index. A single `TODO.md` conflicted on every
+  parallel pull request, and a hook now refuses one.
+- **A problem you find but were not asked to fix becomes a `wip/` entry.** When a task
+  surfaces something unrelated to it, do not fix it inline and do not drop it: write
+  `wip/todo_nr/<date>-<slug>.md` — or `wip/todo/` when it blocks the release in progress (a
+  store policy violation, a security flaw, a crash, data loss) — with enough context to act
+  on it later, then carry on with the task at hand.
+- **Tooling that fights you is a `wip/` entry too.** A skill, a hook, a slash command, a
   wiki procedure or any part of this file that you had to work around — steps that no
   longer match the code, a gate that fires on the wrong thing, a rule that forced a detour,
   something done by hand twice that no skill covers — is the same class of finding as a bug
   in `lib/`. Do not silently absorb the detour and do not leave the next session to
-  rediscover it: add a dated `TODO.md` entry naming the tool, what it actually made you do,
+  rediscover it: add a dated `wip/` entry naming the tool, what it actually made you do,
   and the improvement you propose, then carry on with the task at hand. A one-line
   correction that the current task already proves wrong — a renamed file in a skill, a dead
   command — gets fixed inline and mentioned; anything that changes what a tool *does* is a
   proposal, not a detour of its own.
-- **A `TODO.md` item you fix moves to `DONE.md` in the same change.** Do not delete the
-  entry and do not leave it in `TODO.md`: cut it whole, write
-  `**Status:** done (YYYY-MM-DD)` on it, and paste it at the top of `DONE.md` — newest
-  first — with a line saying what closed it. `TODO.md` then holds only open work, and the
-  reasoning behind a closed item stays readable in `DONE.md`.
+- **An entry you fix moves to `wip/done/` in the same change.** `git mv` it — the file name
+  never changes — and add `**Status:** done (YYYY-MM-DD) — closed by <branch>` under its
+  title, with what closed it. Never delete an entry, and never edit one another pull request
+  owns.
 - **`README.md` makes claims about the code — keep them true in the same change.** It is the
   only document a newcomer reads *before* running anything, and it drifted for ten months
   because no rule said when it was implicated. It is implicated whenever a change touches
@@ -90,7 +95,7 @@ here and, more usefully, with what those hooks do *not* cover.
   `android/app/src/main/AndroidManifest.xml` grants the permission the flow needs, since
   `INTERNET` lives only in the debug and profile manifests by default. A Play Store data
   safety declaration that does not match the binary is a policy violation, not a stale
-  line. The audit behind this rule is in `DONE.md` (2026-09-09).
+  line. The audit behind this rule is in `wip/done/ARCHIVE-2026-09.md` (2026-09-09).
 
 - **Nothing is finished until it is tested and committed.** A feature or a bugfix is done
   only once the automated gates covering the code it touches are green *and* the change is
@@ -103,18 +108,31 @@ here and, more usefully, with what those hooks do *not* cover.
   local branch is not delivered: nothing reviewed it and CI never saw it. When the work is
   done, push the branch, open the pull request with a body saying what changed and why,
   then watch its checks and fix what they find — `gh pr create`, then `gh pr checks`.
-  Report the URL and the state of the checks; merging is the user's call, not yours. A hook
-  refuses to end the turn while the commits have no pull request or while its checks are
-  red (`.llmwiki/Hooks.md`). A branch deliberately held back sets
+  Report the URL and the state of the checks. A hook refuses to end the turn — or a subagent
+  to finish — while the commits have no pull request or while its checks are red
+  (`.llmwiki/Hooks.md`). A branch deliberately held back sets
   `git config branch.<name>.noPullRequest true`, and you say so rather than doing it
   silently.
 
 - **A pull request targets `main`.** Never stack one on another branch: it merges into that
   base, and if the base is merged first — it usually is — the child's work reaches nowhere,
   while both pull requests read as merged and green. When the work depends on something not
-  yet merged, wait for it and rebase onto `main`, or put both changes in one pull request.
-  A hook refuses `gh pr create --base <anything but main>`; stacking anyway is the user's
-  decision to take, not yours.
+  yet merged, wait for it and merge `main` into your branch, or put both changes in one pull
+  request. A hook refuses `gh pr create --base <anything but main>`; stacking anyway is the
+  user's decision to take, not yours.
+
+- **You merge and deploy your own green pull requests — through `ship-parallel`.** Decided by
+  the user on 2026-09-14: once every required check is green on an up-to-date branch, merge
+  with `gh pr merge <n> --squash --delete-branch`, then deploy what the merge changed —
+  `backend-deploy` for `backend/`, `web-deploy` for the app — and smoke-test production. A
+  problem found after the deploy is a new pull request. Never `--admin`, never a merge commit
+  or a rebase merge, never a push to `main` (a hook refuses all three). A Play Store release
+  is **not** part of this: only when the user asks, through `release-android`.
+
+- **Several tasks at once are several pull requests, in parallel.** When the user hands you a
+  set of tasks, follow the `ship-parallel` skill: group the entries by theme, one pull request
+  per theme, each implemented by its own agent in its own git worktree, then merged one at a
+  time and deployed. `.llmwiki/ParallelDelivery.md` has the why.
 
 ## Commands
 
@@ -151,13 +169,19 @@ Backend commands are in `backend/CLAUDE.md`.
 
 ## Git
 
-**Start every session on a fresh branch off the current `main`.** Before the first commit of
-a session — not after it — run:
+**Start every piece of work on a fresh branch off the current `main`, in its own worktree.**
+Before the first commit — not after it — run:
 
 ```bash
 git fetch --prune origin
-git switch -c <type>/<short-topic> origin/main
+git worktree add ../countscore-<short-topic> -b <type>/<short-topic> origin/main
+scripts/worktree_setup.sh ../countscore-<short-topic>    # pub get, codegen, local-only links
 ```
+
+An agent launched with `isolation: "worktree"` gets its worktree already made, and switches
+to `<type>/<short-topic>` off `origin/main` as its first step. The main checkout stays on
+`main`, fast-forwarded: the hooks are read from it, and another session may be working next
+to you. The hooks judge the worktree a command runs in, not the main checkout.
 
 Do not carry on committing to whatever branch the working tree happened to be left on: it is
 usually the *previous* session's, and once its pull request is merged the remote deletes it.
@@ -169,4 +193,6 @@ The recovery recipe, if you are already on a stale branch, is in `.llmwiki/Hooks
 - Branch names: `<type>/<short-topic>`, using the commit-message types below.
 - Commit messages: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`.
 - Do not commit build artifacts or generated files.
-- Never force-push, and never rewrite a commit that is already on `origin/main`.
+- Never force-push, and never rewrite a commit that is already on `origin/main` (a hook
+  refuses `--force`, `--force-with-lease` and `+refspec`). Bring a branch up to date by
+  merging `main` into it — `gh api -X PUT repos/{owner}/{repo}/pulls/<n>/update-branch` — never by rebasing.

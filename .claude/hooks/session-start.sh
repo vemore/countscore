@@ -9,7 +9,11 @@
 
 set -uo pipefail
 
-ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+payload=$(cat 2>/dev/null)
+cwd=$(printf '%s' "$payload" | jq -r '.cwd // empty' 2>/dev/null)
+ROOT=""
+[ -n "$cwd" ] && ROOT=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null)
+[ -z "$ROOT" ] && ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 cd "$ROOT" 2>/dev/null || exit 0
 
 if [ -z "$(find lib -name '*.g.dart' -print -quit 2>/dev/null)" ]; then
@@ -46,7 +50,22 @@ delivery_check() {
     done
 }
 
+# Parallel work lives in worktrees, one per pull request. A session that resumes the
+# orchestration needs to see them before it starts anything new.
+worktrees_report() {
+    local lines
+    lines=$(git worktree list --porcelain 2>/dev/null | awk -v root="$ROOT" '
+        /^worktree / { path = substr($0, 10) }
+        /^branch /   { if (path != root) print path "\t" substr($0, 19) }')
+    [ -z "$lines" ] && return
+    echo "Other worktrees of this repository (\`git worktree remove <path>\` once merged):"
+    printf '%s\n' "$lines" | while IFS=$'\t' read -r path branch; do
+        echo "  $branch  ->  $path"
+    done
+}
+
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
+worktrees_report
 delivery_check
 branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 [ -z "$branch" ] && exit 0

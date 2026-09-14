@@ -47,7 +47,8 @@ Load this file first. Then read only the pages your task touches.
 | Page | Summary | Updated |
 |---|---|---|
 | [[Deployment]] | Synology NAS, Web Station TLS, `deploy_nas.sh`, `deploy_web.sh`, environment | 2026-09-14 |
-| [[Hooks]] | What Claude Code refuses mechanically, and why each rule left CLAUDE.md | 2026-09-13 |
+| [[Hooks]] | What Claude Code refuses mechanically, and why each rule left CLAUDE.md | 2026-09-14 |
+| [[ParallelDelivery]] | Worktrees, one PR per theme, serial squash merges, deploy after each merge, `wip/` tracking | 2026-09-14 |
 | [[Security]] | Defended surfaces, and the security debt that is knowingly open | 2026-09-14 |
 | [[Testing]] | Unit, Drift, migration, e2e web and device; backend pytest | 2026-09-13 |
 | [[Release]] | Play Store signing state, target API, 2026 Play policy constraints | 2026-09-13 |
@@ -56,4 +57,4 @@ Load this file first. Then read only the pages your task touches.
 
 These pages describe *what is*. For *how to do*, use the skills in `.claude/skills/`:
 `i18n-add-string`, `db-migration`, `release-android`, `backend-deploy`, `web-deploy`,
-`flutter-device-test`.
+`flutter-device-test`, `ship-parallel`.

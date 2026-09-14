@@ -101,7 +101,7 @@ address for the Android case; on web that URL still only works from an http orig
   1.1 MB and all. `dart run drift_dev make-web-worker` does not compile at the pinned
   drift 2.34.4 / drift_dev 2.34.0 pairing, so the repository is the only reliable source
   for them. `.gitignore` carries a comment saying so. **Do not regenerate or delete them**
-  until the CLI builds again — see `TODO.md`.
+  until the CLI builds again — see `wip/done/ARCHIVE-2026-09.md`.
 
   > **Status: Outdated** (2026-09-09) — the stated reason does not hold. `make-web-worker`
   > is not a `drift_dev` subcommand in 2.34.6, and never needed to be: **drift ships a
@@ -111,7 +111,7 @@ address for the Android case; on web that URL still only works from an http orig
   > The two files remain tracked — a fresh clone should not have to fetch binaries to run
   > the PWA — but that is now a choice, not a workaround. **The committed
   > `drift_worker.js` is stale**: 351,222 B against the 355,222 B drift 2.34.4 ships.
-  > Refreshing it is its own change, tracked in `TODO.md`.
+  > Refreshing it is its own change, tracked in `wip/done/ARCHIVE-2026-09.md`.
 - **The worker was refreshed from the drift 2.34.4 package (2026-09-13).** Byte-identical
   to `~/.pub-cache/hosted/pub.dev/drift-2.34.4/drift_worker.js`; validated by the web e2e
   and a manual launch under a sub-path. Whenever drift is bumped, copy the worker from the

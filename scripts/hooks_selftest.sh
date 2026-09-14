@@ -72,6 +72,20 @@ guard "a pull request stacked on another branch"    2 'gh pr create --base feat/
 guard "the same, written --base=x"                  2 'gh pr create --base=feat/other --title t'
 guard "no --base means the repository default"      0 'gh pr create --title t --body b'
 guard "reading pull requests is not creating one"   0 'gh pr list --state merged'
+guard "a squash merge"                              0 'gh pr merge 12 --squash --delete-branch'
+guard "a squash merge, short flags"                 0 'gh pr merge 12 -sd'
+guard "--admin bypasses the protection"             2 'gh pr merge 12 --squash --admin'
+guard "a merge with no method prompts"              2 'gh pr merge 12'
+guard "a rebase merge"                              2 'gh pr merge 12 --rebase'
+guard "the words inside an echo (merge)"            0 'echo "gh pr merge 12 --admin"'
+guard "pushing a branch"                            0 'git push -u origin feat/x'
+guard "a force-push"                                2 'git push --force origin feat/x'
+guard "a force-push, bundled short flag"            2 'git push -fu origin feat/x'
+guard "a force-with-lease is still a force-push"    2 'git push --force-with-lease origin feat/x'
+guard "a +refspec is a force-push"                  2 'git push origin +feat/x'
+guard "pushing main by name"                        2 'git push origin main'
+guard "pushing HEAD onto main"                      2 'git push origin HEAD:main'
+guard "the words inside an echo (push)"             0 'echo "git push --force origin main"'
 
 echo "== commit detection =========================================="
 commit_field "plain commit"                    false '.commit.all'   'git commit -m x'
@@ -85,6 +99,8 @@ commit_field "git log is not a commit"          null '.commit'       'git log --
 commit_field "git status is not a commit"       null '.commit'       'git status'
 commit_field "the word in an echo"              null '.commit'       'echo "git commit"'
 commit_field "unparseable assumes a commit"    true  '.commit.all'   'git commit -m "unbalanced'
+commit_field "the commit runs where cd left it" /tmp '.commit.cwd'  'cd /tmp && git commit -m x'
+commit_field "git -C moves the commit"      "$(dirname "$ROOT")/wt" '.commit.cwd' 'git -C ../wt commit -m x'
 
 echo "== .gitignore ================================================"
 SANDBOX=$(mktemp -d)
@@ -184,6 +200,45 @@ branch_case "a branch replaying a commit already upstream" 2
 git -C "$WORK" checkout -q --detach origin/main
 branch_case "a detached HEAD" 2
 
+# A worktree on its own branch, while the checkout the session was launched from
+# sits on main: the commit must be judged on the worktree's branch.
+git -C "$WORK" switch -q main
+TREE="$SANDBOX/tree"
+git -C "$WORK" worktree add -q -b feat/in-tree "$TREE" origin/main 2>/dev/null
+out=$(payload "git commit -m x" "$TREE" | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/guard-bash.sh" 2>/dev/null)
+report "a commit inside a worktree, launch checkout on main" 0 "$?"
+out=$(payload "cd $TREE && git commit -m x" "$WORK" | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/guard-bash.sh" 2>/dev/null)
+report "cd into a worktree, then commit" 0 "$?"
+out=$(payload "git -C $TREE commit -m x" "$WORK" | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/guard-bash.sh" 2>/dev/null)
+report "git -C a worktree commit" 0 "$?"
+out=$(payload "git commit -m x" "$WORK" | CLAUDE_PROJECT_DIR="$TREE" "$HOOKS/guard-bash.sh" 2>/dev/null)
+report "the launch checkout on main is still refused" 2 "$?"
+out=$(payload "git push" "$WORK" | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/guard-bash.sh" 2>/dev/null)
+report "a bare push from main" 2 "$?"
+out=$(payload "git push" "$TREE" | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/guard-bash.sh" 2>/dev/null)
+report "a bare push from a worktree branch" 0 "$?"
+
+# Work tracking: one file per entry under wip/, never a shared TODO.md/DONE.md again.
+mkdir -p "$TREE/wip/done"
+echo "# old" > "$TREE/wip/done/ARCHIVE-2026-09.md"
+git -C "$TREE" add wip
+git -C "$TREE" -c user.email=t@t -c user.name=t commit -qm "archive" >/dev/null 2>&1
+echo "- [ ] x" > "$TREE/TODO.md"
+git -C "$TREE" add TODO.md
+out=$(payload "git commit -m x" "$TREE" | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/guard-bash.sh" 2>/dev/null)
+report "a TODO.md brought back next to wip/" 2 "$?"
+git -C "$TREE" rm -q --cached TODO.md && rm "$TREE/TODO.md"
+echo "# edited" >> "$TREE/wip/done/ARCHIVE-2026-09.md"
+git -C "$TREE" add wip
+out=$(payload "git commit -m x" "$TREE" | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/guard-bash.sh" 2>/dev/null)
+report "editing the frozen archive" 2 "$?"
+git -C "$TREE" checkout -q HEAD -- wip
+echo "# entry" > "$TREE/wip/done/2026-09-14-entry.md"
+git -C "$TREE" add wip
+out=$(payload "git commit -m x" "$TREE" | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/guard-bash.sh" 2>/dev/null)
+report "a new wip/done entry" 0 "$?"
+git -C "$TREE" reset -q HEAD~1 && rm -rf "$TREE/wip"
+
 echo "== pull request ==============================================="
 stop_case() {  # description, expected (silent|block), [stop_hook_active]
     local out got
@@ -271,6 +326,15 @@ git -C "$WORK" config branch.feat/quiet.noPullRequest true
 stub_gh ""
 stopped "a branch deliberately not published" silent
 git -C "$WORK" config --unset branch.feat/quiet.noPullRequest
+
+# A subagent in a worktree: its payload cwd is the worktree, CLAUDE_PROJECT_DIR is not.
+git -C "$TREE" commit -q --allow-empty -m "agent work"
+git -C "$WORK" switch -q main
+stub_gh ""
+out=$(printf '{"hook_event_name":"SubagentStop","stop_hook_active":false,"cwd":"%s"}' "$TREE" \
+      | PATH="$STUB:$PATH" CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/require-pull-request.sh" 2>/dev/null)
+case "$out" in *'"block"'*) got=block ;; "") got=silent ;; *) got="unexpected: $out" ;; esac
+report "a subagent's worktree commits with no pull request" block "$got"
 
 echo "== wiring ===================================================="
 for script in "$HOOKS"/*.sh "$HOOKS"/*.py; do

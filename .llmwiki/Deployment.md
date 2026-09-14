@@ -117,7 +117,7 @@ them.** A dump holds the whole database, which includes:
 - device labels and `last_seen_at`. Device tokens are **not** usable: only their argon2
   hash (`devices.token_hash`) is stored.
 
-What an operator should do, until the backups are encrypted (`TODO.md`):
+What an operator should do, until the backups are encrypted (`wip/todo/2026-09-13-encrypt-backups.md`):
 
 - treat `backups/` and every copy of it as a secret, like `.env`. The sidecar sets no
   `umask`, so the files get the container's default mode; check who else on the NAS can read
@@ -254,7 +254,7 @@ scripts/deploy_web.sh --rollback   # swap pwa/current.prev back
   2026-09-13 security review flagged that they carry every live `share_token`. Documenting it
   took minutes and tells each self-hosting operator what they are storing; encrypting them
   (a public key in the sidecar, the private key off the NAS) changes the restore procedure
-  and stays open in `TODO.md`.
+  and stays open in `wip/todo/2026-09-13-encrypt-backups.md`.
 - **`LLM_PROVIDER` defaults to `bedrock` in code**, but production has been run on
   `mistral`; `backend/README.md` describes only the default. Check the actual `.env` on the
   NAS before assuming which provider answered a given request. **This bit (2026-09-09 →
@@ -262,7 +262,7 @@ scripts/deploy_web.sh --rollback   # swap pwa/current.prev back
   code default `mistral-large-latest` — a model the account's tier no longer allows — and
   every analysis 502'd for two days while `/health` still said `ok`. Closed on 2026-09-11 by
   three changes together: the default is now `mistral-medium-latest`, `/health` reports the
-  resolved model, and production sets `MISTRAL_MODEL` explicitly. See `DONE.md` and
+  resolved model, and production sets `MISTRAL_MODEL` explicitly. See `wip/done/ARCHIVE-2026-09.md` and
   [[LlmProviders]]. **Confirmed by the deploy (2026-09-11):** production picked up
   `mistral-medium-latest` from the *compose* default alone — the NAS `.env` was never edited —
   which proves the compose copy, not `app/config.py`, is the one production reads.

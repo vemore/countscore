@@ -16,7 +16,7 @@
   > **Status: Outdated** (2026-09-13) — written; see [[Sync]]. What it knowingly leaves out
   > is listed under **Group sync** below.
 - **Group sync — deliberate limits of v1** (2026-09-13):
-  - *One group per device*, no group settings or group comments in the app (`TODO.md`).
+  - *One group per device*, no group settings or group comments in the app (`wip/todo_nr/2026-09-13-group-settings-in-app.md`).
     The device list and revoking another device shipped on 2026-09-14 (Settings → Group →
     Devices).
   - *Row-level LWW*: two devices editing different fields of one row concurrently keep one
@@ -64,17 +64,17 @@
   > **Status: Outdated** (2026-09-13) — "fine at current scale" undersells it: the scan
   > runs for *any* bearer token, valid or not, and group creation is free, so it is a CPU
   > denial of service at any size, not a limit reached at ~1 000 devices. See [[Security]]
-  > and `TODO.md`, *Backend security review — 2026-09-13*.
+  > and `wip/done/2026-09-13-backend-security-review.md`.
   >
   > **Status: Outdated** (2026-09-13) — no longer a limit: tokens name their device, so a
   > request runs one verify whatever the number of devices (`backend/app/auth.py`).
 - **Flutter SDK upgrade blocked.** Six packages are pinned back, and `dart run drift_dev`
   does not compile at all at drift 2.34.4 / drift_dev 2.34.0. Full analysis and the plan
-  live in `TODO.md` at the repo root — that file is the source of truth for this item.
+  live in `TODO.md` at the repo root (now `wip/done/ARCHIVE-2026-09.md`) — that file is the source of truth for this item.
 
   > **Status: Outdated** (2026-09-09) — done. The project is on Flutter 3.47.2 / Dart 3.13.2
   > and all seven held-back packages moved. `drift_dev` 2.34.6 compiles and runs
-  > (`dart run drift_dev analyze` → *No errors found*). See `DONE.md`.
+  > (`dart run drift_dev analyze` → *No errors found*). See `wip/done/ARCHIVE-2026-09.md`.
 
 ## Decisions & History
 
@@ -90,5 +90,5 @@
   > `~/.pub-cache/hosted/pub.dev/drift-<version>/drift_worker.js`. So the repository is *not*
   > the only source. They stay tracked by choice, not by necessity — see [[Web]].
 - **This page is not a backlog.** It records limits so that a session does not rediscover
-  them. Actionable work with a plan attached belongs in `TODO.md`, and moves to `DONE.md`
-  once it is closed.
+  them. Actionable work with a plan attached belongs in `wip/todo/` or `wip/todo_nr/`, and moves to
+  `wip/done/` once it is closed (`wip/README.md`).

@@ -1,0 +1,149 @@
+---
+name: ship-parallel
+description: Implement a set of CountScore wip/ entries in parallel — group them by theme, one pull request per theme, each built by a dedicated agent in its own git worktree; then bring each green pull request up to date, resolve conflicts, squash-merge it into main, deploy the backend and the PWA, smoke-test production, and open follow-up fix pull requests. Use when the user lists several tasks to implement, asks to work in parallel, or asks to merge and deploy finished pull requests. Triggers: "implémente ces tâches", "attaque en parallèle", "lance les PR", "implement these", "work on these in parallel", "merge and deploy", "fusionne et déploie", "ship the todo".
+---
+
+# Shipping in parallel
+
+One theme → one worktree → one agent → one pull request → squash-merged into `main` →
+deployed. You are the **orchestrator**: you plan, launch, merge, deploy and verify. The agents
+implement. Facts and the reasoning behind each choice: `.llmwiki/ParallelDelivery.md`.
+
+The user has authorised this loop to **merge its own green pull requests and deploy the
+backend and the PWA** (decided 2026-09-14). A Play Store release is not part of it: only on
+an explicit request, through `release-android`.
+
+## 0. Where the orchestrator stands
+
+- Work from the **main checkout, on `main`**, kept current: `git fetch --prune origin && git
+  merge --ff-only origin/main`. The hooks are read from this checkout
+  (`${CLAUDE_PROJECT_DIR}/.claude/hooks`), so it must carry the latest ones. It never commits
+  (the hook refuses a commit on `main`) — every change is made in a worktree.
+- If the main checkout is on some other branch with work in it, it belongs to another
+  session: do not switch it, ask the user.
+- `session-start.sh` lists the existing worktrees. A worktree whose pull request is still open
+  is work in flight — resume it rather than starting the same theme twice.
+
+## 1. Plan the pull requests
+
+1. `git fetch --prune origin`, then `scripts/wip.sh list all` and read every entry the user
+   named (`wip/todo*/`). An entry that is not in `wip/` yet gets written first (`wip/README.md`).
+2. Group by `Theme`, then **split or merge on the files each group will touch**, not on the
+   tag alone:
+   - two groups editing the same screen, the same Alembic head, or adding strings to the ARB
+     files → merge them into one pull request, or run them in two waves;
+   - a group that needs another's result (a schema, an endpoint) → a later wave, started
+     after the first merges. Never a stacked pull request (the hook refuses `--base`).
+   - one pull request stays reviewable: roughly a day of work, one reason to revert.
+3. Order the merges: schema and backend first, then app, then docs and listing.
+4. Present the plan in **one** `AskUserQuestion` — for each pull request: branch name, entries,
+   likely files, wave, merge order — and wait for the answer. The user's go-ahead covers the
+   whole loop below, merges and deploys included.
+
+Five agents at a time at most. Parallel `flutter test` runs queue on the SDK lock anyway, and
+each worktree costs a `pub get` and a `build_runner`.
+
+## 2. Launch one agent per pull request
+
+All agents of a wave in **one message**, each with `isolation: "worktree"` and
+`run_in_background` left to the default. The tool creates the worktree under
+`.claude/worktrees/<name>` on a branch `worktree-<name>`; the agent moves to a proper branch
+first. Fill in this prompt — do not shorten the rules part:
+
+```text
+You implement one pull request of CountScore, in the git worktree you start in.
+
+Pull request: <type>/<topic> — <one-line goal>
+Entries to close: <wip/todo/....md paths>
+Files you will likely touch: <list>. Other agents are working in parallel on: <other PRs and
+their files> — stay out of those files; if you cannot, say so in your report.
+
+Rules:
+1. First: `git fetch --prune origin && git switch -c <type>/<topic> origin/main`, then
+   `scripts/worktree_setup.sh` (add --no-app or --no-backend when one side is untouched).
+2. Read CLAUDE.md, .llmwiki/INDEX.md and the pages the change touches. Use the project skills
+   that cover the work (i18n-add-string, db-migration, ...).
+3. Implement, with tests. Update the wiki pages, README.md and privacy documents the change
+   falsifies, in the same pull request.
+4. Close each entry in the same pull request: `git mv wip/todo/X.md wip/done/X.md` and add the
+   `**Status:** done (YYYY-MM-DD) — closed by <type>/<topic>. ...` line (wip/README.md). A
+   problem you find but were not asked to fix becomes a new entry in wip/todo_nr/ (or
+   wip/todo/ if it blocks the release) — never fix it inline, never edit another entry.
+5. Commit (the hook runs the gates in this worktree), `git push -u origin <type>/<topic>`,
+   `gh pr create --base main` with a body saying what changed and why.
+6. Watch `gh pr checks <n> --watch` and fix what fails until every check is green.
+7. Never merge, never deploy, never force-push, never push to main.
+8. Report, briefly: PR URL and number, check state, files touched, Alembic revisions, ARB keys
+   added, anything the orchestrator must know to merge or deploy (env vars, migrations,
+   manual steps), and entries you created.
+```
+
+A `SubagentStop` hook refuses to let an agent finish while its commits have no pull request
+or while its checks are red, so a report without a green pull request means the agent was
+blocked twice — read why before relaunching.
+
+## 3. Merge, one pull request at a time
+
+`main` requires an up-to-date branch, three green checks and a linear history
+(`.llmwiki/ParallelDelivery.md`). So merges are serial. For each pull request, in the planned
+order:
+
+1. `gh pr view <n> --json state,mergeable,mergeStateStatus,headRefName` and read the diff
+   (`gh pr diff <n>`) — you are the only reviewer. Check it closes its entries and touches
+   what its report says.
+2. Bring it up to date: `gh api -X PUT repos/{owner}/{repo}/pulls/<n>/update-branch`. (`gh pr update-branch`
+   needs gh ≥ 2.49; this machine has 2.45). It merges `main` into the branch on GitHub — no rebase, no force-push, and the agent's worktree stays valid.
+3. If GitHub reports a conflict, resolve it in that pull request's worktree:
+   `git -C <worktree> fetch origin && git -C <worktree> merge origin/main`, fix, commit (the
+   hook runs the gates), `git push`. Recipes:
+   - **`lib/l10n/*.arb`** — keep the union of the keys, valid JSON, same order as the
+     template; then `flutter gen-l10n`. Never hand-merge `app_localizations*.dart`: take either
+     side and regenerate.
+   - **Alembic** — two revisions with the same `down_revision`: point the later one at the
+     other (`alembic heads` must print one head), then re-run the backend tests.
+   - **`.llmwiki/*.md`** — keep both facts, and the later `Updated:` date; `INDEX.md` too.
+   - **`pubspec.lock` / `uv.lock`** — take `main`'s, then `flutter pub get` / `uv lock`.
+   - **`wip/`** — two branches never touch the same entry; a conflict there means one of them
+     edited an entry it did not own: keep the owner's version.
+   - Anything that is a real semantic clash between two themes: stop and tell the user.
+4. `gh pr checks <n> --watch` — all green, on the updated head.
+5. `gh pr merge <n> --squash --delete-branch` (the hook refuses `--admin`, `--merge`,
+   `--rebase`). Then `git fetch --prune origin && git merge --ff-only origin/main` in the main
+   checkout.
+6. The next pull request is now behind `main`: back to step 2 for it.
+
+## 4. Deploy what the merge changed
+
+After **each** merge, so a regression points at one pull request. List what changed:
+`git diff --name-only <sha>^ <sha>` on the squash commit.
+
+| Paths changed | Do |
+|---|---|
+| `backend/` (code, `Dockerfile`, `alembic/`, compose) | `backend-deploy` skill — migrations included, then `/health` |
+| `lib/`, `web/`, `pubspec.*`, `assets/` | `web-deploy` skill |
+| both | backend first, then web |
+| only `android/`, `store_listing/`, docs, `wip/`, `.claude/`, CI | nothing to deploy |
+
+Deploy from a clean tree at the merged commit, never from an agent's worktree:
+`git worktree add ../countscore-deploy origin/main` (or `git -C ../countscore-deploy switch
+--detach origin/main` when it exists), then `scripts/worktree_setup.sh ../countscore-deploy`,
+which links the untracked `backend/scripts/deploy.env`. Run the deploy skill there.
+
+Then smoke-test production: `/health`, the PWA loads, and the path the pull request changed,
+driven for real (Playwright on the PWA, `flutter-device-test` for the Android app when only
+a device shows it). Record what you checked.
+
+## 5. Follow-up fixes
+
+A problem found after the deploy is a **new** pull request, never a commit on the merged
+branch (the hook refuses it once the branch is gone): write the entry in `wip/todo/`, launch
+one agent with the same prompt, then merge and deploy it through §3–§4. A deploy that broke
+production is rolled back first (`backend-deploy` / `web-deploy` both have a rollback), then
+fixed.
+
+## 6. Clean up and report
+
+- `git worktree remove <path>` for every worktree whose pull request merged, then
+  `git worktree prune`. Worktrees the Agent tool created without changes are already gone.
+- Report to the user: each pull request (URL, merged or not), each deploy and its smoke test,
+  the entries created on the way, and what is left (`scripts/wip.sh list`).

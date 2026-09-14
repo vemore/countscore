@@ -42,7 +42,7 @@ class GroupActionException implements Exception {
 /// Group membership and the sync loop around it.
 ///
 /// Sync runs only while a server URL is configured **and** this device holds a
-/// device token — both conditions from the user's design (TODO.md, 2026-09-13).
+/// device token — both conditions from the user's design (wip/done/ARCHIVE-2026-09.md, 2026-09-13).
 /// It is triggered by local writes (debounced), by the server's WebSocket signal,
 /// on app resume, and every [pollInterval] as a safety net.
 class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
