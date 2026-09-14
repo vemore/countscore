@@ -126,7 +126,8 @@ against stub `pg_dump`/`age`:
 - **Retention.** Files older than 7 days (`BACKUP_RETENTION_DAYS`) are deleted, matching
   `countscore_*.dump.gz.age` and the plaintext `countscore_*.sql.gz` / `countscore_*.dump.gz`
   written before encryption, so the last plaintext dumps on the NAS age out by themselves a
-  week after the first encrypted deploy.
+  week after the first encrypted deploy. The sweep runs after the rename, with `-exec rm`
+  (Ubuntu's BusyBox `find` has no `-delete`); a failed sweep is logged, not a failed backup.
 - `docker compose stop` is immediate: the script traps `TERM` and sleeps in the background.
 - `countscore-backup --once` takes one backup now and exits:
   `docker compose exec db-backup countscore-backup --once`.

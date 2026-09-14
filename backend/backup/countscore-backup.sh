@@ -68,11 +68,15 @@ backup_once() {
     fi
 
     # Encrypted dumps, plus the plaintext ones written before encryption (.sql.gz, and
-    # .dump.gz for good measure), age out after RETENTION_DAYS.
-    find "$BACKUP_DIR" -maxdepth 1 -type f \
-        \( -name 'countscore_*.dump.gz.age' -o -name 'countscore_*.sql.gz' -o -name 'countscore_*.dump.gz' \) \
-        -mtime +"$RETENTION_DAYS" -delete
+    # .dump.gz for good measure), age out after RETENTION_DAYS. `-exec rm` rather than
+    # `-delete`, which some BusyBox builds lack. The dump is already safe on disk, so a
+    # failed sweep is reported, not treated as a failed backup.
     log "backup done: $name"
+    if ! find "$BACKUP_DIR" -maxdepth 1 -type f \
+        \( -name 'countscore_*.dump.gz.age' -o -name 'countscore_*.sql.gz' -o -name 'countscore_*.dump.gz' \) \
+        -mtime +"$RETENTION_DAYS" -exec rm -f {} +; then
+        fail "retention sweep failed; old backups were not deleted"
+    fi
 }
 
 if [ "${1:-}" = "--once" ]; then
