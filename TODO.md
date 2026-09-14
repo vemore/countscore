@@ -17,17 +17,6 @@ in order of value: a `GET /groups/me/devices` endpoint (id, label, joined, last 
 device list in Settings → Group with a revoke action; then group settings. Per-field LWW
 (`field_versions`, see `.llmwiki/Sync.md`) belongs to the same "v2 of groups" conversation.
 
-## The two-device sync test does not run in CI
-
-**Status:** open — noted 2026-09-13, while writing `test/sync/sync_two_devices_test.dart`.
-
-That test is the only one that exercises the client against the real server contract, and it
-is skipped unless `SYNC_BACKEND_URL` is set, so CI never runs it. The `backend` job already
-starts a Postgres through testcontainers. Proposal: a CI job with a `postgres:17` service,
-`alembic upgrade head`, uvicorn in the background with a raised group rate limit, then
-`SYNC_BACKEND_URL=… flutter test test/sync/sync_two_devices_test.dart` — the recipe in
-`.llmwiki/Testing.md`, *Group sync against a local backend*.
-
 ## Backend security review — 2026-09-13
 
 **Status:** open — noted 2026-09-13, during a cyber-security review of `backend/` requested

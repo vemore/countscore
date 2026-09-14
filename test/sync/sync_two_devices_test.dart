@@ -6,6 +6,9 @@
 //
 // Each device is an in-memory database driven by SyncEngine directly — the
 // provider's timers and socket add nothing a test can assert on.
+//
+// The `sync` CI job also sets SYNC_TEST_REQUIRED=true, which turns the skip
+// into a failure: a job that lost its URL must go red, not green with nothing run.
 
 @Tags(['integration'])
 library;
@@ -73,6 +76,12 @@ class _Device {
 
 void main() {
   if (_url == null) {
+    if (Platform.environment['SYNC_TEST_REQUIRED'] == 'true') {
+      test('two devices through a real server', () {
+        fail('SYNC_TEST_REQUIRED is set but SYNC_BACKEND_URL is not');
+      });
+      return;
+    }
     test('two devices through a real server', () {},
         skip: 'set SYNC_BACKEND_URL to run against a backend');
     return;
