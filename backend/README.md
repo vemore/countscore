@@ -68,7 +68,8 @@ Reverse Proxy) :
 **Vérification :** `curl "$PUBLIC_URL/health"`.
 
 > Pour un test full-stack local (db + api + backup, sans Caddy) : `docker compose up -d`
-> puis `curl http://localhost:8000/health`.
+> puis `curl http://localhost:8000/health`. Le sidecar de backup refuse de tourner sans
+> `BACKUP_AGE_RECIPIENT` (clé publique age) dans `.env` — voir `.env.example`.
 
 ## Tests
 
@@ -172,7 +173,7 @@ Voir `../.llmwiki/Security.md`. Points critiques :
 - **Cap de taille de requête** (413 au-delà de `MAX_BODY_BYTES`, 256 Kio par défaut)
 - CORS verrouillé (refus de `*`)
 - TLS géré par Synology Web Station (Let's Encrypt)
-- Backups quotidiens (sidecar)
+- Backups quotidiens (sidecar), chiffrés avec age vers une clé publique ; refusés sans clé
 
 ### Mesures ajoutées le 2026-09-09
 - **WebSocket** : le `device_token` ne transite plus en query string. `POST /sync/ws-ticket`

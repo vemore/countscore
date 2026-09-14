@@ -1,0 +1,13 @@
+# db-backup sidecar image: Postgres client tools plus age, which postgres:17-alpine lacks.
+# The pg_dump major version must match the server's (db: postgres:17-alpine).
+# Built and pushed by scripts/deploy_nas.sh as $REGISTRY/countscore-backup.
+FROM postgres:17-alpine3.23
+
+# age 1.2.x from Alpine 3.23's community repository.
+RUN apk add --no-cache 'age~1.2'
+
+COPY backup/countscore-backup.sh /usr/local/bin/countscore-backup
+RUN chmod 0755 /usr/local/bin/countscore-backup
+
+# Runs as whatever user compose sets: 1027:100 in production (the NAS owner of backups/).
+ENTRYPOINT ["/usr/local/bin/countscore-backup"]
