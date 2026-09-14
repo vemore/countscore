@@ -2,7 +2,7 @@
 
 > Scope: everything specific to the PWA build.
 > Related: [[DataLayer]] · [[MobileApp]] · [[Testing]] · [[LlmProviders]] · [[KnownLimits]]
-> Updated: 2026-09-13
+> Updated: 2026-09-14
 
 ## Facts
 
@@ -12,7 +12,7 @@
 `flutter_bootstrap.js async`, no custom loader or service-worker code) · `manifest.json`
 (CountScore, standalone, portrait-primary, theme `#673AB7`) · `favicon.png` · `icons/`
 (4 PNGs) · and the two Drift runtime binaries: **`sqlite3.wasm` (744 KB)** and
-**`drift_worker.js` (355 KB, the prebuilt worker from drift 2.34.4)**.
+**`drift_worker.js` (the prebuilt worker from drift 2.35.0 — replaced on every drift bump, then the web e2e)**.
 
 Nothing else belongs in `web/`: Flutter copies the whole directory into `build/web/`, so
 any file placed there is published. The Claude Code instructions for the PWA live in
