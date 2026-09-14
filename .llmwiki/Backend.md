@@ -2,7 +2,7 @@
 
 > Scope: the FastAPI service — stack, layout, configuration, auth.
 > Related: [[Api]] · [[Sync]] · [[LlmProviders]] · [[Deployment]] · [[Security]] · [[Testing]]
-> Updated: 2026-09-13
+> Updated: 2026-09-14
 
 ## Facts
 
@@ -44,6 +44,7 @@ in-memory SQLite (aiosqlite) for tests. Postgres-specific features in use: JSONB
 export DATABASE_URL=postgresql://...
 alembic upgrade head                              # apply
 alembic revision --autogenerate -m "add x"        # create
+alembic check                                     # models == migrated schema (a CI step)
 ```
 
 Autogenerate works because `alembic/env.py` imports `app.models` and uses

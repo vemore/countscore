@@ -6,12 +6,17 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import JSON, Column, DateTime, ForeignKey, Index
+from sqlalchemy import JSON, BigInteger, Column, DateTime, ForeignKey, Index, Integer
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlmodel import Field, SQLModel
 
 # Use JSONB on Postgres (better indexing, jsonb ops) and JSON on SQLite (tests).
 _JSON_TYPE = JSON().with_variant(JSONB(), "postgresql")
+
+# BIGINT, as alembic/versions/0001_initial.py creates it. `alembic check` in CI compares
+# these types to the migrated Postgres schema. The primary key falls back to INTEGER on
+# SQLite, because only an `INTEGER PRIMARY KEY` autoincrements there (the test engine).
+_BIGINT_PK = BigInteger().with_variant(Integer(), "sqlite")
 
 
 def _utcnow() -> datetime:
@@ -26,7 +31,9 @@ class ChangeLog(SQLModel, table=True):
         Index("ix_change_log_entity", "entity_type", "entity_uuid", "client_lamport"),
     )
 
-    id: int | None = Field(default=None, primary_key=True)
+    id: int | None = Field(
+        default=None, sa_column=Column(_BIGINT_PK, primary_key=True, autoincrement=True)
+    )
     group_id: uuid.UUID = Field(
         sa_column=Column(ForeignKey("groups.id", ondelete="CASCADE"), nullable=False)
     )
@@ -39,8 +46,8 @@ class ChangeLog(SQLModel, table=True):
     payload: dict[str, Any] = Field(
         default_factory=dict, sa_column=Column(_JSON_TYPE, nullable=False)
     )
-    client_lamport: int
-    server_seq: int = Field(index=True)
+    client_lamport: int = Field(sa_column=Column(BigInteger(), nullable=False))
+    server_seq: int = Field(sa_column=Column(BigInteger(), nullable=False, index=True))
     applied_at: datetime = Field(
         default_factory=_utcnow,
         sa_column=Column(DateTime(timezone=True), nullable=False),
