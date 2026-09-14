@@ -2,7 +2,7 @@
 
 > Scope: the FastAPI service — stack, layout, configuration, auth.
 > Related: [[Api]] · [[Sync]] · [[LlmProviders]] · [[Deployment]] · [[Security]] · [[Testing]]
-> Updated: 2026-09-14
+> Updated: 2026-09-13
 
 ## Facts
 
@@ -12,7 +12,7 @@ present. `backend/README.md` is the fullest existing prose doc.
 ### Stack
 
 - **Python** `>=3.11` (`requires-python`), ruff `target-version = "py311"`, Docker image
-  `python:3.13-slim`, multi-stage, non-root, dependencies from `uv.lock` ([[Deployment]]).
+  `python:3.13-slim`.
 - fastapi >=0.141.1 · uvicorn[standard] · sqlmodel >=0.0.42 · asyncpg · psycopg2-binary ·
   alembic · pydantic v2 · pydantic-settings · `anthropic>=1.4,<2` · boto3 ·
   `openai>=3,<4` · argon2-cffi · httpx · python-multipart.
