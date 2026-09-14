@@ -30,7 +30,7 @@
 | Security headers | `security_headers` middleware in `app/main.py:main`; HSTS behind `HSTS_ENABLED`. API responses get `default-src 'none'`; `/docs` a Swagger CSP, and only exists with `EXPOSE_DOCS=true`; paths under `PWA_BASE_PATH` get `_PWA_CSP` (self, `'wasm-unsafe-eval'`, CanvasKit from `www.gstatic.com`, fonts from `fonts.gstatic.com`, `connect-src 'self' https: wss:`) plus `Cache-Control: no-cache`. |
 | Container | `backend/Dockerfile`: multi-stage, `USER app` (uid 10001), code and venv owned by root, no compiler, dependencies exactly `uv.lock` (`--locked --no-dev`). Checked by the `image` CI job. See [[Deployment]]. |
 | PWA static files | Read-only bind mount; Starlette `StaticFiles` rejects traversal out of `PWA_DIR`; `deploy_web.sh` refuses a build containing any `.md`. |
-| Backups | Daily `pg_dump`, 7-day rotation. |
+| Backups | Daily `pg_dump`, 7-day rotation. **Not encrypted**, and they contain every `share_token` — see the debt below. |
 
 ### Disclosure — what the app admits to sending, and to whom
 
@@ -109,6 +109,9 @@ proof-of-concept results are in `TODO.md`, *Backend security review — 2026-09-
   > the per-IP limit is its only cost control. `backend/tests/test_zapzap_analysis.py`.
 
 
+- **Backups are plain gzip and hold every `share_token` (2026-09-14).** Anyone who reads a
+  daily dump can join every group. Documented for operators, with the recovery step (rotate
+  every invite code), in [[Deployment]] *Backups*; encryption is open in `TODO.md`.
 - **Nothing pins the certificate or the identity of the configured backend.** The user
   types a URL and the app trusts the system trust store for it. Deliberate: a self-hosted
   service cannot be pinned in advance.
