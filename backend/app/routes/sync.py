@@ -614,14 +614,20 @@ async def _serve_stream(websocket: WebSocket, device_id: uuid.UUID, group_id: uu
                         # reconnect-then-pull catches up on whatever it missed.
                         await websocket.close(code=status.WS_1012_SERVICE_RESTART)
                         return
-                    await websocket.send_json({"type": "new_seq", "server_seq": server_seq})
                 except TimeoutError:
-                    # Heartbeat — keeps proxies (Caddy/Nginx) from closing idle conns,
-                    # and is where we notice a device revoked since the handshake.
-                    if await _is_revoked(device_id):
-                        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-                        return
+                    server_seq = None
+                # Revocation is re-checked before every frame — a signal and the idle
+                # heartbeat alike. Checking only on the heartbeat let a busy group, which
+                # never goes 30 s without a push, keep a revoked device's stream (and its
+                # MAX_STREAMS_PER_DEVICE slot) open. One primary-key read per push.
+                if await _is_revoked(device_id):
+                    await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+                    return
+                if server_seq is None:
+                    # Heartbeat — keeps proxies (Caddy/Nginx) from closing idle conns.
                     await websocket.send_json({"type": "ping"})
+                else:
+                    await websocket.send_json({"type": "new_seq", "server_seq": server_seq})
         except WebSocketDisconnect:
             pass
         finally:

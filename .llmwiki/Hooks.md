@@ -29,13 +29,14 @@ commit in a worktree is judged on the worktree's branch and gated on the worktre
 hook *scripts* themselves are still read from `${CLAUDE_PROJECT_DIR}/.claude/hooks`: the rules
 in force are the main checkout's copy, which is why it stays on `main` ([[ParallelDelivery]]).
 
-`session-start.sh` also lists the repository's other worktrees, and reports any pull request merged in the last 14 days whose base was
+`session-start.sh` also lists the repository's other worktrees and counts the local branches
+whose remote is gone, pointing at `scripts/cleanup_local.sh`; and it reports any pull request merged in the last 14 days whose base was
 not `main` and whose commits are not on `main` — work that merged into a dead-end branch.
 Acknowledge one that reached `main` another way with
 `git config --add countscore.deliveryAcknowledged <number>`.
 
 `parse_command.py` and `arb_keys.py` are helpers, not handlers.
-`scripts/hooks_selftest.sh` exercises all of them from a table of 100 cases and runs as the
+`scripts/hooks_selftest.sh` exercises all of them, and `scripts/cleanup_local.sh`, from a table of 110 cases and runs as the
 first step of the `app` job in `.github/workflows/ci.yml`.
 
 ### What is refused, and on what evidence

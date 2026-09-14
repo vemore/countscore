@@ -1,7 +1,9 @@
-"""The /sync/stream handler without Postgres: the per-device cap and a lost LISTEN connection.
+"""The /sync/stream handler without Postgres: the per-device cap, a lost LISTEN connection
+and a device revoked while its group keeps pushing.
 
-``listen_for_group`` is replaced by an in-memory queue, so these run on the fast suite; the
-shared connection itself is covered by ``test_sync_ws_integration.py``.
+``listen_for_group`` is replaced by an in-memory queue and ``_is_revoked`` by a set of
+revoked device ids, so these run on the fast suite; the shared connection and the real
+revocation read are covered by ``test_sync_ws_integration.py``.
 """
 
 from __future__ import annotations
@@ -25,6 +27,7 @@ class FakeWebSocket:
         self.closed = asyncio.Event()
         self.close_code: int | None = None
         self._gone = asyncio.Event()
+        self.sent: list[dict] = []
 
     async def accept(self) -> None:
         self.accepted.set()
@@ -38,14 +41,25 @@ class FakeWebSocket:
         raise WebSocketDisconnect()
 
     async def send_json(self, data: dict) -> None:
-        pass
+        self.sent.append(data)
 
     def disconnect(self) -> None:
         self._gone.set()
 
 
 @pytest.fixture
-def queues(monkeypatch) -> list[asyncio.Queue]:
+def revoked(monkeypatch) -> set[uuid.UUID]:
+    ids: set[uuid.UUID] = set()
+
+    async def fake_is_revoked(device_id: uuid.UUID) -> bool:
+        return device_id in ids
+
+    monkeypatch.setattr(sync_route, "_is_revoked", fake_is_revoked)
+    return ids
+
+
+@pytest.fixture
+def queues(monkeypatch, revoked) -> list[asyncio.Queue]:
     opened: list[asyncio.Queue] = []
 
     @asynccontextmanager
@@ -113,4 +127,28 @@ async def test_a_lost_listen_connection_closes_the_stream(queues):
     await asyncio.wait_for(task, timeout=2)
 
     assert ws.close_code == status.WS_1012_SERVICE_RESTART
+    assert sync_route._open_streams == {}
+
+
+async def test_a_device_revoked_while_its_group_pushes_is_closed_at_the_next_signal(
+    queues, revoked
+):
+    """The idle heartbeat never fires while signals keep coming, so it cannot be the only check."""
+    device = uuid.uuid4()
+    ws, task = await _open(device, uuid.uuid4())
+    assert ws.accepted.is_set()
+
+    queues[0].put_nowait(1)
+    for _ in range(20):
+        if ws.sent:
+            break
+        await asyncio.sleep(0.01)
+    assert ws.sent == [{"type": "new_seq", "server_seq": 1}]
+
+    revoked.add(device)
+    queues[0].put_nowait(2)
+    await asyncio.wait_for(task, timeout=2)  # well under the 30 s idle heartbeat
+
+    assert ws.close_code == status.WS_1008_POLICY_VIOLATION
+    assert ws.sent == [{"type": "new_seq", "server_seq": 1}]  # 2 was never forwarded
     assert sync_route._open_streams == {}

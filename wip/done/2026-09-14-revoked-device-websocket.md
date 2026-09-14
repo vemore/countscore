@@ -1,5 +1,9 @@
 # A revoked device keeps its WebSocket open while the group is busy
 
+**Status:** done (2026-09-14) — closed by fix/revoked-device-stream. `_serve_stream` now
+re-checks revocation before every frame (signal or heartbeat) and closes with 1008; covered by
+a fast test and a Postgres integration test that revokes a device while its group pushes.
+
 - **Noted:** 2026-09-14 — while adding the device list
 - **Theme:** backend-sync
 - **Area:** backend
