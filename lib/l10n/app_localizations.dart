@@ -1445,6 +1445,48 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'La partie « {name} » a été supprimée sur un autre appareil'**
   String gameDeletedElsewhere(String name);
+
+  /// Button in Settings → Group, and title of the sheet listing the group's devices
+  ///
+  /// In fr, this message translates to:
+  /// **'Appareils'**
+  String get groupDevices;
+
+  /// Explanation under the title of the devices sheet
+  ///
+  /// In fr, this message translates to:
+  /// **'Un téléphone perdu ou vendu peut être exclu du groupe ici.'**
+  String get groupDevicesExplain;
+
+  /// Marks the current device in the group's device list
+  ///
+  /// In fr, this message translates to:
+  /// **'Cet appareil'**
+  String get groupDeviceThisOne;
+
+  /// When a device last talked to the server
+  ///
+  /// In fr, this message translates to:
+  /// **'Vu pour la dernière fois : {date}'**
+  String groupDeviceLastSeen(String date);
+
+  /// Action removing another device from the group
+  ///
+  /// In fr, this message translates to:
+  /// **'Exclure'**
+  String get groupDeviceRevoke;
+
+  /// Confirmation before removing a device; the invite code is rotated at the same time
+  ///
+  /// In fr, this message translates to:
+  /// **'Exclure « {label} » du groupe ? Il ne pourra plus synchroniser. Le code d\'invitation change aussi : les membres gardent leur accès, mais il faudra partager le nouveau code pour inviter quelqu\'un.'**
+  String groupDeviceRevokeConfirm(String label);
+
+  /// Shown after a device was removed
+  ///
+  /// In fr, this message translates to:
+  /// **'« {label} » a été exclu. Le code d\'invitation a changé.'**
+  String groupDeviceRevoked(String label);
 }
 
 class _AppLocalizationsDelegate

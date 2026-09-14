@@ -771,4 +771,32 @@ class AppLocalizationsDe extends AppLocalizations {
   String gameDeletedElsewhere(String name) {
     return '„$name“ wurde auf einem anderen Gerät gelöscht';
   }
+
+  @override
+  String get groupDevices => 'Geräte';
+
+  @override
+  String get groupDevicesExplain =>
+      'Ein verlorenes oder verkauftes Handy kann hier aus der Gruppe entfernt werden.';
+
+  @override
+  String get groupDeviceThisOne => 'Dieses Gerät';
+
+  @override
+  String groupDeviceLastSeen(String date) {
+    return 'Zuletzt gesehen: $date';
+  }
+
+  @override
+  String get groupDeviceRevoke => 'Entfernen';
+
+  @override
+  String groupDeviceRevokeConfirm(String label) {
+    return '„$label“ aus der Gruppe entfernen? Es wird nicht mehr synchronisiert. Der Einladungscode ändert sich ebenfalls: Mitglieder behalten ihren Zugang, aber zum Einladen muss der neue Code geteilt werden.';
+  }
+
+  @override
+  String groupDeviceRevoked(String label) {
+    return '„$label“ wurde entfernt. Der Einladungscode hat sich geändert.';
+  }
 }

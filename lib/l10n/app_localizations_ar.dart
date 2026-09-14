@@ -777,4 +777,32 @@ class AppLocalizationsAr extends AppLocalizations {
   String gameDeletedElsewhere(String name) {
     return 'حُذفت اللعبة «$name» على جهاز آخر';
   }
+
+  @override
+  String get groupDevices => 'الأجهزة';
+
+  @override
+  String get groupDevicesExplain =>
+      'يمكنك هنا إزالة هاتف مفقود أو مُباع من المجموعة.';
+
+  @override
+  String get groupDeviceThisOne => 'هذا الجهاز';
+
+  @override
+  String groupDeviceLastSeen(String date) {
+    return 'آخر ظهور: $date';
+  }
+
+  @override
+  String get groupDeviceRevoke => 'إزالة';
+
+  @override
+  String groupDeviceRevokeConfirm(String label) {
+    return 'هل تريد إزالة «$label» من المجموعة؟ لن تتم مزامنته بعد الآن. سيتغير رمز الدعوة أيضًا: يحتفظ الأعضاء بإمكانية الوصول، لكن يجب مشاركة الرمز الجديد لدعوة أي شخص.';
+  }
+
+  @override
+  String groupDeviceRevoked(String label) {
+    return 'تمت إزالة «$label». تغيّر رمز الدعوة.';
+  }
 }

@@ -755,4 +755,31 @@ class AppLocalizationsJa extends AppLocalizations {
   String gameDeletedElsewhere(String name) {
     return '「$name」は別の端末で削除されました';
   }
+
+  @override
+  String get groupDevices => 'デバイス';
+
+  @override
+  String get groupDevicesExplain => '紛失または売却したスマートフォンをここでグループから削除できます。';
+
+  @override
+  String get groupDeviceThisOne => 'このデバイス';
+
+  @override
+  String groupDeviceLastSeen(String date) {
+    return '最終確認：$date';
+  }
+
+  @override
+  String get groupDeviceRevoke => '削除';
+
+  @override
+  String groupDeviceRevokeConfirm(String label) {
+    return '「$label」をグループから削除しますか？今後は同期されません。招待コードも変更されます。メンバーのアクセスはそのままですが、招待するには新しいコードを共有する必要があります。';
+  }
+
+  @override
+  String groupDeviceRevoked(String label) {
+    return '「$label」を削除しました。招待コードが変更されました。';
+  }
 }

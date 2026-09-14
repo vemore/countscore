@@ -89,6 +89,7 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   bool get isJoined => _membership != null && _deviceToken != null;
   String? get groupName => _membership?.groupName;
   String? get groupId => _membership?.groupId;
+  String? get deviceId => _membership?.deviceId;
   String? get shareToken => _shareToken;
   SyncStatus get status => _status;
   DateTime? get lastSyncAt => _lastSyncAt;
@@ -183,6 +184,40 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
       throw GroupActionException(GroupActionError.unreachable);
     }
     await _credentials.saveShareToken(_shareToken!);
+    notifyListeners();
+  }
+
+  /// The group's active devices, this one included.
+  Future<List<GroupDevice>> devices() async {
+    final token = _deviceToken;
+    if (token == null || _baseUrl == null) return const [];
+    try {
+      return await _client().listDevices(token);
+    } on BackendException {
+      throw GroupActionException(GroupActionError.server);
+    } catch (_) {
+      throw GroupActionException(GroupActionError.unreachable);
+    }
+  }
+
+  /// Shuts another device out of the group — a lost or sold phone. The server
+  /// rotates the invite code at the same time, since that device knew it; the
+  /// new code replaces the stored one. This device leaves through [leave].
+  Future<void> revokeDevice(String deviceId) async {
+    final token = _deviceToken;
+    if (token == null || _baseUrl == null || deviceId == this.deviceId) return;
+    final String? newShareToken;
+    try {
+      newShareToken = await _client().revokeDevice(token, deviceId);
+    } on BackendException {
+      throw GroupActionException(GroupActionError.server);
+    } catch (_) {
+      throw GroupActionException(GroupActionError.unreachable);
+    }
+    if (newShareToken != null) {
+      _shareToken = newShareToken;
+      await _credentials.saveShareToken(newShareToken);
+    }
     notifyListeners();
   }
 

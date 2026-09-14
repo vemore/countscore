@@ -1,10 +1,10 @@
 # Privacy Policy for CountScore
 
-**Last Updated**: September 13, 2026
+**Last Updated**: September 14, 2026
 
 **Effective Date**: Applies to CountScore v1.1.0 and later
 
-**Previous versions**: v2.2 (September 11, 2026), v2.1 and v2.0 (September 9, 2026) and v1.0 (November 9, 2025). v1.0
+**Previous versions**: v2.3 (September 13, 2026), v2.2 (September 11, 2026), v2.1 and v2.0 (September 9, 2026) and v1.0 (November 9, 2025). v1.0
 applies to CountScore 1.0.x — the versions currently on the Play Store. See
 [Version History](#version-history).
 
@@ -174,6 +174,9 @@ keep anything sensitive out of comments.
 2. **To the other devices in the group**, which download the shared games from that server.
    Anyone who has the group's invite code can join the group and see its shared games, so
    share the code only with people you mean to share with; you can replace it in Settings.
+   Every device in the group can also see the list of the group's devices — **each device's
+   name, when it joined and when it was last seen** — so that a lost or sold phone can be
+   recognised and removed.
 
 No LLM provider is involved in group sharing, and nothing is sent to us.
 
@@ -185,6 +188,9 @@ No LLM provider is involved in group sharing, and nothing is sent to us.
   can be reached at that moment; otherwise the token is only erased from the device — and
   turns your copies of the shared games back into local games. It does not remove the games from the
   server or from the other devices.
+- **Removing another device** (Settings → Group → Devices) revokes that device's access token,
+  so it can no longer read or change the group's games, and replaces the invite code, since
+  that device knew it. It does not erase the games already on that device.
 - **Removing the data from the server** is done by whoever operates it — normally you. The
   server software deletes a group and everything in it when its row is removed.
 
@@ -354,6 +360,10 @@ changes are announced through app updates on the Google Play Store.
 
 ### Version History
 
+- **v2.4** (September 14, 2026): Group sharing now shows each device of a group the list of
+  the group's devices — their names, when they joined and when they were last seen — and lets
+  any of them remove another one. That information was already stored by the server (v2.3);
+  what changed is that the group's other devices now receive it. Documents removing a device.
 - **v2.3** (September 13, 2026): Documents **group sharing**, which the app now implements:
   what a shared game sends, that the server you configure stores it with a change history,
   that the group's other devices receive it, how leaving and deleting work, and where the

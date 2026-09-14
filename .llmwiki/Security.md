@@ -2,7 +2,7 @@
 
 > Scope: what is defended, and what is knowingly open.
 > Related: [[Backend]] · [[Api]] · [[LlmProviders]] · [[Deployment]] · [[KnownLimits]]
-> Updated: 2026-09-13
+> Updated: 2026-09-14
 
 ## Facts
 
@@ -122,6 +122,10 @@ proof-of-concept results are in `TODO.md`, *Backend security review — 2026-09-
   group, which matches the household model but not a public one. Since a revoke rotates the
   share token, the members who stay hold a stale invite link until they rotate it again
   (`GET /groups/me` never returns the token).
+  Since 2026-09-14 the app puts that privilege on screen: Settings → Group → Devices lets any
+  member remove any other, and shows every member each device's name and last-seen time.
+  Only the member who revoked gets the new code; the others see theirs stop working for
+  invitations. An owner role is the change to make before a public launch.
 - **In-memory state ties the service to one worker.** `ip_rate_limiter`, `ws_ticket`, the
   per-device stream counter and the LISTEN broker all live in process memory; horizontal scaling needs them moved to Redis or Postgres
   first. See rule 2 in `backend/CLAUDE.md`.

@@ -403,5 +403,12 @@
 
   "roundRenumbered": "سبق إدخال هذه الجولة على جهاز آخر، لذا أصبحت الجولة رقم {number}.",
 
-  "gameDeletedElsewhere": "حُذفت اللعبة «{name}» على جهاز آخر"
+  "gameDeletedElsewhere": "حُذفت اللعبة «{name}» على جهاز آخر",
+  "groupDevices": "الأجهزة",
+  "groupDevicesExplain": "يمكنك هنا إزالة هاتف مفقود أو مُباع من المجموعة.",
+  "groupDeviceThisOne": "هذا الجهاز",
+  "groupDeviceLastSeen": "آخر ظهور: {date}",
+  "groupDeviceRevoke": "إزالة",
+  "groupDeviceRevokeConfirm": "هل تريد إزالة «{label}» من المجموعة؟ لن تتم مزامنته بعد الآن. سيتغير رمز الدعوة أيضًا: يحتفظ الأعضاء بإمكانية الوصول، لكن يجب مشاركة الرمز الجديد لدعوة أي شخص.",
+  "groupDeviceRevoked": "تمت إزالة «{label}». تغيّر رمز الدعوة."
 }

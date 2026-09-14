@@ -3,19 +3,30 @@
 Open work only. A finished item moves to `DONE.md` — see the workflow section of
 `CLAUDE.md`.
 
-## Group management beyond joining and leaving
+## Group settings in the app — for 1.2
 
 **Status:** open — noted 2026-09-13, deliberately out of scope for the sync client (decided
-with the user).
+with the user). The device list and revoke half shipped on 2026-09-14 (`DONE.md`); the user
+put what is left below off to a 1.2.
 
 The server has endpoints the app does not use: `GET/PATCH /groups/me` (comment style,
-language, LLM budget), `GET /groups/me/usage`, the group-scoped comments, and revoking
-*another* device (`POST /groups/me/devices/{id}/revoke`). The last one has no way to list
-devices first, so a lost phone can only be shut out by rotating the invite code and — once
-the backend review's MEDIUM *Revocation is reversible* item lands — by revoking it. Proposed,
-in order of value: a `GET /groups/me/devices` endpoint (id, label, joined, last seen) and a
-device list in Settings → Group with a revoke action; then group settings. Per-field LWW
-(`field_versions`, see `.llmwiki/Sync.md`) belongs to the same "v2 of groups" conversation.
+language, LLM budget), `GET /groups/me/usage`, and the group-scoped comments. Per-field LWW
+(`field_versions`, see `.llmwiki/Sync.md`) belongs to the same "v2 of groups" conversation,
+and so does an owner role: today any member can remove any other (`.llmwiki/Security.md`),
+which the user wants revisited before group sharing is opened to the public.
+
+## A revoked device keeps its WebSocket open while the group is busy
+
+**Status:** open — noted 2026-09-14, while adding the device list.
+
+`POST /groups/me/devices/{id}/revoke` does not signal the revoked device's open
+`/sync/stream`. The stream re-checks `revoked_at` only in its idle heartbeat
+(`backend/app/routes/sync.py`, `_is_revoked`, after 30 s with no notification), so while the
+group keeps pushing, the revoked device keeps receiving `new_seq` signals. They carry no data,
+and `/sync/pull` answers 401, so nothing leaks — but the connection and one of its
+`MAX_STREAMS_PER_DEVICE` slots stay held. Proposal: re-check revocation on every signal
+(one primary-key read), or have the revoke route notify a per-device close through the
+LISTEN broker in `app/services/notify.py`.
 
 ## The two-device sync test does not run in CI
 

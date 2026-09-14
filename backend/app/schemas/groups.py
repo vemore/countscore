@@ -24,6 +24,19 @@ class DevicePayload(BaseModel):
     label: str
 
 
+class DeviceInfo(BaseModel):
+    """A member device as its siblings see it: enough to recognise a lost phone, no token."""
+
+    id: uuid.UUID
+    label: str
+    joined_at: datetime
+    last_seen_at: datetime
+
+
+class DeviceListResponse(BaseModel):
+    devices: list[DeviceInfo]
+
+
 class GroupPayload(BaseModel):
     """The group as any member device may read it — no share_token.
 

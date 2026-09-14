@@ -67,6 +67,35 @@ async def test_revoke_device(client):
     assert r.status_code == 401
 
 
+async def test_list_devices_shows_the_active_members_of_the_callers_group(client):
+    r = await client.post("/groups", json={"name": "g", "device_label": "alice"})
+    alice = {"Authorization": f"Bearer {r.json()['device']['token']}"}
+    alice_id = r.json()["device"]["id"]
+    share = r.json()["group"]["share_token"]
+    r = await client.post("/groups/join", json={"share_token": share, "device_label": "bob"})
+    bob_id = r.json()["device"]["id"]
+    r = await client.post("/groups/join", json={"share_token": share, "device_label": "carol"})
+    carol_id = r.json()["device"]["id"]
+    # A device of another group must not show up.
+    await client.post("/groups", json={"name": "other", "device_label": "stranger"})
+
+    r = await client.get("/groups/me/devices", headers=alice)
+    assert r.status_code == 200, r.text
+    devices = r.json()["devices"]
+    assert [d["label"] for d in devices] == ["alice", "bob", "carol"]
+    assert [d["id"] for d in devices] == [alice_id, bob_id, carol_id]
+    assert set(devices[0]) == {"id", "label", "joined_at", "last_seen_at"}
+
+    # A revoked device drops out of the list.
+    await client.post(f"/groups/me/devices/{bob_id}/revoke", headers=alice)
+    r = await client.get("/groups/me/devices", headers=alice)
+    assert [d["id"] for d in r.json()["devices"]] == [alice_id, carol_id]
+
+
+async def test_list_devices_needs_a_device_token(client):
+    assert (await client.get("/groups/me/devices")).status_code == 401
+
+
 async def test_revoking_another_device_rotates_the_share_token(client):
     """Bob learnt the share token when he joined: a revoke alone let him straight back in."""
     r = await client.post("/groups", json={"name": "g", "device_label": "alice"})
