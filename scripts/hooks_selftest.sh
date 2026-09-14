@@ -336,6 +336,74 @@ out=$(printf '{"hook_event_name":"SubagentStop","stop_hook_active":false,"cwd":"
 case "$out" in *'"block"'*) got=block ;; "") got=silent ;; *) got="unexpected: $out" ;; esac
 report "a subagent's worktree commits with no pull request" block "$got"
 
+echo "== local cleanup ============================================="
+# scripts/cleanup_local.sh deletes branches and worktrees, so every reason to keep one
+# is exercised here, with a stubbed gh answering per branch.
+CREMOTE="$SANDBOX/cleanup-remote.git"
+CWORK="$SANDBOX/cleanup-work"
+git init -q --bare "$CREMOTE"
+git clone -q "$CREMOTE" "$CWORK" 2>/dev/null
+git -C "$CWORK" config user.email t@t
+git -C "$CWORK" config user.name t
+git -C "$CWORK" commit -q --allow-empty -m base
+git -C "$CWORK" branch -M main
+git -C "$CWORK" push -q -u origin main 2>/dev/null
+
+cbranch() {  # name -- a branch with one commit of its own
+    git -C "$CWORK" switch -qc "$1" origin/main
+    git -C "$CWORK" commit -q --allow-empty -m "$1"
+    git -C "$CWORK" switch -q main
+}
+git -C "$CWORK" branch worktree-agent1 origin/main          # Agent tool's placeholder
+cbranch feat/merged
+cbranch feat/merged-extra
+cbranch feat/open
+cbranch feat/nopr
+git -C "$CWORK" worktree add -q "$SANDBOX/wt-merged" -b feat/wt-merged origin/main 2>/dev/null
+git -C "$SANDBOX/wt-merged" commit -q --allow-empty -m wt
+git -C "$CWORK" worktree add -q "$SANDBOX/wt-dirty" -b feat/wt-dirty origin/main 2>/dev/null
+git -C "$SANDBOX/wt-dirty" commit -q --allow-empty -m wt
+touch "$SANDBOX/wt-dirty/unsaved.txt"
+
+CSTUB="$SANDBOX/cleanup-stub"
+mkdir -p "$CSTUB"
+cat > "$CSTUB/gh" <<'STUBEOF'
+#!/bin/bash
+args="$*"
+head=""; [[ "$args" =~ --head\ ([^ ]+) ]] && head="${BASH_REMATCH[1]}"
+case "$1 $2" in
+    "auth status") exit 0 ;;
+    "pr list")
+        case "$args" in
+            *"--state merged"*)
+                case "$head" in
+                    feat/merged|feat/merged-extra|feat/wt-merged|feat/wt-dirty) echo "cafe 7" ;;
+                esac ;;
+            *) [ "$head" = feat/open ] && echo "#8 OPEN" ;;
+        esac ;;
+    "api "*)
+        case "$args" in
+            *"...$(git -C "$CLEANUP_WORK" rev-parse feat/merged-extra)"*) echo diverged ;;
+            *compare*) echo behind ;;
+        esac ;;
+esac
+exit 0
+STUBEOF
+chmod +x "$CSTUB/gh"
+
+(cd "$CWORK" && PATH="$CSTUB:$PATH" CLEANUP_WORK="$CWORK" "$ROOT/scripts/cleanup_local.sh" --apply >/dev/null 2>&1)
+has_branch() { git -C "$CWORK" rev-parse --verify -q "refs/heads/$1" >/dev/null && echo kept || echo removed; }
+report "cleanup: Agent placeholder branch with no commit"      removed "$(has_branch worktree-agent1)"
+report "cleanup: merged pull request, tip included"            removed "$(has_branch feat/merged)"
+report "cleanup: merged, but local commits beyond the head"    kept    "$(has_branch feat/merged-extra)"
+report "cleanup: open pull request"                            kept    "$(has_branch feat/open)"
+report "cleanup: no pull request at all"                       kept    "$(has_branch feat/nopr)"
+report "cleanup: clean worktree on a merged branch"            removed "$([ -d "$SANDBOX/wt-merged" ] && echo kept || echo removed)"
+report "cleanup: its branch too"                               removed "$(has_branch feat/wt-merged)"
+report "cleanup: worktree with unsaved work"                   kept    "$([ -d "$SANDBOX/wt-dirty" ] && echo kept || echo removed)"
+report "cleanup: the branch of that worktree"                  kept    "$(has_branch feat/wt-dirty)"
+report "cleanup: main"                                         kept    "$(has_branch main)"
+
 echo "== wiring ===================================================="
 for script in "$HOOKS"/*.sh "$HOOKS"/*.py; do
     [ -x "$script" ] && pass=$((pass + 1)) || { fail=$((fail + 1)); echo "  FAIL  $script is not executable"; }
