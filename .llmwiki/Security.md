@@ -46,7 +46,7 @@ so it is stated once, here, and the compliance documents are written from it.
 | Declared as | Personal info → Name, and App activity → Other user-generated content. Both optional, App functionality, not linked to identity, not used for tracking. `PLAY_STORE_DATA_SAFETY.md`. |
 | Permission it needs | `INTERNET`, and only that, in `android/app/src/main/AndroidManifest.xml`. That manifest also points at `res/xml/network_security_config.xml`. |
 
-The rule that keeps this true is in `CLAUDE.md`: a new outbound flow — a new field in this
+The rule that keeps this true is in [[Documentation]]: a new outbound flow — a new field in this
 payload included — changes `README.md`, `privacy_policy.md` and `PLAY_STORE_DATA_SAFETY.md`
 in the same commit, or it is not finished.
 

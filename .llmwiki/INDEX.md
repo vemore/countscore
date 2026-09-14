@@ -47,11 +47,12 @@ Load this file first. Then read only the pages your task touches.
 | Page | Summary | Updated |
 |---|---|---|
 | [[Deployment]] | Synology NAS, Web Station TLS, `deploy_nas.sh`, `deploy_web.sh`, environment | 2026-09-14 |
-| [[Hooks]] | What Claude Code refuses mechanically, and why each rule left CLAUDE.md | 2026-09-14 |
-| [[ParallelDelivery]] | Worktrees, one PR per theme, serial squash merges, deploy after each merge, `wip/` tracking | 2026-09-14 |
+| [[Hooks]] | What Claude Code refuses mechanically, why each rule left CLAUDE.md, recovering from a stale branch | 2026-09-14 |
+| [[Documentation]] | Which documents a change implicates: wiki, README table, the three privacy documents; the CLAUDE.md budget | 2026-09-14 |
+| [[ParallelDelivery]] | Protection on main, worktrees, local cleanup, why one PR per theme and serial squash merges (`wip/` format: `wip/README.md`) | 2026-09-14 |
 | [[Security]] | Defended surfaces, and the security debt that is knowingly open | 2026-09-14 |
 | [[Testing]] | Unit, Drift, migration, e2e web and device; backend pytest; CI jobs, `alembic check`, dependency audit | 2026-09-14 |
-| [[Release]] | Play Store signing state, target API, 2026 Play policy constraints | 2026-09-14 |
+| [[Release]] | Play Store signing state, target API, 2026 Play policy constraints, release cadence and pruning pass | 2026-09-14 |
 
 ## Procedures live in skills, not here
 

@@ -1,7 +1,7 @@
 # Release
 
 > Scope: the Play Store configuration state. For the procedure, use the `release-android` skill.
-> Related: [[MobileApp]] · [[Testing]] · [[KnownLimits]]
+> Related: [[MobileApp]] · [[Testing]] · [[KnownLimits]] · [[Documentation]]
 > Updated: 2026-09-14
 
 ## Facts
@@ -32,15 +32,6 @@ repo root; the build procedure is the `release-android` skill.
 > `release-android` skill all kept the old claim. Shrinking is on for the size saving, not
 > for obfuscation.
 
-### Build
-
-```bash
-flutter build appbundle --release --no-tree-shake-icons
-# → build/app/outputs/bundle/release/app-release.aab
-```
-
-`--no-tree-shake-icons` is mandatory — see [[MobileApp]] for why.
-
 ### Tags
 
 A released commit gets an **annotated** tag named exactly as `version:` in `pubspec.yaml`,
@@ -55,7 +46,8 @@ Decided 2026-09-14: the merge-and-deploy loop ships the backend and the PWA afte
 request, the Android app only on request, so the gap is made visible rather than automatic.
 `ship-parallel` §6 reports the last tag, the commits on `main` since, and the open `wip/todo/`
 entries; once `wip/todo/` is empty, that report proposes a `release-android` run. The
-release itself still happens only when the user asks.
+release itself still happens only when the user asks. Each run begins with a pruning pass on
+the process (`release-android` §3b).
 
 ### Icons
 
@@ -156,6 +148,13 @@ resolves, then fill the form as `PLAY_STORE_DATA_SAFETY.md` describes.
   that let users create an account. CountScore has none: creating or joining a group issues
   a device token, and Settings → Group → Leave revokes it. Server-side history belongs to
   whoever operates the server the group chose, not to the developer ([[Sync]], `privacy_policy.md`).
+- **A pruning pass before each release (2026-09-14).** The hooks, `CLAUDE.md` and the wiki
+  only ever grew: every incident became a rule, none was removed
+  (`wip/done/2026-09-14-process-only-grows.md`). The user chose the release as the
+  checkpoint — its cadence, "once `wip/todo/` is empty", is already decided above — for a
+  pass that lists each `guard-bash.sh` refusal and `CLAUDE.md` rule, looks for evidence that
+  it fired or was needed since the last tag, and proposes removing or merging the rest as a
+  pull request of its own. The `CLAUDE.md` budget decided the same day is in [[Documentation]].
 - **Releases are built in a dedicated worktree.** `key.properties`, `*.g.dart` and
   `local.properties` are all gitignored, and the main checkout is routinely in use by another
   session; building a release there would ship its uncommitted work.

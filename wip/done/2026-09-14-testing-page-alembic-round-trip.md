@@ -1,5 +1,7 @@
 # Testing.md still describes the backend job's Alembic step as upgrade + check
 
+**Status:** done (2026-09-14) — closed by docs/process-pruning. The `backend` row of the jobs table in `.llmwiki/Testing.md` now names the round trip `upgrade head` → `downgrade base` → `upgrade head` → `check`.
+
 - **Noted:** 2026-09-14 — while building chore/merge-safety
 - **Theme:** docs
 - **Area:** docs

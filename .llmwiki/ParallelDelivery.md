@@ -20,9 +20,10 @@
 
 ### Worktrees
 
-- The **main checkout stays on `main`**. Hooks are loaded from
-  `${CLAUDE_PROJECT_DIR}/.claude/hooks` — that checkout's files, whatever branch the work is
-  on — so the version of the rules in force is the main checkout's.
+- The **main checkout stays on `main`**, fast-forwarded, and never commits. Hooks are loaded
+  from `${CLAUDE_PROJECT_DIR}/.claude/hooks` — that checkout's files, whatever branch the work
+  is on — so the version of the rules in force is the main checkout's; and another session may
+  be working next to you. Which repository each hook then judges: [[Hooks]].
 - Work happens in worktrees: `git worktree add ../countscore-<topic> -b <type>/<topic>
   origin/main` by hand, or `.claude/worktrees/<name>` (branch `worktree-<name>`, gitignored)
   for an agent launched with `isolation: "worktree"`. The Agent tool removes its worktree on
@@ -30,11 +31,6 @@
 - `scripts/worktree_setup.sh` makes a worktree usable: `flutter pub get`, `build_runner`,
   `gen-l10n`, `uv sync --locked --extra dev`, and symlinks to the untracked
   `backend/scripts/deploy.env` and `android/key.properties` of the main checkout.
-- Every hook resolves the repository from the payload `cwd` (followed through `cd` and
-  `git -C`): commits are judged and gated in the worktree, and `SubagentStop` asks for the
-  pull request of the agent's own branch. See [[Hooks]].
-- `gh` on the development machine is 2.45, which has no `gh pr update-branch`; the REST
-  call `gh api -X PUT repos/{owner}/{repo}/pulls/<n>/update-branch` does the same.
 
 ### Cleaning up — `scripts/cleanup_local.sh`
 
@@ -46,17 +42,10 @@ when it is detached on a commit in `origin/main`. Everything else is printed as 
 the reason. `session-start.sh` points at it whenever a worktree or a `[gone]` branch exists.
 Exercised offline by `scripts/hooks_selftest.sh` through a stubbed `gh`.
 
-### Work tracking — `wip/`
+### Work tracking, and what a merge deploys
 
-`wip/todo/` (release in progress), `wip/todo_nr/` (next release), `wip/done/` (closed), one
-file per entry, format in `wip/README.md`, index built by `scripts/wip.sh`. The pre-2026-09-14
-`DONE.md` is `wip/done/ARCHIVE-2026-09.md`, frozen.
-
-### What is deployed after a merge
-
-`backend/` → `backend-deploy`; `lib/`, `web/`, `pubspec.*`, `assets/` → `web-deploy`; both →
-backend first. `android/`, `store_listing/` and documentation deploy nothing. The Play Store
-is never part of the loop: `release-android`, on request.
+Work tracking: `wip/README.md`. What a merge deploys, and how: `ship-parallel` §4 — the Play
+Store is never part of the loop (`release-android`, on request).
 
 ## Decisions & History
 
@@ -84,9 +73,6 @@ is never part of the loop: `release-android`, on request.
 - **Serial merges, deploy after each (2026-09-14).** `strict` makes merges serial anyway. The
   user chose to deploy after each merge rather than once per batch, so a regression in
   production points at a single pull request.
-- **`--admin` and pushes to `main` are refused by hook, not by protection.** `enforce_admins`
-  is off, so the owner's own token — the one the agents use — could skip every check. The hook
-  closes that for Claude without changing what the user can do by hand.
 - **Cleanup became part of the loop (2026-09-14).** The first clean-up, done by hand the day
   the loop was adopted, found 20 local branches whose pull requests had merged and two stale
   worktrees. Proving each branch safe took three passes: `git cherry` flags every

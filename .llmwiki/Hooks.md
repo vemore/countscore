@@ -2,7 +2,7 @@
 
 > Scope: the Claude Code hooks that enforce project rules mechanically, and the reasoning
 > that used to live in `CLAUDE.md`.
-> Related: [[Web]] · [[I18n]] · [[Testing]] · [[Backend]] · [[KnownLimits]] · [[ParallelDelivery]]
+> Related: [[Web]] · [[I18n]] · [[Testing]] · [[Backend]] · [[KnownLimits]] · [[ParallelDelivery]] · [[Documentation]]
 > Updated: 2026-09-14
 
 ## Facts
@@ -43,7 +43,7 @@ first step of the `app` job in `.github/workflows/ci.yml`.
 
 | Rule | Evidence used |
 |---|---|
-| `flutter build <target>` without `--no-tree-shake-icons` | tokenised command; `--help` and a bare `flutter build` produce no artifact and pass |
+| `flutter build <target>` without `--no-tree-shake-icons` (why: [[MobileApp]]) | tokenised command; `--help` and a bare `flutter build` produce no artifact and pass |
 | Deleting or moving `web/sqlite3.wasm`, `web/drift_worker.js`, or `web/` itself | each argument resolved against a notional cwd that follows `cd`; copies under `build/` pass |
 | A `.gitignore` matching either binary | `git check-ignore --no-index`, one path per call |
 | Committing a keystore, `key.properties` or a `.env` | staged path list; `*.template` and `.env.example` pass |
@@ -52,7 +52,7 @@ first step of the `app` job in `.github/workflows/ci.yml`.
 | Committing with red gates, or with a gate's tool not installed | `flutter analyze` if app paths are involved; `ruff check`/`ruff format --check`/`mypy` if `backend/` is. No `flutter`, no `.dart_tool` or no `backend/.venv` tools is a refusal naming the setup command, never a skipped gate |
 | Committing divergent ARB files, or a stale `app_localizations*.dart` | key sets against the template from `l10n.yaml`, then `flutter gen-l10n` |
 | Ending a turn with commits that no pull request covers, whose pull request was closed unmerged, or whose checks are failing | `gh pr list --head <branch> --state all`, then `gh pr checks` |
-| `gh pr create --base <anything but main>` | the parsed `--base` argument; unlocked per repository by `countscore.allowStackedPr` |
+| `gh pr create --base <anything but main>` | the parsed `--base` argument; unlocked per repository by `countscore.allowStackedPr` — setting it is the user's decision, never an agent's |
 | `gh pr merge` with `--admin`, or without `--squash`, or with `--merge`/`--rebase` | parsed flags, bundled short flags included |
 | `git push` with `--force`, `-f`, `--force-with-lease`, `--mirror` or a `+refspec` | parsed flags and refspecs; `--dry-run` passes |
 | `git push` to `main`: a refspec whose destination is `main`, `--all`, or a bare `git push` while on `main` | parsed refspecs; the current branch of the repository the push runs in |
@@ -66,6 +66,12 @@ diffs are taken against `MERGE_HEAD`: what differs from the merged-in `main` —
 own changes and the resolutions — not everything the merge brings in. A missing tool's
 refusal says to run the install as its own Bash call: the hook judges the whole command line
 before any of it runs, so `install && git commit` never installs.
+
+**A stale branch, and the way out.** The branch a working tree was left on is usually the
+*previous* session's, and once its pull request merges the remote deletes it — so never carry
+on committing to it. The refusal prints the recovery:
+`git fetch --prune origin && git switch -c <type>/<short-topic> origin/main`, then
+cherry-pick the commits `git cherry -v origin/main <old-branch>` marks with `+`.
 
 ### What the hooks do not cover
 
@@ -83,7 +89,8 @@ before any of it runs, so `install && git commit` never installs.
   This is why the codegen rule stays in `CLAUDE.md`.
 - **Freshness of `origin/main`.** The hooks never fetch: no network in a hook. Everything
   they know about a branch is as old as the last `git fetch --prune`, so they err towards
-  letting a stale branch through — which is why that command stays in `CLAUDE.md`.
+  letting a stale branch through — which is why that command stays in `CLAUDE.md`, and why
+  a silent pass is not evidence that the branch is live.
 - **Pushing and opening.** `require-pull-request.sh` reads GitHub, never writes to it: it
   asks for the pull request, it does not create one. Publishing is an outward-facing act
   and stays deliberate. It also stays silent when `gh` is absent or unauthenticated, when
@@ -100,11 +107,9 @@ before any of it runs, so `install && git commit` never installs.
   `CLAUDE.md`, enforced only by re-reading the file, and `.github/workflows/ci.yml` caught
   the failures after a push. The rules that a script can decide were moved to scripts; the
   rules that need judgement — never hardcode a user-facing string, keep `README.md` true,
-  the three privacy documents, the `wip/` work tracking — stayed in `CLAUDE.md` because a
-  heuristic guard that cries wolf is worse than the prose.
-- **Why the tree-shaker flag is not optional.** Game-type icons are `IconData` built from
-  codepoints stored in the database (`.llmwiki/MobileApp.md`), so Flutter's icon
-  tree-shaker cannot see those references and the build fails. It costs roughly 200 KB.
+  the three privacy documents, the `wip/` work tracking — stayed prose because a heuristic
+  guard that cries wolf is worse than the prose. Since 2026-09-14 `CLAUDE.md` states each in
+  one line; the detail is in [[Documentation]] and `wip/README.md`.
 - **Why a parser rather than a `grep`.** Splitting on `&&` and `;` and matching substrings
   produced a false positive on every quoting case — a `git commit -m "flutter build apk"`,
   an `echo`, and above all a heredoc body documenting a forbidden command, which made the
