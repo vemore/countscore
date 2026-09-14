@@ -1,24 +1,12 @@
 # CountScore - ProGuard Rules for Release Builds
 #
-# ✅ NOTE: ProGuard/R8 is ENABLED for CountScore release builds
-#
-# R8 is enabled in android/app/build.gradle.kts for code shrinking and optimization:
+# R8 is enabled for release builds, for the size saving (the app is open source, so
+# obfuscation is not the point). android/app/build.gradle.kts sets, in the release build type:
 #   isMinifyEnabled = true
 #   isShrinkResources = true
+#   proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
 #
-# This significantly reduces APK/AAB size while maintaining app functionality.
-#
-# Benefits of keeping it disabled:
-# - Simpler builds (no configuration issues)
-# - Readable crash reports and stack traces
-# - Faster build times
-# - Easier debugging
-#
-# To enable ProGuard/R8 in the future:
-# 1. Edit android/app/build.gradle.kts
-# 2. Set isMinifyEnabled = true and isShrinkResources = true
-# 3. Uncomment proguardFiles configuration
-# 4. Test thoroughly and fix any issues with these rules
+# The keep rules below are what R8 applies on top of the default optimize configuration.
 #
 # Official Documentation:
 # - Flutter: https://docs.flutter.dev/deployment/android#shrinking-your-code-with-r8

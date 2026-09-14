@@ -29,6 +29,23 @@ jobs:
     env:
       # Ephemeral runner: nothing needs reaping, and Ryuk is a known flake source.
       TESTCONTAINERS_RYUK_DISABLED: "true"
+    # For `alembic check` only. The integration test starts its own Postgres through
+    # testcontainers on a random host port, so the two never collide. The job name
+    # above is a required check: steps are added here rather than in a new job.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: cs
+          POSTGRES_PASSWORD: pw
+          POSTGRES_DB: cs
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cs -d cs"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 30
     steps:
       - uses: actions/checkout@v4
 
@@ -64,6 +81,27 @@ jobs:
       # (LISTEN/NOTIFY, JSONB) is covered nowhere else.
       - name: pytest
         run: uv run pytest -v
+
+      # The migrations and the SQLModel models must describe the same schema: migrate
+      # an empty Postgres to head, then let autogenerate compare. Any diff fails, which
+      # is what `alembic revision --autogenerate` would otherwise propose silently.
+      - name: alembic upgrade head && alembic check
+        env:
+          DATABASE_URL: postgresql://cs:pw@localhost:5432/cs
+        run: |
+          uv run alembic upgrade head
+          uv run alembic check
+
+      # Every locked package — runtime, the dev extra and the dev group — against the
+      # PyPI/OSV advisories. Hashes are required, so what is audited is exactly uv.lock.
+      # pip-audit rather than `uv audit`, which is still a preview command. A finding
+      # with no fix yet gets `--ignore-vuln <ID>` here, with a wip/ entry naming it.
+      - name: Dependency vulnerability audit (uv.lock)
+        run: |
+          uv export --locked --all-extras --no-emit-project --format requirements-txt \
+            --quiet -o "$RUNNER_TEMP/requirements.txt"
+          uvx pip-audit@2.10.1 --strict --require-hashes --disable-pip \
+            --progress-spinner off -r "$RUNNER_TEMP/requirements.txt"
 
   image:
     name: Backend image — build, non-root, locked

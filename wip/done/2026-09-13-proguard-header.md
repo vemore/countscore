@@ -1,5 +1,11 @@
 # `proguard-rules.pro` header contradicts itself
 
+**Status:** done (2026-09-14) — closed by chore/release-housekeeping. The header now says only
+what `android/app/build.gradle.kts:54-61` does: R8 on for release, for size, with these rules on
+top of `proguard-android-optimize.txt`; the "keep it disabled" and "enable in the future"
+sections are gone. The file's TESTING footer is a separate entry,
+`wip/todo_nr/2026-09-14-proguard-testing-footer.md`.
+
 - **Noted:** 2026-09-13
 - **Theme:** release-housekeeping
 - **Area:** android

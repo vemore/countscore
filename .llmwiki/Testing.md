@@ -139,13 +139,14 @@ pytest -v                        # everything; the integration marker needs Dock
 
 ### CI — `.github/workflows/ci.yml`
 
-Four parallel jobs, on every push to `main`, every pull request, and `workflow_dispatch`.
+Five parallel jobs, on every push to `main`, every pull request, and `workflow_dispatch`.
 Flutter is pinned to **3.47.2** by the `FLUTTER_VERSION` env key — that pin and the
 toolchain table in [[MobileApp]] must move together.
 
 | Job | Steps |
 |---|---|
-| `backend` | `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` |
+| `backend` | `postgres:17-alpine` service → `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` → `alembic upgrade head` + `alembic check` → `uv export` + `pip-audit` |
+| `image` | `docker build backend` → runs as non-root, no compiler, no dev dependencies, read-only code |
 | `app` | `pub get` → `dart run build_runner build` → `analyze` → `test` → `build web --release` |
 | `android` | `pub get` → `dart run build_runner build` → `build apk --debug` |
 | `sync` | `postgres:17-alpine` service → `uv sync --locked` → `alembic upgrade head` → uvicorn on 8765 (waits on `/health`) → `pub get` → `build_runner build` → `flutter test test/sync/sync_two_devices_test.dart` |
@@ -172,6 +173,21 @@ started with `GROUP_RL_PER_MINUTE`/`_PER_HOUR` and `SYNC_PUSH_RL_PER_MINUTE` rai
 every test creates a group from one address; its log is printed only when the job fails.
 It sets `SYNC_TEST_REQUIRED=true`, which makes the test *fail* when `SYNC_BACKEND_URL` is
 missing — without it, a renamed variable would turn the job into a green run of nothing.
+
+**`alembic check` fails on any difference between the migrated schema and the SQLModel
+models** — a type, a nullability, an index. The fix is on whichever side is wrong: a model
+that drifted from the DDL gets an explicit `sa_column` (as `change_log.id`,
+`.client_lamport`, `.server_seq` and `comments.content` did), a real schema change gets a
+revision (`db-migration` skill). `backend/tests/test_model_ddl.py` pins those four columns in
+the fast suite. A `BigInteger` primary key needs `.with_variant(Integer(), "sqlite")`: only an
+`INTEGER PRIMARY KEY` autoincrements on SQLite, which the tests run on.
+
+**The dependency audit** exports `uv.lock` with hashes — runtime, the `dev` extra and the
+`dev` group — and runs `pip-audit` 2.10.1 (pinned in the `uvx` call) with `--strict`. Any
+advisory fails the job. One with no fix yet is ignored explicitly with `--ignore-vuln <ID>` in
+the step and tracked by a `wip/` entry, never left red. The Flutter dependencies have no
+equivalent scanner; `.github/dependabot.yml` (weekly, grouped: `uv`, `pub`,
+`github-actions`) and GitHub's Dependabot alerts cover them.
 
 Not in CI on purpose: the e2e suite (it calls the real production endpoint) and the signed
 release APK/AAB (needs the keystore secrets).
@@ -220,3 +236,12 @@ automated coverage at all and must be checked on a device.
   as a sync regression rather than a Flutter one. A `services:` container, not
   testcontainers, because the server and the Flutter test are separate processes that both
   need a fixed port. It adds ~5 min of wall time in parallel, not in series.
+- **`alembic check` and the dependency audit are steps of `backend`, not jobs of their own**
+  (2026-09-14). The job name is a required status check in branch protection; a new job
+  would not be required until someone edits the protection, and a renamed one would block
+  every open pull request. The Postgres `services:` container is used by `alembic check`
+  alone — the integration test keeps its testcontainers instance on a random port. Found
+  on 2026-09-13: `alembic check` reported four columns narrower in the models than in
+  `0001_initial.py`; the models were aligned, no revision was needed. `pip-audit` rather
+  than `uv audit`, which uv 0.12 still ships as a preview command; both found nothing on
+  2026-09-14.

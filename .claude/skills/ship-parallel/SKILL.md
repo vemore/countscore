@@ -21,8 +21,10 @@ an explicit request, through `release-android`.
   (the hook refuses a commit on `main`) — every change is made in a worktree.
 - If the main checkout is on some other branch with work in it, it belongs to another
   session: do not switch it, ask the user.
-- `session-start.sh` lists the existing worktrees. A worktree whose pull request is still open
-  is work in flight — resume it rather than starting the same theme twice.
+- `session-start.sh` lists the existing worktrees and the local branches whose remote is gone.
+  A worktree whose pull request is still open is work in flight — resume it rather than
+  starting the same theme twice. Debris from a finished loop: `scripts/cleanup_local.sh`
+  (§6) before planning anything new, so the next listing shows only live work.
 
 ## 1. Plan the pull requests
 
@@ -124,7 +126,8 @@ After **each** merge, so a regression points at one pull request. List what chan
 | both | backend first, then web |
 | only `android/`, `store_listing/`, docs, `wip/`, `.claude/`, CI | nothing to deploy |
 
-Deploy from a clean tree at the merged commit, never from an agent's worktree:
+Deploy from a clean tree at the merged commit, never from an agent's worktree (it is detached
+on `main`, so §6 removes it once the loop is over):
 `git worktree add ../countscore-deploy origin/main` (or `git -C ../countscore-deploy switch
 --detach origin/main` when it exists), then `scripts/worktree_setup.sh ../countscore-deploy`,
 which links the untracked `backend/scripts/deploy.env`. Run the deploy skill there.
@@ -143,7 +146,21 @@ fixed.
 
 ## 6. Clean up and report
 
-- `git worktree remove <path>` for every worktree whose pull request merged, then
-  `git worktree prune`. Worktrees the Agent tool created without changes are already gone.
+The loop is not finished while it leaves debris: the local environment ends with the main
+checkout on `main`, fast-forwarded, and only the worktrees and branches of work still in
+flight. A loop leaves four kinds of leftovers — agent worktrees under `.claude/worktrees/`,
+the `worktree-<name>` branch each agent abandoned for its real branch, the deploy worktree,
+and one local branch per merged pull request.
+
+- Once **every agent has reported** (a clean worktree on a branch with no commit yet looks
+  abandoned): `scripts/cleanup_local.sh` — a dry run listing what goes and why — then
+  `scripts/cleanup_local.sh --apply`. It removes a clean worktree and deletes a branch only
+  when the branch has no commit of its own, or when GitHub reports its pull request merged
+  and the local tip inside the merged head. Squash merges make `git branch -d` useless here
+  and `-D` unsafe; this is the check in between.
+- Read the `keep` lines. An unmerged pull request, a dirty worktree or local commits beyond a
+  merged head are real: say so in the report, never force them away. A pull request closed
+  without merging is the user's call.
+- `git worktree list` and `git branch -vv` must then show only `main` and work in flight.
 - Report to the user: each pull request (URL, merged or not), each deploy and its smoke test,
   the entries created on the way, and what is left (`scripts/wip.sh list`).
