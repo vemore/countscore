@@ -1,5 +1,10 @@
 # The Play Store release falls further behind production with every merge
 
+**Status:** done (2026-09-14) — closed by chore/merge-safety. `ship-parallel` §6 reports an
+Android line (last tag, commits since, open `wip/todo/` entries); `.llmwiki/Release.md`
+records the cadence: once `wip/todo/` is empty the report proposes `release-android`, still
+run only on the user's request.
+
 - **Noted:** 2026-09-14 — while reviewing the two weeks of work since 2026-09-09
 - **Theme:** release-housekeeping
 - **Area:** android

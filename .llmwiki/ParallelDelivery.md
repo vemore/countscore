@@ -12,7 +12,7 @@
 | Setting | Value | Consequence |
 |---|---|---|
 | `required_status_checks.strict` | `true` | A branch must contain the tip of `main` before it merges, so merges are **serial**: each merge makes every other open pull request stale |
-| Required checks | `Backend — ruff, mypy, pytest`, `App — codegen, analyze, test, web build`, `Android debug APK — fresh-clone build proof` | Not every CI job is required (`image`, `sync` are not); `gh pr checks <n>` shows all of them |
+| Required checks | All five CI jobs: `Backend — ruff, mypy, pytest`, `Backend image — build, non-root, locked`, `App — codegen, analyze, test, web build`, `Sync — two devices against a real backend`, `Android debug APK — fresh-clone build proof` | `image` and `sync` were made required on 2026-09-14: a merge is followed by a deploy of that very image, and `sync` is the only end-to-end proof of group sharing. No job may get a path filter — a filtered required check leaves a doc-only pull request waiting forever |
 | `required_linear_history` | `true` | Merge commits are refused on `main`: **squash** (or rebase) only. The project uses squash |
 | `enforce_admins` | `false` | The owner's token can merge red pull requests (`--admin`) and push to `main`; `guard-bash.sh` refuses both instead |
 | `allow_force_pushes` | `false` | On `main` only; feature branches are protected from force-pushes by the hook |

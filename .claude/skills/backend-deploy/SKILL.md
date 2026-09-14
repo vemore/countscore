@@ -114,6 +114,14 @@ SSHes to `$NAS_SSH`, brings the compose stack up, prints the `db-backup` status 
 lines, and runs `alembic upgrade head`. All three come
 from `scripts/deploy.env`; the script exits naming the variable if one is missing.
 
+**Before the upgrade, a pending revision gets its own dump.** When `alembic current` differs
+from `alembic heads` in the new container, the script has the `db-backup` sidecar write
+`backups/premigration_<UTC ts>_<from>-to-<to>.dump.gz.age` (age-encrypted like the daily
+dumps, outside their 7-day retention), and stops without migrating if that fails. There is no
+staging: this dump and CI's upgrade/`downgrade base`/upgrade round trip stand in for one.
+Note the file name it prints — §5 needs it. Delete it by hand once the release has proved
+itself.
+
 ## 4. Verify
 
 ```bash
@@ -166,14 +174,28 @@ alerting** — logs are all there is.
 ./scripts/deploy_nas.sh --rollback <git-sha>
 ```
 
-**Alembic does not roll back with it.** If the bad deploy applied a migration, downgrade
-deliberately (`alembic downgrade -1`) and only after checking the revision's `downgrade()`
-actually preserves data. When in doubt, restore from the latest dump in `backups/`
-instead — they are age-encrypted, so decrypt with the private key, off the NAS:
+**Alembic does not roll back with it.** If the bad deploy applied a migration, undo the
+schema by restoring the `premigration_*` dump §3 took — not by `alembic downgrade`, whose
+`downgrade()` CI only proves on an empty database. Writes made since the deploy are lost.
+Roll the image back first, stop the API, empty the schema (a `--clean` restore would leave
+the tables the migration added), restore — decrypting off the NAS, with the private key —
+and start again:
 
 ```bash
-age -d -i countscore-backup.key countscore_<ts>.dump.gz.age | gunzip | pg_restore -h … -U … -d …
+source scripts/deploy.env
+NAS_PATH='export PATH=/var/packages/ContainerManager/target/usr/bin:$PATH'
+./scripts/deploy_nas.sh --rollback <git-sha>
+ssh "$NAS_SSH" "$NAS_PATH; cd $NAS_DEPLOY_DIR && docker compose stop api && docker compose exec -T db \
+  sh -c 'psql -v ON_ERROR_STOP=1 -U \"\$POSTGRES_USER\" -d \"\$POSTGRES_DB\" -c \"DROP SCHEMA public CASCADE; CREATE SCHEMA public;\"'"
+ssh "$NAS_SSH" "cat $NAS_DEPLOY_DIR/backups/premigration_<ts>_<from>-to-<to>.dump.gz.age" \
+  | age -d -i countscore-backup.key | gunzip \
+  | ssh "$NAS_SSH" "$NAS_PATH; cd $NAS_DEPLOY_DIR && docker compose exec -T db \
+      sh -c 'pg_restore --exit-on-error -U \"\$POSTGRES_USER\" -d \"\$POSTGRES_DB\"'"
+ssh "$NAS_SSH" "$NAS_PATH; cd $NAS_DEPLOY_DIR && docker compose up -d && \
+  docker compose exec -T api alembic current"      # expect <from>
 ```
+
+The same pipe restores a daily `countscore_<ts>.dump.gz.age` when no pre-migration dump fits.
 
 Dumps written before 2026-09-14 are plaintext `countscore_<ts>.sql.gz`:
 `gunzip -c <file> | pg_restore …`.
@@ -193,7 +215,7 @@ The Dockerfile runs one worker and the dev compose file inherits it — the same
 ## Checklist
 
 - [ ] `ruff check .` and `pytest -m 'not integration'` clean
-- [ ] Any new Alembic revision read, not just generated
+- [ ] Any new Alembic revision read, not just generated; its `premigration_*` dump name noted
 - [ ] `.env.example` updated if `app/config.py` gained a setting
 - [ ] `CORS_ORIGINS` correct, never `*`
 - [ ] `BACKUP_AGE_RECIPIENT` set in the NAS `.env` (public key only), and `db-backup` running,
