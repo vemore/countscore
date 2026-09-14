@@ -2,7 +2,7 @@
 
 > Scope: what is tested, how to run it, and the traps.
 > Related: [[MobileApp]] · [[DataLayer]] · [[SchemaV10]] · [[Backend]] · [[Web]] · [[KnownLimits]]
-> Updated: 2026-09-13
+> Updated: 2026-09-14
 
 ## Facts
 
@@ -48,7 +48,9 @@ DATABASE_URL=postgresql+asyncpg://cs:pw@localhost:55433/cs GROUP_RL_PER_MINUTE=1
 cd .. && SYNC_BACKEND_URL=http://127.0.0.1:8765 flutter test test/sync/sync_two_devices_test.dart
 ```
 
-Raise the group rate limit: every test creates a group. Adding
+Raise the group rate limit: every test creates a group. The `sync` CI job runs exactly this
+(port 5432, a services container) on every pull request — if the recipe and the job
+disagree, the job is the one that is kept green. Adding
 `PWA_BASE_PATH=/countscore PWA_DIR=$PWD/build/web` after a
 `flutter build web --base-href /countscore/` serves the PWA on the same host, which is how the
 two-browser check of 2026-09-13 ran (Playwright, one context per device).
@@ -137,7 +139,7 @@ pytest -v                        # everything; the integration marker needs Dock
 
 ### CI — `.github/workflows/ci.yml`
 
-Three parallel jobs, on every push to `main`, every pull request, and `workflow_dispatch`.
+Four parallel jobs, on every push to `main`, every pull request, and `workflow_dispatch`.
 Flutter is pinned to **3.47.2** by the `FLUTTER_VERSION` env key — that pin and the
 toolchain table in [[MobileApp]] must move together.
 
@@ -146,6 +148,7 @@ toolchain table in [[MobileApp]] must move together.
 | `backend` | `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` |
 | `app` | `pub get` → `dart run build_runner build` → `analyze` → `test` → `build web --release` |
 | `android` | `pub get` → `dart run build_runner build` → `build apk --debug` |
+| `sync` | `postgres:17-alpine` service → `uv sync --locked` → `alembic upgrade head` → uvicorn on 8765 (waits on `/health`) → `pub get` → `build_runner build` → `flutter test test/sync/sync_two_devices_test.dart` |
 
 **Codegen comes before analyze, test and every build.** `*.g.dart` is gitignored, so
 `lib/services/drift/database.g.dart` does not exist in a fresh clone; skipping the step
@@ -163,6 +166,12 @@ which outranks the project's `android/gradle.properties` and its `-Xmx8G` reques
 committed file is not touched. It builds **debug** only — release signing reads
 `android/key.properties`, absent in CI by design — and asserts afterwards that the Flutter
 tool injected the gitignored `gradlew` and `gradle-wrapper.jar`.
+
+The `sync` job is the only one where the client meets the real server contract. uvicorn is
+started with `GROUP_RL_PER_MINUTE`/`_PER_HOUR` and `SYNC_PUSH_RL_PER_MINUTE` raised, since
+every test creates a group from one address; its log is printed only when the job fails.
+It sets `SYNC_TEST_REQUIRED=true`, which makes the test *fail* when `SYNC_BACKEND_URL` is
+missing — without it, a renamed variable would turn the job into a green run of nothing.
 
 Not in CI on purpose: the e2e suite (it calls the real production endpoint) and the signed
 release APK/AAB (needs the keystore secrets).
@@ -206,3 +215,8 @@ automated coverage at all and must be checked on a device.
   with required checks would hang forever on docs-only PRs — and because the bug that
   motivated CI at all (`settings.gradle` shadowing `settings.gradle.kts` for years) was
   precisely a "nobody built it" bug. Narrowing when the build runs would reopen that hole.
+- **The two-device sync test runs in CI, as its own job** (2026-09-14). Not folded into
+  `app`: it needs Python, a Postgres and a running server, and a failure there should read
+  as a sync regression rather than a Flutter one. A `services:` container, not
+  testcontainers, because the server and the Flutter test are separate processes that both
+  need a fixed port. It adds ~5 min of wall time in parallel, not in series.
