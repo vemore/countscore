@@ -178,7 +178,7 @@ your own, and your data stays on it. It exposes:
 **Current state, stated plainly:** the server side of groups and sync is implemented and
 tested, but **the Flutter client for it has not been written yet**. The app is therefore
 local-only today, and the single live app↔backend call is the ZapZap analysis — which
-itself only happens once you have configured a server. See [TODO.md](TODO.md) and
+itself only happens once you have configured a server. See [wip/](wip/README.md) and
 `.llmwiki/Architecture.md`.
 
 The app accepts an `https://` URL for any host, and an `http://` URL only for a private or
@@ -232,8 +232,8 @@ CI — it calls the production endpoint. See `.llmwiki/Testing.md`.
 6. Push the branch and open a Pull Request.
 
 Working conventions live in [CLAUDE.md](CLAUDE.md): never hardcode a user-facing string
-(everything goes through `AppLocalizations`), and record open work in `TODO.md` / closed work
-in `DONE.md`. The rules a Claude Code hook enforces on its own — the build flag above, the
+(everything goes through `AppLocalizations`), and record work one file per entry under
+[`wip/`](wip/README.md) (`todo/`, `todo_nr/`, `done/`). The rules a Claude Code hook enforces on its own — the build flag above, the
 gates, secrets, the branch — are in `.llmwiki/Hooks.md`. Architecture, schema and deployment
 knowledge is in `.llmwiki/` — start at `.llmwiki/INDEX.md`.
 

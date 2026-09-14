@@ -6,7 +6,14 @@ stdout:
 
     {"parse_ok": bool,
      "blocks":   [{"rule": str, "message": str}, ...],
-     "commit":   null | {"all": bool, "amend": bool, "pathspecs": [str, ...]}}
+     "commit":   null | {"all": bool, "amend": bool, "pathspecs": [str, ...],
+                         "cwd": str},
+     "push":     null | {"refspecs": [str, ...], "cwd": str}}
+
+`cwd` is the directory the git command actually runs in -- the hook payload's
+cwd, followed through `cd` and `git -C`. The caller resolves the repository from
+it, so a commit made inside a git worktree is judged on that worktree's branch
+and gated on its files, not on the checkout the session was launched from.
 
 Why a parser and not a grep: splitting a command on "&&" and ";" and then
 matching substrings misfires on every quoting case -- `git commit -m "flutter
@@ -162,10 +169,24 @@ def operands(tokens):
     return result
 
 
+def repo_root(path):
+    """The nearest enclosing directory holding `.git` (a directory, or a worktree's
+    file), or PROJECT_DIR when there is none. Filesystem only -- no git process per
+    segment."""
+    current = posixpath.normpath(path)
+    while True:
+        if os.path.exists(posixpath.join(current, ".git")):
+            return current
+        parent = posixpath.dirname(current)
+        if parent == current:
+            return posixpath.normpath(PROJECT_DIR)
+        current = parent
+
+
 def relpath(token, cwd):
-    """Path relative to the project root, or None when outside the project."""
+    """Path relative to the repository holding cwd, or None when outside it."""
     absolute = posixpath.normpath(posixpath.join(cwd, token))
-    root = posixpath.normpath(PROJECT_DIR)
+    root = repo_root(cwd)
     if absolute == root:
         return "."
     if not absolute.startswith(root + "/"):
@@ -233,6 +254,104 @@ def check_stacked_pr(tokens):
     }
 
 
+def check_pr_merge(tokens):
+    """`gh pr merge` goes through the required checks, and squashes."""
+    if not tokens or base(tokens[0]) != "gh":
+        return None
+    words = [t for t in tokens[1:] if not is_option(t)]
+    if words[:2] != ["pr", "merge"]:
+        return None
+    if "-h" in tokens or "--help" in tokens:
+        return None
+    if "--admin" in tokens:
+        return {
+            "rule": "merge-admin",
+            "message": (
+                "Refused: `gh pr merge --admin` bypasses the branch protection on main.\n"
+                "main requires three green checks and an up-to-date branch, and the "
+                "protection is not enforced for admins -- so --admin would merge a red or "
+                "stale pull request. Wait for the checks (`gh pr checks <n> --watch`), "
+                "bring the branch up to date (`gh api -X PUT repos/{owner}/{repo}/pulls/<n>/update-branch`), then merge "
+                "without --admin. If a merge really must skip the checks, that is the "
+                "user's call: say so and let them run it."
+            ),
+        }
+    short = "".join(t[1:] for t in tokens if t.startswith("-") and not t.startswith("--"))
+    squash = "--squash" in tokens or "s" in short
+    other = {"--merge", "--rebase"} & set(tokens) or set("mr") & set(short)
+    if squash and not other:
+        return None
+    return {
+        "rule": "merge-squash",
+        "message": (
+            "Refused: `gh pr merge` without --squash (or with --merge / --rebase).\n"
+            "main requires a linear history, and one squashed commit per pull request is "
+            "what keeps a theme revertable in one step. Without a method flag gh asks "
+            "interactively, which a hook-driven session cannot answer.\n"
+            "Re-run it as: gh pr merge <n> --squash --delete-branch"
+        ),
+    }
+
+
+PROTECTED_BRANCH = "main"
+
+
+def parse_push(tokens):
+    """Return (push info, finding) for a `git push` segment."""
+    if not tokens or base(tokens[0]) != "git":
+        return None, None
+    subcommand, rest = git_subcommand(tokens)
+    if subcommand != "push":
+        return None, None
+    if "-h" in rest or "--help" in rest or "--dry-run" in rest or "-n" in rest:
+        return None, None
+
+    force = None
+    for token in rest:
+        if token in {"--force", "--force-with-lease", "--force-if-includes", "--mirror"} \
+                or token.startswith("--force-with-lease="):
+            force = token
+        elif token.startswith("-") and not token.startswith("--") and "f" in token[1:]:
+            force = token
+    positional = [t for t in rest if not is_option(t)]
+    refspecs = positional[1:]  # the first operand is the remote
+    for spec in refspecs:
+        if spec.startswith("+"):
+            force = spec
+    if force:
+        return None, {
+            "rule": "force-push",
+            "message": (
+                "Refused: `git push {flag}` rewrites what the remote holds.\n"
+                "Pull requests here are updated by merging main into the branch "
+                "(`gh api -X PUT repos/{{owner}}/{{repo}}/pulls/<n>/update-branch`, or `git merge origin/main` then a plain "
+                "push), never by a rebase and a force-push: a force-push destroys the "
+                "review history, and on a branch another agent also pushes to it "
+                "destroys their commits."
+            ).format(flag=force),
+        }
+
+    if "--all" in rest or "--branches" in rest:
+        return None, push_to_main("--all")
+    for spec in refspecs:
+        destination = spec.split(":", 1)[-1]
+        if destination in {PROTECTED_BRANCH, "refs/heads/" + PROTECTED_BRANCH}:
+            return None, push_to_main(spec)
+    return {"refspecs": refspecs}, None
+
+
+def push_to_main(spec):
+    return {
+        "rule": "push-main",
+        "message": (
+            "Refused: `git push ... {spec}` would update main directly.\n"
+            "main only moves through a squash-merged pull request with green checks. "
+            "The branch protection does not stop an admin push, so this hook does. Push "
+            "your branch and open a pull request against main."
+        ).format(spec=spec),
+    }
+
+
 def check_web_binaries(tokens, cwd):
     if not tokens:
         return None
@@ -290,6 +409,25 @@ def git_subcommand(tokens):
     return None, []
 
 
+def git_cwd(tokens, cwd):
+    """The directory a `git` segment runs in, following every `-C <dir>`."""
+    index = 1
+    while index < len(tokens) - 1:
+        token = tokens[index]
+        if token == "-C":
+            cwd = posixpath.normpath(posixpath.join(cwd, tokens[index + 1]))
+            index += 2
+            continue
+        if token in GIT_GLOBAL_WITH_ARG:
+            index += 2
+            continue
+        if is_option(token):
+            index += 1
+            continue
+        break
+    return cwd
+
+
 def parse_commit(tokens):
     """Return commit info for a `git commit` segment, or None."""
     if not tokens or base(tokens[0]) != "git":
@@ -336,12 +474,13 @@ def main():
     cwd = payload.get("cwd") or PROJECT_DIR
 
     tokens, ok = tokenize(strip_heredocs(command))
-    verdict = {"parse_ok": ok, "blocks": [], "commit": None}
+    verdict = {"parse_ok": ok, "blocks": [], "commit": None, "push": None}
     if not ok:
         # Fail closed on the commit question only: a regex is enough to decide
         # whether the gates should run, and running them spuriously is cheap.
         if re.search(r"\bgit\b[^\n]*\bcommit\b", command) and "--dry-run" not in command:
-            verdict["commit"] = {"all": True, "amend": True, "pathspecs": []}
+            verdict["commit"] = {"all": True, "amend": True, "pathspecs": [],
+                                 "cwd": posixpath.normpath(cwd)}
         print(json.dumps(verdict))
         return
 
@@ -359,12 +498,23 @@ def main():
         for finding in (
             check_flutter_build(tokens_of_segment),
             check_stacked_pr(tokens_of_segment),
+            check_pr_merge(tokens_of_segment),
             check_web_binaries(tokens_of_segment, notional_cwd),
         ):
             if finding:
                 verdict["blocks"].append(finding)
+        segment_cwd = notional_cwd
+        if base(tokens_of_segment[0]) == "git":
+            segment_cwd = git_cwd(tokens_of_segment, notional_cwd)
+        push, finding = parse_push(tokens_of_segment)
+        if finding:
+            verdict["blocks"].append(finding)
+        if push:
+            push["cwd"] = segment_cwd
+            verdict["push"] = push
         commit = parse_commit(tokens_of_segment)
         if commit:
+            commit["cwd"] = segment_cwd
             verdict["commit"] = commit
     print(json.dumps(verdict))
 

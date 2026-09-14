@@ -3,7 +3,7 @@
 # CountScore - pull-request reminder (Claude Code Stop hook)
 #
 # A change that only exists as a local commit is not delivered. This asks, when a
-# turn ends, whether the commits on this branch have a pull request yet, and
+# turn ends (Stop) or a subagent finishes (SubagentStop), whether the commits on this branch have a pull request yet, and
 # whether that pull request is green -- the two halves of "finished".
 #
 # It is deliberately quiet: it says nothing on main, on a branch with nothing to
@@ -16,10 +16,16 @@
 
 set -uo pipefail
 
-ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+payload=$(cat)
+
+# Judge the repository the session (or the subagent) is working in -- a worktree when
+# the work happens in one -- and fall back to the launch directory.
+cwd=$(printf '%s' "$payload" | jq -r '.cwd // empty' 2>/dev/null)
+ROOT=""
+[ -n "$cwd" ] && ROOT=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null)
+[ -z "$ROOT" ] && ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 cd "$ROOT" 2>/dev/null || exit 0
 
-payload=$(cat)
 # Already asked once and Claude is still working on it: do not ask again, or the
 # turn never ends.
 [ "$(printf '%s' "$payload" | jq -r '.stop_hook_active // false' 2>/dev/null)" = "true" ] && exit 0
@@ -75,7 +81,7 @@ request now, with a body that says what changed and why -- then report its URL a
 state of its checks.
 
   git push -u origin $branch
-  gh pr create --base <the branch this stacks on, usually main> --head $branch --title ... --body ...
+  gh pr create --base main --head $branch --title ... --body ...
 
 If this branch is genuinely not meant to be published yet, say so to the user and set
 \`git config branch.$branch.noPullRequest true\`."

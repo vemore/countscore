@@ -13,12 +13,23 @@
 
 set -uo pipefail
 
-ROOT="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
+PROJECT="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
 HOOKS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 payload=$(cat)
-verdict=$(printf '%s' "$payload" | CLAUDE_PROJECT_DIR="$ROOT" python3 "$HOOKS/parse_command.py" 2>/dev/null)
+verdict=$(printf '%s' "$payload" | CLAUDE_PROJECT_DIR="$PROJECT" python3 "$HOOKS/parse_command.py" 2>/dev/null)
 [ -z "$verdict" ] && exit 0   # parser unavailable: fail open, never block on our own bug
+
+# The repository a git command acts on is the one holding the directory it runs in --
+# a worktree, when the work happens in one -- not the checkout the session was
+# launched from. CLAUDE_PROJECT_DIR is only the fallback.
+repo_of() {  # directory
+    [ -n "$1" ] && [ "$1" != "null" ] && git -C "$1" rev-parse --show-toplevel 2>/dev/null && return
+    printf '%s\n' "$PROJECT"
+}
+command_cwd=$(printf '%s' "$verdict" | jq -r '.commit.cwd // .push.cwd // empty' 2>/dev/null)
+[ -z "$command_cwd" ] && command_cwd=$(printf '%s' "$payload" | jq -r '.cwd // empty' 2>/dev/null)
+ROOT=$(repo_of "$command_cwd")
 
 # --------------------------------------------------------------- outright refusals
 
@@ -32,6 +43,18 @@ blocked=$(printf '%s' "$verdict" | jq -r '.blocks[]?.message' 2>/dev/null)
 if [ -n "$blocked" ]; then
     printf '%s\n' "$blocked" >&2
     exit 2
+fi
+
+# A bare `git push` publishes the current branch to its upstream: refuse it on main,
+# which the parser cannot see from the command line alone.
+if printf '%s' "$verdict" | jq -e '.push != null and (.push.refspecs | length) == 0' >/dev/null 2>&1; then
+    if [ "$(git -C "$ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null)" = "main" ]; then
+        printf '%s\n' "Refused: \`git push\` from main would update main directly.
+
+main only moves through a squash-merged pull request with green checks, and the branch
+protection does not stop an admin push. Work on a branch off origin/main." >&2
+        exit 2
+    fi
 fi
 
 printf '%s' "$verdict" | jq -e '.commit != null' >/dev/null 2>&1 || exit 0
@@ -75,7 +98,31 @@ Unstage them with \`git reset <path>\` and commit again. Templates
 (key.properties.template, .env.example) are the committed versions."
 fi
 
-# 2. Branch ----------------------------------------------------------------
+# 2. Work tracking ----------------------------------------------------------
+# Open and closed work lives one file per entry under wip/, so parallel pull requests
+# do not all conflict on one shared file. Only enforced in a tree that has wip/.
+if [ -d "$ROOT/wip/done" ]; then
+    revived=""
+    for legacy in TODO.md DONE.md; do
+        printf '%s\n' "$paths" | grep -qx "$legacy" && [ -e "$ROOT/$legacy" ] && revived="$revived $legacy"
+    done
+    [ -n "$revived" ] && refuse "Refused: this commit brings back$revived at the repository root.
+
+Work is tracked one file per entry: wip/todo/ (this release), wip/todo_nr/ (next
+release), wip/done/ (closed). A single shared file conflicts on every parallel pull
+request. Move the content into a wip/ entry -- the format is in wip/README.md -- and
+\`git rm --cached\` the file."
+    archive=$(printf '%s\n' "$paths" | grep -E '^wip/done/ARCHIVE-' | while read -r f; do
+        git cat-file -e "HEAD:$f" 2>/dev/null && printf '%s\n' "$f"; done)
+    [ -n "$archive" ] && refuse "Refused: this commit edits a frozen archive.
+
+$archive
+
+It is the history of closed work from before wip/ existed, kept verbatim. New closed work
+is a file of its own in wip/done/. Unstage it with \`git restore --staged <path>\`."
+fi
+
+# 3. Branch ----------------------------------------------------------------
 if git rev-parse --verify -q origin/main >/dev/null && git rev-parse --verify -q HEAD >/dev/null; then
     branch=$(git rev-parse --abbrev-ref HEAD)
     recipe="git fetch --prune origin && git switch -c <type>/<short-topic> origin/main
@@ -120,7 +167,7 @@ $recipe"
     # \`git fetch --prune\`, so it errs towards letting a stale branch through.
 fi
 
-# 3. Localization ----------------------------------------------------------
+# 4. Localization ----------------------------------------------------------
 if printf '%s\n' "$paths" | grep -qE '^lib/l10n/.*\.arb$'; then
     if ! arb_report=$(CLAUDE_PROJECT_DIR="$ROOT" python3 "$HOOKS/arb_keys.py" 2>&1); then
         refuse "Refused: the ARB files are not in sync.
@@ -144,7 +191,7 @@ just been regenerated for you -- stage them into this commit and try again."
     fi
 fi
 
-# 4. The two web binaries --------------------------------------------------
+# 5. The two web binaries --------------------------------------------------
 if git check-ignore -q --no-index web/sqlite3.wasm 2>/dev/null || git check-ignore -q --no-index web/drift_worker.js 2>/dev/null; then
     refuse "Refused: a .gitignore rule now matches web/sqlite3.wasm or web/drift_worker.js.
 
@@ -153,7 +200,7 @@ Find the rule with \`git check-ignore -v --no-index web/sqlite3.wasm web/drift_w
 and remove it. See .llmwiki/Web.md."
 fi
 
-# 5. Quality gates ---------------------------------------------------------
+# 6. Quality gates ---------------------------------------------------------
 run_gate() {  # name, then the command
     local name="$1"; shift
     local output

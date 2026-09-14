@@ -2,32 +2,40 @@
 
 > Scope: the Claude Code hooks that enforce project rules mechanically, and the reasoning
 > that used to live in `CLAUDE.md`.
-> Related: [[Web]] · [[I18n]] · [[Testing]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-09-13
+> Related: [[Web]] · [[I18n]] · [[Testing]] · [[Backend]] · [[KnownLimits]] · [[ParallelDelivery]]
+> Updated: 2026-09-14
 
 ## Facts
 
 ### What is configured
 
-`.claude/settings.json` declares four handlers. The scripts are in `.claude/hooks/`; the
+`.claude/settings.json` declares six handlers. The scripts are in `.claude/hooks/`; the
 `hooks` key merges across settings levels, so `.claude/settings.local.json` (permissions)
 is untouched by it.
 
 | Event | Matcher | Script | What it does |
 |---|---|---|---|
-| `PreToolUse` | `Bash` | `guard-bash.sh` | Refuses three commands outright; runs the gates before a commit |
+| `PreToolUse` | `Bash` | `guard-bash.sh` | Refuses a set of commands outright; runs the gates before a commit |
 | `PostToolUse` | `Edit\|Write` | `guard-gitignore.sh` | Refuses a `.gitignore` that starts ignoring the two web binaries |
 | `PostToolUse` | `Edit\|Write` | `check-arb-sync.sh` | Reports ARB key drift as context — never blocks |
 | `SessionStart` | — | `session-start.sh` | Says whether the clone needs codegen and whether the branch is safe |
 | `Stop` | — | `require-pull-request.sh` | Refuses to end the turn while finished commits have no pull request, or while that pull request is red |
+| `SubagentStop` | — | `require-pull-request.sh` | The same, for an agent — judged on the branch of the worktree it works in |
 
-`session-start.sh` also reports any pull request merged in the last 14 days whose base was
+**Which repository a hook judges.** Every handler resolves the repository from the payload's
+`cwd` — for `guard-bash.sh`, the directory the `git` command actually runs in, following `cd`
+and `git -C` (`parse_command.py` reports it) — and falls back to `CLAUDE_PROJECT_DIR`. So a
+commit in a worktree is judged on the worktree's branch and gated on the worktree's files. The
+hook *scripts* themselves are still read from `${CLAUDE_PROJECT_DIR}/.claude/hooks`: the rules
+in force are the main checkout's copy, which is why it stays on `main` ([[ParallelDelivery]]).
+
+`session-start.sh` also lists the repository's other worktrees, and reports any pull request merged in the last 14 days whose base was
 not `main` and whose commits are not on `main` — work that merged into a dead-end branch.
 Acknowledge one that reached `main` another way with
 `git config --add countscore.deliveryAcknowledged <number>`.
 
 `parse_command.py` and `arb_keys.py` are helpers, not handlers.
-`scripts/hooks_selftest.sh` exercises all of them from a table of ~57 cases and runs as the
+`scripts/hooks_selftest.sh` exercises all of them from a table of 100 cases and runs as the
 first step of the `app` job in `.github/workflows/ci.yml`.
 
 ### What is refused, and on what evidence
@@ -38,11 +46,15 @@ first step of the `app` job in `.github/workflows/ci.yml`.
 | Deleting or moving `web/sqlite3.wasm`, `web/drift_worker.js`, or `web/` itself | each argument resolved against a notional cwd that follows `cd`; copies under `build/` pass |
 | A `.gitignore` matching either binary | `git check-ignore --no-index`, one path per call |
 | Committing a keystore, `key.properties` or a `.env` | staged path list; `*.template` and `.env.example` pass |
-| Committing on `main`, on a detached HEAD, or on a stale branch | `%(upstream:track)` = `[gone]`, then `git cherry origin/main HEAD` |
+| Committing on `main`, on a detached HEAD, or on a stale branch | `%(upstream:track)` = `[gone]`, then `git cherry origin/main HEAD`, in the repository the command runs in |
+| Committing a root `TODO.md` or `DONE.md` next to `wip/`, or editing `wip/done/ARCHIVE-*.md` | committed path list; the file exists in the tree / the archive exists in `HEAD`; only in a tree that has `wip/done/` |
 | Committing with red gates | `flutter analyze`, `flutter test` if app paths are involved; `ruff check`/`ruff format --check`/`mypy`/`pytest -m 'not integration'` if `backend/` is |
 | Committing divergent ARB files, or a stale `app_localizations*.dart` | key sets against the template from `l10n.yaml`, then `flutter gen-l10n` |
 | Ending a turn with commits that no pull request covers, whose pull request was closed unmerged, or whose checks are failing | `gh pr list --head <branch> --state all`, then `gh pr checks` |
 | `gh pr create --base <anything but main>` | the parsed `--base` argument; unlocked per repository by `countscore.allowStackedPr` |
+| `gh pr merge` with `--admin`, or without `--squash`, or with `--merge`/`--rebase` | parsed flags, bundled short flags included |
+| `git push` with `--force`, `-f`, `--force-with-lease`, `--mirror` or a `+refspec` | parsed flags and refspecs; `--dry-run` passes |
+| `git push` to `main`: a refspec whose destination is `main`, `--all`, or a bare `git push` while on `main` | parsed refspecs; the current branch of the repository the push runs in |
 
 The path set that decides which gates run is a union, not `git diff --cached` alone:
 `git commit -a` stages tracked changes *after* the hook has read the index, so `--cached`
@@ -55,6 +67,8 @@ a superset costs seconds and never blocks wrongly.
 - **Anything a `Bash` command writes.** `PostToolUse` does not fire when a shell command
   rewrites a file, so the two post-edit handlers are a convenience. The guarantee is the
   commit-time check in `guard-bash.sh`.
+- **Merging through the API.** `gh api -X PUT .../pulls/<n>/merge` or a merge from the GitHub
+  web page is not a `gh pr merge` command line; only the branch protection stands behind it.
 - **`git merge`, `git rebase --continue`, `git revert`, `git cherry-pick`,** and any commit
   made inside a script invoked as `bash scripts/foo.sh`: the hook only sees the command
   string it was given.
@@ -81,7 +95,7 @@ a superset costs seconds and never blocks wrongly.
   `CLAUDE.md`, enforced only by re-reading the file, and `.github/workflows/ci.yml` caught
   the failures after a push. The rules that a script can decide were moved to scripts; the
   rules that need judgement — never hardcode a user-facing string, keep `README.md` true,
-  the three privacy documents, `TODO.md` → `DONE.md` — stayed in `CLAUDE.md` because a
+  the three privacy documents, the `wip/` work tracking — stayed in `CLAUDE.md` because a
   heuristic guard that cries wolf is worse than the prose.
 - **Why the tree-shaker flag is not optional.** Game-type icons are `IconData` built from
   codepoints stored in the database (`.llmwiki/MobileApp.md`), so Flutter's icon
@@ -147,3 +161,14 @@ a superset costs seconds and never blocks wrongly.
   manual `!` step, and it would have kept refusing to format new code once the debt was
   paid. Formatting is now enforced the other way round: `ruff format --check .` is a
   commit-time gate and a CI step, so unformatted code is refused rather than the formatter.
+- **Worktrees, and the merge and push rules (2026-09-14).** Every hook took the repository from
+  `CLAUDE_PROJECT_DIR`, so a commit in a worktree was judged on the main checkout's branch —
+  refused as stale when that branch was merged — and gated on its files, or on nothing when it
+  had nothing staged. It was hit four times in two days. The fix reads the payload `cwd`, and
+  `SubagentStop` was wired to the same pull-request check so an agent cannot finish with
+  undelivered commits. The same change let Claude merge and deploy its own green pull requests
+  ([[ParallelDelivery]]), which made three owner-token powers dangerous: `--admin` skips the
+  required checks because `enforce_admins` is off, a push can land on `main` for the same
+  reason, and a force-push would destroy an agent's commits on a shared branch. Force-pushing
+  was already forbidden in prose; all three are now refusals. The `TODO.md` / `DONE.md` guard
+  exists because old sessions, and memories, still know the previous convention.

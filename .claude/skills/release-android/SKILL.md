@@ -54,10 +54,10 @@ Signing and R8 shrinking are already wired in `android/app/build.gradle.kts` (`s
 **higher than every version code on every track**, not just production. Tags so far
 (`git tag`): `1.0.1`, `1.0.1+3` — the Console's *Release explorer* is the authority.
 
-Commit the bump on the release branch; the hook refuses commits on `main`. **The commit hook
-does not see worktrees yet** (`TODO.md`, "The commit hook ignores git worktrees"): it judges
-the branch and runs the gates in the *main* checkout. Run `flutter analyze` and `flutter test`
-in the release worktree yourself before committing, and do not read a silent pass as green.
+Commit the bump on the release branch; the hook refuses commits on `main`. The commit hook
+judges the worktree the command runs in and runs the gates there (fixed 2026-09-14,
+`wip/done/2026-09-13-commit-hook-ignores-worktrees.md`), so `scripts/worktree_setup.sh` first —
+without generated code the gates fail for a reason unrelated to the release.
 
 ## 3. Release notes
 
@@ -83,7 +83,7 @@ code, not against the previous release.
 | **16 KB page size** | Required for apps targeting Android 15+ with native code (`libflutter`, `libsqlite3`, …). `verify_aab.sh` checks it. |
 | **App registered** in the Console | Unregistered apps are removed from 2026-09-30. Part A of the brief reads the status. |
 
-A failure here is not fixed inside the release: stop, add a `TODO.md` entry, tell the user
+A failure here is not fixed inside the release: stop, add a `wip/todo/` entry, tell the user
 and let them decide whether it blocks.
 
 ## 5. Pre-flight
@@ -122,7 +122,7 @@ One line per check, non-zero on the first failure:
 
 - the bundle verifies and is signed with the **upload** key — its SHA-256 compared with the
   keystore named by `key.properties`, debug key refused;
-- the bundle manifest declares `INTERNET` (it shipped missing once — `DONE.md`, 2026-09-09);
+- the bundle manifest declares `INTERNET` (it shipped missing once — `wip/done/ARCHIVE-2026-09.md`, 2026-09-09);
 - `versionCode` equals the `pubspec.yaml` build number, read from a merged manifest no staler
   than the bundle;
 - `targetSdk` ≥ 36;
@@ -197,7 +197,7 @@ Adaptive icon on white `#FFFFFF`; every density is generated.
 - [ ] Built in a release worktree off `origin/main`, not in a shared checkout
 - [ ] Version code above every track's; bump committed on `chore/release-<version>`
 - [ ] Release notes en-US and fr-FR, ≤ 500 characters, no claim contradicting Data Safety
-- [ ] Policy gate (§4) passed, or its failures in `TODO.md` and cleared by the user
+- [ ] Policy gate (§4) passed, or its failures in `wip/todo/` and cleared by the user
 - [ ] `flutter analyze` and `flutter test` clean; release APK exercised on a device over the store version
 - [ ] `verify_aab.sh` all OK
 - [ ] No keystore, `key.properties` or `.env` staged

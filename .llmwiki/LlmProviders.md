@@ -128,7 +128,7 @@ text is local data a failed refresh never touched.
   container on 2026-09-11: it already holds **both** a Mistral and a Gemini key. The catch is
   that it also sets `GEMINI_MODEL=gemini-2.5-pro`, which is quota-0 on the free tier — so the
   Gemini escape hatch exists but is armed to fail until that value becomes
-  `gemini-2.5-flash`. See `TODO.md`.
+  `gemini-2.5-flash`. See `wip/done/ARCHIVE-2026-09.md`.
 
   > **Status: Outdated** (2026-09-13) — the NAS `.env` never set `GEMINI_MODEL`: the
   > `gemini-2.5-pro` seen inside the container was the *compose* default. Both tracked
@@ -140,7 +140,7 @@ text is local data a failed refresh never touched.
   `mistral-medium-latest` present and `mistral-large-latest` absent. A real call now fails
   with **429 `rate_limited`** instead — account-wide, reproduced by a 5-token request to
   `mistral-small-latest`, so it is neither the model nor the payload. That is an account
-  quota, not a repository fact; see `TODO.md`.
+  quota, not a repository fact; see `wip/done/ARCHIVE-2026-09.md`.
 - **Production moves to `gemini-2.5-flash` (decided 2026-09-13).** The Mistral account's
   429 did not clear, and Gemini needs no code: a Gemini key was already in production and
   Google was already a declared recipient in all three privacy documents. Flash, because Pro

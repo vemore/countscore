@@ -1,4 +1,9 @@
-# DONE
+# DONE — archive, frozen on 2026-09-14
+
+> **Frozen.** This is `DONE.md` as it stood when work tracking moved to one file per entry
+> under `wip/` (`wip/README.md`). It is kept verbatim for its reasoning, and a commit hook
+> refuses edits to it. Mentions of `TODO.md` and `DONE.md` below are historical. New closed
+> work goes in `wip/done/<date>-<slug>.md`.
 
 Closed items, newest first. Moved out of `TODO.md` when they were finished, so that file
 holds only open work. Nothing here is deleted — the reasoning behind a decision stays

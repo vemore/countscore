@@ -146,3 +146,6 @@ firebase_options.dart
 # Deployment target for backend/scripts/deploy_nas.sh and scripts/deploy_web.sh:
 # one person's NAS hostname, registry and SSH alias. deploy.env.example is the tracked template.
 backend/scripts/deploy.env
+
+# Worktrees created by Claude Code agents (isolation: worktree), one per pull request
+.claude/worktrees/

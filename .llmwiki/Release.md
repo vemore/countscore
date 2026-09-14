@@ -74,7 +74,7 @@ A step in the `android` CI job asserts `INTERNET` in the main manifest, and the
 > **Status: Outdated** (2026-09-09) — until this date the main manifest declared no
 > permissions at all. `INTERNET` was present only in `src/debug` and `src/profile`, which a
 > release build does not merge, so the analysis failed with a `SocketException` in every
-> signed build while working in debug. See `DONE.md`.
+> signed build while working in debug. See `wip/done/ARCHIVE-2026-09.md`.
 
 ### Store assets
 
@@ -91,7 +91,7 @@ compliance documents; `scripts/build_privacy_page.py` renders the policy to
 | New apps and updates must target API **36** since 2026-08-31 (extension to 2026-11-01 on request) | Play Console Help, target API requirements | 36 — met. `verify_aab.sh` checks it. |
 | Native libraries must support **16 KB page sizes** for apps targeting Android 15+ | Android Developers, "Support 16 KB page sizes" | Met on the 1.1.0+4 bundle (every 64-bit `.so` aligned `0x4000`). `verify_aab.sh` checks it. |
 | Apps must be **registered** (Android developer verification) by 2026-09-30, or they are removed | Android Developers Blog, 2026-06; Policy announcement 2026-07-15 | Not visible from the repository — Part A of the Console brief reads it. |
-| **AI-Generated Content**: in-app reporting or flagging of offensive generated content | Play policy "AI-Generated Content"; the 2026-07-15 announcement brings third-party AI integrations under User Data | The ZapZap commentary is LLM output and the app has **no** report control — `TODO.md`. |
+| **AI-Generated Content**: in-app reporting or flagging of offensive generated content | Play policy "AI-Generated Content"; the 2026-07-15 announcement brings third-party AI integrations under User Data | The ZapZap commentary is LLM output and the app has **no** report control — `wip/todo/2026-09-13-ai-commentary-report-control.md`. |
 | Unrated apps are not permitted | Policy announcement 2026-07-15 | IARC answers in `PUBLISHING.md` §3. |
 | Personal accounts created after 2023-11-13: closed test, 12 testers, 14 consecutive days, before production | Play Console Help, testing requirements for new personal accounts | Unknown from the repository; the Console says so on the Production page. |
 | Release notes ≤ 500 characters per language | Play Console | `stage_handoff.sh` refuses longer notes. |
@@ -106,7 +106,7 @@ resolves, then fill the form as `PLAY_STORE_DATA_SAFETY.md` describes.
 > shipped, and `store_listing/*/full_description.txt` still says "No accounts, no cloud sync"
 > and calls the analysis "the one feature that uses the internet". The app also has no in-app
 > report control for AI-generated content, and there are no 1.1.0 release notes. Each is
-> recorded in `TODO.md`. A signed 1.1.0+4 bundle built from `origin/main` passes
+> recorded in `wip/todo/` (theme `store-listing`, `ai-report`). A signed 1.1.0+4 bundle built from `origin/main` passes
 > `verify_aab.sh`.
 
 ## Decisions & History
@@ -135,7 +135,7 @@ resolves, then fill the form as `PLAY_STORE_DATA_SAFETY.md` describes.
   brief (`references/play-console-handoff.md`) whose agent may survey, upload and fill in,
   but must stop before sending anything for review or starting a rollout. The API route —
   fastlane `supply` or Gradle Play Publisher with a service account — would make the upload
-  scriptable from this machine; it is proposed in `TODO.md`, not adopted.
+  scriptable from this machine; it is proposed in `wip/todo_nr/2026-09-13-play-console-upload-api.md`, not adopted.
 - **No account-deletion flow is required.** Play's account-deletion policy applies to apps
   that let users create an account. CountScore has none: creating or joining a group issues
   a device token, and Settings → Group → Leave revokes it. Server-side history belongs to
