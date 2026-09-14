@@ -1,5 +1,7 @@
 # `alembic check` reports drift that predates the sync contract
 
+**Status:** done (2026-09-14) — closed by chore/backend-ci-hardening. The four columns got an explicit `sa_column` matching `0001_initial.py` (BIGINT with an INTEGER variant on SQLite for the primary key, TEXT), pinned by `backend/tests/test_model_ddl.py`; the CI backend job now runs `alembic upgrade head && alembic check` on a Postgres service. No new revision.
+
 - **Noted:** 2026-09-13 — while validating `0002_sync_contract` on Postgres
 - **Theme:** backend-hardening
 - **Area:** backend

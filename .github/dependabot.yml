@@ -1,0 +1,45 @@
+# Version updates for the three dependency manifests. Security advisories reach the same
+# ecosystems through Dependabot alerts; the backend lock is also audited on every CI run
+# (`pip-audit` in the backend job). Weekly and grouped, so a routine week is one pull
+# request per ecosystem rather than one per package. Every pull request still has to pass
+# the full CI, and is merged like any other: squash, never by Dependabot itself.
+version: 2
+updates:
+  # backend/pyproject.toml + backend/uv.lock
+  - package-ecosystem: uv
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+    groups:
+      backend-minor-patch:
+        update-types: [minor, patch]
+
+  # pubspec.yaml + pubspec.lock. Flutter itself is pinned in ci.yml (FLUTTER_VERSION)
+  # and in .llmwiki/MobileApp.md, which Dependabot does not see.
+  - package-ecosystem: pub
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+    groups:
+      app-minor-patch:
+        update-types: [minor, patch]
+
+  # .github/workflows/*.yml
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+    groups:
+      actions:
+        patterns: ["*"]
