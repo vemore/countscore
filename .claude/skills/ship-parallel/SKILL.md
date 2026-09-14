@@ -7,18 +7,13 @@ description: Implement a set of CountScore wip/ entries in parallel — group th
 
 One theme → one worktree → one agent → one pull request → squash-merged into `main` →
 deployed. You are the **orchestrator**: you plan, launch, merge, deploy and verify. The agents
-implement. Facts and the reasoning behind each choice: `.llmwiki/ParallelDelivery.md`.
-
-The user has authorised this loop to **merge its own green pull requests and deploy the
-backend and the PWA** (decided 2026-09-14). A Play Store release is not part of it: only on
-an explicit request, through `release-android`.
+implement. The authorisation to merge and deploy is in `CLAUDE.md`; facts and the reasoning
+behind each choice: `.llmwiki/ParallelDelivery.md`.
 
 ## 0. Where the orchestrator stands
 
 - Work from the **main checkout, on `main`**, kept current: `git fetch --prune origin && git
-  merge --ff-only origin/main`. The hooks are read from this checkout
-  (`${CLAUDE_PROJECT_DIR}/.claude/hooks`), so it must carry the latest ones. It never commits
-  (the hook refuses a commit on `main`) — every change is made in a worktree.
+  merge --ff-only origin/main` (why: `ParallelDelivery.md` § Worktrees).
 - If the main checkout is on some other branch with work in it, it belongs to another
   session: do not switch it, ask the user.
 - `session-start.sh` lists the existing worktrees and the local branches whose remote is gone.
@@ -40,8 +35,7 @@ an explicit request, through `release-android`.
      under the 1 500-line cap §3 checks before merging.
 3. Order the merges: schema and backend first, then app, then docs and listing. A pull request
    touching `.claude/` (hooks, settings, skills the hooks rely on) merges **last in its wave**,
-   once every agent of that wave has reported: hooks are read from the main checkout, so
-   merging it earlier changes the rules under running agents.
+   once every agent of that wave has reported (why: `ParallelDelivery.md`).
 4. Present the plan in **one** `AskUserQuestion` — for each pull request: branch name, entries,
    likely files, wave, merge order — and wait for the answer. The user's go-ahead covers the
    whole loop below, merges and deploys included.
@@ -107,10 +101,7 @@ order:
    needs gh ≥ 2.49; this machine has 2.45). It merges `main` into the branch on GitHub — no rebase, no force-push, and the agent's worktree stays valid.
 3. If GitHub reports a conflict, resolve it in that pull request's worktree:
    `git -C <worktree> fetch origin && git -C <worktree> merge origin/main`, fix, commit (the
-   hook runs the gates), `git push`. A merge commit is gated only on what differs from `main`,
-   so a worktree set up with `--no-app`/`--no-backend` usually needs no extra install; if the
-   hook asks for one, run the install and `git add` as calls separate from `git commit`.
-   Recipes:
+   hook runs the gates on what differs from `main` — `.llmwiki/Hooks.md`), `git push`. Recipes:
    - **`lib/l10n/*.arb`** — keep the union of the keys, valid JSON, same order as the
      template; then `flutter gen-l10n`. Never hand-merge `app_localizations*.dart`: take either
      side and regenerate.
@@ -167,10 +158,8 @@ and one local branch per merged pull request.
 
 - Once **every agent has reported** (a clean worktree on a branch with no commit yet looks
   abandoned): `scripts/cleanup_local.sh` — a dry run listing what goes and why — then
-  `scripts/cleanup_local.sh --apply`. It removes a clean worktree and deletes a branch only
-  when the branch has no commit of its own, or when GitHub reports its pull request merged
-  and the local tip inside the merged head. Squash merges make `git branch -d` useless here
-  and `-D` unsafe; this is the check in between.
+  `scripts/cleanup_local.sh --apply` (what it proves before deleting:
+  `ParallelDelivery.md` § Cleaning up).
 - Read the `keep` lines. An unmerged pull request, a dirty worktree or local commits beyond a
   merged head are real: say so in the report, never force them away. A pull request closed
   without merging is the user's call.

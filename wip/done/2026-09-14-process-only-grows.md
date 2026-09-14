@@ -1,5 +1,7 @@
 # The process only ever grows: nothing prunes a rule, a hook or a wiki page
 
+**Status:** done (2026-09-14) — closed by docs/process-pruning. `CLAUDE.md` capped at 120 lines and cut from 204 (details moved to the new `.llmwiki/Documentation.md`, `wip/README.md`, `Hooks.md`, `ParallelDelivery.md`); a pruning pass added as `release-android` §3b (decision in `Release.md`); `wip/README.md` now says a tooling entry may propose a removal and prefers replacing to adding.
+
 - **Noted:** 2026-09-14 — while reviewing the two weeks of work since 2026-09-09
 - **Theme:** process-pruning
 - **Area:** tooling

@@ -34,8 +34,25 @@ the fix, twenty lines or so.
 
 ## Where a new entry goes
 
+A problem a task surfaces but was not asked to fix is neither fixed inline nor dropped: it
+becomes an entry with enough context to act on later, and the task carries on.
 `todo_nr/` by default. `todo/` only when it blocks the release in progress: a store policy
 violation, a security flaw, a crash, data loss. The user promotes the rest.
+
+## Tooling entries
+
+A skill, a hook, a slash command, a wiki procedure or a part of `CLAUDE.md` that had to be
+worked around — steps that no longer match the code, a gate that fires on the wrong thing, a
+rule that forced a detour, something done by hand twice that no skill covers — is the same
+class of finding as a bug in `lib/`. The entry names the tool, what it actually made you do,
+and the change proposed.
+
+- **The change may be a removal.** A rule, a hook refusal or a wiki page that costs more than
+  it catches is a valid finding; prefer replacing a rule to adding one next to it. The
+  periodic pass that looks for these is `release-android` §3b.
+- **A one-line correction the current task already proves wrong** — a renamed file in a
+  skill, a dead command — is fixed inline and mentioned. Anything that changes what a tool
+  *does* is a proposal, not a detour of its own.
 
 ## Lifecycle
 
@@ -45,6 +62,7 @@ violation, a security flaw, a crash, data loss. The user promotes the rest.
   then a line under the title:
   `**Status:** done (YYYY-MM-DD) — closed by <branch or #PR>. <What closed it, in one or two sentences.>`
 - **Partly done** stays open. Say what landed, and keep only what is left.
+- **Never delete an entry, and never edit one another pull request owns.**
 - **After a release ships**, the user decides what moves from `todo_nr/` to `todo/`.
 
 A commit hook refuses a root `TODO.md` or `DONE.md` next to `wip/`, and any edit to the

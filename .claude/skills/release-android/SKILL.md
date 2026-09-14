@@ -10,9 +10,7 @@ State facts — signing, target, policy constraints — are in `.llmwiki/Release
 Console form must say is in `PUBLISHING.md` and `PLAY_STORE_DATA_SAFETY.md`; this skill does
 not repeat their answers.
 
-`--no-tree-shake-icons` is **mandatory on every build** (a hook refuses a `flutter build`
-without it): game-type icons are `IconData` codepoints stored in the database, invisible to
-the tree-shaker.
+`--no-tree-shake-icons` is **mandatory on every build** (why: `.llmwiki/MobileApp.md`).
 
 ## 0. Build in a release worktree
 
@@ -24,15 +22,11 @@ git fetch --prune origin
 git worktree add ../countscore-release-<version> -b chore/release-<version> origin/main
 cd ../countscore-release-<version>
 git branch --unset-upstream          # it tracks origin/main; push it under its own name later
-cp ../countscore/android/key.properties android/key.properties
-git check-ignore -q android/key.properties && echo "ignored — good"
-flutter pub get
-dart run build_runner build          # *.g.dart is gitignored: a worktree has none
-flutter gen-l10n
+scripts/worktree_setup.sh            # pub get, build_runner, gen-l10n, links key.properties
 ```
 
-`key.properties` is gitignored, so a worktree does not have it — and without it the release
-build has no signing config. Its `storeFile` is absolute, so the copy works as is.
+`key.properties` is gitignored: without the link the release build has no signing config. Its
+`storeFile` is absolute, so the link works as is.
 
 ## 1. Signing setup — first time only
 
@@ -55,10 +49,7 @@ Signing and R8 shrinking are already wired in `android/app/build.gradle.kts` (`s
 (`git ls-remote --tags origin`): `1.0.0+1`, `1.0.1+2`, `1.0.1+3` — the Console's *Release
 explorer* is the authority.
 
-Commit the bump on the release branch; the hook refuses commits on `main`. The commit hook
-judges the worktree the command runs in and runs the gates there (fixed 2026-09-14,
-`wip/done/2026-09-13-commit-hook-ignores-worktrees.md`), so `scripts/worktree_setup.sh` first —
-without generated code the gates fail for a reason unrelated to the release.
+Commit the bump on the release branch; the commit hook runs the gates in this worktree.
 
 ## 3. Release notes
 
@@ -70,6 +61,22 @@ One file per locale: `store_listing/en-US/release_notes_v<x.y.z>.txt` and
 - No claim that contradicts the Data Safety declaration ("no data collection", "fully
   offline").
 
+## 3b. Pruning pass — before the build
+
+A release is the checkpoint where the process shrinks as well as grows
+(`.llmwiki/Release.md`). With `<tag>` the last release tag (`git describe --tags --abbrev=0
+origin/main`):
+
+1. List each refusal of `.claude/hooks/guard-bash.sh` (the table in `.llmwiki/Hooks.md`) and
+   each rule of `CLAUDE.md`.
+2. For each, look for evidence it fired or was needed since `<tag>`: `git log <tag>..`, the
+   `wip/done/` entries closed since, the pull requests merged since
+   (`gh pr list --state merged --search "merged:>=<tag date>"`), and reports that quote a
+   refusal.
+3. Propose removing or merging those with no evidence, and check `wc -l CLAUDE.md` against
+   its budget. The proposal is its own pull request, decided by the user — never folded into
+   the release branch, and never a reason to hold the release.
+
 ## 4. Policy gate — before building
 
 Each of these is a rejection, a removal or a blocked update if it is false. Check against the
@@ -78,7 +85,7 @@ code, not against the previous release.
 | Check | How |
 |---|---|
 | **Listing text matches the app** | `store_listing/*/full_description.txt` vs what leaves the device: the ZapZap analysis, plus group sharing and sync (`lib/services/sync/`, `/sync/stream` WebSocket) — both to the server the **user** configures in Settings → Server; the app ships no server URL. |
-| **Data Safety and privacy policy match** | `PLAY_STORE_DATA_SAFETY.md`, `privacy_policy.md`, README Privacy — a new flow means all three plus the manifest (rule in `CLAUDE.md`). If the policy changed: `python3 scripts/build_privacy_page.py`, and the page is live: `curl -sI https://vemore.github.io/countscore/privacy-policy.html` → `200`. |
+| **Data Safety and privacy policy match** | `PLAY_STORE_DATA_SAFETY.md`, `privacy_policy.md`, README Privacy — a new flow means all three plus the manifest (rule in `.llmwiki/Documentation.md`). If the policy changed: `python3 scripts/build_privacy_page.py`, and the page is live: `curl -sI https://vemore.github.io/countscore/privacy-policy.html` → `200`. |
 | **AI-generated content is reportable in the app** | Play's AI-Generated Content policy requires an in-app way to flag offensive generated content; ZapZap commentary is LLM output. See `.llmwiki/Release.md` for whether the app has it yet. |
 | **Target API ≥ 36** | Required for every update since 2026-08-31. `verify_aab.sh` checks it. |
 | **16 KB page size** | Required for apps targeting Android 15+ with native code (`libflutter`, `libsqlite3`, …). `verify_aab.sh` checks it. |
@@ -199,6 +206,7 @@ Adaptive icon on white `#FFFFFF`; every density is generated.
 - [ ] Built in a release worktree off `origin/main`, not in a shared checkout
 - [ ] Version code above every track's; bump committed on `chore/release-<version>`
 - [ ] Release notes en-US and fr-FR, ≤ 500 characters, no claim contradicting Data Safety
+- [ ] Pruning pass (§3b) proposed to the user
 - [ ] Policy gate (§4) passed, or its failures in `wip/todo/` and cleared by the user
 - [ ] `flutter analyze` and `flutter test` clean; release APK exercised on a device over the store version
 - [ ] `verify_aab.sh` all OK
