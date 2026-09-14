@@ -141,7 +141,7 @@ cd backend
 docker compose up -d          # db + api on :8000 + backup sidecar
 EXPOSE_DOCS=true uvicorn app.main:app --reload # or run it directly; docs at /docs
 ```
-The dev compose file and Dockerfile default to 2 workers, which is fine locally.
+The Dockerfile runs one worker and the dev compose file inherits it — the same as production.
 
 ## Checklist
 

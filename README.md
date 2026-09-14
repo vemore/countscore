@@ -210,10 +210,12 @@ CI — it calls the production endpoint. See `.llmwiki/Testing.md`.
 
 ### Continuous integration
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs four jobs on every push to
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs five jobs on every push to
 `main` and every pull request:
 
 - **Backend** — `ruff check`, `ruff format --check`, `mypy`, `pytest` (integration tests included).
+- **Backend image** — builds `backend/Dockerfile` (dependencies locked to `uv.lock`) and
+  checks that the container runs as a non-root user, with no compiler and no dev dependencies.
 - **App** — codegen, `flutter analyze`, `flutter test`, release web build.
 - **Android** — debug APK from a clean checkout, as a fresh-clone build proof, plus an
   assertion that the release manifest still declares `INTERNET`.

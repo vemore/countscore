@@ -8,8 +8,7 @@ Voir `../.llmwiki/INDEX.md` pour la conception complète (notamment `Architectur
 
 ```bash
 cd backend
-python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+uv sync --locked --extra dev && source .venv/bin/activate   # dépendances exactes de uv.lock
 cp .env.example .env  # remplir POSTGRES_PASSWORD, ANTHROPIC_API_KEY
 
 # Postgres local
@@ -74,8 +73,8 @@ Reverse Proxy) :
 ## Tests
 
 ```bash
-pip install -e ".[dev]"
-pytest -v
+uv sync --locked --extra dev
+uv run pytest -v
 ```
 
 Les tests utilisent SQLite en mémoire pour la rapidité. Les fonctionnalités spécifiques

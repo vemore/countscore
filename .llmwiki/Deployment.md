@@ -25,8 +25,38 @@ proxying to `http://127.0.0.1:8087`. Caddy was removed and is no longer part of 
 
 The single worker is **not** a resource decision: `ip_rate_limiter.py` holds its state in
 process memory, so more than one worker would silently multiply the effective rate limit.
-The local `docker-compose.yml` and the Dockerfile default to 2 workers, which is fine for
-dev. See [[LlmProviders]].
+The Dockerfile's `CMD` also runs one worker, and the dev compose file inherits it. See
+[[LlmProviders]].
+
+> **Status: Outdated** (2026-09-14) — until this date this paragraph said the local
+> `docker-compose.yml` and the Dockerfile default to 2 workers. The Dockerfile had already
+> moved to `--workers 1`, and the dev compose file sets no `command`.
+
+### The image — `backend/Dockerfile`
+
+Every self-hosting user deploys this image, so it is locked down by default:
+
+- **Two stages.** `builder` copies the `uv` binary from `ghcr.io/astral-sh/uv:0.12.6` and
+  runs `uv sync --locked --no-dev --no-install-project` into `/app/.venv`. `runtime` is a
+  fresh `python:3.13-slim` that receives only that venv plus `app/`, `alembic/` and
+  `alembic.ini`. No `apt-get`: every dependency ships a manylinux wheel, so neither
+  `build-essential` nor `libpq-dev` is needed, and no compiler is in the image.
+- **Locked dependencies.** Production resolves exactly `backend/uv.lock`, as CI does.
+  `--locked` fails the build if the lock is stale. `--no-dev` leaves out the `dev` group
+  (testcontainers, httpx-ws), and extras are never installed, so pytest, ruff and mypy
+  stay out too. `--no-install-project` is used because the app runs from `/app` as source,
+  and building the project would need the `README.md` that `.dockerignore` excludes.
+- **Non-root.** `USER app`, uid/gid **10001**, no home and no login shell. The code and the
+  venv belong to root, so the process cannot write to its own filesystem. It never needs to:
+  the only mount is the read-only PWA, which `deploy_web.sh` makes world-readable
+  (`chmod -R a+rX`).
+- `PATH` starts with `/app/.venv/bin`. The compose healthcheck (`python -c …`) and
+  `docker compose exec -T api alembic upgrade head` therefore work unchanged.
+
+Measured on 2026-09-14: 600 MB before, 271 MB after. Checked against a Postgres 17
+container: `alembic upgrade head`, `/health`, a PWA file under `PWA_BASE_PATH`,
+`POST /groups` 201, and the compose healthcheck passing. The `image` CI job re-checks
+uid ≠ 0, no compiler, no pytest, and that the app imports.
 
 ```bash
 cd backend
@@ -210,6 +240,14 @@ scripts/deploy_web.sh --rollback   # swap pwa/current.prev back
   error, a game created before a reload was there after it. `pwa/` came out owned by the
   SSH user, and the container sees it read-only. The sub-path itself is in the NAS `.env`,
   not here.
+- **The image was hardened because it is everyone's image (2026-09-14).** Before this date
+  it ran as root, kept `build-essential` and `libpq-dev`, and ran `pip install -e .` from
+  `pyproject.toml`. Each build therefore resolved its own dependency set, and only CI honoured
+  `uv.lock`. The 2026-09-13 security review listed it in the hardening bundle, and once the
+  backend became something each user self-hosts, the default image was the one that mattered.
+  uid 10001 is outside the range a NAS or desktop hands to real accounts, so a host file
+  that happens to match it is unlikely. It does not need to match the NAS user: the container
+  writes nothing to a bind mount.
 - **Backups are `pg_dump` on a cron sidecar with 7-day rotation**, not a managed service.
   The dataset is small and the recovery story is "copy a file back".
 - **The backups' contents were written down before being encrypted (2026-09-14).** The
