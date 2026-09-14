@@ -48,7 +48,7 @@ at your own server in Settings → Server if you want the connected features.
 |---|---|
 | Framework | Flutter 3.47.2 / Dart 3.13.2 (SDK constraint `^3.13.0`) |
 | State management | `provider` ^6.1.2 |
-| Database | `drift` ^2.34.4 + `drift_flutter` ^0.3.1 over SQLite |
+| Database | `drift` ^2.35.0 + `drift_flutter` ^0.3.1 over SQLite |
 | — on Android | native SQLite via FFI |
 | — on web | `sqlite3.wasm` persisted through OPFS |
 | Legacy migrator | `sqflite` ^2.4.3 — bootstraps an existing database to schema v11, then Drift takes over |
