@@ -20,7 +20,7 @@ Deploying is a skill: `backend-deploy`. Do not improvise the steps.
 
 ```bash
 # Setup
-pip install -e ".[dev]"
+uv sync --locked --extra dev  # as CI and the Dockerfile: pip misses the dev group (testcontainers)
 cp .env.example .env          # then fill it in; .env is never committed
 
 # Run

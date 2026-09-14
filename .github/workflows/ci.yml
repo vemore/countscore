@@ -65,6 +65,31 @@ jobs:
       - name: pytest
         run: uv run pytest -v
 
+  image:
+    name: Backend image — build, non-root, locked
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      # Every self-hosting user deploys this image. The build itself proves uv.lock is
+      # in step with pyproject.toml (--locked); the run proves what the Dockerfile claims.
+      - name: Build
+        run: docker build -t countscore:ci backend
+
+      - name: Check the image
+        run: |
+          docker run --rm countscore:ci sh -euc '
+            uid=$(id -u)
+            [ "$uid" != 0 ] || { echo "runs as root"; exit 1; }
+            ! command -v gcc >/dev/null || { echo "a compiler is in the image"; exit 1; }
+            ! python -c "import pytest" 2>/dev/null || { echo "dev dependencies are in the image"; exit 1; }
+            ! touch /app/app/probe 2>/dev/null || { echo "the code is writable by the service"; exit 1; }
+            python -c "import app.main"
+            alembic --help >/dev/null
+            echo "uid $uid, no compiler, no dev dependencies, read-only code, app imports"
+          '
+
   app:
     name: App — codegen, analyze, test, web build
     runs-on: ubuntu-latest
