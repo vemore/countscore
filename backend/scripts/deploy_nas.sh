@@ -13,7 +13,9 @@
 #   - the production .env placed on the NAS once (secrets stay off the repo):
 #       cat .env | ssh "$NAS_SSH" "cat > $NAS_DEPLOY_DIR/.env"
 #     (must set POSTGRES_*, CORS_ORIGINS=<your public URL>,
-#      LLM_PROVIDER + the matching provider key.)
+#      LLM_PROVIDER + the matching provider key, and BACKUP_AGE_RECIPIENT — the
+#      age public key the db-backup sidecar encrypts to; without it that container
+#      refuses to start. The private key stays off the NAS.)
 #
 # Usage:
 #   ./scripts/deploy_nas.sh              # build + push + deploy current HEAD
@@ -31,6 +33,9 @@ CONFIG="$(dirname "$0")/deploy.env"
 PUBLIC_URL="${PUBLIC_URL:-<your public URL>}"
 
 IMAGE="$REGISTRY/countscore"
+# The db-backup sidecar: postgres client + age (Dockerfile.backup). Built from the same
+# commit and tagged alike, so compose.yaml's :latest always pairs with the api image.
+BACKUP_IMAGE="$REGISTRY/countscore-backup"
 NAS_PATH_EXPORT="export PATH=/var/packages/ContainerManager/target/usr/bin:\$PATH"
 
 # Run from the backend/ directory (where the Dockerfile lives).
@@ -48,12 +53,27 @@ fi
 
 VERSION=$(git rev-parse --short HEAD)
 
+# The db-backup sidecar refuses to run without an age recipient, by design: a dump holds
+# every share_token in clear. Catch it here rather than as a restart loop on the NAS.
+echo "==> Checking BACKUP_AGE_RECIPIENT in the NAS .env"
+if ! ssh "$NAS_SSH" "grep -Eq '^BACKUP_AGE_RECIPIENT=age1[0-9a-z]+[[:space:]]*$' $NAS_DEPLOY_DIR/.env"; then
+    echo "error: $NAS_DEPLOY_DIR/.env on the NAS has no BACKUP_AGE_RECIPIENT=age1..." >&2
+    echo "       Generate a key pair OFF the NAS (age-keygen -o countscore-backup.key), keep" >&2
+    echo "       the private key safe, and append its public key to the NAS .env." >&2
+    exit 1
+fi
+
 echo "==> Building $IMAGE:$VERSION"
 docker build -t "$IMAGE:$VERSION" -t "$IMAGE:latest" -f Dockerfile .
+
+echo "==> Building $BACKUP_IMAGE:$VERSION"
+docker build -t "$BACKUP_IMAGE:$VERSION" -t "$BACKUP_IMAGE:latest" -f Dockerfile.backup .
 
 echo "==> Pushing to registry"
 docker push "$IMAGE:$VERSION"
 docker push "$IMAGE:latest"
+docker push "$BACKUP_IMAGE:$VERSION"
+docker push "$BACKUP_IMAGE:latest"
 
 echo "==> Copying compose.yaml to the NAS (scp is blocked, so we pipe via ssh)"
 # pwa/ is created here, as the SSH user, so Docker does not create it root-owned on
@@ -64,6 +84,11 @@ cat docker-compose.prod.yml | ssh "$NAS_SSH" "cat > $NAS_DEPLOY_DIR/compose.yaml
 echo "==> Pulling and starting on the NAS"
 ssh "$NAS_SSH" \
     "$NAS_PATH_EXPORT && cd $NAS_DEPLOY_DIR && docker compose pull && docker compose up -d"
+
+echo "==> db-backup sidecar"
+sleep 5
+ssh "$NAS_SSH" \
+    "$NAS_PATH_EXPORT && cd $NAS_DEPLOY_DIR && docker compose ps db-backup && docker compose logs --tail 5 db-backup"
 
 echo "==> Applying database migrations"
 ssh "$NAS_SSH" \

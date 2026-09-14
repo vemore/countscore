@@ -30,7 +30,7 @@
 | Security headers | `security_headers` middleware in `app/main.py:main`; HSTS behind `HSTS_ENABLED`. API responses get `default-src 'none'`; `/docs` a Swagger CSP, and only exists with `EXPOSE_DOCS=true`; paths under `PWA_BASE_PATH` get `_PWA_CSP` (self, `'wasm-unsafe-eval'`, CanvasKit from `www.gstatic.com`, fonts from `fonts.gstatic.com`, `connect-src 'self' https: wss:`) plus `Cache-Control: no-cache`. |
 | Container | `backend/Dockerfile`: multi-stage, `USER app` (uid 10001), code and venv owned by root, no compiler, dependencies exactly `uv.lock` (`--locked --no-dev`). Checked by the `image` CI job. See [[Deployment]]. |
 | PWA static files | Read-only bind mount; Starlette `StaticFiles` rejects traversal out of `PWA_DIR`; `deploy_web.sh` refuses a build containing any `.md`. |
-| Backups | Daily `pg_dump`, 7-day rotation. **Not encrypted**, and they contain every `share_token` — see the debt below. |
+| Backups | Daily `pg_dump`, 7-day rotation, encrypted with `age` to a public key whose private half is kept off the server (`backend/backup/countscore-backup.sh`). The sidecar refuses to dump without `BACKUP_AGE_RECIPIENT`. See [[Deployment]] *Backups*. |
 
 ### Disclosure — what the app admits to sending, and to whom
 
@@ -112,6 +112,10 @@ proof-of-concept results are in `wip/done/2026-09-13-backend-security-review.md`
 - **Backups are plain gzip and hold every `share_token` (2026-09-14).** Anyone who reads a
   daily dump can join every group. Documented for operators, with the recovery step (rotate
   every invite code), in [[Deployment]] *Backups*; encryption is open in `wip/todo/2026-09-13-encrypt-backups.md`.
+
+  > **Status: Outdated** (2026-09-14) — closed by `feat/encrypted-backups`: dumps are
+  > `.dump.gz.age`, encrypted to `BACKUP_AGE_RECIPIENT`, and the sidecar refuses to write one
+  > without it. The debt that remains is the private key: whoever holds it reads every group.
 - **Nothing pins the certificate or the identity of the configured backend.** The user
   types a URL and the app trusts the system trust store for it. Deliberate: a self-hosted
   service cannot be pinned in advance.
