@@ -1,5 +1,7 @@
 # No feature graphic in `store_listing/assets/`
 
+**Status:** done (2026-09-15) — closed by fix/store-listing-1-1-0. `store_listing/assets/feature_graphic.png` (1024×500, RGB) committed from Template 1, and `stage_handoff.sh` copies it into the hand-off folder; the Console brief names it in Part C.
+
 - **Noted:** 2026-09-13 — while listing the store assets for the Console brief
 - **Theme:** store-listing
 - **Area:** android
