@@ -26,6 +26,11 @@ keyAlias=countscore-upload
 # Key password (set during keystore generation, often same as storePassword)
 keyPassword=YOUR_KEY_PASSWORD_HERE
 
+# Google Play publishing (optional) — the service-account JSON key used by
+# .claude/skills/release-android/scripts/play_publish.py. Absolute path, outside the repo,
+# chmod 600. One-time setup: .claude/skills/release-android/SKILL.md, "Play API access".
+# playServiceAccount=/home/username/.config/countscore/play-service-account.json
+
 # ============================================================================
 # SETUP INSTRUCTIONS:
 # ============================================================================

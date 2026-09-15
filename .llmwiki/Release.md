@@ -32,6 +32,29 @@ repo root; the build procedure is the `release-android` skill.
 > `release-android` skill all kept the old claim. Shrinking is on for the size saving, not
 > for obfuscation.
 
+### Publishing
+
+Releases reach Play through the **Google Play Developer Publishing API** (androidpublisher
+v3), from this machine's terminal only — no CI job holds a Google key or the keystore.
+`.claude/skills/release-android/scripts/play_publish.py` (run by `uv run --script`, PEP 723
+dependencies `google-api-python-client`, `google-auth`) has `status` (read-only) and
+`publish --track internal|closed|production`, which uploads the bundle, sets the release
+with the en-US/fr-FR notes, optionally the listing and graphics, runs `edits.validate`, and
+commits **only with `--commit`**. Production goes out `inProgress` at `userFraction` 0.2 by
+default, never 1.0. The Console's "Closed testing" is the API track `alpha`. Tests:
+`test_play_publish.py` next to it, on a fake service.
+
+- Credentials: a service account `countscore-play-publisher` (no GCP role), invited in the
+  Play Console with release and store-presence permissions on this app only. Its JSON key
+  lives at `~/.config/countscore/play-service-account.json` (`chmod 600`), named by
+  `playServiceAccount=` in `android/key.properties`, and is backed up like the keystore.
+  `.gitignore` has `*service-account*.json`; `guard-bash.sh` refuses any committed JSON whose
+  content holds `"type": "service_account"` ([[Hooks]]). As of 2026-09-15 the key does not
+  exist yet: the one-time setup is `release-android` §8, *Play API access*.
+- Outside the API, still Console-only: the IARC content rating, the App content declarations,
+  the Data Safety form review, app registration, the 12-tester closed test. `stage_handoff.sh`
+  stages a browser-agent brief for those alone (`references/play-console-handoff.md`).
+
 ### Tags
 
 A released commit gets an **annotated** tag named exactly as `version:` in `pubspec.yaml`,
@@ -91,7 +114,8 @@ under `en-US/` and `fr-FR/`. `scripts/capture_screenshots.sh` pulls screenshots 
 `store_listing/assets/` has the 512×512 icon, eight phone screenshots and the 1024×500
 feature graphic `feature_graphic.png` (Template 1 of `store_listing/FEATURE_GRAPHIC_TEMPLATES.md`:
 icon, name, tagline and the scoring-grid screenshot in a phone frame, drawn with Pillow).
-`stage_handoff.sh` copies the screenshots and the graphic into the Console hand-off folder.
+`play_publish.py publish --graphics` uploads the screenshots (in name order) and the graphic
+to both listing locales.
 The listing text describes both network features — group sharing and the ZapZap analysis —
 as reaching only the server the user enters in Settings → Server; it must never say "our
 server" or claim the app has no sync (checked against `privacy_policy.md` v2.5).
@@ -105,11 +129,11 @@ compliance documents; `scripts/build_privacy_page.py` renders the policy to
 |---|---|---|
 | New apps and updates must target API **36** since 2026-08-31 (extension to 2026-11-01 on request) | Play Console Help, target API requirements | 36 — met. `verify_aab.sh` checks it. |
 | Native libraries must support **16 KB page sizes** for apps targeting Android 15+ | Android Developers, "Support 16 KB page sizes" | Met on the 1.1.0+4 bundle (every 64-bit `.so` aligned `0x4000`). `verify_aab.sh` checks it. |
-| Apps must be **registered** (Android developer verification) by 2026-09-30, or they are removed | Android Developers Blog, 2026-06; Policy announcement 2026-07-15 | Not visible from the repository — Part A of the Console brief reads it. |
+| Apps must be **registered** (Android developer verification) by 2026-09-30, or they are removed | Android Developers Blog, 2026-06; Policy announcement 2026-07-15 | Not visible from the repository nor the Play API — Part A of the Console brief reads it. |
 | **AI-Generated Content**: in-app reporting or flagging of offensive generated content | Play policy "AI-Generated Content"; the 2026-07-15 announcement brings third-party AI integrations under User Data | Met: the ZapZap analysis screen has a "Report this commentary" app-bar action that opens a prefilled `mailto:` to the listing contact ([[LlmProviders]]). Closed by `wip/done/2026-09-13-ai-commentary-report-control.md`. |
 | Unrated apps are not permitted | Policy announcement 2026-07-15 | IARC answers in `PUBLISHING.md` §3. |
 | Personal accounts created after 2023-11-13: closed test, 12 testers, 14 consecutive days, before production | Play Console Help, testing requirements for new personal accounts | Unknown from the repository; the Console says so on the Production page. |
-| Release notes ≤ 500 characters per language | Play Console | `stage_handoff.sh` refuses longer notes. |
+| Release notes ≤ 500 characters per language | Play Console | `play_publish.py` refuses longer notes. |
 
 ### Submission state
 
@@ -163,6 +187,19 @@ resolves, then fill the form as `PLAY_STORE_DATA_SAFETY.md` describes.
   but must stop before sending anything for review or starting a rollout. The API route —
   fastlane `supply` or Gradle Play Publisher with a service account — would make the upload
   scriptable from this machine; it is proposed in `wip/todo_nr/2026-09-13-play-console-upload-api.md`, not adopted.
+- **Reversed (2026-09-15): releases go through the Play Publishing API, from the terminal.**
+  The user asked for the deployment itself to run from this machine rather than through a
+  browser agent. Chosen: a Python script run by `uv` calling androidpublisher v3 directly —
+  no fastlane (a Ruby toolchain for one command) and no Gradle Play Publisher (it ties
+  publishing to the Gradle build, where a validate-then-commit step is awkward). **Terminal
+  only, no CI**: neither the keystore nor a Google key goes on GitHub, so the bundle is built,
+  verified and published on the one machine that holds both. Every run validates the edit
+  with Google before anything is published, and `--commit` stays a separate, explicit step
+  taken on the user's go. The browser brief survives, shrunk to what the API cannot reach
+  (content rating, declarations, Data Safety review, registration). Data Safety through
+  `applications.dataSafety` was left out: it overwrites the whole declaration, so it is a
+  proposal of its own (`wip/todo_nr/2026-09-15-data-safety-via-api.md`). Closed
+  `wip/done/2026-09-13-play-console-upload-api.md`.
 - **No account-deletion flow is required.** Play's account-deletion policy applies to apps
   that let users create an account. CountScore has none: creating or joining a group issues
   a device token, and Settings → Group → Leave revokes it. Server-side history belongs to

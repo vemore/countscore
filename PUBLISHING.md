@@ -1,6 +1,6 @@
 # CountScore — Play Store Submission Guide
 
-**Last Updated**: September 13, 2026
+**Last Updated**: September 15, 2026
 **Scope**: what happens in the **Play Console**, for a release that is already built.
 
 Everything on the machine — keystore, signing, version bump, icons, the App Bundle — is the
@@ -44,9 +44,11 @@ These must be true. Each is a rejection, a blocked update or a policy violation 
 6. **The app is registered in the Console** (Android developer verification). Unregistered
    apps are removed from Google Play from 2026-09-30.
 
-The Console work in §5 can be delegated to Claude Cowork or Claude in Chrome: the
-`release-android` skill (§8) stages the bundle and a brief, `HANDOFF.md`, that surveys the
-Console, creates the release and stops before anything is sent for review.
+The release itself (§5) — bundle, track, release notes, and the listing text and images of
+§2 — is published from the terminal through the Play Publishing API: `release-android` §8,
+`play_publish.py`. What the API cannot reach (content rating, App content declarations, the
+Data Safety review, registration) can be delegated to Claude Cowork or Claude in Chrome with
+the brief `release-android` §9 stages.
 
 ---
 
@@ -62,7 +64,7 @@ not retype it:
 
 | Field | Source | Limit |
 |---|---|---|
-| App name | `store_listing/<locale>/title.txt` | 50 |
+| App name | `store_listing/<locale>/title.txt` | 30 |
 | Short description | `store_listing/<locale>/short_description.txt` | 80 |
 | Full description | `store_listing/<locale>/full_description.txt` | 4000 |
 
@@ -124,6 +126,10 @@ there because the old version of this guide said so is how the two end up contra
   doing that yourself (`release-android` §1).
 
 ## 5. Release: internal, then staged production
+
+**Normally not by hand:** `release-android` §8 publishes the bundle and the notes to a track
+with `play_publish.py` (validate, then `--commit` on the owner's go). The Console steps below
+are the fallback, and what the testers list still needs.
 
 **Always internal testing first.** Testing → **Internal testing** → Create new release →
 upload the AAB → add testers (up to 100) → send for review. Give it a few days of real use.
@@ -188,7 +194,7 @@ signing, not a Console problem. `release-android` §1.
 
 ## Never commit
 
-`android/key.properties`, `*.jks` / `*.keystore`, `.env`. A commit hook refuses all three
+`android/key.properties`, `*.jks` / `*.keystore`, `.env`, the Play service-account key. A commit hook refuses all four
 (`.llmwiki/Hooks.md`), but the hook is a net, not the rule. **Losing the upload keystore
 means the app can never be updated again** — back it up somewhere durable, with its
 passwords in a password manager.
