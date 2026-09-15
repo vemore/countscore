@@ -237,7 +237,7 @@
 
   "rate": "المعدل",
 
-  "version": "الإصدار 1.0.0",
+  "version": "الإصدار {version}",
 
   "appDescription": "تطبيق إدارة النتائج لجلسات الألعاب الخاصة بك من Vincent Moreau",
 
@@ -252,6 +252,10 @@
   "featureCustomization": "التخصيص",
 
   "featureDarkLightTheme": "الوضع الداكن/الفاتح",
+
+  "featureGroupSharing": "المشاركة الجماعية",
+
+  "featureZapZapAnalysis": "تحليل ألعاب ZapZap",
 
   "credits": "الاعتمادات",
 

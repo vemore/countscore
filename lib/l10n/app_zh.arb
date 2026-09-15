@@ -237,7 +237,7 @@
 
   "rate": "比率",
 
-  "version": "版本 1.0.0",
+  "version": "版本 {version}",
 
   "appDescription": "由Vincent Moreau开发的游戏会话分数管理应用",
 
@@ -252,6 +252,10 @@
   "featureCustomization": "自定义",
 
   "featureDarkLightTheme": "深色/浅色主题",
+
+  "featureGroupSharing": "群组共享",
+
+  "featureZapZapAnalysis": "ZapZap 游戏分析",
 
   "credits": "致谢",
 

@@ -410,7 +410,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get rate => 'المعدل';
 
   @override
-  String get version => 'الإصدار 1.0.0';
+  String version(String version) {
+    return 'الإصدار $version';
+  }
 
   @override
   String get appDescription =>
@@ -433,6 +435,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get featureDarkLightTheme => 'الوضع الداكن/الفاتح';
+
+  @override
+  String get featureGroupSharing => 'المشاركة الجماعية';
+
+  @override
+  String get featureZapZapAnalysis => 'تحليل ألعاب ZapZap';
 
   @override
   String get credits => 'الاعتمادات';

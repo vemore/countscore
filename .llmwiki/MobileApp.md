@@ -2,7 +2,7 @@
 
 > Scope: the Flutter app's own structure — entry point, state, screens, models.
 > Related: [[DataLayer]] · [[SchemaV10]] · [[I18n]] · [[Web]] · [[Testing]]
-> Updated: 2026-09-14
+> Updated: 2026-09-15
 
 ## Facts
 
@@ -38,7 +38,11 @@ themed and already knows whether the connected features exist.
 `game_types_screen` (491 l.) · `create_game_screen` (372 l.) ·
 `game_analysis_screen` (396 l., the LLM analysis — see [[LlmProviders]]) ·
 `players_screen` (326 l.) · `player_stats_screen` (299 l.) · `settings_screen` (368 l.) ·
-`about_screen` (145 l.) · `ranking_screen` (140 l.).
+`about_screen` (175 l.) · `ranking_screen` (140 l.).
+
+`about_screen` reads the displayed version from `package_info_plus`
+(`PackageInfo.fromPlatform()`, held in a `static final` future) — i.e. from `pubspec.yaml`
+`version:` at build time; the ARB key `version` is only the `"Version {version}"` frame.
 
 `lib/widgets/` holds exactly one component: `player_picker_dialog.dart` (291 l.).
 
@@ -106,5 +110,10 @@ not "fix" it by hardcoding a codepoint.
   prefs asynchronously from its own constructor, which is fine for a wakelock but would
   paint one frame of the wrong theme on every cold start. So the theme is read in `main()`
   instead and injected — the only reason the app has an `async` `main()`.
+- **The About version comes from the build, not from the ARB files** (2026-09-15). It was
+  `"Version 1.0.0"` in ten translations, so the 1.1.0 build still announced 1.0.0; every
+  release would have needed ten ARB edits nobody remembered. `test/screens/about_screen_test.dart`
+  mocks `PackageInfo` and keeps both of its checks in one test, because a static future
+  completed in one test's fake-async zone never delivers in the next.
 - **The mode is stored as `ThemeMode.name`, not its index**, so reordering the enum cannot
   silently flip a user's theme. An unknown stored value decodes to `ThemeMode.system`.

@@ -403,7 +403,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rate => '率';
 
   @override
-  String get version => 'バージョン 1.0.0';
+  String version(String version) {
+    return 'バージョン $version';
+  }
 
   @override
   String get appDescription => 'Vincent Moreauによるゲームセッション用のスコア管理アプリ';
@@ -425,6 +427,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get featureDarkLightTheme => 'ダーク/ライトテーマ';
+
+  @override
+  String get featureGroupSharing => 'グループ共有';
+
+  @override
+  String get featureZapZapAnalysis => 'ZapZapゲーム分析';
 
   @override
   String get credits => 'クレジット';

@@ -85,6 +85,12 @@ All dependencies use **permissive open-source licenses** (MIT and BSD variants).
 **Repository:** https://github.com/dart-lang/path
 **Description:** Path manipulation library
 
+### package_info_plus (^10.2.1)
+**License:** BSD-3-Clause
+**Copyright:** Copyright 2017 The Chromium Authors
+**Repository:** https://github.com/fluttercommunity/plus_plugins/tree/main/packages/package_info_plus
+**Description:** Reads the app's version and build number — shown on the About screen
+
 ---
 
 ## Development Dependencies
