@@ -141,6 +141,14 @@ Nothing blocks a 1.1.0 submission in the repository any more. What is left is on
 Console and the GitHub account, not in the code: enable GitHub Pages so the policy URL
 resolves, then fill the form as `PLAY_STORE_DATA_SAFETY.md` describes.
 
+> **Status: Outdated** (2026-09-15) — **1.1.0 (4) is live on the internal track**, published
+> with `play_publish.py publish --track internal --listing --graphics --commit` — the first
+> release through the API. The same edit published the 1.1.0 listing text (en-US, fr-FR), the
+> feature graphic and the eight phone screenshots in both locales. Production, beta and closed
+> testing still carry 1.0.1 (3). Left before production: the Data Safety form
+> (`wip/todo/2026-09-13-data-safety-banner.md`), the device test over the store version, and
+> the `1.1.0+4` tag.
+
 > **Status: Outdated** (2026-09-15) — GitHub Pages is now enabled (source `main:/docs`) and
 > the policy URL answers `200`; the 1.1.0 release notes are committed
 > (`store_listing/*/release_notes_v1.1.0.txt`). A signed 1.1.0+4 bundle built from `e14db59`
