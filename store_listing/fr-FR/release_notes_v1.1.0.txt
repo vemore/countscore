@@ -1,0 +1,9 @@
+CountScore 1.1.0
+
+• Partage en groupe : les mêmes parties sur plusieurs téléphones, même hors ligne, via un serveur que vous hébergez (Paramètres → Serveur).
+• Analyse ZapZap : un commentaire IA de votre partie, avec « Signaler ce commentaire ».
+• Le thème choisi est conservé au redémarrage.
+• L'écran À propos affiche la vraie version.
+• De nombreuses corrections et une base de données plus fiable.
+
+Pas de pub, pas de pistage. Les fonctions en ligne restent inactives sans serveur.

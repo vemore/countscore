@@ -117,6 +117,12 @@ Nothing blocks a 1.1.0 submission in the repository any more. What is left is on
 Console and the GitHub account, not in the code: enable GitHub Pages so the policy URL
 resolves, then fill the form as `PLAY_STORE_DATA_SAFETY.md` describes.
 
+> **Status: Outdated** (2026-09-15) — GitHub Pages is now enabled (source `main:/docs`) and
+> the policy URL answers `200`; the 1.1.0 release notes are committed
+> (`store_listing/*/release_notes_v1.1.0.txt`). A signed 1.1.0+4 bundle built from `e14db59`
+> passes `verify_aab.sh` and is staged for the **internal** track. Left: the Console upload and
+> the Data Safety form (`wip/todo/2026-09-13-data-safety-banner.md`).
+
 > **Status: Outdated** (2026-09-15) — the listing text and the feature graphic are fixed
 > (`wip/done/2026-09-13-store-listing-denies-group-sharing.md`,
 > `wip/done/2026-09-13-feature-graphic-missing.md`), and the report control shipped. What the

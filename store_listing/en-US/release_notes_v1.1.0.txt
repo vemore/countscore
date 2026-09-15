@@ -1,0 +1,9 @@
+CountScore 1.1.0
+
+• Group sharing: keep the same games on several phones, even offline, through a server you host (Settings → Server).
+• ZapZap analysis: an AI commentary on your game, now with "Report this commentary".
+• Your selected theme is remembered across restarts.
+• The About screen shows the real app version.
+• Many fixes and a more reliable database.
+
+No ads, no tracking. Both online features stay off until you enter a server.
