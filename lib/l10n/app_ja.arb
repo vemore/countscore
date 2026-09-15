@@ -237,7 +237,7 @@
 
   "rate": "率",
 
-  "version": "バージョン 1.0.0",
+  "version": "バージョン {version}",
 
   "appDescription": "Vincent Moreauによるゲームセッション用のスコア管理アプリ",
 
@@ -252,6 +252,10 @@
   "featureCustomization": "カスタマイズ",
 
   "featureDarkLightTheme": "ダーク/ライトテーマ",
+
+  "featureGroupSharing": "グループ共有",
+
+  "featureZapZapAnalysis": "ZapZapゲーム分析",
 
   "credits": "クレジット",
 

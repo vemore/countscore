@@ -410,7 +410,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get rate => 'Rate';
 
   @override
-  String get version => 'Version 1.0.0';
+  String version(String version) {
+    return 'Version $version';
+  }
 
   @override
   String get appDescription =>
@@ -433,6 +435,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get featureDarkLightTheme => 'Dunkles/helles Design';
+
+  @override
+  String get featureGroupSharing => 'Gruppenfreigabe';
+
+  @override
+  String get featureZapZapAnalysis => 'ZapZap-Spielanalyse';
 
   @override
   String get credits => 'Danksagungen';

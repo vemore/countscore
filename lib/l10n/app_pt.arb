@@ -237,7 +237,7 @@
 
   "rate": "Taxa",
 
-  "version": "Versão 1.0.0",
+  "version": "Versão {version}",
 
   "appDescription": "Aplicativo de gerenciamento de pontuação para suas sessões de jogo por Vincent Moreau",
 
@@ -252,6 +252,10 @@
   "featureCustomization": "Personalização",
 
   "featureDarkLightTheme": "Tema escuro/claro",
+
+  "featureGroupSharing": "Compartilhamento em grupo",
+
+  "featureZapZapAnalysis": "Análise de partidas ZapZap",
 
   "credits": "Créditos",
 

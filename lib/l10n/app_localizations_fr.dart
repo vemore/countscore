@@ -411,7 +411,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rate => 'Taux';
 
   @override
-  String get version => 'Version 1.0.0';
+  String version(String version) {
+    return 'Version $version';
+  }
 
   @override
   String get appDescription =>
@@ -434,6 +436,12 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get featureDarkLightTheme => 'Thème sombre/clair';
+
+  @override
+  String get featureGroupSharing => 'Partage en groupe';
+
+  @override
+  String get featureZapZapAnalysis => 'Analyse des parties ZapZap';
 
   @override
   String get credits => 'Crédits';

@@ -413,7 +413,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get rate => 'Процент';
 
   @override
-  String get version => 'Версия 1.0.0';
+  String version(String version) {
+    return 'Версия $version';
+  }
 
   @override
   String get appDescription =>
@@ -436,6 +438,12 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get featureDarkLightTheme => 'Тёмная/светлая тема';
+
+  @override
+  String get featureGroupSharing => 'Совместный доступ в группах';
+
+  @override
+  String get featureZapZapAnalysis => 'Анализ партий ZapZap';
 
   @override
   String get credits => 'Авторы';

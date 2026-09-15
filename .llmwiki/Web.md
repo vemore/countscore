@@ -2,7 +2,7 @@
 
 > Scope: everything specific to the PWA build.
 > Related: [[DataLayer]] · [[MobileApp]] · [[Testing]] · [[LlmProviders]] · [[KnownLimits]]
-> Updated: 2026-09-14
+> Updated: 2026-09-15
 
 ## Facts
 
@@ -71,6 +71,11 @@ profile that has never configured a server — see [[LlmProviders]]. CI passes n
 
 `--no-tree-shake-icons` applies to web exactly as it does to apk — see [[MobileApp]].
 Add `--base-href=/subpath/` if not served from the domain root.
+
+The build writes `build/web/version.json` (name, version, build number from `pubspec.yaml`).
+`package_info_plus` fetches it same-origin, relative to the base href, to show the version on
+the About screen — so it must be published with the rest of `build/web/`; `connect-src 'self'`
+already allows it.
 
 There is **no committed hosting configuration for the Flutter web app** — no nginx or
 Caddy vhost anywhere in the repo. [[Deployment]] covers only the FastAPI container.

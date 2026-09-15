@@ -237,7 +237,7 @@
 
   "rate": "Процент",
 
-  "version": "Версия 1.0.0",
+  "version": "Версия {version}",
 
   "appDescription": "Приложение для управления счётом ваших игровых сессий от Vincent Moreau",
 
@@ -252,6 +252,10 @@
   "featureCustomization": "Настройка",
 
   "featureDarkLightTheme": "Тёмная/светлая тема",
+
+  "featureGroupSharing": "Совместный доступ в группах",
+
+  "featureZapZapAnalysis": "Анализ партий ZapZap",
 
   "credits": "Авторы",
 

@@ -401,7 +401,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rate => '比率';
 
   @override
-  String get version => '版本 1.0.0';
+  String version(String version) {
+    return '版本 $version';
+  }
 
   @override
   String get appDescription => '由Vincent Moreau开发的游戏会话分数管理应用';
@@ -423,6 +425,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get featureDarkLightTheme => '深色/浅色主题';
+
+  @override
+  String get featureGroupSharing => '群组共享';
+
+  @override
+  String get featureZapZapAnalysis => 'ZapZap 游戏分析';
 
   @override
   String get credits => '致谢';

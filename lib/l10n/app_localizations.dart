@@ -822,11 +822,11 @@ abstract class AppLocalizations {
   /// **'Taux'**
   String get rate;
 
-  /// Application version
+  /// Application version line on the About screen, read from pubspec at runtime
   ///
   /// In fr, this message translates to:
-  /// **'Version 1.0.0'**
-  String get version;
+  /// **'Version {version}'**
+  String version(String version);
 
   /// Application description
   ///
@@ -869,6 +869,18 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Thème sombre/clair'**
   String get featureDarkLightTheme;
+
+  /// Feature: sharing games with a group through the self-hosted server
+  ///
+  /// In fr, this message translates to:
+  /// **'Partage en groupe'**
+  String get featureGroupSharing;
+
+  /// Feature: LLM-generated analysis of ZapZap games
+  ///
+  /// In fr, this message translates to:
+  /// **'Analyse des parties ZapZap'**
+  String get featureZapZapAnalysis;
 
   /// Credits section title
   ///

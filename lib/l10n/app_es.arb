@@ -237,7 +237,7 @@
 
   "rate": "Tasa",
 
-  "version": "Versión 1.0.0",
+  "version": "Versión {version}",
 
   "appDescription": "Aplicación de gestión de puntuaciones para tus sesiones de juego por Vincent Moreau",
 
@@ -252,6 +252,10 @@
   "featureCustomization": "Personalización",
 
   "featureDarkLightTheme": "Tema oscuro/claro",
+
+  "featureGroupSharing": "Compartir en grupo",
+
+  "featureZapZapAnalysis": "Análisis de partidas ZapZap",
 
   "credits": "Créditos",
 

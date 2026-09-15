@@ -653,9 +653,12 @@
     "description": "Label for rate"
   },
 
-  "version": "Version 1.0.0",
+  "version": "Version {version}",
   "@version": {
-    "description": "Application version"
+    "description": "Application version line on the About screen, read from pubspec at runtime",
+    "placeholders": {
+      "version": { "type": "String", "example": "1.1.0" }
+    }
   },
 
   "appDescription": "Application de gestion de scores pour vos parties de jeux par Vincent Moreau",
@@ -691,6 +694,16 @@
   "featureDarkLightTheme": "Thème sombre/clair",
   "@featureDarkLightTheme": {
     "description": "Feature: dark/light theme"
+  },
+
+  "featureGroupSharing": "Partage en groupe",
+  "@featureGroupSharing": {
+    "description": "Feature: sharing games with a group through the self-hosted server"
+  },
+
+  "featureZapZapAnalysis": "Analyse des parties ZapZap",
+  "@featureZapZapAnalysis": {
+    "description": "Feature: LLM-generated analysis of ZapZap games"
   },
 
   "credits": "Crédits",
