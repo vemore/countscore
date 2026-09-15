@@ -1,5 +1,7 @@
 # `PLAY_STORE_DATA_SAFETY.md` still says "the form must be updated"
 
+**Status:** done (2026-09-15) — closed by docs/data-safety-1-1-0. The owner updated the Console form and submitted 1.1.0 (4) to production; the banner in `PLAY_STORE_DATA_SAFETY.md` is now a dated history note.
+
 - **Noted:** 2026-09-13
 - **Theme:** play-console
 - **Area:** docs
