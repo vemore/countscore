@@ -237,7 +237,7 @@
 
   "rate": "दर",
 
-  "version": "संस्करण 1.0.0",
+  "version": "संस्करण {version}",
 
   "appDescription": "Vincent Moreau द्वारा आपके गेम सत्रों के लिए स्कोर प्रबंधन एप्लिकेशन",
 
@@ -252,6 +252,10 @@
   "featureCustomization": "अनुकूलन",
 
   "featureDarkLightTheme": "गहरा/हल्का थीम",
+
+  "featureGroupSharing": "समूह साझाकरण",
+
+  "featureZapZapAnalysis": "ZapZap खेल विश्लेषण",
 
   "credits": "श्रेय",
 
