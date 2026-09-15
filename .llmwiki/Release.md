@@ -2,7 +2,7 @@
 
 > Scope: the Play Store configuration state. For the procedure, use the `release-android` skill.
 > Related: [[MobileApp]] · [[Testing]] · [[KnownLimits]] · [[Documentation]]
-> Updated: 2026-09-14
+> Updated: 2026-09-15
 
 ## Facts
 
@@ -88,6 +88,13 @@ A step in the `android` CI job asserts `INTERNET` in the main manifest, and the
 
 `store_listing/` holds the listing assets, including the committed per-locale listing text
 under `en-US/` and `fr-FR/`. `scripts/capture_screenshots.sh` pulls screenshots over ADB.
+`store_listing/assets/` has the 512×512 icon, eight phone screenshots and the 1024×500
+feature graphic `feature_graphic.png` (Template 1 of `store_listing/FEATURE_GRAPHIC_TEMPLATES.md`:
+icon, name, tagline and the scoring-grid screenshot in a phone frame, drawn with Pillow).
+`stage_handoff.sh` copies the screenshots and the graphic into the Console hand-off folder.
+The listing text describes both network features — group sharing and the ZapZap analysis —
+as reaching only the server the user enters in Settings → Server; it must never say "our
+server" or claim the app has no sync (checked against `privacy_policy.md` v2.5).
 `privacy_policy.md`, `PLAY_STORE_DATA_SAFETY.md` and `THIRD_PARTY_LICENSES.md` are the
 compliance documents; `scripts/build_privacy_page.py` renders the policy to
 `docs/privacy-policy.html`, which GitHub Pages serves as the URL the Play Console holds.
@@ -109,6 +116,12 @@ compliance documents; `scripts/build_privacy_page.py` renders the policy to
 Nothing blocks a 1.1.0 submission in the repository any more. What is left is on the
 Console and the GitHub account, not in the code: enable GitHub Pages so the policy URL
 resolves, then fill the form as `PLAY_STORE_DATA_SAFETY.md` describes.
+
+> **Status: Outdated** (2026-09-15) — the listing text and the feature graphic are fixed
+> (`wip/done/2026-09-13-store-listing-denies-group-sharing.md`,
+> `wip/done/2026-09-13-feature-graphic-missing.md`), and the report control shipped. What the
+> repository still lacks for 1.1.0 is the release notes, which the release branch writes; the
+> Data Safety form is a Console step (`wip/todo/2026-09-13-data-safety-banner.md`).
 
 > **Status: Outdated** (2026-09-13) — the repository blocks 1.1.0 again. Group sharing
 > shipped, and `store_listing/*/full_description.txt` still says "No accounts, no cloud sync"

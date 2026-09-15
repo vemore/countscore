@@ -3,22 +3,29 @@ Gardez les scores de tous vos jeux préférés avec CountScore – une applicati
 FONCTIONNALITÉS PRINCIPALES
 
 Types de jeux multiples
-CountScore propose des configurations prédéfinies pour les jeux populaires comme Uno et Scrabble. Vous pouvez également créer vos propres types de jeux avec des noms, couleurs et icônes personnalisés.
+CountScore est prêt pour les jeux populaires comme ZapZap, Uno, Scrabble, Skyjo, Belote et Tarot. Vous pouvez aussi créer vos propres types de jeux, avec le nom, la couleur et l'icône de votre choix.
 
 Système de score flexible
-Que votre jeu récompense le score le plus haut ou le plus bas, CountScore s'adapte. Saisissez et ajustez facilement les scores pendant la partie.
+Que votre jeu récompense le score le plus haut ou le plus bas, CountScore s'adapte. Saisissez et ajustez les scores tour par tour, avec les totaux et le classement en direct.
 
-Gestion des joueurs
-Ajoutez un nombre illimité de joueurs et suivez leurs statistiques individuelles sur plusieurs parties et sessions.
+Joueurs et statistiques
+Les joueurs sont communs à toutes les parties : leurs statistiques les suivent d'une partie à l'autre.
 
 Historique complet des parties
-Consultez l'historique complet des scores de chaque partie. Suivez la progression dans le temps et réglez les débats "qui a gagné la dernière fois ?".
+Consultez l'historique complet des scores de chaque partie et réglez les débats « qui a gagné la dernière fois ? ».
 
 Fonctionne hors ligne
-Toutes les données sont stockées localement sur votre appareil. Aucune connexion internet n'est nécessaire pour suivre vos scores – parfait pour le camping, les voyages ou partout où vous jouez.
+Vos parties sont stockées sur votre appareil. Aucune connexion internet n'est nécessaire pour compter les points – parfait pour le camping, les voyages ou partout où vous jouez.
+
+Partage en groupe (optionnel)
+Retrouvez les mêmes parties sur plusieurs téléphones – ceux de toute la famille, par exemple. Créez un groupe ou rejoignez-en un avec un code d'invitation, puis partagez vos parties : les scores saisis sur un appareil apparaissent sur les autres, et les modifications faites hors ligne se synchronisent au retour de la connexion. Les parties que vous ne partagez pas restent sur votre appareil.
 
 Analyse ZapZap (optionnelle)
-Une partie de ZapZap terminée ? Demandez un commentaire écrit de la partie. C'est la seule fonctionnalité qui utilise internet : quand vous appuyez sur le bouton, les données de cette partie sont envoyées à notre serveur puis à un modèle d'IA qui rédige l'analyse. Elle ne se déclenche jamais toute seule.
+Une partie de ZapZap terminée ? Demandez un commentaire écrit de la partie. Elle ne se lance que lorsque vous appuyez sur le bouton : les scores, les noms des joueurs et les commentaires des tours de cette partie sont envoyés à votre serveur, qui demande à un modèle d'IA de rédiger l'analyse. Si un commentaire est faux ou choquant, « Signaler ce commentaire » vous permet de nous prévenir par e-mail.
+
+VOTRE PROPRE SERVEUR
+
+Le partage en groupe et l'analyse ZapZap ont besoin d'un serveur, et CountScore n'en fournit aucun. Ils restent désactivés tant que vous n'avez pas saisi, dans Paramètres → Serveur, l'adresse d'un serveur que vous hébergez – le logiciel serveur est open source. Sans cela, l'application n'effectue aucune requête réseau.
 
 COMMENT ÇA MARCHE
 
@@ -29,19 +36,19 @@ COMMENT ÇA MARCHE
 
 PARFAIT POUR
 
-Les soirées jeux en famille, les tournois de cartes, les sessions de jeux de société, le suivi de scores sportifs, les activités en classe et les jeux de fête. Si ça nécessite un score, CountScore s'en charge.
+Les soirées jeux en famille, les tournois de cartes, les sessions de jeux de société, les activités en classe et les jeux entre amis. Si ça nécessite un score, CountScore s'en charge.
 
 CONFIDENTIALITÉ
 
-Aucun compte à créer, aucune synchronisation cloud, aucune publicité, aucun traceur. Vos parties restent sur votre appareil, à une exception près que vous contrôlez : appuyer sur « générer l'analyse » envoie les données de cette partie à notre serveur puis à un fournisseur d'IA pour rédiger le commentaire, et rien d'autre n'est jamais transmis. Tous les détails dans notre politique de confidentialité. CountScore est open source (licence MIT), vous pouvez tout vérifier vous-même.
+Pas de compte, pas de publicité, pas de pistage. Vos parties restent sur votre appareil, sauf si vous en décidez autrement : une partie partagée avec un groupe est stockée sur le serveur que vous avez configuré et envoyée aux appareils du groupe, et une analyse que vous demandez est envoyée à ce serveur puis au fournisseur d'IA qu'il utilise. Rejoindre un groupe attribue à votre appareil un jeton d'accès – jamais un compte. Tous les détails dans notre politique de confidentialité. CountScore est open source (licence MIT) : vous pouvez tout vérifier par vous-même.
 
 ENTIÈREMENT GRATUIT
 
-Pas de publicités, pas d'achats intégrés, pas de frais cachés. CountScore est gratuit pour toujours.
+Pas de publicités, pas d'achats intégrés, pas de frais cachés.
 
 SUPPORT
 
-Email : scribio.ai@gmail.com
+E-mail : scribio.ai@gmail.com
 Code source : github.com/vemore/countscore
 
 Nécessite Android 7.0 ou supérieur.

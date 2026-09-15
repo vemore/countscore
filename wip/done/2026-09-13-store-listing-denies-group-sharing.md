@@ -1,5 +1,7 @@
 # The store listing text denies group sharing
 
+**Status:** done (2026-09-15) — closed by fix/store-listing-1-1-0. Both locales rewritten from `privacy_policy.md`: a Group sharing paragraph, a "Your own server" section saying both network features reach only the server the user enters, no "our server" or "no cloud sync" (en-US 2781, fr-FR 3431 characters).
+
 - **Noted:** 2026-09-13 — while rewriting the `release-android` skill
 - **Theme:** store-listing
 - **Area:** docs

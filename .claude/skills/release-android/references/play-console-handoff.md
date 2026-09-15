@@ -92,6 +92,8 @@ Tasks requested for this release: **{{OPTIONAL_TASKS}}**
   `store_listing/<locale>/` copies in this folder. Save as draft; do not send for review.
 - **Screenshots** — upload the PNGs in `screenshots/phone/` in filename order, replacing the
   existing phone screenshots only if the owner asked for it.
+- **Feature graphic** — upload `feature_graphic.png` (1024×500) from this folder if the listing
+  has none; replace an existing one only if the owner asked for it.
 - **Data safety** — the answers are in `PLAY_STORE_DATA_SAFETY.md` in this folder, question
   by question. Walk the form, compare each current answer with the document, and report the
   differences. Change an answer only when the owner says go (rule 4).

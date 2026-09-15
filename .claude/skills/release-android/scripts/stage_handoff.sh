@@ -56,6 +56,7 @@ mkdir -p "$dir/store_listing" "$dir/screenshots"
 cp "$AAB" "$dir/$aab_file"
 cp -r "$ROOT/store_listing/en-US" "$ROOT/store_listing/fr-FR" "$dir/store_listing/"
 cp -r "$ROOT/store_listing/assets/screenshots/phone" "$dir/screenshots/"
+cp "$ROOT/store_listing/assets/feature_graphic.png" "$dir/"
 cp "$ROOT/PLAY_STORE_DATA_SAFETY.md" "$ROOT/PUBLISHING.md" "$dir/"
 
 if [[ "$track" == production ]]; then
@@ -80,7 +81,7 @@ if grep -n '{{' "$dir/HANDOFF.md"; then echo "unfilled placeholder in HANDOFF.md
 cat <<EOF
 
 Staged: $dir_win
-  $aab_file, HANDOFF.md, store_listing/, screenshots/phone/, PLAY_STORE_DATA_SAFETY.md, PUBLISHING.md
+  $aab_file, HANDOFF.md, store_listing/, screenshots/phone/, feature_graphic.png, PLAY_STORE_DATA_SAFETY.md, PUBLISHING.md
 
 Cowork:           grant the folder above, then say: "Read HANDOFF.md in this folder and carry it out."
 Claude in Chrome: open https://play.google.com/console signed in to the developer account, paste the
