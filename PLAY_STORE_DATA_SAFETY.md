@@ -2,17 +2,21 @@
 
 Complete guide for filling out the Data Safety section in Google Play Console for CountScore.
 
-**Last Updated**: September 14, 2026
+**Last Updated**: September 15, 2026
 **Applies to**: CountScore v1.1.0 and later
 **Privacy Policy**: `privacy_policy.md`, published at
 https://vemore.github.io/countscore/privacy-policy.html
 
-> **This guide changed materially in September 2026.** Versions 1.0.x contained no networking
-> code, and the declaration for them was correctly "no data collected". **Version 1.1.0 adds
-> the ZapZap analysis and group sharing**, which transmit game data off the device — and group
-> sharing **stores** it on the server the user configures. The form must be updated
-> **before** 1.1.0 is submitted — a declaration that does not match app behaviour is a Play
-> policy violation and a common cause of suspension.
+> **History — the declaration changed with 1.1.0.** Versions 1.0.x contained no networking
+> code, and the declaration for them was correctly "no data collected". Version 1.1.0 added
+> the ZapZap analysis and group sharing, which transmit game data off the device — and group
+> sharing **stores** it on the server the user configures. The owner updated the Console form
+> to this guide and submitted 1.1.0 (4) to production on **2026-09-15**.
+>
+> Keep the form and this guide in step: a declaration that does not match app behaviour is a
+> Play policy violation and a common cause of suspension. Any new outbound data flow changes
+> this file, `privacy_policy.md`, README Privacy and the Console form together
+> (`.llmwiki/Documentation.md`).
 
 ---
 

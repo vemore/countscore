@@ -60,7 +60,7 @@ default, never 1.0. The Console's "Closed testing" is the API track `alpha`. Tes
 A released commit gets an **annotated** tag named exactly as `version:` in `pubspec.yaml`,
 `<x.y.z+n>` — the `release-android` skill §10 creates it once the rollout is live. On
 `origin`: `1.0.0+1` → `4e52a54`, `1.0.1+2` → `1614707`, `1.0.1+3` → `ee3ff1b` (lightweight,
-predates the rule). `1.1.0+4` is not tagged until its rollout is live. A local `1.0.1` tag on
+predates the rule). `1.1.0+4` → `3808257` (annotated, 2026-09-15). A local `1.0.1` tag on
 `1614707` (the older scheme) was never pushed and is not part of the scheme.
 
 ### Cadence
@@ -140,6 +140,14 @@ compliance documents; `scripts/build_privacy_page.py` renders the policy to
 Nothing blocks a 1.1.0 submission in the repository any more. What is left is on the
 Console and the GitHub account, not in the code: enable GitHub Pages so the policy URL
 resolves, then fill the form as `PLAY_STORE_DATA_SAFETY.md` describes.
+
+> **Status: Outdated** (2026-09-15, later) — the owner updated the Data Safety form to
+> `PLAY_STORE_DATA_SAFETY.md` and submitted **1.1.0 (4) to production at 100 %** from the
+> Console (about 20 users). Right after the submission, `play_publish.py status` still
+> showed 1.0.1 (3) as the completed production release, next to an unnamed production draft
+> with no version code — the Console submission awaiting review, not yet a committed release
+> the API reports. `1.1.0+4` is tagged on `3808257`, the bundle's source plus its release
+> notes. Left: a device test over the store version, and watching Crashes & ANRs.
 
 > **Status: Outdated** (2026-09-15) — **1.1.0 (4) is live on the internal track**, published
 > with `play_publish.py publish --track internal --listing --graphics --commit` — the first
