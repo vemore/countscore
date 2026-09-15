@@ -1,6 +1,6 @@
 ---
 name: release-android
-description: Build and publish a CountScore release to the Google Play Store — release worktree, keystore, version bump, release notes, Play policy gate, signed App Bundle, artifact verification (upload key, versionCode, target API 36, INTERNET, 16 KB pages), then a filled-in brief that lets Claude Cowork or Claude in Chrome do the Play Console steps. Use when preparing a release, cutting a new version, building or verifying a signed AAB, uploading to a Play track, handing the Console work to a browser agent, or regenerating the app icon. Triggers: "build a release", "publier sur le Play Store", "release build", "appbundle", "sign the app", "keystore", "new version", "bump version", "upload to Play Console", "internal testing", "Cowork", "Claude in Chrome".
+description: Build and publish a CountScore release to the Google Play Store — release worktree, keystore, version bump, release notes, Play policy gate, signed App Bundle, artifact verification (upload key, versionCode, target API 36, INTERNET, 16 KB pages), then publishing to a Play track through the Google Play Developer Publishing API (play_publish.py: status, validate, commit on the user's go), plus a brief for the Console-only tasks (content rating, declarations, Data Safety review) that Claude Cowork or Claude in Chrome can do. Use when preparing a release, cutting a new version, building or verifying a signed AAB, uploading to a Play track, setting up the Play API service account, handing the Console-only work to a browser agent, or regenerating the app icon. Triggers: "build a release", "publier sur le Play Store", "release build", "appbundle", "sign the app", "keystore", "new version", "bump version", "upload to Play Console", "Play API", "service account", "internal testing", "Cowork", "Claude in Chrome".
 ---
 
 # Releasing CountScore to the Play Store
@@ -46,8 +46,8 @@ Signing and R8 shrinking are already wired in `android/app/build.gradle.kts` (`s
 
 `version:` in `pubspec.yaml` is `x.y.z+build`; `build` becomes the `versionCode` and must be
 **higher than every version code on every track**, not just production. Tags so far
-(`git ls-remote --tags origin`): `1.0.0+1`, `1.0.1+2`, `1.0.1+3` — the Console's *Release
-explorer* is the authority.
+(`git ls-remote --tags origin`): `1.0.0+1`, `1.0.1+2`, `1.0.1+3` — `play_publish.py status`
+(§8) is the authority.
 
 Commit the bump on the release branch; the commit hook runs the gates in this worktree.
 
@@ -56,8 +56,7 @@ Commit the bump on the release branch; the commit hook runs the gates in this wo
 One file per locale: `store_listing/en-US/release_notes_v<x.y.z>.txt` and
 `store_listing/fr-FR/release_notes_v<x.y.z>.txt` (the `v` matches the existing files).
 
-- **At most 500 characters each** — Play's limit. `wc -m` them; `stage_handoff.sh` refuses
-  longer ones.
+- **At most 500 characters each** — Play's limit. `play_publish.py` refuses longer ones.
 - No claim that contradicts the Data Safety declaration ("no data collection", "fully
   offline").
 
@@ -89,7 +88,7 @@ code, not against the previous release.
 | **AI-generated content is reportable in the app** | Play's AI-Generated Content policy requires an in-app way to flag offensive generated content; ZapZap commentary is LLM output. See `.llmwiki/Release.md` for whether the app has it yet. |
 | **Target API ≥ 36** | Required for every update since 2026-08-31. `verify_aab.sh` checks it. |
 | **16 KB page size** | Required for apps targeting Android 15+ with native code (`libflutter`, `libsqlite3`, …). `verify_aab.sh` checks it. |
-| **App registered** in the Console | Unregistered apps are removed from 2026-09-30. Part A of the brief reads the status. |
+| **App registered** in the Console | Unregistered apps are removed from 2026-09-30. The API cannot read it: Part A of the Console brief (§9) does. |
 
 A failure here is not fixed inside the release: stop, add a `wip/todo/` entry, tell the user
 and let them decide whether it blocks.
@@ -138,46 +137,83 @@ One line per check, non-zero on the first failure:
 
 A stale `build/` fails the freshness or `INTERNET` check — rebuild rather than work around it.
 
-## 8. Stage the hand-off
+## 8. Publish through the Play API
+
+`scripts/play_publish.py` drives the Google Play Developer Publishing API (androidpublisher
+v3) from this terminal, with the service account of *Play API access* below. Every change goes
+into one **edit**, invisible in the Console until it is committed. Run it from the release
+worktree; `uv` fetches its dependencies (inline, PEP 723).
 
 ```bash
-.claude/skills/release-android/scripts/stage_handoff.sh internal
-#   or: closed · production 20 · production 20 "store listing, screenshots"
+P=.claude/skills/release-android/scripts/play_publish.py
+uv run --script $P status                                # read-only: releases per track, listings
+uv run --script $P publish --track internal              # validate only — nothing is published
+uv run --script $P publish --track internal --commit     # ONLY on the user's explicit go
+#   --track closed (API track "alpha") · --track production [--rollout 0.2]
+#   --draft · --listing (title, descriptions) · --graphics (feature graphic, phone screenshots)
+#   --aab <path>, default build/app/outputs/bundle/release/app-release.aab
 ```
 
-It re-runs `verify_aab.sh`, then creates `C:\Users\<you>\Downloads\countscore-release-<x.y.z+n>\`
-with the bundle, `HANDOFF.md` (filled in from `references/play-console-handoff.md`: version
-code, upload key fingerprint, track, rollout, release notes in Play's `<en-US>…</en-US>`
-block), the listing text, the phone screenshots, `PLAY_STORE_DATA_SAFETY.md` and
-`PUBLISHING.md`.
+1. **`status`** — the version codes on every track. `publish` refuses a `versionCode` not
+   above the highest of them, but read it first: a surprise here stops the release.
+2. **`publish` without `--commit`** — re-runs `verify_aab.sh`, uploads the bundle, sets the
+   release `x.y.z (n)` on the track with the en-US and fr-FR notes (≤ 500 characters), the
+   listing and graphics if asked, runs `edits.validate` — Google's full check — and deletes
+   the edit. Free to run; report its output to the user.
+3. **`--commit`** — only after the user's explicit go for *this* track: a commit publishes.
+   Internal and closed releases go out `completed`; production goes out `inProgress` at
+   `--rollout` (default `0.2`, always strictly between 0 and 1 — widening to 100 % is a later
+   decision, in the Console). If Google answers that `changesNotSentForReview` must be set,
+   the script prints it and stops: nothing was published, and the changes are sent for review
+   from the Console.
 
-Windows, because Cowork and Claude in Chrome run there and their upload only sees folders the
-user grants.
+Order: **internal → closed (if required) → production at a staged percentage**, and watch
+Crashes & ANRs for 48 h before widening.
 
-## 9. Play Console — delegated or by hand
+Tests (fake Google service, no network):
+`uv run --no-project --with pytest --with google-api-python-client --with google-auth pytest .claude/skills/release-android/scripts/`
 
-**Delegated.** Hand `HANDOFF.md` to the user with the two lines the script prints — **Claude
-Cowork** (grant the folder, "Read HANDOFF.md and carry it out") or **Claude in Chrome** (paste
-it into the side panel on play.google.com/console). The brief has:
+### Play API access — first time only (the user does this)
 
-- **Part A**, read-only survey: banners, app registration, pending changes, whether production
-  still needs a **12-tester / 14-day closed test** (personal accounts created after
-  2023-11-13), version codes per track, incomplete App content;
-- **Part B**: create the release on the track, upload, check the version code, paste the
-  notes, copy every error and warning — **then stop**;
-- **Part C**: only the optional tasks named on the command line.
+1. **Google Cloud**: a project (new or existing) with **Google Play Android Developer API**
+   enabled.
+2. **Service account**: IAM → Service accounts → create `countscore-play-publisher` with **no
+   GCP role**; Keys → add a **JSON** key and download it.
+3. **On this machine**: move it to `~/.config/countscore/play-service-account.json`,
+   `chmod 600` it, and add `playServiceAccount=<that absolute path>` to
+   `android/key.properties` (worktrees reach that file through `scripts/worktree_setup.sh`'s
+   link). **Back the key up like the keystore.** It never enters the repository: `.gitignore`
+   has `*service-account*.json`, and the commit hook refuses any JSON holding
+   `"type": "service_account"`.
+4. **Play Console** → Users and permissions → invite the service account's e-mail, **limited
+   to CountScore**, with *View app information*, *Release apps to testing tracks*, *Release
+   to production*, *Manage store presence*. Propagation can take **up to 24 h**; until then
+   `status` answers 401/403.
 
-The agent is forbidden to send for review, start a rollout, or save Data Safety / Content
-rating changes without the user's explicit go; to accept terms; or to touch signing, pricing,
-users or verification. The user handles sign-in and 2FA.
+`status` listing the tracks proves the setup.
 
-You cannot drive the Console from this session and should not relay the browser agent's
-questions on its behalf: give the user the brief and the folder path, and wait for their report.
+## 9. What the API cannot do — the Console brief
 
-**By hand.** `PUBLISHING.md` §5.
+The API does not reach the content rating (IARC questionnaire), the App content
+declarations, the Data Safety form review, app registration / developer verification, or the
+12-tester / 14-day closed-test requirement. When one of those needs attention — a change to
+what the app declares, a Console banner, the first production release:
 
-Either way: **internal → closed (if required) → production at a staged percentage**, and
-watch Crashes & ANRs for 48 h before widening.
+```bash
+.claude/skills/release-android/scripts/stage_handoff.sh ["content rating, Data safety review"]
+```
+
+It creates `C:\Users\<you>\Downloads\countscore-console-<x.y.z+n>\` with `HANDOFF.md` (from
+`references/play-console-handoff.md`), `PLAY_STORE_DATA_SAFETY.md` and `PUBLISHING.md` — no
+bundle, no release notes. Hand it to **Claude Cowork** (grant the folder, "Read HANDOFF.md
+and carry it out") or **Claude in Chrome** (paste it into the side panel). Part A surveys the
+Console read-only (banners, registration, pending changes, production access, App content);
+Part B does only the tasks named on the command line — compare, report, and save a
+declaration only on the user's go. The agent never sends for review, accepts terms, or
+touches signing, pricing, users or verification; the user handles sign-in and 2FA. Do not
+relay the browser agent's questions yourself: give the user the folder, wait for the report.
+
+**By hand.** `PUBLISHING.md` §3 and §5.
 
 ## 10. After the rollout
 
@@ -191,7 +227,7 @@ watch Crashes & ANRs for 48 h before widening.
 - Once the release pull request is merged: `scripts/cleanup_local.sh --apply` removes the
   release worktree (and the `key.properties` link with it) and the local release branch. Run it
   dry first; a `keep` line means something from the release is not on GitHub yet.
-- Delete the Windows hand-off folder: it holds a signed bundle.
+- Delete the Windows Console-brief folder, if §9 staged one.
 
 ## Icons — only if the artwork changed
 
@@ -210,7 +246,9 @@ Adaptive icon on white `#FFFFFF`; every density is generated.
 - [ ] Policy gate (§4) passed, or its failures in `wip/todo/` and cleared by the user
 - [ ] `flutter analyze` and `flutter test` clean; release APK exercised on a device over the store version
 - [ ] `verify_aab.sh` all OK
-- [ ] No keystore, `key.properties` or `.env` staged
-- [ ] Hand-off staged; Console report received; review/rollout started by the user or on their explicit go
-- [ ] Tag pushed, `Release.md` Submission state updated, worktree and hand-off folder removed
-- [ ] Keystore backup exists and is current
+- [ ] No keystore, `key.properties`, `.env` or service-account key staged
+- [ ] `play_publish.py status` read; `publish` without `--commit` validated
+- [ ] `--commit` run only on the user's explicit go; production at a partial rollout
+- [ ] Console-only tasks (content rating, declarations, Data Safety) checked, through the brief if needed
+- [ ] Tag pushed, `Release.md` Submission state updated, worktree and brief folder removed
+- [ ] Keystore and service-account key backups exist and are current

@@ -3,7 +3,7 @@
 > Scope: the Claude Code hooks that enforce project rules mechanically, and the reasoning
 > that used to live in `CLAUDE.md`.
 > Related: [[Web]] · [[I18n]] · [[Testing]] · [[Backend]] · [[KnownLimits]] · [[ParallelDelivery]] · [[Documentation]]
-> Updated: 2026-09-14
+> Updated: 2026-09-15
 
 ## Facts
 
@@ -36,7 +36,7 @@ Acknowledge one that reached `main` another way with
 `git config --add countscore.deliveryAcknowledged <number>`.
 
 `parse_command.py` and `arb_keys.py` are helpers, not handlers.
-`scripts/hooks_selftest.sh` exercises all of them, and `scripts/cleanup_local.sh`, from a table of 114 cases and runs as the
+`scripts/hooks_selftest.sh` exercises all of them, and `scripts/cleanup_local.sh`, from a table of 117 cases and runs as the
 first step of the `app` job in `.github/workflows/ci.yml`.
 
 ### What is refused, and on what evidence
@@ -46,7 +46,7 @@ first step of the `app` job in `.github/workflows/ci.yml`.
 | `flutter build <target>` without `--no-tree-shake-icons` (why: [[MobileApp]]) | tokenised command; `--help` and a bare `flutter build` produce no artifact and pass |
 | Deleting or moving `web/sqlite3.wasm`, `web/drift_worker.js`, or `web/` itself | each argument resolved against a notional cwd that follows `cd`; copies under `build/` pass |
 | A `.gitignore` matching either binary | `git check-ignore --no-index`, one path per call |
-| Committing a keystore, `key.properties` or a `.env` | staged path list; `*.template` and `.env.example` pass |
+| Committing a keystore, `key.properties`, a `.env` or a Google service-account key | staged path list; `*.template` and `.env.example` pass; any staged `.json` whose content (index, or working file under `commit -a`) holds `"type": "service_account"`, whatever its name |
 | Committing on `main`, on a detached HEAD, or on a stale branch | `%(upstream:track)` = `[gone]`, then `git cherry origin/main HEAD`, in the repository the command runs in |
 | Committing a root `TODO.md` or `DONE.md` next to `wip/`, or editing `wip/done/ARCHIVE-*.md` | committed path list; the file exists in the tree / the archive exists in `HEAD`; only in a tree that has `wip/done/` |
 | Committing with red gates, or with a gate's tool not installed | `flutter analyze` if app paths are involved; `ruff check`/`ruff format --check`/`mypy` if `backend/` is. No `flutter`, no `.dart_tool` or no `backend/.venv` tools is a refusal naming the setup command, never a skipped gate |
@@ -188,3 +188,8 @@ cherry-pick the commits `git cherry -v origin/main <old-branch>` marks with `+`.
   reason, and a force-push would destroy an agent's commits on a shared branch. Force-pushing
   was already forbidden in prose; all three are now refusals. The `TODO.md` / `DONE.md` guard
   exists because old sessions, and memories, still know the previous convention.
+- **The service-account key is recognised by content, inside the secrets rule (2026-09-15).**
+  Publishing through the Play API ([[Release]]) put a key on this machine that can release
+  the app. Google names the downloaded file after the project and a key id, so no path rule
+  would catch it once renamed; `"type": "service_account"` is in every such key. The existing
+  secrets refusal was extended rather than a rule added next to it: same reason, same remedy.

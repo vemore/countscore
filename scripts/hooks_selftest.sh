@@ -239,6 +239,23 @@ out=$(payload "git commit -m x" "$TREE" | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/gua
 report "a new wip/done entry" 0 "$?"
 git -C "$TREE" reset -q HEAD~1 && rm -rf "$TREE/wip"
 
+# Secrets: a Google service-account key is refused by content, whatever its name.
+printf '{\n  "type": "service_account",\n  "project_id": "fake",\n  "private_key": "not-a-key"\n}\n' > "$TREE/play.json"
+git -C "$TREE" add play.json
+out=$(payload "git commit -m x" "$TREE" | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/guard-bash.sh" 2>/dev/null)
+report "a staged service-account key" 2 "$?"
+git -C "$TREE" rm -q --cached play.json && rm "$TREE/play.json"
+echo '{"type": "config", "name": "service_account"}' > "$TREE/settings.json"
+git -C "$TREE" add settings.json
+out=$(payload "git commit -m x" "$TREE" | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/guard-bash.sh" 2>/dev/null)
+report "an ordinary JSON file" 0 "$?"
+git -C "$TREE" rm -q --cached settings.json && rm "$TREE/settings.json"
+echo "storeFile=/x" > "$TREE/key.properties"
+git -C "$TREE" add -f key.properties
+out=$(payload "git commit -m x" "$TREE" | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/guard-bash.sh" 2>/dev/null)
+report "a staged key.properties" 2 "$?"
+git -C "$TREE" rm -q --cached key.properties && rm "$TREE/key.properties"
+
 # Gates: which paths select them, and a missing tool named with its setup command.
 tree_commit() {  # description, expected exit, [text the refusal must contain]
     local err rc

@@ -82,6 +82,12 @@ jobs:
       - name: pytest
         run: uv run pytest -v
 
+      # The release tooling's Play API client, on a fake Google service (no network, no
+      # key). Here because this job already has uv; the job name is a required check.
+      - name: play_publish.py tests
+        working-directory: .
+        run: uv run --no-project --with pytest --with google-api-python-client --with google-auth pytest -v .claude/skills/release-android/scripts/
+
       # Every downgrade() must run, and the migrations and the SQLModel models must
       # describe the same schema: migrate an empty Postgres up, all the way down and up
       # again, then let autogenerate compare. Any diff fails, which is what

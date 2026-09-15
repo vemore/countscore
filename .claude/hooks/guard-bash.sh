@@ -90,16 +90,27 @@ refuse() {
 # 1. Secrets ---------------------------------------------------------------
 secrets=$(printf '%s\n' "$paths" | grep -E '(^|/)key\.properties$|\.jks$|\.keystore$|(^|/)\.env$|(^|/)\.env\.' \
           | grep -vE '\.template$|(^|/)\.env\.example$')
+# A Google service-account key is recognised by its content, whatever it is named: the
+# staged blob, or the working file when `commit -a` stages it after this hook runs.
+sa_key='"type"[[:space:]]*:[[:space:]]*"service_account"'
+while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    if git show ":$f" 2>/dev/null | grep -qE "$sa_key" || { [ -f "$f" ] && grep -qE "$sa_key" "$f"; }; then
+        secrets="${secrets:+$secrets$'\n'}$f"
+    fi
+done < <(printf '%s\n' "$paths" | grep -E '\.json$')
 if [ -n "$secrets" ]; then
     refuse "Refused: this commit would add a secret to the repository.
 
 $secrets
 
-The keystore, key.properties and every .env file stay out of git: losing control of
-the upload keystore means losing the ability to update the app on the Play Store.
-They are already in .gitignore, so reaching this point took a \`git add -f\`.
-Unstage them with \`git reset <path>\` and commit again. Templates
-(key.properties.template, .env.example) are the committed versions."
+The keystore, key.properties, every .env file and any Google service-account key stay
+out of git: losing control of the upload keystore means losing the ability to update the
+app on the Play Store, and the service-account key can publish to it.
+The keystore and key.properties are already in .gitignore, so reaching this point took a
+\`git add -f\`. Unstage them with \`git reset <path>\` and commit again. Templates
+(key.properties.template, .env.example) are the committed versions; the Play key lives
+outside the repository (~/.config/countscore/play-service-account.json)."
 fi
 
 # 2. Work tracking ----------------------------------------------------------

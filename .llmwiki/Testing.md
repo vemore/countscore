@@ -2,7 +2,7 @@
 
 > Scope: what is tested, how to run it, and the traps.
 > Related: [[MobileApp]] · [[DataLayer]] · [[SchemaV10]] · [[Backend]] · [[Web]] · [[KnownLimits]]
-> Updated: 2026-09-14
+> Updated: 2026-09-15
 
 ## Facts
 
@@ -145,7 +145,7 @@ toolchain table in [[MobileApp]] must move together.
 
 | Job | Steps |
 |---|---|
-| `backend` | `postgres:17-alpine` service → `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` → `alembic upgrade head` → `downgrade base` → `upgrade head` → `check` (a migration round trip) → `uv export` + `pip-audit` |
+| `backend` | `postgres:17-alpine` service → `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` → `play_publish.py` tests (`.claude/skills/release-android/scripts/`, fake Google service) → `alembic upgrade head` → `downgrade base` → `upgrade head` → `check` (a migration round trip) → `uv export` + `pip-audit` |
 | `image` | `docker build backend` → runs as non-root, no compiler, no dev dependencies, read-only code |
 | `app` | `pub get` → `dart run build_runner build` → `analyze` → `test` → `build web --release` |
 | `android` | `pub get` → `dart run build_runner build` → `build apk --debug` |
