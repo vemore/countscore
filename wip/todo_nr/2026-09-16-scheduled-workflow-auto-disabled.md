@@ -5,8 +5,9 @@
 - **Area:** tooling
 - **Blocks release:** no
 
-`pip-audit` is a step of the `backend` CI job and the only dependency scanner this project
-has (`pub` has none — `2026-09-16-dependabot-alerts-disabled.md`). It used to re-run on every
+`pip-audit` is a step of the `backend` CI job and the only dependency scan that *fails a
+build* in this project — Dependabot alerts, on since 2026-09-16, notify but gate nothing
+(`2026-09-16-dependabot-alerts-disabled.md`). It used to re-run on every
 pull request, documentation included, purely because every job ran on every pull request.
 Since the `scope` job it runs only when a change touches `backend/`, and the weekly
 `schedule:` trigger (`cron: "17 6 * * 1"`) is what caps the exposure window at seven days.

@@ -30,7 +30,8 @@ runs everything too. Branch protection is unchanged: the same five contexts, and
 deliberately not one of them (`.llmwiki/ParallelDelivery.md` says why).
 
 A weekly `schedule:` run with every flag true was added in the same change, because
-`pip-audit` — the only dependency scanner this project has — lives in the `backend` job and
+`pip-audit` — the only dependency scan that fails a build here; Dependabot alerts notify but
+gate nothing — lives in the `backend` job and
 used to be re-run incidentally by every documentation pull request
 (`wip/todo_nr/2026-09-16-scheduled-workflow-auto-disabled.md` covers how that trigger can go
 quiet). The `android` job is still triggered by every Dart change, which is why a `lib/`-only
