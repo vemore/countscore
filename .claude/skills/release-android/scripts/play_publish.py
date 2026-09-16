@@ -4,6 +4,8 @@
 # dependencies = [
 #   "google-api-python-client>=2.100",
 #   "google-auth>=2.23",
+#   "google-auth-httplib2>=0.2",
+#   "httplib2>=0.22",
 # ]
 # ///
 """Publish CountScore to Google Play through the Play Developer Publishing API (v3).
@@ -11,10 +13,17 @@
     uv run --script .claude/skills/release-android/scripts/play_publish.py status
     uv run --script .claude/skills/release-android/scripts/play_publish.py publish --track internal
     uv run --script .claude/skills/release-android/scripts/play_publish.py publish --track internal --commit
+    uv run --script .claude/skills/release-android/scripts/play_publish.py listing --graphics
 
 Run from the checkout that built the bundle. Every change goes through one *edit*: nothing
 is visible in the Play Console until `edits.commit`, which happens only with --commit.
 Without it the edit is validated by Google and then deleted.
+
+`listing` is the store listing alone — title, descriptions, an optional promo video, and
+with --graphics the feature graphic and the phone screenshots. It never reads pubspec.yaml,
+never runs verify_aab.sh and never uploads a bundle, so the listing can be rewritten without
+a version bump. A listing has no `userFraction`: `listing --commit` is live at once, for
+everyone, with no staged rollout.
 
 The service-account key is named by `playServiceAccount=` in android/key.properties; the
 one-time setup is in .claude/skills/release-android/SKILL.md, "Play API access".
@@ -28,25 +37,43 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, TextIO
+from typing import Any, Callable, Iterable, TextIO
 
 PACKAGE = "com.vemore.countscore"
 SCOPE = "https://www.googleapis.com/auth/androidpublisher"
-LOCALES = ("en-US", "fr-FR")
+# Release notes stay bilingual on purpose: a locale added to store_listing/ must not make a
+# third release-notes file mandatory at the next release. A missing file falls back to en-US.
+NOTES_LOCALES = ("en-US", "fr-FR")
+# The listing locales are *not* a constant: listing_locales() reads them off the disk, so
+# adding a language to the listing is creating a directory — this file does not change.
+LISTING_ROOT = "store_listing"
+ASSETS_DIR = "assets"
 NOTES_LIMIT = 500
 LISTING_FILES = {  # file -> (API field, Play's limit)
     "title.txt": ("title", 30),
     "short_description.txt": ("shortDescription", 80),
     "full_description.txt": ("fullDescription", 4000),
 }
+# Optional: the `video` field of the androidpublisher Listing resource, a YouTube URL.
+# No file means the field is not sent at all, and Play keeps whatever it already has.
+VIDEO_FILE = "video.txt"
+VIDEO_LIMIT = 2048
+MAX_PHONE_SCREENSHOTS = 8  # Play's limit
 # The Console's "Closed testing" is the API track `alpha`.
 TRACKS = {"internal": "internal", "closed": "alpha", "production": "production"}
 DEFAULT_ROLLOUT = 0.2
 DEFAULT_AAB = "build/app/outputs/bundle/release/app-release.aab"
+HTTP_TIMEOUT = 300  # seconds — httplib2's default socket has no read timeout at all
+NUM_RETRIES = 5  # googleapiclient retries an upload this many times before giving up
 SETUP_HINT = (
     "One-time setup: .claude/skills/release-android/SKILL.md, section 'Play API access' "
     "(service account, JSON key at ~/.config/countscore/play-service-account.json, "
     "then playServiceAccount=<absolute path> in android/key.properties)."
+)
+NO_ROLLOUT_WARNING = (
+    "note: a store listing has no userFraction — unlike a bundle it cannot be staged. "
+    "--commit publishes the text (and with --graphics the images) to everyone at once, in "
+    "every locale listed above, as soon as Play accepts the edit."
 )
 
 
@@ -106,39 +133,92 @@ def _read_text(path: Path, limit: int) -> str:
     return text
 
 
-def read_release_notes(root: Path, version: str) -> list[dict[str, str]]:
-    return [
-        {
-            "language": locale,
-            "text": _read_text(
-                root / "store_listing" / locale / f"release_notes_v{version}.txt", NOTES_LIMIT
-            ),
-        }
-        for locale in LOCALES
-    ]
+def listing_locales(root: Path) -> list[str]:
+    """The store-listing locales, read off the disk rather than held in a constant.
+
+    A locale is a directory under store_listing/ holding a title.txt; `assets/` and any
+    directory without one (a guide, a translation in progress) is skipped. Adding a language
+    to the listing is therefore creating its directory — there is no second list to drift.
+    """
+    base = root / LISTING_ROOT
+    if not base.is_dir():
+        raise PublishError(f"missing {base}")
+    locales = sorted(
+        d.name
+        for d in base.iterdir()
+        if d.is_dir() and d.name != ASSETS_DIR and (d / "title.txt").is_file()
+    )
+    if not locales:
+        raise PublishError(f"no locale directory with a title.txt under {base}")
+    return locales
+
+
+def read_release_notes(root: Path, version: str, out: TextIO = sys.stderr) -> list[dict[str, str]]:
+    """The release notes, for NOTES_LOCALES only, each falling back to en-US when absent.
+
+    A listing locale outside NOTES_LOCALES requires nothing: a language can be added to the
+    store listing without making a third release-notes file mandatory at every release.
+    """
+    fallback = NOTES_LOCALES[0]
+    notes = []
+    for locale in NOTES_LOCALES:
+        path = root / LISTING_ROOT / locale / f"release_notes_v{version}.txt"
+        if not path.is_file() and locale != fallback:
+            path = root / LISTING_ROOT / fallback / f"release_notes_v{version}.txt"
+            print(f"note: no {locale} release notes for {version}, using {fallback}", file=out)
+        notes.append({"language": locale, "text": _read_text(path, NOTES_LIMIT)})
+    return notes
 
 
 def read_listing(root: Path) -> dict[str, dict[str, str]]:
     listings = {}
-    for locale in LOCALES:
+    for locale in listing_locales(root):
         body = {"language": locale}
         for name, (field, limit) in LISTING_FILES.items():
-            body[field] = _read_text(root / "store_listing" / locale / name, limit)
+            body[field] = _read_text(root / LISTING_ROOT / locale / name, limit)
+        video = root / LISTING_ROOT / locale / VIDEO_FILE
+        if video.is_file():  # optional; absent means the field is not sent at all
+            url = _read_text(video, VIDEO_LIMIT)
+            if not url.startswith(("http://", "https://")):
+                raise PublishError(f"{video} must hold a YouTube URL, got {url!r}")
+            body["video"] = url
         listings[locale] = body
     return listings
 
 
-def graphics_files(root: Path) -> tuple[Path, list[Path]]:
-    assets = root / "store_listing" / "assets"
-    feature = assets / "feature_graphic.png"
+def graphics_files(root: Path, locale: str) -> tuple[Path, list[Path]]:
+    """The feature graphic and the phone screenshots for one locale.
+
+    store_listing/<locale>/ first, store_listing/assets/ as the fallback — which is still the
+    nominal path: localised artwork is opt-in, one directory at a time. The screenshot glob
+    is `*.png` only, so a JPEG dropped in that directory is ignored in silence.
+    """
+    base = root / LISTING_ROOT
+    feature = base / locale / "feature_graphic.png"
+    if not feature.is_file():
+        feature = base / ASSETS_DIR / "feature_graphic.png"
     if not feature.is_file():
         raise PublishError(f"missing {feature}")
-    shots = sorted((assets / "screenshots" / "phone").glob("*.png"), key=lambda p: p.name)
+    phone = base / locale / "screenshots" / "phone"
+    shots = _pngs(phone)
     if not shots:
-        raise PublishError(f"no PNG in {assets / 'screenshots' / 'phone'}")
-    if len(shots) > 8:
-        raise PublishError(f"{len(shots)} phone screenshots; Play allows 8")
+        phone = base / ASSETS_DIR / "screenshots" / "phone"
+        shots = _pngs(phone)
+    if not shots:
+        raise PublishError(f"no PNG in {phone}")
+    if len(shots) > MAX_PHONE_SCREENSHOTS:
+        raise PublishError(f"{len(shots)} phone screenshots; Play allows {MAX_PHONE_SCREENSHOTS}")
     return feature, shots
+
+
+def _pngs(directory: Path) -> list[Path]:
+    if not directory.is_dir():
+        return []
+    return sorted(directory.glob("*.png"), key=lambda p: p.name)
+
+
+def read_graphics(root: Path, locales: Iterable[str]) -> dict[str, tuple[Path, list[Path]]]:
+    return {locale: graphics_files(root, locale) for locale in locales}
 
 
 def build_release(
@@ -163,13 +243,19 @@ def build_release(
 
 
 def build_service(key_path: Path) -> Any:  # pragma: no cover - needs real credentials
+    import httplib2
     from google.oauth2 import service_account
+    from google_auth_httplib2 import AuthorizedHttp
     from googleapiclient.discovery import build
 
     credentials = service_account.Credentials.from_service_account_file(
         str(key_path), scopes=[SCOPE]
     )
-    return build("androidpublisher", "v3", credentials=credentials, cache_discovery=False)
+    # The bundle is ~60 MB and httplib2's default socket never times out on a read, so a
+    # stalled upload used to hang and then raise a bare TimeoutError
+    # (wip/done/2026-09-15-play-publish-upload-timeout.md).
+    http = AuthorizedHttp(credentials, http=httplib2.Http(timeout=HTTP_TIMEOUT))
+    return build("androidpublisher", "v3", http=http, cache_discovery=False)
 
 
 def media_upload(path: Path, mimetype: str) -> Any:  # pragma: no cover - thin wrapper
@@ -206,6 +292,63 @@ def describe_tracks(tracks: dict[str, Any]) -> list[str]:
     return lines or ["  no tracks"]
 
 
+def push_listings(
+    edits: Any, edit_id: str, listings: dict[str, dict[str, str]], out: TextIO
+) -> None:
+    for locale, body in listings.items():
+        edits.listings().update(
+            packageName=PACKAGE, editId=edit_id, language=locale, body=body
+        ).execute()
+        extra = " + promo video" if "video" in body else ""
+        print(f"listing {locale} updated{extra}", file=out)
+
+
+def push_graphics(
+    edits: Any,
+    edit_id: str,
+    graphics: dict[str, tuple[Path, list[Path]]],
+    media: Callable[[Path, str], Any],
+    out: TextIO,
+) -> None:
+    for locale, (feature, shots) in graphics.items():
+        images = edits.images()
+        for image_type, files in (("featureGraphic", [feature]), ("phoneScreenshots", shots)):
+            images.deleteall(
+                packageName=PACKAGE, editId=edit_id, language=locale, imageType=image_type
+            ).execute()
+            for f in files:
+                images.upload(
+                    packageName=PACKAGE,
+                    editId=edit_id,
+                    language=locale,
+                    imageType=image_type,
+                    media_body=media(f, "image/png"),
+                ).execute(num_retries=NUM_RETRIES)
+        print(f"graphics {locale}: feature graphic + {len(shots)} phone screenshots", file=out)
+
+
+def commit_edit(edits: Any, edit_id: str) -> None:
+    """edits.commit, with Play's `changesNotSentForReview` answer turned into a refusal."""
+    try:
+        edits.commit(packageName=PACKAGE, editId=edit_id).execute()
+    except Exception as err:  # googleapiclient.errors.HttpError
+        if "changesNotSentForReview" in str(err):
+            raise PublishError(
+                "Play refused the commit and asks for changesNotSentForReview: this app's "
+                "changes are sent for review from the Console (Publishing overview), not "
+                "automatically. Nothing was published. Google's answer:\n"
+                f"{err}"
+            ) from err
+        raise
+
+
+def discard_edit(edits: Any, edit_id: str) -> None:
+    try:
+        edits.delete(packageName=PACKAGE, editId=edit_id).execute()
+    except Exception as err:  # the edit expires on its own; never mask the real error
+        print(f"warning: could not delete edit {edit_id}: {err}", file=sys.stderr)
+
+
 def cmd_status(service: Any, out: TextIO = sys.stdout) -> None:
     edits = service.edits()
     edit_id = edits.insert(packageName=PACKAGE, body={}).execute()["id"]
@@ -224,7 +367,49 @@ def cmd_status(service: Any, out: TextIO = sys.stdout) -> None:
                 file=out,
             )
     finally:
-        edits.delete(packageName=PACKAGE, editId=edit_id).execute()
+        discard_edit(edits, edit_id)
+
+
+@dataclass
+class ListingOptions:
+    graphics: bool = False
+    commit: bool = False
+
+
+def cmd_listing(
+    service: Any,
+    root: Path,
+    opts: ListingOptions,
+    media: Callable[[Path, str], Any] = media_upload,
+    out: TextIO = sys.stdout,
+) -> None:
+    """The store listing alone — no pubspec.yaml, no verify_aab.sh, no bundle, no track."""
+    # Read and check every local file before opening an edit.
+    listings = read_listing(root)
+    graphics = read_graphics(root, listings) if opts.graphics else {}
+    print(f"listing locales: {', '.join(listings)}", file=out)
+    if opts.commit:
+        print(NO_ROLLOUT_WARNING, file=out)
+
+    edits = service.edits()
+    edit_id = edits.insert(packageName=PACKAGE, body={}).execute()["id"]
+    committed = False
+    try:
+        push_listings(edits, edit_id, listings, out)
+        push_graphics(edits, edit_id, graphics, media, out)
+
+        edits.validate(packageName=PACKAGE, editId=edit_id).execute()
+        print("edits.validate OK", file=out)
+
+        if not opts.commit:
+            print("validated, nothing published (rerun with --commit to publish)", file=out)
+            return
+        commit_edit(edits, edit_id)
+        committed = True
+        print(f"committed: store listing for {', '.join(listings)} — live, no rollout", file=out)
+    finally:
+        if not committed:
+            discard_edit(edits, edit_id)
 
 
 @dataclass
@@ -253,7 +438,7 @@ def cmd_publish(
     # Read and check every local file before opening an edit.
     notes = read_release_notes(root, version)
     listings = read_listing(root) if opts.listing else {}
-    feature, shots = graphics_files(root) if opts.graphics else (None, [])
+    graphics = read_graphics(root, listing_locales(root)) if opts.graphics else {}
     release = build_release(version, code, notes, opts.track, opts.draft, opts.rollout)
     api_track = TRACKS[opts.track]
 
@@ -267,15 +452,21 @@ def cmd_publish(
                 f"versionCode {code} (pubspec.yaml) is not above {highest}, already on track "
                 f"'{where}'. Bump `version:` in pubspec.yaml and rebuild."
             )
-        uploaded = (
-            edits.bundles()
-            .upload(
-                packageName=PACKAGE,
-                editId=edit_id,
-                media_body=media(opts.aab, "application/octet-stream"),
+        try:
+            uploaded = (
+                edits.bundles()
+                .upload(
+                    packageName=PACKAGE,
+                    editId=edit_id,
+                    media_body=media(opts.aab, "application/octet-stream"),
+                )
+                .execute(num_retries=NUM_RETRIES)
             )
-            .execute()
-        )
+        except TimeoutError as err:
+            raise PublishError(
+                f"the bundle upload timed out after {HTTP_TIMEOUT}s and {NUM_RETRIES} retries. "
+                "Nothing was committed and the edit is discarded: rerun the same command."
+            ) from err
         if int(uploaded.get("versionCode", -1)) != code:
             raise PublishError(
                 f"Play read versionCode {uploaded.get('versionCode')} from the bundle, "
@@ -292,28 +483,8 @@ def cmd_publish(
         fraction = f" {release['userFraction']:.0%}" if "userFraction" in release else ""
         print(f"track {api_track}: {release['name']} [{release['status']}{fraction}]", file=out)
 
-        for locale, body in listings.items():
-            edits.listings().update(
-                packageName=PACKAGE, editId=edit_id, language=locale, body=body
-            ).execute()
-            print(f"listing {locale} updated", file=out)
-
-        if feature is not None:
-            for locale in LOCALES:
-                images = edits.images()
-                for image_type, files in (("featureGraphic", [feature]), ("phoneScreenshots", shots)):
-                    images.deleteall(
-                        packageName=PACKAGE, editId=edit_id, language=locale, imageType=image_type
-                    ).execute()
-                    for f in files:
-                        images.upload(
-                            packageName=PACKAGE,
-                            editId=edit_id,
-                            language=locale,
-                            imageType=image_type,
-                            media_body=media(f, "image/png"),
-                        ).execute()
-                print(f"graphics {locale}: feature graphic + {len(shots)} phone screenshots", file=out)
+        push_listings(edits, edit_id, listings, out)
+        push_graphics(edits, edit_id, graphics, media, out)
 
         edits.validate(packageName=PACKAGE, editId=edit_id).execute()
         print("edits.validate OK", file=out)
@@ -321,25 +492,12 @@ def cmd_publish(
         if not opts.commit:
             print("validated, nothing published (rerun with --commit to publish)", file=out)
             return
-        try:
-            edits.commit(packageName=PACKAGE, editId=edit_id).execute()
-        except Exception as err:  # googleapiclient.errors.HttpError
-            if "changesNotSentForReview" in str(err):
-                raise PublishError(
-                    "Play refused the commit and asks for changesNotSentForReview: this app's "
-                    "changes are sent for review from the Console (Publishing overview), not "
-                    "automatically. Nothing was published. Google's answer:\n"
-                    f"{err}"
-                ) from err
-            raise
+        commit_edit(edits, edit_id)
         committed = True
         print(f"committed: {release['name']} on {api_track}", file=out)
     finally:
         if not committed:
-            try:
-                edits.delete(packageName=PACKAGE, editId=edit_id).execute()
-            except Exception as err:  # the edit expires on its own; never mask the real error
-                print(f"warning: could not delete edit {edit_id}: {err}", file=sys.stderr)
+            discard_edit(edits, edit_id)
 
 
 # ----------------------------------------------------------------- entry point
@@ -363,6 +521,12 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     pub.add_argument("--graphics", action="store_true", help="replace feature graphic and phone screenshots")
     pub.add_argument("--commit", action="store_true", help="publish the edit; without it, validate only")
     pub.add_argument("--aab", type=Path, default=None, help=f"default {DEFAULT_AAB}")
+    lst = sub.add_parser(
+        "listing",
+        help="the store listing alone — no bundle, no version bump; --commit is live at once",
+    )
+    lst.add_argument("--graphics", action="store_true", help="replace feature graphic and phone screenshots")
+    lst.add_argument("--commit", action="store_true", help="publish the edit; without it, validate only")
     return parser.parse_args(argv)
 
 
@@ -372,6 +536,14 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.command == "status":
             cmd_status(build_service(read_service_account_path(root)))
+            return 0
+        if args.command == "listing":
+            key = read_service_account_path(root)
+            cmd_listing(
+                build_service(key),
+                root,
+                ListingOptions(graphics=args.graphics, commit=args.commit),
+            )
             return 0
         if args.rollout is not None and args.track != "production":
             raise PublishError("--rollout applies to --track production only")

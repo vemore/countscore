@@ -1,5 +1,11 @@
 # `play_publish.py` times out uploading the bundle on the first try
 
+**Status:** done (2026-09-16) — closed by chore/play-publish-listing. `build_service()` now
+wraps the credentials in an `AuthorizedHttp` over `httplib2.Http(timeout=300)`, the bundle and
+image uploads `.execute(num_retries=5)`, and a `TimeoutError` becomes a `PublishError` saying
+nothing was committed and the command can be rerun. `google-auth-httplib2` and `httplib2` are
+in the PEP 723 header.
+
 - **Noted:** 2026-09-15 — publishing 1.1.0+4 to the internal track
 - **Theme:** release-automation
 - **Area:** tooling
