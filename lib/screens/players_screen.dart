@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/game_provider.dart';
+import '../utils/insets.dart';
 
 class PlayersScreen extends StatefulWidget {
   const PlayersScreen({super.key});
@@ -57,7 +58,7 @@ class _PlayersScreenState extends State<PlayersScreen> {
               ),
             )
           : ListView.builder(
-              padding: const EdgeInsets.all(8),
+              padding: withBottomInset(context, const EdgeInsets.all(8)),
               itemCount: _playerNames.length,
               itemBuilder: (context, index) {
                 final playerName = _playerNames[index];

@@ -443,7 +443,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get featureGroupSharing => 'Совместный доступ в группах';
 
   @override
-  String get featureZapZapAnalysis => 'Анализ партий ZapZap';
+  String get featureGameAnalysis => 'Анализ партий с ИИ';
 
   @override
   String get rateApp => 'Оценить CountScore';
@@ -482,46 +482,47 @@ class AppLocalizationsRu extends AppLocalizations {
   String get close => 'Закрыть';
 
   @override
-  String get playerEliminationCondition => 'Player Elimination Condition';
+  String get playerEliminationCondition => 'Условие выбывания игрока';
 
   @override
-  String get gameOverCondition => 'Game Over Condition';
+  String get gameOverCondition => 'Условие окончания игры';
 
   @override
-  String get none => 'None';
+  String get none => 'Нет';
 
   @override
-  String get overThreshold => 'Over threshold';
+  String get overThreshold => 'Выше порога';
 
   @override
-  String get underThreshold => 'Under threshold';
+  String get underThreshold => 'Ниже порога';
 
   @override
-  String get firstPlayerOver => 'First player over';
+  String get firstPlayerOver => 'Первый игрок выше';
 
   @override
-  String get firstPlayerUnder => 'First player under';
+  String get firstPlayerUnder => 'Первый игрок ниже';
 
   @override
-  String get lastPlayerOver => 'Last player over';
+  String get lastPlayerOver => 'Последний игрок выше';
 
   @override
-  String get lastPlayerUnder => 'Last player under';
+  String get lastPlayerUnder => 'Последний игрок ниже';
 
   @override
-  String get threshold => 'Threshold';
+  String get threshold => 'Порог';
 
   @override
-  String get conditionType => 'Condition Type';
+  String get conditionType => 'Тип условия';
 
   @override
-  String get gameOverTitle => 'Game Over!';
+  String get gameOverTitle => 'Игра окончена!';
 
   @override
-  String get gameOverMessage => 'Game over condition reached. End game now?';
+  String get gameOverMessage =>
+      'Условие окончания игры выполнено. Завершить игру?';
 
   @override
-  String get continuePlay => 'Continue Playing';
+  String get continuePlay => 'Продолжить игру';
 
   @override
   String get endGame => 'Завершить игру';
@@ -531,6 +532,15 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get gameFinished => 'Завершена';
+
+  @override
+  String get undo => 'Отменить';
+
+  @override
+  String get gameMarkedFinished => 'Игра завершена';
+
+  @override
+  String get gameReopened => 'Игра возобновлена';
 
   @override
   String get comment => 'Комментарий';
@@ -543,6 +553,36 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get analysisTitle => 'Анализ игры';
+
+  @override
+  String get analysisStyle => 'Стиль анализа';
+
+  @override
+  String get analysisStyleProfessor => 'Профессор';
+
+  @override
+  String get analysisStyleCommentator => 'Спортивный комментатор';
+
+  @override
+  String get analysisStyleDocumentary => 'Фильм о дикой природе';
+
+  @override
+  String get analysisStyleNoir => 'Детектив';
+
+  @override
+  String get analysisStyleBard => 'Бард';
+
+  @override
+  String get analysisStyleCoach => 'Тренер';
+
+  @override
+  String get analysisStyleConsultant => 'Консультант';
+
+  @override
+  String get analysisStyleAstrologer => 'Астролог';
+
+  @override
+  String get analysisStyleRealityTv => 'Реалити-шоу';
 
   @override
   String get generatingAnalysis => 'Создание анализа…';
@@ -838,4 +878,149 @@ class AppLocalizationsRu extends AppLocalizations {
   String reportCommentaryNoMailApp(String email) {
     return 'Почтовое приложение не найдено. Напишите на $email, чтобы пожаловаться на этот комментарий.';
   }
+
+  @override
+  String get gameRulesTitle => 'Правила игры';
+
+  @override
+  String get gameRulesInApp => 'В CountScore';
+
+  @override
+  String get gameRulesSection => 'Правила';
+
+  @override
+  String get gameRulesNoElimination => 'Игроки не выбывают по ходу партии';
+
+  @override
+  String gameRulesEliminationOver(int threshold) {
+    return 'Игрок выбывает, набрав больше $threshold очков';
+  }
+
+  @override
+  String gameRulesEliminationUnder(int threshold) {
+    return 'Игрок выбывает, опустившись ниже $threshold очков';
+  }
+
+  @override
+  String gameRulesEndFirstOver(int threshold) {
+    return 'Партия заканчивается, как только игрок набирает больше $threshold очков';
+  }
+
+  @override
+  String gameRulesEndFirstUnder(int threshold) {
+    return 'Партия заканчивается, как только игрок опускается ниже $threshold очков';
+  }
+
+  @override
+  String gameRulesEndLastOver(int threshold) {
+    return 'Партия заканчивается, когда все игроки, кроме одного, наберут больше $threshold очков';
+  }
+
+  @override
+  String gameRulesEndLastUnder(int threshold) {
+    return 'Партия заканчивается, когда все игроки, кроме одного, опустятся ниже $threshold очков';
+  }
+
+  @override
+  String get gameRulesNoEnd =>
+      'Автоматического завершения нет: вы сами решаете, когда партия окончена';
+
+  @override
+  String get gameRulesEmptyTitle => 'Правил пока нет';
+
+  @override
+  String get gameRulesEmptyHint =>
+      'Запишите, как считают очки за вашим столом, — и у всех будет одна версия.';
+
+  @override
+  String get gameRulesWrite => 'Записать правила';
+
+  @override
+  String get gameRulesEditTitle => 'Изменить правила';
+
+  @override
+  String get gameRulesEditorHint =>
+      'Правила вашего стола. Поддерживается Markdown.';
+
+  @override
+  String get gameRulesFromGroup => 'Правила вашей группы';
+
+  @override
+  String get gameRulesRestoreDefault => 'Восстановить исходные правила';
+
+  @override
+  String get gameRulesSaved => 'Правила сохранены';
+
+  @override
+  String get gameRulesRestored => 'Исходные правила восстановлены';
+
+  @override
+  String get gameRulesDisclaimer =>
+      'Пересказ подготовлен для CountScore по правилам в их наиболее распространённом виде. Названия игр принадлежат их правообладателям и упоминаются только описательно.';
+
+  @override
+  String get gameTypeNameZapzap => 'ZapZap';
+
+  @override
+  String get gameTypeNameUno => 'Уно';
+
+  @override
+  String get gameTypeNameScrabble => 'Скрэббл';
+
+  @override
+  String get gameTypeNameOther => 'Другое';
+
+  @override
+  String get gameTypeNameSkyjo => 'Скайджо';
+
+  @override
+  String get gameTypeNamePresident => 'Президент';
+
+  @override
+  String get gameTypeNameBelote => 'Белот';
+
+  @override
+  String get gameTypeNameTarot => 'Таро';
+
+  @override
+  String get gameTypeNameBridge => 'Бридж';
+
+  @override
+  String get gameTypeNameRami => 'Рамми';
+
+  @override
+  String get gameTypeNameCoinche => 'Куанш';
+
+  @override
+  String get gameTypeNameYahtzee => 'Яцзы';
+
+  @override
+  String get gameTypeNamePhase10 => 'Фаза 10';
+
+  @override
+  String get gameTypeNameFlip7 => 'Флип 7';
+
+  @override
+  String get gameTypeNameMilleBornes => 'Милль Борн';
+
+  @override
+  String get gameTypeNameRummikub => 'Руммикуб';
+
+  @override
+  String get gameTypeNameSixNimmt => 'Шесть берёт';
+
+  @override
+  String get gameTypeNameQwirkle => 'Квиркл';
+
+  @override
+  String get gameTypeNameFarkle => 'Фаркл';
+
+  @override
+  String get gameTypeNameCanasta => 'Канаста';
+
+  @override
+  String get gameTypeNameWizard => 'Визард';
+
+  @override
+  String get gameTypeNameTriomino => 'Триомино';
 }

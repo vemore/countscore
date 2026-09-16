@@ -155,6 +155,44 @@ python3 -c 'import json,sys; print(json.dumps({"tool_input":{"file_path":sys.arg
     | CLAUDE_PROJECT_DIR="$ARBDIR" "$HOOKS/check-arb-sync.sh" >/dev/null 2>&1
 report "invalid JSON in the edited file" 2 "$?"
 
+echo "== ARB values ================================================"
+# A key can be present in all ten files and still hold the literal English string.
+# Own sandbox: the block above deliberately breaks app_de.arb and app_es.arb.
+VALDIR="$SANDBOX/arbval"
+mkdir -p "$VALDIR/lib/l10n"
+cp "$ROOT/l10n.yaml" "$VALDIR/"
+cp "$ROOT"/lib/l10n/*.arb "$VALDIR/lib/l10n/"
+CLAUDE_PROJECT_DIR="$VALDIR" python3 "$HOOKS/arb_keys.py" --values >/dev/null 2>&1
+report "ten files translated, not merely present" 0 "$?"
+
+# description, expected exit, locale, mode, then `key=value` pairs written verbatim
+# into BOTH that locale and app_en.arb -- a key absent from English is never compared,
+# so writing it on one side alone would pass for the wrong reason.
+arb_value_case() {
+    local desc="$1" expected="$2" locale="$3" mode="$4"; shift 4
+    cp "$ROOT/lib/l10n/app_$locale.arb" "$VALDIR/lib/l10n/app_$locale.arb"
+    cp "$ROOT/lib/l10n/app_en.arb" "$VALDIR/lib/l10n/app_en.arb"
+    python3 - "$VALDIR/lib/l10n/app_$locale.arb" "$VALDIR/lib/l10n/app_en.arb" "$@" <<'PY'
+import json, sys
+paths, pairs = sys.argv[1:3], [a.split("=", 1) for a in sys.argv[3:]]
+for path in paths:
+    data = json.load(open(path, encoding="utf-8"))
+    data.update(dict(pairs))
+    json.dump(data, open(path, "w", encoding="utf-8"), ensure_ascii=False)
+PY
+    CLAUDE_PROJECT_DIR="$VALDIR" python3 "$HOOKS/arb_keys.py" "$mode" >/dev/null 2>&1
+    report "$desc" "$expected" "$?"
+    cp "$ROOT/lib/l10n/app_$locale.arb" "$VALDIR/lib/l10n/app_$locale.arb"
+    cp "$ROOT/lib/l10n/app_en.arb" "$VALDIR/lib/l10n/app_en.arb"
+}
+
+arb_value_case "a value left in English"     1 ja --values 'continuePlay=Continue Playing'
+arb_value_case "an exempted key (appTitle)"  0 ja --values 'appTitle=CountScore'
+arb_value_case "an exemption is per locale"  1 ru --values 'ok=OK'
+arb_value_case "the gameTypeName* prefix"    0 ja --values 'gameTypeNameYahtzee=Yahtzee'
+arb_value_case "any other new key"           1 ja --values 'someNewLabel=Yahtzee'
+arb_value_case "--keys ignores values"       0 ja --keys   'continuePlay=Continue Playing'
+
 echo "== branch discipline ========================================="
 REMOTE="$SANDBOX/remote.git"
 WORK="$SANDBOX/work"
@@ -474,6 +512,99 @@ git -C "$SANDBOX/wt-recent" commit -q --allow-empty -m wt
 report "cleanup: worktree in setup (marker)"                   kept    "$([ -d "$SANDBOX/wt-setup" ] && echo kept || echo removed)"
 report "cleanup: the branch of a worktree in setup"            kept    "$(has_branch feat/wt-setup)"
 report "cleanup: recently modified worktree"                   kept    "$([ -d "$SANDBOX/wt-recent" ] && echo kept || echo removed)"
+
+echo "== scheduled runs ============================================"
+# scripts/check_scheduled_runs.sh asks GitHub whether the two `schedule:`-only workflows
+# are still firing. Every answer it has to tell apart is exercised here against a stubbed
+# `gh`, so the cases run offline and in CI -- and so that "silent" is proven to mean
+# "nothing is wrong", never "the check quietly gave up".
+SCHED="$SANDBOX/sched"
+SSTUB="$SANDBOX/sched-stub"
+mkdir -p "$SCHED/scripts" "$SCHED/.github/workflows" "$SSTUB"
+cp "$ROOT/scripts/check_scheduled_runs.sh" "$SCHED/scripts/"
+printf 'on:\n  schedule:\n    - cron: "17 6 * * 1"\n' > "$SCHED/.github/workflows/ci.yml"
+printf 'on:\n  schedule:\n    - cron: "23 5 4 * *"\n' > "$SCHED/.github/workflows/deps.yml"
+git init -q "$SCHED"
+git -C "$SCHED" add -A >/dev/null 2>&1
+git -C "$SCHED" -c user.email=t@t -c user.name=t commit -qm "workflows" >/dev/null 2>&1
+git -C "$SCHED" branch -M main
+git -C "$SCHED" remote add origin https://github.com/example/does-not-exist.git
+git -C "$SCHED" update-ref refs/remotes/origin/main refs/heads/main
+
+sched_stub() {  # workflows listing (%b), ci run date, deps run date, [auth exit]
+    local wf="$1" ci="$2" deps="$3" auth="${4:-0}"
+    cat > "$SSTUB/gh" <<STUBEOF
+#!/bin/bash
+[ "\$1 \$2" = "auth status" ] && exit $auth
+case "\$1" in
+    api) printf '%b\n' '$wf' ;;
+    run) case "\$*" in
+             *ci.yml*)   [ -n '$ci' ]   && echo '$ci' ;;
+             *deps.yml*) [ -n '$deps' ] && echo '$deps' ;;
+         esac ;;
+esac
+exit 0
+STUBEOF
+    chmod +x "$SSTUB/gh"
+}
+
+sched_check() {  # description, expected exit, [text it must name], [text it must not name]
+    local out rc
+    out=$(cd "$SCHED" && PATH="$SSTUB:$PATH" ./scripts/check_scheduled_runs.sh 2>/dev/null)
+    rc=$?
+    if [ -n "${3:-}" ]; then
+        case "$out" in *"$3"*) ;; *) rc="$rc without '$3'" ;; esac
+    fi
+    if [ -n "${4:-}" ]; then
+        case "$out" in *"$4"*) rc="$rc, wrongly naming '$4'" ;; esac
+    fi
+    # A silent exit 0 is the whole point: anything printed on the happy path is a failure.
+    [ -z "${3:-}" ] && [ -n "$out" ] && rc="$rc but said: $(printf '%s' "$out" | head -1)"
+    report "$1" "$2" "$rc"
+}
+
+ACTIVE='.github/workflows/ci.yml\tactive\n.github/workflows/deps.yml\tactive'
+OFF='.github/workflows/ci.yml\tdisabled_inactivity\n.github/workflows/deps.yml\tactive'
+ago() { date -u -d "$1 days ago" +%Y-%m-%dT%H:%M:%SZ; }
+
+sched_stub "$ACTIVE" "$(ago 2)" "$(ago 20)"
+sched_check "both crons fired within their own period"   0
+sched_stub "$ACTIVE" "$(ago 40)" "$(ago 20)"
+sched_check "a weekly workflow silent for 40 days"       1 "ci.yml" "deps.yml"
+# The per-workflow threshold is the point: one 10-day window would cry wolf at the
+# monthly workflow every month, and a single 40-day one would miss three weeks of ci.yml.
+sched_stub "$ACTIVE" "$(ago 12)" "$(ago 35)"
+sched_check "35 days is normal for a monthly workflow"   1 "ci.yml" "deps.yml"
+sched_stub "$OFF" "$(ago 2)" "$(ago 20)"
+sched_check "GitHub reports the workflow disabled"       1 "gh workflow enable ci.yml"
+sched_stub "$ACTIVE" "" ""
+sched_check "a cron that landed today has yet to fire"   0
+sched_stub "$ACTIVE" "$(ago 2)" "$(ago 20)" 1
+sched_check "gh cannot answer: silent, and says so"      3
+git -C "$SCHED" remote set-url origin "$SANDBOX/not-a-forge.git"
+sched_check "the origin is not GitHub"                   3
+git -C "$SCHED" remote set-url origin https://github.com/example/does-not-exist.git
+
+# Wired into SessionStart, at most once a day -- and the day is only banked when GitHub
+# actually answered, or a session started on a train would silence the check until tomorrow.
+STAMP="$SCHED/.countscore-scheduled-check"
+session_start() {  # -> stdout of the hook, run inside $SCHED
+    printf '{"hook_event_name":"SessionStart","cwd":"%s"}' "$SCHED" \
+        | PATH="$SSTUB:$PATH" CLAUDE_PROJECT_DIR="$SCHED" "$HOOKS/session-start.sh" 2>/dev/null
+}
+sched_stub "$ACTIVE" "$(ago 40)" "$(ago 20)"
+rm -f "$STAMP"
+out=$(session_start)
+case "$out" in *ci.yml*) got=reported ;; *) got=silent ;; esac
+report "the session opener reports a dead cron" reported "$got"
+report "and stamps the day"                     stamped  "$([ -s "$STAMP" ] && echo stamped || echo "no stamp")"
+out=$(session_start)
+case "$out" in *ci.yml*) got=reported ;; *) got=silent ;; esac
+report "the next session of the same day is quiet" silent "$got"
+rm -f "$STAMP"
+sched_stub "$ACTIVE" "$(ago 40)" "$(ago 20)" 1
+session_start >/dev/null
+report "an unanswered check banks no day" "no stamp" "$([ -s "$STAMP" ] && echo stamped || echo "no stamp")"
 
 echo "== wiring ===================================================="
 for script in "$HOOKS"/*.sh "$HOOKS"/*.py; do

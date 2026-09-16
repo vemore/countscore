@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/game_provider.dart';
+import '../utils/insets.dart';
 
 class RankingScreen extends StatelessWidget {
   const RankingScreen({super.key});
@@ -64,7 +65,7 @@ class RankingScreen extends StatelessWidget {
               // Liste des joueurs classés
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.all(8),
+                  padding: withBottomInset(context, const EdgeInsets.all(8)),
                   itemCount: ranking.length,
                   itemBuilder: (context, index) {
                     final entry = ranking[index];

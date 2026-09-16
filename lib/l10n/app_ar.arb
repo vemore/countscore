@@ -255,7 +255,7 @@
 
   "featureGroupSharing": "المشاركة الجماعية",
 
-  "featureZapZapAnalysis": "تحليل ألعاب ZapZap",
+  "featureGameAnalysis": "تحليل المباريات بالذكاء الاصطناعي",
 
   "rateApp": "قيّم CountScore",
 
@@ -284,27 +284,50 @@
 
   "close": "إغلاق",
 
-  "playerEliminationCondition": "Player Elimination Condition",
-  "gameOverCondition": "Game Over Condition",
-  "none": "None",
-  "overThreshold": "Over threshold",
-  "underThreshold": "Under threshold",
-  "firstPlayerOver": "First player over",
-  "firstPlayerUnder": "First player under",
-  "lastPlayerOver": "Last player over",
-  "lastPlayerUnder": "Last player under",
-  "threshold": "Threshold",
-  "conditionType": "Condition Type",
-  "gameOverTitle": "Game Over!",
-  "gameOverMessage": "Game over condition reached. End game now?",
-  "continuePlay": "Continue Playing",
+  "playerEliminationCondition": "شرط إقصاء اللاعب",
+  "gameOverCondition": "شرط انتهاء اللعبة",
+  "none": "بدون",
+  "overThreshold": "فوق الحد",
+  "underThreshold": "تحت الحد",
+  "firstPlayerOver": "أول لاعب فوق الحد",
+  "firstPlayerUnder": "أول لاعب تحت الحد",
+  "lastPlayerOver": "آخر لاعب فوق الحد",
+  "lastPlayerUnder": "آخر لاعب تحت الحد",
+  "threshold": "الحد",
+  "conditionType": "نوع الشرط",
+  "gameOverTitle": "انتهت اللعبة!",
+  "gameOverMessage": "تم بلوغ شرط انتهاء اللعبة. هل تريد إنهاء اللعبة الآن؟",
+  "continuePlay": "متابعة اللعب",
   "endGame": "إنهاء اللعبة",
   "reopenGame": "إعادة فتح اللعبة",
   "gameFinished": "منتهية",
+  "undo": "تراجع",
+  "gameMarkedFinished": "انتهت المباراة",
+  "gameReopened": "أُعيد فتح المباراة",
   "comment": "تعليق",
   "enterComment": "أدخل تعليقًا",
   "analyzeGame": "تحليل المباراة",
   "analysisTitle": "تحليل المباراة",
+  "analysisStyle": "أسلوب التحليل",
+
+  "analysisStyleProfessor": "الأستاذ",
+
+  "analysisStyleCommentator": "المعلّق الرياضي",
+
+  "analysisStyleDocumentary": "وثائقي الحياة البرّية",
+
+  "analysisStyleNoir": "المحقّق",
+
+  "analysisStyleBard": "الشاعر الجوّال",
+
+  "analysisStyleCoach": "المدرّب",
+
+  "analysisStyleConsultant": "المستشار",
+
+  "analysisStyleAstrologer": "المنجّم",
+
+  "analysisStyleRealityTv": "تلفزيون الواقع",
+
   "generatingAnalysis": "جارٍ إنشاء التحليل…",
   "generateAnalysis": "إنشاء التحليل",
   "regenerateAnalysis": "إعادة إنشاء التحليل",
@@ -426,5 +449,71 @@
 
   "reportCommentaryBody": "ما المشكلة في هذا التعليق المُنشأ بالذكاء الاصطناعي؟\n\n\n---\nالمرجع: {reference}\nالتعليق:\n{commentary}",
 
-  "reportCommentaryNoMailApp": "لم يتم العثور على تطبيق بريد إلكتروني. راسلنا على {email} للإبلاغ عن هذا التعليق."
+  "reportCommentaryNoMailApp": "لم يتم العثور على تطبيق بريد إلكتروني. راسلنا على {email} للإبلاغ عن هذا التعليق.",
+
+  "gameRulesTitle": "قواعد اللعبة",
+  "gameRulesInApp": "في CountScore",
+  "gameRulesSection": "القواعد",
+  "gameRulesNoElimination": "لا إقصاء أثناء اللعب",
+  "gameRulesEliminationOver": "يُقصى اللاعب عند تجاوز {threshold} نقطة",
+  "gameRulesEliminationUnder": "يُقصى اللاعب عند النزول تحت {threshold} نقطة",
+  "gameRulesEndFirstOver": "تنتهي المباراة بمجرد تجاوز أحد اللاعبين {threshold} نقطة",
+  "gameRulesEndFirstUnder": "تنتهي المباراة بمجرد نزول أحد اللاعبين تحت {threshold} نقطة",
+  "gameRulesEndLastOver": "تنتهي المباراة عندما يتجاوز جميع اللاعبين إلا واحدًا {threshold} نقطة",
+  "gameRulesEndLastUnder": "تنتهي المباراة عندما ينزل جميع اللاعبين إلا واحدًا تحت {threshold} نقطة",
+  "gameRulesNoEnd": "لا نهاية تلقائية: أنت من يقرر متى تنتهي المباراة",
+  "gameRulesEmptyTitle": "لا توجد قواعد بعد",
+  "gameRulesEmptyHint": "دوّن كيف تُحتسب النقاط على طاولتك، فتصبح النسخة واحدة للجميع.",
+  "gameRulesWrite": "اكتب القواعد",
+  "gameRulesEditTitle": "تعديل القواعد",
+  "gameRulesEditorHint": "قواعد طاولتك. صيغة Markdown مدعومة.",
+  "gameRulesFromGroup": "قواعد مجموعتك",
+  "gameRulesRestoreDefault": "استعادة القواعد الأصلية",
+  "gameRulesSaved": "تم حفظ القواعد",
+  "gameRulesRestored": "تمت استعادة القواعد الأصلية",
+  "gameRulesDisclaimer": "مُلخَّص كُتب لـ CountScore استنادًا إلى القواعد الشائعة. أسماء الألعاب ملك لأصحابها وتُذكر لغرض الوصف فقط.",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameUno": "أونو",
+
+  "gameTypeNameScrabble": "سكرابل",
+
+  "gameTypeNameOther": "أخرى",
+
+  "gameTypeNameSkyjo": "سكايجو",
+
+  "gameTypeNamePresident": "الرئيس",
+
+  "gameTypeNameBelote": "بيلوت",
+
+  "gameTypeNameTarot": "تاروت",
+
+  "gameTypeNameBridge": "بريدج",
+
+  "gameTypeNameRami": "رامي",
+
+  "gameTypeNameCoinche": "كوانش",
+
+  "gameTypeNameYahtzee": "ياتزي",
+
+  "gameTypeNamePhase10": "فيز 10",
+
+  "gameTypeNameFlip7": "فليب 7",
+
+  "gameTypeNameMilleBornes": "ميل بورن",
+
+  "gameTypeNameRummikub": "روميكوب",
+
+  "gameTypeNameSixNimmt": "خذ 6",
+
+  "gameTypeNameQwirkle": "كويركل",
+
+  "gameTypeNameFarkle": "فاركل",
+
+  "gameTypeNameCanasta": "كاناستا",
+
+  "gameTypeNameWizard": "ويزارد",
+
+  "gameTypeNameTriomino": "تريومينو"
 }

@@ -1,5 +1,7 @@
 # The whole game-over string cluster is English in five of the ten languages
 
+**Status:** done (2026-09-16) — closed by fix/untranslated-game-over-strings. It was **fourteen** keys, not fifteen: `endGame` was already translated in all ten locales by the branch that filed the entry. The fourteen are translated in `ar`, `hi`, `ja`, `ru` and `zh`. The check that let the block through is fixed where it was: `.claude/hooks/arb_keys.py` now compares message *values* against `app_en.arb` as well as key sets, with a measured `SAME_AS_ENGLISH_OK` allow-list (13 keys plus the `gameTypeName*` prefix) instead of a similarity heuristic. `scripts/check-arb-sync.sh` named in this entry does not exist — the reporter is `.claude/hooks/check-arb-sync.sh`, and the blocking gate is `guard-bash.sh`; the existing split is respected, the reporter reports both checks and only the commit gate refuses. `README.md:26` ("10 languages, fully translated") needed no edit: this change makes it true.
+
 - **Noted:** 2026-09-16 — while adding the explicit end of a game (feat/explicit-end-of-game)
 - **Theme:** i18n
 - **Area:** app

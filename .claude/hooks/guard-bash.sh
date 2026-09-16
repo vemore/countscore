@@ -184,13 +184,24 @@ fi
 
 # 4. Localization ----------------------------------------------------------
 if printf '%s\n' "$paths" | grep -qE '^lib/l10n/.*\.arb$'; then
-    if ! arb_report=$(CLAUDE_PROJECT_DIR="$ROOT" python3 "$HOOKS/arb_keys.py" 2>&1); then
+    if ! arb_report=$(CLAUDE_PROJECT_DIR="$ROOT" python3 "$HOOKS/arb_keys.py" --keys 2>&1); then
         refuse "Refused: the ARB files are not in sync.
 
 $arb_report
 
 Ten languages must hold the same keys -- a key missing from one is a silent English
 fallback for those users. The \`i18n-add-string\` skill has the procedure."
+    fi
+    if ! arb_values=$(CLAUDE_PROJECT_DIR="$ROOT" python3 "$HOOKS/arb_keys.py" --values 2>&1); then
+        refuse "Refused: some ARB values are still the literal English string.
+
+$arb_values
+
+Present is not translated: a key that holds the English text reads as English to that
+user even though the key set is in sync -- that is how the whole game-over cluster
+stayed English in five languages. Translate them, or, when the match really is
+deliberate (a brand name, a loanword), add the key to SAME_AS_ENGLISH_OK in
+.claude/hooks/arb_keys.py and say why."
     fi
     if command -v flutter >/dev/null 2>&1; then
         flutter gen-l10n >/dev/null 2>&1

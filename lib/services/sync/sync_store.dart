@@ -58,6 +58,10 @@ typedef ApplyReport = ({int applied, int quarantined});
 /// Server limits a payload must respect (`backend/app/services/delta_bounds.py`).
 const _gameNameMax = 64;
 const _gameTypeNameMax = 64;
+// The server bounds these too (delta_bounds.py); clipping here keeps a long
+// house ruleset from being rejected whole.
+const _gameTypeRulesMax = 8000;
+const _gameTypeRulesSlugMax = 32;
 const _roundCommentMax = 500;
 const _analysisContentMax = 20000;
 
@@ -336,18 +340,28 @@ class SyncStore {
       await _link(groupId, 'player', p.data['uuid'] as String, p.data['name'] as String);
     }
     final types = await _db.customSelect(
-      'SELECT DISTINCT t.uuid, t.name FROM games g JOIN game_types t ON t.id = g.gameTypeId '
+      'SELECT DISTINCT t.uuid, t.name, t.builtin_key FROM games g '
+      'JOIN game_types t ON t.id = g.gameTypeId '
       'WHERE g.group_id = ? AND t.uuid NOT IN '
       "(SELECT local_uuid FROM group_links WHERE group_id = ? AND entity_type = 'game_type')",
       variables: [Variable(groupId), Variable(groupId)],
     ).get();
     for (final t in types) {
-      await _link(groupId, 'game_type', t.data['uuid'] as String, t.data['name'] as String);
+      await _link(
+        groupId,
+        'game_type',
+        t.data['uuid'] as String,
+        t.data['name'] as String,
+        builtinKey: t.data['builtin_key'] as String?,
+      );
     }
   }
 
-  Future<void> _link(String groupId, String type, String localUuid, String name) async {
-    final remote = linkedRemoteUuid(groupId, type, name);
+  Future<void> _link(String groupId, String type, String localUuid, String name,
+      {String? builtinKey}) async {
+    final remote = type == 'game_type'
+        ? linkedGameTypeRemoteUuid(groupId, builtinKey, name)
+        : linkedRemoteUuid(groupId, type, name);
     // Another local row may already hold that remote identity — two local
     // "Alice (2)"-style duplicates that normalise alike. Keep the first link.
     final taken = await _db.customSelect(
@@ -425,6 +439,10 @@ class SyncStore {
           remoteUuid: remote,
           payload: {
             'name': _clip(r['name'] as String, _gameTypeNameMax),
+            // The identity *and* the displayed name of a built-in type. The
+            // name travels too, so a device that does not know this key still
+            // has something to show. See .llmwiki/Sync.md.
+            'builtin_key': r['builtin_key'],
             'icon_code_point': r['iconCodePoint'],
             'card_color_value': r['cardColorValue'],
             'is_lowest_score_wins': r['isLowestScoreWins'] == 1,
@@ -433,6 +451,14 @@ class SyncStore {
             'player_dead_threshold': r['playerDeadThreshold'],
             'game_over_condition_type': r['gameOverConditionType'],
             'game_over_threshold': r['gameOverThreshold'],
+            'rules': switch (r['rules']) {
+              final String rules => _clip(rules, _gameTypeRulesMax),
+              _ => null,
+            },
+            'rules_slug': switch (r['rules_slug']) {
+              final String slug => _clip(slug, _gameTypeRulesSlugMax),
+              _ => null,
+            },
           },
           error: null,
         );
@@ -707,6 +733,7 @@ class SyncStore {
     final now = _nowMs();
     final values = <String, Object?>{
       if (p.containsKey('name')) 'name': p['name'],
+      if (p.containsKey('builtin_key')) 'builtin_key': p['builtin_key'],
       if (p.containsKey('icon_code_point')) 'iconCodePoint': p['icon_code_point'],
       if (p.containsKey('card_color_value')) 'cardColorValue': p['card_color_value'],
       if (p.containsKey('is_lowest_score_wins'))
@@ -717,6 +744,8 @@ class SyncStore {
       if (p.containsKey('game_over_condition_type'))
         'gameOverConditionType': p['game_over_condition_type'],
       if (p.containsKey('game_over_threshold')) 'gameOverThreshold': p['game_over_threshold'],
+      if (p.containsKey('rules')) 'rules': p['rules'],
+      if (p.containsKey('rules_slug')) 'rules_slug': p['rules_slug'],
     };
     final linked = await _localOf(groupId, 'game_type', d.entityUuid);
     if (linked != null) {
@@ -729,20 +758,31 @@ class SyncStore {
     }
     final name = p['name'] as String?;
     if (name == null) return 'game_type_without_name';
-    final byName = await _db.customSelect(
+    final builtinKey = p['builtin_key'] as String?;
+    // A built-in type matches on its key first: the two devices may be in
+    // different locales, and then the names do not match at all.
+    var match = builtinKey == null
+        ? null
+        : await _db.customSelect(
+            'SELECT uuid FROM game_types WHERE builtin_key = ? AND deleted_at IS NULL '
+            'ORDER BY id LIMIT 1',
+            variables: [Variable(builtinKey)],
+          ).getSingleOrNull();
+    match ??= await _db.customSelect(
       'SELECT uuid FROM game_types WHERE name = ? COLLATE NOCASE AND deleted_at IS NULL '
       'ORDER BY id LIMIT 1',
       variables: [Variable(name)],
     ).getSingleOrNull();
     String localUuid;
-    if (byName != null) {
+    if (match != null) {
       // The same built-in or custom type this device already has: link, keep local
       // settings. The local row is the one this device's games already point at.
-      localUuid = byName.data['uuid'] as String;
+      localUuid = match.data['uuid'] as String;
     } else {
       localUuid = newUuid();
       await _insert('game_types', {
         'name': name,
+        'builtin_key': builtinKey,
         'iconCodePoint': p['icon_code_point'] ?? 0,
         'cardColorValue': p['card_color_value'] ?? 0,
         'isLowestScoreWins': p['is_lowest_score_wins'] == true ? 1 : 0,
@@ -751,6 +791,8 @@ class SyncStore {
         'playerDeadThreshold': p['player_dead_threshold'],
         'gameOverConditionType': p['game_over_condition_type'],
         'gameOverThreshold': p['game_over_threshold'],
+        'rules': p['rules'],
+        'rules_slug': p['rules_slug'],
         'uuid': localUuid,
         'created_at': now,
         'updated_at': now,

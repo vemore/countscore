@@ -255,7 +255,7 @@
 
   "featureGroupSharing": "Group sharing",
 
-  "featureZapZapAnalysis": "ZapZap game analysis",
+  "featureGameAnalysis": "AI game analysis",
 
   "rateApp": "Rate CountScore",
 
@@ -315,6 +315,9 @@
   "endGame": "End Game",
   "reopenGame": "Reopen game",
   "gameFinished": "Finished",
+  "undo": "Undo",
+  "gameMarkedFinished": "Game finished",
+  "gameReopened": "Game reopened",
 
   "comment": "Comment",
   "@comment": {
@@ -335,6 +338,26 @@
   "@analysisTitle": {
     "description": "Title of the analysis screen"
   },
+
+  "analysisStyle": "Analysis style",
+
+  "analysisStyleProfessor": "The professor",
+
+  "analysisStyleCommentator": "The sports commentator",
+
+  "analysisStyleDocumentary": "The wildlife documentary",
+
+  "analysisStyleNoir": "The detective",
+
+  "analysisStyleBard": "The bard",
+
+  "analysisStyleCoach": "The coach",
+
+  "analysisStyleConsultant": "The consultant",
+
+  "analysisStyleAstrologer": "The astrologer",
+
+  "analysisStyleRealityTv": "The reality show",
 
   "generatingAnalysis": "Generating analysis…",
   "@generatingAnalysis": {
@@ -499,5 +522,71 @@
 
   "reportCommentaryBody": "What is wrong with this AI-generated commentary?\n\n\n---\nReference: {reference}\nCommentary:\n{commentary}",
 
-  "reportCommentaryNoMailApp": "No email app found. Write to {email} to report this commentary."
+  "reportCommentaryNoMailApp": "No email app found. Write to {email} to report this commentary.",
+
+  "gameRulesTitle": "Game rules",
+  "gameRulesInApp": "In CountScore",
+  "gameRulesSection": "The rules",
+  "gameRulesNoElimination": "No elimination during play",
+  "gameRulesEliminationOver": "A player is eliminated above {threshold} points",
+  "gameRulesEliminationUnder": "A player is eliminated below {threshold} points",
+  "gameRulesEndFirstOver": "The game ends as soon as a player goes above {threshold} points",
+  "gameRulesEndFirstUnder": "The game ends as soon as a player drops below {threshold} points",
+  "gameRulesEndLastOver": "The game ends when every player but one is above {threshold} points",
+  "gameRulesEndLastUnder": "The game ends when every player but one is below {threshold} points",
+  "gameRulesNoEnd": "No automatic end: you decide when the game is over",
+  "gameRulesEmptyTitle": "No rules yet",
+  "gameRulesEmptyHint": "Write down how your table counts the points — everyone will have the same version.",
+  "gameRulesWrite": "Write the rules",
+  "gameRulesEditTitle": "Edit the rules",
+  "gameRulesEditorHint": "Your table's rules. Markdown is supported.",
+  "gameRulesFromGroup": "Your group's rules",
+  "gameRulesRestoreDefault": "Restore the original rules",
+  "gameRulesSaved": "Rules saved",
+  "gameRulesRestored": "Original rules restored",
+  "gameRulesDisclaimer": "Summary written for CountScore from the rules as they are commonly played. Game names belong to their respective owners and are used descriptively only.",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameUno": "Uno",
+
+  "gameTypeNameScrabble": "Scrabble",
+
+  "gameTypeNameOther": "Other",
+
+  "gameTypeNameSkyjo": "Skyjo",
+
+  "gameTypeNamePresident": "President",
+
+  "gameTypeNameBelote": "Belote",
+
+  "gameTypeNameTarot": "Tarot",
+
+  "gameTypeNameBridge": "Bridge",
+
+  "gameTypeNameRami": "Rummy",
+
+  "gameTypeNameCoinche": "Coinche",
+
+  "gameTypeNameYahtzee": "Yahtzee",
+
+  "gameTypeNamePhase10": "Phase 10",
+
+  "gameTypeNameFlip7": "Flip 7",
+
+  "gameTypeNameMilleBornes": "Mille Bornes",
+
+  "gameTypeNameRummikub": "Rummikub",
+
+  "gameTypeNameSixNimmt": "Take 6",
+
+  "gameTypeNameQwirkle": "Qwirkle",
+
+  "gameTypeNameFarkle": "Farkle",
+
+  "gameTypeNameCanasta": "Canasta",
+
+  "gameTypeNameWizard": "Wizard",
+
+  "gameTypeNameTriomino": "Triomino"
 }
