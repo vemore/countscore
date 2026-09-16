@@ -6,7 +6,7 @@
 
 ## Facts
 
-63 Dart files under `lib/` (including generated localizations).
+65 Dart files under `lib/` (including generated localizations).
 
 ### Entry point
 
@@ -29,7 +29,7 @@ themed and already knows whether the connected features exist.
 | `group_provider.dart` | Group membership and the sync loop — create/join/leave/rotate, the device list and `revokeDevice`, `shareGame`, `syncNow`, `SyncStatus`, and a `SyncEvent` stream shown as snackbars by `_SyncEventListener` in `main.dart`. A `ChangeNotifierProxyProvider` over `BackendProvider`: runs only with a URL **and** a device token. Calls `GameProvider.refreshFromSync` after remote changes. See [[Sync]]. |
 | `backend_provider.dart` | The self-hosted backend base URL, SharedPreferences key `backendUrl`, **no default**. `check()` validates and canonicalises what the user typed; `isConfigured` gates every connected feature. `load()` is called from `main()` before `runApp`. |
 
-### Screens — `lib/screens/` (10)
+### Screens — `lib/screens/` (11)
 
 `settings_screen` is a `StatefulWidget` since the Server section (it owns the URL
 `TextEditingController`).
@@ -39,7 +39,14 @@ themed and already knows whether the connected features exist.
 `game_analysis_screen` (the LLM analysis, with its row of voice chips — see
 [[LlmProviders]]) ·
 `players_screen` (326 l.) · `player_stats_screen` (299 l.) · `settings_screen` (368 l.) ·
-`about_screen` (175 l.) · `ranking_screen` (140 l.).
+`about_screen` (175 l.) · `ranking_screen` (140 l.) · `game_rules_screen`.
+
+`game_rules_screen` takes its `GameType` as a constructor argument rather than reading a
+provider: both callers — the board's overflow menu and the game-type list — already hold
+it, and the list has no "current game". It shows, in order, the type's own scoring summary
+derived from its fields, then the user's rules if any, else the ruleset shipped for
+`rulesSlug` (`lib/services/game_rules_catalog.dart`), else an empty state. See [[I18n]] for
+why those rulesets are assets and not ARB keys.
 
 `about_screen` reads the displayed version from `package_info_plus`
 (`PackageInfo.fromPlatform()`, held in a `static final` future) — i.e. from `pubspec.yaml`

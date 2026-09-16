@@ -863,4 +863,83 @@ class AppLocalizationsDe extends AppLocalizations {
   String reportCommentaryNoMailApp(String email) {
     return 'Keine E-Mail-App gefunden. Schreibe an $email, um diesen Kommentar zu melden.';
   }
+
+  @override
+  String get gameRulesTitle => 'Spielregeln';
+
+  @override
+  String get gameRulesInApp => 'In CountScore';
+
+  @override
+  String get gameRulesSection => 'Die Regeln';
+
+  @override
+  String get gameRulesNoElimination => 'Kein Ausscheiden während des Spiels';
+
+  @override
+  String gameRulesEliminationOver(int threshold) {
+    return 'Ein Spieler scheidet über $threshold Punkten aus';
+  }
+
+  @override
+  String gameRulesEliminationUnder(int threshold) {
+    return 'Ein Spieler scheidet unter $threshold Punkten aus';
+  }
+
+  @override
+  String gameRulesEndFirstOver(int threshold) {
+    return 'Das Spiel endet, sobald ein Spieler über $threshold Punkte kommt';
+  }
+
+  @override
+  String gameRulesEndFirstUnder(int threshold) {
+    return 'Das Spiel endet, sobald ein Spieler unter $threshold Punkte fällt';
+  }
+
+  @override
+  String gameRulesEndLastOver(int threshold) {
+    return 'Das Spiel endet, wenn alle bis auf einen Spieler über $threshold Punkten liegen';
+  }
+
+  @override
+  String gameRulesEndLastUnder(int threshold) {
+    return 'Das Spiel endet, wenn alle bis auf einen Spieler unter $threshold Punkten liegen';
+  }
+
+  @override
+  String get gameRulesNoEnd =>
+      'Kein automatisches Ende: Sie entscheiden, wann das Spiel vorbei ist';
+
+  @override
+  String get gameRulesEmptyTitle => 'Noch keine Regeln';
+
+  @override
+  String get gameRulesEmptyHint =>
+      'Halten Sie fest, wie an Ihrem Tisch gezählt wird — dann haben alle dieselbe Fassung.';
+
+  @override
+  String get gameRulesWrite => 'Regeln schreiben';
+
+  @override
+  String get gameRulesEditTitle => 'Regeln bearbeiten';
+
+  @override
+  String get gameRulesEditorHint =>
+      'Die Regeln Ihres Tisches. Markdown wird unterstützt.';
+
+  @override
+  String get gameRulesFromGroup => 'Regeln Ihrer Gruppe';
+
+  @override
+  String get gameRulesRestoreDefault => 'Ursprüngliche Regeln wiederherstellen';
+
+  @override
+  String get gameRulesSaved => 'Regeln gespeichert';
+
+  @override
+  String get gameRulesRestored => 'Ursprüngliche Regeln wiederhergestellt';
+
+  @override
+  String get gameRulesDisclaimer =>
+      'Zusammenfassung für CountScore, nach den üblicherweise gespielten Regeln. Spielnamen gehören ihren jeweiligen Eigentümern und werden nur beschreibend verwendet.';
 }

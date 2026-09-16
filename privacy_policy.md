@@ -42,7 +42,8 @@ this policy.
 CountScore stores the following **locally on your device**:
 
 1. **Game Information** — game type names and settings (e.g. "Uno", "Scrabble", custom
-   games), scoring rules (lowest-wins or highest-wins), colours and icons.
+   games), scoring rules (lowest-wins or highest-wins), colours and icons, and **any
+   rules text you write for a game type**.
 2. **Player Information** — player names you create, and their association with games.
 3. **Score Data** — scores, round-by-round history, any comment you attach to a round,
    timestamps, and completed-game results.
@@ -155,8 +156,9 @@ you do not share never leave your device.
 
 For each **shared** game, and kept up to date as you play:
 
-- the game's name, its game type (name, icon, colour and rules), its scoring rule, its
-  creation date and, once you declare the game over, the date you ended it;
+- the game's name, its game type (name, icon, colour, elimination and game-over
+  thresholds, and **any rules text you wrote for it**), its scoring rule, its creation
+  date and, once you declare the game over, the date you ended it;
 - the **names and colours of its players**;
 - every round: its number, **any comment you typed on it**, and its scores;
 - its analysis, if one was generated.

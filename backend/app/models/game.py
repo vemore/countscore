@@ -36,6 +36,12 @@ class GameType(SQLModel, table=True):
     player_dead_threshold: int | None = Field(default=None)
     game_over_condition_type: str | None = Field(default=None, max_length=32)
     game_over_threshold: int | None = Field(default=None)
+    # The rules the group wrote for this type, as Markdown. NULL means the app
+    # shows the ruleset it ships for ``rules_slug`` instead.
+    rules: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    # Names a ruleset shipped in the app's ``assets/rules/``. Kept apart from
+    # ``name`` because the name is user-editable.
+    rules_slug: str | None = Field(default=None, max_length=32)
 
     created_at: datetime = Field(
         default_factory=_utcnow,

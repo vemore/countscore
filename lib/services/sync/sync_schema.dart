@@ -162,3 +162,55 @@ Future<void> applyV12(
     }
   }
 }
+
+/// The ten game types seeded at first run, mapped to the ruleset shipped in
+/// `assets/rules/`. `Autre` is a catch-all with no rules of its own, so it is
+/// absent: a type without a slug shows the "write your own" empty state.
+const defaultRulesSlugs = <String, String>{
+  'ZapZap': 'zapzap',
+  'Uno': 'uno',
+  'Scrabble': 'scrabble',
+  'Skyjo': 'skyjo',
+  'Président': 'president',
+  'Belote': 'belote',
+  'Tarot': 'tarot',
+  'Bridge': 'bridge',
+  'Rami': 'rami',
+};
+
+/// Schema v13, shared by both engines: `game_types.rules` and
+/// `game_types.rules_slug`.
+///
+/// `rules` is what the user wrote — free Markdown, user content, never
+/// translated. NULL means "show the shipped ruleset instead".
+///
+/// `rules_slug` names that shipped ruleset. It is a column rather than a match
+/// on `name` because the name is user-editable: renaming "Belote" to "Belote
+/// coinchée" must not lose its rules. Existing installs are back-filled from
+/// the seeded names, and only for rows still flagged `isDefault` — a type the
+/// user renamed or built themselves keeps a NULL slug, which is correct.
+///
+/// Idempotent, and it never resurrects a type the user deleted: the back-fill
+/// only updates rows that are already there.
+Future<void> applyV13(
+  Future<void> Function(String sql) execute,
+  Future<Set<String>> Function(String table) columnsOf,
+) async {
+  const columns = {
+    'game_types': {'rules': 'TEXT', 'rules_slug': 'TEXT'},
+  };
+  for (final table in columns.entries) {
+    final existing = await columnsOf(table.key);
+    for (final column in table.value.entries) {
+      if (existing.contains(column.key)) continue;
+      await execute('ALTER TABLE ${table.key} ADD COLUMN ${column.key} ${column.value}');
+    }
+  }
+  for (final entry in defaultRulesSlugs.entries) {
+    await execute(
+      "UPDATE game_types SET rules_slug = '${entry.value}' "
+      "WHERE isDefault = 1 AND rules_slug IS NULL "
+      "AND name = '${entry.key.replaceAll("'", "''")}'",
+    );
+  }
+}

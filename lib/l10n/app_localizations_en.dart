@@ -859,4 +859,83 @@ class AppLocalizationsEn extends AppLocalizations {
   String reportCommentaryNoMailApp(String email) {
     return 'No email app found. Write to $email to report this commentary.';
   }
+
+  @override
+  String get gameRulesTitle => 'Game rules';
+
+  @override
+  String get gameRulesInApp => 'In CountScore';
+
+  @override
+  String get gameRulesSection => 'The rules';
+
+  @override
+  String get gameRulesNoElimination => 'No elimination during play';
+
+  @override
+  String gameRulesEliminationOver(int threshold) {
+    return 'A player is eliminated above $threshold points';
+  }
+
+  @override
+  String gameRulesEliminationUnder(int threshold) {
+    return 'A player is eliminated below $threshold points';
+  }
+
+  @override
+  String gameRulesEndFirstOver(int threshold) {
+    return 'The game ends as soon as a player goes above $threshold points';
+  }
+
+  @override
+  String gameRulesEndFirstUnder(int threshold) {
+    return 'The game ends as soon as a player drops below $threshold points';
+  }
+
+  @override
+  String gameRulesEndLastOver(int threshold) {
+    return 'The game ends when every player but one is above $threshold points';
+  }
+
+  @override
+  String gameRulesEndLastUnder(int threshold) {
+    return 'The game ends when every player but one is below $threshold points';
+  }
+
+  @override
+  String get gameRulesNoEnd =>
+      'No automatic end: you decide when the game is over';
+
+  @override
+  String get gameRulesEmptyTitle => 'No rules yet';
+
+  @override
+  String get gameRulesEmptyHint =>
+      'Write down how your table counts the points — everyone will have the same version.';
+
+  @override
+  String get gameRulesWrite => 'Write the rules';
+
+  @override
+  String get gameRulesEditTitle => 'Edit the rules';
+
+  @override
+  String get gameRulesEditorHint =>
+      'Your table\'s rules. Markdown is supported.';
+
+  @override
+  String get gameRulesFromGroup => 'Your group\'s rules';
+
+  @override
+  String get gameRulesRestoreDefault => 'Restore the original rules';
+
+  @override
+  String get gameRulesSaved => 'Rules saved';
+
+  @override
+  String get gameRulesRestored => 'Original rules restored';
+
+  @override
+  String get gameRulesDisclaimer =>
+      'Summary written for CountScore from the rules as they are commonly played. Game names belong to their respective owners and are used descriptively only.';
 }

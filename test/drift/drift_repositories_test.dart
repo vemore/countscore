@@ -64,6 +64,31 @@ void main() {
       expect(await gameTypeRepo.getById(id), isNull);
     });
 
+    test('carries rules and rulesSlug through create, read and update', () async {
+      // The repository writes game types by map, so a new column needs no code
+      // there — this is the test that proves it, and catches a Drift table that
+      // was never regenerated.
+      final id = await gameTypeRepo.create(GameType(
+        name: 'Skyjo',
+        iconCodePoint: 0,
+        cardColorValue: 0,
+        isLowestScoreWins: true,
+        rulesSlug: 'skyjo',
+      ));
+      final seeded = await gameTypeRepo.getById(id);
+      expect(seeded!.rulesSlug, 'skyjo');
+      expect(seeded.rules, isNull, reason: 'shipped rules are not stored');
+
+      await gameTypeRepo.update(seeded.copyWith(rules: 'On joue à 150.'));
+      final written = await gameTypeRepo.getById(id);
+      expect(written!.rules, 'On joue à 150.');
+      expect(written.rulesSlug, 'skyjo');
+
+      await gameTypeRepo.update(written.copyWith(clearRules: true));
+      expect((await gameTypeRepo.getById(id))?.rules, isNull,
+          reason: 'restoring the shipped rules must write a real NULL');
+    });
+
     test('delete throws if games reference it', () async {
       final gtId = await gameTypeRepo.create(GameType(
         name: 'InUse',
