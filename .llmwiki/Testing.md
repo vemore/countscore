@@ -2,7 +2,7 @@
 
 > Scope: what is tested, how to run it, and the traps.
 > Related: [[MobileApp]] · [[DataLayer]] · [[SchemaV10]] · [[Backend]] · [[Web]] · [[KnownLimits]]
-> Updated: 2026-09-15
+> Updated: 2026-09-16
 
 ## Facts
 
@@ -185,9 +185,19 @@ the fast suite. A `BigInteger` primary key needs `.with_variant(Integer(), "sqli
 **The dependency audit** exports `uv.lock` with hashes — runtime, the `dev` extra and the
 `dev` group — and runs `pip-audit` 2.10.1 (pinned in the `uvx` call) with `--strict`. Any
 advisory fails the job. One with no fix yet is ignored explicitly with `--ignore-vuln <ID>` in
-the step and tracked by a `wip/` entry, never left red. The Flutter dependencies have no
-equivalent scanner; `.github/dependabot.yml` (weekly, grouped: `uv`, `pub`,
-`github-actions`) and GitHub's Dependabot alerts cover them.
+the step and tracked by a `wip/` entry, never left red.
+
+**The Flutter dependencies have no scanner at all.** `.github/dependabot.yml` (weekly,
+grouped: `uv`, `pub`, `github-actions`) raises *version* updates only, and only for the
+direct dependencies written in `pubspec.yaml` — a transitive package pinned in
+`pubspec.lock` is never proposed, and nothing ever runs `flutter pub upgrade`
+(`wip/todo_nr/2026-09-16-pubspec-lock-never-refreshed.md`).
+
+> **Status: Outdated** (2026-09-16) — this paragraph used to say Dependabot *alerts* covered
+> the Flutter dependencies. They do not: `gh api repos/{owner}/{repo}/dependabot/alerts`
+> answers `403 Dependabot alerts are disabled for this repository`, so no ecosystem here gets
+> advisories pushed to it. The backend is still audited by `pip-audit` on every run; `pub`
+> has nothing. `wip/todo_nr/2026-09-16-dependabot-alerts-disabled.md`.
 
 Not in CI on purpose: the e2e suite (it calls the real production endpoint) and the signed
 release APK/AAB (needs the keystore secrets).
