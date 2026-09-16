@@ -71,7 +71,9 @@ Rules:
    wip/todo/ if it blocks the release) — never fix it inline, never edit another entry.
 5. Commit (the hook runs the gates in this worktree), `git push -u origin <type>/<topic>`,
    `gh pr create --base main` with a body saying what changed and why.
-6. Watch `gh pr checks <n> --watch` and fix what fails until every check is green.
+6. Watch `gh pr checks <n> --watch` and fix what fails until every check is green **or
+   skipped** — the `scope` job rules out the jobs the change does not need, and a job it
+   skipped reports `skipping`, which counts as passing.
 7. Never merge, never deploy, never force-push, never push to main.
 8. Report, briefly: PR URL and number, check state, files touched, Alembic revisions, ARB keys
    added, anything the orchestrator must know to merge or deploy (env vars, migrations,
@@ -84,7 +86,7 @@ blocked twice — read why before relaunching.
 
 ## 3. Merge, one pull request at a time
 
-`main` requires an up-to-date branch, all five CI checks green and a linear history
+`main` requires an up-to-date branch, the five CI checks green or skipped, and a linear history
 (`.llmwiki/ParallelDelivery.md`). So merges are serial. For each pull request, in the planned
 order:
 
@@ -112,7 +114,7 @@ order:
    - **`wip/`** — two branches never touch the same entry; a conflict there means one of them
      edited an entry it did not own: keep the owner's version.
    - Anything that is a real semantic clash between two themes: stop and tell the user.
-4. `gh pr checks <n> --watch` — all green, on the updated head.
+4. `gh pr checks <n> --watch` — all green or `skipping`, on the updated head.
 5. `gh pr merge <n> --squash --delete-branch` (the hook refuses `--admin`, `--merge`,
    `--rebase`). Then `git fetch --prune origin && git merge --ff-only origin/main` in the main
    checkout.

@@ -4,6 +4,13 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Mondays 06:17 UTC, on main, with every scope flag true. The `backend` job
+  # carries `pip-audit`, the only dependency scan that *fails a build* here
+  # (Dependabot alerts notify but gate nothing), and it no longer runs on a pull
+  # request that leaves backend/ alone: this is what caps the exposure window at
+  # a week. Same cadence as .github/dependabot.yml.
+  schedule:
+    - cron: "17 6 * * 1"
   workflow_dispatch:
 
 # Cancel superseded PR runs; never cancel a run for a commit already on main,
@@ -19,8 +26,89 @@ env:
   FLUTTER_VERSION: "3.47.2"
 
 jobs:
+  # Which of the five jobs below this change actually needs. Everything here is
+  # fail-safe: when this job fails, is cancelled, or writes no output at all,
+  # every job runs. It must never be the reason something goes untested.
+  scope:
+    name: Scope — which jobs this change needs
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # A job-level permissions block *replaces* the workflow's, so contents: read
+    # is repeated here — without it actions/checkout fails.
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      backend: ${{ steps.flags.outputs.backend }}
+      image: ${{ steps.flags.outputs.image }}
+      app: ${{ steps.flags.outputs.app }}
+      android: ${{ steps.flags.outputs.android }}
+      sync: ${{ steps.flags.outputs.sync }}
+    steps:
+      - uses: actions/checkout@v7
+
+      # The classifier decides what is *not* built, so a wrong rule does not fail
+      # a build — it merges something nothing tested. The table is the gate, and
+      # it runs first: a broken classifier fails this job, which runs all five.
+      - name: Scope classifier self-test
+        run: scripts/ci_scope_selftest.sh
+
+      # On main, on the weekly run and on a manual run every flag is true: main
+      # keeps a complete verification record. On a pull request the flags come
+      # from the files it changes.
+      #
+      # `.filename` — the pulls/{n}/files endpoint has no `path` key, and
+      # `-q '.[].path'` would emit one null per file, every null would hit the
+      # catch-all rule, and the whole thing would be green forever having saved
+      # nothing. `.previous_filename` so a rename is judged on both sides.
+      #
+      # set -euo pipefail: the default shell is `bash -e` *without* pipefail, so
+      # a gh failure inside the pipe would otherwise pass silently. Never add
+      # `|| true` to this step — failing here is how everything gets run.
+      - name: Which jobs this change needs
+        id: flags
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          all='backend=true\nimage=true\napp=true\nandroid=true\nsync=true\n'
+          if [ "$EVENT" != pull_request ]; then
+            printf "$all" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          gh api "repos/$REPO/pulls/$PR/files?per_page=100" --paginate \
+            -q '.[] | .filename, (.previous_filename // empty)' > "$RUNNER_TEMP/changed.txt"
+          n=$(grep -c . "$RUNNER_TEMP/changed.txt" || true)
+          echo "$n changed path(s):"
+          sed 's/^/  /' "$RUNNER_TEMP/changed.txt"
+          # The endpoint stops listing at 3000 files, without an error: past that
+          # the list is a lie, so scope nothing out.
+          if [ "$n" -ge 3000 ]; then
+            echo "::warning::more than 3000 changed files — scoping is off for this run"
+            printf "$all" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          scripts/ci_scope.sh < "$RUNNER_TEMP/changed.txt" | tee -a "$GITHUB_OUTPUT"
+
   backend:
     name: Backend — ruff, mypy, pytest
+    needs: scope
+    # Runs unless `scope` succeeded and explicitly said no. A failed, cancelled
+    # or output-less `scope` leaves this empty, and '' != 'false', so everything
+    # runs — hence `!= 'false'` rather than the weaker `== 'true'`.
+    #
+    # `!cancelled()` is load-bearing: `needs:` adds an implicit success(), which
+    # is only dropped when the expression contains a status function. Without it
+    # a failed `scope` would skip this job — and a job skipped by `if:` reports
+    # **Success**, which satisfies branch protection. Never a workflow-level
+    # `paths:` filter instead: a filtered workflow reports no status at all, and
+    # a required check that never reports leaves a pull request waiting forever.
+    # The ${{ }} is not cosmetic either — a bare `if: !cancelled()` is invalid
+    # YAML, `!` opens a tag, and a workflow that does not parse reports nothing.
+    if: ${{ !cancelled() && needs.scope.outputs.backend != 'false' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:
@@ -115,6 +203,8 @@ jobs:
 
   image:
     name: Backend image — build, non-root, locked
+    needs: scope
+    if: ${{ !cancelled() && needs.scope.outputs.image != 'false' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -140,6 +230,8 @@ jobs:
 
   app:
     name: App — codegen, analyze, test, web build
+    needs: scope
+    if: ${{ !cancelled() && needs.scope.outputs.app != 'false' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -189,6 +281,8 @@ jobs:
   # in-memory devices. Mirrors .llmwiki/Testing.md, "Group sync against a local backend".
   sync:
     name: Sync — two devices against a real backend
+    needs: scope
+    if: ${{ !cancelled() && needs.scope.outputs.sync != 'false' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     services:
@@ -282,6 +376,8 @@ jobs:
 
   android:
     name: Android debug APK — fresh-clone build proof
+    needs: scope
+    if: ${{ !cancelled() && needs.scope.outputs.android != 'false' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:

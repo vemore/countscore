@@ -1,16 +1,14 @@
-# Dependabot alerts are disabled, so no ecosystem gets security advisories pushed to it
+# `pub` has no vulnerability gate in CI, only Dependabot alerts on the repository
 
 - **Noted:** 2026-09-16 — reviewing what dependency updates were available
 - **Theme:** dependencies
 - **Area:** tooling
 - **Blocks release:** no
 
-`gh api repos/{owner}/{repo}/dependabot/alerts` answers
+As first noted, `gh api repos/{owner}/{repo}/dependabot/alerts` answered
 `403 Dependabot alerts are disabled for this repository`. `.llmwiki/Testing.md` claimed the
-opposite until this entry was written — that alerts covered the Flutter dependencies, which
-have no scanner of their own.
-
-What actually stands today:
+opposite — that alerts covered the Flutter dependencies, which have no scanner of their own.
+The alerts have since been turned on; see *Half done* below. What stood at the time:
 
 | Ecosystem | Version updates | Vulnerability scanning |
 |---|---|---|
@@ -23,12 +21,22 @@ security updates, they only happen to carry the fix if someone merges the weekly
 before it matters — and they never cover a transitive package at all
 (`2026-09-16-pubspec-lock-never-refreshed.md`).
 
-**Fix:** turn the alerts on — GitHub → Settings → Advanced Security → Dependabot alerts (and
-the dependency graph they need). It is a repository setting, not a file, so no pull request
-can do it; reading it back through `gh` needs the `admin:repo_hook` scope, which this
-checkout's token does not have.
+## Half done (2026-09-16)
 
-Because a setting can be switched off again without leaving a trace in the repository, the
-durable half is a CI gate symmetric to the backend's: an OSV scan of `pubspec.lock` in the
-`app` job, failing on any advisory, with the same `--ignore-vuln` + `wip/` entry escape as
-`pip-audit`. `osv-scanner` reads `pubspec.lock` natively; `flutter pub audit` does not exist.
+**The alerts are on.** Enabled the same day from GitHub → Settings → Advanced Security,
+together with the *Dependency graph* they require — both had been off since the repository
+was created. The endpoint that answered `403 Dependabot alerts are disabled for this
+repository` now answers `[]`: enabled, no open advisory on any ecosystem. The table above is
+therefore out of date in its third column; `pub` and `github-actions` now get advisories,
+they still get no gate.
+
+*Dependabot security updates* — the setting that turns an alert into a pull request — was
+deliberately left off. A security bump should arrive on the normal weekly schedule, reviewed
+like any other, rather than as an extra automated pull request.
+
+**What is left, and why the entry stays open:** an alert notifies, it does not fail a build,
+and a repository setting can be switched off again without leaving a trace in git. The
+durable half is a CI gate symmetric to the backend's `pip-audit`: an OSV scan of
+`pubspec.lock` in the `app` job, failing on any advisory, with the same `--ignore-vuln <ID>`
++ `wip/` entry escape. `osv-scanner` reads `pubspec.lock` natively; `dart pub audit` does not
+exist (checked: `Could not find a subcommand named "audit" for "dart pub"`).
