@@ -701,9 +701,9 @@
     "description": "Feature: sharing games with a group through the self-hosted server"
   },
 
-  "featureZapZapAnalysis": "Analyse des parties ZapZap",
-  "@featureZapZapAnalysis": {
-    "description": "Feature: LLM-generated analysis of ZapZap games"
+  "featureGameAnalysis": "Analyse des parties par IA",
+  "@featureGameAnalysis": {
+    "description": "Feature: LLM-generated analysis of a finished game, any game type"
   },
 
   "rateApp": "Noter CountScore",
@@ -863,6 +863,56 @@
   "analysisTitle": "Analyse de la partie",
   "@analysisTitle": {
     "description": "Title of the analysis screen"
+  },
+
+  "analysisStyle": "Style d'analyse",
+  "@analysisStyle": {
+    "description": "Label of the row of chips picking the voice an analysis is written in"
+  },
+
+  "analysisStyleProfessor": "Le professeur",
+  "@analysisStyleProfessor": {
+    "description": "Analysis style: caustic, unfair professor who marks out of 20 — the default"
+  },
+
+  "analysisStyleCommentator": "Le commentateur sportif",
+  "@analysisStyleCommentator": {
+    "description": "Analysis style: live sports commentator"
+  },
+
+  "analysisStyleDocumentary": "Le documentaire animalier",
+  "@analysisStyleDocumentary": {
+    "description": "Analysis style: wildlife documentary narrator"
+  },
+
+  "analysisStyleNoir": "Le détective",
+  "@analysisStyleNoir": {
+    "description": "Analysis style: film-noir private detective"
+  },
+
+  "analysisStyleBard": "Le barde",
+  "@analysisStyleBard": {
+    "description": "Analysis style: medieval bard singing an epic"
+  },
+
+  "analysisStyleCoach": "Le coach",
+  "@analysisStyleCoach": {
+    "description": "Analysis style: warm, encouraging coach"
+  },
+
+  "analysisStyleConsultant": "Le consultant",
+  "@analysisStyleConsultant": {
+    "description": "Analysis style: management consultant's quarterly review, as parody"
+  },
+
+  "analysisStyleAstrologer": "L'astrologue",
+  "@analysisStyleAstrologer": {
+    "description": "Analysis style: astrologer reading the game like a star chart"
+  },
+
+  "analysisStyleRealityTv": "La téléréalité",
+  "@analysisStyleRealityTv": {
+    "description": "Analysis style: reality-TV voice-over"
   },
 
   "generatingAnalysis": "Génération de l'analyse en cours…",

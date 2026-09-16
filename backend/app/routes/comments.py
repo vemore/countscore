@@ -1,6 +1,9 @@
 """Comment generation endpoints.
 
 Two endpoints:
+- ``POST /comments/game-analysis`` — stateless long-form analysis of one finished game,
+                                  in one of nine voices and ten languages. Also served at
+                                  the legacy path ``/comments/zapzap-analysis``.
 - ``POST /comments/mvp``       — stateless MVP (Jalon 4). Accepts a full game payload
                                   inline. No groups, no memory, no budget, no rate limit
                                   beyond a basic per-IP throttle. This is what the mobile
@@ -27,11 +30,13 @@ from app.models import Comment, Game, GamePlayer, Player, Round, Score
 from app.schemas.comments import (
     CommentPayload,
     CommentStyle,
+    GameAnalysisPayload,
+    GameAnalysisResponse,
     GenerateCommentRequest,
     MvpCommentResponse,
     MvpGamePayload,
-    ZapZapPayload,
 )
+from app.services.analysis import build_analysis_prompt
 from app.services.anthropic_client import get_anthropic_client
 from app.services.budget import charge_budget, check_budget
 from app.services.ip_rate_limiter import check_ip_rate_limit, client_ip
@@ -45,7 +50,6 @@ from app.services.prompt_builder import (
     compute_scores_hash,
 )
 from app.services.rate_limiter import check_and_increment
-from app.services.zapzap_prompt import ZAPZAP_SYSTEM_PROMPT, build_zapzap_user_message
 
 router = APIRouter(tags=["comments"])
 
@@ -112,19 +116,26 @@ async def generate_mvp_comment(
 
 
 # ---------------------------------------------------------------------------
-# ZapZap analysis — stateless, AWS Bedrock (Llama-3) caustic commentator
+# Game analysis — stateless, any game type, nine voices, ten languages
 # ---------------------------------------------------------------------------
 
 
-@router.post("/comments/zapzap-analysis")
-async def generate_zapzap_analysis(
-    body: ZapZapPayload, request: Request, response: Response
-) -> dict:
-    """Caustic ZapZap game analysis via the configured LLM provider.
+@router.post("/comments/game-analysis", response_model=GameAnalysisResponse)
+# The published app posts to the old path. Both decorators register the same function, so
+# the per-IP limiter inside it counts one bucket for the two of them.
+@router.post(
+    "/comments/zapzap-analysis",
+    response_model=GameAnalysisResponse,
+    include_in_schema=False,
+)
+async def generate_game_analysis(
+    body: GameAnalysisPayload, request: Request, response: Response
+) -> GameAnalysisResponse:
+    """Long-form analysis of one finished game via the configured LLM provider.
 
     Provider chosen by the LLM_PROVIDER env var (bedrock | gemini | mistral, default
     bedrock). The system prompt and user message are identical across providers — only
-    the API call differs.
+    the API call differs, which is what makes scripts/compare_providers.py meaningful.
 
     Stateless: no persistence, no auth, no budget — protected only by a per-IP rate limit
     (cost-abuse guard). The mobile app caches the response locally in its game_analyses
@@ -140,33 +151,33 @@ async def generate_zapzap_analysis(
 
     # The schema has already clipped the text and filtered the names; the builder reads
     # the app's camelCase history keys, hence by_alias.
-    user_message = build_zapzap_user_message(body.model_dump(by_alias=True))
+    system_prompt, user_message = build_analysis_prompt(body.model_dump(by_alias=True))
 
     try:
-        result = await provider.generate(ZAPZAP_SYSTEM_PROMPT, user_message)
+        result = await provider.generate(system_prompt, user_message)
     except LLMRateLimitedError as e:
         # The provider account is out of quota, not broken. 503 + Retry-After lets the
         # client say "try later" instead of showing an opaque 502; 429 stays reserved for
         # our own per-IP limit above. The detail names no provider (see .llmwiki/Api.md).
-        logger.warning("zapzap-analysis upstream LLM rate-limited: %s", e)
+        logger.warning("game-analysis upstream LLM rate-limited: %s", e)
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             "upstream LLM rate-limited",
             headers={"Retry-After": str(_UPSTREAM_RETRY_AFTER_SECONDS)},
         ) from e
     except Exception as e:
-        logger.exception("zapzap-analysis upstream LLM error")
+        logger.exception("game-analysis upstream LLM error")
         raise HTTPException(
             status.HTTP_502_BAD_GATEWAY,
             f"upstream LLM error: {type(e).__name__}",
         ) from e
 
-    return {
-        "content": result.content,
-        "model": result.model,
-        "tokens_in": result.tokens_in,
-        "tokens_out": result.tokens_out,
-    }
+    return GameAnalysisResponse(
+        content=result.content,
+        model=result.model,
+        tokens_in=result.tokens_in,
+        tokens_out=result.tokens_out,
+    )
 
 
 # ---------------------------------------------------------------------------

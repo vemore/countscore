@@ -255,7 +255,7 @@
 
   "featureGroupSharing": "群组共享",
 
-  "featureZapZapAnalysis": "ZapZap 游戏分析",
+  "featureGameAnalysis": "AI 对局分析",
 
   "rateApp": "为 CountScore 评分",
 
@@ -305,6 +305,26 @@
   "enterComment": "输入备注",
   "analyzeGame": "分析游戏",
   "analysisTitle": "游戏分析",
+  "analysisStyle": "分析风格",
+
+  "analysisStyleProfessor": "教授",
+
+  "analysisStyleCommentator": "体育解说",
+
+  "analysisStyleDocumentary": "动物纪录片",
+
+  "analysisStyleNoir": "侦探",
+
+  "analysisStyleBard": "吟游诗人",
+
+  "analysisStyleCoach": "教练",
+
+  "analysisStyleConsultant": "顾问",
+
+  "analysisStyleAstrologer": "占星师",
+
+  "analysisStyleRealityTv": "真人秀",
+
   "generatingAnalysis": "正在生成分析…",
   "generateAnalysis": "生成分析",
   "regenerateAnalysis": "重新生成分析",

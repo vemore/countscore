@@ -430,7 +430,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get featureGroupSharing => '群组共享';
 
   @override
-  String get featureZapZapAnalysis => 'ZapZap 游戏分析';
+  String get featureGameAnalysis => 'AI 对局分析';
 
   @override
   String get rateApp => '为 CountScore 评分';
@@ -530,6 +530,36 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get analysisTitle => '游戏分析';
+
+  @override
+  String get analysisStyle => '分析风格';
+
+  @override
+  String get analysisStyleProfessor => '教授';
+
+  @override
+  String get analysisStyleCommentator => '体育解说';
+
+  @override
+  String get analysisStyleDocumentary => '动物纪录片';
+
+  @override
+  String get analysisStyleNoir => '侦探';
+
+  @override
+  String get analysisStyleBard => '吟游诗人';
+
+  @override
+  String get analysisStyleCoach => '教练';
+
+  @override
+  String get analysisStyleConsultant => '顾问';
+
+  @override
+  String get analysisStyleAstrologer => '占星师';
+
+  @override
+  String get analysisStyleRealityTv => '真人秀';
 
   @override
   String get generatingAnalysis => '正在生成分析…';

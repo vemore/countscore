@@ -255,7 +255,7 @@
 
   "featureGroupSharing": "Совместный доступ в группах",
 
-  "featureZapZapAnalysis": "Анализ партий ZapZap",
+  "featureGameAnalysis": "Анализ партий с ИИ",
 
   "rateApp": "Оценить CountScore",
 
@@ -305,6 +305,26 @@
   "enterComment": "Введите комментарий",
   "analyzeGame": "Анализировать игру",
   "analysisTitle": "Анализ игры",
+  "analysisStyle": "Стиль анализа",
+
+  "analysisStyleProfessor": "Профессор",
+
+  "analysisStyleCommentator": "Спортивный комментатор",
+
+  "analysisStyleDocumentary": "Фильм о дикой природе",
+
+  "analysisStyleNoir": "Детектив",
+
+  "analysisStyleBard": "Бард",
+
+  "analysisStyleCoach": "Тренер",
+
+  "analysisStyleConsultant": "Консультант",
+
+  "analysisStyleAstrologer": "Астролог",
+
+  "analysisStyleRealityTv": "Реалити-шоу",
+
   "generatingAnalysis": "Создание анализа…",
   "generateAnalysis": "Создать анализ",
   "regenerateAnalysis": "Пересоздать анализ",

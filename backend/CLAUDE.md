@@ -51,10 +51,11 @@ alembic revision --autogenerate -m "add x"
    effective rate limit and drops WebSocket tickets issued by its sibling. Do not raise
    the worker count without moving that state out of memory first.
 3. **Never let `CORS_ORIGINS` become `*`.** A validator rejects it at startup — leave it in.
-4. **The ZapZap generation prompt must stay identical across bedrock, gemini and mistral.**
-   It is the control variable that makes provider comparison meaningful.
-   `app/services/zapzap_prompt.py` is exempt from `E501`/`RUF001` on purpose: it is
-   verbatim French prose and must not be reflowed.
+4. **The analysis prompt must stay identical across bedrock, gemini and mistral.**
+   It is the control variable that makes provider comparison meaningful — nothing in
+   `app/services/analysis/` takes a provider argument, and a test pins it. The prose
+   modules there (`personas`, `game_rules`, `languages`, `contract`) are exempt from
+   `E501`/`RUF001` on purpose: they are verbatim prompt text and must not be reflowed.
 5. **No tool use in LLM calls.** That is a prompt-injection control, not a limitation.
 6. **New entity?** Use the `db-migration` skill — the mobile and server schemas move
    together, and `_ENTITY_MAP` in `app/routes/sync.py` is easy to forget.

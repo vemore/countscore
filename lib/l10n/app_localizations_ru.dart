@@ -443,7 +443,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get featureGroupSharing => 'Совместный доступ в группах';
 
   @override
-  String get featureZapZapAnalysis => 'Анализ партий ZapZap';
+  String get featureGameAnalysis => 'Анализ партий с ИИ';
 
   @override
   String get rateApp => 'Оценить CountScore';
@@ -543,6 +543,36 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get analysisTitle => 'Анализ игры';
+
+  @override
+  String get analysisStyle => 'Стиль анализа';
+
+  @override
+  String get analysisStyleProfessor => 'Профессор';
+
+  @override
+  String get analysisStyleCommentator => 'Спортивный комментатор';
+
+  @override
+  String get analysisStyleDocumentary => 'Фильм о дикой природе';
+
+  @override
+  String get analysisStyleNoir => 'Детектив';
+
+  @override
+  String get analysisStyleBard => 'Бард';
+
+  @override
+  String get analysisStyleCoach => 'Тренер';
+
+  @override
+  String get analysisStyleConsultant => 'Консультант';
+
+  @override
+  String get analysisStyleAstrologer => 'Астролог';
+
+  @override
+  String get analysisStyleRealityTv => 'Реалити-шоу';
 
   @override
   String get generatingAnalysis => 'Создание анализа…';

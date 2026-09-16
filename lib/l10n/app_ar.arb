@@ -255,7 +255,7 @@
 
   "featureGroupSharing": "المشاركة الجماعية",
 
-  "featureZapZapAnalysis": "تحليل ألعاب ZapZap",
+  "featureGameAnalysis": "تحليل المباريات بالذكاء الاصطناعي",
 
   "rateApp": "قيّم CountScore",
 
@@ -305,6 +305,26 @@
   "enterComment": "أدخل تعليقًا",
   "analyzeGame": "تحليل المباراة",
   "analysisTitle": "تحليل المباراة",
+  "analysisStyle": "أسلوب التحليل",
+
+  "analysisStyleProfessor": "الأستاذ",
+
+  "analysisStyleCommentator": "المعلّق الرياضي",
+
+  "analysisStyleDocumentary": "وثائقي الحياة البرّية",
+
+  "analysisStyleNoir": "المحقّق",
+
+  "analysisStyleBard": "الشاعر الجوّال",
+
+  "analysisStyleCoach": "المدرّب",
+
+  "analysisStyleConsultant": "المستشار",
+
+  "analysisStyleAstrologer": "المنجّم",
+
+  "analysisStyleRealityTv": "تلفزيون الواقع",
+
   "generatingAnalysis": "جارٍ إنشاء التحليل…",
   "generateAnalysis": "إنشاء التحليل",
   "regenerateAnalysis": "إعادة إنشاء التحليل",

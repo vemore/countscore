@@ -138,20 +138,16 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
               );
             },
           ),
-          Consumer2<GameProvider, GameTypeProvider>(
-            builder: (context, gameProvider, gameTypeProvider, child) {
-              final menuGameType = gameProvider.currentGame?.gameTypeId != null
-                  ? gameTypeProvider
-                      .getGameTypeById(gameProvider.currentGame!.gameTypeId!)
-                  : null;
-              final isZapZap =
-                  menuGameType?.name.toLowerCase() == 'zapzap';
-              // The analysis is the app's only network call, so generating one
-              // needs a server the user configured. An analysis already stored
-              // stays reachable without one — it is local data.
-              final canAnalyse = isZapZap &&
-                  (context.watch<BackendProvider>().isConfigured ||
-                      _hasCachedAnalysis);
+          Consumer<GameProvider>(
+            builder: (context, gameProvider, child) {
+              // The analysis is the app's only network call, so generating
+              // one needs a server the user configured. An analysis already
+              // stored stays reachable without one — it is local data.
+              // Every game type is analysable: the rules of the game travel in
+              // the payload, so a type the user invented reads as well as a
+              // seeded one.
+              final canAnalyse = context.watch<BackendProvider>().isConfigured ||
+                  _hasCachedAnalysis;
               final group = context.watch<GroupProvider>();
               final canShare = group.isJoined &&
                   !(gameProvider.currentGame?.isShared ?? true);
@@ -160,11 +156,15 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
               final isFinished = gameProvider.currentGame?.isFinished ?? false;
               final canFinish =
                   isFinished || gameProvider.currentRounds.isNotEmpty;
+              // Only the rules entry needs the type itself; a game whose type
+              // was deleted has gameTypeId NULL and has no rules to show.
+              final gameTypeId = gameProvider.currentGame?.gameTypeId;
+              final menuGameType = gameTypeId == null
+                  ? null
+                  : context.watch<GameTypeProvider>().getGameTypeById(gameTypeId);
 
               return PopupMenuButton<String>(
                 itemBuilder: (context) => [
-                  // A game whose type was deleted has gameTypeId NULL, and
-                  // there is nothing to show the rules of.
                   if (menuGameType != null)
                     PopupMenuItem(
                       value: 'game_rules',
