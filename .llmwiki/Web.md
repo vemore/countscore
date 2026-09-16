@@ -2,7 +2,7 @@
 
 > Scope: everything specific to the PWA build.
 > Related: [[DataLayer]] · [[MobileApp]] · [[Testing]] · [[LlmProviders]] · [[KnownLimits]]
-> Updated: 2026-09-15
+> Updated: 2026-09-16
 
 ## Facts
 
@@ -11,12 +11,37 @@
 `index.html` (1525 B, **stock Flutter template, zero customisation** — `$FLUTTER_BASE_HREF`,
 `flutter_bootstrap.js async`, no custom loader or service-worker code) · `manifest.json`
 (CountScore, standalone, portrait-primary, theme `#673AB7`) · `favicon.png` · `icons/`
-(4 PNGs) · and the two Drift runtime binaries: **`sqlite3.wasm` (744 KB)** and
-**`drift_worker.js` (the prebuilt worker from drift 2.35.0 — replaced on every drift bump, then the web e2e)**.
+(4 PNGs) · the two Drift runtime binaries: **`sqlite3.wasm` (748686 B, sqlite3 3.6.0)** and
+**`drift_worker.js` (357220 B, the prebuilt worker from drift 2.35.0)** · and
+`sqlite3.wasm.sha256`, 279 B, the `sha256sum -c` file that records which release the wasm
+came from.
 
 Nothing else belongs in `web/`: Flutter copies the whole directory into `build/web/`, so
-any file placed there is published. The Claude Code instructions for the PWA live in
-`.claude/rules/web.md` for that reason.
+any file placed there is published — the `.sha256` included, which is why it is 279 bytes
+and not a document. The Claude Code instructions for the PWA live in `.claude/rules/web.md`
+for that reason.
+
+### The committed binaries are checked against `pubspec.lock`
+
+`scripts/web_binaries.sh` compares both, and runs as a step of the `app` CI job right after
+`flutter pub get` (`.github/workflows/ci.yml`), so a dependency bump that leaves a binary
+behind fails a required check instead of merging green — see [[Testing]].
+
+| Binary | Source | How it is checked |
+|---|---|---|
+| `drift_worker.js` | the drift package root, `$PUB_CACHE/hosted/pub.dev/drift-<locked>/` | `cmp`, offline |
+| `sqlite3.wasm` | a `sqlite3.dart` GitHub release asset — in no package | `web/sqlite3.wasm.sha256`, offline; `--fetch` also compares the upstream asset |
+
+`--check` (default) is offline and costs ~20 ms. `--fetch` adds the upstream comparison and
+runs in CI on the weekly `schedule:` only. `--refresh` copies the worker, downloads the wasm
+into a temp directory, validates its `0061736d` magic, copies it in and rewrites the
+`.sha256`; it never `mv`s, and it is finished only once the web e2e has run. Exit codes are
+`0` match, `1` a real disagreement, `2` usage, `3` environment — a scheduled `--fetch`
+tolerates `3` and never `1`.
+
+`web/sqlite3.wasm.sha256` carries its version as its own `# version:` key, cross-checked
+against `# source:`, because `sqlite3` is **transitive**: nothing proposes a bump for it, so
+the recorded version disagreeing with the lock is the whole point of the file.
 
 ### Persistence
 
@@ -122,6 +147,24 @@ address for the Android case; on web that URL still only works from an http orig
   and a manual launch under a sub-path. Whenever drift is bumped, copy the worker from the
   new version's package root in the same change. `sqlite3.wasm` was left alone: it embeds
   SQLite 3.53.1 and works with `sqlite3` 3.5.2.
+
+  > **Status: Outdated** (2026-09-16) — both binaries moved on (drift 2.35.0, sqlite3
+  > 3.6.0) and "copy it in the same change" is no longer something to remember:
+  > `scripts/web_binaries.sh --refresh` does it, and `--check` runs in the `app` CI job.
+- **A stale `web/` binary fails a required check now (2026-09-16).** Dependabot #43 (drift
+  2.34.4 → 2.35.0) merged with five green checks and the 2.34.4 worker still committed:
+  nothing compared the binaries to the lock, and the web e2e is not in CI. The check is a
+  script rather than inline YAML so the same command is the local procedure, the CI gate and
+  the refresh — `scripts/web_binaries.sh`, `wip/done/2026-09-14-dependabot-drift-worker.md`.
+- **The wasm is checked by a committed digest, not by a download (2026-09-16).** `sqlite3`
+  ships no `.wasm` in its package: it is a GitHub release asset. A CI step that fetched it
+  on every run would be a network dependency on every pull request, and offline work would
+  lose the check entirely. `web/sqlite3.wasm.sha256` makes the common case offline and
+  hand-verifiable (`sha256sum -c web/sqlite3.wasm.sha256` from the repository root); the
+  fetch is kept for the weekly `schedule:` run, where it catches a re-cut upstream release.
+  The file lives in `web/` and not at the root so that `scripts/ci_scope.sh` classifies it
+  as `app` alone rather than hitting the catch-all and running all five jobs on every
+  refresh; it ships in `build/web/` as a consequence, 279 harmless bytes.
 - **`web/CLAUDE.md` moved to `.claude/rules/web.md` (2026-09-13).** It was being shipped in
   every `build/web/`. A path-scoped rule loads when the same files are touched, and lives
   outside the tree Flutter copies. `scripts/deploy_web.sh` refuses any `.md` in the build

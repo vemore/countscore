@@ -165,7 +165,7 @@ countscore/
 ├── integration_test/    # End-to-end suite (web + real device)
 ├── store_listing/       # Play Store assets and the listing text, in 10 locales
 ├── docs/                # Published by GitHub Pages — the privacy policy Play links to
-├── scripts/             # Keystore, screenshots, privacy page, PWA deploy, hook self-test
+├── scripts/             # Keystore, screenshots, privacy page, PWA deploy, web binaries, self-tests
 ├── .llmwiki/            # Durable project knowledge — start at INDEX.md
 └── pubspec.yaml
 ```
@@ -235,13 +235,19 @@ CI — it calls the production endpoint. See `.llmwiki/Testing.md`.
   `backend/`.
 - **Backend image** — builds `backend/Dockerfile` (dependencies locked to `uv.lock`) and
   checks that the container runs as a non-root user, with no compiler and no dev dependencies.
-- **App** — codegen, `flutter analyze`, `flutter test`, release web build.
+- **App** — checks that the two binaries committed under `web/` match the versions
+  `pubspec.lock` resolves ([`scripts/web_binaries.sh`](scripts/web_binaries.sh)), then
+  codegen, `flutter analyze`, `flutter test`, release web build.
 - **Android** — debug APK from a clean checkout, as a fresh-clone build proof, plus an
   assertion that the release manifest still declares `INTERNET`.
 - **Sync** — the backend on a real Postgres, then the two-device group sync test against it.
 
 [`.github/dependabot.yml`](.github/dependabot.yml) opens weekly, grouped update pull requests
-for the backend (`uv`), the app (`pub`) and the GitHub Actions.
+for the backend (`uv`), the app (`pub`) and the GitHub Actions. It only proposes the
+dependencies *written in* `pubspec.yaml`, so
+[`.github/workflows/deps.yml`](.github/workflows/deps.yml) runs `flutter pub upgrade`
+monthly for the transitive half, refreshes the committed `web/` binaries to match, runs the
+gates and pushes a `chore/deps-<date>` branch when anything moved.
 
 ### Contributing
 

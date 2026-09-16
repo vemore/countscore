@@ -22,3 +22,8 @@ misclassification — Play ranks a mislabelled app badly and reviewers notice.
 Store presence → Store settings → drop **Productivity**, add **Entertainment**, keep the
 category **Tools**. Then re-check the *More apps to try* block a few days later and record
 what it became in `.llmwiki/StoreListing.md`.
+
+**Status:** done (2026-09-16) — closed by docs/store-listing-live. In the Console, *Productivity*
+was removed and *Entertainment* added; the category stays *Tools*. Tags are now
+`Entertainment, Tools`. The *More apps to try* block still has to be re-checked in a few days and
+the result recorded in `.llmwiki/StoreListing.md`.

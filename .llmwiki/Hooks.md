@@ -3,7 +3,7 @@
 > Scope: the Claude Code hooks that enforce project rules mechanically, and the reasoning
 > that used to live in `CLAUDE.md`.
 > Related: [[Web]] · [[I18n]] · [[Testing]] · [[Backend]] · [[KnownLimits]] · [[ParallelDelivery]] · [[Documentation]]
-> Updated: 2026-09-15
+> Updated: 2026-09-16
 
 ## Facts
 
@@ -36,7 +36,7 @@ Acknowledge one that reached `main` another way with
 `git config --add countscore.deliveryAcknowledged <number>`.
 
 `parse_command.py` and `arb_keys.py` are helpers, not handlers.
-`scripts/hooks_selftest.sh` exercises all of them, and `scripts/cleanup_local.sh`, from a table of 117 cases and runs as the
+`scripts/hooks_selftest.sh` exercises all of them, and `scripts/cleanup_local.sh`, from a table of 120 cases and runs as the
 first step of the `app` job in `.github/workflows/ci.yml`.
 
 ### What is refused, and on what evidence

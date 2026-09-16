@@ -21,6 +21,13 @@ That trigger is fragile in a way nothing here notices:
 
 So the audit can stop running without anything going red.
 
+(2026-09-16) **A second workflow is now exposed to the same thing.**
+`.github/workflows/deps.yml` — the monthly `flutter pub upgrade` that also refreshes the
+committed `web/` binaries (`chore/web-binaries-and-lock-freshness`) — is scheduled and
+nothing else triggers it, so the 60-day clock silently stops it too, and its own
+`schedule:` activity is the only thing resetting it. Whatever check this entry grows has to
+cover both workflows, not just `ci.yml`.
+
 **Fix:** make the absence detectable rather than trusting the trigger. Either a `Stop`-hook
 or `release-android` §3 check that the newest `schedule`-event run of `ci.yml` is younger
 than ~10 days (`gh run list --workflow=ci.yml --event schedule --limit 1 --json createdAt`),

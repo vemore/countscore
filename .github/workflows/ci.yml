@@ -257,6 +257,22 @@ jobs:
       - name: flutter pub get
         run: flutter pub get
 
+      # web/drift_worker.js and web/sqlite3.wasm are committed and must follow the
+      # versions pubspec.lock resolves; nothing compared them, so Dependabot #43
+      # merged green with the previous worker. It sits here because it needs the
+      # pub cache `pub get` just populated, and nothing more: a stale binary fails
+      # in seconds rather than after codegen, analyze, test and a web build.
+      - name: Web binaries match pubspec.lock
+        run: scripts/web_binaries.sh --check
+
+      # Scheduled only: proves the committed wasm still matches the bytes GitHub
+      # serves, which is what catches a re-cut upstream release. `|| [ $? -eq 3 ]`
+      # swallows an environment failure (no network, GitHub down) while a real
+      # mismatch, which exits 1, still fails the job.
+      - name: Web binaries match upstream (scheduled)
+        if: github.event_name == 'schedule'
+        run: scripts/web_binaries.sh --fetch || [ $? -eq 3 ]
+
       # MANDATORY, and it must precede analyze/test/build: *.g.dart is gitignored,
       # so lib/services/drift/database.g.dart does not exist in a fresh clone.
       # Do NOT add --delete-conflicting-outputs: build_runner 2.16 removed it.

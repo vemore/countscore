@@ -31,7 +31,7 @@ Load this file first. Then read only the pages your task touches.
 | [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-09-13 |
 | [[SchemaV10]] | Schema v11: the twelve tables, sync bookkeeping and capture triggers, tombstones, the migration chain | 2026-09-13 |
 | [[I18n]] | 10 languages × 235 keys, French template, English fallback; store locales differ | 2026-09-16 |
-| [[Web]] | PWA specifics: sqlite3.wasm, OPFS, committed binaries, `kIsWeb` guards, base href | 2026-09-15 |
+| [[Web]] | PWA specifics: sqlite3.wasm, OPFS, committed binaries and the check that gates them, `kIsWeb` guards, base href | 2026-09-16 |
 
 ## Backend (FastAPI)
 
@@ -51,7 +51,7 @@ Load this file first. Then read only the pages your task touches.
 | [[Documentation]] | Which documents a change implicates: wiki, README table, the three privacy documents; the CLAUDE.md budget | 2026-09-14 |
 | [[ParallelDelivery]] | Protection on main, worktrees, local cleanup, why one PR per theme and serial squash merges (`wip/` format: `wip/README.md`) | 2026-09-16 |
 | [[Security]] | Defended surfaces, and the security debt that is knowingly open | 2026-09-14 |
-| [[Testing]] | Unit, Drift, migration, e2e web and device; backend pytest, release tooling; CI jobs and how `scope` picks them, `alembic check`, dependency audit | 2026-09-16 |
+| [[Testing]] | Unit, Drift, migration, e2e web and device; backend pytest, release tooling; CI jobs and how `scope` picks them, `alembic check`, dependency audit, the `web/` binary gate and the monthly lock refresh | 2026-09-16 |
 | [[Release]] | Play Store signing state, publishing through the Play API, target API, 2026 Play policy constraints, release cadence and pruning pass | 2026-09-16 |
 | [[StoreListing]] | The 10 store locales, the keyword per market, category and tags, the assets, Play's text limits, and the 2026-09-16 acquisition baseline | 2026-09-16 |
 
