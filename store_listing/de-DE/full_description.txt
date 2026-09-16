@@ -16,7 +16,7 @@ Höchste oder niedrigste Punktzahl gewinnt — ihr entscheidet je Spielart. Plus
 
 SPIELER UND STATISTIK
 
-Spieler gelten für alle Partien, ihre Statistik begleitet sie von Abend zu Abend: gespielte Partien, Siege, bestes und durchschnittliches Ergebnis. Kein Konto nötig.
+Spieler gelten für alle Partien, ihre Statistik begleitet sie von Abend zu Abend: gespielte Partien, Siege, Siegquote und die Aufschlüsselung nach Spieltyp. Kein Konto nötig.
 
 VOLLSTÄNDIGER VERLAUF
 
