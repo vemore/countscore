@@ -155,6 +155,44 @@ python3 -c 'import json,sys; print(json.dumps({"tool_input":{"file_path":sys.arg
     | CLAUDE_PROJECT_DIR="$ARBDIR" "$HOOKS/check-arb-sync.sh" >/dev/null 2>&1
 report "invalid JSON in the edited file" 2 "$?"
 
+echo "== ARB values ================================================"
+# A key can be present in all ten files and still hold the literal English string.
+# Own sandbox: the block above deliberately breaks app_de.arb and app_es.arb.
+VALDIR="$SANDBOX/arbval"
+mkdir -p "$VALDIR/lib/l10n"
+cp "$ROOT/l10n.yaml" "$VALDIR/"
+cp "$ROOT"/lib/l10n/*.arb "$VALDIR/lib/l10n/"
+CLAUDE_PROJECT_DIR="$VALDIR" python3 "$HOOKS/arb_keys.py" --values >/dev/null 2>&1
+report "ten files translated, not merely present" 0 "$?"
+
+# description, expected exit, locale, mode, then `key=value` pairs written verbatim
+# into BOTH that locale and app_en.arb -- a key absent from English is never compared,
+# so writing it on one side alone would pass for the wrong reason.
+arb_value_case() {
+    local desc="$1" expected="$2" locale="$3" mode="$4"; shift 4
+    cp "$ROOT/lib/l10n/app_$locale.arb" "$VALDIR/lib/l10n/app_$locale.arb"
+    cp "$ROOT/lib/l10n/app_en.arb" "$VALDIR/lib/l10n/app_en.arb"
+    python3 - "$VALDIR/lib/l10n/app_$locale.arb" "$VALDIR/lib/l10n/app_en.arb" "$@" <<'PY'
+import json, sys
+paths, pairs = sys.argv[1:3], [a.split("=", 1) for a in sys.argv[3:]]
+for path in paths:
+    data = json.load(open(path, encoding="utf-8"))
+    data.update(dict(pairs))
+    json.dump(data, open(path, "w", encoding="utf-8"), ensure_ascii=False)
+PY
+    CLAUDE_PROJECT_DIR="$VALDIR" python3 "$HOOKS/arb_keys.py" "$mode" >/dev/null 2>&1
+    report "$desc" "$expected" "$?"
+    cp "$ROOT/lib/l10n/app_$locale.arb" "$VALDIR/lib/l10n/app_$locale.arb"
+    cp "$ROOT/lib/l10n/app_en.arb" "$VALDIR/lib/l10n/app_en.arb"
+}
+
+arb_value_case "a value left in English"     1 ja --values 'continuePlay=Continue Playing'
+arb_value_case "an exempted key (appTitle)"  0 ja --values 'appTitle=CountScore'
+arb_value_case "an exemption is per locale"  1 ru --values 'ok=OK'
+arb_value_case "the gameTypeName* prefix"    0 ja --values 'gameTypeNameYahtzee=Yahtzee'
+arb_value_case "any other new key"           1 ja --values 'someNewLabel=Yahtzee'
+arb_value_case "--keys ignores values"       0 ja --keys   'continuePlay=Continue Playing'
+
 echo "== branch discipline ========================================="
 REMOTE="$SANDBOX/remote.git"
 WORK="$SANDBOX/work"

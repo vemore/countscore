@@ -479,46 +479,47 @@ class AppLocalizationsAr extends AppLocalizations {
   String get close => 'إغلاق';
 
   @override
-  String get playerEliminationCondition => 'Player Elimination Condition';
+  String get playerEliminationCondition => 'شرط إقصاء اللاعب';
 
   @override
-  String get gameOverCondition => 'Game Over Condition';
+  String get gameOverCondition => 'شرط انتهاء اللعبة';
 
   @override
-  String get none => 'None';
+  String get none => 'بدون';
 
   @override
-  String get overThreshold => 'Over threshold';
+  String get overThreshold => 'فوق الحد';
 
   @override
-  String get underThreshold => 'Under threshold';
+  String get underThreshold => 'تحت الحد';
 
   @override
-  String get firstPlayerOver => 'First player over';
+  String get firstPlayerOver => 'أول لاعب فوق الحد';
 
   @override
-  String get firstPlayerUnder => 'First player under';
+  String get firstPlayerUnder => 'أول لاعب تحت الحد';
 
   @override
-  String get lastPlayerOver => 'Last player over';
+  String get lastPlayerOver => 'آخر لاعب فوق الحد';
 
   @override
-  String get lastPlayerUnder => 'Last player under';
+  String get lastPlayerUnder => 'آخر لاعب تحت الحد';
 
   @override
-  String get threshold => 'Threshold';
+  String get threshold => 'الحد';
 
   @override
-  String get conditionType => 'Condition Type';
+  String get conditionType => 'نوع الشرط';
 
   @override
-  String get gameOverTitle => 'Game Over!';
+  String get gameOverTitle => 'انتهت اللعبة!';
 
   @override
-  String get gameOverMessage => 'Game over condition reached. End game now?';
+  String get gameOverMessage =>
+      'تم بلوغ شرط انتهاء اللعبة. هل تريد إنهاء اللعبة الآن؟';
 
   @override
-  String get continuePlay => 'Continue Playing';
+  String get continuePlay => 'متابعة اللعب';
 
   @override
   String get endGame => 'إنهاء اللعبة';

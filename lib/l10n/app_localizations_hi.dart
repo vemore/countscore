@@ -480,46 +480,47 @@ class AppLocalizationsHi extends AppLocalizations {
   String get close => 'बंद करें';
 
   @override
-  String get playerEliminationCondition => 'Player Elimination Condition';
+  String get playerEliminationCondition => 'खिलाड़ी के बाहर होने की शर्त';
 
   @override
-  String get gameOverCondition => 'Game Over Condition';
+  String get gameOverCondition => 'खेल समाप्ति की शर्त';
 
   @override
-  String get none => 'None';
+  String get none => 'कोई नहीं';
 
   @override
-  String get overThreshold => 'Over threshold';
+  String get overThreshold => 'सीमा से ऊपर';
 
   @override
-  String get underThreshold => 'Under threshold';
+  String get underThreshold => 'सीमा से नीचे';
 
   @override
-  String get firstPlayerOver => 'First player over';
+  String get firstPlayerOver => 'पहला खिलाड़ी ऊपर';
 
   @override
-  String get firstPlayerUnder => 'First player under';
+  String get firstPlayerUnder => 'पहला खिलाड़ी नीचे';
 
   @override
-  String get lastPlayerOver => 'Last player over';
+  String get lastPlayerOver => 'अंतिम खिलाड़ी ऊपर';
 
   @override
-  String get lastPlayerUnder => 'Last player under';
+  String get lastPlayerUnder => 'अंतिम खिलाड़ी नीचे';
 
   @override
-  String get threshold => 'Threshold';
+  String get threshold => 'सीमा';
 
   @override
-  String get conditionType => 'Condition Type';
+  String get conditionType => 'शर्त का प्रकार';
 
   @override
-  String get gameOverTitle => 'Game Over!';
+  String get gameOverTitle => 'खेल समाप्त!';
 
   @override
-  String get gameOverMessage => 'Game over condition reached. End game now?';
+  String get gameOverMessage =>
+      'खेल समाप्ति की शर्त पूरी हो गई। अभी खेल समाप्त करें?';
 
   @override
-  String get continuePlay => 'Continue Playing';
+  String get continuePlay => 'खेलते रहें';
 
   @override
   String get endGame => 'खेल समाप्त करें';

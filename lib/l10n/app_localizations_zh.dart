@@ -469,46 +469,46 @@ class AppLocalizationsZh extends AppLocalizations {
   String get close => '关闭';
 
   @override
-  String get playerEliminationCondition => 'Player Elimination Condition';
+  String get playerEliminationCondition => '玩家淘汰条件';
 
   @override
-  String get gameOverCondition => 'Game Over Condition';
+  String get gameOverCondition => '游戏结束条件';
 
   @override
-  String get none => 'None';
+  String get none => '无';
 
   @override
-  String get overThreshold => 'Over threshold';
+  String get overThreshold => '高于阈值';
 
   @override
-  String get underThreshold => 'Under threshold';
+  String get underThreshold => '低于阈值';
 
   @override
-  String get firstPlayerOver => 'First player over';
+  String get firstPlayerOver => '第一位玩家超过';
 
   @override
-  String get firstPlayerUnder => 'First player under';
+  String get firstPlayerUnder => '第一位玩家低于';
 
   @override
-  String get lastPlayerOver => 'Last player over';
+  String get lastPlayerOver => '最后一位玩家超过';
 
   @override
-  String get lastPlayerUnder => 'Last player under';
+  String get lastPlayerUnder => '最后一位玩家低于';
 
   @override
-  String get threshold => 'Threshold';
+  String get threshold => '阈值';
 
   @override
-  String get conditionType => 'Condition Type';
+  String get conditionType => '条件类型';
 
   @override
-  String get gameOverTitle => 'Game Over!';
+  String get gameOverTitle => '游戏结束！';
 
   @override
-  String get gameOverMessage => 'Game over condition reached. End game now?';
+  String get gameOverMessage => '已达到游戏结束条件。现在结束游戏吗？';
 
   @override
-  String get continuePlay => 'Continue Playing';
+  String get continuePlay => '继续游戏';
 
   @override
   String get endGame => '结束游戏';
