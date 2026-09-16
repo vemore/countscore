@@ -36,6 +36,11 @@ at your own server in Settings → Server if you want the connected features.
 - **Bring your own backend**: the server address is a setting, empty by default. Run the
   FastAPI service in `backend/` on hardware you control and your data never touches anyone
   else's infrastructure.
+- **Rate the app** (Android): once you have finished a few games and had the app for a week,
+  Google Play's own review sheet may appear when you end a game — at most once per app
+  version, never twice in a session, and nothing in the app is gated on whether or how you
+  rate. The About screen also links to the Play listing. No data is sent by the app either
+  way: the sheet belongs to the Play Store.
 - **Comfort**: light/dark/system theme, screen kept awake during a game, database
   export/import (Android only).
 - **Material Design 3** throughout.
@@ -54,7 +59,7 @@ at your own server in Settings → Server if you want the connected features.
 | Legacy migrator | `sqflite` ^2.4.3 — bootstraps an existing database to schema v11, then Drift takes over |
 | UI | `flex_color_picker` ^4.0.0, `flutter_markdown_plus` |
 | Group sync | `web_socket_channel` ^3.0.3 (change signal), `flutter_secure_storage` ^11.1.1 (device token), `crypto` ^3.0.7 (name-based uuids) |
-| Utilities | `intl`, `http`, `url_launcher` (report email), `wakelock_plus`, `shared_preferences`, `path_provider`, `file_picker` |
+| Utilities | `intl`, `http`, `url_launcher` (report email, Play listing), `in_app_review` ^2.0.12 (Play review sheet), `package_info_plus` (version), `wakelock_plus`, `shared_preferences`, `path_provider`, `file_picker` |
 
 Data access goes through the repository interfaces in `lib/repositories/`; screens never
 touch the database directly.
@@ -155,7 +160,7 @@ countscore/
 ├── android/             # Android platform code
 ├── test/                # Unit, Drift and migration tests
 ├── integration_test/    # End-to-end suite (web + real device)
-├── store_listing/       # Play Store assets and the per-locale listing text
+├── store_listing/       # Play Store assets and the listing text, in 10 locales
 ├── docs/                # Published by GitHub Pages — the privacy policy Play links to
 ├── scripts/             # Keystore, screenshots, privacy page, PWA deploy, hook self-test
 ├── .llmwiki/            # Durable project knowledge — start at INDEX.md

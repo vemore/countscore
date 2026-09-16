@@ -444,6 +444,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get featureZapZapAnalysis => 'ZapZap खेल विश्लेषण';
 
   @override
+  String get rateApp => 'CountScore को रेट करें';
+
+  @override
   String get credits => 'श्रेय';
 
   @override

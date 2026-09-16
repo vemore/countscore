@@ -11,6 +11,7 @@ import 'providers/group_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
+import 'services/review_prompt.dart';
 import 'services/sync/sync_engine.dart';
 
 void main() async {
@@ -21,6 +22,9 @@ void main() async {
   // Same reasoning for the backend URL: the ZapZap entry in the game menu must
   // not appear and then vanish once preferences have loaded.
   final backendUrl = await BackendProvider.load();
+  // Starts the "installed for at least a week" clock. Cheap: it writes only on
+  // the very first launch, and preferences are already in memory by now.
+  await ReviewPromptService.instance.recordFirstLaunch();
   runApp(MyApp(initialThemeMode: themeMode, initialBackendUrl: backendUrl));
 }
 

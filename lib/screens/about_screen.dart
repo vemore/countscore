@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
 
@@ -10,6 +11,13 @@ class AboutScreen extends StatelessWidget {
   /// a future created in build() would restart the FutureBuilder on every
   /// rebuild.
   static final Future<PackageInfo> _packageInfo = PackageInfo.fromPlatform();
+
+  /// The app's own public listing. Opening it is the only honest way to offer
+  /// a "rate this app" button: the Play in-app review sheet cannot be summoned
+  /// on demand, and pretending otherwise would promise what the API refuses.
+  static final Uri _playListing = Uri.parse(
+    'https://play.google.com/store/apps/details?id=com.vemore.countscore',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -105,6 +113,18 @@ class AboutScreen extends StatelessWidget {
                           l10n.featureZapZapAnalysis,
                         ),
                       ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.star_outline),
+                    title: Text(l10n.rateApp),
+                    trailing: const Icon(Icons.open_in_new, size: 18),
+                    onTap: () => launchUrl(
+                      _playListing,
+                      mode: LaunchMode.externalApplication,
                     ),
                   ),
                 ),

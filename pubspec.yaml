@@ -46,7 +46,7 @@ dependencies:
   flex_color_picker: ^4.0.0
   shared_preferences: ^2.3.3
   intl: ^0.20.3
-  file_picker: ^12.2.0
+  file_picker: ^13.1.0
   path: ^1.9.0
   http: ^1.6.0
   flutter_markdown_plus: ^1.0.12
@@ -57,6 +57,7 @@ dependencies:
   crypto: ^3.0.7
   url_launcher: ^6.3.2
   package_info_plus: ^10.2.1
+  in_app_review: ^2.0.12
 
 dev_dependencies:
   flutter_test:

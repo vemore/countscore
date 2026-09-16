@@ -435,6 +435,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get featureZapZapAnalysis => 'ZapZapゲーム分析';
 
   @override
+  String get rateApp => 'CountScore を評価する';
+
+  @override
   String get credits => 'クレジット';
 
   @override

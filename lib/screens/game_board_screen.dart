@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +13,7 @@ import '../providers/game_type_provider.dart';
 import '../repositories/drift/drift_repositories.dart';
 import '../repositories/game_analysis_repository.dart';
 import '../services/drift/database.dart';
+import '../services/review_prompt.dart';
 import 'game_analysis_screen.dart';
 import 'ranking_screen.dart';
 
@@ -736,6 +739,10 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
             onPressed: () {
               Navigator.pop(dialogContext);
               Navigator.pop(context); // Return to game list
+              // The one point in the app where the user states a game is over,
+              // with the winner still on screen. Fire and forget: the service
+              // owns every guard, and nothing here waits on Play.
+              unawaited(ReviewPromptService.instance.onGameFinished());
             },
             child: Text(l10n.endGame),
           ),
