@@ -16,7 +16,7 @@ Gana la puntuación más alta o la más baja: lo decides tú, para cada tipo de 
 
 JUGADORES Y ESTADÍSTICAS
 
-Los jugadores son comunes a todas las partidas, así que sus estadísticas les acompañan de una noche a otra: partidas jugadas, ganadas, mejor puntuación y media. Sin cuenta que crear.
+Los jugadores son comunes a todas las partidas, así que sus estadísticas les acompañan de una noche a otra: partidas jugadas, ganadas, porcentaje de victorias y el desglose por tipo de juego. Sin cuenta que crear.
 
 HISTORIAL COMPLETO
 

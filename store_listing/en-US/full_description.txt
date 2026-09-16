@@ -16,7 +16,7 @@ Highest score wins, or lowest score wins — you decide, per game type. Enter po
 
 PLAYERS AND STATISTICS
 
-Players are shared across every game, so their statistics follow them from one evening to the next: games played, games won, best and average score. Nothing to sign up for — a player is a name and a colour.
+Players are shared across every game, so their statistics follow them from one evening to the next: games played, games won, win rate, and a breakdown per game type. Nothing to sign up for — a player is a name and a colour.
 
 A COMPLETE GAME HISTORY
 
