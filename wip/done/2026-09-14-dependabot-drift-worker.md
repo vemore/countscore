@@ -1,5 +1,7 @@
 # A dependency bump leaves the committed `web/` binaries behind, and CI stays green
 
+**Status:** done (2026-09-16) — closed by chore/web-binaries-and-lock-freshness. `scripts/web_binaries.sh --check` runs in the `app` CI job right after `flutter pub get` and covers both binaries: `drift_worker.js` by `cmp` against the drift version `pubspec.lock` resolves, `sqlite3.wasm` against the new `web/sqlite3.wasm.sha256` committed beside it (version and digest), with `--fetch` comparing the upstream asset on the weekly run. `--refresh` is the fix, and every failure message names it. The web e2e it implies is still not in CI — that half stays open in `.llmwiki/Testing.md` §Gaps. Listing `drift` in its own Dependabot group was not done: the check makes the group irrelevant.
+
 - **Noted:** 2026-09-14 — merging Dependabot #43 (drift 2.34.4 → 2.35.0)
 - **Theme:** dependencies
 - **Area:** tooling

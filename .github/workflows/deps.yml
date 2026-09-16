@@ -1,0 +1,122 @@
+name: Dependencies
+
+# The transitive half of pubspec.lock. Dependabot's `pub` ecosystem only proposes the
+# dependencies *written in* pubspec.yaml, so a package that exists only in the lock is
+# never bumped by anything — which is how `sqlite3` reached 3.6.0 while web/sqlite3.wasm
+# stayed on an earlier release, with no pull request anywhere to notice it.
+#
+# This workflow does NOT open the pull request. A pull request created with the default
+# GITHUB_TOKEN triggers no workflow, so the five required checks of ci.yml would never
+# report on it and it could never merge. It pushes the branch and prints the one command
+# to run instead. No new secret is introduced on purpose.
+#
+# Known fragility, tracked in wip/todo_nr/2026-09-16-scheduled-workflow-auto-disabled.md:
+# GitHub silently disables a scheduled workflow after 60 days of repository inactivity.
+# This is the second workflow exposed to that, after ci.yml's weekly audit run.
+on:
+  # The 4th of each month, 05:23 UTC — a quiet slot, and far enough from Dependabot's
+  # Monday run (.github/dependabot.yml) that the two never race on the same lock.
+  schedule:
+    - cron: "23 5 4 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: "3.47.2"
+
+jobs:
+  upgrade:
+    name: Refresh pubspec.lock and the committed web/ binaries
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # A job-level permissions block *replaces* the workflow's. The repository default
+    # is read-only; pushing the branch is the one extra right this needs.
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - run: flutter --version
+
+      # `material_color_utilities`, `cli_util` and `test_api` are pinned by the Flutter
+      # SDK and cannot move here — `pub outdated` reports their resolvable version as the
+      # current one. Only FLUTTER_VERSION above moves them. Do not chase them.
+      - name: flutter pub upgrade
+        run: flutter pub upgrade
+
+      # Without this the workflow would reintroduce exactly the drift it exists to catch:
+      # a new sqlite3 or drift in the lock, with the committed binaries left behind.
+      # --fetch makes the wasm come from upstream and the digest be recorded from it.
+      - name: Refresh the committed web/ binaries
+        run: scripts/web_binaries.sh --refresh --fetch
+
+      # *.g.dart is gitignored, so this must precede analyze, test and any build.
+      - name: Code generation (drift)
+        run: dart run build_runner build
+
+      - name: flutter analyze
+        run: flutter analyze
+
+      - name: flutter test
+        run: flutter test
+
+      - name: Push a branch when something moved
+        run: |
+          set -euo pipefail
+          summary() { printf '%s\n' "$1" >> "$GITHUB_STEP_SUMMARY"; }
+
+          if git diff --quiet -- pubspec.lock web/; then
+            summary "## Dependencies"
+            summary ""
+            summary "\`flutter pub upgrade\` moved nothing: \`pubspec.lock\` and the"
+            summary "committed \`web/\` binaries are already current. No branch pushed."
+            exit 0
+          fi
+
+          # Dated, so a run never clobbers a previous one; suffixed on the same day so a
+          # re-dispatch does not need a force push, which nothing here is allowed to do.
+          branch="chore/deps-$(date -u +%Y-%m-%d)"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+            branch="$branch-${GITHUB_RUN_NUMBER}"
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add pubspec.lock web/
+          git commit -m "chore: refresh pubspec.lock and the committed web/ binaries" \
+                     -m "flutter pub upgrade, then scripts/web_binaries.sh --refresh --fetch. analyze and test green on the result."
+          git push -u origin "$branch"
+
+          summary "## Dependencies"
+          summary ""
+          summary "Pushed \`$branch\`. \`analyze\` and \`test\` are green on it."
+          summary ""
+          summary "This workflow deliberately does not open the pull request: one created"
+          summary "with the default \`GITHUB_TOKEN\` triggers no workflow, so the required"
+          summary "checks would never report. Open it by hand:"
+          summary ""
+          summary '```bash'
+          summary "gh pr create --base main --head $branch \\"
+          summary "  --title 'chore: refresh pubspec.lock and the committed web/ binaries' \\"
+          summary "  --body 'Scheduled transitive refresh. flutter pub upgrade, web/ binaries refreshed from the new lock by scripts/web_binaries.sh --refresh --fetch.'"
+          summary '```'
+          summary ""
+          summary "Run the web e2e before merging if \`web/\` changed (\`.llmwiki/Testing.md\`)."
+
+          {
+            echo "### What changed"
+            echo
+            echo '```'
+            git show --stat --oneline HEAD | sed -n '2,$p'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
