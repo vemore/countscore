@@ -18,7 +18,11 @@ import 'game_analysis_screen.dart';
 import 'ranking_screen.dart';
 
 class GameBoardScreen extends StatefulWidget {
-  const GameBoardScreen({super.key});
+  const GameBoardScreen({super.key, this.analysisRepo});
+
+  /// Injected by tests only, as `GameProvider`'s repositories are: the default
+  /// reaches the `AppDatabase` singleton, which opens the real database.
+  final GameAnalysisRepository? analysisRepo;
 
   @override
   State<GameBoardScreen> createState() => _GameBoardScreenState();
@@ -29,7 +33,19 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
   final Set<int> _eliminatedPlayers = {};
 
   late final GameAnalysisRepository _analysisRepo =
-      DriftGameAnalysisRepository(AppDatabase.instance);
+      widget.analysisRepo ?? DriftGameAnalysisRepository(AppDatabase.instance);
+
+  /// Whether the game-over dialog is already standing, or was answered
+  /// "Continue playing", for the crossing currently in force.
+  ///
+  /// It re-arms as soon as the condition is false again — a deleted round or a
+  /// corrected score puts the game back under its threshold, and crossing it
+  /// once more is a new event worth asking about.
+  ///
+  /// It is in-memory only, so leaving the board and coming back asks again.
+  /// Persisting the refusal would need a synced column; see
+  /// `wip/todo_nr/2026-09-16-game-over-dialog-only-on-score-edit.md`.
+  bool _gameOverDismissed = false;
 
   /// Whether this game already has an analysis stored locally. It keeps the
   /// menu entry available after the server is cleared: the generated text is
@@ -119,6 +135,21 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                   Tooltip(
                     message: l10n.gameSharedBadge,
                     child: const Icon(Icons.cloud_done_outlined, size: 20),
+                  ),
+                ],
+                // The list shows a finished game as finished; the board used to
+                // show nothing at all, so the two disagreed about a fact one of
+                // them was willing to display. Nothing is locked — a finished
+                // game still takes rounds and score edits.
+                if (game?.isFinished ?? false) ...[
+                  const SizedBox(width: 8),
+                  Chip(
+                    key: const Key('board_finished_badge'),
+                    label: Text(l10n.gameFinished),
+                    avatar: const Icon(Icons.flag, size: 16),
+                    labelStyle: Theme.of(context).textTheme.labelSmall,
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ],
               ],
@@ -244,15 +275,36 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                     if (confirm == true) {
                       final lastRound = gameProvider.currentRounds.last;
                       await gameProvider.deleteRound(lastRound.id!);
+                      // Removing a round can take the game back under its
+                      // threshold, or leave it over one it was already past.
+                      _maybeShowGameOver(gameProvider, menuGameType);
                     }
                   } else if (value == 'finish_game') {
                     final gameId = gameProvider.currentGame?.id;
                     if (gameId == null) return;
-                    final justFinished = await gameProvider.setGameFinished(
-                        gameId, !isFinished);
+                    // Captured before the await, as everywhere else on this
+                    // screen: the messenger outlives this closure's context.
+                    final messenger = ScaffoldMessenger.of(context);
+                    final finished = !isFinished;
+                    final justFinished =
+                        await gameProvider.setGameFinished(gameId, finished);
                     if (justFinished) {
                       unawaited(ReviewPromptService.instance.onGameFinished());
                     }
+                    // The board gave no feedback at all before; the action is
+                    // reversible, so it is offered back.
+                    messenger
+                      ..hideCurrentSnackBar()
+                      ..showSnackBar(SnackBar(
+                        content: Text(finished
+                            ? l10n.gameMarkedFinished
+                            : l10n.gameReopened),
+                        action: SnackBarAction(
+                          label: l10n.undo,
+                          onPressed: () =>
+                              gameProvider.setGameFinished(gameId, !finished),
+                        ),
+                      ));
                   } else if (value == 'share_game') {
                     await _shareGame(gameProvider, group);
                   } else if (value == 'analyze_game') {
@@ -460,6 +512,11 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                       key: const Key('board_add_round'),
                       onPressed: () async {
                         await gameProvider.addRound();
+                        // A new round does not move a total, but it is the
+                        // moment a game already past its threshold — crossed on
+                        // another device, or in an earlier session — gets
+                        // noticed.
+                        _maybeShowGameOver(gameProvider, gameType);
                       },
                       icon: const Icon(Icons.add),
                       label: Text(l10n.addRound),
@@ -506,6 +563,26 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
         // All players under threshold
         return playerTotals.every((total) => total < gameType.gameOverThreshold!);
     }
+  }
+
+  /// Shows the game-over dialog once per crossing of the threshold.
+  ///
+  /// Every mutation that can change a total calls this: a score edit, a round
+  /// added, a round deleted. There is deliberately no check on the board's
+  /// first build — nothing records the user's "Continue playing", so opening a
+  /// game that is past its threshold would raise the dialog every single time.
+  void _maybeShowGameOver(GameProvider gameProvider, GameType? gameType) {
+    if (!_checkGameOverCondition(gameProvider, gameType)) {
+      _gameOverDismissed = false;
+      return;
+    }
+    if (_gameOverDismissed) return;
+    _gameOverDismissed = true;
+    // A slight delay so the table shows the new total before the dialog covers
+    // it.
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) _showGameOverDialog(context);
+    });
   }
 
   void _showEditGameDialog() {
@@ -826,14 +903,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
       }
 
       // Check if game over condition is met
-      if (_checkGameOverCondition(gameProvider, gameType)) {
-        // Use a slight delay to ensure UI updates before showing dialog
-        Future.delayed(const Duration(milliseconds: 100), () {
-          if (context.mounted) {
-            _showGameOverDialog(context);
-          }
-        });
-      }
+      _maybeShowGameOver(gameProvider, gameType);
     }
 
     showDialog(

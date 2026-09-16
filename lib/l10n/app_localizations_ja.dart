@@ -522,6 +522,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get gameFinished => '終了済み';
 
   @override
+  String get undo => '元に戻す';
+
+  @override
+  String get gameMarkedFinished => 'ゲームを終了しました';
+
+  @override
+  String get gameReopened => 'ゲームを再開しました';
+
+  @override
   String get comment => 'コメント';
 
   @override

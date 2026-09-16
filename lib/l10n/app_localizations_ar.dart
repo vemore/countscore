@@ -530,6 +530,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get gameFinished => 'منتهية';
 
   @override
+  String get undo => 'تراجع';
+
+  @override
+  String get gameMarkedFinished => 'انتهت المباراة';
+
+  @override
+  String get gameReopened => 'أُعيد فتح المباراة';
+
+  @override
   String get comment => 'تعليق';
 
   @override

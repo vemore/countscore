@@ -287,6 +287,19 @@ class DriftRoundRepository implements RoundRepository {
   }
 
   @override
+  Future<Map<int, int>> countByGame() async {
+    final rows = await _db
+        .customSelect(
+          'SELECT gameId, COUNT(*) AS c FROM rounds WHERE deleted_at IS NULL '
+          'GROUP BY gameId',
+        )
+        .get();
+    return {
+      for (final r in rows) r.data['gameId'] as int: r.data['c'] as int,
+    };
+  }
+
+  @override
   Future<int> delete(int id) async {
     return _db.transaction(() async {
       if (await _isShared(_db, 'rounds', id)) {

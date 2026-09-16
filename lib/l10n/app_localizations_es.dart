@@ -533,6 +533,15 @@ class AppLocalizationsEs extends AppLocalizations {
   String get gameFinished => 'Finalizado';
 
   @override
+  String get undo => 'Deshacer';
+
+  @override
+  String get gameMarkedFinished => 'Partida finalizada';
+
+  @override
+  String get gameReopened => 'Partida reabierta';
+
+  @override
   String get comment => 'Comentario';
 
   @override
