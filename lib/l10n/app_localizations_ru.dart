@@ -482,46 +482,47 @@ class AppLocalizationsRu extends AppLocalizations {
   String get close => 'Закрыть';
 
   @override
-  String get playerEliminationCondition => 'Player Elimination Condition';
+  String get playerEliminationCondition => 'Условие выбывания игрока';
 
   @override
-  String get gameOverCondition => 'Game Over Condition';
+  String get gameOverCondition => 'Условие окончания игры';
 
   @override
-  String get none => 'None';
+  String get none => 'Нет';
 
   @override
-  String get overThreshold => 'Over threshold';
+  String get overThreshold => 'Выше порога';
 
   @override
-  String get underThreshold => 'Under threshold';
+  String get underThreshold => 'Ниже порога';
 
   @override
-  String get firstPlayerOver => 'First player over';
+  String get firstPlayerOver => 'Первый игрок выше';
 
   @override
-  String get firstPlayerUnder => 'First player under';
+  String get firstPlayerUnder => 'Первый игрок ниже';
 
   @override
-  String get lastPlayerOver => 'Last player over';
+  String get lastPlayerOver => 'Последний игрок выше';
 
   @override
-  String get lastPlayerUnder => 'Last player under';
+  String get lastPlayerUnder => 'Последний игрок ниже';
 
   @override
-  String get threshold => 'Threshold';
+  String get threshold => 'Порог';
 
   @override
-  String get conditionType => 'Condition Type';
+  String get conditionType => 'Тип условия';
 
   @override
-  String get gameOverTitle => 'Game Over!';
+  String get gameOverTitle => 'Игра окончена!';
 
   @override
-  String get gameOverMessage => 'Game over condition reached. End game now?';
+  String get gameOverMessage =>
+      'Условие окончания игры выполнено. Завершить игру?';
 
   @override
-  String get continuePlay => 'Continue Playing';
+  String get continuePlay => 'Продолжить игру';
 
   @override
   String get endGame => 'Завершить игру';

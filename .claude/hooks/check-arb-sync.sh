@@ -8,6 +8,11 @@
 # So this reports progress as context, and the hard check happens at commit time
 # in guard-bash.sh.
 #
+# It runs arb_keys.py in both modes -- missing keys and values that are still the
+# literal English string -- for the same reason: halfway through translating ten
+# files, both are expected to be divergent, and naming what is left is help, not a
+# verdict. guard-bash.sh runs the two modes separately so its refusal can say which.
+#
 # The one exception is invalid JSON in the file just written: that is a defect
 # whatever the surrounding state, and exit 2 surfaces it to the model immediately.
 

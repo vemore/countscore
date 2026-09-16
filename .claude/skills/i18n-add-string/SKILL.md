@@ -100,15 +100,23 @@ Text(l10n.roundCount(5))
 ### 6. Verify
 
 ```bash
-python3 -c "
-import json,glob
-counts={f:len([k for k in json.load(open(f)) if not k.startswith('@')]) for f in sorted(glob.glob('lib/l10n/app_*.arb'))}
-print(counts)
-assert len(set(counts.values()))==1, 'ARB key counts diverge: '+str(counts)
-print('OK — all files agree')"
+python3 .claude/hooks/arb_keys.py    # --keys alone, or --values alone
 flutter analyze
 flutter test
 ```
+
+`arb_keys.py` runs two checks, and the same two block the commit in `guard-bash.sh`:
+
+- **keys** — every message key of the template `app_fr.arb` is in all ten files, and no
+  file has a key the template lacks.
+- **values** — no locale still holds the literal `app_en.arb` string. Counting keys is
+  not enough: the whole game-over cluster was *present* in all ten files and English in
+  five of them for months.
+
+When a translation legitimately equals the English string — a brand name, a loanword, a
+proper noun such as a game's name — add the key to `SAME_AS_ENGLISH_OK` in
+`.claude/hooks/arb_keys.py` with a comment saying why, rather than distorting the
+translation to get past the check. A key ending in `*` exempts a whole prefix.
 
 ## Rules
 

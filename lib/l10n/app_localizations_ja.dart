@@ -471,46 +471,46 @@ class AppLocalizationsJa extends AppLocalizations {
   String get close => '閉じる';
 
   @override
-  String get playerEliminationCondition => 'Player Elimination Condition';
+  String get playerEliminationCondition => 'プレイヤー脱落条件';
 
   @override
-  String get gameOverCondition => 'Game Over Condition';
+  String get gameOverCondition => 'ゲーム終了条件';
 
   @override
-  String get none => 'None';
+  String get none => 'なし';
 
   @override
-  String get overThreshold => 'Over threshold';
+  String get overThreshold => 'しきい値を超える';
 
   @override
-  String get underThreshold => 'Under threshold';
+  String get underThreshold => 'しきい値を下回る';
 
   @override
-  String get firstPlayerOver => 'First player over';
+  String get firstPlayerOver => '最初のプレイヤーが超える';
 
   @override
-  String get firstPlayerUnder => 'First player under';
+  String get firstPlayerUnder => '最初のプレイヤーが下回る';
 
   @override
-  String get lastPlayerOver => 'Last player over';
+  String get lastPlayerOver => '最後のプレイヤーが超える';
 
   @override
-  String get lastPlayerUnder => 'Last player under';
+  String get lastPlayerUnder => '最後のプレイヤーが下回る';
 
   @override
-  String get threshold => 'Threshold';
+  String get threshold => 'しきい値';
 
   @override
-  String get conditionType => 'Condition Type';
+  String get conditionType => '条件の種類';
 
   @override
-  String get gameOverTitle => 'Game Over!';
+  String get gameOverTitle => 'ゲーム終了！';
 
   @override
-  String get gameOverMessage => 'Game over condition reached. End game now?';
+  String get gameOverMessage => 'ゲーム終了条件に達しました。ゲームを終了しますか？';
 
   @override
-  String get continuePlay => 'Continue Playing';
+  String get continuePlay => '続ける';
 
   @override
   String get endGame => 'ゲームを終了';

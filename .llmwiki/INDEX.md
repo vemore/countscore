@@ -30,7 +30,7 @@ Load this file first. Then read only the pages your task touches.
 | [[MobileApp]] | `lib/` layout, providers, screens, the dynamic-icon constraint | 2026-09-15 |
 | [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-09-13 |
 | [[SchemaV10]] | Schema v11: the twelve tables, sync bookkeeping and capture triggers, tombstones, the migration chain | 2026-09-13 |
-| [[I18n]] | 10 languages × 235 keys, French template, English fallback; store locales differ | 2026-09-16 |
+| [[I18n]] | 10 languages × 238 keys, French template, English fallback; the key *and* value checks; store locales differ | 2026-09-16 |
 | [[Web]] | PWA specifics: sqlite3.wasm, OPFS, committed binaries and the check that gates them, `kIsWeb` guards, base href | 2026-09-16 |
 
 ## Backend (FastAPI)

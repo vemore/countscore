@@ -17,7 +17,7 @@ is untouched by it.
 |---|---|---|---|
 | `PreToolUse` | `Bash` | `guard-bash.sh` | Refuses a set of commands outright; runs the gates before a commit |
 | `PostToolUse` | `Edit\|Write` | `guard-gitignore.sh` | Refuses a `.gitignore` that starts ignoring the two web binaries |
-| `PostToolUse` | `Edit\|Write` | `check-arb-sync.sh` | Reports ARB key drift as context — never blocks |
+| `PostToolUse` | `Edit\|Write` | `check-arb-sync.sh` | Reports ARB key drift and untranslated values as context — never blocks |
 | `SessionStart` | — | `session-start.sh` | Says whether the clone needs codegen and whether the branch is safe |
 | `Stop` | — | `require-pull-request.sh` | Refuses to end the turn while finished commits have no pull request, or while that pull request is red |
 | `SubagentStop` | — | `require-pull-request.sh` | The same, for an agent — judged on the branch of the worktree it works in |
@@ -50,7 +50,7 @@ first step of the `app` job in `.github/workflows/ci.yml`.
 | Committing on `main`, on a detached HEAD, or on a stale branch | `%(upstream:track)` = `[gone]`, then `git cherry origin/main HEAD`, in the repository the command runs in |
 | Committing a root `TODO.md` or `DONE.md` next to `wip/`, or editing `wip/done/ARCHIVE-*.md` | committed path list; the file exists in the tree / the archive exists in `HEAD`; only in a tree that has `wip/done/` |
 | Committing with red gates, or with a gate's tool not installed | `flutter analyze` if app paths are involved; `ruff check`/`ruff format --check`/`mypy` if `backend/` is. No `flutter`, no `.dart_tool` or no `backend/.venv` tools is a refusal naming the setup command, never a skipped gate |
-| Committing divergent ARB files, or a stale `app_localizations*.dart` | key sets against the template from `l10n.yaml`, then `flutter gen-l10n` |
+| Committing divergent ARB files, an ARB value still in English, or a stale `app_localizations*.dart` | `arb_keys.py --keys` (key sets against the template from `l10n.yaml`), then `arb_keys.py --values` (values against `app_en.arb`, minus the `SAME_AS_ENGLISH_OK` allow-list in that file), then `flutter gen-l10n` |
 | Ending a turn with commits that no pull request covers, whose pull request was closed unmerged, or whose checks are failing | `gh pr list --head <branch> --state all`, then `gh pr checks` |
 | `gh pr create --base <anything but main>` | the parsed `--base` argument; unlocked per repository by `countscore.allowStackedPr` — setting it is the user's decision, never an agent's |
 | `gh pr merge` with `--admin`, or without `--squash`, or with `--merge`/`--rebase` | parsed flags, bundled short flags included |
@@ -127,7 +127,10 @@ cherry-pick the commits `git cherry -v origin/main <old-branch>` marks with `+`.
   key sets are legitimately divergent after edits one through nine. A blocking
   `PostToolUse` tells the model its last edit was rejected, and inviting it to undo good
   work would make the `i18n-add-string` skill unusable. It reports progress instead, and
-  the refusal happens once, at commit time.
+  the refusal happens once, at commit time. The value check added on 2026-09-16 obeys the
+  same split for the same reason — halfway through translating ten files, half of them
+  still hold the English string — so it too only reports on edit and only refuses on
+  commit. [[I18n]]
 - **Why no `flutter gen-l10n` after each ARB edit.** Ten regenerations for one useful
   result, nine of them writing an `app_localizations_*.dart` that reflects an intermediate
   state — and `generate: true` in `pubspec.yaml` already regenerates on `pub get`, `run`,
