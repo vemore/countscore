@@ -132,6 +132,10 @@ firebase_options.dart
 *.temp
 *~
 
+# scripts/worktree_setup.sh's claim on a worktree, read by scripts/cleanup_local.sh.
+# Anchored: only the one at the root of a worktree means anything.
+/.countscore-setup-in-progress
+
 # web/sqlite3.wasm and web/drift_worker.js are deliberately tracked so that a
 # fresh clone can run the PWA without fetching binaries. drift_worker.js also
 # ships prebuilt at the drift package root; sqlite3.wasm comes from the

@@ -16,7 +16,7 @@ Score le plus haut ou le plus bas gagnant : vous décidez, pour chaque type de j
 
 JOUEURS ET STATISTIQUES
 
-Les joueurs sont communs à toutes les parties : leurs statistiques les suivent d'une soirée à l'autre — parties jouées, gagnées, meilleur score et moyenne. Aucun compte à créer.
+Les joueurs sont communs à toutes les parties : leurs statistiques les suivent d'une soirée à l'autre — parties jouées, gagnées, taux de victoire, et le détail par type de jeu. Aucun compte à créer.
 
 UN HISTORIQUE COMPLET DES PARTIES
 

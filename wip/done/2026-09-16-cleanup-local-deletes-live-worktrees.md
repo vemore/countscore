@@ -1,5 +1,12 @@
 # `cleanup_local.sh --apply` deletes a worktree another agent is still setting up
 
+**Status:** done (2026-09-16) — closed by `fix/cleanup-local-live-worktrees`. Both proposals
+were implemented, because they cover different windows: `worktree_setup.sh` now writes a
+`.countscore-setup-in-progress` marker (gitignored) and clears it only on success, and
+`cleanup_local.sh` keeps any worktree carrying one, or modified in the last
+`CLEANUP_IDLE_MINUTES` (default 30) minutes — both keeping the worktree's **branch** too,
+which is what let the incident delete `chore/flutter-deps` itself. Three self-test cases.
+
 - **Noted:** 2026-09-16 — the `chore/flutter-deps` worktree vanished mid-`worktree_setup.sh`
 - **Theme:** dependencies
 - **Area:** tooling

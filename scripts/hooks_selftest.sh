@@ -393,6 +393,12 @@ git -C "$CWORK" config user.email t@t
 git -C "$CWORK" config user.name t
 git -C "$CWORK" commit -q --allow-empty -m base
 git -C "$CWORK" branch -M main
+# The setup marker is gitignored in the real repository, so a worktree carrying one is
+# clean by `git status` -- reproduce that here, or the marker guard is never reached and
+# the worktree is kept for the wrong reason.
+echo "/.countscore-setup-in-progress" > "$CWORK/.gitignore"
+git -C "$CWORK" add .gitignore
+git -C "$CWORK" commit -q -m "ignore the setup marker"
 git -C "$CWORK" push -q -u origin main 2>/dev/null
 
 cbranch() {  # name -- a branch with one commit of its own
@@ -410,6 +416,11 @@ git -C "$SANDBOX/wt-merged" commit -q --allow-empty -m wt
 git -C "$CWORK" worktree add -q "$SANDBOX/wt-dirty" -b feat/wt-dirty origin/main 2>/dev/null
 git -C "$SANDBOX/wt-dirty" commit -q --allow-empty -m wt
 touch "$SANDBOX/wt-dirty/unsaved.txt"
+# A worktree scripts/worktree_setup.sh is still building: clean, on a merged branch, and
+# saved only by its marker -- the first run below has the modification-time guard off.
+git -C "$CWORK" worktree add -q "$SANDBOX/wt-setup" -b feat/wt-setup origin/main 2>/dev/null
+git -C "$SANDBOX/wt-setup" commit -q --allow-empty -m wt
+echo "pid 1 started now branch feat/wt-setup" > "$SANDBOX/wt-setup/.countscore-setup-in-progress"
 
 CSTUB="$SANDBOX/cleanup-stub"
 mkdir -p "$CSTUB"
@@ -424,6 +435,7 @@ case "$1 $2" in
             *"--state merged"*)
                 case "$head" in
                     feat/merged|feat/merged-extra|feat/wt-merged|feat/wt-dirty) echo "cafe 7" ;;
+                    feat/wt-setup|feat/wt-recent) echo "cafe 7" ;;
                 esac ;;
             *) [ "$head" = feat/open ] && echo "#8 OPEN" ;;
         esac ;;
@@ -437,7 +449,10 @@ exit 0
 STUBEOF
 chmod +x "$CSTUB/gh"
 
-(cd "$CWORK" && PATH="$CSTUB:$PATH" CLEANUP_WORK="$CWORK" "$ROOT/scripts/cleanup_local.sh" --apply >/dev/null 2>&1)
+# These worktrees are seconds old, so the modification-time guard would keep every one of
+# them: the assertions below only mean anything with the window closed.
+(cd "$CWORK" && PATH="$CSTUB:$PATH" CLEANUP_WORK="$CWORK" CLEANUP_IDLE_MINUTES=0 \
+    "$ROOT/scripts/cleanup_local.sh" --apply >/dev/null 2>&1)
 has_branch() { git -C "$CWORK" rev-parse --verify -q "refs/heads/$1" >/dev/null && echo kept || echo removed; }
 report "cleanup: Agent placeholder branch with no commit"      removed "$(has_branch worktree-agent1)"
 report "cleanup: merged pull request, tip included"            removed "$(has_branch feat/merged)"
@@ -449,6 +464,16 @@ report "cleanup: its branch too"                               removed "$(has_br
 report "cleanup: worktree with unsaved work"                   kept    "$([ -d "$SANDBOX/wt-dirty" ] && echo kept || echo removed)"
 report "cleanup: the branch of that worktree"                  kept    "$(has_branch feat/wt-dirty)"
 report "cleanup: main"                                         kept    "$(has_branch main)"
+
+# Second run, at the default window: a worktree an agent is still working in, with nothing
+# committed and nothing uncommitted either, is only visible through its modification times.
+git -C "$CWORK" worktree add -q "$SANDBOX/wt-recent" -b feat/wt-recent origin/main 2>/dev/null
+git -C "$SANDBOX/wt-recent" commit -q --allow-empty -m wt
+(cd "$CWORK" && PATH="$CSTUB:$PATH" CLEANUP_WORK="$CWORK" \
+    "$ROOT/scripts/cleanup_local.sh" --apply >/dev/null 2>&1)
+report "cleanup: worktree in setup (marker)"                   kept    "$([ -d "$SANDBOX/wt-setup" ] && echo kept || echo removed)"
+report "cleanup: the branch of a worktree in setup"            kept    "$(has_branch feat/wt-setup)"
+report "cleanup: recently modified worktree"                   kept    "$([ -d "$SANDBOX/wt-recent" ] && echo kept || echo removed)"
 
 echo "== wiring ===================================================="
 for script in "$HOOKS"/*.sh "$HOOKS"/*.py; do

@@ -31,7 +31,11 @@
   its own only when the agent changed nothing.
 - `scripts/worktree_setup.sh` makes a worktree usable: `flutter pub get`, `build_runner`,
   `gen-l10n`, `uv sync --locked --extra dev`, and symlinks to the untracked
-  `backend/scripts/deploy.env` and `android/key.properties` of the main checkout.
+  `backend/scripts/deploy.env` and `android/key.properties` of the main checkout. While it
+  runs it holds `<worktree>/.countscore-setup-in-progress` (pid, date, branch; gitignored,
+  `.gitignore:137`) and removes it on the `ready:` line. A **failed** setup leaves the marker
+  on purpose — a half-built worktree is exactly the one not to delete. Clearing a stale one
+  is a manual `rm`, named in the script's `--help`.
 
 ### Cleaning up — `scripts/cleanup_local.sh`
 
@@ -42,6 +46,23 @@ GitHub's compare of its head against the local tip says `identical` or `behind`.
 when it is detached on a commit in `origin/main`. Everything else is printed as `keep` with
 the reason. `session-start.sh` points at it whenever a worktree or a `[gone]` branch exists.
 Exercised offline by `scripts/hooks_selftest.sh` through a stubbed `gh`.
+
+Two guards run **before** every other rule in the worktree loop
+(`scripts/cleanup_local.sh:124-135`), and each keeps the worktree's **branch** as well as the
+worktree — without that the branch loop deletes the branch out from under a live worktree:
+
+| Guard | Evidence | Printed as |
+|---|---|---|
+| Setup in progress | `<worktree>/.countscore-setup-in-progress` exists | `keep … — setup in progress (.countscore-setup-in-progress)` |
+| An agent may be working | `find <worktree> -newermt "-$CLEANUP_IDLE_MINUTES minutes" -print -quit` finds anything | `keep … — modified in the last N minutes (an agent may be working)` |
+
+`CLEANUP_IDLE_MINUTES` defaults to `30`; `0` disables the second guard only — the marker is
+always honoured. The self-test runs its first `--apply` with `CLEANUP_IDLE_MINUTES=0`, because
+its sandbox worktrees are created seconds earlier and would otherwise all be kept.
+
+Neither guard makes `--apply` safe to run while agents work: a worktree idle for more than the
+window, with a branch that carries no commit yet, still looks abandoned. They cover the two
+windows that cost work in practice — the five-minute setup, and an agent between commits.
 
 ### Work tracking, and what a merge deploys
 
@@ -88,6 +109,19 @@ Store is never part of the loop (`release-android`, on request).
   checkout's older copies: they judged its `[gone]` branch and refused the worktree's commits.
   Keeping the main checkout on a fast-forwarded `main` means the hooks are always the merged
   ones, and nothing ever commits there.
+- **A worktree in setup became something the script can see (2026-09-16).** `--apply`, run
+  from another session, deleted the `chore/flutter-deps` worktree *and* its branch while
+  `worktree_setup.sh` was inside `build_runner`; the setup died on a `PathNotFoundException`
+  under `.dart_tool/`. Everything the setup writes is gitignored, so `git status --porcelain`
+  saw a perfectly clean worktree, and the branch had no commit yet — the two conditions the
+  script treats as "abandoned". Both scripts' headers and this page already said "not while
+  agents are working", and that is precisely what failed: an instruction the operator has to
+  remember protects nothing. The fix is a handshake between the two scripts that own the two
+  ends of it — the writer drops a marker, the reader honours it — plus a modification-time
+  floor for an agent that is merely working rather than setting up. The marker is deliberately
+  **not** cleared by a `trap`: a setup that crashed leaves the worktree half-built, which is
+  the state that must survive. A branch-age heuristic was rejected: the branch in the incident
+  was minutes old and still deleted, because age is not what the script reads.
 - **A pull request touching `.claude/` merges last in its wave (2026-09-14).** The flip side of
   the previous point: fast-forwarding the main checkout after a merge that changes a hook
   changes the rules under agents still running. Such a pull request waits until every agent of
