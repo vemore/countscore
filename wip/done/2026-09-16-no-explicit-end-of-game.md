@@ -1,5 +1,12 @@
 # Only three game types can ever declare a game over
 
+**Status:** done (2026-09-16) — closed by `feat/explicit-end-of-game`. `games.finishedAt`
+(schema v12, synced as the server's existing `ended_at`) plus a "Terminer la partie" /
+"Rouvrir la partie" action on the board menu and on the home-screen game menu, a finished
+badge in the game list, and the game-over dialog now persisting what it announces. All four
+triggers go through `GameProvider.setGameFinished`, which reports the null → set transition
+so `ReviewPromptService.onGameFinished` fires for every game type instead of three.
+
 - **Noted:** 2026-09-16 — while wiring the review prompt to the end of a game (feat/rating-prompt)
 - **Theme:** growth
 - **Area:** app

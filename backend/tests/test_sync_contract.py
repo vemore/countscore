@@ -329,6 +329,52 @@ async def test_round_comment_round_trips(client, session_factory):
     assert too_long["results"][0]["reason"] == "comment longer than 500 characters"
 
 
+async def test_game_ended_at_round_trips(client, session_factory):
+    """`games.ended_at` has existed since 0001_initial but nothing ever set it.
+
+    The client writes it when a game is declared over and writes it back to null
+    when the game is reopened, so both directions have to survive the push — the
+    null especially, since a payload that simply omitted the key would leave the
+    other devices showing a game as finished forever.
+    """
+    from app.models import Game
+
+    _body, headers = await _group(client)
+    game = uuid.uuid4()
+
+    await _push(client, headers, _delta("game", game, 1, name="G", ended_at=None))
+    assert (await _get(session_factory, Game, game)).ended_at is None
+
+    await _push(
+        client,
+        headers,
+        _delta("game", game, 2, name="G", ended_at="2026-09-16T19:30:00+00:00"),
+    )
+    ended = (await _get(session_factory, Game, game)).ended_at
+    assert ended is not None
+    assert ended.isoformat().startswith("2026-09-16T19:30:00")
+
+    # Reopened on another device: the null must land, not be ignored.
+    await _push(client, headers, _delta("game", game, 3, name="G", ended_at=None))
+    assert (await _get(session_factory, Game, game)).ended_at is None
+
+
+async def test_game_ended_at_reaches_the_other_devices(client, session_factory):
+    """A pulled delta must carry the field, or the fact never leaves the device."""
+    _body, headers = await _group(client)
+    game = uuid.uuid4()
+    await _push(
+        client,
+        headers,
+        _delta("game", game, 1, name="G", ended_at="2026-09-16T19:30:00+00:00"),
+    )
+
+    r = await client.get("/sync/pull?since_seq=0", headers=headers)
+    assert r.status_code == 200, r.text
+    payload = next(d["payload"] for d in r.json()["deltas"] if d["entity_type"] == "game")
+    assert payload["ended_at"].startswith("2026-09-16T19:30:00")
+
+
 async def test_game_analysis_is_a_synced_entity(client, session_factory):
     from app.models import GameAnalysis
 

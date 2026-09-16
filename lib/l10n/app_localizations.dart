@@ -1044,6 +1044,18 @@ abstract class AppLocalizations {
   /// **'Terminer la partie'**
   String get endGame;
 
+  /// Menu action that reopens a game previously marked finished
+  ///
+  /// In fr, this message translates to:
+  /// **'Rouvrir la partie'**
+  String get reopenGame;
+
+  /// Badge shown on a finished game in the game list
+  ///
+  /// In fr, this message translates to:
+  /// **'Terminée'**
+  String get gameFinished;
+
   /// No description provided for @comment.
   ///
   /// In fr, this message translates to:

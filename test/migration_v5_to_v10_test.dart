@@ -166,6 +166,8 @@ void main() {
     final games = await DriftGameRepository(db).getAll();
     expect(games.map((g) => g.name), ['Jeudi', 'Mardi']);
     expect(games.every((g) => g.gameTypeId == 1), isTrue);
+    expect(games.every((g) => g.isFinished), isFalse,
+        reason: 'v12 adds finishedAt as null; no existing game becomes finished');
 
     final players = DriftPlayerRepository(db);
     expect(await players.getAllNames(), ['Alice', 'Bob', 'Chloé']);
@@ -196,6 +198,13 @@ void main() {
     final r = await DriftRoundRepository(db).create(Round(gameId: newGame, roundNumber: 1));
     await DriftScoreRepository(db).create(Score(playerId: p, roundId: r, value: 3));
     expect((await DriftPlayerStatsRepository(db).getStatsByName('Bob'))['gamesPlayed'], 2);
+
+    // The v12 column is writable on a file that came all the way from v5.
+    final at = DateTime(2026, 9, 16, 21);
+    await DriftGameRepository(db)
+        .update((await DriftGameRepository(db).getById(newGame))!
+            .copyWith(finishedAt: at));
+    expect((await DriftGameRepository(db).getById(newGame))?.finishedAt, at);
   });
 
   test('reopening an upgraded file is a no-op', () async {

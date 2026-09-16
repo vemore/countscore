@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -7,6 +9,7 @@ import '../providers/group_provider.dart';
 import '../providers/game_type_provider.dart';
 import '../models/game.dart';
 import '../models/game_type.dart';
+import '../services/review_prompt.dart';
 import 'about_screen.dart';
 import 'create_game_screen.dart';
 import 'game_board_screen.dart';
@@ -379,6 +382,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ],
+                if (game.isFinished) ...[
+                  const SizedBox(width: 6),
+                  Tooltip(
+                    message: l10n.gameFinished,
+                    child: Icon(
+                      Icons.flag,
+                      size: 16,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
               ],
             ),
             subtitle: Column(
@@ -415,6 +429,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       const Icon(Icons.edit),
                       const SizedBox(width: 8),
                       Text(l10n.rename),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'finish_game',
+                  child: Row(
+                    children: [
+                      Icon(game.isFinished ? Icons.replay : Icons.flag_outlined),
+                      const SizedBox(width: 8),
+                      Text(game.isFinished ? l10n.reopenGame : l10n.endGame),
                     ],
                   ),
                 ),
@@ -483,7 +507,15 @@ class _HomeScreenState extends State<HomeScreen> {
   ) async {
     final l10n = AppLocalizations.of(context)!;
     final group = context.read<GroupProvider>();
-    if (value == 'new_same') {
+    if (value == 'finish_game') {
+      final justFinished =
+          await gameProvider.setGameFinished(game.id!, !game.isFinished);
+      // Same guard as the board: only a game that was open and now is not
+      // counts towards the review prompt.
+      if (justFinished) {
+        unawaited(ReviewPromptService.instance.onGameFinished());
+      }
+    } else if (value == 'new_same') {
       await gameProvider.loadGame(game.id!);
       final playerNames = gameProvider.currentPlayers.map((p) => p.name).toList();
 

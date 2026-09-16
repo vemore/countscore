@@ -12,14 +12,15 @@
 |---|---|
 | `test/database_service_test.dart` (10) | Fresh current schema (v10 tables and columns included), CRUD via the singleton, v8→v9 migration, model serialisation. `sqflite_common_ffi` in memory (`sqfliteFfiInit()`), schema built via `DatabaseService.instance.createDB`. |
 | `test/migration_v8_to_v9_test.dart` (4) | Hand-written v8 fixture; cross-game dedup and intra-game disambiguation. |
-| `test/migration_v5_to_v10_test.dart` (2) | The production upgrade: a real v5 file from tag `1.0.1+3`'s DDL, upgraded with the production callbacks (`DatabaseService.openForTesting`), then read back through Drift — games, merged players, scores, stats — and written to. |
-| `test/drift/drift_repositories_test.dart` (17) | Full lifecycle through the Drift repositories over `AppDatabase.forTesting(NativeDatabase.memory())`; Drift `onCreate` builds the v10 tables; shared rows are tombstoned (game, round, membership, `deleteByName`), local ones deleted, and tombstones count in no statistic. |
-| `test/sync/sync_store_test.dart` (15) | Group sync without a network: capture triggers (local games capture nothing, sharing captures a game and its children, inherited `group_id`, deletes captured as deletes), `preparePush` (coalescing, uuid5 player links, parent-first order, stable lamports on retry, refused names), `applyPulled` (a full game from another device, merge by name, quarantine and replay, LWW, delete wins, own deltas skipped, score-cell adoption), `renumberRound`, `leave`. |
+| `test/migration_v5_to_v10_test.dart` (2) | The production upgrade: a real v5 file from tag `1.0.1+3`'s DDL, upgraded with the production callbacks (`DatabaseService.openForTesting`), then read back through Drift — games, merged players, scores, stats — and written to, `finishedAt` included. Its name understates its range: it asserts `DatabaseService.schemaVersion`, so it runs v5 → **v12** today and will follow the next bump without an edit. |
+| `test/drift/drift_repositories_test.dart` (19) | Full lifecycle through the Drift repositories over `AppDatabase.forTesting(NativeDatabase.memory())`; Drift `onCreate` builds the v10 tables; shared rows are tombstoned (game, round, membership, `deleteByName`), local ones deleted, and tombstones count in no statistic; `finishedAt` survives create, update and reopen — the only test that catches a field missing from `update`'s hand-written column list. |
+| `test/sync/sync_store_test.dart` (18) | Group sync without a network: capture triggers (local games capture nothing, sharing captures a game and its children, inherited `group_id`, deletes captured as deletes), `preparePush` (coalescing, uuid5 player links, parent-first order, stable lamports on retry, refused names), `applyPulled` (a full game from another device, merge by name, quarantine and replay, LWW, delete wins, own deltas skipped, score-cell adoption), `renumberRound`, `leave`; and `ended_at` both ways — sent even while open so that a reopen can clear it, a pulled null reopening the game rather than being ignored. |
 | `test/sync/sync_ids_test.dart` (4) | uuid5 against Python's `uuid.uuid5` vector, name normalisation, the player-name allow-list — combining marks accepted after a letter and refused anywhere else, the same cases as `backend/tests/test_sync.py`. |
 | `test/sync/sync_two_devices_test.dart` (5, `integration`) | Two in-memory devices through a **real** backend: a shared game and its scores both ways, the same round entered on both (renumbered, nothing lost), delete wins, same-name players merged, leaving. Skipped unless `SYNC_BACKEND_URL` is set — recipe below. |
 | `test/widgets/group_settings_section_test.dart` (1) | Settings → Group pumped with asserts on: create a group through the dialog against a `MockClient` server, and the group and its invite code appear. Guards the dialog that disposed its controllers during its exit transition (`_dependents.isEmpty`, found on a Pixel on 2026-09-13, invisible in release builds). |
+| `test/providers/game_provider_finish_test.dart` (5) | `setGameFinished` reports only the transition that finishes a game — re-finishing and reopening return false — which is the single gate on the Play review sheet, so a finish → reopen → finish evening counts once. Plus the current game updating without a reload, which needs `copyWith`'s `clearFinishedAt` escape. |
 | `test/providers/game_provider_sync_test.dart` (1) | A current game deleted by sync is reported once (`takeRemotelyDeletedGameName`), which the board uses to close itself. |
-| `test/drift/web_upgrade_test.dart` (1) | A v9 database (v10/v11 stripped, `user_version` 9) reopened through Drift gets the sync tables, columns and triggers from `onUpgrade` — the PWA's upgrade path. |
+| `test/drift/web_upgrade_test.dart` (1) | A v9 database (v10/v11/v12 stripped, `user_version` 9) reopened through Drift gets the sync tables, columns, triggers and `games.finishedAt` from `onUpgrade` — the PWA's upgrade path, and the only engine that runs it. |
 | `test/widget_test.dart` (8) | Model serialisation only — it pumps no widgets, despite the name. |
 | `test/providers/theme_provider_test.dart` (7) | `ThemeMode` decode fallbacks and the SharedPreferences round-trip. |
 | `test/providers/backend_provider_test.dart` (10) | Backend URL validation — https anywhere, http only on a private or loopback host — and the persistence round-trip, including that a cleared setting is not re-seeded from `--dart-define`. |
@@ -35,7 +36,8 @@ _hasCachedAnalysis`) has **no** widget test: pumping the board needs a loaded ga
 repositories. It was verified on device on 2026-09-11 — both directions, and the p171 case
 where neither condition holds.
 
-89 tests pass in fifteen files; `sync_two_devices_test.dart` is skipped unless a backend is given.
+`flutter test` reports **123 passing, 1 skipped, across 19 files**;
+`sync_two_devices_test.dart` is the skip, unless a backend is given.
 
 ### Group sync against a local backend
 
@@ -114,7 +116,10 @@ work, use the `flutter-device-test` skill.
 
 ### Backend — `pytest`
 
-`tests/test_groups.py` (create, join, revoke, rotate) · `test_sync.py` (push/pull,
+`tests/test_groups.py` (create, join, revoke, rotate) · `test_sync_contract.py` (batch
+isolation, group scoping, delete-wins, reject reasons, and the fields added for the Flutter
+client — including `games.ended_at` in both directions: set, cleared back to null, and
+carried on `/sync/pull`) · `test_sync.py` (push/pull,
 idempotence, round conflicts, payload bounds, player-name allow-list, and row-level LWW
 between two devices — SQLite in memory, `pg_notify` stubbed) ·
 `test_sync_ws_integration.py` (WS handshake + push → NOTIFY → new_seq → pull on a **real

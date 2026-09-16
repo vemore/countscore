@@ -454,6 +454,11 @@ class SyncStore {
             'game_type_id': typeRemote,
             'is_lowest_score_wins': r['isLowestScoreWins'] == 1,
             'started_at': _isoUtc(r['createdAt'] as String),
+            // Always sent, null included: that is what clears the column on the
+            // server and on the other devices when a game is reopened.
+            'ended_at': r['finishedAt'] == null
+                ? null
+                : _isoUtc(r['finishedAt'] as String),
           },
           error: null,
         );
@@ -781,6 +786,7 @@ class SyncStore {
       if (p.containsKey('game_type_id')) 'gameTypeId': typeId,
       if (p.containsKey('is_lowest_score_wins'))
         'isLowestScoreWins': p['is_lowest_score_wins'] == true ? 1 : 0,
+      if (p.containsKey('ended_at')) 'finishedAt': _localIso(p['ended_at'] as String?),
       'lastModified': DateTime.now().toIso8601String(),
       'updated_at': now,
     };
@@ -796,6 +802,7 @@ class SyncStore {
       'createdAt': started == null
           ? DateTime.now().toIso8601String()
           : DateTime.parse(started).toLocal().toIso8601String(),
+      'finishedAt': _localIso(p['ended_at'] as String?),
       'lastModified': values['lastModified'],
       'uuid': d.entityUuid,
       'created_at': now,
@@ -1074,6 +1081,11 @@ class SyncStore {
 
   /// Local timestamps are ISO strings without an offset, in the device's zone.
   static String _isoUtc(String local) => DateTime.parse(local).toUtc().toIso8601String();
+
+  /// The reverse of [_isoUtc]: a UTC timestamp from the server back into the
+  /// device's zone, null passed straight through.
+  static String? _localIso(String? utc) =>
+      utc == null ? null : DateTime.parse(utc).toLocal().toIso8601String();
 
   static Map<String, dynamic> _deltaJson(PulledDelta d) => {
         'entity_type': d.entityType,

@@ -139,3 +139,26 @@ CREATE TABLE IF NOT EXISTS sync_flags (
   for (final entry in {'player': 'players', 'game_type': 'game_types'}.entries)
     _capture(entry.key, entry.value, 'update', _linked(entry.key)),
 ];
+
+/// Schema v12, shared by both engines: `games.finishedAt`, the moment a game was
+/// declared over. Null means still open. ISO-8601 TEXT like `createdAt` and
+/// `lastModified`, not epoch-ms like the sync bookkeeping columns.
+///
+/// Idempotent — it checks the column before adding it, so it can replay on a
+/// database that already has it. Pushed as `ended_at`, which the server has
+/// carried since `0001_initial`.
+Future<void> applyV12(
+  Future<void> Function(String sql) execute,
+  Future<Set<String>> Function(String table) columnsOf,
+) async {
+  const columns = {
+    'games': {'finishedAt': 'TEXT'},
+  };
+  for (final table in columns.entries) {
+    final existing = await columnsOf(table.key);
+    for (final column in table.value.entries) {
+      if (existing.contains(column.key)) continue;
+      await execute('ALTER TABLE ${table.key} ADD COLUMN ${column.key} ${column.value}');
+    }
+  }
+}

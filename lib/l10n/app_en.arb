@@ -313,6 +313,8 @@
   "continuePlay": "Continue Playing",
 
   "endGame": "End Game",
+  "reopenGame": "Reopen game",
+  "gameFinished": "Finished",
 
   "comment": "Comment",
   "@comment": {

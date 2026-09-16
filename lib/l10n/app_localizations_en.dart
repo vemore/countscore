@@ -523,6 +523,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get endGame => 'End Game';
 
   @override
+  String get reopenGame => 'Reopen game';
+
+  @override
+  String get gameFinished => 'Finished';
+
+  @override
   String get comment => 'Comment';
 
   @override

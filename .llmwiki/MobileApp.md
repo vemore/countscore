@@ -2,7 +2,7 @@
 
 > Scope: the Flutter app's own structure — entry point, state, screens, models.
 > Related: [[DataLayer]] · [[SchemaV10]] · [[I18n]] · [[Web]] · [[Testing]]
-> Updated: 2026-09-15
+> Updated: 2026-09-16
 
 ## Facts
 
@@ -51,6 +51,12 @@ themed and already knows whether the connected features exist.
 `game`, `game_type`, `player`, `round`, `score`, `game_analysis`. Plain classes with
 `toMap`/`fromMap`. `player.dart` has no `gameId` since v9 — its `id` is a
 `game_players.id`. See [[SchemaV10]].
+
+`game.dart` carries `finishedAt` since v12, with `isFinished` next to `isShared`. Its
+`copyWith` takes a `clearFinishedAt` flag: `x ?? this.x` cannot express "set this back to
+null", and reopening a game is exactly that. `GameProvider.setGameFinished` is the single
+write path — it returns true only for the transition that finishes a game, which is what
+gates the Play review sheet.
 
 ### Toolchain
 

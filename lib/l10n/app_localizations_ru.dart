@@ -524,7 +524,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get continuePlay => 'Continue Playing';
 
   @override
-  String get endGame => 'End Game';
+  String get endGame => 'Завершить игру';
+
+  @override
+  String get reopenGame => 'Возобновить игру';
+
+  @override
+  String get gameFinished => 'Завершена';
 
   @override
   String get comment => 'Комментарий';

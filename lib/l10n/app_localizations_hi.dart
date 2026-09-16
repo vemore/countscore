@@ -522,7 +522,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get continuePlay => 'Continue Playing';
 
   @override
-  String get endGame => 'End Game';
+  String get endGame => 'खेल समाप्त करें';
+
+  @override
+  String get reopenGame => 'खेल फिर से खोलें';
+
+  @override
+  String get gameFinished => 'समाप्त';
 
   @override
   String get comment => 'टिप्पणी';

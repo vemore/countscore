@@ -99,6 +99,33 @@ void main() {
       expect((await gameRepo.getById(gameId))?.name, 'Renommée');
     });
 
+    test('finishedAt round-trips through create, update and reopen', () async {
+      // A new game is open.
+      expect((await gameRepo.getById(gameId))?.finishedAt, isNull);
+      expect((await gameRepo.getById(gameId))?.isFinished, isFalse);
+
+      // Finishing it survives the write. `update` lists its columns by hand, so
+      // a field it forgets is dropped here and nowhere else.
+      final at = DateTime(2026, 9, 16, 21, 30);
+      await gameRepo
+          .update((await gameRepo.getById(gameId))!.copyWith(finishedAt: at));
+      final finished = await gameRepo.getById(gameId);
+      expect(finished?.finishedAt, at);
+      expect(finished?.isFinished, isTrue);
+
+      // And reopening clears it — `copyWith` alone cannot express that.
+      await gameRepo.update(finished!.copyWith(clearFinishedAt: true));
+      expect((await gameRepo.getById(gameId))?.finishedAt, isNull);
+    });
+
+    test('a game created already finished keeps its finishedAt', () async {
+      final at = DateTime(2026, 9, 16, 22);
+      final id = await gameRepo.create(
+        Game(name: 'Déjà finie', isLowestScoreWins: false, finishedAt: at),
+      );
+      expect((await gameRepo.getById(id))?.finishedAt, at);
+    });
+
     test('same player name in two games → one global player', () async {
       final g2 = await gameRepo.create(
         Game(name: 'G2', isLowestScoreWins: false),

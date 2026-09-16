@@ -527,6 +527,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get endGame => 'Terminar Jogo';
 
   @override
+  String get reopenGame => 'Reabrir jogo';
+
+  @override
+  String get gameFinished => 'Terminado';
+
+  @override
   String get comment => 'Comentário';
 
   @override

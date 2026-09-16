@@ -152,6 +152,9 @@ void main() {
       final game = deltas.firstWhere((d) => d.entityType == 'game');
       expect(game.payload['name'], 'Mardi soir');
       expect(game.payload['is_lowest_score_wins'], isTrue);
+      expect(game.payload.containsKey('ended_at'), isTrue,
+          reason: 'sent even while open, so reopening can clear it');
+      expect(game.payload['ended_at'], isNull);
 
       final alice = deltas.firstWhere((d) => d.payload['name'] == 'Alice');
       expect(alice.entityUuid, linkedRemoteUuid(_group, 'player', 'alice'));
@@ -167,6 +170,32 @@ void main() {
       // A retry before the server answered resends the very same deltas.
       final again = await store.preparePush((await store.membership())!);
       expect(again.map((d) => (d.outboxId, d.lamport)), deltas.map((d) => (d.outboxId, d.lamport)));
+    });
+
+    test('a finished game sends ended_at, and reopening sends it back to null',
+        () async {
+      final m = await joined();
+      final g = await localGame();
+      await store.shareGame(g.game, m.groupId);
+
+      final at = DateTime(2026, 9, 16, 21, 30);
+      await games.update((await games.getById(g.game))!.copyWith(finishedAt: at));
+      final first = await store.preparePush(m);
+      var game = first.firstWhere((d) => d.entityType == 'game');
+      expect(DateTime.parse(game.payload['ended_at'] as String).toLocal(), at,
+          reason: 'sent as UTC, like started_at');
+
+      // A prepared delta keeps its payload until the server answers, so the
+      // reopen is only visible once this push is acknowledged.
+      for (final d in first) {
+        await store.markSent(d, _me);
+      }
+
+      await games
+          .update((await games.getById(g.game))!.copyWith(clearFinishedAt: true));
+      game = (await store.preparePush((await store.membership())!))
+          .firstWhere((d) => d.entityType == 'game');
+      expect(game.payload['ended_at'], isNull);
     });
 
     test('a player whose name the server refuses is rejected, not sent', () async {
@@ -222,6 +251,49 @@ void main() {
       expect(await outbox(), isEmpty, reason: 'applied under suppression');
       expect((await store.membership())!.lastServerSeq, 5);
       expect((await store.membership())!.lastLamport, 5);
+    });
+
+    test('a game pulled without ended_at is open; a later one finishes it',
+        () async {
+      final m = await joined();
+      await pullGameFromOther(m);
+      expect((await games.getAll()).single.finishedAt, isNull);
+
+      await store.applyPulled(m, [
+        _delta('game', 'aaaaaaaa-0000-4000-8000-000000000002', 6, 6, {
+          'name': 'Chez Bob',
+          'is_lowest_score_wins': false,
+          'started_at': '2026-09-13T18:00:00Z',
+          'ended_at': '2026-09-13T20:30:00Z',
+        }),
+      ], 6);
+      expect((await games.getAll()).single.finishedAt,
+          DateTime.parse('2026-09-13T20:30:00Z').toLocal());
+
+      // Reopened on the other device: the null must land, not be ignored.
+      await store.applyPulled(m, [
+        _delta('game', 'aaaaaaaa-0000-4000-8000-000000000002', 7, 7, {
+          'name': 'Chez Bob',
+          'is_lowest_score_wins': false,
+          'started_at': '2026-09-13T18:00:00Z',
+          'ended_at': null,
+        }),
+      ], 7);
+      expect((await games.getAll()).single.finishedAt, isNull);
+    });
+
+    test('a game that arrives already finished lands finished', () async {
+      final m = await joined();
+      await store.applyPulled(m, [
+        _delta('game', 'cccccccc-0000-4000-8000-000000000001', 1, 1, {
+          'name': 'Finie ailleurs',
+          'is_lowest_score_wins': false,
+          'started_at': '2026-09-13T18:00:00Z',
+          'ended_at': '2026-09-13T21:00:00Z',
+        }),
+      ], 1);
+      expect((await games.getAll()).single.finishedAt,
+          DateTime.parse('2026-09-13T21:00:00Z').toLocal());
     });
 
     test('a pulled player merges with the local one of the same name', () async {

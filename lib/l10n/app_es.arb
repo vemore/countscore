@@ -299,6 +299,8 @@
   "gameOverMessage": "Se alcanzó la condición de fin del juego. ¿Terminar ahora?",
   "continuePlay": "Continuar jugando",
   "endGame": "Terminar juego",
+  "reopenGame": "Reabrir juego",
+  "gameFinished": "Finalizado",
   "comment": "Comentario",
   "enterComment": "Escribir un comentario",
   "analyzeGame": "Analizar partida",

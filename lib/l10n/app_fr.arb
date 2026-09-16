@@ -841,6 +841,16 @@
     "description": "Button to end the game"
   },
 
+  "reopenGame": "Rouvrir la partie",
+  "@reopenGame": {
+    "description": "Menu action that reopens a game previously marked finished"
+  },
+
+  "gameFinished": "Terminée",
+  "@gameFinished": {
+    "description": "Badge shown on a finished game in the game list"
+  },
+
   "comment": "Commentaire",
 
   "enterComment": "Saisir un commentaire",

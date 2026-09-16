@@ -438,8 +438,8 @@ Thank you for reviewing CountScore. Our data handling is as follows:
    default value.
 6. Optional group sharing: after configuring that same self-hosted server and creating
    or joining a group, the user can share games. A shared game's name, player names,
-   scores, round comments and analysis are stored on that server and synchronised to the
-   group's other devices, with a random per-installation identifier and access token.
+   scores, round comments, end date and analysis are stored on that server and synchronised
+   to the group's other devices, with a random per-installation identifier and access token.
    Games that are not shared never leave the device.
 
 Our privacy policy at [PRIVACY_POLICY_URL] describes this in detail.

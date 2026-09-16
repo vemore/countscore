@@ -2,15 +2,15 @@
 
 > Scope: the mobile database — tables, the global-player model, the migration chain.
 > Related: [[DataLayer]] · [[Sync]] · [[MobileApp]] · [[Testing]]
-> Updated: 2026-09-13
+> Updated: 2026-09-16
 
 This page was `SchemaV9` until v10 landed on 2026-09-13; links were renamed with it.
-v11 followed the same day and is described here too.
+v11 followed the same day, and v12 on 2026-09-16; both are described here too.
 
 ## Facts
 
-Schema version **11**, declared in two places that must stay in sync:
-`lib/services/drift/database.dart` (`schemaVersion => 11`) and
+Schema version **12**, declared in two places that must stay in sync:
+`lib/services/drift/database.dart` (`schemaVersion => 12`) and
 `DatabaseService.schemaVersion` in `lib/services/database_service.dart`, which both
 `openDatabase` calls use.
 
@@ -19,7 +19,7 @@ Schema version **11**, declared in two places that must stay in sync:
 | Table | Role |
 |---|---|
 | `game_types` | Game types. uuid + sync columns. |
-| `games` | Games. uuid, `group_id`, sync columns. |
+| `games` | Games. uuid, `group_id`, sync columns, `finishedAt` since v12. |
 | `players` | **Global identity**: `(id, name, colorValue, uuid, group_id, …)`. UNIQUE on `name COLLATE NOCASE` where `group_id IS NULL`. |
 | `game_players` | **Per-game membership**: `(id, gameId, player_id FK→players, name, orderIndex, colorValue, uuid, …)`. UNIQUE `(gameId, player_id)`. |
 | `rounds` | `(gameId FK, roundNumber, comment, …)`. |
@@ -38,13 +38,26 @@ wrong.
 
 The device token is **not** in the database: it belongs in platform secure storage.
 
+### `games.finishedAt` (since v12)
+
+ISO-8601 TEXT, nullable; null means the game is still open. Set when the user declares a
+game over — the board's overflow menu, the home-screen game menu, or the "End game" button
+of the game-over dialog — and cleared by reopening it. It locks nothing: a finished game
+still takes rounds and score edits.
+
+Pushed as `ended_at`, a column the server has carried since `0001_initial` and that nothing
+ever wrote (`backend/app/models/game.py`). The payload always carries the key, null
+included, so that reopening a game clears it on the other devices instead of leaving them
+showing it as finished forever. `lib/services/sync/sync_store.dart`, `case 'game'` and
+`_applyGame`.
+
 ### Upgrades on web (since v11)
 
 Drift's `onUpgrade` is **not** a no-op any more. Native still never reaches it — sqflite has
 migrated the file first — but a browser keeps its database across PWA releases, and the PWA
 has been in production at v9 since 2026-09-13. `onUpgrade` runs `applySyncV10` for
-`from < 10` and the v11 statements for `from < 11`: the same SQL sqflite runs, from
-`sync_schema.dart`. Covered by `test/drift/web_upgrade_test.dart`.
+`from < 10`, the v11 statements for `from < 11` and `applyV12` for `from < 12`: the same SQL
+sqflite runs, from `sync_schema.dart`. Covered by `test/drift/web_upgrade_test.dart`.
 
 ### Tombstones (since v10)
 
@@ -66,6 +79,7 @@ and scores. Deleting a game type ignores tombstoned games and clears their `game
 | v8 | `game_analyses` recreated to add the sync columns missing from the Bedrock prototype. |
 | v9 | Global players. |
 | **v11** | **Change capture**: `sync_flags` (one row, `suppress`), `trg_sync_*` capture triggers on games, game_players, rounds, scores, game_analyses (insert/update when `group_id` is set) and on players, game_types (update when linked), and `*_inherit` triggers that give a row inserted under a shared parent its `group_id`. SQL in `lib/services/sync/sync_schema.dart`, shared by both engines. |
+| **v12** | **`games.finishedAt`** (ISO-8601 TEXT, nullable): an explicit end for every game, not only the three types that carry a threshold. `applyV12` in `lib/services/sync/sync_schema.dart`, run by both engines. Additive only. |
 | v10 | **Sync bookkeeping**: `group_links`, `entity_versions`, `sync_inbox`; `outbox.rejected_at` / `reject_reason`; `sync_state.device_id` / `group_name`. Additive only — `_createSyncV10Tables` is the fresh-install and the upgrade path at once. |
 
 ### The v9 migration in detail
@@ -103,6 +117,15 @@ repairs the shape before the rest of the chain runs.
   a server uuid that can differ from the local one. Columns on six tables would have meant
   six `ALTER TABLE`s on every user's data and a Drift table change each; two side tables
   keyed by `(entity_type, uuid)` touch no existing row. See [[Sync]].
+- **v12 adds a column although v10 deliberately did not (2026-09-16).** The v10 decision
+  below rejected "a column per synced row" — that was six `ALTER TABLE`s across six tables
+  for bookkeeping keyed by `(entity_type, uuid)`, which two side tables express better.
+  `finishedAt` is the opposite case: one nullable column on one table, holding a fact about
+  the game itself that every read of a game wants. A side table would have meant a join on
+  every game list for one timestamp.
+- **The end of a game is a timestamp, not a flag (2026-09-16).** `finishedAt` answers "when"
+  as well as "whether", which a boolean cannot, and it costs the same. It also maps onto the
+  server's existing `ended_at` with no migration at all.
 - **Tombstone shared rows only (2026-09-13).** A delete has to reach the other devices, so
   a shared row cannot vanish; a local row has nobody to tell, and tombstoning it would grow
   every existing user's database forever for nothing.

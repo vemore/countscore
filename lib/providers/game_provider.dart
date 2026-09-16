@@ -268,6 +268,38 @@ class GameProvider with ChangeNotifier {
     }
   }
 
+  /// Marks a game finished, or reopens it.
+  ///
+  /// Returns true only when this call is what finished the game — a null
+  /// `finishedAt` becoming set. Finishing an already finished game, or
+  /// reopening one, returns false. Callers use that to decide whether to offer
+  /// the Play review sheet, so that a finish → reopen → finish cycle counts
+  /// once rather than twice.
+  ///
+  /// Nothing is locked: a finished game still accepts rounds and score edits.
+  Future<bool> setGameFinished(int gameId, bool finished) async {
+    final game = await _gameRepo.getById(gameId);
+    if (game == null) return false;
+
+    final wasFinished = game.isFinished;
+    if (finished == wasFinished) return false;
+
+    final updated = finished
+        ? game.copyWith(finishedAt: DateTime.now())
+        : game.copyWith(clearFinishedAt: true);
+    await _gameRepo.update(updated);
+    await loadGames();
+
+    if (_currentGame?.id == gameId) {
+      _currentGame = finished
+          ? _currentGame!.copyWith(finishedAt: updated.finishedAt)
+          : _currentGame!.copyWith(clearFinishedAt: true);
+    }
+    notifyListeners();
+
+    return finished;
+  }
+
   Future<void> updateGameType(int gameId, int? gameTypeId) async {
     final game = await _gameRepo.getById(gameId);
     if (game != null) {
