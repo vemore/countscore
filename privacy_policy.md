@@ -1,6 +1,6 @@
 # Privacy Policy for CountScore
 
-**Last Updated**: September 14, 2026
+**Last Updated**: September 16, 2026
 
 **Effective Date**: Applies to CountScore v1.1.0 and later
 
@@ -150,8 +150,8 @@ you do not share never leave your device.
 
 For each **shared** game, and kept up to date as you play:
 
-- the game's name, its game type (name, icon, colour and rules), its scoring rule and its
-  creation date;
+- the game's name, its game type (name, icon, colour and rules), its scoring rule, its
+  creation date and, once you declare the game over, the date you ended it;
 - the **names and colours of its players**;
 - every round: its number, **any comment you typed on it**, and its scores;
 - its ZapZap analysis, if one was generated.
@@ -374,6 +374,10 @@ changes are announced through app updates on the Google Play Store.
 
 ### Version History
 
+- **v2.6** (September 16, 2026): A game can now be declared over explicitly, and a shared
+  game carries that end date to the group's other devices alongside everything it already
+  synchronised. No new recipient, no new category of information, and nothing is sent that
+  a shared game did not already send — only one more date about a game you chose to share.
 - **v2.5** (September 14, 2026): Adds **Reporting an AI Commentary**. The analysis screen can
   open a prefilled email to the developer to report generated text; the app itself sends
   nothing, and the developer receives the report only if you send it from your email app.

@@ -513,7 +513,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get continuePlay => 'Continue Playing';
 
   @override
-  String get endGame => 'End Game';
+  String get endGame => 'ゲームを終了';
+
+  @override
+  String get reopenGame => 'ゲームを再開';
+
+  @override
+  String get gameFinished => '終了済み';
 
   @override
   String get comment => 'コメント';

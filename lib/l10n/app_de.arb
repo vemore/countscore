@@ -299,6 +299,8 @@
   "gameOverMessage": "Spielende-Bedingung erreicht. Jetzt beenden?",
   "continuePlay": "Weiterspielen",
   "endGame": "Spiel beenden",
+  "reopenGame": "Spiel fortsetzen",
+  "gameFinished": "Beendet",
   "comment": "Kommentar",
   "enterComment": "Kommentar eingeben",
   "analyzeGame": "Partie analysieren",

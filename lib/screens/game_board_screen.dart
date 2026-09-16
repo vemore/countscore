@@ -154,6 +154,11 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
               final group = context.watch<GroupProvider>();
               final canShare = group.isJoined &&
                   !(gameProvider.currentGame?.isShared ?? true);
+              // A game with no round yet was never played, so there is nothing
+              // to declare over. Reopening stays offered whatever the rounds.
+              final isFinished = gameProvider.currentGame?.isFinished ?? false;
+              final canFinish =
+                  isFinished || gameProvider.currentRounds.isNotEmpty;
 
               return PopupMenuButton<String>(
                 itemBuilder: (context) => [
@@ -177,6 +182,19 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                       ],
                     ),
                   ),
+                  if (canFinish)
+                    PopupMenuItem(
+                      value: 'finish_game',
+                      child: Row(
+                        children: [
+                          Icon(isFinished
+                              ? Icons.replay
+                              : Icons.flag_outlined),
+                          const SizedBox(width: 8),
+                          Text(isFinished ? l10n.reopenGame : l10n.endGame),
+                        ],
+                      ),
+                    ),
                   if (canShare)
                     PopupMenuItem(
                       value: 'share_game',
@@ -226,6 +244,14 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                     if (confirm == true) {
                       final lastRound = gameProvider.currentRounds.last;
                       await gameProvider.deleteRound(lastRound.id!);
+                    }
+                  } else if (value == 'finish_game') {
+                    final gameId = gameProvider.currentGame?.id;
+                    if (gameId == null) return;
+                    final justFinished = await gameProvider.setGameFinished(
+                        gameId, !isFinished);
+                    if (justFinished) {
+                      unawaited(ReviewPromptService.instance.onGameFinished());
                     }
                   } else if (value == 'share_game') {
                     await _shareGame(gameProvider, group);
@@ -736,13 +762,20 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
             child: Text(l10n.continuePlay),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
+              final gameProvider = context.read<GameProvider>();
+              final gameId = gameProvider.currentGame?.id;
               Navigator.pop(dialogContext);
               Navigator.pop(context); // Return to game list
-              // The one point in the app where the user states a game is over,
-              // with the winner still on screen. Fire and forget: the service
-              // owns every guard, and nothing here waits on Play.
-              unawaited(ReviewPromptService.instance.onGameFinished());
+              // One trigger among several since the board and the game list can
+              // declare a game over too; all of them record the same fact.
+              final justFinished = gameId != null &&
+                  await gameProvider.setGameFinished(gameId, true);
+              // Fire and forget: the service owns every guard, and nothing here
+              // waits on Play.
+              if (justFinished) {
+                unawaited(ReviewPromptService.instance.onGameFinished());
+              }
             },
             child: Text(l10n.endGame),
           ),

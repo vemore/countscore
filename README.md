@@ -18,6 +18,9 @@ at your own server in Settings → Server if you want the connected features.
   Bridge, Rami and a generic "Autre" — plus custom types with a user-picked icon and colour.
 - **Flexible scoring**: lowest-wins and highest-wins, per game type.
 - **Scoring grid**: rounds, running totals, live ranking and per-player statistics.
+- **An explicit end**: any game can be declared over from the board or the game list, which
+  marks it in the history; reopen it and play on. Game types that define a threshold
+  (Skyjo, Président, Belote) still offer it by themselves when the threshold is crossed.
 - **Global players**: a player exists once and is shared across games, so statistics follow
   them from one game to the next.
 - **10 languages**, fully translated: English, French, Spanish, German, Portuguese (BR),
@@ -296,8 +299,8 @@ opens your own email app with a message to the developer, prefilled with the ana
 we receive it only if you press send.
 
 **2, group sharing**: once you have also created or joined a group (Settings → Group), the
-games you share — their name, type, player names and colours, round comments, scores and
-analysis — are uploaded to **your** server, which **stores** them with a log of every change,
+games you share — their name, type, player names and colours, round comments, scores,
+whether and when you ended them, and analysis — are uploaded to **your** server, which **stores** them with a log of every change,
 and downloaded by the group's other devices. Each device of the group also sees the others'
 names and when they were last seen, so a lost phone can be recognised and removed. Anyone with
 the group's invite code can join, so share it only with the people you mean to. Games you do not share never leave the device.

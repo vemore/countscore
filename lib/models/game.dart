@@ -6,11 +6,19 @@ class Game {
   final DateTime createdAt;
   final DateTime? lastModified;
 
+  /// When the game was declared over, or null while it is still open. Set from
+  /// the board, the home-screen menu or the game-over dialog; cleared by
+  /// reopening. Nothing is locked by it — a finished game still takes rounds
+  /// and score edits. Synced as `ended_at`.
+  final DateTime? finishedAt;
+
   /// The group this game is shared with, or null for a local game. Read-only here:
   /// sharing goes through `SyncStore.shareGame`, never through [toMap].
   final String? groupId;
 
   bool get isShared => groupId != null;
+
+  bool get isFinished => finishedAt != null;
 
   Game({
     this.id,
@@ -19,6 +27,7 @@ class Game {
     required this.isLowestScoreWins,
     DateTime? createdAt,
     this.lastModified,
+    this.finishedAt,
     this.groupId,
   }) : createdAt = createdAt ?? DateTime.now();
 
@@ -30,6 +39,7 @@ class Game {
       'isLowestScoreWins': isLowestScoreWins ? 1 : 0,
       'createdAt': createdAt.toIso8601String(),
       'lastModified': lastModified?.toIso8601String(),
+      'finishedAt': finishedAt?.toIso8601String(),
     };
   }
 
@@ -43,10 +53,15 @@ class Game {
       lastModified: map['lastModified'] != null
           ? DateTime.parse(map['lastModified'] as String)
           : null,
+      finishedAt: map['finishedAt'] != null
+          ? DateTime.parse(map['finishedAt'] as String)
+          : null,
       groupId: map['group_id'] as String?,
     );
   }
 
+  /// [clearFinishedAt] reopens the game. It exists because `x ?? this.x` cannot
+  /// express "set this back to null", and reopening is exactly that.
   Game copyWith({
     int? id,
     String? name,
@@ -54,6 +69,8 @@ class Game {
     bool? isLowestScoreWins,
     DateTime? createdAt,
     DateTime? lastModified,
+    DateTime? finishedAt,
+    bool clearFinishedAt = false,
   }) {
     return Game(
       id: id ?? this.id,
@@ -62,6 +79,7 @@ class Game {
       isLowestScoreWins: isLowestScoreWins ?? this.isLowestScoreWins,
       createdAt: createdAt ?? this.createdAt,
       lastModified: lastModified ?? this.lastModified,
+      finishedAt: clearFinishedAt ? null : (finishedAt ?? this.finishedAt),
       groupId: groupId,
     );
   }

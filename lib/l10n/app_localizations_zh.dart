@@ -511,7 +511,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get continuePlay => 'Continue Playing';
 
   @override
-  String get endGame => 'End Game';
+  String get endGame => '结束游戏';
+
+  @override
+  String get reopenGame => '重新开始游戏';
+
+  @override
+  String get gameFinished => '已结束';
 
   @override
   String get comment => '备注';

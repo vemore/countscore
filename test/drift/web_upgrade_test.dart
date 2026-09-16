@@ -2,8 +2,8 @@
 // it; on web there is no sqflite, and a browser that ran the PWA at v9 keeps its
 // database. Drift's onUpgrade must then bring it to the current schema itself.
 //
-// Simulated on a native file: build the current schema, strip everything v10 and
-// v11 added, stamp user_version 9, and reopen through Drift.
+// Simulated on a native file: build the current schema, strip everything v10,
+// v11 and v12 added, stamp user_version 9, and reopen through Drift.
 
 import 'dart:io';
 
@@ -41,6 +41,7 @@ void main() {
     for (final column in ['device_id', 'group_name']) {
       await raw.execute('ALTER TABLE sync_state DROP COLUMN $column');
     }
+    await raw.execute('ALTER TABLE games DROP COLUMN finishedAt');
     await raw.execute('PRAGMA user_version = 9');
     await raw.close();
 
@@ -53,6 +54,7 @@ void main() {
     }
     await db.customSelect('SELECT rejected_at, reject_reason FROM outbox').get();
     await db.customSelect('SELECT device_id, group_name FROM sync_state').get();
+    await db.customSelect('SELECT finishedAt FROM games').get();
     final captureTriggers = await db
         .customSelect("SELECT COUNT(*) AS c FROM sqlite_master WHERE type = 'trigger'")
         .getSingle();

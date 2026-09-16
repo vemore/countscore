@@ -521,7 +521,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get continuePlay => 'Continue Playing';
 
   @override
-  String get endGame => 'End Game';
+  String get endGame => 'إنهاء اللعبة';
+
+  @override
+  String get reopenGame => 'إعادة فتح اللعبة';
+
+  @override
+  String get gameFinished => 'منتهية';
 
   @override
   String get comment => 'تعليق';

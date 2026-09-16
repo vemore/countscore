@@ -42,6 +42,7 @@ class Games extends Table {
   IntColumn get isLowestScoreWins => integer().named('isLowestScoreWins')();
   TextColumn get createdAtIso => text().named('createdAt')();
   TextColumn get lastModified => text().named('lastModified').nullable()();
+  TextColumn get finishedAt => text().named('finishedAt').nullable()();
   TextColumn get uuid => text()();
   IntColumn get createdAt => integer().named('created_at')();
   IntColumn get updatedAt => integer().named('updated_at')();

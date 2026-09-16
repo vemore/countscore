@@ -116,13 +116,14 @@ class DriftGameRepository implements GameRepository {
     final now = DateTime.now();
     return _db.customUpdate(
       'UPDATE games SET name = ?, gameTypeId = ?, isLowestScoreWins = ?, '
-      'createdAt = ?, lastModified = ?, updated_at = ? WHERE id = ?',
+      'createdAt = ?, lastModified = ?, finishedAt = ?, updated_at = ? WHERE id = ?',
       variables: [
         Variable(game.name),
         Variable(game.gameTypeId),
         Variable(game.isLowestScoreWins ? 1 : 0),
         Variable(game.createdAt.toIso8601String()),
         Variable(now.toIso8601String()),
+        Variable(game.finishedAt?.toIso8601String()),
         Variable(now.millisecondsSinceEpoch),
         Variable(game.id),
       ],

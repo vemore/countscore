@@ -69,6 +69,13 @@ void main() {
       expect(await columns('sync_state'), containsAll(['device_id', 'group_name']));
     });
 
+    test('v12 finishedAt exists on games', () async {
+      final columns = (await db.rawQuery('PRAGMA table_info(games)'))
+          .map((r) => r['name'] as String)
+          .toSet();
+      expect(columns, contains('finishedAt'));
+    });
+
     test('default game types seeded', () async {
       final rows = await db.query('game_types', columns: ['name']);
       final names = rows.map((r) => r['name'] as String).toSet();
