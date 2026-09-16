@@ -10,6 +10,7 @@ import '../providers/game_type_provider.dart';
 import '../models/game.dart';
 import '../models/game_type.dart';
 import '../services/review_prompt.dart';
+import '../utils/insets.dart';
 import 'about_screen.dart';
 import 'create_game_screen.dart';
 import 'game_board_screen.dart';
@@ -87,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Drawer(
       child: ListView(
-        padding: EdgeInsets.zero,
+        padding: withBottomInset(context, EdgeInsets.zero),
         children: [
           DrawerHeader(
             decoration: BoxDecoration(
@@ -331,7 +332,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         return ListView.builder(
-          padding: const EdgeInsets.all(8),
+          padding: withBottomInset(context, const EdgeInsets.all(8)),
           itemCount: games.length,
           itemBuilder: (context, index) {
             final game = games[index];

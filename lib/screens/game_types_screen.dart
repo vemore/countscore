@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../models/game_type.dart';
 import '../providers/game_type_provider.dart';
 import '../utils/game_type_name.dart';
+import '../utils/insets.dart';
 import 'game_rules_screen.dart';
 
 class GameTypesScreen extends StatefulWidget {
@@ -41,7 +42,7 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.all(8),
+            padding: withBottomInset(context, const EdgeInsets.all(8)),
             itemCount: gameTypes.length,
             itemBuilder: (context, index) {
               final gameType = gameTypes[index];

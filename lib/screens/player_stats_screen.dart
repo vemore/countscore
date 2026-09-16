@@ -5,6 +5,7 @@ import '../models/game_type.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
 import '../utils/game_type_name.dart';
+import '../utils/insets.dart';
 
 class PlayerStatsScreen extends StatefulWidget {
   const PlayerStatsScreen({super.key});
@@ -83,7 +84,7 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
                   child: Text(l10n.noStatisticsAvailable),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.all(8),
+                  padding: withBottomInset(context, const EdgeInsets.all(8)),
                   itemCount: _playerNames.length,
                   itemBuilder: (context, index) {
                     final name = _playerNames[index];

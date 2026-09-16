@@ -6,12 +6,13 @@
 
 ## Facts
 
-65 Dart files under `lib/` (including generated localizations, excluding gitignored
-`*.g.dart`).
+70 Dart files tracked under `lib/` (including the committed generated localizations,
+excluding gitignored `*.g.dart`).
 
-`lib/utils/` exists since 2026-09-16 and holds `game_type_name.dart`: the switch from a
-built-in game type's `builtin_key` to its localized name, with the stored `name` as the
-fallback. Every screen that shows a game type's name goes through it. See [[I18n]].
+`lib/utils/` exists since 2026-09-16 and holds two cross-cutting helpers, detailed below:
+`game_type_name.dart` — the switch from a built-in game type's `builtin_key` to its
+localized name, which every screen showing a game type's name goes through ([[I18n]]) —
+and `insets.dart`.
 
 ### Entry point
 
@@ -59,16 +60,40 @@ why those rulesets are assets and not ARB keys.
 
 `lib/widgets/` holds exactly one component: `player_picker_dialog.dart` (291 l.).
 
-`analysis_style.dart` is an enum whose `id` is an ASCII string that travels to the backend
-and into SharedPreferences (`analysisStyle`) and whose label is translated. It mirrors
-`PERSONAS` in `backend/app/services/analysis/personas.py`: a new voice is added in both
-places plus the ten ARB files.
+### Utilities — `lib/utils/` (2)
+
+`insets.dart` — `withBottomInset(context, base)` adds `MediaQuery.paddingOf(context).bottom`
+to an `EdgeInsets`. A `BoxScrollView` (`ListView`, `GridView`) inserts `MediaQuery.padding`
+on its main axis **only when its `padding` argument is null**, so every root scrollable that
+passes an explicit padding loses that compensation and cannot scroll its last row clear of
+the system navigation bar — the app is edge-to-edge on `targetSdk` 36 and cannot opt out
+(`android/app/src/main/kotlin/com/example/countscore/MainActivity.kt` is a bare
+`FlutterActivity`; there is no `SystemChrome` call anywhere in `lib/`). Its eight call sites
+are the root scrollables of `about_screen.dart:31` (on the child `Padding` — a
+`SingleChildScrollView` never gets the compensation at all),
+`create_game_screen.dart:200`, `game_types_screen.dart:43`,
+`home_screen.dart:91` (the drawer) and `:335`, `player_stats_screen.dart:83`,
+`players_screen.dart:61`, `ranking_screen.dart:68`. Only the bottom edge is compensated:
+`Scaffold` drops the top padding for a body under an `AppBar`
+(`scaffold.dart`, `removeTopPadding: widget.appBar != null`) and keeps the bottom one unless
+there is a `bottomNavigationBar`, and `DrawerHeader` adds the status-bar height itself.
+`settings_screen.dart:117` and `game_analysis_screen.dart` need nothing — the first passes no
+padding, the second is a `SingleChildScrollView` inside the `SafeArea(top: false)` at l. 328.
+
+`game_type_name.dart` — `gameTypeDisplayName(l10n, type)` and `isBuiltinRename(...)`. A
+built-in type's name is read from its `builtin_key`, never from the stored `name`, which is
+what lets two devices in different locales hold the same type. Renaming one clears the key.
 
 ### Models — `lib/models/` (7)
 
 `game`, `game_type`, `player`, `round`, `score`, `game_analysis`, `analysis_style`. Plain classes with
 `toMap`/`fromMap`. `player.dart` has no `gameId` since v9 — its `id` is a
 `game_players.id`. See [[SchemaV10]].
+
+`analysis_style.dart` is an enum whose `id` is an ASCII string that travels to the backend
+and into SharedPreferences (`analysisStyle`) and whose label is translated. It mirrors
+`PERSONAS` in `backend/app/services/analysis/personas.py`: a new voice is added in both
+places plus the ten ARB files.
 
 `game.dart` carries `finishedAt` since v12, with `isFinished` next to `isShared`. Its
 `copyWith` takes a `clearFinishedAt` flag: `x ?? this.x` cannot express "set this back to
@@ -152,6 +177,14 @@ not "fix" it by hardcoding a codepoint.
   release would have needed ten ARB edits nobody remembered. `test/screens/about_screen_test.dart`
   mocks `PackageInfo` and keeps both of its checks in one test, because a static future
   completed in one test's fake-async zone never delivers in the next.
+- **The bottom inset is a helper, not seven more `SafeArea`s** (2026-09-16). Six root
+  `ListView`s and the About screen drew their last row behind the navigation bar; the bug had
+  been fixed case by case before (`game_analysis_screen.dart:328`), never in principle.
+  `withBottomInset` reproduces exactly what `BoxScrollView` does when `padding` is null,
+  which is why it needed no measurement on hardware to be correct — a widget test that pumps
+  a `MediaQuery` with a bottom padding and reads back the resolved padding pins it
+  (`test/utils/insets_test.dart`). It uses `MediaQuery.paddingOf`, not
+  `MediaQuery.of(context).padding`, so the keyboard opening does not rebuild a whole list.
 - **The game-over refusal is in memory, and there is no check on the board's first build**
   (2026-09-16). Nothing records the user's "Continue playing", so a first-build check would
   raise the dialog every single time the board is opened for a game past its threshold —
