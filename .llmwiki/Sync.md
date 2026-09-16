@@ -2,7 +2,7 @@
 
 > Scope: the offline-first sharing protocol — server and Flutter client.
 > Related: [[Api]] · [[SchemaV10]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-09-14
+> Updated: 2026-09-16
 
 ## Facts
 
@@ -58,8 +58,9 @@ field**, ordered lexicographically by `(client_lamport, origin_device_id)`.
    back as a stable reason code rather than a driver error — codes in [[Api]].
 7. The log stores the payload's known client columns only; that is what other devices pull.
 
-Synced entities: `player`, `game_type`, `game`, `game_player`, `round` (with `comment`),
-`score`, `game_analysis`. `game_player` still has no uuid and is hard-deleted.
+Synced entities: `player`, `game_type` (with `rules` and `rules_slug` since v13), `game`,
+`game_player`, `round` (with `comment`), `score`, `game_analysis`. `game_player` still has
+no uuid and is hard-deleted.
 
 - `client_lamport` is a monotone integer per device, a logical clock. On write:
   `lamport = max(local_max, last_server_seq_received) + 1`.

@@ -1346,5 +1346,126 @@
         "example": "contact@example.com"
       }
     }
+  },
+
+  "gameRulesTitle": "Règles du jeu",
+  "@gameRulesTitle": {
+    "description": "Title of the game-rules screen"
+  },
+  "gameRulesInApp": "Dans CountScore",
+  "@gameRulesInApp": {
+    "description": "Section header: how CountScore scores this game type"
+  },
+  "gameRulesSection": "Les règles",
+  "@gameRulesSection": {
+    "description": "Section header above the rules text itself"
+  },
+  "gameRulesNoElimination": "Pas d'élimination en cours de partie",
+  "@gameRulesNoElimination": {
+    "description": "Derived line: the game type has no player elimination threshold"
+  },
+  "gameRulesEliminationOver": "Un joueur est éliminé au-dessus de {threshold} points",
+  "@gameRulesEliminationOver": {
+    "description": "Derived line: a player is out above the elimination threshold",
+    "placeholders": {
+      "threshold": {
+        "type": "int",
+        "example": "100"
+      }
+    }
+  },
+  "gameRulesEliminationUnder": "Un joueur est éliminé en dessous de {threshold} points",
+  "@gameRulesEliminationUnder": {
+    "description": "Derived line: a player is out below the elimination threshold",
+    "placeholders": {
+      "threshold": {
+        "type": "int",
+        "example": "100"
+      }
+    }
+  },
+  "gameRulesEndFirstOver": "La partie s'arrête dès qu'un joueur dépasse {threshold} points",
+  "@gameRulesEndFirstOver": {
+    "description": "Derived line: game over when the first player passes the threshold",
+    "placeholders": {
+      "threshold": {
+        "type": "int",
+        "example": "100"
+      }
+    }
+  },
+  "gameRulesEndFirstUnder": "La partie s'arrête dès qu'un joueur descend sous {threshold} points",
+  "@gameRulesEndFirstUnder": {
+    "description": "Derived line: game over when the first player drops under the threshold",
+    "placeholders": {
+      "threshold": {
+        "type": "int",
+        "example": "100"
+      }
+    }
+  },
+  "gameRulesEndLastOver": "La partie s'arrête quand tous les joueurs sauf un dépassent {threshold} points",
+  "@gameRulesEndLastOver": {
+    "description": "Derived line: game over when the last player passes the threshold",
+    "placeholders": {
+      "threshold": {
+        "type": "int",
+        "example": "100"
+      }
+    }
+  },
+  "gameRulesEndLastUnder": "La partie s'arrête quand tous les joueurs sauf un descendent sous {threshold} points",
+  "@gameRulesEndLastUnder": {
+    "description": "Derived line: game over when the last player drops under the threshold",
+    "placeholders": {
+      "threshold": {
+        "type": "int",
+        "example": "100"
+      }
+    }
+  },
+  "gameRulesNoEnd": "Pas de fin automatique : vous décidez quand la partie s'arrête",
+  "@gameRulesNoEnd": {
+    "description": "Derived line: the game type has no automatic game-over condition"
+  },
+  "gameRulesEmptyTitle": "Pas encore de règles",
+  "@gameRulesEmptyTitle": {
+    "description": "Empty state on the rules screen: nothing shipped and nothing written"
+  },
+  "gameRulesEmptyHint": "Notez comment votre table compte les points : tout le monde aura la même version.",
+  "@gameRulesEmptyHint": {
+    "description": "Empty state hint inviting the user to write the rules"
+  },
+  "gameRulesWrite": "Écrire les règles",
+  "@gameRulesWrite": {
+    "description": "Button that opens the editor when no rules exist yet"
+  },
+  "gameRulesEditTitle": "Modifier les règles",
+  "@gameRulesEditTitle": {
+    "description": "Title of the rules editor"
+  },
+  "gameRulesEditorHint": "Les règles de votre table. Le Markdown est accepté.",
+  "@gameRulesEditorHint": {
+    "description": "Placeholder inside the rules editor text field"
+  },
+  "gameRulesFromGroup": "Règles de votre groupe",
+  "@gameRulesFromGroup": {
+    "description": "Footnote shown when the displayed rules were written by the user"
+  },
+  "gameRulesRestoreDefault": "Rétablir les règles d'origine",
+  "@gameRulesRestoreDefault": {
+    "description": "Action that discards the user's rules and brings the shipped ones back"
+  },
+  "gameRulesSaved": "Règles enregistrées",
+  "@gameRulesSaved": {
+    "description": "Snackbar after the user's rules are saved"
+  },
+  "gameRulesRestored": "Règles d'origine rétablies",
+  "@gameRulesRestored": {
+    "description": "Snackbar after the shipped rules are restored"
+  },
+  "gameRulesDisclaimer": "Résumé rédigé pour CountScore à partir des règles couramment jouées. Les noms de jeux appartiennent à leurs propriétaires et ne sont cités qu'à titre descriptif.",
+  "@gameRulesDisclaimer": {
+    "description": "Footnote on the shipped rules: original summary, trademarks used descriptively"
   }
 }

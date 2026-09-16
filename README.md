@@ -17,6 +17,10 @@ at your own server in Settings → Server if you want the connected features.
 - **10 pre-configured game types** — ZapZap, Uno, Scrabble, Skyjo, Président, Belote, Tarot,
   Bridge, Rami and a generic "Autre" — plus custom types with a user-picked icon and colour.
 - **Flexible scoring**: lowest-wins and highest-wins, per game type.
+- **Rules for the game you are playing** — reachable from the score table and from the
+  game-type list. Nine of the pre-configured types ship a ruleset, translated into all ten
+  languages, next to a summary of how CountScore scores that type. Any of it can be
+  rewritten: your table's own rules replace the shipped text and travel with your group.
 - **Scoring grid**: rounds, running totals, live ranking and per-player statistics.
 - **An explicit end**: any game can be declared over from the board or the game list, which
   marks it in the history; reopen it and play on. Game types that define a threshold
@@ -286,7 +290,8 @@ own — described below.
 - ✅ **No account**: nothing to sign up for, no identity attached to your data.
 - ✅ **Open source**: the code is publicly auditable.
 
-**Where your data lives**: game types, player names, scores, game history and app
+**Where your data lives**: game types and their rules text, player names, scores, game
+history and app
 preferences are stored in a local SQLite database on your device. Delete a game or a player
 at any time; uninstalling removes everything permanently.
 

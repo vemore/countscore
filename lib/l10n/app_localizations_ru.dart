@@ -838,4 +838,83 @@ class AppLocalizationsRu extends AppLocalizations {
   String reportCommentaryNoMailApp(String email) {
     return 'Почтовое приложение не найдено. Напишите на $email, чтобы пожаловаться на этот комментарий.';
   }
+
+  @override
+  String get gameRulesTitle => 'Правила игры';
+
+  @override
+  String get gameRulesInApp => 'В CountScore';
+
+  @override
+  String get gameRulesSection => 'Правила';
+
+  @override
+  String get gameRulesNoElimination => 'Игроки не выбывают по ходу партии';
+
+  @override
+  String gameRulesEliminationOver(int threshold) {
+    return 'Игрок выбывает, набрав больше $threshold очков';
+  }
+
+  @override
+  String gameRulesEliminationUnder(int threshold) {
+    return 'Игрок выбывает, опустившись ниже $threshold очков';
+  }
+
+  @override
+  String gameRulesEndFirstOver(int threshold) {
+    return 'Партия заканчивается, как только игрок набирает больше $threshold очков';
+  }
+
+  @override
+  String gameRulesEndFirstUnder(int threshold) {
+    return 'Партия заканчивается, как только игрок опускается ниже $threshold очков';
+  }
+
+  @override
+  String gameRulesEndLastOver(int threshold) {
+    return 'Партия заканчивается, когда все игроки, кроме одного, наберут больше $threshold очков';
+  }
+
+  @override
+  String gameRulesEndLastUnder(int threshold) {
+    return 'Партия заканчивается, когда все игроки, кроме одного, опустятся ниже $threshold очков';
+  }
+
+  @override
+  String get gameRulesNoEnd =>
+      'Автоматического завершения нет: вы сами решаете, когда партия окончена';
+
+  @override
+  String get gameRulesEmptyTitle => 'Правил пока нет';
+
+  @override
+  String get gameRulesEmptyHint =>
+      'Запишите, как считают очки за вашим столом, — и у всех будет одна версия.';
+
+  @override
+  String get gameRulesWrite => 'Записать правила';
+
+  @override
+  String get gameRulesEditTitle => 'Изменить правила';
+
+  @override
+  String get gameRulesEditorHint =>
+      'Правила вашего стола. Поддерживается Markdown.';
+
+  @override
+  String get gameRulesFromGroup => 'Правила вашей группы';
+
+  @override
+  String get gameRulesRestoreDefault => 'Восстановить исходные правила';
+
+  @override
+  String get gameRulesSaved => 'Правила сохранены';
+
+  @override
+  String get gameRulesRestored => 'Исходные правила восстановлены';
+
+  @override
+  String get gameRulesDisclaimer =>
+      'Пересказ подготовлен для CountScore по правилам в их наиболее распространённом виде. Названия игр принадлежат их правообладателям и упоминаются только описательно.';
 }

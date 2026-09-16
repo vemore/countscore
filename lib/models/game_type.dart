@@ -44,6 +44,16 @@ class GameType {
   final GameOverConditionType? gameOverConditionType;
   final int? gameOverThreshold;
 
+  /// The rules the user wrote for this type, as Markdown. Null means "show the
+  /// ruleset shipped for [rulesSlug] instead". User content: never translated,
+  /// and it travels with the group like every other column here.
+  final String? rules;
+
+  /// Names the ruleset shipped in `assets/rules/`, or null for a type the user
+  /// created. Kept apart from [name] because the name is editable — renaming a
+  /// type must not lose its rules.
+  final String? rulesSlug;
+
   GameType({
     this.id,
     required this.name,
@@ -55,6 +65,8 @@ class GameType {
     this.playerDeadThreshold,
     this.gameOverConditionType,
     this.gameOverThreshold,
+    this.rules,
+    this.rulesSlug,
   });
 
   // The code point comes from the database, so it cannot be a constant. This is
@@ -75,6 +87,8 @@ class GameType {
       'playerDeadThreshold': playerDeadThreshold,
       'gameOverConditionType': gameOverConditionType?.toDbString(),
       'gameOverThreshold': gameOverThreshold,
+      'rules': rules,
+      'rules_slug': rulesSlug,
     };
   }
 
@@ -94,6 +108,8 @@ class GameType {
         map['gameOverConditionType'] as String?,
       ),
       gameOverThreshold: map['gameOverThreshold'] as int?,
+      rules: map['rules'] as String?,
+      rulesSlug: map['rules_slug'] as String?,
     );
   }
 
@@ -108,6 +124,9 @@ class GameType {
     int? playerDeadThreshold,
     GameOverConditionType? gameOverConditionType,
     int? gameOverThreshold,
+    String? rules,
+    String? rulesSlug,
+    bool clearRules = false,
   }) {
     return GameType(
       id: id ?? this.id,
@@ -120,12 +139,17 @@ class GameType {
       playerDeadThreshold: playerDeadThreshold ?? this.playerDeadThreshold,
       gameOverConditionType: gameOverConditionType ?? this.gameOverConditionType,
       gameOverThreshold: gameOverThreshold ?? this.gameOverThreshold,
+      // `x ?? this.x` cannot express "put this back to null", and restoring the
+      // shipped rules is exactly that — same shape as Game.clearFinishedAt.
+      rules: clearRules ? null : (rules ?? this.rules),
+      rulesSlug: rulesSlug ?? this.rulesSlug,
     );
   }
 
   // Types de jeux prédéfinis
   static GameType zapzap() => GameType(
         name: 'ZapZap',
+        rulesSlug: 'zapzap',
         iconCodePoint: Icons.flash_on.codePoint,
         cardColorValue: Colors.amber.toARGB32(),
         isLowestScoreWins: true,
@@ -136,6 +160,7 @@ class GameType {
 
   static GameType uno() => GameType(
         name: 'Uno',
+        rulesSlug: 'uno',
         iconCodePoint: Icons.style.codePoint,
         cardColorValue: Colors.red.toARGB32(),
         isLowestScoreWins: true,
@@ -144,6 +169,7 @@ class GameType {
 
   static GameType scrabble() => GameType(
         name: 'Scrabble',
+        rulesSlug: 'scrabble',
         iconCodePoint: Icons.grid_on.codePoint,
         cardColorValue: Colors.green.toARGB32(),
         isLowestScoreWins: false,
@@ -160,6 +186,7 @@ class GameType {
 
   static GameType skyjo() => GameType(
         name: 'Skyjo',
+        rulesSlug: 'skyjo',
         iconCodePoint: Icons.casino.codePoint,
         cardColorValue: Colors.blue.toARGB32(),
         isLowestScoreWins: true,
@@ -170,6 +197,7 @@ class GameType {
 
   static GameType president() => GameType(
         name: 'Président',
+        rulesSlug: 'president',
         iconCodePoint: Icons.workspace_premium.codePoint,
         cardColorValue: Colors.orange.toARGB32(),
         isLowestScoreWins: true,
@@ -180,6 +208,7 @@ class GameType {
 
   static GameType belote() => GameType(
         name: 'Belote',
+        rulesSlug: 'belote',
         iconCodePoint: Icons.diamond.codePoint,
         cardColorValue: const Color(0xFF8B4513).toARGB32(), // Brown color
         isLowestScoreWins: false,
@@ -190,6 +219,7 @@ class GameType {
 
   static GameType tarot() => GameType(
         name: 'Tarot',
+        rulesSlug: 'tarot',
         iconCodePoint: Icons.auto_awesome.codePoint,
         cardColorValue: Colors.indigo.toARGB32(),
         isLowestScoreWins: false,
@@ -198,6 +228,7 @@ class GameType {
 
   static GameType bridge() => GameType(
         name: 'Bridge',
+        rulesSlug: 'bridge',
         iconCodePoint: Icons.account_tree.codePoint,
         cardColorValue: Colors.teal.toARGB32(),
         isLowestScoreWins: false,
@@ -206,6 +237,7 @@ class GameType {
 
   static GameType rami() => GameType(
         name: 'Rami',
+        rulesSlug: 'rami',
         iconCodePoint: Icons.style_outlined.codePoint,
         cardColorValue: const Color(0xFF9C27B0).toARGB32(), // Deep purple
         isLowestScoreWins: true,

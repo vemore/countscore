@@ -426,5 +426,27 @@
 
   "reportCommentaryBody": "Что не так с этим комментарием, созданным ИИ?\n\n\n---\nСсылка: {reference}\nКомментарий:\n{commentary}",
 
-  "reportCommentaryNoMailApp": "Почтовое приложение не найдено. Напишите на {email}, чтобы пожаловаться на этот комментарий."
+  "reportCommentaryNoMailApp": "Почтовое приложение не найдено. Напишите на {email}, чтобы пожаловаться на этот комментарий.",
+
+  "gameRulesTitle": "Правила игры",
+  "gameRulesInApp": "В CountScore",
+  "gameRulesSection": "Правила",
+  "gameRulesNoElimination": "Игроки не выбывают по ходу партии",
+  "gameRulesEliminationOver": "Игрок выбывает, набрав больше {threshold} очков",
+  "gameRulesEliminationUnder": "Игрок выбывает, опустившись ниже {threshold} очков",
+  "gameRulesEndFirstOver": "Партия заканчивается, как только игрок набирает больше {threshold} очков",
+  "gameRulesEndFirstUnder": "Партия заканчивается, как только игрок опускается ниже {threshold} очков",
+  "gameRulesEndLastOver": "Партия заканчивается, когда все игроки, кроме одного, наберут больше {threshold} очков",
+  "gameRulesEndLastUnder": "Партия заканчивается, когда все игроки, кроме одного, опустятся ниже {threshold} очков",
+  "gameRulesNoEnd": "Автоматического завершения нет: вы сами решаете, когда партия окончена",
+  "gameRulesEmptyTitle": "Правил пока нет",
+  "gameRulesEmptyHint": "Запишите, как считают очки за вашим столом, — и у всех будет одна версия.",
+  "gameRulesWrite": "Записать правила",
+  "gameRulesEditTitle": "Изменить правила",
+  "gameRulesEditorHint": "Правила вашего стола. Поддерживается Markdown.",
+  "gameRulesFromGroup": "Правила вашей группы",
+  "gameRulesRestoreDefault": "Восстановить исходные правила",
+  "gameRulesSaved": "Правила сохранены",
+  "gameRulesRestored": "Исходные правила восстановлены",
+  "gameRulesDisclaimer": "Пересказ подготовлен для CountScore по правилам в их наиболее распространённом виде. Названия игр принадлежат их правообладателям и упоминаются только описательно."
 }

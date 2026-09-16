@@ -15,6 +15,7 @@ import '../repositories/game_analysis_repository.dart';
 import '../services/drift/database.dart';
 import '../services/review_prompt.dart';
 import 'game_analysis_screen.dart';
+import 'game_rules_screen.dart';
 import 'ranking_screen.dart';
 
 class GameBoardScreen extends StatefulWidget {
@@ -162,6 +163,19 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
 
               return PopupMenuButton<String>(
                 itemBuilder: (context) => [
+                  // A game whose type was deleted has gameTypeId NULL, and
+                  // there is nothing to show the rules of.
+                  if (menuGameType != null)
+                    PopupMenuItem(
+                      value: 'game_rules',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.menu_book_outlined),
+                          const SizedBox(width: 8),
+                          Text(l10n.gameRulesTitle),
+                        ],
+                      ),
+                    ),
                   PopupMenuItem(
                     value: 'edit_game',
                     child: Row(
@@ -219,7 +233,14 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                     ),
                 ],
                 onSelected: (value) async {
-                  if (value == 'edit_game') {
+                  if (value == 'game_rules' && menuGameType != null) {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => GameRulesScreen(gameType: menuGameType),
+                      ),
+                    );
+                  } else if (value == 'edit_game') {
                     _showEditGameDialog();
                   } else if (value == 'delete_round' &&
                       gameProvider.currentRounds.isNotEmpty) {

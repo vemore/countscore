@@ -18,7 +18,7 @@ Schema version **12**, declared in two places that must stay in sync:
 
 | Table | Role |
 |---|---|
-| `game_types` | Game types. uuid + sync columns. |
+| `game_types` | Game types. uuid + sync columns, `rules` and `rules_slug` since v13. |
 | `games` | Games. uuid, `group_id`, sync columns, `finishedAt` since v12. |
 | `players` | **Global identity**: `(id, name, colorValue, uuid, group_id, …)`. UNIQUE on `name COLLATE NOCASE` where `group_id IS NULL`. |
 | `game_players` | **Per-game membership**: `(id, gameId, player_id FK→players, name, orderIndex, colorValue, uuid, …)`. UNIQUE `(gameId, player_id)`. |
@@ -37,6 +37,19 @@ rows have `group_id = NULL`, meaning local-only mode — so the sync columns are
 wrong.
 
 The device token is **not** in the database: it belongs in platform secure storage.
+
+### `game_types.rules` / `game_types.rules_slug` (since v13)
+
+Both TEXT, nullable. `rules` is free Markdown the user wrote; NULL means the app shows the
+ruleset it ships for `rules_slug` instead, in the current locale. `rules_slug` names one of
+the nine rulesets in `assets/rules/` (`Autre` has none) and exists as its own column
+because `name` is user-editable — a renamed type must not lose its rules.
+
+Both push as `rules` and `rules_slug`, columns the server gained in
+`0003_game_type_rules`. Bounds in `backend/app/services/delta_bounds.py`: 8 000 and 32.
+The client clips to the same lengths (`sync_store.dart`, `_gameTypeRulesMax`).
+`defaultRulesSlugs` in `sync_schema.dart` is the single map from seeded name to slug,
+shared by the seed factories and the back-fill.
 
 ### `games.finishedAt` (since v12)
 
@@ -79,6 +92,7 @@ and scores. Deleting a game type ignores tombstoned games and clears their `game
 | v8 | `game_analyses` recreated to add the sync columns missing from the Bedrock prototype. |
 | v9 | Global players. |
 | **v11** | **Change capture**: `sync_flags` (one row, `suppress`), `trg_sync_*` capture triggers on games, game_players, rounds, scores, game_analyses (insert/update when `group_id` is set) and on players, game_types (update when linked), and `*_inherit` triggers that give a row inserted under a shared parent its `group_id`. SQL in `lib/services/sync/sync_schema.dart`, shared by both engines. |
+| **v13** | **`game_types.rules` / `game_types.rules_slug`** (both TEXT, nullable): the rules a group wrote for a type, and the shipped ruleset it falls back to. `applyV13` in `lib/services/sync/sync_schema.dart`, run by both engines. Additive, plus a back-fill that maps the ten seeded names to their slug — `UPDATE`s only, so a type the user deleted is not resurrected and a renamed one keeps a NULL slug. |
 | **v12** | **`games.finishedAt`** (ISO-8601 TEXT, nullable): an explicit end for every game, not only the three types that carry a threshold. `applyV12` in `lib/services/sync/sync_schema.dart`, run by both engines. Additive only. |
 | v10 | **Sync bookkeeping**: `group_links`, `entity_versions`, `sync_inbox`; `outbox.rejected_at` / `reject_reason`; `sync_state.device_id` / `group_name`. Additive only — `_createSyncV10Tables` is the fresh-install and the upgrade path at once. |
 

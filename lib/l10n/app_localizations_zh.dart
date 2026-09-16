@@ -806,4 +806,80 @@ class AppLocalizationsZh extends AppLocalizations {
   String reportCommentaryNoMailApp(String email) {
     return '未找到电子邮件应用。请发送邮件至 $email 举报此评论。';
   }
+
+  @override
+  String get gameRulesTitle => '游戏规则';
+
+  @override
+  String get gameRulesInApp => '在 CountScore 中';
+
+  @override
+  String get gameRulesSection => '规则';
+
+  @override
+  String get gameRulesNoElimination => '对局中不会淘汰玩家';
+
+  @override
+  String gameRulesEliminationOver(int threshold) {
+    return '超过 $threshold 分的玩家被淘汰';
+  }
+
+  @override
+  String gameRulesEliminationUnder(int threshold) {
+    return '低于 $threshold 分的玩家被淘汰';
+  }
+
+  @override
+  String gameRulesEndFirstOver(int threshold) {
+    return '当有玩家超过 $threshold 分时，对局结束';
+  }
+
+  @override
+  String gameRulesEndFirstUnder(int threshold) {
+    return '当有玩家低于 $threshold 分时，对局结束';
+  }
+
+  @override
+  String gameRulesEndLastOver(int threshold) {
+    return '当除一名玩家外所有人都超过 $threshold 分时，对局结束';
+  }
+
+  @override
+  String gameRulesEndLastUnder(int threshold) {
+    return '当除一名玩家外所有人都低于 $threshold 分时，对局结束';
+  }
+
+  @override
+  String get gameRulesNoEnd => '没有自动结束：由你决定何时收局';
+
+  @override
+  String get gameRulesEmptyTitle => '还没有规则';
+
+  @override
+  String get gameRulesEmptyHint => '把你们这桌的计分方式写下来，大家就有了同一个版本。';
+
+  @override
+  String get gameRulesWrite => '编写规则';
+
+  @override
+  String get gameRulesEditTitle => '编辑规则';
+
+  @override
+  String get gameRulesEditorHint => '你们这桌的规则。支持 Markdown。';
+
+  @override
+  String get gameRulesFromGroup => '你们小组的规则';
+
+  @override
+  String get gameRulesRestoreDefault => '恢复原始规则';
+
+  @override
+  String get gameRulesSaved => '规则已保存';
+
+  @override
+  String get gameRulesRestored => '已恢复原始规则';
+
+  @override
+  String get gameRulesDisclaimer =>
+      '本摘要由 CountScore 依据通行玩法编写。游戏名称归各自所有者所有，此处仅作描述性使用。';
 }

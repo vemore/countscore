@@ -832,4 +832,83 @@ class AppLocalizationsHi extends AppLocalizations {
   String reportCommentaryNoMailApp(String email) {
     return 'कोई ईमेल ऐप नहीं मिला। इस टिप्पणी की रिपोर्ट करने के लिए $email पर लिखें।';
   }
+
+  @override
+  String get gameRulesTitle => 'खेल के नियम';
+
+  @override
+  String get gameRulesInApp => 'CountScore में';
+
+  @override
+  String get gameRulesSection => 'नियम';
+
+  @override
+  String get gameRulesNoElimination =>
+      'खेल के दौरान कोई खिलाड़ी बाहर नहीं होता';
+
+  @override
+  String gameRulesEliminationOver(int threshold) {
+    return '$threshold अंक से ऊपर जाने पर खिलाड़ी बाहर हो जाता है';
+  }
+
+  @override
+  String gameRulesEliminationUnder(int threshold) {
+    return '$threshold अंक से नीचे जाने पर खिलाड़ी बाहर हो जाता है';
+  }
+
+  @override
+  String gameRulesEndFirstOver(int threshold) {
+    return 'जैसे ही कोई खिलाड़ी $threshold अंक पार करता है, खेल समाप्त हो जाता है';
+  }
+
+  @override
+  String gameRulesEndFirstUnder(int threshold) {
+    return 'जैसे ही कोई खिलाड़ी $threshold अंक से नीचे आता है, खेल समाप्त हो जाता है';
+  }
+
+  @override
+  String gameRulesEndLastOver(int threshold) {
+    return 'जब एक को छोड़कर सभी खिलाड़ी $threshold अंक पार कर लेते हैं, तब खेल समाप्त होता है';
+  }
+
+  @override
+  String gameRulesEndLastUnder(int threshold) {
+    return 'जब एक को छोड़कर सभी खिलाड़ी $threshold अंक से नीचे आ जाते हैं, तब खेल समाप्त होता है';
+  }
+
+  @override
+  String get gameRulesNoEnd =>
+      'कोई स्वतः समाप्ति नहीं: खेल कब खत्म हो, यह आप तय करते हैं';
+
+  @override
+  String get gameRulesEmptyTitle => 'अभी कोई नियम नहीं';
+
+  @override
+  String get gameRulesEmptyHint =>
+      'लिख लें कि आपकी मेज़ पर अंक कैसे गिने जाते हैं — फिर सबके पास एक ही संस्करण होगा।';
+
+  @override
+  String get gameRulesWrite => 'नियम लिखें';
+
+  @override
+  String get gameRulesEditTitle => 'नियम संपादित करें';
+
+  @override
+  String get gameRulesEditorHint => 'आपकी मेज़ के नियम। Markdown समर्थित है।';
+
+  @override
+  String get gameRulesFromGroup => 'आपके समूह के नियम';
+
+  @override
+  String get gameRulesRestoreDefault => 'मूल नियम पुनर्स्थापित करें';
+
+  @override
+  String get gameRulesSaved => 'नियम सहेजे गए';
+
+  @override
+  String get gameRulesRestored => 'मूल नियम पुनर्स्थापित किए गए';
+
+  @override
+  String get gameRulesDisclaimer =>
+      'यह सारांश CountScore के लिए, आमतौर पर खेले जाने वाले नियमों के आधार पर लिखा गया है। खेलों के नाम उनके संबंधित स्वामियों के हैं और केवल वर्णनात्मक रूप से उपयोग किए गए हैं।';
 }

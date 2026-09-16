@@ -97,6 +97,9 @@ flutter:
   # App assets
   assets:
     - store_listing/assets/icon_512.png
+    # Shipped game rules, one Markdown file per app locale. Long-form localised
+    # content lives here rather than in the ARB files — see .llmwiki/I18n.md.
+    - assets/rules/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

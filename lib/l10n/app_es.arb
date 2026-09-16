@@ -426,5 +426,27 @@
 
   "reportCommentaryBody": "¿Qué problema tiene este comentario generado por IA?\n\n\n---\nReferencia: {reference}\nComentario:\n{commentary}",
 
-  "reportCommentaryNoMailApp": "No se encontró ninguna aplicación de correo. Escribe a {email} para denunciar este comentario."
+  "reportCommentaryNoMailApp": "No se encontró ninguna aplicación de correo. Escribe a {email} para denunciar este comentario.",
+
+  "gameRulesTitle": "Reglas del juego",
+  "gameRulesInApp": "En CountScore",
+  "gameRulesSection": "Las reglas",
+  "gameRulesNoElimination": "Sin eliminación durante la partida",
+  "gameRulesEliminationOver": "Un jugador queda eliminado al superar los {threshold} puntos",
+  "gameRulesEliminationUnder": "Un jugador queda eliminado por debajo de {threshold} puntos",
+  "gameRulesEndFirstOver": "La partida termina en cuanto un jugador supera los {threshold} puntos",
+  "gameRulesEndFirstUnder": "La partida termina en cuanto un jugador baja de {threshold} puntos",
+  "gameRulesEndLastOver": "La partida termina cuando todos los jugadores menos uno superan los {threshold} puntos",
+  "gameRulesEndLastUnder": "La partida termina cuando todos los jugadores menos uno bajan de {threshold} puntos",
+  "gameRulesNoEnd": "Sin final automático: tú decides cuándo termina la partida",
+  "gameRulesEmptyTitle": "Todavía no hay reglas",
+  "gameRulesEmptyHint": "Anota cómo cuenta los puntos tu mesa: así todos tendréis la misma versión.",
+  "gameRulesWrite": "Escribir las reglas",
+  "gameRulesEditTitle": "Editar las reglas",
+  "gameRulesEditorHint": "Las reglas de tu mesa. Se admite Markdown.",
+  "gameRulesFromGroup": "Reglas de tu grupo",
+  "gameRulesRestoreDefault": "Restaurar las reglas originales",
+  "gameRulesSaved": "Reglas guardadas",
+  "gameRulesRestored": "Reglas originales restauradas",
+  "gameRulesDisclaimer": "Resumen redactado para CountScore a partir de las reglas tal como se juegan habitualmente. Los nombres de los juegos pertenecen a sus propietarios y se citan solo de forma descriptiva."
 }
