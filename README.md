@@ -217,13 +217,19 @@ CI — it calls the production endpoint. See `.llmwiki/Testing.md`.
 
 ### Continuous integration
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs five jobs on every push to
-`main` and every pull request:
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs six jobs on every push to
+`main`, every pull request, and once a week:
 
+- **Scope** — reads the files the pull request changes and decides which of the five below it
+  needs: a documentation-only pull request runs none of them. On `main`, on the weekly run and
+  on demand, all five run. The rules are in [`scripts/ci_scope.sh`](scripts/ci_scope.sh), and
+  [`scripts/ci_scope_selftest.sh`](scripts/ci_scope_selftest.sh) pins them on every run.
 - **Backend** — `ruff check`, `ruff format --check`, `mypy`, `pytest` (integration tests included),
   an Alembic round trip on a real Postgres — upgrade, `downgrade base`, upgrade, then
   `alembic check` (every downgrade runs, and the models and the migrations describe the same
-  schema) — and a `pip-audit` of every package locked in `backend/uv.lock`.
+  schema) — and a `pip-audit` of every package locked in `backend/uv.lock`. The weekly run
+  exists for that audit: it is the only thing that runs it on a week where nothing touched
+  `backend/`.
 - **Backend image** — builds `backend/Dockerfile` (dependencies locked to `uv.lock`) and
   checks that the container runs as a non-root user, with no compiler and no dev dependencies.
 - **App** — codegen, `flutter analyze`, `flutter test`, release web build.
