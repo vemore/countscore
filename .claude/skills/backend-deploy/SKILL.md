@@ -141,7 +141,7 @@ Then exercise a real path — the unauthenticated analysis endpoint is the quick
 proof, since it crosses TLS, the app, and the LLM provider:
 
 ```bash
-curl -s -X POST "$PUBLIC_URL/comments/zapzap-analysis" \
+curl -s -X POST "$PUBLIC_URL/comments/game-analysis" \
   -H 'Content-Type: application/json' \
   -d @scripts/sample_payload.json | head -20
 ```

@@ -1,14 +1,20 @@
 #!/usr/bin/env python
-"""Compare the ZapZap caustic analysis across LLM providers on one real game.
+"""Compare the game analysis across LLM providers, personas and languages on a real game.
 
-Reads a JSON payload (same shape the mobile app POSTs to /comments/zapzap-analysis),
-builds the user message once, then runs each selected provider with the SAME system
-prompt and parameters. Writes one Markdown file per provider and prints a side-by-side
-recap so you can judge the French stylistic quality on a real case.
+Reads a JSON payload (the shape the app POSTs to /comments/game-analysis), builds the
+prompt once per style, then runs each selected provider with the SAME prompt and
+parameters. Writes one Markdown file per provider and style and prints a side-by-side
+recap.
+
+This is the only way to judge what no unit test can: that the answer really does fit on a
+page, that it does not rebuild the score table, and that it reads well in a language whose
+persona block is written in English.
 
 Usage:
     python scripts/compare_providers.py --payload scripts/sample_payload.json
-    python scripts/compare_providers.py --payload game.json --providers bedrock,gemini,mistral
+    python scripts/compare_providers.py --payload game.json --providers bedrock,gemini
+    python scripts/compare_providers.py --payload scripts/sample_payload_skyjo.json \
+        --styles bard,coach --language ja
 """
 
 from __future__ import annotations
@@ -20,15 +26,16 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
+from app.services.analysis import PERSONA_KEYS, build_analysis_prompt
 from app.services.llm import get_llm_provider
 from app.services.llm.base import DEFAULT_MAX_TOKENS
 from app.services.llm.factory import _PROVIDERS
-from app.services.zapzap_prompt import ZAPZAP_SYSTEM_PROMPT, build_zapzap_user_message
 
 
 @dataclass
 class Outcome:
     provider: str
+    style: str = ""
     model: str = ""
     tokens_in: int = 0
     tokens_out: int = 0
@@ -37,8 +44,10 @@ class Outcome:
     content: str = ""
 
 
-async def _run_one(name: str, system_prompt: str, user_message: str, max_tokens: int) -> Outcome:
-    out = Outcome(provider=name)
+async def _run_one(
+    name: str, style: str, system_prompt: str, user_message: str, max_tokens: int
+) -> Outcome:
+    out = Outcome(provider=name, style=style)
     try:
         provider = get_llm_provider(name)
     except ValueError as e:
@@ -67,38 +76,57 @@ async def _run_one(name: str, system_prompt: str, user_message: str, max_tokens:
 
 async def _main(args: argparse.Namespace) -> int:
     payload = json.loads(Path(args.payload).read_text(encoding="utf-8"))
-    user_message = build_zapzap_user_message(payload)
 
     names = (
         [p.strip() for p in args.providers.split(",") if p.strip()]
         if args.providers
         else list(_PROVIDERS)
     )
-
-    outcomes = await asyncio.gather(
-        *(_run_one(n, ZAPZAP_SYSTEM_PROMPT, user_message, args.max_tokens) for n in names)
+    styles = (
+        [s.strip() for s in args.styles.split(",") if s.strip()]
+        if args.styles
+        else [payload.get("style") or PERSONA_KEYS[0]]
     )
+    if args.language:
+        payload["language"] = args.language
+    # The schema fills this in for a request that omits it — an app older than the
+    # multilingual analysis — so a raw JSON file has to opt into the same default, or the
+    # script would silently compare a different prompt from the one the route builds.
+    payload.setdefault("language", "fr")
+
+    jobs = []
+    for style in styles:
+        system_prompt, user_message = build_analysis_prompt(payload | {"style": style})
+        jobs += [_run_one(n, style, system_prompt, user_message, args.max_tokens) for n in names]
+    outcomes = await asyncio.gather(*jobs)
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     for o in outcomes:
         if o.status == "ok":
             header = (
-                f"<!-- provider={o.provider} model={o.model} "
+                f"<!-- provider={o.provider} style={o.style} model={o.model} "
                 f"tokens_in={o.tokens_in} tokens_out={o.tokens_out} "
                 f"elapsed={o.elapsed_s:.1f}s -->\n\n"
             )
-            (out_dir / f"zapzap_{o.provider}.md").write_text(header + o.content, encoding="utf-8")
+            (out_dir / f"analysis_{o.style}_{o.provider}.md").write_text(
+                header + o.content, encoding="utf-8"
+            )
 
     # Side-by-side recap.
     print(f"\nGame: {payload.get('game', {}).get('name', '?')}")
     print(f"Output dir: {out_dir.resolve()}\n")
-    print(f"{'provider':<10} {'model':<32} {'tok_in':>7} {'tok_out':>8} {'secs':>6}  status")
-    print("-" * 90)
+    print(
+        f"{'provider':<10} {'style':<12} {'model':<32} {'tok_in':>7} {'tok_out':>8} "
+        f"{'words':>6} {'secs':>6}  status"
+    )
+    print("-" * 110)
     for o in outcomes:
+        # The contract asks for 250-350 words; the count is the quickest way to see it.
+        words = len(o.content.split())
         print(
-            f"{o.provider:<10} {o.model[:32]:<32} {o.tokens_in:>7} {o.tokens_out:>8} "
-            f"{o.elapsed_s:>6.1f}  {o.status}"
+            f"{o.provider:<10} {o.style:<12} {o.model[:32]:<32} {o.tokens_in:>7} "
+            f"{o.tokens_out:>8} {words:>6} {o.elapsed_s:>6.1f}  {o.status}"
         )
     print()
 
@@ -114,6 +142,13 @@ def main() -> int:
         default="",
         help="Comma-separated providers (default: bedrock,gemini,mistral)",
     )
+    parser.add_argument(
+        "--styles",
+        default="",
+        help=f"Comma-separated personas (default: the payload's, or {PERSONA_KEYS[0]}). "
+        f"One of: {', '.join(PERSONA_KEYS)}",
+    )
+    parser.add_argument("--language", default="", help="Output language tag, e.g. ja or pt-BR")
     parser.add_argument("--out-dir", default="out", help="Directory for per-provider .md files")
     parser.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
     return asyncio.run(_main(parser.parse_args()))

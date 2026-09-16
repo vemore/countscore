@@ -876,11 +876,11 @@ abstract class AppLocalizations {
   /// **'Partage en groupe'**
   String get featureGroupSharing;
 
-  /// Feature: LLM-generated analysis of ZapZap games
+  /// Feature: LLM-generated analysis of a finished game, any game type
   ///
   /// In fr, this message translates to:
-  /// **'Analyse des parties ZapZap'**
-  String get featureZapZapAnalysis;
+  /// **'Analyse des parties par IA'**
+  String get featureGameAnalysis;
 
   /// About screen entry opening the app's Play Store listing
   ///
@@ -1079,6 +1079,66 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Analyse de la partie'**
   String get analysisTitle;
+
+  /// Label of the row of chips picking the voice an analysis is written in
+  ///
+  /// In fr, this message translates to:
+  /// **'Style d\'analyse'**
+  String get analysisStyle;
+
+  /// Analysis style: caustic, unfair professor who marks out of 20 — the default
+  ///
+  /// In fr, this message translates to:
+  /// **'Le professeur'**
+  String get analysisStyleProfessor;
+
+  /// Analysis style: live sports commentator
+  ///
+  /// In fr, this message translates to:
+  /// **'Le commentateur sportif'**
+  String get analysisStyleCommentator;
+
+  /// Analysis style: wildlife documentary narrator
+  ///
+  /// In fr, this message translates to:
+  /// **'Le documentaire animalier'**
+  String get analysisStyleDocumentary;
+
+  /// Analysis style: film-noir private detective
+  ///
+  /// In fr, this message translates to:
+  /// **'Le détective'**
+  String get analysisStyleNoir;
+
+  /// Analysis style: medieval bard singing an epic
+  ///
+  /// In fr, this message translates to:
+  /// **'Le barde'**
+  String get analysisStyleBard;
+
+  /// Analysis style: warm, encouraging coach
+  ///
+  /// In fr, this message translates to:
+  /// **'Le coach'**
+  String get analysisStyleCoach;
+
+  /// Analysis style: management consultant's quarterly review, as parody
+  ///
+  /// In fr, this message translates to:
+  /// **'Le consultant'**
+  String get analysisStyleConsultant;
+
+  /// Analysis style: astrologer reading the game like a star chart
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'astrologue'**
+  String get analysisStyleAstrologer;
+
+  /// Analysis style: reality-TV voice-over
+  ///
+  /// In fr, this message translates to:
+  /// **'La téléréalité'**
+  String get analysisStyleRealityTv;
 
   /// Shown while the LLM is generating
   ///

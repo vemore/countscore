@@ -255,7 +255,7 @@
 
   "featureGroupSharing": "Compartir en grupo",
 
-  "featureZapZapAnalysis": "Análisis de partidas ZapZap",
+  "featureGameAnalysis": "Análisis de partidas con IA",
 
   "rateApp": "Valorar CountScore",
 
@@ -305,6 +305,26 @@
   "enterComment": "Escribir un comentario",
   "analyzeGame": "Analizar partida",
   "analysisTitle": "Análisis de la partida",
+  "analysisStyle": "Estilo de análisis",
+
+  "analysisStyleProfessor": "El profesor",
+
+  "analysisStyleCommentator": "El comentarista deportivo",
+
+  "analysisStyleDocumentary": "El documental de naturaleza",
+
+  "analysisStyleNoir": "El detective",
+
+  "analysisStyleBard": "El bardo",
+
+  "analysisStyleCoach": "El entrenador",
+
+  "analysisStyleConsultant": "El consultor",
+
+  "analysisStyleAstrologer": "El astrólogo",
+
+  "analysisStyleRealityTv": "El reality",
+
   "generatingAnalysis": "Generando análisis…",
   "generateAnalysis": "Generar análisis",
   "regenerateAnalysis": "Regenerar análisis",

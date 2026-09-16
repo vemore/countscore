@@ -137,20 +137,16 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
               );
             },
           ),
-          Consumer2<GameProvider, GameTypeProvider>(
-            builder: (context, gameProvider, gameTypeProvider, child) {
-              final menuGameType = gameProvider.currentGame?.gameTypeId != null
-                  ? gameTypeProvider
-                      .getGameTypeById(gameProvider.currentGame!.gameTypeId!)
-                  : null;
-              final isZapZap =
-                  menuGameType?.name.toLowerCase() == 'zapzap';
-              // The analysis is the app's only network call, so generating one
-              // needs a server the user configured. An analysis already stored
-              // stays reachable without one — it is local data.
-              final canAnalyse = isZapZap &&
-                  (context.watch<BackendProvider>().isConfigured ||
-                      _hasCachedAnalysis);
+          Consumer<GameProvider>(
+            builder: (context, gameProvider, child) {
+              // The analysis is the app's only network call, so generating
+              // one needs a server the user configured. An analysis already
+              // stored stays reachable without one — it is local data.
+              // Every game type is analysable: the rules of the game travel in
+              // the payload, so a type the user invented reads as well as a
+              // seeded one.
+              final canAnalyse = context.watch<BackendProvider>().isConfigured ||
+                  _hasCachedAnalysis;
               final group = context.watch<GroupProvider>();
               final canShare = group.isJoined &&
                   !(gameProvider.currentGame?.isShared ?? true);

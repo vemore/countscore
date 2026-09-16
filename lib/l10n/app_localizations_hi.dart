@@ -441,7 +441,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get featureGroupSharing => 'समूह साझाकरण';
 
   @override
-  String get featureZapZapAnalysis => 'ZapZap खेल विश्लेषण';
+  String get featureGameAnalysis => 'AI से खेल विश्लेषण';
 
   @override
   String get rateApp => 'CountScore को रेट करें';
@@ -541,6 +541,36 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get analysisTitle => 'खेल विश्लेषण';
+
+  @override
+  String get analysisStyle => 'विश्लेषण शैली';
+
+  @override
+  String get analysisStyleProfessor => 'प्रोफ़ेसर';
+
+  @override
+  String get analysisStyleCommentator => 'खेल कमेंटेटर';
+
+  @override
+  String get analysisStyleDocumentary => 'वन्यजीव वृत्तचित्र';
+
+  @override
+  String get analysisStyleNoir => 'जासूस';
+
+  @override
+  String get analysisStyleBard => 'चारण कवि';
+
+  @override
+  String get analysisStyleCoach => 'कोच';
+
+  @override
+  String get analysisStyleConsultant => 'सलाहकार';
+
+  @override
+  String get analysisStyleAstrologer => 'ज्योतिषी';
+
+  @override
+  String get analysisStyleRealityTv => 'रियलिटी शो';
 
   @override
   String get generatingAnalysis => 'विश्लेषण उत्पन्न हो रहा है…';

@@ -442,7 +442,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get featureGroupSharing => 'Compartilhamento em grupo';
 
   @override
-  String get featureZapZapAnalysis => 'Análise de partidas ZapZap';
+  String get featureGameAnalysis => 'Análise de partidas por IA';
 
   @override
   String get rateApp => 'Avaliar o CountScore';
@@ -543,6 +543,36 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get analysisTitle => 'Análise da partida';
+
+  @override
+  String get analysisStyle => 'Estilo de análise';
+
+  @override
+  String get analysisStyleProfessor => 'O professor';
+
+  @override
+  String get analysisStyleCommentator => 'O narrador esportivo';
+
+  @override
+  String get analysisStyleDocumentary => 'O documentário de natureza';
+
+  @override
+  String get analysisStyleNoir => 'O detetive';
+
+  @override
+  String get analysisStyleBard => 'O bardo';
+
+  @override
+  String get analysisStyleCoach => 'O treinador';
+
+  @override
+  String get analysisStyleConsultant => 'O consultor';
+
+  @override
+  String get analysisStyleAstrologer => 'O astrólogo';
+
+  @override
+  String get analysisStyleRealityTv => 'O reality show';
 
   @override
   String get generatingAnalysis => 'Gerando análise…';

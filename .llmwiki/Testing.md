@@ -24,8 +24,8 @@
 | `test/widget_test.dart` (8) | Model serialisation only — it pumps no widgets, despite the name. |
 | `test/providers/theme_provider_test.dart` (7) | `ThemeMode` decode fallbacks and the SharedPreferences round-trip. |
 | `test/providers/backend_provider_test.dart` (10) | Backend URL validation — https anywhere, http only on a private or loopback host — and the persistence round-trip, including that a cleared setting is not re-seeded from `--dart-define`. |
-| `test/screens/game_analysis_screen_test.dart` (5) | The only widget-pumping tests: with no backend configured the analysis screen offers no generation, a cached analysis still renders, and configuring one restores the button; plus the two failure paths — a failed regeneration keeps the cached text and warns by snackbar, and with nothing cached the error state carries the HTTP status and no raw exception. |
-| `test/services/backend_client_test.dart` (4) | `BackendException` carries the status, keeps the body for logging, and decodes utf8 on both the error and the success path. `MockClient` from `package:http/testing.dart`. |
+| `test/screens/game_analysis_screen_test.dart` (11) | The only widget-pumping tests: with no backend configured the analysis screen offers no generation, a cached analysis still renders, and configuring one restores the button; the two failure paths — a failed regeneration keeps the cached text and warns by snackbar, and with nothing cached the error state carries the HTTP status and no raw exception; the commentary report; and the voice chips — every style is offered, the last pick is remembered in SharedPreferences, an unreadable stored value falls back to `professor`, and the request carries the style, the app's language and the game type's rules. |
+| `test/services/backend_client_test.dart` (6) | `BackendException` carries the status, keeps the body for logging, and decodes utf8 on both the error and the success path; a 404 on `/comments/game-analysis` is retried once on the legacy path, and a 404 from both is still a failure. `MockClient` from `package:http/testing.dart`. |
 
 Neither the `SafeArea` inset nor the scheme-derived header colour has a widget test: both
 need golden files this repo does not use, and an assertion that a `SafeArea` exists proves
@@ -36,7 +36,7 @@ _hasCachedAnalysis`) has **no** widget test: pumping the board needs a loaded ga
 repositories. It was verified on device on 2026-09-11 — both directions, and the p171 case
 where neither condition holds.
 
-`flutter test` reports **123 passing, 1 skipped, across 19 files**;
+`flutter test` reports **128 passing, 1 skipped, across 19 files**;
 `sync_two_devices_test.dart` is the skip, unless a backend is given.
 
 ### Group sync against a local backend
@@ -124,7 +124,13 @@ idempotence, round conflicts, payload bounds, player-name allow-list, and row-le
 between two devices — SQLite in memory, `pg_notify` stubbed) ·
 `test_sync_ws_integration.py` (WS handshake + push → NOTIFY → new_seq → pull on a **real
 Postgres** via testcontainers) · `test_comments.py` (mocked Anthropic, rate limit, budget,
-prompt injection) · `test_zapzap_analysis.py` · `test_llm_providers.py` ·
+prompt injection) · `test_game_analysis.py` (the route on **both** paths, bounds,
+clipping, name filtering, injection through a player name *and* through the game type, and
+the prompt builder) · `test_analysis_prompt.py` (the nine-by-ten matrix of voice by
+language, the editorial contract, and that no composed prompt names a real person) ·
+`test_analysis_game_rules.py` (the registry, the generic fallback, and that the payload's
+configuration overrides it) · `test_analysis_signals.py` (the derived facts, which the model
+is forbidden to recite and so cannot check) · `test_llm_providers.py` ·
 `test_ip_rate_limit.py` · `test_health.py` (the `/health` shape, including that the resolved
 LLM model is reported and that an unknown `LLM_PROVIDER` still answers 200).
 

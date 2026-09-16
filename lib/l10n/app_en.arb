@@ -255,7 +255,7 @@
 
   "featureGroupSharing": "Group sharing",
 
-  "featureZapZapAnalysis": "ZapZap game analysis",
+  "featureGameAnalysis": "AI game analysis",
 
   "rateApp": "Rate CountScore",
 
@@ -335,6 +335,26 @@
   "@analysisTitle": {
     "description": "Title of the analysis screen"
   },
+
+  "analysisStyle": "Analysis style",
+
+  "analysisStyleProfessor": "The professor",
+
+  "analysisStyleCommentator": "The sports commentator",
+
+  "analysisStyleDocumentary": "The wildlife documentary",
+
+  "analysisStyleNoir": "The detective",
+
+  "analysisStyleBard": "The bard",
+
+  "analysisStyleCoach": "The coach",
+
+  "analysisStyleConsultant": "The consultant",
+
+  "analysisStyleAstrologer": "The astrologer",
+
+  "analysisStyleRealityTv": "The reality show",
 
   "generatingAnalysis": "Generating analysis…",
   "@generatingAnalysis": {

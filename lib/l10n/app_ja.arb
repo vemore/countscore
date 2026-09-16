@@ -255,7 +255,7 @@
 
   "featureGroupSharing": "グループ共有",
 
-  "featureZapZapAnalysis": "ZapZapゲーム分析",
+  "featureGameAnalysis": "AIによる対戦分析",
 
   "rateApp": "CountScore を評価する",
 
@@ -305,6 +305,26 @@
   "enterComment": "コメントを入力",
   "analyzeGame": "ゲームを分析",
   "analysisTitle": "ゲーム分析",
+  "analysisStyle": "分析のスタイル",
+
+  "analysisStyleProfessor": "教授",
+
+  "analysisStyleCommentator": "スポーツ実況",
+
+  "analysisStyleDocumentary": "動物ドキュメンタリー",
+
+  "analysisStyleNoir": "探偵",
+
+  "analysisStyleBard": "吟遊詩人",
+
+  "analysisStyleCoach": "コーチ",
+
+  "analysisStyleConsultant": "コンサルタント",
+
+  "analysisStyleAstrologer": "占星術師",
+
+  "analysisStyleRealityTv": "リアリティ番組",
+
   "generatingAnalysis": "分析を生成中…",
   "generateAnalysis": "分析を生成",
   "regenerateAnalysis": "分析を再生成",
