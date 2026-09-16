@@ -1,0 +1,53 @@
+CountScore é um contador de pontos e marcador de placar para suas partidas de cartas e jogos de tabuleiro. Seja qual for o jogo, ele anota os pontos por você.
+
+Ele substitui a súmula de papel: adicione os jogadores, lance os pontos rodada a rodada e veja os totais e a classificação se atualizarem sozinhos.
+
+JOGOS PARA OS QUAIS ELE SERVE
+
+CountScore não é o aplicativo oficial de ninguém: é um caderno de pontos para os jogos que você já tem.
+
+Ele serve para suas partidas de Skyjo, Uno, Buraco, Canastra, Truco e Pife. Serve para suas partidas de Palavras Cruzadas, Rummy, Yahtzee e Phase 10. Faz o mesmo numa noite de jogos de tabuleiro: Rummikub, Qwirkle, 6 nimmt!, Farkle ou dominó.
+
+Se o seu jogo não estiver nessa lista, você cria o seu próprio tipo de jogo em segundos: um nome, uma cor, um ícone e se vence a maior ou a menor pontuação. Tudo o que se joga por pontos cabe aqui.
+
+UM PLACAR QUE SEGUE AS SUAS REGRAS
+
+Vence a maior ou a menor pontuação: você decide, para cada tipo de jogo. Pontos positivos ou negativos, correção em qualquer rodada e a tabela de pontos se recalcula sozinha. Defina um limite e o CountScore avisa quem foi eliminado ou quando a partida acaba, como o Skyjo que termina em 100.
+
+JOGADORES E ESTATÍSTICAS
+
+Os jogadores são comuns a todas as partidas, então as estatísticas os acompanham de uma noite para a outra: partidas jogadas, vitórias, melhor pontuação e média. Nenhuma conta para criar.
+
+HISTÓRICO COMPLETO
+
+Cada partida encerrada guarda a súmula inteira. Abra de novo para ver quem marcou o quê em cada rodada e encerre a discussão "quem ganhou da última vez?".
+
+CONTAR PONTOS SEM INTERNET
+
+Suas partidas ficam no aparelho. Contar pontos, adicionar jogadores, ver estatísticas e histórico funcionam em modo avião: no acampamento, no ônibus, na casa de praia sem sinal.
+
+PERFEITO PARA
+
+Noites de jogos em família, torneios de cartas, clubes de jogos de tabuleiro, escola e férias. Se o jogo tem pontos, o CountScore conta.
+
+AVANÇADO: O SEU PRÓPRIO SERVIDOR (OPCIONAL)
+
+Duas funções vão além do aparelho e ambas exigem um servidor hospedado por você, a partir do código aberto do projeto. O CountScore não traz endereço nenhum: elas ficam desligadas até você digitar um em Configurações → Servidor.
+
+- Compartilhamento em grupo: crie um grupo ou entre em um com código de convite, e as partidas que você escolher compartilhar aparecem nos outros telefones do grupo; o que foi lançado offline sincroniza quando a conexão volta. As partidas não compartilhadas ficam no seu aparelho.
+- Análise ZapZap: peça um comentário escrito de uma partida encerrada. Para isso, as pontuações, os nomes dos jogadores e os comentários de rodada são enviados ao seu servidor, que pede a um modelo de IA para redigir. Nada sai sem você tocar no botão, e "Denunciar este comentário" avisa por e-mail quando um sai errado.
+
+PRIVACIDADE, DITA COM CLAREZA
+
+Sem conta, sem publicidade, sem estatísticas de uso, sem rastreamento. O cartão de Segurança dos Dados do Play lista três categorias; é isto que elas são de verdade: os nomes dos jogadores e o conteúdo das partidas só circulam se você pedir uma análise ou compartilhar uma partida com o seu grupo, e o "identificador do dispositivo" é um token aleatório que o seu próprio servidor emite ao entrar num grupo — não é identificador de hardware nem de publicidade, e não está ligado a identidade nenhuma. Sem servidor configurado, o app não faz uma única requisição de rede. O CountScore é de código aberto (licença MIT): dá para conferir tudo isso no código.
+
+TOTALMENTE GRÁTIS
+
+Sem anúncios, sem compras no app, sem assinatura.
+
+SUPORTE
+
+E-mail: scribio.ai@gmail.com
+Código-fonte: github.com/vemore/countscore
+
+Requer Android 7.0 ou superior.

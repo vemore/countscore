@@ -160,7 +160,7 @@ countscore/
 ├── android/             # Android platform code
 ├── test/                # Unit, Drift and migration tests
 ├── integration_test/    # End-to-end suite (web + real device)
-├── store_listing/       # Play Store assets and the per-locale listing text
+├── store_listing/       # Play Store assets and the listing text, in 10 locales
 ├── docs/                # Published by GitHub Pages — the privacy policy Play links to
 ├── scripts/             # Keystore, screenshots, privacy page, PWA deploy, hook self-test
 ├── .llmwiki/            # Durable project knowledge — start at INDEX.md
