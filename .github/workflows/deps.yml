@@ -112,6 +112,7 @@ jobs:
           summary '```'
           summary ""
           summary "Run the web e2e before merging if \`web/\` changed (\`.llmwiki/Testing.md\`)."
+          summary ""
 
           {
             echo "### What changed"

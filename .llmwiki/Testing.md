@@ -267,6 +267,12 @@ moved it commits to `chore/deps-YYYY-MM-DD`, pushes that branch and writes the r
 `gh pr create` line into the run summary. `material_color_utilities`, `cli_util` and
 `test_api` are pinned by the Flutter SDK and only `FLUTTER_VERSION` moves them.
 
+**It cannot be dry-run before it is on `main`.** GitHub only exposes the dispatch endpoint
+for a workflow present on the *default* branch, so `gh workflow run deps.yml --ref
+<branch>` answers `HTTP 404: Not Found` from a pull request branch. A new scheduled
+workflow is therefore first exercised by `gh workflow run deps.yml` right after its merge —
+and the branch that run pushes is deleted unless it is wanted.
+
 What covers them instead is **Dependabot alerts**, enabled on the repository on 2026-09-16
 together with the dependency graph they require. Both had been off since the repository was
 created: `gh api repos/{owner}/{repo}/dependabot/alerts` answered
