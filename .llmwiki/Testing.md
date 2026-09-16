@@ -240,17 +240,30 @@ pull request. The weekly `schedule:` run is what replaces that, and caps the exp
 at seven days; GitHub disables a scheduled workflow after 60 days of repository inactivity
 (`wip/todo_nr/2026-09-16-scheduled-workflow-auto-disabled.md`).
 
-**The Flutter dependencies have no scanner at all.** `.github/dependabot.yml` (weekly,
+**The Flutter dependencies have no scanner in CI.** `.github/dependabot.yml` (weekly,
 grouped: `uv`, `pub`, `github-actions`) raises *version* updates only, and only for the
 direct dependencies written in `pubspec.yaml` — a transitive package pinned in
 `pubspec.lock` is never proposed, and nothing ever runs `flutter pub upgrade`
 (`wip/todo_nr/2026-09-16-pubspec-lock-never-refreshed.md`).
 
-> **Status: Outdated** (2026-09-16) — this paragraph used to say Dependabot *alerts* covered
-> the Flutter dependencies. They do not: `gh api repos/{owner}/{repo}/dependabot/alerts`
-> answers `403 Dependabot alerts are disabled for this repository`, so no ecosystem here gets
-> advisories pushed to it. The backend is still audited by `pip-audit` on every run; `pub`
-> has nothing. `wip/todo_nr/2026-09-16-dependabot-alerts-disabled.md`.
+What covers them instead is **Dependabot alerts**, enabled on the repository on 2026-09-16
+together with the dependency graph they require. Both had been off since the repository was
+created: `gh api repos/{owner}/{repo}/dependabot/alerts` answered
+`403 Dependabot alerts are disabled for this repository`, and now answers `[]` — enabled,
+no open advisory on any ecosystem.
+
+Two things this does *not* give, and the difference matters:
+
+- **Nothing fails a build.** An alert is a notification on the repository, not a gate. Only
+  the backend has a gate (`pip-audit --strict`); a `pub` advisory still reaches nobody who
+  is not reading GitHub's security tab. That is why
+  `wip/todo_nr/2026-09-16-dependabot-alerts-disabled.md` stays open for the CI half.
+- **Nothing opens a fix.** *Dependabot security updates* — the setting that turns an alert
+  into a pull request — is deliberately left off, so a security bump arrives on the normal
+  weekly version-update schedule like any other.
+
+A repository setting can also be switched off again without leaving a trace in git, which is
+the other reason the CI gate is the durable half of this.
 
 Not in CI on purpose: the e2e suite (it calls the real production endpoint) and the signed
 release APK/AAB (needs the keystore secrets).
