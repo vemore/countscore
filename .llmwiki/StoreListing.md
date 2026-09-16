@@ -35,13 +35,13 @@ Adding a language to `lib/l10n/` does not add a store locale, and the reverse is
 **Release notes stay in `en-US` and `fr-FR` only** — the 8 new locales deliberately have no
 `release_notes_*.txt`.
 
-> **Publishing dependency (2026-09-16).** `play_publish.py` holds
-> `LOCALES = ("en-US", "fr-FR")` and iterates it for the listing text, the release notes and
-> the graphics. Until that list is split — every `store_listing/<locale>/` directory for the
-> text, the two release-note locales unchanged — **the eight new locales exist in the
-> repository but are not uploaded**, and a Play locale with no graphics of its own falls back
-> to the default language's. That change is owned by the `chore/play-publish-listing` pull
-> request, not by this page.
+> **Published on 2026-09-16.** `play_publish.py listing --commit` pushed the ten locales
+> live in one edit (`edits.validate OK`, `committed: store listing for ar, de-DE, en-US,
+> es-ES, fr-FR, hi-IN, ja-JP, pt-BR, ru-RU, zh-CN — live, no rollout`). It ran against
+> `1.1.0+4`, the build already in production: **a listing is independent of the app version**,
+> so no bump and no rebuild were needed. The Console header changed immediately; the public
+> store page keeps serving the old title for a while, because a title change goes through
+> review and the page is cached.
 
 ### Keyword targets
 
@@ -104,13 +104,20 @@ byte count would be two to three times the real length.
 
 ### Category and tags
 
-Declared in the Console: app type **App**, category **Tools**, tags **Tools, Productivity**.
-The tags drive the "similar apps" group, and on 2026-09-16 the public listing's *More apps to
+Declared in the Console: app type **App**, category **Tools**, tags **Entertainment, Tools**
+(changed 2026-09-16 — *Productivity* removed, *Entertainment* added).
+
+The tags drive the "similar apps" group. Before the change, the public listing's *More apps to
 try* block offered Windy, Google Cloud, ChatGPT, Uber, Microsoft Launcher and Gemini
-Notebook — no score counter. The tag picker has **no board-game or score tag at all**; the
-only relevant one available is **Entertainment**. Changing this is Console-only work:
-`play_publish.py` handles neither the category nor the tags
-(`wip/todo_nr/2026-09-16-store-category-and-tags-misplace-the-app.md`).
+Notebook — no score counter. The tag picker has **no board-game or score tag at all**, checked
+entry by entry: searching it for *jeu*, *score*, *loisir* or *famille* returns nothing usable,
+so **Entertainment** is the whole of the available lever. The category stays **Tools**, where
+the 500 K-install leader also sits; *Games* would be a false declaration, since CountScore is
+not a game.
+
+Changing either is Console-only work — `play_publish.py` handles neither
+(*Grow → Store presence → Store listing settings*). **Re-check the *More apps to try* block a
+few days after a tag change and record what it shows here.**
 
 ### Baseline, measured in the Console on 2026-09-16
 
@@ -125,7 +132,7 @@ The numbers the next listing change is judged against. 28-day window:
 | Active devices (monthly) | 6 |
 | Total installs, all time | ~10 |
 | Ratings | **0** |
-| Category / tags | Tools / Tools, Productivity |
+| Category / tags | Tools / Tools, Productivity (both changed the same day) |
 | Store locales before this change | 2 (`en-US`, `fr-FR`) |
 
 Read it as: conversion is not the problem, **visibility is**. Search checks the same day, FR
