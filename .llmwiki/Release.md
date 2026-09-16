@@ -1,7 +1,7 @@
 # Release
 
 > Scope: the Play Store configuration state. For the procedure, use the `release-android` skill.
-> Related: [[MobileApp]] · [[Testing]] · [[KnownLimits]] · [[Documentation]]
+> Related: [[MobileApp]] · [[StoreListing]] · [[Testing]] · [[KnownLimits]] · [[Documentation]]
 > Updated: 2026-09-16
 
 ## Facts
@@ -133,18 +133,14 @@ A step in the `android` CI job asserts `INTERNET` in the main manifest, and the
 > release build does not merge, so the analysis failed with a `SocketException` in every
 > signed build while working in debug. See `wip/done/ARCHIVE-2026-09.md`.
 
-### Store assets
+### Store listing and assets
 
-`store_listing/` holds the listing assets, including the committed per-locale listing text
-under `en-US/` and `fr-FR/`. `scripts/capture_screenshots.sh` pulls screenshots over ADB.
-`store_listing/assets/` has the 512×512 icon, eight phone screenshots and the 1024×500
-feature graphic `feature_graphic.png` (Template 1 of `store_listing/FEATURE_GRAPHIC_TEMPLATES.md`:
-icon, name, tagline and the scoring-grid screenshot in a phone frame, drawn with Pillow).
-`play_publish.py publish --graphics` uploads the screenshots (in name order) and the graphic
-to both listing locales.
-The listing text describes both network features — group sharing and the ZapZap analysis —
-as reaching only the server the user enters in Settings → Server; it must never say "our
-server" or claim the app has no sync (checked against `privacy_policy.md` v2.5).
+The listing text, its locales, the keyword targets, the category and tags, and the assets are
+[[StoreListing]]. What belongs here is the publishing constraint: the per-locale text and
+images in `store_listing/` are what `play_publish.py publish --listing --graphics` uploads, so
+a field changed in the Console and not in the repository reverts at the next release, and the
+copy must stay true to what ships — never "our server", never a denial of sync.
+
 `privacy_policy.md`, `PLAY_STORE_DATA_SAFETY.md` and `THIRD_PARTY_LICENSES.md` are the
 compliance documents; `scripts/build_privacy_page.py` renders the policy to
 `docs/privacy-policy.html`, which GitHub Pages serves as the URL the Play Console holds.
@@ -204,6 +200,12 @@ resolves, then fill the form as `PLAY_STORE_DATA_SAFETY.md` describes.
 
 ## Decisions & History
 
+- **The store listing left this page for [[StoreListing]] (2026-09-16).** Rewriting the copy
+  for search added locales, keyword targets, category and tags, a competitive picture and a
+  measured baseline — none of which is "the Play Store configuration state" this page is
+  scoped to. The §*Store assets* block and the vocabulary rule moved rather than being
+  duplicated (`wip/README.md`: prefer replacing to adding); what stayed here is the one fact
+  that belongs to publishing — the repository, not the Console, owns the text.
 - **Only the Play app signing key is registered for developer verification (2026-09-16).**
   The Console banner asking to register package names and signing keys turned out to need no
   action: Google had already registered `com.vemore.countscore` with its own app signing key,

@@ -30,7 +30,7 @@ Load this file first. Then read only the pages your task touches.
 | [[MobileApp]] | `lib/` layout, providers, screens, the dynamic-icon constraint | 2026-09-15 |
 | [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-09-13 |
 | [[SchemaV10]] | Schema v11: the twelve tables, sync bookkeeping and capture triggers, tombstones, the migration chain | 2026-09-13 |
-| [[I18n]] | 10 languages × 235 keys, French template, English fallback | 2026-09-15 |
+| [[I18n]] | 10 languages × 235 keys, French template, English fallback; store locales differ | 2026-09-16 |
 | [[Web]] | PWA specifics: sqlite3.wasm, OPFS, committed binaries, `kIsWeb` guards, base href | 2026-09-15 |
 
 ## Backend (FastAPI)
@@ -52,7 +52,8 @@ Load this file first. Then read only the pages your task touches.
 | [[ParallelDelivery]] | Protection on main, worktrees, local cleanup, why one PR per theme and serial squash merges (`wip/` format: `wip/README.md`) | 2026-09-14 |
 | [[Security]] | Defended surfaces, and the security debt that is knowingly open | 2026-09-14 |
 | [[Testing]] | Unit, Drift, migration, e2e web and device; backend pytest, release tooling; CI jobs, `alembic check`, dependency audit | 2026-09-15 |
-| [[Release]] | Play Store signing state, publishing through the Play API, target API, 2026 Play policy constraints, release cadence and pruning pass | 2026-09-15 |
+| [[Release]] | Play Store signing state, publishing through the Play API, target API, 2026 Play policy constraints, release cadence and pruning pass | 2026-09-16 |
+| [[StoreListing]] | The 10 store locales, the keyword per market, category and tags, the assets, Play's text limits, and the 2026-09-16 acquisition baseline | 2026-09-16 |
 
 ## Procedures live in skills, not here
 

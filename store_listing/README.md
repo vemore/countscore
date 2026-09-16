@@ -1,254 +1,109 @@
-# CountScore - Google Play Store Listing
+# CountScore — Google Play store listing
 
-This directory contains all materials for the Google Play Store listing.
+The committed source of truth for everything the Play Store page shows.
 
-## Directory Structure
+`.claude/skills/release-android/scripts/play_publish.py publish --listing --graphics` uploads
+these files to the Console. **A field edited in the Console and not here silently reverts at
+the next release.** The durable facts — which locales, which keyword per market, the
+category, the acquisition baseline — are `.llmwiki/StoreListing.md`; the Console walkthrough
+is `PUBLISHING.md`.
 
-```
-store_listing/
-├── en-US/                          # English (United States) listing
-│   ├── title.txt                   # App name (50 chars max)
-│   ├── short_description.txt       # Short description (80 chars max)
-│   ├── full_description.txt        # Full description (4000 chars max)
-│   └── release_notes_v1.0.0.txt   # Release notes for v1.0.0
-├── fr-FR/                          # French (France) listing
-│   ├── title.txt                   # App name (50 chars max)
-│   ├── short_description.txt       # Short description (80 chars max)
-│   ├── full_description.txt        # Full description (4000 chars max)
-│   └── release_notes_v1.0.0.txt   # Release notes for v1.0.0
-├── assets/                         # Visual assets (create these)
-│   ├── icon_512.png               # App icon 512×512 (REQUIRED)
-│   ├── feature_graphic.png        # Feature graphic 1024×500 (REQUIRED)
-│   └── screenshots/               # Screenshots (REQUIRED)
-│       ├── phone/                 # Phone screenshots (2-8 required)
-│       └── tablet/                # Tablet screenshots (optional)
-├── ASSET_REQUIREMENTS.md          # Complete asset specifications
-└── README.md                      # This file
-```
-
-## What's Included
-
-### Store Listing Copy ✅
-
-All text content is ready to use in **2 languages**:
-
-**English (en-US)** and **French (fr-FR)**:
-1. **title.txt** - "CountScore - Score Tracker" / "CountScore - Suivi de Score"
-2. **short_description.txt** - Engaging description (under 80 chars)
-3. **full_description.txt** - 3,500+ character comprehensive description with:
-   - Feature highlights
-   - Use cases
-   - Privacy focus
-   - SEO-optimized keywords
-4. **release_notes_v1.0.0.txt** - Launch announcement for v1.0.0
-
-### Asset Specifications ✅
-
-Complete requirements documented in `ASSET_REQUIREMENTS.md`:
-- App icon specifications (512×512)
-- Feature graphic specifications (1024×500)
-- Screenshot requirements and strategies
-- Design tips and tools
-- Quality checklist
-
-## What You Need to Create
-
-### Required Visual Assets
-
-Before you can publish, you need to create:
-
-1. **App Icon** (512×512px PNG)
-   - High-resolution version of your app icon
-   - See: `ASSET_REQUIREMENTS.md` for specifications
-
-2. **Feature Graphic** (1024×500px)
-   - Promotional banner for Play Store
-   - See: `ASSET_REQUIREMENTS.md` for design ideas
-
-3. **Screenshots** (minimum 2, recommended 4-8)
-   - Phone screenshots showing key features
-   - See: `ASSET_REQUIREMENTS.md` for capture guide
-
-Save these files in the `assets/` directory:
-```
-assets/
-├── icon_512.png
-├── feature_graphic.png
-└── screenshots/
-    └── phone/
-        ├── 01_main_screen.png
-        ├── 02_players.png
-        ├── 03_history.png
-        └── 04_games.png
-```
-
-## How to Use
-
-### 1. Review Store Listing Copy
-
-Read through the text files in `en-US/`:
-- Edit if you want to personalize the content
-- Replace placeholder email/GitHub URLs
-- Ensure it accurately represents your app
-
-### 2. Create Visual Assets
-
-Follow the guide in `ASSET_REQUIREMENTS.md`:
-- Design app icon (512×512)
-- Create feature graphic (1024×500)
-- Capture screenshots (4-8 recommended)
-
-### 3. Upload to Play Console
-
-In Google Play Console:
-
-**Store Presence > Main store listing**:
-1. App name: Copy from `title.txt`
-2. Short description: Copy from `short_description.txt`
-3. Full description: Copy from `full_description.txt`
-4. App icon: Upload `assets/icon_512.png`
-5. Feature graphic: Upload `assets/feature_graphic.png`
-6. Phone screenshots: Upload from `assets/screenshots/phone/`
-
-**Production > Releases**:
-1. Release notes: Copy from `release_notes_v1.0.0.txt`
-
-## Localization
-
-### Available Languages ✅
-
-CountScore store listing is currently available in:
-- 🇺🇸 **en-US** - English (United States)
-- 🇫🇷 **fr-FR** - French (France)
-
-### Adding More Languages
-
-To add support for additional languages, create new directories:
+## Layout
 
 ```
 store_listing/
-├── en-US/           # English (United States) ✅
-├── fr-FR/           # French (France) ✅
-├── es-ES/           # Spanish (Spain)
-├── de-DE/           # German (Germany)
-├── it-IT/           # Italian (Italy)
-├── pt-BR/           # Portuguese (Brazil)
-└── ...
+├── <play-locale>/                  # one directory per published locale
+│   ├── title.txt                   # app name, 30 characters max
+│   ├── short_description.txt       # 80 characters max
+│   ├── full_description.txt        # 4000 characters max
+│   └── release_notes_v<x.y.z>.txt  # 500 characters max — en-US and fr-FR only
+├── assets/
+│   ├── icon_512.png                # 512×512, also the source of the Android launcher icons
+│   ├── feature_graphic.png         # 1024×500, opaque
+│   └── screenshots/phone/          # 8 captures, 01_… to 08_…
+├── ASSET_REQUIREMENTS.md           # image specifications
+├── ASSET_CREATION_CHECKLIST.md · COLOR_THEME_GUIDE.md
+├── FEATURE_GRAPHIC_TEMPLATES.md · ICON_DESIGN_GUIDE.md · SCREENSHOT_GUIDE.md
+└── README.md                       # this file
 ```
 
-Each language directory should contain:
-- title.txt
-- short_description.txt
-- full_description.txt
-- release_notes_vX.X.X.txt
+The ten published locales are Play's identifiers, **not** the app's:
 
-Screenshots can be reused or localized as needed.
+| Play locale | App ARB | | Play locale | App ARB |
+|---|---|---|---|---|
+| `ar` | `app_ar.arb` | | `ja-JP` | `app_ja.arb` |
+| `de-DE` | `app_de.arb` | | `pt-BR` | `app_pt.arb` |
+| `en-US` | `app_en.arb` | | `ru-RU` | `app_ru.arb` |
+| `es-ES` | `app_es.arb` | | `zh-CN` | `app_zh.arb` |
+| `fr-FR` | `app_fr.arb` | | `hi-IN` | `app_hi.arb` |
 
-## Tips for Success
+Adding a language to `lib/l10n/` does not create the listing for it, and vice versa.
 
-### Store Listing Copy
+> **Not published yet.** `play_publish.py` iterates a hardcoded `LOCALES = ("en-US", "fr-FR")`
+> for the text, the notes and the graphics, so the eight locales added on 2026-09-16 are
+> committed but not uploaded. Widening that list (text: every directory here; notes: still the
+> two) belongs to the `chore/play-publish-listing` work — `.llmwiki/StoreListing.md`.
 
-**DO**:
-- ✅ Highlight unique features
-- ✅ Focus on user benefits
-- ✅ Use clear, concise language
-- ✅ Include relevant keywords naturally
-- ✅ Mention "free", "no ads", "privacy" (competitive advantages)
+## Limits, and how to check them
 
-**DON'T**:
-- ❌ Make false claims
-- ❌ Keyword stuff
-- ❌ Use all caps excessively
-- ❌ Mention competitors by name
+| Field | Play limit |
+|---|---|
+| `title.txt` | 30 characters |
+| `short_description.txt` | 80 characters |
+| `full_description.txt` | 4000 characters |
+| `release_notes_v*.txt` | 500 characters per locale |
 
-### Visual Assets
+`play_publish.py` refuses a file over the limit, so a bad edit fails the release rather than
+the review. Check locally with **`wc -m`, never `wc -c`** — every non-Latin locale here is
+multi-byte and the byte count would be two to three times the real length:
 
-**Quality Matters**:
-- Professional-looking assets increase conversion rates
-- First impressions are critical
-- Consistency across all assets
+```bash
+for d in store_listing/*/; do
+  printf '%-7s %3s %3s %5s\n' "$(basename "$d")" \
+    "$(wc -m < "$d/title.txt")" \
+    "$(wc -m < "$d/short_description.txt")" \
+    "$(wc -m < "$d/full_description.txt")"
+done
+```
 
-**Testing**:
-- Preview on different device sizes
-- Check readability at small sizes
-- Get feedback before finalizing
+The files carry **no trailing newline**: the Console shows one as part of the field.
 
-## Character Limits Reference
+## Writing the copy
 
-Quick reference for Play Console text fields:
+The full rules and the reasoning are in `.llmwiki/StoreListing.md`. The ones that get a
+release rejected or wasted:
 
-| Field | Limit | Current |
-|-------|-------|---------|
-| App name | 50 chars | 26 chars ✅ |
-| Short description | 80 chars | 79 chars ✅ |
-| Full description | 4000 chars | ~3500 chars ✅ |
-| Release notes | 500 chars | ~450 chars ✅ |
+- **Never "our server", and never claim the app has no sync.** Group sharing and the ZapZap
+  analysis are real and reach the server *the user hosts*. "100 % offline" or "no data leaves
+  the device" contradicts the Data Safety declaration — the first rejection reason in
+  `PUBLISHING.md`. This holds in all ten languages, not only the two you can read.
+- **No backend URL, anywhere** (`CLAUDE.md`).
+- **No third-party game name in `title.txt`.** Uno, Skyjo, Scrabble, Phase 10 and Yahtzee are
+  trademarks and the title is where Play enforces it. In the descriptions they are used
+  descriptively — "works for your games of …", never "official app".
+- **No keyword stuffing.** Play's Metadata policy forbids a comma block of game names; they go
+  into sentences.
+- **The head keyword opens the title**, before the brand, in every locale.
+- `en-US/release_notes_v1.0.0.txt` and `fr-FR/release_notes_v1.0.0.txt` describe 1.0.x, which
+  had no networking at all. They are history — never publish them against a 1.1.0+ build.
 
-## Asset Size Reference
+## Assets
 
-| Asset | Dimensions | Format | Max Size |
-|-------|------------|--------|----------|
-| App icon | 512 × 512 | PNG (32-bit) | 1 MB |
-| Feature graphic | 1024 × 500 | JPEG/PNG (24-bit) | ~1 MB |
-| Screenshots | See ASSET_REQUIREMENTS.md | JPEG/PNG (24-bit) | 8 MB each |
+Committed and published since 2026-09-15: the icon, the feature graphic and eight phone
+screenshots. Specifications are in `ASSET_REQUIREMENTS.md`; `scripts/capture_screenshots.sh`
+pulls fresh captures over ADB.
 
-## Maintenance
+Known gap: the eight screenshots are raw 1080×2400 RGBA captures, which is wider than the
+16:9 Play asks for and carries an alpha channel it does not allow, with no caption and no
+localization — `wip/todo_nr/2026-09-16-screenshots-are-raw-captures.md`. There is no tablet
+set, because no screen has a large-screen layout yet
+(`wip/todo_nr/2026-09-16-no-large-screen-layout.md`).
 
-### Updating for New Versions
+## Releasing a change to the listing
 
-When releasing updates:
-
-1. Create new release notes:
-   ```
-   release_notes_v1.1.0.txt
-   release_notes_v1.2.0.txt
-   ```
-
-2. Update full description if features change
-
-3. Update screenshots if UI changes significantly
-
-### A/B Testing
-
-Consider testing different:
-- Short descriptions
-- Screenshot orders
-- Feature graphic designs
-
-Google Play Console supports A/B testing for store listings.
-
-## Resources
-
-- **Play Console Help**: https://support.google.com/googleplay/android-developer
-- **Material Design**: https://material.io/
-- **App Store Optimization**: https://developer.android.com/distribute/best-practices/grow
-
-## Checklist
-
-Before submitting to Play Store:
-
-**Text Content**:
-- [ ] Reviewed all text files
-- [ ] Replaced placeholders (email, URLs)
-- [ ] Verified character limits
-- [ ] Spell-checked content
-- [ ] Accurate feature descriptions
-
-**Visual Assets**:
-- [ ] Created 512×512 app icon
-- [ ] Created 1024×500 feature graphic
-- [ ] Captured 4-8 screenshots
-- [ ] All assets meet specifications
-- [ ] Previewed on multiple devices
-
-**Upload**:
-- [ ] Uploaded all text to Play Console
-- [ ] Uploaded all visual assets
-- [ ] Previewed store listing
-- [ ] Looks professional and accurate
-
----
-
-**Status**: Store listing copy ✅ Ready | Visual assets ⚠️ Need creation
-
-See `ASSET_REQUIREMENTS.md` for detailed asset creation guide.
+1. Edit the files, per locale.
+2. Check the character counts with the loop above.
+3. Re-read the two rules that get releases rejected: no "our server", no denial of sync.
+4. Commit — the listing is published by `release-android` §8, with the release.
+5. Anything the API cannot reach — the category, the store tags, the Data Safety review — is
+   manual Console work, listed in `PUBLISHING.md`.

@@ -1,1 +1,1 @@
-Suivi de score simple et puissant. Sans pubs ni tracking. Fonctionne hors ligne.
+Compteur de points pour Skyjo, Belote, Tarot, Uno, Rami. Hors ligne, sans pub.
