@@ -16,7 +16,7 @@ Vence a maior ou a menor pontuação: você decide, para cada tipo de jogo. Pont
 
 JOGADORES E ESTATÍSTICAS
 
-Os jogadores são comuns a todas as partidas, então as estatísticas os acompanham de uma noite para a outra: partidas jogadas, vitórias, melhor pontuação e média. Nenhuma conta para criar.
+Os jogadores são comuns a todas as partidas, então as estatísticas os acompanham de uma noite para a outra: partidas jogadas, vitórias, taxa de vitórias e o detalhamento por tipo de jogo. Nenhuma conta para criar.
 
 HISTÓRICO COMPLETO
 
