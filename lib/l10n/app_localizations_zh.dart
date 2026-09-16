@@ -433,6 +433,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get featureZapZapAnalysis => 'ZapZap 游戏分析';
 
   @override
+  String get rateApp => '为 CountScore 评分';
+
+  @override
   String get credits => '致谢';
 
   @override

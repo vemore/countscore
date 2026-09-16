@@ -444,6 +444,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get featureZapZapAnalysis => 'Analyse des parties ZapZap';
 
   @override
+  String get rateApp => 'Noter CountScore';
+
+  @override
   String get credits => 'Crédits';
 
   @override
