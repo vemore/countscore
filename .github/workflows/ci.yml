@@ -9,6 +9,10 @@ on:
   # (Dependabot alerts notify but gate nothing), and it no longer runs on a pull
   # request that leaves backend/ alone: this is what caps the exposure window at
   # a week. Same cadence as .github/dependabot.yml.
+  #
+  # GitHub disables a schedule-only workflow after 60 days of repository inactivity
+  # and nothing here goes red when it does, so scripts/check_scheduled_runs.sh
+  # watches this trigger (and deps.yml's) from the session-start hook.
   schedule:
     - cron: "17 6 * * 1"
   workflow_dispatch:

@@ -242,8 +242,8 @@ advisory fails the job. One with no fix yet is ignored explicitly with `--ignore
 the step and tracked by a `wip/` entry, never left red. **It no longer runs on a pull
 request that leaves `backend/` alone** — it used to, incidentally, on every documentation
 pull request. The weekly `schedule:` run is what replaces that, and caps the exposure window
-at seven days; GitHub disables a scheduled workflow after 60 days of repository inactivity
-(`wip/todo_nr/2026-09-16-scheduled-workflow-auto-disabled.md`).
+at seven days — as long as it still fires, which is what `scripts/check_scheduled_runs.sh`
+watches (below).
 
 **The Flutter dependencies have no scanner in CI.** `.github/dependabot.yml` (weekly,
 grouped: `uv`, `pub`, `github-actions`) raises *version* updates only, and only for the
@@ -277,6 +277,20 @@ for a workflow present on the *default* branch, so `gh workflow run deps.yml --r
 <branch>` answers `HTTP 404: Not Found` from a pull request branch. A new scheduled
 workflow is therefore first exercised by `gh workflow run deps.yml` right after its merge —
 and the branch that run pushes is deleted unless it is wanted.
+
+**Both crons are watched, because GitHub turns them off.** A workflow triggered by a
+`schedule:` and nothing else is disabled after 60 days without repository activity, and
+re-enabling it is a manual click. Neither of these two goes red when it stops — a scheduled
+run has no pull request in front of it. `scripts/check_scheduled_runs.sh` asks GitHub for the
+state of `ci.yml` and `deps.yml` (`disabled_inactivity` is GitHub's own name for the rule)
+and for the age of each one's newest `schedule`-event run, against a threshold per workflow:
+10 days for the weekly, 40 for the monthly. It exits 0 silent when both are healthy, 1 with a
+report, and 3 — also silent — when it cannot ask. `.claude/hooks/session-start.sh` runs it at
+most once a day ([[Hooks]]); nothing in CI does, since a check of the crons that is itself a
+cron has the same problem. Run it by hand any time: `scripts/check_scheduled_runs.sh`.
+Its answers — fresh, overdue, disabled, never run, unauthenticated, not GitHub — are pinned
+offline in `scripts/hooks_selftest.sh` against a stubbed `gh`, together with the hook's
+once-a-day stamp.
 
 What covers them instead is **Dependabot alerts**, enabled on the repository on 2026-09-16
 together with the dependency graph they require. Both had been off since the repository was
@@ -326,8 +340,10 @@ automated coverage at all and must be checked on a device.
   App, both a new secret to store and rotate for a repository whose only user is its author;
   the branch plus a copy-pasteable `gh pr create` line costs one command and no secret.
   `deps.yml` is the second workflow exposed to GitHub disabling a scheduled workflow after
-  60 days of repository inactivity — recorded in
-  `wip/todo_nr/2026-09-16-scheduled-workflow-auto-disabled.md`, not fixed here.
+  60 days of repository inactivity — closed since by
+  `wip/done/2026-09-16-scheduled-workflow-auto-disabled.md`: both crons are now watched from
+  the session-start hook (above), rather than moved to a daily cadence, which would have
+  rested on the unverified premise that a scheduled run is itself "repository activity".
 - **The binary check is a script, not inline YAML** (2026-09-16). The same command has to
   be the CI gate, the local check and the fix (`--refresh`), or the fix drifts from what the
   gate demands — which is how `web/drift_worker.js` was left behind by Dependabot #43 in the

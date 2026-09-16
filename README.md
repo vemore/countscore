@@ -165,7 +165,7 @@ countscore/
 ├── integration_test/    # End-to-end suite (web + real device)
 ├── store_listing/       # Play Store assets and the listing text, in 10 locales
 ├── docs/                # Published by GitHub Pages — the privacy policy Play links to
-├── scripts/             # Keystore, screenshots, privacy page, PWA deploy, web binaries, self-tests
+├── scripts/             # Keystore, screenshots, privacy page, PWA deploy, web binaries, CI freshness, self-tests
 ├── .llmwiki/            # Durable project knowledge — start at INDEX.md
 └── pubspec.yaml
 ```
@@ -248,6 +248,13 @@ dependencies *written in* `pubspec.yaml`, so
 [`.github/workflows/deps.yml`](.github/workflows/deps.yml) runs `flutter pub upgrade`
 monthly for the transitive half, refreshes the committed `web/` binaries to match, runs the
 gates and pushes a `chore/deps-<date>` branch when anything moved.
+
+Both of those cadences are load-bearing and both are triggered by a `schedule:` alone, which
+GitHub disables after 60 days without repository activity — silently, since a scheduled run
+has no pull request in front of it.
+[`scripts/check_scheduled_runs.sh`](scripts/check_scheduled_runs.sh) asks GitHub whether each
+one is still enabled and still firing within its own period, and the Claude Code session-start
+hook runs it once a day.
 
 ### Contributing
 
