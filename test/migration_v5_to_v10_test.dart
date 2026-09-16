@@ -166,6 +166,16 @@ void main() {
     final games = await DriftGameRepository(db).getAll();
     expect(games.map((g) => g.name), ['Jeudi', 'Mardi']);
     expect(games.every((g) => g.gameTypeId == 1), isTrue);
+    // v13: this fixture holds one type, ZapZap. It is back-filled in place —
+    // same row, same id, so the games still point at it — and the twelve types
+    // the seed never held arrive alongside it. The nine other pre-v13 types
+    // were never in this database and are *not* resurrected: 1 + 12 = 13.
+    final types = await DriftGameTypeRepository(db).getAll();
+    expect(types.where((t) => t.builtinKey == 'zapzap').map((t) => t.id), [1]);
+    expect(types, hasLength(13));
+    expect(types.every((t) => t.builtinKey != null), isTrue);
+    expect(types.map((t) => t.builtinKey), contains('mille_bornes'));
+    expect(types.map((t) => t.builtinKey), isNot(contains('skyjo')));
     expect(games.every((g) => g.isFinished), isFalse,
         reason: 'v12 adds finishedAt as null; no existing game becomes finished');
 

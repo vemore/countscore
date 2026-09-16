@@ -111,7 +111,7 @@ class AboutScreen extends StatelessWidget {
                         _buildFeature(Icons.group, l10n.featureGroupSharing),
                         _buildFeature(
                           Icons.auto_awesome,
-                          l10n.featureZapZapAnalysis,
+                          l10n.featureGameAnalysis,
                         ),
                       ],
                     ),

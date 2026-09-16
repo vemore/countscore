@@ -349,6 +349,11 @@ class _HomeScreenState extends State<HomeScreen> {
     final l10n = AppLocalizations.of(context)!;
     final cardColor = gameType?.cardColor ?? Colors.deepPurple;
     final gameIcon = gameType?.icon ?? Icons.sports_esports;
+    // A game with no round yet was never played, so there is nothing to declare
+    // over — the same rule the board applies, and the one that keeps an empty
+    // game out of the review prompt's count. Reopening stays offered whatever
+    // the rounds.
+    final canFinish = game.isFinished || gameProvider.roundCountOf(game.id!) > 0;
 
     return FutureBuilder<List<dynamic>>(
       future: _getGamePlayers(gameProvider, game.id!),
@@ -433,16 +438,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                 ),
-                PopupMenuItem(
-                  value: 'finish_game',
-                  child: Row(
-                    children: [
-                      Icon(game.isFinished ? Icons.replay : Icons.flag_outlined),
-                      const SizedBox(width: 8),
-                      Text(game.isFinished ? l10n.reopenGame : l10n.endGame),
-                    ],
+                if (canFinish)
+                  PopupMenuItem(
+                    value: 'finish_game',
+                    child: Row(
+                      children: [
+                        Icon(game.isFinished
+                            ? Icons.replay
+                            : Icons.flag_outlined),
+                        const SizedBox(width: 8),
+                        Text(game.isFinished ? l10n.reopenGame : l10n.endGame),
+                      ],
+                    ),
                   ),
-                ),
                 PopupMenuItem(
                   value: 'delete',
                   child: Row(
@@ -509,13 +517,29 @@ class _HomeScreenState extends State<HomeScreen> {
     final l10n = AppLocalizations.of(context)!;
     final group = context.read<GroupProvider>();
     if (value == 'finish_game') {
-      final justFinished =
-          await gameProvider.setGameFinished(game.id!, !game.isFinished);
+      // Captured before the await: the card this menu belongs to may be gone
+      // from the tree by the time the write returns.
+      final messenger = ScaffoldMessenger.of(context);
+      final gameId = game.id!;
+      final finished = !game.isFinished;
+      final justFinished = await gameProvider.setGameFinished(gameId, finished);
       // Same guard as the board: only a game that was open and now is not
       // counts towards the review prompt.
       if (justFinished) {
         unawaited(ReviewPromptService.instance.onGameFinished());
       }
+      // The whole feedback used to be a 16 px flag appearing under the user's
+      // finger. The action is reversible, so say what happened and offer it.
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(
+          content:
+              Text(finished ? l10n.gameMarkedFinished : l10n.gameReopened),
+          action: SnackBarAction(
+            label: l10n.undo,
+            onPressed: () => gameProvider.setGameFinished(gameId, !finished),
+          ),
+        ));
     } else if (value == 'new_same') {
       await gameProvider.loadGame(game.id!);
       final playerNames = gameProvider.currentPlayers.map((p) => p.name).toList();

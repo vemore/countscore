@@ -49,7 +49,7 @@ void main() {
     expect(find.text('Version 1.1.0'), findsOneWidget);
     expect(find.textContaining('1.0.0'), findsNothing);
     expect(find.text('Group sharing'), findsOneWidget);
-    expect(find.text('ZapZap game analysis'), findsOneWidget);
+    expect(find.text('AI game analysis'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     tester.view.physicalSize = const Size(320, 568);

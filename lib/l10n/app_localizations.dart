@@ -876,11 +876,11 @@ abstract class AppLocalizations {
   /// **'Partage en groupe'**
   String get featureGroupSharing;
 
-  /// Feature: LLM-generated analysis of ZapZap games
+  /// Feature: LLM-generated analysis of a finished game, any game type
   ///
   /// In fr, this message translates to:
-  /// **'Analyse des parties ZapZap'**
-  String get featureZapZapAnalysis;
+  /// **'Analyse des parties par IA'**
+  String get featureGameAnalysis;
 
   /// About screen entry opening the app's Play Store listing
   ///
@@ -1056,6 +1056,24 @@ abstract class AppLocalizations {
   /// **'Terminée'**
   String get gameFinished;
 
+  /// Snackbar action that reverts the action just confirmed
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler'**
+  String get undo;
+
+  /// Snackbar confirming a game was just marked finished
+  ///
+  /// In fr, this message translates to:
+  /// **'Partie terminée'**
+  String get gameMarkedFinished;
+
+  /// Snackbar confirming a finished game was just reopened
+  ///
+  /// In fr, this message translates to:
+  /// **'Partie rouverte'**
+  String get gameReopened;
+
   /// No description provided for @comment.
   ///
   /// In fr, this message translates to:
@@ -1079,6 +1097,66 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Analyse de la partie'**
   String get analysisTitle;
+
+  /// Label of the row of chips picking the voice an analysis is written in
+  ///
+  /// In fr, this message translates to:
+  /// **'Style d\'analyse'**
+  String get analysisStyle;
+
+  /// Analysis style: caustic, unfair professor who marks out of 20 — the default
+  ///
+  /// In fr, this message translates to:
+  /// **'Le professeur'**
+  String get analysisStyleProfessor;
+
+  /// Analysis style: live sports commentator
+  ///
+  /// In fr, this message translates to:
+  /// **'Le commentateur sportif'**
+  String get analysisStyleCommentator;
+
+  /// Analysis style: wildlife documentary narrator
+  ///
+  /// In fr, this message translates to:
+  /// **'Le documentaire animalier'**
+  String get analysisStyleDocumentary;
+
+  /// Analysis style: film-noir private detective
+  ///
+  /// In fr, this message translates to:
+  /// **'Le détective'**
+  String get analysisStyleNoir;
+
+  /// Analysis style: medieval bard singing an epic
+  ///
+  /// In fr, this message translates to:
+  /// **'Le barde'**
+  String get analysisStyleBard;
+
+  /// Analysis style: warm, encouraging coach
+  ///
+  /// In fr, this message translates to:
+  /// **'Le coach'**
+  String get analysisStyleCoach;
+
+  /// Analysis style: management consultant's quarterly review, as parody
+  ///
+  /// In fr, this message translates to:
+  /// **'Le consultant'**
+  String get analysisStyleConsultant;
+
+  /// Analysis style: astrologer reading the game like a star chart
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'astrologue'**
+  String get analysisStyleAstrologer;
+
+  /// Analysis style: reality-TV voice-over
+  ///
+  /// In fr, this message translates to:
+  /// **'La téléréalité'**
+  String get analysisStyleRealityTv;
 
   /// Shown while the LLM is generating
   ///
@@ -1541,6 +1619,264 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Aucune application e-mail trouvée. Écrivez à {email} pour signaler ce commentaire.'**
   String reportCommentaryNoMailApp(String email);
+
+  /// Title of the game-rules screen
+  ///
+  /// In fr, this message translates to:
+  /// **'Règles du jeu'**
+  String get gameRulesTitle;
+
+  /// Section header: how CountScore scores this game type
+  ///
+  /// In fr, this message translates to:
+  /// **'Dans CountScore'**
+  String get gameRulesInApp;
+
+  /// Section header above the rules text itself
+  ///
+  /// In fr, this message translates to:
+  /// **'Les règles'**
+  String get gameRulesSection;
+
+  /// Derived line: the game type has no player elimination threshold
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas d\'élimination en cours de partie'**
+  String get gameRulesNoElimination;
+
+  /// Derived line: a player is out above the elimination threshold
+  ///
+  /// In fr, this message translates to:
+  /// **'Un joueur est éliminé au-dessus de {threshold} points'**
+  String gameRulesEliminationOver(int threshold);
+
+  /// Derived line: a player is out below the elimination threshold
+  ///
+  /// In fr, this message translates to:
+  /// **'Un joueur est éliminé en dessous de {threshold} points'**
+  String gameRulesEliminationUnder(int threshold);
+
+  /// Derived line: game over when the first player passes the threshold
+  ///
+  /// In fr, this message translates to:
+  /// **'La partie s\'arrête dès qu\'un joueur dépasse {threshold} points'**
+  String gameRulesEndFirstOver(int threshold);
+
+  /// Derived line: game over when the first player drops under the threshold
+  ///
+  /// In fr, this message translates to:
+  /// **'La partie s\'arrête dès qu\'un joueur descend sous {threshold} points'**
+  String gameRulesEndFirstUnder(int threshold);
+
+  /// Derived line: game over when the last player passes the threshold
+  ///
+  /// In fr, this message translates to:
+  /// **'La partie s\'arrête quand tous les joueurs sauf un dépassent {threshold} points'**
+  String gameRulesEndLastOver(int threshold);
+
+  /// Derived line: game over when the last player drops under the threshold
+  ///
+  /// In fr, this message translates to:
+  /// **'La partie s\'arrête quand tous les joueurs sauf un descendent sous {threshold} points'**
+  String gameRulesEndLastUnder(int threshold);
+
+  /// Derived line: the game type has no automatic game-over condition
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas de fin automatique : vous décidez quand la partie s\'arrête'**
+  String get gameRulesNoEnd;
+
+  /// Empty state on the rules screen: nothing shipped and nothing written
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas encore de règles'**
+  String get gameRulesEmptyTitle;
+
+  /// Empty state hint inviting the user to write the rules
+  ///
+  /// In fr, this message translates to:
+  /// **'Notez comment votre table compte les points : tout le monde aura la même version.'**
+  String get gameRulesEmptyHint;
+
+  /// Button that opens the editor when no rules exist yet
+  ///
+  /// In fr, this message translates to:
+  /// **'Écrire les règles'**
+  String get gameRulesWrite;
+
+  /// Title of the rules editor
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier les règles'**
+  String get gameRulesEditTitle;
+
+  /// Placeholder inside the rules editor text field
+  ///
+  /// In fr, this message translates to:
+  /// **'Les règles de votre table. Le Markdown est accepté.'**
+  String get gameRulesEditorHint;
+
+  /// Footnote shown when the displayed rules were written by the user
+  ///
+  /// In fr, this message translates to:
+  /// **'Règles de votre groupe'**
+  String get gameRulesFromGroup;
+
+  /// Action that discards the user's rules and brings the shipped ones back
+  ///
+  /// In fr, this message translates to:
+  /// **'Rétablir les règles d\'origine'**
+  String get gameRulesRestoreDefault;
+
+  /// Snackbar after the user's rules are saved
+  ///
+  /// In fr, this message translates to:
+  /// **'Règles enregistrées'**
+  String get gameRulesSaved;
+
+  /// Snackbar after the shipped rules are restored
+  ///
+  /// In fr, this message translates to:
+  /// **'Règles d\'origine rétablies'**
+  String get gameRulesRestored;
+
+  /// Footnote on the shipped rules: original summary, trademarks used descriptively
+  ///
+  /// In fr, this message translates to:
+  /// **'Résumé rédigé pour CountScore à partir des règles couramment jouées. Les noms de jeux appartiennent à leurs propriétaires et ne sont cités qu\'à titre descriptif.'**
+  String get gameRulesDisclaimer;
+
+  /// Built-in game type: ZapZap (the app's own game)
+  ///
+  /// In fr, this message translates to:
+  /// **'ZapZap'**
+  String get gameTypeNameZapzap;
+
+  /// Built-in game type: Uno
+  ///
+  /// In fr, this message translates to:
+  /// **'Uno'**
+  String get gameTypeNameUno;
+
+  /// Built-in game type: Scrabble
+  ///
+  /// In fr, this message translates to:
+  /// **'Scrabble'**
+  String get gameTypeNameScrabble;
+
+  /// Built-in game type: the catch-all type, for a game with no preset
+  ///
+  /// In fr, this message translates to:
+  /// **'Autre'**
+  String get gameTypeNameOther;
+
+  /// Built-in game type: Skyjo
+  ///
+  /// In fr, this message translates to:
+  /// **'Skyjo'**
+  String get gameTypeNameSkyjo;
+
+  /// Built-in game type: the President card game
+  ///
+  /// In fr, this message translates to:
+  /// **'Président'**
+  String get gameTypeNamePresident;
+
+  /// Built-in game type: Belote
+  ///
+  /// In fr, this message translates to:
+  /// **'Belote'**
+  String get gameTypeNameBelote;
+
+  /// Built-in game type: Tarot (the trick-taking card game)
+  ///
+  /// In fr, this message translates to:
+  /// **'Tarot'**
+  String get gameTypeNameTarot;
+
+  /// Built-in game type: Bridge
+  ///
+  /// In fr, this message translates to:
+  /// **'Bridge'**
+  String get gameTypeNameBridge;
+
+  /// Built-in game type: Rummy
+  ///
+  /// In fr, this message translates to:
+  /// **'Rami'**
+  String get gameTypeNameRami;
+
+  /// Built-in game type: Coinche (Belote with a bid)
+  ///
+  /// In fr, this message translates to:
+  /// **'Coinche'**
+  String get gameTypeNameCoinche;
+
+  /// Built-in game type: Yahtzee
+  ///
+  /// In fr, this message translates to:
+  /// **'Yahtzee'**
+  String get gameTypeNameYahtzee;
+
+  /// Built-in game type: Phase 10
+  ///
+  /// In fr, this message translates to:
+  /// **'Phase 10'**
+  String get gameTypeNamePhase10;
+
+  /// Built-in game type: Flip 7
+  ///
+  /// In fr, this message translates to:
+  /// **'Flip 7'**
+  String get gameTypeNameFlip7;
+
+  /// Built-in game type: Mille Bornes
+  ///
+  /// In fr, this message translates to:
+  /// **'Mille Bornes'**
+  String get gameTypeNameMilleBornes;
+
+  /// Built-in game type: Rummikub
+  ///
+  /// In fr, this message translates to:
+  /// **'Rummikub'**
+  String get gameTypeNameRummikub;
+
+  /// Built-in game type: the '6 takes' card game
+  ///
+  /// In fr, this message translates to:
+  /// **'6 qui prend'**
+  String get gameTypeNameSixNimmt;
+
+  /// Built-in game type: Qwirkle
+  ///
+  /// In fr, this message translates to:
+  /// **'Qwirkle'**
+  String get gameTypeNameQwirkle;
+
+  /// Built-in game type: Farkle
+  ///
+  /// In fr, this message translates to:
+  /// **'Farkle'**
+  String get gameTypeNameFarkle;
+
+  /// Built-in game type: Canasta
+  ///
+  /// In fr, this message translates to:
+  /// **'Canasta'**
+  String get gameTypeNameCanasta;
+
+  /// Built-in game type: Wizard
+  ///
+  /// In fr, this message translates to:
+  /// **'Wizard'**
+  String get gameTypeNameWizard;
+
+  /// Built-in game type: Triomino
+  ///
+  /// In fr, this message translates to:
+  /// **'Triomino'**
+  String get gameTypeNameTriomino;
 }
 
 class _AppLocalizationsDelegate

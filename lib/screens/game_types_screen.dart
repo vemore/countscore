@@ -4,7 +4,9 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 import '../l10n/app_localizations.dart';
 import '../models/game_type.dart';
 import '../providers/game_type_provider.dart';
+import '../utils/game_type_name.dart';
 import '../utils/insets.dart';
+import 'game_rules_screen.dart';
 
 class GameTypesScreen extends StatefulWidget {
   const GameTypesScreen({super.key});
@@ -54,7 +56,7 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
                     color: gameType.cardColor,
                   ),
                   title: Text(
-                    gameType.name,
+                    gameTypeDisplayName(l10n, gameType),
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
@@ -62,8 +64,19 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
                         ? l10n.lowestScoreWins
                         : l10n.highestScoreWins,
                   ),
+                  onTap: () => _openRules(context, gameType),
                   trailing: PopupMenuButton(
                     itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'rules',
+                        child: Row(
+                          children: [
+                            const Icon(Icons.menu_book_outlined),
+                            const SizedBox(width: 8),
+                            Text(l10n.gameRulesTitle),
+                          ],
+                        ),
+                      ),
                       PopupMenuItem(
                         value: 'edit',
                         child: Row(
@@ -86,7 +99,9 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
                       ),
                     ],
                     onSelected: (value) async {
-                      if (value == 'edit') {
+                      if (value == 'rules') {
+                        _openRules(context, gameType);
+                      } else if (value == 'edit') {
                         _showGameTypeDialog(context, gameType);
                       } else if (value == 'delete') {
                         _deleteGameType(context, gameType);
@@ -107,11 +122,22 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
     );
   }
 
+  void _openRules(BuildContext context, GameType gameType) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => GameRulesScreen(gameType: gameType)),
+    );
+  }
+
   void _showGameTypeDialog(BuildContext context, GameType? existingGameType) {
     final l10n = AppLocalizations.of(context)!;
     final isEditing = existingGameType != null;
 
-    final nameController = TextEditingController(text: existingGameType?.name ?? '');
+    // The localized name, so that a user who edits a built-in type sees the
+    // name the rest of the app shows them, not the seeded literal.
+    final nameController = TextEditingController(
+      text: existingGameType == null ? '' : gameTypeDisplayName(l10n, existingGameType),
+    );
     final playerDeadThresholdController = TextEditingController(
       text: existingGameType?.playerDeadThreshold?.toString() ?? '',
     );
@@ -315,8 +341,15 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
                       return;
                     }
 
+                    // Renaming a built-in type gives up its key: the key is
+                    // what the display name is read from, so keeping it would
+                    // silently ignore the name the user just typed. Everything
+                    // else may change with the key intact.
+                    final renamed = existingGameType != null &&
+                        isBuiltinRename(l10n, existingGameType, nameController.text);
                     final gameType = GameType(
                       id: existingGameType?.id,
+                      builtinKey: renamed ? null : existingGameType?.builtinKey,
                       name: nameController.text,
                       iconCodePoint: selectedIcon.codePoint,
                       cardColorValue: selectedColor.toARGB32(),
@@ -357,7 +390,7 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.confirmDeletion),
-        content: Text(l10n.confirmDeleteGame(gameType.name)),
+        content: Text(l10n.confirmDeleteGame(gameTypeDisplayName(l10n, gameType))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),

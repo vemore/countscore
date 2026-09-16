@@ -1,24 +1,29 @@
-# The game-over dialog fires only when a score is edited, never when a round is added
+# The game-over dialog is forgotten as soon as the board is closed
+
+**Status:** partly done (2026-09-16) — fix/end-of-game-polish gave the check every trigger
+it was missing. `_checkGameOverCondition` now runs from `_maybeShowGameOver` after a score
+edit, after `addRound` and after `deleteRound`, so a threshold crossed by any path raises the
+dialog, and `_gameOverDismissed` in `_GameBoardScreenState` keeps it to one question per
+crossing, re-arming as soon as the condition is false again.
 
 - **Noted:** 2026-09-16 — while adding the explicit end of a game (feat/explicit-end-of-game)
 - **Theme:** growth
 - **Area:** app
 - **Blocks release:** no
 
-`_checkGameOverCondition` (`lib/screens/game_board_screen.dart:463`) has exactly one call
-site: `handleScoreUpdate`, a closure inside `_showScoreDialog` (same file, l. 796). Nothing
-checks the condition when a round is added (`board_add_round`, l. 427), when a round is
-deleted, or when the board is opened.
+What is left is the part the original entry called out as unrecorded: **the user's "Continue
+playing" lives only in `_gameOverDismissed`, a field of the board's `State`.** Leaving the
+board and coming back re-arms it, so the next round raises the dialog again on a game the
+user already said to keep playing.
 
-So even for the three types that define a threshold — Skyjo, Président, Belote — a game can
-sit past its game-over condition with no dialog, as long as the crossing score was not the
-last cell the user touched. Reopening the board does not notice either.
+The original fix proposed a check "on the board's first build for a game that already has
+rounds". It was **deliberately not implemented** (decided with the user, 2026-09-16): with
+nothing persisted, that check reopens the dialog on every single opening of a game past its
+threshold — worse than the bug. The order matters: persist the refusal first, then a
+first-build check becomes possible.
 
-This is much less severe since `feat/explicit-end-of-game`: every game can now be ended from
-the board menu or the game list, so the dialog is one trigger among several rather than the
-only one. It is still a condition the app claims to detect and does not.
-
-**Fix:** call `_checkGameOverCondition` after `addRound` and on the board's first build for a
-game that already has rounds, not only from `handleScoreUpdate`. Guard against re-showing it
-for a game the user already answered "Continue playing" on — which today is not recorded
-anywhere, and is the reason the check was left on the one path that has a natural moment.
+**Fix:** persist the answer. A `gameOverDismissedAt` (or a flag) on `games`, cleared whenever
+the condition goes false, would survive the board closing — and, being on a synced table,
+would need a schema bump, the `sync_store` contract and LWW like `finishedAt` got in v12
+(`db-migration` skill, [[Sync]]). Only then is a check on the board's first build worth
+adding.

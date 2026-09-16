@@ -2,7 +2,7 @@
 
 > Scope: the offline-first sharing protocol — server and Flutter client.
 > Related: [[Api]] · [[SchemaV10]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-09-14
+> Updated: 2026-09-16
 
 ## Facts
 
@@ -58,8 +58,41 @@ field**, ordered lexicographically by `(client_lamport, origin_device_id)`.
    back as a stable reason code rather than a driver error — codes in [[Api]].
 7. The log stores the payload's known client columns only; that is what other devices pull.
 
-Synced entities: `player`, `game_type`, `game`, `game_player`, `round` (with `comment`),
-`score`, `game_analysis`. `game_player` still has no uuid and is hard-deleted.
+Synced entities: `player`, `game_type` (with `rules` and `rules_slug` since v13, `builtin_key` since v14), `game`,
+`game_player`, `round` (with `comment`), `score`, `game_analysis`. `game_player` still has
+no uuid and is hard-deleted.
+
+### A built-in game type travels by key, not by name (since 2026-09-16)
+
+The `game_type` payload carries **`builtin_key`** alongside `name`
+(`lib/services/sync/sync_store.dart`, `case 'game_type'`), and the server stores it
+(`backend/app/models/game.py`, revision `0004_game_type_builtin_key`).
+
+A built-in type's `name` is localized, so it is not its identity: two devices set to
+different languages hold "Autre" and "その他" for one and the same type. Three things follow.
+
+- **The group link is derived from the key.** `linkedGameTypeRemoteUuid`
+  (`lib/services/sync/sync_ids.dart`) hashes `game_type_builtin:<key>` instead of the
+  normalised name, so both devices mint the same server uuid before either has pulled. A
+  type with no key still hashes its name, exactly as a player does.
+- **An incoming delta matches on the key first**, then falls back to the name
+  (`_applyGameType`). That is what links a device's own built-in row to the group's, whatever
+  the two call it.
+- **One live row per `(group_id, builtin_key)`** — a partial unique index, and a
+  `builtin_key_taken` rejection so a clash is a reason rather than a driver error
+  (`_check_unique`, `backend/app/routes/sync.py`). `unique(group_id, name)` is unchanged:
+  a user's own types still collide by name. The client **resolves** that reason rather than
+  rejecting it — `markSuperseded` then a pull, like `score_exists` — because the engine's
+  default is terminal, and a rejected `game_type` would leave every game that references it
+  pushing a `game_type_id` the server never created, stalling on `parent_missing` for good
+  (`sync_engine.dart`, `test/sync/sync_engine_resolve_test.dart`).
+
+Last-writer-wins on `game_types.name` is therefore harmless for a built-in row — nothing
+reads it while the key is set. See [[SchemaV10]] and [[I18n]].
+
+> A group that was already sharing *before* this change keeps its existing name-derived
+> links (`_ensureLinks` only links rows it has not linked yet). Those groups converge on the
+> next pull instead, through the key match in `_applyGameType`.
 
 - `client_lamport` is a monotone integer per device, a logical clock. On write:
   `lamport = max(local_max, last_server_seq_received) + 1`.
@@ -257,6 +290,11 @@ closed with 1013 before `accept()`. The counter is process memory too (`_open_st
 - **Payload built at push time, not at write time (2026-09-13).** Ten score edits to one
   cell send one delta with the last value, and a delta can never describe a row that has
   since changed again.
+- **A built-in game type merges by key, a user's by name (2026-09-16).** The deterministic
+  uuid below works because both devices compute it from the same string. That stopped being
+  true for game types the moment their names became localized, so built-in types hash their
+  `builtin_key` instead. Translating the rows in place was the alternative and it fails the
+  same way: two devices, two locales, two names, two rows.
 - **Players merge by name through a deterministic uuid (2026-09-13).** Chosen with the user
   over separate group players: stats stay keyed on the local global player, and two devices
   that both have "Alice" converge without a join-time reconciliation step.

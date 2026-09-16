@@ -27,6 +27,29 @@ void main() {
     );
   });
 
+  test('a built-in game type links by its key, not by its localized name', () {
+    const group = '11111111-2222-3333-4444-555555555555';
+    // Two devices, two locales, one type: they must mint the same server uuid.
+    expect(
+      linkedGameTypeRemoteUuid(group, 'other', 'Autre'),
+      linkedGameTypeRemoteUuid(group, 'other', 'その他'),
+    );
+    // A user's own type has no key and still links by name, as before.
+    expect(
+      linkedGameTypeRemoteUuid(group, null, 'Le jeu du jeudi'),
+      linkedRemoteUuid(group, 'game_type', 'le jeu du jeudi'),
+    );
+    // And a name cannot be crafted to collide with a key.
+    expect(
+      linkedGameTypeRemoteUuid(group, 'zapzap', 'ZapZap'),
+      isNot(linkedGameTypeRemoteUuid(group, null, 'builtin:zapzap')),
+    );
+    expect(
+      linkedGameTypeRemoteUuid(group, 'other', 'Autre'),
+      isNot(linkedGameTypeRemoteUuid(group, 'skyjo', 'Autre')),
+    );
+  });
+
   test('player names follow the server allow-list', () {
     expect(isSyncablePlayerName("Zoé O'Brien-Lévy"), isTrue);
     expect(isSyncablePlayerName('Иван 2'), isTrue);

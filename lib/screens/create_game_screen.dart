@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../models/game_type.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
+import '../utils/game_type_name.dart';
 import '../providers/group_provider.dart';
 import '../utils/insets.dart';
 import '../widgets/player_picker_dialog.dart';
@@ -61,14 +62,14 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
       defaultGameType = gameTypes.firstWhere(
         (type) => type.id == games.first.gameTypeId,
         orElse: () => gameTypes.firstWhere(
-          (type) => type.name.toLowerCase() == 'zapzap',
+          (type) => type.builtinKey == 'zapzap',
           orElse: () => gameTypes.first,
         ),
       );
     } else {
       // Si aucune partie n'existe, utiliser ZapZap par défaut
       defaultGameType = gameTypes.firstWhere(
-        (type) => type.name.toLowerCase() == 'zapzap',
+        (type) => type.builtinKey == 'zapzap',
         orElse: () => gameTypes.first,
       );
     }
@@ -241,7 +242,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                       .map((GameType type) {
                     return DropdownMenuEntry<int>(
                       value: type.id!,
-                      label: type.name,
+                      label: gameTypeDisplayName(l10n, type),
                       leadingIcon: Icon(type.icon, size: 20, color: type.cardColor),
                     );
                   }).toList(),
@@ -267,7 +268,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                     .firstWhere((t) => t.id == _selectedGameTypeId,
                         orElse: () => gameTypeProvider.gameTypes.first);
 
-                if (selectedType.name.toLowerCase() != 'autre') {
+                if (selectedType.builtinKey != 'other') {
                   return const SizedBox.shrink();
                 }
 

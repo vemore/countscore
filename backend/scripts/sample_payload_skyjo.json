@@ -1,0 +1,277 @@
+{
+  "game": {
+    "id": 77,
+    "name": "Skyjo du samedi",
+    "is_lowest_score_wins": true,
+    "created_at": "2026-05-16T20:45:00.000"
+  },
+  "game_type": "Skyjo",
+  "style": "commentator",
+  "language": "fr",
+  "game_type_rules": {
+    "is_lowest_score_wins": true,
+    "game_over_condition_type": "firstPlayerOver",
+    "game_over_threshold": 100
+  },
+  "players": [
+    {
+      "id": 1,
+      "name": "Alex"
+    },
+    {
+      "id": 2,
+      "name": "Bea"
+    },
+    {
+      "id": 3,
+      "name": "Chris"
+    },
+    {
+      "id": 4,
+      "name": "Dana"
+    }
+  ],
+  "rounds": [
+    {
+      "id": 101,
+      "number": 1,
+      "comment": null,
+      "scores": [
+        {
+          "player_id": 1,
+          "value": 9
+        },
+        {
+          "player_id": 2,
+          "value": 13
+        },
+        {
+          "player_id": 3,
+          "value": 12
+        },
+        {
+          "player_id": 4,
+          "value": 29
+        }
+      ]
+    },
+    {
+      "id": 102,
+      "number": 2,
+      "comment": null,
+      "scores": [
+        {
+          "player_id": 1,
+          "value": 14
+        },
+        {
+          "player_id": 2,
+          "value": 10
+        },
+        {
+          "player_id": 3,
+          "value": 9
+        },
+        {
+          "player_id": 4,
+          "value": 16
+        }
+      ]
+    },
+    {
+      "id": 103,
+      "number": 3,
+      "comment": null,
+      "scores": [
+        {
+          "player_id": 1,
+          "value": 11
+        },
+        {
+          "player_id": 2,
+          "value": 2
+        },
+        {
+          "player_id": 3,
+          "value": 7
+        },
+        {
+          "player_id": 4,
+          "value": 25
+        }
+      ]
+    },
+    {
+      "id": 104,
+      "number": 4,
+      "comment": "Dana ferme la manche trop tôt",
+      "scores": [
+        {
+          "player_id": 1,
+          "value": 10
+        },
+        {
+          "player_id": 2,
+          "value": 11
+        },
+        {
+          "player_id": 3,
+          "value": 11
+        },
+        {
+          "player_id": 4,
+          "value": 19
+        }
+      ]
+    },
+    {
+      "id": 105,
+      "number": 5,
+      "comment": "manche décisive",
+      "scores": [
+        {
+          "player_id": 1,
+          "value": 14
+        },
+        {
+          "player_id": 2,
+          "value": 1
+        },
+        {
+          "player_id": 3,
+          "value": 6
+        },
+        {
+          "player_id": 4,
+          "value": 14
+        }
+      ]
+    }
+  ],
+  "history_by_player_name": {
+    "Alex": [
+      {
+        "gameName": "Skyjo 6",
+        "gameType": "Skyjo",
+        "createdAt": "2026-05-16T20:30:00.000",
+        "finalScore": 78,
+        "totalPlayers": 4,
+        "rank": 3,
+        "didWin": false
+      },
+      {
+        "gameName": "Skyjo 5",
+        "gameType": "Skyjo",
+        "createdAt": "2026-05-15T20:30:00.000",
+        "finalScore": 75,
+        "totalPlayers": 4,
+        "rank": 1,
+        "didWin": true
+      },
+      {
+        "gameName": "Skyjo 4",
+        "gameType": "Skyjo",
+        "createdAt": "2026-05-14T20:30:00.000",
+        "finalScore": 72,
+        "totalPlayers": 4,
+        "rank": 1,
+        "didWin": true
+      },
+      {
+        "gameName": "Skyjo 3",
+        "gameType": "Skyjo",
+        "createdAt": "2026-05-13T20:30:00.000",
+        "finalScore": 69,
+        "totalPlayers": 4,
+        "rank": 3,
+        "didWin": false
+      },
+      {
+        "gameName": "Skyjo 2",
+        "gameType": "Skyjo",
+        "createdAt": "2026-04-12T20:30:00.000",
+        "finalScore": 66,
+        "totalPlayers": 4,
+        "rank": 1,
+        "didWin": true
+      },
+      {
+        "gameName": "Skyjo 1",
+        "gameType": "Skyjo",
+        "createdAt": "2026-04-11T20:30:00.000",
+        "finalScore": 63,
+        "totalPlayers": 4,
+        "rank": 1,
+        "didWin": true
+      }
+    ],
+    "Bea": [
+      {
+        "gameName": "Skyjo 6",
+        "gameType": "Skyjo",
+        "createdAt": "2026-05-16T20:30:00.000",
+        "finalScore": 96,
+        "totalPlayers": 4,
+        "rank": 2,
+        "didWin": false
+      },
+      {
+        "gameName": "Skyjo 5",
+        "gameType": "Skyjo",
+        "createdAt": "2026-05-15T20:30:00.000",
+        "finalScore": 95,
+        "totalPlayers": 4,
+        "rank": 3,
+        "didWin": false
+      },
+      {
+        "gameName": "Skyjo 4",
+        "gameType": "Skyjo",
+        "createdAt": "2026-05-14T20:30:00.000",
+        "finalScore": 94,
+        "totalPlayers": 4,
+        "rank": 3,
+        "didWin": false
+      },
+      {
+        "gameName": "Skyjo 3",
+        "gameType": "Skyjo",
+        "createdAt": "2026-05-13T20:30:00.000",
+        "finalScore": 93,
+        "totalPlayers": 4,
+        "rank": 3,
+        "didWin": false
+      },
+      {
+        "gameName": "Skyjo 2",
+        "gameType": "Skyjo",
+        "createdAt": "2026-04-12T20:30:00.000",
+        "finalScore": 92,
+        "totalPlayers": 4,
+        "rank": 4,
+        "didWin": false
+      },
+      {
+        "gameName": "Skyjo 1",
+        "gameType": "Skyjo",
+        "createdAt": "2026-04-11T20:30:00.000",
+        "finalScore": 91,
+        "totalPlayers": 4,
+        "rank": 4,
+        "didWin": false
+      }
+    ],
+    "Chris": [],
+    "Dana": [
+      {
+        "gameName": "Uno du mardi",
+        "gameType": "Uno",
+        "createdAt": "2026-05-02T21:00:00.000",
+        "finalScore": 42,
+        "totalPlayers": 5,
+        "rank": 2,
+        "didWin": false
+      }
+    ]
+  }
+}

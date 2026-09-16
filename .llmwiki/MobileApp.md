@@ -6,7 +6,13 @@
 
 ## Facts
 
-61 Dart files tracked under `lib/` (including the committed generated localizations).
+70 Dart files tracked under `lib/` (including the committed generated localizations,
+excluding gitignored `*.g.dart`).
+
+`lib/utils/` exists since 2026-09-16 and holds two cross-cutting helpers, detailed below:
+`game_type_name.dart` — the switch from a built-in game type's `builtin_key` to its
+localized name, which every screen showing a game type's name goes through ([[I18n]]) —
+and `insets.dart`.
 
 ### Entry point
 
@@ -22,23 +28,31 @@ themed and already knows whether the connected features exist.
 
 | Provider | Responsibility |
 |---|---|
-| `game_provider.dart` (339 l.) | The substantial one. Repositories are constructor-injectable, defaulting to the six Drift implementations over `AppDatabase.instance`. Owns `_games`, `_currentGame`, `_currentPlayers`, `_currentRounds` and `_scores` (keyed `"playerId_roundId"`). Game/round/score CRUD plus stats. |
-| `game_type_provider.dart` (46 l.) | Game-type list CRUD, `getGameTypeById`. |
+| `game_provider.dart` (415 l.) | The substantial one. Repositories are constructor-injectable, defaulting to the six Drift implementations over `AppDatabase.instance`. Owns `_games`, `_currentGame`, `_currentPlayers`, `_currentRounds`, `_scores` (keyed `"playerId_roundId"`) and `_roundCounts` (game id → rounds played, one grouped query in `loadGames`, kept in step by `addRound`/`deleteRound`). Game/round/score CRUD plus stats. |
+| `game_type_provider.dart` (46 l.) | Game-type list CRUD, `getGameTypeById`. The 22 built-in types are rows like any other; their *displayed* name comes from `lib/utils/game_type_name.dart`, not from the row. |
 | `settings_provider.dart` (72 l.) | Wakelock toggle (SharedPreferences-backed) and DB export/import. The **only** caller of `DatabaseService` for I/O. Exposes `supportsDbExportImport => !kIsWeb`. |
 | `theme_provider.dart` (33 l.) | `ThemeMode` only, persisted to SharedPreferences under `themeMode` as `ThemeMode.name`. `load()` is called from `main()` before `runApp`. |
 | `group_provider.dart` | Group membership and the sync loop — create/join/leave/rotate, the device list and `revokeDevice`, `shareGame`, `syncNow`, `SyncStatus`, and a `SyncEvent` stream shown as snackbars by `_SyncEventListener` in `main.dart`. A `ChangeNotifierProxyProvider` over `BackendProvider`: runs only with a URL **and** a device token. Calls `GameProvider.refreshFromSync` after remote changes. See [[Sync]]. |
 | `backend_provider.dart` | The self-hosted backend base URL, SharedPreferences key `backendUrl`, **no default**. `check()` validates and canonicalises what the user typed; `isConfigured` gates every connected feature. `load()` is called from `main()` before `runApp`. |
 
-### Screens — `lib/screens/` (10)
+### Screens — `lib/screens/` (11)
 
 `settings_screen` is a `StatefulWidget` since the Server section (it owns the URL
 `TextEditingController`).
 
-`home_screen` (545 l.) · `game_board_screen` (792 l., the scoring grid) ·
+`home_screen` (628 l.) · `game_board_screen` (1017 l., the scoring grid) ·
 `game_types_screen` (491 l.) · `create_game_screen` (372 l.) ·
-`game_analysis_screen` (396 l., the LLM analysis — see [[LlmProviders]]) ·
+`game_analysis_screen` (the LLM analysis, with its row of voice chips — see
+[[LlmProviders]]) ·
 `players_screen` (326 l.) · `player_stats_screen` (299 l.) · `settings_screen` (368 l.) ·
-`about_screen` (175 l.) · `ranking_screen` (140 l.).
+`about_screen` (175 l.) · `ranking_screen` (140 l.) · `game_rules_screen`.
+
+`game_rules_screen` takes its `GameType` as a constructor argument rather than reading a
+provider: both callers — the board's overflow menu and the game-type list — already hold
+it, and the list has no "current game". It shows, in order, the type's own scoring summary
+derived from its fields, then the user's rules if any, else the ruleset shipped for
+`rulesSlug` (`lib/services/game_rules_catalog.dart`), else an empty state. See [[I18n]] for
+why those rulesets are assets and not ARB keys.
 
 `about_screen` reads the displayed version from `package_info_plus`
 (`PackageInfo.fromPlatform()`, held in a `static final` future) — i.e. from `pubspec.yaml`
@@ -46,7 +60,7 @@ themed and already knows whether the connected features exist.
 
 `lib/widgets/` holds exactly one component: `player_picker_dialog.dart` (291 l.).
 
-### Utilities — `lib/utils/` (1)
+### Utilities — `lib/utils/` (2)
 
 `insets.dart` — `withBottomInset(context, base)` adds `MediaQuery.paddingOf(context).bottom`
 to an `EdgeInsets`. A `BoxScrollView` (`ListView`, `GridView`) inserts `MediaQuery.padding`
@@ -66,17 +80,39 @@ there is a `bottomNavigationBar`, and `DrawerHeader` adds the status-bar height 
 `settings_screen.dart:117` and `game_analysis_screen.dart` need nothing — the first passes no
 padding, the second is a `SingleChildScrollView` inside the `SafeArea(top: false)` at l. 328.
 
-### Models — `lib/models/` (6)
+`game_type_name.dart` — `gameTypeDisplayName(l10n, type)` and `isBuiltinRename(...)`. A
+built-in type's name is read from its `builtin_key`, never from the stored `name`, which is
+what lets two devices in different locales hold the same type. Renaming one clears the key.
 
-`game`, `game_type`, `player`, `round`, `score`, `game_analysis`. Plain classes with
+### Models — `lib/models/` (7)
+
+`game`, `game_type`, `player`, `round`, `score`, `game_analysis`, `analysis_style`. Plain classes with
 `toMap`/`fromMap`. `player.dart` has no `gameId` since v9 — its `id` is a
 `game_players.id`. See [[SchemaV10]].
+
+`analysis_style.dart` is an enum whose `id` is an ASCII string that travels to the backend
+and into SharedPreferences (`analysisStyle`) and whose label is translated. It mirrors
+`PERSONAS` in `backend/app/services/analysis/personas.py`: a new voice is added in both
+places plus the ten ARB files.
 
 `game.dart` carries `finishedAt` since v12, with `isFinished` next to `isShared`. Its
 `copyWith` takes a `clearFinishedAt` flag: `x ?? this.x` cannot express "set this back to
 null", and reopening a game is exactly that. `GameProvider.setGameFinished` is the single
 write path — it returns true only for the transition that finishes a game, which is what
 gates the Play review sheet.
+
+Both screens show the state and both can change it: a flag icon beside the name in the game
+list, a chip beside the title on the board, and a menu entry that finishes or reopens,
+confirmed by a snackbar whose **Undo** action writes the previous state back (the repo's only
+`SnackBarAction`). The entry is offered on a game that has at least one round or is already
+finished — a game with no round was never played, which is why the list needs
+`GameProvider.roundCountOf`. Nothing is locked: a finished game still takes rounds and score
+edits.
+
+`_GameBoardScreenState._maybeShowGameOver` raises the game-over dialog after a score edit,
+after a round is added and after one is deleted — every mutation that can move a total past
+the game type's threshold. `_gameOverDismissed` keeps it to one question per crossing and
+re-arms as soon as the condition is false again.
 
 ### Toolchain
 
@@ -149,5 +185,14 @@ not "fix" it by hardcoding a codepoint.
   a `MediaQuery` with a bottom padding and reads back the resolved padding pins it
   (`test/utils/insets_test.dart`). It uses `MediaQuery.paddingOf`, not
   `MediaQuery.of(context).padding`, so the keyboard opening does not rebuild a whole list.
+- **The game-over refusal is in memory, and there is no check on the board's first build**
+  (2026-09-16). Nothing records the user's "Continue playing", so a first-build check would
+  raise the dialog every single time the board is opened for a game past its threshold —
+  worse than the bug it fixes. Persisting the refusal needs a synced column and stays open in
+  `wip/todo_nr/2026-09-16-game-over-dialog-only-on-score-edit.md`.
+- **The game list counts rounds in one grouped query, not one per card** (2026-09-16).
+  `DriftGameRepository.getAll` returns no count, and a `FutureBuilder` per card would be one
+  query per row over the whole history; `RoundRepository.countByGame` is a single `GROUP BY`
+  that `loadGames` folds into the provider.
 - **The mode is stored as `ThemeMode.name`, not its index**, so reordering the enum cannot
   silently flip a user's theme. An unknown stored value decodes to `ThemeMode.system`.

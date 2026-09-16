@@ -85,6 +85,7 @@ REASON_PARENT_MISSING = "parent_missing"
 REASON_ROUND_NUMBER_TAKEN = "round_number_taken"
 REASON_SCORE_EXISTS = "score_exists"
 REASON_NAME_TAKEN = "name_taken"
+REASON_BUILTIN_KEY_TAKEN = "builtin_key_taken"
 REASON_ANALYSIS_EXISTS = "analysis_exists"
 REASON_INTEGRITY = "integrity constraint violation"
 
@@ -230,27 +231,31 @@ async def _check_unique(
     ``row`` holds the values the row will have after the write. The unique indexes stay
     the backstop; this only turns their violation into a reason a client can act on.
     """
-    rules: dict[type[SQLModel], tuple[tuple[str, ...], str]] = {
-        Round: (("game_id", "round_number"), REASON_ROUND_NUMBER_TAKEN),
-        Score: (("player_id", "round_id"), REASON_SCORE_EXISTS),
-        GameAnalysis: (("game_id",), REASON_ANALYSIS_EXISTS),
-        Player: (("group_id", "name_normalized"), REASON_NAME_TAKEN),
-        GameType: (("group_id", "name"), REASON_NAME_TAKEN),
+    rules: dict[type[SQLModel], tuple[tuple[tuple[str, ...], str], ...]] = {
+        Round: ((("game_id", "round_number"), REASON_ROUND_NUMBER_TAKEN),),
+        Score: ((("player_id", "round_id"), REASON_SCORE_EXISTS),),
+        GameAnalysis: ((("game_id",), REASON_ANALYSIS_EXISTS),),
+        Player: ((("group_id", "name_normalized"), REASON_NAME_TAKEN),),
+        # A game type carries two: its name, and — for a built-in one — the key
+        # that identifies it whatever the pushing device's locale calls it.
+        GameType: (
+            (("group_id", "name"), REASON_NAME_TAKEN),
+            (("group_id", "builtin_key"), REASON_BUILTIN_KEY_TAKEN),
+        ),
     }
-    rule = rules.get(cls)
-    if rule is None:
-        return None
-    keys, reason = rule
-    if any(row.get(k) is None for k in keys):
-        return None
     columns = _columns(cls)
-    query = select(columns["id"]).where(
-        columns["id"] != entity_uuid, columns["deleted_at"].is_(None)
-    )
-    for k in keys:
-        query = query.where(columns[k] == row[k])
-    clash = await session.execute(query.limit(1))
-    return reason if clash.first() is not None else None
+    for keys, reason in rules.get(cls, ()):
+        if any(row.get(k) is None for k in keys):
+            continue
+        query = select(columns["id"]).where(
+            columns["id"] != entity_uuid, columns["deleted_at"].is_(None)
+        )
+        for k in keys:
+            query = query.where(columns[k] == row[k])
+        clash = await session.execute(query.limit(1))
+        if clash.first() is not None:
+            return reason
+    return None
 
 
 async def _was_deleted(session: AsyncSession, group_id: uuid.UUID, entity_uuid: uuid.UUID) -> bool:
