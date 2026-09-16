@@ -271,31 +271,36 @@ class DatabaseService {
   }
 
   Future<void> _insertDefaultGameTypes(Database db) async {
-    // On v6+ tables we must also populate the sync-readiness columns (uuid,
-    // created_at, updated_at, group_id). On older tables these columns don't
-    // exist yet; sqflite's `insert` will silently drop unknown keys, but to be
-    // explicit we detect the column presence first.
-    final hasSyncCols = await _hasColumn(db, 'game_types', 'uuid');
-    final hasBuiltinKey = await _hasColumn(db, 'game_types', 'builtin_key');
+    final columns = await _columnsOf(db, 'game_types');
     final now = DateTime.now().millisecondsSinceEpoch;
     for (final gameType in GameType.defaultGameTypes()) {
-      final map = gameType.toMap();
-      // The v2 -> v3 step seeds a table that predates builtin_key.
-      if (!hasBuiltinKey) map.remove('builtin_key');
-      if (hasSyncCols) {
-        map['uuid'] = _newUuid();
-        map['created_at'] = now;
-        map['updated_at'] = now;
-        // Default game types are local (no group ownership); stays NULL.
-      }
-      await db.insert('game_types', map);
+      await db.insert('game_types', _gameTypeRow(gameType, columns, now));
     }
   }
 
-  /// Returns true if the column exists on the given table.
-  Future<bool> _hasColumn(Database db, String table, String column) async {
-    final cols = await db.rawQuery('PRAGMA table_info($table)');
-    return cols.any((c) => c['name'] == column);
+  /// A game type reduced to the columns `game_types` carries **at this point of
+  /// the migration chain**.
+  ///
+  /// sqflite builds its INSERT column list straight from the map keys: a key the
+  /// table does not have is `SqliteException(1): table game_types has no column
+  /// named …`, thrown inside `onUpgrade`, which aborts the open and leaves the
+  /// database permanently unopenable. It is **not** silently dropped — an
+  /// earlier comment here claimed it was, and that was wrong.
+  ///
+  /// Every seed inside a migration step runs against an older shape than
+  /// `GameType.toMap()` describes: no condition columns before v5, no sync
+  /// columns before v6, no `builtin_key` before v13. So the map is filtered
+  /// against the table as it is, rather than against the model.
+  Map<String, Object?> _gameTypeRow(GameType type, Set<String> columns, int now) {
+    final map = Map<String, Object?>.from(type.toMap())
+      ..removeWhere((key, _) => !columns.contains(key));
+    if (columns.contains('uuid')) {
+      map['uuid'] = _newUuid();
+      map['created_at'] = now;
+      map['updated_at'] = now;
+      // Default game types are local (no group ownership); group_id stays NULL.
+    }
+    return map;
   }
 
   /// Generates a v4-like UUID string. We avoid pulling the ``uuid`` package
@@ -379,6 +384,11 @@ class DatabaseService {
       await db.execute('ALTER TABLE game_types ADD COLUMN gameOverConditionType TEXT');
       await db.execute('ALTER TABLE game_types ADD COLUMN gameOverThreshold INTEGER');
 
+      // The four ALTERs above are the shape these seeds write against — no sync
+      // columns yet, and no builtin_key for another eight versions.
+      final gameTypeColumns = await _columnsOf(db, 'game_types');
+      final seededAt = DateTime.now().millisecondsSinceEpoch;
+
       // Update existing game types with appropriate conditions
       // ZapZap: player dead over 100
       await db.execute('''
@@ -390,7 +400,8 @@ class DatabaseService {
       // Skyjo: game over when first player over 100
       final skyjoExists = await db.query('game_types', where: 'name = ?', whereArgs: ['Skyjo']);
       if (skyjoExists.isEmpty) {
-        await db.insert('game_types', GameType.skyjo().toMap());
+        await db.insert(
+            'game_types', _gameTypeRow(GameType.skyjo(), gameTypeColumns, seededAt));
       } else {
         await db.execute('''
           UPDATE game_types
@@ -402,7 +413,8 @@ class DatabaseService {
       // Président: game over when first player over 11
       final presidentExists = await db.query('game_types', where: 'name = ?', whereArgs: ['Président']);
       if (presidentExists.isEmpty) {
-        await db.insert('game_types', GameType.president().toMap());
+        await db.insert(
+            'game_types', _gameTypeRow(GameType.president(), gameTypeColumns, seededAt));
       } else {
         await db.execute('''
           UPDATE game_types
@@ -414,7 +426,8 @@ class DatabaseService {
       // Belote: game over when first player over 1000
       final beloteExists = await db.query('game_types', where: 'name = ?', whereArgs: ['Belote']);
       if (beloteExists.isEmpty) {
-        await db.insert('game_types', GameType.belote().toMap());
+        await db.insert(
+            'game_types', _gameTypeRow(GameType.belote(), gameTypeColumns, seededAt));
       } else {
         await db.execute('''
           UPDATE game_types
@@ -426,19 +439,22 @@ class DatabaseService {
       // Tarot: no conditions
       final tarotExists = await db.query('game_types', where: 'name = ?', whereArgs: ['Tarot']);
       if (tarotExists.isEmpty) {
-        await db.insert('game_types', GameType.tarot().toMap());
+        await db.insert(
+            'game_types', _gameTypeRow(GameType.tarot(), gameTypeColumns, seededAt));
       }
 
       // Bridge: no conditions
       final bridgeExists = await db.query('game_types', where: 'name = ?', whereArgs: ['Bridge']);
       if (bridgeExists.isEmpty) {
-        await db.insert('game_types', GameType.bridge().toMap());
+        await db.insert(
+            'game_types', _gameTypeRow(GameType.bridge(), gameTypeColumns, seededAt));
       }
 
       // Rami: player dead over 100
       final ramiExists = await db.query('game_types', where: 'name = ?', whereArgs: ['Rami']);
       if (ramiExists.isEmpty) {
-        await db.insert('game_types', GameType.rami().toMap());
+        await db.insert(
+            'game_types', _gameTypeRow(GameType.rami(), gameTypeColumns, seededAt));
       } else {
         await db.execute('''
           UPDATE game_types

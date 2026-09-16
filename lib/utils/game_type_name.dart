@@ -72,8 +72,27 @@ String? builtinGameTypeName(AppLocalizations l10n, String? builtinKey) {
   }
 }
 
+/// Whether saving [typedName] over [type] gives up its built-in key.
+///
+/// It does when, and only when, the user actually changed the name of a built-in
+/// type: the key is what the displayed name is read from, so keeping it would
+/// silently ignore what they typed. Everything else — the icon, the colour, a
+/// threshold — may change with the key intact.
+///
+/// **Trimmed on both sides.** A stray trailing space typed while changing the
+/// colour is not a rename, and treating it as one is destructive: the type stops
+/// being localized, and for ZapZap it turns the analysis feature off outright
+/// (`game_board_screen.dart` keys that on `builtinKey == 'zapzap'`).
+bool isBuiltinRename(AppLocalizations l10n, GameType type, String typedName) =>
+    type.builtinKey != null &&
+    typedName.trim() != gameTypeDisplayName(l10n, type).trim();
+
 /// The name to show for a value the statistics aggregate grouped by, which is
 /// `COALESCE(game_types.builtin_key, game_types.name)` — a built-in key when the
 /// game was played on a built-in type, the stored name otherwise.
+///
+/// A **last resort**: it can only return the raw key for a built-in key this
+/// version does not know. A caller holding the row should use
+/// [gameTypeDisplayName], which falls back to the stored name instead.
 String gameTypeDisplayNameForKey(AppLocalizations l10n, String keyOrName) =>
     builtinGameTypeName(l10n, keyOrName) ?? keyOrName;

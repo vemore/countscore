@@ -180,13 +180,25 @@ Future<void> applyV12(
 /// Three steps, all idempotent so the step can replay:
 ///
 /// 1. add the column;
-/// 2. back-fill the ten rows the seed wrote before v13, matched by the literal
-///    name they were seeded with — the precedent is the v4 to v5 step in
-///    `database_service.dart`. At most one row per key, the oldest, so a user
-///    who has two "Uno" rows does not end up with two `uno` keys;
-/// 3. insert the built-in types whose key is absent. Only types the seed never
-///    held can be absent this way, so **a type the user deleted is not
-///    resurrected**: the ten old ones are back-filled, never re-inserted.
+/// 2. back-fill every **seeded** row, matched by the literal name it was seeded
+///    with and by `isDefault = 1` — the precedent is the v4 to v5 step in
+///    `database_service.dart`. `isDefault` is what separates a row the app wrote
+///    from one the user made: a user's own "Yahtzee" carries 0 and is left
+///    alone, so the migration never hijacks their row and renames it under them.
+///    At most one row per key, the oldest: the guard is on the key, not on the
+///    row, so a user with two "Uno" rows still ends up with exactly one `uno`,
+///    on the first replay and on every one after it;
+/// 3. insert the built-in types the pre-v13 seed never held, when the key is
+///    absent **and no live row already uses that name**. The ten old ones are
+///    never re-inserted, so **a type the user deleted is not resurrected**; and
+///    a user who already made their own "Yahtzee" — the very premise of this
+///    change — keeps that one row rather than gaining a second with the same
+///    name, which the server's `unique(group_id, name)` would refuse for good
+///    anyway.
+///
+/// Step 2 covers all 22 rather than only the ten, because the v2 to v3 step
+/// seeds the *current* catalogue into an old database: a device coming from v2
+/// arrives at v13 with all 22 names already present and none of them keyed.
 Future<void> applyV13(
   SqlExecutor execute,
   Future<Set<String>> Function(String table) columnsOf,
@@ -196,13 +208,16 @@ Future<void> applyV13(
     await execute('ALTER TABLE game_types ADD COLUMN builtin_key TEXT');
   }
 
-  for (final seeded in GameType.seededNamesBeforeV13.entries) {
+  for (final type in GameType.defaultGameTypes()) {
+    final key = type.builtinKey;
+    if (key == null) continue;
     await execute(
       'UPDATE game_types SET builtin_key = ? WHERE id = ('
       '  SELECT id FROM game_types'
-      '  WHERE builtin_key IS NULL AND name = ? COLLATE NOCASE'
-      '  ORDER BY id LIMIT 1)',
-      [seeded.key, seeded.value],
+      '  WHERE builtin_key IS NULL AND name = ? COLLATE NOCASE AND isDefault = 1'
+      '  ORDER BY id LIMIT 1)'
+      ' AND NOT EXISTS (SELECT 1 FROM game_types WHERE builtin_key = ?)',
+      [key, type.name, key],
     );
   }
 
@@ -218,8 +233,10 @@ Future<void> applyV13(
     final placeholders = List.filled(values.length, '?').join(', ');
     await execute(
       'INSERT INTO game_types ($columns) SELECT $placeholders '
-      'WHERE NOT EXISTS (SELECT 1 FROM game_types WHERE builtin_key = ?)',
-      [...values.values, key],
+      'WHERE NOT EXISTS (SELECT 1 FROM game_types WHERE builtin_key = ?) '
+      'AND NOT EXISTS (SELECT 1 FROM game_types '
+      '                WHERE name = ? COLLATE NOCASE AND deleted_at IS NULL)',
+      [...values.values, key, type.name],
     );
   }
 }

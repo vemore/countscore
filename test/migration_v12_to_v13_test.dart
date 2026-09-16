@@ -40,14 +40,20 @@ Future<Set<String>> _columnsOf(Database db, String table) async {
   return {for (final r in rows) r['name'] as String};
 }
 
-Future<void> _insertV12(Database db, String name, {int? deletedAt}) async {
+Future<void> _insertV12(
+  Database db,
+  String name, {
+  int? deletedAt,
+  bool isDefault = true,
+  String? uuid,
+}) async {
   await db.insert('game_types', {
     'name': name,
     'iconCodePoint': 0xe000,
     'cardColorValue': 0xFF000000,
     'isLowestScoreWins': 0,
-    'isDefault': 1,
-    'uuid': 'uuid-${name.toLowerCase()}',
+    'isDefault': isDefault ? 1 : 0,
+    'uuid': uuid ?? 'uuid-${name.toLowerCase()}',
     'created_at': 1,
     'updated_at': 1,
     'deleted_at': deletedAt,
@@ -130,18 +136,9 @@ void main() {
     expect(keys.containsKey('Skyjo'), isFalse);
   });
 
-  test('two rows with the same seeded name yield one key, the oldest row', () async {
+  test('two seeded rows with the same name yield one key, the oldest row', () async {
     await _insertV12(db, 'Uno');
-    await db.insert('game_types', {
-      'name': 'uno',
-      'iconCodePoint': 0xe001,
-      'cardColorValue': 0xFF000001,
-      'isLowestScoreWins': 0,
-      'isDefault': 0,
-      'uuid': 'uuid-uno-2',
-      'created_at': 2,
-      'updated_at': 2,
-    });
+    await _insertV12(db, 'uno', uuid: 'uuid-uno-2');
 
     await upgrade();
 
@@ -149,6 +146,57 @@ void main() {
         where: 'builtin_key = ?', whereArgs: ['uno'], orderBy: 'id');
     expect(rows, hasLength(1));
     expect(rows.single['uuid'], 'uuid-uno');
+  });
+
+  test('replaying over a duplicated name still leaves one key', () async {
+    // The two halves of the previous cases together. The back-fill guard is on
+    // the *key*, not on the row: without it the replay would find the second
+    // "Uno" — still `builtin_key IS NULL` — and key that one too, leaving two
+    // rows the new partial unique index refuses.
+    await _insertV12(db, 'Uno');
+    await _insertV12(db, 'uno', uuid: 'uuid-uno-2');
+
+    await upgrade();
+    await upgrade();
+    await upgrade();
+
+    final rows = await db.query('game_types', where: 'builtin_key = ?', whereArgs: ['uno']);
+    expect(rows, hasLength(1));
+    expect(rows.single['uuid'], 'uuid-uno');
+  });
+
+  test("a type the user made themselves is never claimed, nor duplicated", () async {
+    // The premise of the entry this closes: someone who wanted Yahtzee made one.
+    // `isDefault = 0` is what says the row is theirs, so the back-fill leaves it
+    // keyless — its name is theirs to choose and must not start being localized
+    // under them — and the insert is blocked by the name, so they do not end up
+    // with two "Yahtzee" rows that the server's unique(group_id, name) would
+    // then refuse for good.
+    await _insertV12(db, 'ZapZap');
+    await _insertV12(db, 'Yahtzee', isDefault: false);
+
+    await upgrade();
+
+    final yahtzee = await db.query('game_types', where: 'name = ? COLLATE NOCASE',
+        whereArgs: ['Yahtzee']);
+    expect(yahtzee, hasLength(1));
+    expect(yahtzee.single['builtin_key'], isNull);
+    expect(yahtzee.single['isDefault'], 0);
+    // The other eleven still arrive.
+    final keyed = await db.query('game_types', where: 'builtin_key IS NOT NULL');
+    expect(keyed, hasLength(12));
+  });
+
+  test('a seeded row the user renamed frees its name for the new type', () async {
+    // "Le jeu du jeudi" was Skyjo; nothing matches 'Skyjo' any more, so no key.
+    // Unrelated to the twelve, which arrive as usual.
+    await _insertV12(db, 'Le jeu du jeudi');
+
+    await upgrade();
+
+    final rows = await db.query('game_types', columns: ['name', 'builtin_key']);
+    expect(rows.firstWhere((r) => r['name'] == 'Le jeu du jeudi')['builtin_key'], isNull);
+    expect(rows.where((r) => r['builtin_key'] != null), hasLength(12));
   });
 
   test('replaying the step changes nothing', () async {

@@ -137,6 +137,17 @@ class SyncEngine {
         // pull adopts that identity locally.
         await _store.markSuperseded(d);
         return true;
+      case 'builtin_key_taken':
+        // Another device already holds the group's row for this built-in type,
+        // under a uuid this one did not compute — an older group, linked by name
+        // before built-in types linked by key. Pulling adopts that identity, and
+        // `_applyGameType` matches it to the local row on the key. Rejecting
+        // instead would be terminal, and every shared game pointing at this type
+        // would then push a `game_type_id` the server never created and stall on
+        // `parent_missing` for good.
+        await _store.markSuperseded(d);
+        await _pullAll();
+        return true;
       case 'parent_missing':
         // The parent went in an earlier batch that failed, or is still queued.
         // Retry once; a second refusal means it is not coming.

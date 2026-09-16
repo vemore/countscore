@@ -64,12 +64,29 @@ Renaming a built-in type in `lib/screens/game_types_screen.dart` **clears the ke
 is what makes the chosen name stick.
 
 `applyV13` in `lib/services/sync/sync_schema.dart`, run by both engines, does three things:
-adds the column; back-fills the ten rows the seed wrote before v13, matched by the literal
-name they were seeded with (the precedent is the v4→v5 step, `database_service.dart`), one
-row per key at most; then inserts the twelve types the seed never held, guarded by
-`WHERE NOT EXISTS`. A type the user deleted is therefore **not** resurrected — the ten old
-ones are only ever back-filled. Idempotent, so replaying it changes nothing.
-`test/migration_v12_to_v13_test.dart`.
+
+1. adds the column;
+2. **back-fills every seeded row**, matched by the literal name it was seeded with *and* by
+   `isDefault = 1` — the precedent is the v4→v5 step, `database_service.dart`. `isDefault` is
+   what separates a row the app wrote from one the user made, so a user's own "Yahtzee" is
+   never claimed and renamed under them. At most one row per key: the guard is on the key,
+   not on the row, which is what makes a replay over a duplicated name safe;
+3. **inserts the twelve types the pre-v13 seed never held**, when the key is absent *and* no
+   live row already uses that name.
+
+A type the user deleted is therefore **not** resurrected — the ten old ones are only ever
+back-filled — and a user who had already made their own "Yahtzee" keeps one row rather than
+gaining a second the server's `unique(group_id, name)` would refuse for good. Step 2 covers
+all 22 rather than only the ten because the v2→v3 step seeds the *current* catalogue: a
+device coming from v2 reaches v13 with all 22 names present and none of them keyed.
+`test/migration_v12_to_v13_test.dart` and `test/migration_v2_to_v13_test.dart`.
+
+> **A seed inside a migration step writes against an older table than the model describes.**
+> sqflite builds its INSERT column list straight from the map keys, so one key too many is
+> `SqliteException(1): table game_types has no column named …`, thrown inside `onUpgrade` —
+> the open fails and the database is unopenable for good, not silently trimmed.
+> `DatabaseService._gameTypeRow` filters `GameType.toMap()` against the table as it is at
+> that point, and every seed in the chain goes through it.
 
 Pushed as `builtin_key`, a column the server gained in `0003_game_type_builtin_key`. The
 group link of a built-in type is derived from the key rather than the name

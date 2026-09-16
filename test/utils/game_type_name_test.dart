@@ -61,6 +61,34 @@ void main() {
     expect(builtinGameTypeName(fr, 'petanque'), isNull);
   });
 
+  group('isBuiltinRename', () {
+    test('a stray space is not a rename', () {
+      final zapzap = _type(builtinKey: 'zapzap', name: 'ZapZap');
+      expect(isBuiltinRename(fr, zapzap, 'ZapZap'), isFalse);
+      expect(isBuiltinRename(fr, zapzap, 'ZapZap '), isFalse);
+      expect(isBuiltinRename(fr, zapzap, '  ZapZap'), isFalse);
+    });
+
+    test('the locale the user sees is the one compared against', () {
+      // A Japanese user editing "その他" has not renamed anything; comparing
+      // against the stored `Autre` would call every save a rename.
+      final other = _type(builtinKey: 'other', name: 'Autre');
+      expect(isBuiltinRename(ja, other, 'その他'), isFalse);
+      expect(isBuiltinRename(ja, other, 'Autre'), isTrue);
+    });
+
+    test('a real rename gives up the key', () {
+      expect(
+        isBuiltinRename(fr, _type(builtinKey: 'skyjo', name: 'Skyjo'), 'Le jeu du jeudi'),
+        isTrue,
+      );
+    });
+
+    test('a type that has no key cannot give one up', () {
+      expect(isBuiltinRename(fr, _type(name: 'Le jeu du jeudi'), 'Autre chose'), isFalse);
+    });
+  });
+
   test('the statistics key resolves the same way', () {
     expect(gameTypeDisplayNameForKey(ja, 'yahtzee'), 'ヤッツィー');
     expect(gameTypeDisplayNameForKey(ja, 'Le jeu du jeudi'), 'Le jeu du jeudi');

@@ -80,7 +80,11 @@ different languages hold "Autre" and "その他" for one and the same type. Thre
 - **One live row per `(group_id, builtin_key)`** — a partial unique index, and a
   `builtin_key_taken` rejection so a clash is a reason rather than a driver error
   (`_check_unique`, `backend/app/routes/sync.py`). `unique(group_id, name)` is unchanged:
-  a user's own types still collide by name.
+  a user's own types still collide by name. The client **resolves** that reason rather than
+  rejecting it — `markSuperseded` then a pull, like `score_exists` — because the engine's
+  default is terminal, and a rejected `game_type` would leave every game that references it
+  pushing a `game_type_id` the server never created, stalling on `parent_missing` for good
+  (`sync_engine.dart`, `test/sync/sync_engine_resolve_test.dart`).
 
 Last-writer-wins on `game_types.name` is therefore harmless for a built-in row — nothing
 reads it while the key is set. See [[SchemaV10]] and [[I18n]].

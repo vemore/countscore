@@ -226,7 +226,13 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
       // The aggregate groups on COALESCE(builtin_key, name), so the key is a
       // built-in key for a built-in type and a stored name otherwise.
       final gameTypeKey = entry.key;
-      final gameTypeName = gameTypeDisplayNameForKey(l10n, gameTypeKey);
+      final gameType = _gameTypesByKey[gameTypeKey];
+      // With the row in hand the name is exact, including for a key this version
+      // of the app does not know — a newer one on another device may have seeded
+      // it, and showing the raw `six_nimmt` would be worse than its stored name.
+      final gameTypeName = gameType != null
+          ? gameTypeDisplayName(l10n, gameType)
+          : gameTypeDisplayNameForKey(l10n, gameTypeKey);
       final stats = entry.value;
       final gamesPlayed = stats['gamesPlayed'] ?? 0;
       final wins = stats['wins'] ?? 0;
@@ -234,8 +240,7 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
           ? (wins / gamesPlayed * 100).toStringAsFixed(1)
           : '0.0';
 
-      // Get game type info for icon and color
-      final gameType = _gameTypesByKey[gameTypeKey];
+      // Icon and colour come from the same row.
       final iconData = gameType?.icon ?? Icons.casino;
       final iconColor = gameType?.cardColor ?? Theme.of(context).colorScheme.primary;
 

@@ -324,8 +324,7 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
                     // silently ignore the name the user just typed. Everything
                     // else may change with the key intact.
                     final renamed = existingGameType != null &&
-                        existingGameType.builtinKey != null &&
-                        nameController.text != gameTypeDisplayName(l10n, existingGameType);
+                        isBuiltinRename(l10n, existingGameType, nameController.text);
                     final gameType = GameType(
                       id: existingGameType?.id,
                       builtinKey: renamed ? null : existingGameType?.builtinKey,
