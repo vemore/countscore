@@ -18,7 +18,7 @@ is untouched by it.
 | `PreToolUse` | `Bash` | `guard-bash.sh` | Refuses a set of commands outright; runs the gates before a commit |
 | `PostToolUse` | `Edit\|Write` | `guard-gitignore.sh` | Refuses a `.gitignore` that starts ignoring the two web binaries |
 | `PostToolUse` | `Edit\|Write` | `check-arb-sync.sh` | Reports ARB key drift as context — never blocks |
-| `SessionStart` | — | `session-start.sh` | Says whether the clone needs codegen and whether the branch is safe |
+| `SessionStart` | — | `session-start.sh` | Says whether the clone needs codegen, whether the branch is safe, and whether the scheduled workflows are still firing |
 | `Stop` | — | `require-pull-request.sh` | Refuses to end the turn while finished commits have no pull request, or while that pull request is red |
 | `SubagentStop` | — | `require-pull-request.sh` | The same, for an agent — judged on the branch of the worktree it works in |
 
@@ -35,8 +35,22 @@ not `main` and whose commits are not on `main` — work that merged into a dead-
 Acknowledge one that reached `main` another way with
 `git config --add countscore.deliveryAcknowledged <number>`.
 
+**The scheduled half of CI, once a day.** `scripts/check_scheduled_runs.sh` asks GitHub
+whether `ci.yml` and `deps.yml` — both triggered by a `schedule:` and nothing else — are
+still `active`, and how old each one's newest `schedule`-event run is, against a threshold
+*per workflow* (weekly → 10 days, monthly → 40; one window would cry wolf at the monthly one
+every month). With no run on record it measures from the commit that last touched a `cron:`
+line, so a cron that landed last week is not reported as overdue. It is silent unless
+something is wrong, and silent too when it cannot ask — no `gh`, not authenticated, origin
+not GitHub, no answer within `timeout 20` — in which case the hook banks no day and asks
+again next session. The stamp is the gitignored `/.countscore-scheduled-check`, one date.
+Why here: this hook is what greets a session opening on a repository that has just come back
+from a quiet spell, which is exactly the moment a cron disabled for inactivity stays off.
+See [[Testing]] for what the two workflows carry.
+
 `parse_command.py` and `arb_keys.py` are helpers, not handlers.
-`scripts/hooks_selftest.sh` exercises all of them, and `scripts/cleanup_local.sh`, from a table of 120 cases and runs as the
+`scripts/hooks_selftest.sh` exercises all of them, and `scripts/cleanup_local.sh` and
+`scripts/check_scheduled_runs.sh`, from a table of 131 cases and runs as the
 first step of the `app` job in `.github/workflows/ci.yml`.
 
 ### What is refused, and on what evidence
@@ -87,10 +101,14 @@ cherry-pick the commits `git cherry -v origin/main <old-branch>` marks with `+`.
   removal and gitignoring are guarded. `.claude/rules/web.md` still states the rule.
 - **A stale `*.g.dart`.** `session-start.sh` only notices when *no* generated file exists.
   This is why the codegen rule stays in `CLAUDE.md`.
-- **Freshness of `origin/main`.** The hooks never fetch: no network in a hook. Everything
-  they know about a branch is as old as the last `git fetch --prune`, so they err towards
-  letting a stale branch through — which is why that command stays in `CLAUDE.md`, and why
-  a silent pass is not evidence that the branch is live.
+- **Freshness of `origin/main`.** The hooks never *fetch* — not because a hook cannot reach
+  the network (three of these checks ask GitHub through `gh`), but because a fetch writes to
+  the clone, silently under whatever else a session is doing, and every worktree shares those
+  refs. So everything they know about a branch is as old as the last `git fetch --prune`, and
+  they err towards letting a stale branch through — which is why that command stays in
+  `CLAUDE.md`, and why a silent pass is not evidence that the branch is live. The reads that
+  do go out (`gh pr list`, `gh pr checks`, the workflow state and run age) are all wrapped in
+  `timeout` and all fail silent: a session offline behaves as a session with nothing to say.
 - **Pushing and opening.** `require-pull-request.sh` reads GitHub, never writes to it: it
   asks for the pull request, it does not create one. Publishing is an outward-facing act
   and stays deliberate. It also stays silent when `gh` is absent or unauthenticated, when
@@ -188,6 +206,21 @@ cherry-pick the commits `git cherry -v origin/main <old-branch>` marks with `+`.
   reason, and a force-push would destroy an agent's commits on a shared branch. Force-pushing
   was already forbidden in prose; all three are now refusals. The `TODO.md` / `DONE.md` guard
   exists because old sessions, and memories, still know the previous convention.
+- **The scheduled workflows are checked at session start, not by a cron of their own
+  (2026-09-16).** A workflow that only a `schedule:` triggers is disabled by GitHub after 60
+  days without repository activity, and re-enabling it is a manual click; nothing here would
+  notice, because a scheduled run has no pull request in front of it and no hook or required
+  check answers for it. `ci.yml`'s weekly run carries `pip-audit`, the only dependency scan
+  that fails a build in this project, and `deps.yml` is the only thing that keeps
+  `pubspec.lock` and the committed `web/` binaries current. The failure needs a repository
+  quiet for two months *and then active again*, which is precisely a session opening on this
+  hook — so the check is here rather than in another workflow (one more cron exposed to the
+  same rule) or in `release-android` (a release is the one moment the audit has just run
+  anyway). The entry that asked for it (`wip/done/2026-09-16-scheduled-workflow-auto-disabled.md`)
+  also offered a cheaper option — move the cron to daily so its own runs reset the clock.
+  **It was not taken**: GitHub's documentation says the 60 days are counted from *repository
+  activity* and nowhere says a scheduled run counts as any, so that option rests on an
+  unverified premise and would have replaced a detectable gap with an invisible one.
 - **The service-account key is recognised by content, inside the secrets rule (2026-09-15).**
   Publishing through the Play API ([[Release]]) put a key on this machine that can release
   the app. Google names the downloaded file after the project and a key id, so no path rule

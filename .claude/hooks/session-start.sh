@@ -50,6 +50,30 @@ delivery_check() {
     done
 }
 
+# GitHub disables a workflow triggered only by `schedule:` after 60 days without
+# repository activity, and the two that carry the dependency audit and the lock refresh
+# are exactly that. The moment to look is the one this hook already owns: a session
+# opening on a repository that has just come back to life. The check itself is
+# scripts/check_scheduled_runs.sh -- silent unless something is wrong, and silent too
+# whenever it cannot ask GitHub.
+#
+# Once a day, through a gitignored stamp at the repository root: this hook runs on every
+# session, and three `gh` calls per session would be paid for nothing 364 days out of 365.
+# The stamp is written only when GitHub actually answered, so a session started offline
+# does not buy a day of silence.
+scheduled_runs_check() {
+    local stamp=".countscore-scheduled-check" today out rc
+    today=$(date -u +%Y-%m-%d 2>/dev/null) || return
+    [ "$(cat "$stamp" 2>/dev/null)" = "$today" ] && return
+    [ -x scripts/check_scheduled_runs.sh ] || return
+
+    out=$(scripts/check_scheduled_runs.sh 2>/dev/null)
+    rc=$?
+    [ "$rc" -eq 3 ] || printf '%s' "$today" > "$stamp" 2>/dev/null
+    [ -n "$out" ] && printf '%s\n' "$out"
+    return 0
+}
+
 # Parallel work lives in worktrees, one per pull request. A session that resumes the
 # orchestration needs to see them before it starts anything new.
 worktrees_report() {
@@ -74,6 +98,7 @@ worktrees_report() {
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
 worktrees_report
 delivery_check
+scheduled_runs_check
 branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 [ -z "$branch" ] && exit 0
 
