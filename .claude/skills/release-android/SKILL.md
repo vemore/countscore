@@ -1,6 +1,6 @@
 ---
 name: release-android
-description: Build and publish a CountScore release to the Google Play Store — release worktree, keystore, version bump, release notes, Play policy gate, signed App Bundle, artifact verification (upload key, versionCode, target API 36, INTERNET, 16 KB pages), then publishing to a Play track through the Google Play Developer Publishing API (play_publish.py: status, validate, commit on the user's go), plus a brief for the Console-only tasks (content rating, declarations, Data Safety review) that Claude Cowork or Claude in Chrome can do. Use when preparing a release, cutting a new version, building or verifying a signed AAB, uploading to a Play track, setting up the Play API service account, handing the Console-only work to a browser agent, or regenerating the app icon. Triggers: "build a release", "publier sur le Play Store", "release build", "appbundle", "sign the app", "keystore", "new version", "bump version", "upload to Play Console", "Play API", "service account", "internal testing", "Cowork", "Claude in Chrome".
+description: Build and publish a CountScore release to the Google Play Store — release worktree, keystore, version bump, release notes, Play policy gate, signed App Bundle, artifact verification (upload key, versionCode, target API 36, INTERNET, 16 KB pages), then publishing to a Play track through the Google Play Developer Publishing API (play_publish.py: status, validate, commit on the user's go), publishing the store listing alone — title, descriptions, screenshots, translations — with no version bump and no rebuild (play_publish.py listing), plus a brief for the Console-only tasks (content rating, declarations, Data Safety review, category and tags) that Claude Cowork or Claude in Chrome can do. Use when preparing a release, cutting a new version, building or verifying a signed AAB, uploading to a Play track, updating or translating the store listing, setting up the Play API service account, handing the Console-only work to a browser agent, or regenerating the app icon. Triggers: "build a release", "publier sur le Play Store", "release build", "appbundle", "sign the app", "keystore", "new version", "bump version", "upload to Play Console", "update the store listing", "publier la fiche", "ASO", "store listing translation", "screenshots on Play", "Play API", "service account", "internal testing", "Cowork", "Claude in Chrome".
 ---
 
 # Releasing CountScore to the Play Store
@@ -53,10 +53,16 @@ Commit the bump on the release branch; the commit hook runs the gates in this wo
 
 ## 3. Release notes
 
-One file per locale: `store_listing/en-US/release_notes_v<x.y.z>.txt` and
+Release notes are **bilingual, whatever the listing speaks**: `play_publish.py` reads them
+for `NOTES_LOCALES` only — `en-US` and `fr-FR`. One file each:
+`store_listing/en-US/release_notes_v<x.y.z>.txt` and
 `store_listing/fr-FR/release_notes_v<x.y.z>.txt` (the `v` matches the existing files).
 
 - **At most 500 characters each** — Play's limit. `play_publish.py` refuses longer ones.
+- A missing `fr-FR` file **falls back to `en-US`** with a note on stderr; a missing `en-US`
+  file is a refusal.
+- A store-listing locale outside `NOTES_LOCALES` (see §8a) requires **nothing** here: adding
+  a language to the listing never makes a third release-notes file mandatory.
 - No claim that contradicts the Data Safety declaration ("no data collection", "fully
   offline").
 
@@ -152,6 +158,8 @@ uv run --script $P publish --track internal --commit     # ONLY on the user's ex
 #   --track closed (API track "alpha") · --track production [--rollout 0.2]
 #   --draft · --listing (title, descriptions) · --graphics (feature graphic, phone screenshots)
 #   --aab <path>, default build/app/outputs/bundle/release/app-release.aab
+uv run --script $P listing [--graphics]                  # the store listing alone, validate only
+uv run --script $P listing [--graphics] --commit         # ONLY on the user's explicit go — §8a
 ```
 
 1. **`status`** — the version codes on every track. `publish` refuses a `versionCode` not
@@ -169,6 +177,52 @@ uv run --script $P publish --track internal --commit     # ONLY on the user's ex
 
 Order: **internal → closed (if required) → production at a staged percentage**, and watch
 Crashes & ANRs for 48 h before widening.
+
+## 8a. The store listing on its own
+
+ASO work — a new title, a rewritten description, fresh screenshots, a translation — does
+**not** need a version bump or a rebuilt bundle. `listing` is its own subcommand:
+
+```bash
+uv run --script $P listing              # every locale's text, validated, nothing published
+uv run --script $P listing --graphics   # also the feature graphic and the phone screenshots
+uv run --script $P listing --commit     # ONLY on the user's explicit go
+```
+
+It opens an edit, pushes `edits.listings().update()` per locale, replaces the images with
+`--graphics`, runs `edits.validate` and then either commits (`--commit`) or deletes the edit.
+It reads neither `pubspec.yaml` nor the bundle, and never touches a track — so nothing about a
+release moves. The Console must still not be used for this: the listing is API-owned
+(`references/play-console-handoff.md`, rule 2).
+
+> **`listing --commit` has no staged rollout.** A `Listing` has no `userFraction`: the text
+> and images go live for everyone, in every locale, as soon as Play accepts the edit. There is
+> no 20 % equivalent and no halting it — the only way back is another `listing --commit` with
+> the previous text. Say this to the user before asking for the go.
+
+**Which locales.** There is no locale constant for the listing: `listing_locales()` reads
+`store_listing/` and takes every directory holding a `title.txt`, `assets/` excluded, sorted.
+Adding a language is creating its directory — the script does not change, and there is no
+second list to drift from. Release notes are the other half and stay on `NOTES_LOCALES`
+(§3).
+
+```
+store_listing/
+  assets/                          # shared fallback: feature_graphic.png, screenshots/phone/
+  <locale>/                        # a locale iff it holds title.txt
+    title.txt  short_description.txt  full_description.txt
+    video.txt                      # optional: a YouTube URL -> the Listing `video` field
+    feature_graphic.png            # optional: overrides assets/feature_graphic.png
+    screenshots/phone/*.png        # optional: overrides assets/screenshots/phone/
+    release_notes_v<x.y.z>.txt     # NOTES_LOCALES only (en-US, fr-FR)
+```
+
+- The per-locale artwork is **opt-in**: with nothing under `store_listing/<locale>/`, every
+  locale gets `assets/` — which is the nominal path today.
+- The screenshot glob is **`*.png` only**. A JPEG in that directory is ignored in silence;
+  convert it. Play's limit is **8 phone screenshots**, and the script refuses a ninth.
+- `video.txt` absent means the `video` field is not sent at all, so Play keeps whatever is
+  already there. It must hold an `http(s)` URL.
 
 Tests (fake Google service, no network):
 `uv run --no-project --with pytest --with google-api-python-client --with google-auth pytest .claude/skills/release-android/scripts/`
@@ -195,9 +249,11 @@ Tests (fake Google service, no network):
 ## 9. What the API cannot do — the Console brief
 
 The API does not reach the content rating (IARC questionnaire), the App content
-declarations, the Data Safety form review, app registration / developer verification, or the
-12-tester / 14-day closed-test requirement. When one of those needs attention — a change to
-what the app declares, a Console banner, the first production release:
+declarations, the Data Safety form review, app registration / developer verification, the
+12-tester / 14-day closed-test requirement, or the **app category and store tags** (androidpublisher
+has no endpoint for them — *Grow → Store presence → Store listing settings*). When one of
+those needs attention — a change to what the app declares, a Console banner, the first
+production release, an ASO pass that changes the category:
 
 ```bash
 .claude/skills/release-android/scripts/stage_handoff.sh ["content rating, Data safety review"]
@@ -249,6 +305,8 @@ Adaptive icon on white `#FFFFFF`; every density is generated.
 - [ ] No keystore, `key.properties`, `.env` or service-account key staged
 - [ ] `play_publish.py status` read; `publish` without `--commit` validated
 - [ ] `--commit` run only on the user's explicit go; production at a partial rollout
-- [ ] Console-only tasks (content rating, declarations, Data Safety) checked, through the brief if needed
+- [ ] Store listing text/graphics published through `listing` (never the Console), and the
+      user told that `listing --commit` is live at once with no staged rollout
+- [ ] Console-only tasks (content rating, declarations, Data Safety, category and tags) checked, through the brief if needed
 - [ ] Tag pushed, `Release.md` Submission state updated, worktree and brief folder removed
 - [ ] Keystore and service-account key backups exist and are current
