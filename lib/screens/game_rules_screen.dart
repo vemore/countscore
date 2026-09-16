@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../models/game_type.dart';
 import '../providers/game_type_provider.dart';
 import '../services/game_rules_catalog.dart';
+import '../utils/game_type_name.dart';
 
 /// How a game type is played, and how CountScore scores it.
 ///
@@ -102,7 +103,7 @@ class _GameRulesScreenState extends State<GameRulesScreen> {
     final body = _displayed;
     return Scaffold(
       appBar: AppBar(
-        title: Text(_gameType.name),
+        title: Text(gameTypeDisplayName(l10n, _gameType)),
         actions: [
           if (!_loading && body != null)
             IconButton(
@@ -176,7 +177,7 @@ class _TypeHeader extends StatelessWidget {
       child: ListTile(
         leading: Icon(gameType.icon, size: 40, color: gameType.cardColor),
         title: Text(
-          gameType.name,
+          gameTypeDisplayName(l10n, gameType),
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         subtitle: Text(gameType.isLowestScoreWins
