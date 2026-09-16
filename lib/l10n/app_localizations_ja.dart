@@ -432,7 +432,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get featureGroupSharing => 'グループ共有';
 
   @override
-  String get featureZapZapAnalysis => 'ZapZapゲーム分析';
+  String get featureGameAnalysis => 'AIによる対戦分析';
 
   @override
   String get rateApp => 'CountScore を評価する';
@@ -532,6 +532,36 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get analysisTitle => 'ゲーム分析';
+
+  @override
+  String get analysisStyle => '分析のスタイル';
+
+  @override
+  String get analysisStyleProfessor => '教授';
+
+  @override
+  String get analysisStyleCommentator => 'スポーツ実況';
+
+  @override
+  String get analysisStyleDocumentary => '動物ドキュメンタリー';
+
+  @override
+  String get analysisStyleNoir => '探偵';
+
+  @override
+  String get analysisStyleBard => '吟遊詩人';
+
+  @override
+  String get analysisStyleCoach => 'コーチ';
+
+  @override
+  String get analysisStyleConsultant => 'コンサルタント';
+
+  @override
+  String get analysisStyleAstrologer => '占星術師';
+
+  @override
+  String get analysisStyleRealityTv => 'リアリティ番組';
 
   @override
   String get generatingAnalysis => '分析を生成中…';

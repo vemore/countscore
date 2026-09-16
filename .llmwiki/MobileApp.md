@@ -6,7 +6,7 @@
 
 ## Facts
 
-49 Dart files under `lib/` (including generated localizations).
+63 Dart files under `lib/` (including generated localizations).
 
 ### Entry point
 
@@ -36,7 +36,8 @@ themed and already knows whether the connected features exist.
 
 `home_screen` (545 l.) · `game_board_screen` (792 l., the scoring grid) ·
 `game_types_screen` (491 l.) · `create_game_screen` (372 l.) ·
-`game_analysis_screen` (396 l., the LLM analysis — see [[LlmProviders]]) ·
+`game_analysis_screen` (the LLM analysis, with its row of voice chips — see
+[[LlmProviders]]) ·
 `players_screen` (326 l.) · `player_stats_screen` (299 l.) · `settings_screen` (368 l.) ·
 `about_screen` (175 l.) · `ranking_screen` (140 l.).
 
@@ -46,9 +47,14 @@ themed and already knows whether the connected features exist.
 
 `lib/widgets/` holds exactly one component: `player_picker_dialog.dart` (291 l.).
 
-### Models — `lib/models/` (6)
+`analysis_style.dart` is an enum whose `id` is an ASCII string that travels to the backend
+and into SharedPreferences (`analysisStyle`) and whose label is translated. It mirrors
+`PERSONAS` in `backend/app/services/analysis/personas.py`: a new voice is added in both
+places plus the ten ARB files.
 
-`game`, `game_type`, `player`, `round`, `score`, `game_analysis`. Plain classes with
+### Models — `lib/models/` (7)
+
+`game`, `game_type`, `player`, `round`, `score`, `game_analysis`, `analysis_style`. Plain classes with
 `toMap`/`fromMap`. `player.dart` has no `gameId` since v9 — its `id` is a
 `game_players.id`. See [[SchemaV10]].
 

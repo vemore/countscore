@@ -5,9 +5,11 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
+import '../models/analysis_style.dart';
 import '../models/game_analysis.dart';
 import '../providers/backend_provider.dart';
 import '../providers/game_provider.dart';
@@ -43,6 +45,12 @@ class GameAnalysisScreen extends StatefulWidget {
 }
 
 class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
+  /// The last voice the user picked, remembered across games and launches.
+  /// It is deliberately not stored with the analysis: the tone is recognisable
+  /// in a sentence, and a column on `game_analyses` would cost a migration
+  /// through Drift, the sqflite chain, SQLModel, Alembic and the sync bounds.
+  static const stylePreferenceKey = 'analysisStyle';
+
   late final GameAnalysisRepository _repo =
       widget.repository ?? DriftGameAnalysisRepository(AppDatabase.instance);
 
@@ -52,11 +60,28 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
   DateTime? _generatedAt;
   String? _modelId;
   int? _analysisId;
+  AnalysisStyle _style = AnalysisStyle.fallback;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadCached());
+    _loadStyle();
+  }
+
+  /// An unreadable or unknown stored value decodes to the default, the same
+  /// rule [ThemeMode] follows in `theme_provider.dart`.
+  Future<void> _loadStyle() async {
+    final prefs = await SharedPreferences.getInstance();
+    final style = AnalysisStyle.fromId(prefs.getString(stylePreferenceKey));
+    if (!mounted) return;
+    setState(() => _style = style);
+  }
+
+  Future<void> _selectStyle(AnalysisStyle style) async {
+    setState(() => _style = style);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(stylePreferenceKey, style.id);
   }
 
   /// Loads a previously saved analysis if one exists. Generation is never
@@ -80,6 +105,8 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
     final gameProvider = context.read<GameProvider>();
     final gameTypeProvider = context.read<GameTypeProvider>();
     final baseUrl = context.read<BackendProvider>().baseUrl;
+    // Read before the first await: the payload is built after several of them.
+    final languageCode = Localizations.localeOf(context).languageCode;
     final game = gameProvider.currentGame;
     if (game == null || game.id == null || baseUrl == null) return;
 
@@ -114,6 +141,22 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
           'created_at': game.createdAt.toIso8601String(),
         },
         'game_type': gameType?.name,
+        'style': _style.id,
+        // The analysis answers in the language the app is displayed in. A
+        // backend older than this drops both fields and uses its own defaults.
+        'language': languageCode,
+        // Any game type can be analysed now, including one the user created,
+        // so what the app actually enforced travels with the game rather than
+        // being guessed from its name.
+        'game_type_rules': {
+          'is_lowest_score_wins': game.isLowestScoreWins,
+          'player_dead_condition_type':
+              gameType?.playerDeadConditionType?.toDbString(),
+          'player_dead_threshold': gameType?.playerDeadThreshold,
+          'game_over_condition_type':
+              gameType?.gameOverConditionType?.toDbString(),
+          'game_over_threshold': gameType?.gameOverThreshold,
+        },
         'players': [
           for (final p in players) {'id': p.id, 'name': p.name},
         ],
@@ -136,7 +179,7 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
       };
 
       final result = await BackendClient(baseUrl, httpClient: widget.httpClient)
-          .zapzapAnalysis(payload);
+          .gameAnalysis(payload);
       final text = result.content;
       final modelId = result.model;
       final now = DateTime.now();
@@ -166,7 +209,7 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
       _reportFailure(AppLocalizations.of(context)!.analysisError);
     } on BackendException catch (e) {
       if (!mounted) return;
-      debugPrint('zapzap analysis failed: $e'); // status + body stay in the log
+      debugPrint('game analysis failed: $e'); // status + body stay in the log
       final l10n = AppLocalizations.of(context)!;
       // 503 is temporary by contract — no LLM credentials, or the provider's
       // quota is exhausted — so it gets words a user can act on: try later.
@@ -177,7 +220,7 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      debugPrint('zapzap analysis failed: $e');
+      debugPrint('game analysis failed: $e');
       _reportFailure(AppLocalizations.of(context)!.analysisError);
     }
   }
@@ -235,21 +278,39 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
 
   Future<void> _regenerate() async {
     final l10n = AppLocalizations.of(context)!;
+    // Picking another voice is the usual reason to regenerate, so the chips
+    // are offered here rather than behind a trip back to the empty state.
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.confirm),
-        content: Text(l10n.confirmRegenerateAnalysis),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(l10n.cancel),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(l10n.confirm),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(l10n.confirmRegenerateAnalysis),
+              const SizedBox(height: 16),
+              _StylePicker(
+                selected: _style,
+                onSelected: (style) async {
+                  await _selectStyle(style);
+                  setDialogState(() {});
+                },
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(l10n.regenerateAnalysis),
-          ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l10n.regenerateAnalysis),
+            ),
+          ],
+        ),
       ),
     );
     if (confirm == true) {
@@ -419,11 +480,21 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
     if (_analysisText == null) {
       if (!canGenerate) return _buildNoServer(context, l10n);
       return Center(
-        child: FilledButton.icon(
-          key: const Key('analysis_generate'),
-          icon: const Icon(Icons.auto_awesome),
-          label: Text(l10n.generateAnalysis),
-          onPressed: _generate,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _StylePicker(selected: _style, onSelected: _selectStyle),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                key: const Key('analysis_generate'),
+                icon: const Icon(Icons.auto_awesome),
+                label: Text(l10n.generateAnalysis),
+                onPressed: _generate,
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -452,6 +523,43 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The row of voices an analysis can be written in.
+///
+/// Labels are translated, [AnalysisStyle.id] is not: the id is what the backend
+/// and the stored preference speak.
+class _StylePicker extends StatelessWidget {
+  const _StylePicker({required this.selected, required this.onSelected});
+
+  final AnalysisStyle selected;
+  final ValueChanged<AnalysisStyle> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(l10n.analysisStyle, style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final style in AnalysisStyle.values)
+              ChoiceChip(
+                key: Key('analysis_style_${style.id}'),
+                avatar: Icon(style.icon, size: 18),
+                label: Text(style.label(l10n)),
+                selected: style == selected,
+                onSelected: (_) => onSelected(style),
+              ),
+          ],
+        ),
+      ],
     );
   }
 }

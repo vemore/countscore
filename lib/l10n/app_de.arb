@@ -255,7 +255,7 @@
 
   "featureGroupSharing": "Gruppenfreigabe",
 
-  "featureZapZapAnalysis": "ZapZap-Spielanalyse",
+  "featureGameAnalysis": "KI-Spielanalyse",
 
   "rateApp": "CountScore bewerten",
 
@@ -305,6 +305,26 @@
   "enterComment": "Kommentar eingeben",
   "analyzeGame": "Partie analysieren",
   "analysisTitle": "Partieanalyse",
+  "analysisStyle": "Analysestil",
+
+  "analysisStyleProfessor": "Der Professor",
+
+  "analysisStyleCommentator": "Der Sportkommentator",
+
+  "analysisStyleDocumentary": "Die Tierdokumentation",
+
+  "analysisStyleNoir": "Der Detektiv",
+
+  "analysisStyleBard": "Der Barde",
+
+  "analysisStyleCoach": "Der Coach",
+
+  "analysisStyleConsultant": "Der Berater",
+
+  "analysisStyleAstrologer": "Der Astrologe",
+
+  "analysisStyleRealityTv": "Die Realityshow",
+
   "generatingAnalysis": "Analyse wird erstellt…",
   "generateAnalysis": "Analyse erstellen",
   "regenerateAnalysis": "Analyse neu erstellen",

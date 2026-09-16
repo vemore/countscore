@@ -26,10 +26,15 @@ at your own server in Settings → Server if you want the connected features.
 - **10 languages**, fully translated: English, French, Spanish, German, Portuguese (BR),
   Russian, Chinese (Simplified), Japanese, Hindi and Arabic — Arabic including RTL layout.
 - **Offline-first**: everything works with no network. Data lives on the device.
-- **ZapZap analysis** (optional, network, off until you configure a server): a long-form
-  LLM commentary on a finished ZapZap game. Always user-initiated, never automatic, and
-  cached locally once generated. A **Report this commentary** action opens a prefilled email
-  to the developer if the generated text is offensive or wrong.
+- **AI game analysis** (optional, network, off until you configure a server): a one-page
+  LLM commentary on any finished game, whatever its type, in **one of nine voices** — the
+  caustic professor, a sports commentator, a wildlife documentary, a noir detective, a bard,
+  a kind coach, a corporate consultant, an astrologer or a reality-TV voice-over — and in
+  the language the app is displayed in. It tells you how each player played and what it says
+  about their habits; the numbers stay on the Ranking and Player-statistics screens. Always
+  user-initiated, never automatic, and cached locally once generated. A **Report this
+  commentary** action opens a prefilled email to the developer if the generated text is
+  offensive or wrong.
 - **Group sharing** (optional, network, off until you configure a server and join a group):
   create a group or join one with an invite code, then share games with the group's other
   devices — scores entered on one phone appear on the others within seconds, offline edits
@@ -181,12 +186,12 @@ your own, and your data stays on it. It exposes:
 | `/groups/*` | Create/join a group, device tokens, share-link rotation |
 | `/sync/push`, `/sync/pull` | Delta-log sync with row-level last-write-wins |
 | `/sync/stream` | WebSocket change signalling (Postgres `LISTEN/NOTIFY`) |
-| `/comments/*` | LLM game commentary, including the ZapZap analysis |
+| `/comments/*` | LLM game commentary, including the game analysis |
 | `$PWA_BASE_PATH/` | Optional: the web app itself, same origin as the API (off unless `PWA_BASE_PATH` is set) |
 
 **Current state, stated plainly:** the server side of groups and sync is implemented and
 tested, but **the Flutter client for it has not been written yet**. The app is therefore
-local-only today, and the single live app↔backend call is the ZapZap analysis — which
+local-only today, and the single live app↔backend call is the game analysis — which
 itself only happens once you have configured a server. See [wip/](wip/README.md) and
 `.llmwiki/Architecture.md`.
 
@@ -290,8 +295,9 @@ own — described below.
 preferences are stored in a local SQLite database on your device. Delete a game or a player
 at any time; uninstalling removes everything permanently.
 
-**When data can leave your device — 1, the ZapZap analysis**: asking for one sends that
-game's data — game type, player names, round scores and per-player history — to the
+**When data can leave your device — 1, the AI game analysis**: asking for one sends that
+game's data — game type and its scoring rules, player names, round scores and per-player
+history — plus the voice you picked and the language the app is displayed in, to the
 CountScore backend **you configured in Settings → Server**, which forwards it to an LLM
 provider to generate the commentary. Two conditions, both yours: no server configured means
 the feature is not even offered, and with one configured nothing is sent until you tap the

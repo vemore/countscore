@@ -10,7 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:countscore/l10n/app_localizations.dart';
+import 'package:countscore/models/analysis_style.dart';
 import 'package:countscore/models/game.dart';
 import 'package:countscore/models/game_analysis.dart';
 import 'package:countscore/providers/backend_provider.dart';
@@ -103,6 +105,8 @@ Future<void> _pumpFailure(WidgetTester tester) async {
 }
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
   testWidgets('with no server configured, generation is not offered',
       (tester) async {
     await tester.pumpWidget(_wrap(
@@ -318,5 +322,80 @@ void main() {
     );
     expect(find.textContaining('HTTP'), findsNothing);
     expect(find.textContaining('rate-limited'), findsNothing);
+  });
+
+  testWidgets('the style picker offers every voice and remembers the last pick',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({'analysisStyle': 'bard'});
+    await tester.pumpWidget(_wrap(
+      GameAnalysisScreen(repository: _FakeAnalysisRepository()),
+      backendUrl: 'https://countscore.example.com',
+    ));
+    await tester.pumpAndSettle();
+
+    for (final style in AnalysisStyle.values) {
+      expect(find.byKey(Key('analysis_style_${style.id}')), findsOneWidget);
+    }
+    ChoiceChip chip(AnalysisStyle style) =>
+        tester.widget<ChoiceChip>(find.byKey(Key('analysis_style_${style.id}')));
+    expect(chip(AnalysisStyle.bard).selected, isTrue);
+
+    await tester.tap(find.byKey(const Key('analysis_style_coach')));
+    await tester.pumpAndSettle();
+
+    expect(chip(AnalysisStyle.coach).selected, isTrue);
+    expect(chip(AnalysisStyle.bard).selected, isFalse);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('analysisStyle'), 'coach');
+  });
+
+  testWidgets('an unreadable stored style falls back to the professor',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({'analysisStyle': 'town-crier'});
+    await tester.pumpWidget(_wrap(
+      GameAnalysisScreen(repository: _FakeAnalysisRepository()),
+      backendUrl: 'https://countscore.example.com',
+    ));
+    await tester.pumpAndSettle();
+
+    final chip = tester.widget<ChoiceChip>(
+        find.byKey(const Key('analysis_style_professor')));
+    expect(chip.selected, isTrue);
+  });
+
+  testWidgets('the request carries the style, the app language and the rules',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({'analysisStyle': 'noir'});
+    Map<String, dynamic>? sent;
+    final client = MockClient((request) async {
+      sent = jsonDecode(request.body) as Map<String, dynamic>;
+      return http.Response.bytes(
+        utf8.encode(jsonEncode({'content': 'Il pleuvait.', 'model': 'm'})),
+        200,
+      );
+    });
+
+    await tester.pumpWidget(_wrap(
+      GameAnalysisScreen(
+        repository: _FakeAnalysisRepository(),
+        httpClient: client,
+      ),
+      backendUrl: 'https://countscore.example.com',
+      gameProvider: _GameProviderWithCurrentGame(),
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('analysis_generate')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Il pleuvait.'), findsOneWidget);
+    expect(sent!['style'], 'noir');
+    // The analysis answers in the language the app is displayed in — this
+    // MaterialApp is pinned to English.
+    expect(sent!['language'], 'en');
+    expect(
+      (sent!['game_type_rules'] as Map<String, dynamic>)['is_lowest_score_wins'],
+      isTrue,
+    );
   });
 }

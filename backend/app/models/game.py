@@ -162,7 +162,7 @@ class Score(SQLModel, table=True):
 
 
 class GameAnalysis(SQLModel, table=True):
-    """The long-form ZapZap analysis of a game, shared so members do not pay for it twice."""
+    """The long-form analysis of a game, shared so members do not pay for it twice."""
 
     __tablename__ = "game_analyses"
     __table_args__ = (live_unique("uq_game_analyses_game", "game_id"),)

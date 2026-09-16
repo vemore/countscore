@@ -255,7 +255,7 @@
 
   "featureGroupSharing": "समूह साझाकरण",
 
-  "featureZapZapAnalysis": "ZapZap खेल विश्लेषण",
+  "featureGameAnalysis": "AI से खेल विश्लेषण",
 
   "rateApp": "CountScore को रेट करें",
 
@@ -305,6 +305,26 @@
   "enterComment": "टिप्पणी दर्ज करें",
   "analyzeGame": "खेल का विश्लेषण करें",
   "analysisTitle": "खेल विश्लेषण",
+  "analysisStyle": "विश्लेषण शैली",
+
+  "analysisStyleProfessor": "प्रोफ़ेसर",
+
+  "analysisStyleCommentator": "खेल कमेंटेटर",
+
+  "analysisStyleDocumentary": "वन्यजीव वृत्तचित्र",
+
+  "analysisStyleNoir": "जासूस",
+
+  "analysisStyleBard": "चारण कवि",
+
+  "analysisStyleCoach": "कोच",
+
+  "analysisStyleConsultant": "सलाहकार",
+
+  "analysisStyleAstrologer": "ज्योतिषी",
+
+  "analysisStyleRealityTv": "रियलिटी शो",
+
   "generatingAnalysis": "विश्लेषण उत्पन्न हो रहा है…",
   "generateAnalysis": "विश्लेषण उत्पन्न करें",
   "regenerateAnalysis": "विश्लेषण पुनः उत्पन्न करें",
