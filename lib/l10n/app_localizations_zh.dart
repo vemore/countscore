@@ -520,6 +520,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get gameFinished => '已结束';
 
   @override
+  String get undo => '撤销';
+
+  @override
+  String get gameMarkedFinished => '游戏已结束';
+
+  @override
+  String get gameReopened => '游戏已重新开启';
+
+  @override
   String get comment => '备注';
 
   @override

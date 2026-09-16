@@ -533,6 +533,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String get gameFinished => 'Завершена';
 
   @override
+  String get undo => 'Отменить';
+
+  @override
+  String get gameMarkedFinished => 'Игра завершена';
+
+  @override
+  String get gameReopened => 'Игра возобновлена';
+
+  @override
   String get comment => 'Комментарий';
 
   @override

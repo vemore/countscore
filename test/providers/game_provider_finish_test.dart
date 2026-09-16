@@ -79,4 +79,57 @@ void main() {
   test('an unknown game reports nothing', () async {
     expect(await provider.setGameFinished(9999, true), isFalse);
   });
+
+  // The round count is what tells the game list which games were actually
+  // played: "Finish" is offered on a game with a round, or on one already
+  // finished, and on nothing else. The list needs every card's count at once,
+  // so it comes from one grouped query rather than one per card.
+  group('round counts', () {
+    test('loadGames counts every game in one pass', () async {
+      final empty = await aGame();
+      final played = await aGame();
+
+      await provider.loadGame(played);
+      await provider.addRound();
+      await provider.addRound();
+
+      await provider.loadGames();
+      expect(provider.roundCountOf(empty), 0);
+      expect(provider.roundCountOf(played), 2);
+    });
+
+    test('an unknown game counts zero rather than throwing', () {
+      expect(provider.roundCountOf(9999), 0);
+    });
+
+    test('adding and deleting a round keep the count in step', () async {
+      final id = await aGame();
+      await provider.loadGame(id);
+      expect(provider.roundCountOf(id), 0);
+
+      // No reload in between: the game list is rebuilt by the same
+      // notifyListeners, so a stale count would show a stale menu.
+      await provider.addRound();
+      expect(provider.roundCountOf(id), 1);
+
+      await provider.deleteRound(provider.currentRounds.single.id!);
+      expect(provider.roundCountOf(id), 0);
+
+      // And the database agrees.
+      await provider.loadGames();
+      expect(provider.roundCountOf(id), 0);
+    });
+
+    test('a deleted round is not counted after a reload', () async {
+      final id = await aGame();
+      await provider.loadGame(id);
+      await provider.addRound();
+      await provider.addRound();
+      await provider.deleteRound(provider.currentRounds.first.id!);
+
+      await provider.loadGames();
+      expect(provider.roundCountOf(id), 1,
+          reason: 'a tombstoned round must not keep a game "played"');
+    });
+  });
 }

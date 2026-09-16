@@ -315,6 +315,9 @@
   "endGame": "End Game",
   "reopenGame": "Reopen game",
   "gameFinished": "Finished",
+  "undo": "Undo",
+  "gameMarkedFinished": "Game finished",
+  "gameReopened": "Game reopened",
 
   "comment": "Comment",
   "@comment": {

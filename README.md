@@ -25,9 +25,11 @@ at your own server in Settings → Server if you want the connected features.
   or your own, gets that summary. Any of it can be
   rewritten: your table's own rules replace the shipped text and travel with your group.
 - **Scoring grid**: rounds, running totals, live ranking and per-player statistics.
-- **An explicit end**: any game can be declared over from the board or the game list, which
-  marks it in the history; reopen it and play on. Game types that define a threshold
-  (Skyjo, President, Belote) still offer it by themselves when the threshold is crossed.
+- **An explicit end**: any game that has been played can be declared over from the board or
+  the game list, which marks it in the history and shows it as finished in both; the
+  confirmation offers an undo, and reopening it lets you play on. Game types that define a
+  threshold (Skyjo, Président, Belote) offer it by themselves whenever a score or a round
+  takes the game past it.
 - **Global players**: a player exists once and is shared across games, so statistics follow
   them from one game to the next.
 - **10 languages**, fully translated: English, French, Spanish, German, Portuguese (BR),

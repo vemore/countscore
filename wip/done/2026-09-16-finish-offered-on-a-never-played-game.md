@@ -1,5 +1,12 @@
 # The home-screen menu ends a game that has no round, and it counts towards the review sheet
 
+**Status:** done (2026-09-16) — closed by fix/end-of-game-polish. The home card gates
+`finish_game` on `game.isFinished || roundCount > 0`, the board's rule word for word. The
+count comes from `RoundRepository.countByGame()`, one grouped `COUNT(*)` folded into
+`GameProvider.loadGames()` and kept in step by `addRound`/`deleteRound` — not a
+`FutureBuilder` per card, which would be one query per row of the whole history. Pinned by
+`test/screens/home_screen_finish_menu_test.dart`.
+
 - **Noted:** 2026-09-16 — testing `feat/explicit-end-of-game` on the Pixel 9 Pro XL
 - **Theme:** growth
 - **Area:** app

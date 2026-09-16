@@ -851,6 +851,21 @@
     "description": "Badge shown on a finished game in the game list"
   },
 
+  "undo": "Annuler",
+  "@undo": {
+    "description": "Snackbar action that reverts the action just confirmed"
+  },
+
+  "gameMarkedFinished": "Partie terminée",
+  "@gameMarkedFinished": {
+    "description": "Snackbar confirming a game was just marked finished"
+  },
+
+  "gameReopened": "Partie rouverte",
+  "@gameReopened": {
+    "description": "Snackbar confirming a finished game was just reopened"
+  },
+
   "comment": "Commentaire",
 
   "enterComment": "Saisir un commentaire",

@@ -27,7 +27,7 @@ themed and already knows whether the connected features exist.
 
 | Provider | Responsibility |
 |---|---|
-| `game_provider.dart` (339 l.) | The substantial one. Repositories are constructor-injectable, defaulting to the six Drift implementations over `AppDatabase.instance`. Owns `_games`, `_currentGame`, `_currentPlayers`, `_currentRounds` and `_scores` (keyed `"playerId_roundId"`). Game/round/score CRUD plus stats. |
+| `game_provider.dart` (415 l.) | The substantial one. Repositories are constructor-injectable, defaulting to the six Drift implementations over `AppDatabase.instance`. Owns `_games`, `_currentGame`, `_currentPlayers`, `_currentRounds`, `_scores` (keyed `"playerId_roundId"`) and `_roundCounts` (game id → rounds played, one grouped query in `loadGames`, kept in step by `addRound`/`deleteRound`). Game/round/score CRUD plus stats. |
 | `game_type_provider.dart` (46 l.) | Game-type list CRUD, `getGameTypeById`. The 22 built-in types are rows like any other; their *displayed* name comes from `lib/utils/game_type_name.dart`, not from the row. |
 | `settings_provider.dart` (72 l.) | Wakelock toggle (SharedPreferences-backed) and DB export/import. The **only** caller of `DatabaseService` for I/O. Exposes `supportsDbExportImport => !kIsWeb`. |
 | `theme_provider.dart` (33 l.) | `ThemeMode` only, persisted to SharedPreferences under `themeMode` as `ThemeMode.name`. `load()` is called from `main()` before `runApp`. |
@@ -39,7 +39,7 @@ themed and already knows whether the connected features exist.
 `settings_screen` is a `StatefulWidget` since the Server section (it owns the URL
 `TextEditingController`).
 
-`home_screen` (545 l.) · `game_board_screen` (792 l., the scoring grid) ·
+`home_screen` (628 l.) · `game_board_screen` (1017 l., the scoring grid) ·
 `game_types_screen` (491 l.) · `create_game_screen` (372 l.) ·
 `game_analysis_screen` (the LLM analysis, with its row of voice chips — see
 [[LlmProviders]]) ·
@@ -75,6 +75,19 @@ places plus the ten ARB files.
 null", and reopening a game is exactly that. `GameProvider.setGameFinished` is the single
 write path — it returns true only for the transition that finishes a game, which is what
 gates the Play review sheet.
+
+Both screens show the state and both can change it: a flag icon beside the name in the game
+list, a chip beside the title on the board, and a menu entry that finishes or reopens,
+confirmed by a snackbar whose **Undo** action writes the previous state back (the repo's only
+`SnackBarAction`). The entry is offered on a game that has at least one round or is already
+finished — a game with no round was never played, which is why the list needs
+`GameProvider.roundCountOf`. Nothing is locked: a finished game still takes rounds and score
+edits.
+
+`_GameBoardScreenState._maybeShowGameOver` raises the game-over dialog after a score edit,
+after a round is added and after one is deleted — every mutation that can move a total past
+the game type's threshold. `_gameOverDismissed` keeps it to one question per crossing and
+re-arms as soon as the condition is false again.
 
 ### Toolchain
 
@@ -139,5 +152,14 @@ not "fix" it by hardcoding a codepoint.
   release would have needed ten ARB edits nobody remembered. `test/screens/about_screen_test.dart`
   mocks `PackageInfo` and keeps both of its checks in one test, because a static future
   completed in one test's fake-async zone never delivers in the next.
+- **The game-over refusal is in memory, and there is no check on the board's first build**
+  (2026-09-16). Nothing records the user's "Continue playing", so a first-build check would
+  raise the dialog every single time the board is opened for a game past its threshold —
+  worse than the bug it fixes. Persisting the refusal needs a synced column and stays open in
+  `wip/todo_nr/2026-09-16-game-over-dialog-only-on-score-edit.md`.
+- **The game list counts rounds in one grouped query, not one per card** (2026-09-16).
+  `DriftGameRepository.getAll` returns no count, and a `FutureBuilder` per card would be one
+  query per row over the whole history; `RoundRepository.countByGame` is a single `GROUP BY`
+  that `loadGames` folds into the provider.
 - **The mode is stored as `ThemeMode.name`, not its index**, so reordering the enum cannot
   silently flip a user's theme. An unknown stored value decodes to `ThemeMode.system`.

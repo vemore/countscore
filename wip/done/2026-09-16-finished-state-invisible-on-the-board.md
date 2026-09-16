@@ -1,5 +1,13 @@
 # Nothing on a finished game's board says it is finished, and finishing it says nothing either
 
+**Status:** done (2026-09-16) — closed by fix/end-of-game-polish. The board's app bar
+carries a `l10n.gameFinished` chip beside the title whenever `finishedAt` is set, and both
+triggers — the game list's menu and the board's — now confirm with a snackbar whose **Undo**
+action writes the previous state back (the repo's first `SnackBarAction`; messenger captured
+before the await, as in `players_screen.dart`). **Add round** is deliberately left enabled:
+`GameProvider.setGameFinished` documents that a finished game still takes rounds and score
+edits. Pinned by `test/screens/game_board_end_of_game_test.dart`.
+
 - **Noted:** 2026-09-16 — testing `feat/explicit-end-of-game` on the Pixel 9 Pro XL
 - **Theme:** growth
 - **Area:** app

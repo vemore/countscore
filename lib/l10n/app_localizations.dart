@@ -1056,6 +1056,24 @@ abstract class AppLocalizations {
   /// **'Terminée'**
   String get gameFinished;
 
+  /// Snackbar action that reverts the action just confirmed
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler'**
+  String get undo;
+
+  /// Snackbar confirming a game was just marked finished
+  ///
+  /// In fr, this message translates to:
+  /// **'Partie terminée'**
+  String get gameMarkedFinished;
+
+  /// Snackbar confirming a finished game was just reopened
+  ///
+  /// In fr, this message translates to:
+  /// **'Partie rouverte'**
+  String get gameReopened;
+
   /// No description provided for @comment.
   ///
   /// In fr, this message translates to:

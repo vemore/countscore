@@ -532,6 +532,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get gameFinished => 'Terminée';
 
   @override
+  String get undo => 'Annuler';
+
+  @override
+  String get gameMarkedFinished => 'Partie terminée';
+
+  @override
+  String get gameReopened => 'Partie rouverte';
+
+  @override
   String get comment => 'Commentaire';
 
   @override
