@@ -20,7 +20,7 @@ MockClient _answering(String body, int status) => MockClient(
     );
 
 void main() {
-  group('zapzapAnalysis', () {
+  group('gameAnalysis', () {
     test('a non-200 arrives as a BackendException carrying the status', () async {
       final client = BackendClient(
         'https://countscore.example.com',
@@ -28,8 +28,48 @@ void main() {
       );
 
       expect(
-        () => client.zapzapAnalysis(const {}),
+        () => client.gameAnalysis(const {}),
         throwsA(isA<BackendException>().having((e) => e.statusCode, 'statusCode', 502)),
+      );
+    });
+
+    test('a backend that predates the rename is retried on its old path', () async {
+      // A self-hosted backend is upgraded on its owner's schedule, so a phone
+      // that updates first must not lose the feature.
+      final paths = <String>[];
+      final client = BackendClient(
+        'https://countscore.example.com',
+        httpClient: MockClient((request) async {
+          paths.add(request.url.path);
+          if (request.url.path == BackendClient.analysisPath) {
+            return http.Response.bytes(utf8.encode('Not Found'), 404);
+          }
+          return http.Response.bytes(
+            utf8.encode('{"content":"Le professeur a parlé.","model":"m"}'),
+            200,
+          );
+        }),
+      );
+
+      final result = await client.gameAnalysis(const {});
+
+      expect(paths, [
+        BackendClient.analysisPath,
+        BackendClient.legacyAnalysisPath,
+      ]);
+      expect(result.content, 'Le professeur a parlé.');
+    });
+
+    test('a 404 from both paths is still a failure', () async {
+      final client = BackendClient(
+        'https://countscore.example.com',
+        httpClient: _answering('Not Found', 404),
+      );
+
+      expect(
+        () => client.gameAnalysis(const {}),
+        throwsA(isA<BackendException>()
+            .having((e) => e.statusCode, 'statusCode', 404)),
       );
     });
 
@@ -40,7 +80,7 @@ void main() {
       );
 
       try {
-        await client.zapzapAnalysis(const {});
+        await client.gameAnalysis(const {});
         fail('expected a BackendException');
       } on BackendException catch (e) {
         expect(e.body, contains('RuntimeError'));
@@ -57,7 +97,7 @@ void main() {
       );
 
       try {
-        await client.zapzapAnalysis(const {});
+        await client.gameAnalysis(const {});
         fail('expected a BackendException');
       } on BackendException catch (e) {
         expect(e.body, contains('erreur amont côté fournisseur'));
@@ -73,7 +113,7 @@ void main() {
         ),
       );
 
-      final result = await client.zapzapAnalysis(const {});
+      final result = await client.gameAnalysis(const {});
       expect(result.content, 'Le professeur a parlé.');
       expect(result.model, 'mistral-medium-latest');
     });

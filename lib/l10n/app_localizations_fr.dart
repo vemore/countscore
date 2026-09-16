@@ -441,7 +441,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get featureGroupSharing => 'Partage en groupe';
 
   @override
-  String get featureZapZapAnalysis => 'Analyse des parties ZapZap';
+  String get featureGameAnalysis => 'Analyse des parties par IA';
 
   @override
   String get rateApp => 'Noter CountScore';
@@ -551,6 +551,36 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get analysisTitle => 'Analyse de la partie';
+
+  @override
+  String get analysisStyle => 'Style d\'analyse';
+
+  @override
+  String get analysisStyleProfessor => 'Le professeur';
+
+  @override
+  String get analysisStyleCommentator => 'Le commentateur sportif';
+
+  @override
+  String get analysisStyleDocumentary => 'Le documentaire animalier';
+
+  @override
+  String get analysisStyleNoir => 'Le détective';
+
+  @override
+  String get analysisStyleBard => 'Le barde';
+
+  @override
+  String get analysisStyleCoach => 'Le coach';
+
+  @override
+  String get analysisStyleConsultant => 'Le consultant';
+
+  @override
+  String get analysisStyleAstrologer => 'L\'astrologue';
+
+  @override
+  String get analysisStyleRealityTv => 'La téléréalité';
 
   @override
   String get generatingAnalysis => 'Génération de l\'analyse en cours…';
@@ -842,4 +872,149 @@ class AppLocalizationsFr extends AppLocalizations {
   String reportCommentaryNoMailApp(String email) {
     return 'Aucune application e-mail trouvée. Écrivez à $email pour signaler ce commentaire.';
   }
+
+  @override
+  String get gameRulesTitle => 'Règles du jeu';
+
+  @override
+  String get gameRulesInApp => 'Dans CountScore';
+
+  @override
+  String get gameRulesSection => 'Les règles';
+
+  @override
+  String get gameRulesNoElimination => 'Pas d\'élimination en cours de partie';
+
+  @override
+  String gameRulesEliminationOver(int threshold) {
+    return 'Un joueur est éliminé au-dessus de $threshold points';
+  }
+
+  @override
+  String gameRulesEliminationUnder(int threshold) {
+    return 'Un joueur est éliminé en dessous de $threshold points';
+  }
+
+  @override
+  String gameRulesEndFirstOver(int threshold) {
+    return 'La partie s\'arrête dès qu\'un joueur dépasse $threshold points';
+  }
+
+  @override
+  String gameRulesEndFirstUnder(int threshold) {
+    return 'La partie s\'arrête dès qu\'un joueur descend sous $threshold points';
+  }
+
+  @override
+  String gameRulesEndLastOver(int threshold) {
+    return 'La partie s\'arrête quand tous les joueurs sauf un dépassent $threshold points';
+  }
+
+  @override
+  String gameRulesEndLastUnder(int threshold) {
+    return 'La partie s\'arrête quand tous les joueurs sauf un descendent sous $threshold points';
+  }
+
+  @override
+  String get gameRulesNoEnd =>
+      'Pas de fin automatique : vous décidez quand la partie s\'arrête';
+
+  @override
+  String get gameRulesEmptyTitle => 'Pas encore de règles';
+
+  @override
+  String get gameRulesEmptyHint =>
+      'Notez comment votre table compte les points : tout le monde aura la même version.';
+
+  @override
+  String get gameRulesWrite => 'Écrire les règles';
+
+  @override
+  String get gameRulesEditTitle => 'Modifier les règles';
+
+  @override
+  String get gameRulesEditorHint =>
+      'Les règles de votre table. Le Markdown est accepté.';
+
+  @override
+  String get gameRulesFromGroup => 'Règles de votre groupe';
+
+  @override
+  String get gameRulesRestoreDefault => 'Rétablir les règles d\'origine';
+
+  @override
+  String get gameRulesSaved => 'Règles enregistrées';
+
+  @override
+  String get gameRulesRestored => 'Règles d\'origine rétablies';
+
+  @override
+  String get gameRulesDisclaimer =>
+      'Résumé rédigé pour CountScore à partir des règles couramment jouées. Les noms de jeux appartiennent à leurs propriétaires et ne sont cités qu\'à titre descriptif.';
+
+  @override
+  String get gameTypeNameZapzap => 'ZapZap';
+
+  @override
+  String get gameTypeNameUno => 'Uno';
+
+  @override
+  String get gameTypeNameScrabble => 'Scrabble';
+
+  @override
+  String get gameTypeNameOther => 'Autre';
+
+  @override
+  String get gameTypeNameSkyjo => 'Skyjo';
+
+  @override
+  String get gameTypeNamePresident => 'Président';
+
+  @override
+  String get gameTypeNameBelote => 'Belote';
+
+  @override
+  String get gameTypeNameTarot => 'Tarot';
+
+  @override
+  String get gameTypeNameBridge => 'Bridge';
+
+  @override
+  String get gameTypeNameRami => 'Rami';
+
+  @override
+  String get gameTypeNameCoinche => 'Coinche';
+
+  @override
+  String get gameTypeNameYahtzee => 'Yahtzee';
+
+  @override
+  String get gameTypeNamePhase10 => 'Phase 10';
+
+  @override
+  String get gameTypeNameFlip7 => 'Flip 7';
+
+  @override
+  String get gameTypeNameMilleBornes => 'Mille Bornes';
+
+  @override
+  String get gameTypeNameRummikub => 'Rummikub';
+
+  @override
+  String get gameTypeNameSixNimmt => '6 qui prend';
+
+  @override
+  String get gameTypeNameQwirkle => 'Qwirkle';
+
+  @override
+  String get gameTypeNameFarkle => 'Farkle';
+
+  @override
+  String get gameTypeNameCanasta => 'Canasta';
+
+  @override
+  String get gameTypeNameWizard => 'Wizard';
+
+  @override
+  String get gameTypeNameTriomino => 'Triomino';
 }

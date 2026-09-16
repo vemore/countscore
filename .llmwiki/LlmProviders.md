@@ -1,8 +1,8 @@
 # LLM Providers
 
-> Scope: both LLM paths — Claude for short comments, a pluggable provider for ZapZap.
-> Related: [[Api]] · [[Backend]] · [[Security]] · [[MobileApp]] · [[Deployment]]
-> Updated: 2026-09-14
+> Scope: both LLM paths — Claude for short comments, a pluggable provider for the game
+> analysis. Related: [[Api]] · [[Backend]] · [[Security]] · [[MobileApp]] · [[Deployment]]
+> Updated: 2026-09-16
 
 ## Facts
 
@@ -31,21 +31,49 @@ Prompt built by `app/services/prompt_builder.py`:
 The system block is marked `cache_control: ephemeral`, so across a games evening roughly
 90% of input tokens come from cache.
 
-### Path 2 — ZapZap analysis, pluggable
+### Path 2 — game analysis, pluggable
 
-`POST /comments/zapzap-analysis` — stateless, unauthenticated, unbudgeted.
+`POST /comments/game-analysis` — stateless, unauthenticated, unbudgeted.
+`/comments/zapzap-analysis` is the same handler under its former name (two stacked
+decorators, the old one `include_in_schema=False`), kept because a self-hosted backend is
+upgraded on its owner's schedule. The app posts to the new path and retries the old one on
+a 404 (`lib/services/backend_client.dart`).
 
-- **Prompt**: `app/services/zapzap_prompt.py` (150 l.). `ZAPZAP_SYSTEM_PROMPT` at line 20 is
-  the French "professeur Claude" persona, ported from the Flutter prototype
-  `lib/services/bedrock_analysis_service.dart`, and names no real person.
-  `build_zapzap_user_message(payload)` at line 70 builds the Markdown round table plus
-  per-player history.
-- **Payload**: `ZapZapPayload` in `app/schemas/comments.py`. The app never bounded game
-  names, round comments or player names locally, so the schema does not refuse a game over
-  its text: strings are clipped (comment 200, names of games and types 64), player names
-  are filtered through `sanitize_player_name` (the sync allow-list as a filter, `Joueur N`
-  when nothing survives) and history is re-keyed to match. 422 only for a wrong shape or a
-  count out of bounds. The five layers below still do not apply to this path.
+- **Prompt**: the package `app/services/analysis/`. One analysis is a **voice**, a
+  **language** and a **game type** composed over a shared editorial contract:
+  - `personas.py` — nine voices (`professor`, `commentator`, `documentary`, `noir`, `bard`,
+    `coach`, `consultant`, `astrologer`, `reality_tv`), written in English, ~100 words each,
+    voice only. `DEFAULT_PERSONA = "professor"` is the original caustic "professeur Claude",
+    ported from French. No block names a real person, show or brand.
+  - `languages.py` — the ten app locales. `resolve_language` keeps the primary subtag
+    (`pt-BR` → `pt`) and falls back to `en`. The directive is the only per-language prose and
+    is emitted **twice**, after the role line and as the last line, which is what holds
+    `ar`/`hi`/`ja`/`zh` in line.
+  - `game_rules.py` — a registry keyed on the *normalised* game-type name (NFKD, accents
+    stripped, casefold, alphanumerics) with a block for nine of the ten seeded types, plus a
+    generic block for anything else that explicitly forbids inventing a rule. It always
+    appends the configuration the app enforced, which **overrides** the registry block: a
+    user may rename or retune a type.
+  - `contract.py` — role, editorial contract, safety line, anti-injection rules. The
+    contract is the point of the feature: 250–350 words, one paragraph per player about how
+    they played and what their record says, **no table, no statistics list, no restated
+    totals** — the Ranking and Player-statistics screens already show every number.
+  - `signals.py` — derived facts computed in Python (rank, lead changes, best/worst round,
+    consistency, comeback/collapse, elimination round, standing against the player's usual
+    one on a 0..1 scale). The model is forbidden to quote numbers but required to judge
+    them, so the counting cannot be left to it.
+  - `builder.py` — assembly. **No function in the package takes a provider argument**, which
+    makes the "identical across providers" rule structural; `test_prompt_is_identical_across_providers`
+    pins it.
+- **Payload**: `GameAnalysisPayload` in `app/schemas/comments.py` (`ZapZapPayload` is an
+  alias). The app never bounded game names, round comments or player names locally, so the
+  schema does not refuse a game over its text: strings are clipped (comment 200, names of
+  games and types 64), player names are filtered through `sanitize_player_name` (the sync
+  allow-list as a filter, `Player N` when nothing survives) and history is re-keyed to match.
+  `style`, `language` and the two condition enums are **corrected, never refused** — an
+  unknown value resolves to the default, because a newer app against an older backend, or the
+  reverse, must still come back with an analysis. 422 stays for a wrong shape or a count out
+  of bounds, thresholds included. The five layers below still do not apply to this path.
 - **Contract**: `app/services/llm/base.py` — `LLMProvider` Protocol (`available` and `model`
   properties, `async generate`), `LLMResult(content, model, tokens_in, tokens_out)`. Shared parameters:
   `DEFAULT_MAX_TOKENS = 8192`, `DEFAULT_TEMPERATURE = 0.4`, `DEFAULT_TOP_P = 0.9`.
@@ -69,15 +97,32 @@ The system block is marked `cache_control: ephemeral`, so across a games evening
   key is set — **not** that the model can be called.
 
 - **Comparison tool**:
-  `python scripts/compare_providers.py --payload scripts/sample_payload.json --providers bedrock,gemini,mistral`
-  → writes `out/zapzap_<provider>.md` plus a side-by-side recap.
+  `python scripts/compare_providers.py --payload scripts/sample_payload.json --providers bedrock,gemini,mistral`,
+  plus `--styles` and `--language` → writes `out/analysis_<style>_<provider>.md` and a
+  side-by-side recap carrying the **word count**. It is the only check of the editorial
+  contract: no test can tell whether the answer fits on a page or reads well in Japanese.
+  `scripts/sample_payload_skyjo.json` is the non-ZapZap fixture.
 
 ### Client side
 
-`lib/screens/game_analysis_screen.dart` posts `{game, game_type, players, rounds,
-history_by_player_name}` and reads back `{content, model}`. The result is cached in
-`game_analyses`; regenerating deletes and replaces. Generation is manual-only, never
-automatic, so no LLM call happens without a user asking.
+`lib/screens/game_analysis_screen.dart` posts `{game, game_type, style, language,
+game_type_rules, players, rounds, history_by_player_name}` and reads back `{content, model}`.
+The result is cached in `game_analyses`; regenerating deletes and replaces. Generation is
+manual-only, never automatic, so no LLM call happens without a user asking.
+
+The **voice** is chosen on the screen itself: a `Wrap` of `ChoiceChip`s above the Generate
+button and inside the Regenerate dialog, backed by `AnalysisStyle`
+(`lib/models/analysis_style.dart`, whose ids mirror `PERSONAS` server-side). The pick is
+remembered in SharedPreferences under `analysisStyle` and an unreadable value decodes to
+`professor`, the same rule `ThemeMode` follows. It is deliberately **not** stored with the
+analysis: `game_analyses` has no `style` column, and adding one would cost a migration
+through Drift, the sqflite chain, SQLModel, Alembic and the sync bounds to display a label
+under a text whose tone is recognisable in a sentence.
+
+The **language** is `Localizations.localeOf(context).languageCode`, read before the first
+await. The **rules** block carries what the app enforced for this game type — direction and
+the two conditions with their thresholds — so a type the user invented reads as well as a
+seeded one.
 
 > **Status: Outdated** (2026-09-11) — the base URL was a compile-time
 > `String.fromEnvironment('BACKEND_URL', defaultValue: <the author's NAS>)` with no API
@@ -94,8 +139,9 @@ when there is neither a server nor anything to read, present when an analysis wa
 earlier, since that text is local data and this is the only way to reach it. On that path the
 regenerate action stays disabled and delete stays enabled.
 
-The HTTP call lives in `lib/services/backend_client.dart`: `zapzapAnalysis` (90 s timeout)
-and `health` (10 s, used by the Test-connection button). It remains the only HTTP call in the
+The HTTP call lives in `lib/services/backend_client.dart`: `gameAnalysis` (90 s timeout,
+`analysisPath` then `legacyAnalysisPath` on a 404) and `health` (10 s, used by the
+Test-connection button). It remains the only HTTP call in the
 whole app. A non-200 arrives as `BackendException(statusCode, body)`; the screen shows the
 status alone (`analysisErrorStatus`) and sends the body to `debugPrint`, never to the UI. A
 failure with an analysis already on screen is a snackbar, not the error state — the cached
@@ -208,5 +254,28 @@ the email from their own mail app — so this is not an outbound data flow.
   the repository — see [[Deployment]].
 - **AWS credentials live in backend env vars only** and are never bundled into the APK —
   that is the whole reason ZapZap moved server-side from the Flutter prototype.
-- **To harden**: give ZapZap device auth and share the `rate_limits` budget once the
-  feature goes group-scoped.
+- **To harden**: give the analysis device auth and share the `rate_limits` budget once the
+  feature goes group-scoped. Nine voices and ten languages make the endpoint a marginally
+  more attractive free proxy, but the mandatory players/rounds shape still makes it a poor
+  general-purpose one, and the per-IP limit is unchanged.
+
+- **The analysis stopped being ZapZap-only (2026-09-16).** It was gated on
+  `gameType.name.toLowerCase() == 'zapzap'`, which left Skyjo, Belote and every type a user
+  created with no access to a feature whose payload was already generic. Three things were
+  wrong at once and they were fixed in one change because they touch the same files: one
+  game type, one voice, one language. What each decision cost:
+  - **Nine voices, written in English once.** Nine personas × ten languages would be ninety
+    prose blocks to maintain and to re-audit against the "names no real person" rule. The
+    output language is a parameter instead, and the persona blocks never move.
+  - **The editorial contract replaced the ZapZap output format.** The old prompt asked for
+    per-player statistics and a numbered standing — exactly what Ranking and Player
+    statistics already display. An app that predates the change gets its persona and its
+    language back from the defaults but **not** the old long format; keeping two output
+    contracts would have doubled the prompt surface and every test matrix, for a text that
+    regenerates with one tap.
+  - **The game-type name now drives a section of the prompt, not a data line**, so it is
+    escaped and wrapped in `<game_type>` like a player name, stripped of newlines and of a
+    leading `#`, and the anti-injection rule names both tags.
+  - **Gemini copied the `<player_name>` tags into its answer** on the first live run. The
+    contract now says in as many words that the tags are addressed to the model and never to
+    the reader. No unit test would have found that; `scripts/compare_providers.py` did.

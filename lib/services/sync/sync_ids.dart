@@ -26,6 +26,21 @@ String uuid5(String namespace, String name) {
 String linkedRemoteUuid(String groupId, String entityType, String name) =>
     uuid5(groupId, '$entityType:${normalizeName(name)}');
 
+/// The server uuid a game type takes when it is first linked into a group.
+///
+/// A built-in type derives it from its stable key rather than from its name:
+/// its name is localized, so two devices in different locales hold different
+/// names for the same type and would otherwise mint two server rows for it. A
+/// user's own type has no key and falls back to the name, as before.
+///
+/// The namespace is `game_type_builtin:` rather than `game_type:builtin:`, so a
+/// user type someone names "builtin:zapzap" cannot collide with the key
+/// `zapzap`: a name always lands under `game_type:`.
+String linkedGameTypeRemoteUuid(String groupId, String? builtinKey, String name) =>
+    builtinKey == null || builtinKey.isEmpty
+        ? linkedRemoteUuid(groupId, 'game_type', name)
+        : uuid5(groupId, 'game_type_builtin:$builtinKey');
+
 List<int> _uuidBytes(String uuid) {
   final hex = uuid.replaceAll('-', '');
   if (hex.length != 32) {

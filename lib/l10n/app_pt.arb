@@ -255,7 +255,7 @@
 
   "featureGroupSharing": "Compartilhamento em grupo",
 
-  "featureZapZapAnalysis": "Análise de partidas ZapZap",
+  "featureGameAnalysis": "Análise de partidas por IA",
 
   "rateApp": "Avaliar o CountScore",
 
@@ -308,6 +308,26 @@
   "enterComment": "Escrever um comentário",
   "analyzeGame": "Analisar partida",
   "analysisTitle": "Análise da partida",
+  "analysisStyle": "Estilo de análise",
+
+  "analysisStyleProfessor": "O professor",
+
+  "analysisStyleCommentator": "O narrador esportivo",
+
+  "analysisStyleDocumentary": "O documentário de natureza",
+
+  "analysisStyleNoir": "O detetive",
+
+  "analysisStyleBard": "O bardo",
+
+  "analysisStyleCoach": "O treinador",
+
+  "analysisStyleConsultant": "O consultor",
+
+  "analysisStyleAstrologer": "O astrólogo",
+
+  "analysisStyleRealityTv": "O reality show",
+
   "generatingAnalysis": "Gerando análise…",
   "generateAnalysis": "Gerar análise",
   "regenerateAnalysis": "Regenerar análise",
@@ -429,5 +449,71 @@
 
   "reportCommentaryBody": "Qual é o problema deste comentário gerado por IA?\n\n\n---\nReferência: {reference}\nComentário:\n{commentary}",
 
-  "reportCommentaryNoMailApp": "Nenhum app de e-mail encontrado. Escreva para {email} para denunciar este comentário."
+  "reportCommentaryNoMailApp": "Nenhum app de e-mail encontrado. Escreva para {email} para denunciar este comentário.",
+
+  "gameRulesTitle": "Regras do jogo",
+  "gameRulesInApp": "No CountScore",
+  "gameRulesSection": "As regras",
+  "gameRulesNoElimination": "Sem eliminação durante a partida",
+  "gameRulesEliminationOver": "Um jogador é eliminado acima de {threshold} pontos",
+  "gameRulesEliminationUnder": "Um jogador é eliminado abaixo de {threshold} pontos",
+  "gameRulesEndFirstOver": "A partida termina assim que um jogador passa de {threshold} pontos",
+  "gameRulesEndFirstUnder": "A partida termina assim que um jogador cai abaixo de {threshold} pontos",
+  "gameRulesEndLastOver": "A partida termina quando todos os jogadores, menos um, passam de {threshold} pontos",
+  "gameRulesEndLastUnder": "A partida termina quando todos os jogadores, menos um, caem abaixo de {threshold} pontos",
+  "gameRulesNoEnd": "Sem fim automático: você decide quando a partida termina",
+  "gameRulesEmptyTitle": "Ainda sem regras",
+  "gameRulesEmptyHint": "Anote como a sua mesa conta os pontos: assim todos terão a mesma versão.",
+  "gameRulesWrite": "Escrever as regras",
+  "gameRulesEditTitle": "Editar as regras",
+  "gameRulesEditorHint": "As regras da sua mesa. Markdown é suportado.",
+  "gameRulesFromGroup": "Regras do seu grupo",
+  "gameRulesRestoreDefault": "Restaurar as regras originais",
+  "gameRulesSaved": "Regras salvas",
+  "gameRulesRestored": "Regras originais restauradas",
+  "gameRulesDisclaimer": "Resumo escrito para o CountScore a partir das regras como são normalmente jogadas. Os nomes dos jogos pertencem aos seus proprietários e são citados apenas de forma descritiva.",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameUno": "Uno",
+
+  "gameTypeNameScrabble": "Scrabble",
+
+  "gameTypeNameOther": "Outro",
+
+  "gameTypeNameSkyjo": "Skyjo",
+
+  "gameTypeNamePresident": "Presidente",
+
+  "gameTypeNameBelote": "Belote",
+
+  "gameTypeNameTarot": "Tarô",
+
+  "gameTypeNameBridge": "Bridge",
+
+  "gameTypeNameRami": "Rummy",
+
+  "gameTypeNameCoinche": "Coinche",
+
+  "gameTypeNameYahtzee": "Yahtzee",
+
+  "gameTypeNamePhase10": "Phase 10",
+
+  "gameTypeNameFlip7": "Flip 7",
+
+  "gameTypeNameMilleBornes": "Mille Bornes",
+
+  "gameTypeNameRummikub": "Rummikub",
+
+  "gameTypeNameSixNimmt": "Pega em 6",
+
+  "gameTypeNameQwirkle": "Qwirkle",
+
+  "gameTypeNameFarkle": "Farkle",
+
+  "gameTypeNameCanasta": "Canasta",
+
+  "gameTypeNameWizard": "Wizard",
+
+  "gameTypeNameTriomino": "Triomino"
 }

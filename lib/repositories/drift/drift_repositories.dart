@@ -696,7 +696,8 @@ class DriftPlayerStatsRepository implements PlayerStatsRepository {
       final playerGames = await _db
           .customSelect(
             '''
-        SELECT g.id AS gameId, COALESCE(gt.name, 'Unknown') AS gameType,
+        SELECT g.id AS gameId,
+               COALESCE(gt.builtin_key, gt.name, 'Unknown') AS gameType,
                g.isLowestScoreWins AS isLowestScoreWins, gp.id AS gpId,
                COALESCE(SUM(s.value), 0) AS playerTotal
         FROM game_players gp
@@ -704,7 +705,7 @@ class DriftPlayerStatsRepository implements PlayerStatsRepository {
         LEFT JOIN game_types gt ON g.gameTypeId = gt.id
         LEFT JOIN scores s ON s.playerId = gp.id AND s.deleted_at IS NULL
         WHERE gp.player_id = ? AND gp.deleted_at IS NULL
-        GROUP BY g.id, gt.name, g.isLowestScoreWins, gp.id
+        GROUP BY g.id, gt.builtin_key, gt.name, g.isLowestScoreWins, gp.id
       ''',
             variables: [Variable(globalId)],
           )
@@ -841,6 +842,10 @@ class DriftGameAnalysisRepository implements GameAnalysisRepository {
   }
 
   @override
+  /// The `gameType` of each entry is the **stored name**, not `builtin_key`:
+  /// this history goes into the LLM prompt (`backend/app/services/zapzap_prompt.py`),
+  /// which wants something readable rather than `six_nimmt`. Only the statistics
+  /// aggregate needs the key, because only it groups by type.
   Future<List<Map<String, dynamic>>> getRecentPlayerHistory(
     String playerName, {
     int limit = 10,

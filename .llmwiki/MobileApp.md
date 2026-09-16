@@ -6,7 +6,12 @@
 
 ## Facts
 
-49 Dart files under `lib/` (including generated localizations).
+65 Dart files under `lib/` (including generated localizations, excluding gitignored
+`*.g.dart`).
+
+`lib/utils/` exists since 2026-09-16 and holds `game_type_name.dart`: the switch from a
+built-in game type's `builtin_key` to its localized name, with the stored `name` as the
+fallback. Every screen that shows a game type's name goes through it. See [[I18n]].
 
 ### Entry point
 
@@ -23,22 +28,30 @@ themed and already knows whether the connected features exist.
 | Provider | Responsibility |
 |---|---|
 | `game_provider.dart` (415 l.) | The substantial one. Repositories are constructor-injectable, defaulting to the six Drift implementations over `AppDatabase.instance`. Owns `_games`, `_currentGame`, `_currentPlayers`, `_currentRounds`, `_scores` (keyed `"playerId_roundId"`) and `_roundCounts` (game id → rounds played, one grouped query in `loadGames`, kept in step by `addRound`/`deleteRound`). Game/round/score CRUD plus stats. |
-| `game_type_provider.dart` (46 l.) | Game-type list CRUD, `getGameTypeById`. |
+| `game_type_provider.dart` (46 l.) | Game-type list CRUD, `getGameTypeById`. The 22 built-in types are rows like any other; their *displayed* name comes from `lib/utils/game_type_name.dart`, not from the row. |
 | `settings_provider.dart` (72 l.) | Wakelock toggle (SharedPreferences-backed) and DB export/import. The **only** caller of `DatabaseService` for I/O. Exposes `supportsDbExportImport => !kIsWeb`. |
 | `theme_provider.dart` (33 l.) | `ThemeMode` only, persisted to SharedPreferences under `themeMode` as `ThemeMode.name`. `load()` is called from `main()` before `runApp`. |
 | `group_provider.dart` | Group membership and the sync loop — create/join/leave/rotate, the device list and `revokeDevice`, `shareGame`, `syncNow`, `SyncStatus`, and a `SyncEvent` stream shown as snackbars by `_SyncEventListener` in `main.dart`. A `ChangeNotifierProxyProvider` over `BackendProvider`: runs only with a URL **and** a device token. Calls `GameProvider.refreshFromSync` after remote changes. See [[Sync]]. |
 | `backend_provider.dart` | The self-hosted backend base URL, SharedPreferences key `backendUrl`, **no default**. `check()` validates and canonicalises what the user typed; `isConfigured` gates every connected feature. `load()` is called from `main()` before `runApp`. |
 
-### Screens — `lib/screens/` (10)
+### Screens — `lib/screens/` (11)
 
 `settings_screen` is a `StatefulWidget` since the Server section (it owns the URL
 `TextEditingController`).
 
 `home_screen` (628 l.) · `game_board_screen` (1017 l., the scoring grid) ·
 `game_types_screen` (491 l.) · `create_game_screen` (372 l.) ·
-`game_analysis_screen` (396 l., the LLM analysis — see [[LlmProviders]]) ·
+`game_analysis_screen` (the LLM analysis, with its row of voice chips — see
+[[LlmProviders]]) ·
 `players_screen` (326 l.) · `player_stats_screen` (299 l.) · `settings_screen` (368 l.) ·
-`about_screen` (175 l.) · `ranking_screen` (140 l.).
+`about_screen` (175 l.) · `ranking_screen` (140 l.) · `game_rules_screen`.
+
+`game_rules_screen` takes its `GameType` as a constructor argument rather than reading a
+provider: both callers — the board's overflow menu and the game-type list — already hold
+it, and the list has no "current game". It shows, in order, the type's own scoring summary
+derived from its fields, then the user's rules if any, else the ruleset shipped for
+`rulesSlug` (`lib/services/game_rules_catalog.dart`), else an empty state. See [[I18n]] for
+why those rulesets are assets and not ARB keys.
 
 `about_screen` reads the displayed version from `package_info_plus`
 (`PackageInfo.fromPlatform()`, held in a `static final` future) — i.e. from `pubspec.yaml`
@@ -46,9 +59,14 @@ themed and already knows whether the connected features exist.
 
 `lib/widgets/` holds exactly one component: `player_picker_dialog.dart` (291 l.).
 
-### Models — `lib/models/` (6)
+`analysis_style.dart` is an enum whose `id` is an ASCII string that travels to the backend
+and into SharedPreferences (`analysisStyle`) and whose label is translated. It mirrors
+`PERSONAS` in `backend/app/services/analysis/personas.py`: a new voice is added in both
+places plus the ten ARB files.
 
-`game`, `game_type`, `player`, `round`, `score`, `game_analysis`. Plain classes with
+### Models — `lib/models/` (7)
+
+`game`, `game_type`, `player`, `round`, `score`, `game_analysis`, `analysis_style`. Plain classes with
 `toMap`/`fromMap`. `player.dart` has no `gameId` since v9 — its `id` is a
 `game_players.id`. See [[SchemaV10]].
 
