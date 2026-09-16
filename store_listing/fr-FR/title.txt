@@ -1,1 +1,1 @@
-CountScore - Suivi de Score
+Compteur de points: CountScore

@@ -2,7 +2,7 @@
 
 Complete guide for filling out the Data Safety section in Google Play Console for CountScore.
 
-**Last Updated**: September 15, 2026
+**Last Updated**: September 16, 2026
 **Applies to**: CountScore v1.1.0 and later
 **Privacy Policy**: `privacy_policy.md`, published at
 https://vemore.github.io/countscore/privacy-policy.html
@@ -17,6 +17,15 @@ https://vemore.github.io/countscore/privacy-policy.html
 > Play policy violation and a common cause of suspension. Any new outbound data flow changes
 > this file, `privacy_policy.md`, README Privacy and the Console form together
 > (`.llmwiki/Documentation.md`).
+
+> **Corrected 2026-09-16 — the document contradicted itself, the declaration did not change.**
+> §Data Types to Declare has declared **three** types since 1.1.0, including *Device or other
+> IDs*, while the Quick Summary, the copy-paste block and `PUBLISHING.md` §3 still described
+> two and said "collects no device identifiers". The Console answers were right and were left
+> untouched; the prose around them was brought in line, because softening a Play answer to
+> make the public card read better is the mistake this whole file exists to prevent. The
+> store descriptions now explain the third entry rather than talk past it
+> (`.llmwiki/StoreListing.md`).
 
 ---
 
@@ -35,7 +44,8 @@ local to the device. Two optional features use the server the user configures:
   shares — name, type, player names and colours, round comments, scores, analysis — plus the
   group name and a user-chosen device name to that backend, which **stores** them (with a
   change log) and serves them to the group's other devices. The server also issues the device
-  a random identifier and access token.
+  a random identifier and access token — which is why **Device or other IDs** is one of the
+  three declared data types, even though no hardware or advertising identifier is ever read.
 
 **The app ships with no backend address.** There is no default and none is compiled in: the
 user enters one in Settings → Server, pointing at a server they host themselves from the
@@ -224,7 +234,8 @@ queries the manifest.
 **Answer**: `https://vemore.github.io/countscore/privacy-policy.html`
 
 That page is `docs/privacy-policy.html`, a static rendering of the **current**
-`privacy_policy.md` (v2.4, September 14, 2026), which describes the analysis feature and group sharing.
+`privacy_policy.md` (v2.5, September 14, 2026), which describes the analysis feature, group
+sharing and the AI-commentary report control.
 Publishing the older v1.0 text alongside a "Yes" declaration is exactly the mismatch
 reviewers look for, so the two must be regenerated together — see `docs/README.md`.
 
@@ -338,7 +349,8 @@ Before submitting:
 - [ ] **Q3**: answered "Yes" for data deletion
 - [ ] **GitHub Pages enabled** (Settings → Pages → `main` / `docs`)
 - [ ] **Privacy Policy**: https://vemore.github.io/countscore/privacy-policy.html live over
-      HTTPS, publicly accessible in a private window, and serving the **v2.3** text
+      HTTPS, publicly accessible in a private window, and serving the **current** text —
+      v2.5 as of 2026-09-16, per `privacy_policy.md` §Version History
 - [ ] Policy content matches the declaration — no leftover "no data is transmitted" claims
 - [ ] Data Safety preview reviewed in Play Console
 - [ ] Changes saved
@@ -444,7 +456,9 @@ vemore
 CountScore is a score-tracking application that:
 - Stores all game data locally on the user's device
 - Uses no analytics, advertising or tracking services
-- Collects no device identifiers and requires no account
+- Collects no hardware or advertising identifier and requires no account. A user who
+  joins a group receives a random per-installation identifier and access token, issued
+  by the server that user configured, used only to authenticate that group's sync
 - Allows users to delete their data at any time
 - Is open-source software (MIT License)
 

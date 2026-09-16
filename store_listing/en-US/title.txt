@@ -1,1 +1,1 @@
-CountScore - Score Tracker
+Score Keeper - CountScore

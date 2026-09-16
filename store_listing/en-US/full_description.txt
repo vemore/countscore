@@ -1,50 +1,49 @@
-Keep track of scores for all your favorite games with CountScore – a simple, privacy-focused score tracking app.
+CountScore is a score keeper and point counter for your card games and board games. Whatever you are playing, it keeps the score.
 
-KEY FEATURES
+It replaces the paper scorecard: add your players, enter the points round by round, and watch the running totals and the ranking update as the game goes on.
 
-Multiple Game Types
-CountScore comes ready for popular games such as ZapZap, Uno, Scrabble, Skyjo, Belote and Tarot. You can also create your own game types with the name, color and icon you like.
+GAMES IT WORKS FOR
 
-Flexible Scoring
-Whether your game rewards the highest or lowest score, CountScore adapts. Enter and adjust scores round by round, with running totals and a live ranking.
+CountScore is nobody's official app — it is a score sheet you use for the games you already own, and it is not tied to a single one of them.
 
-Players and Statistics
-Players are shared across games, so their statistics follow them from one game to the next.
+It works for your games of Skyjo, Uno, Belote, Coinche, Tarot, Rami and President. It works for your games of Scrabble, Bridge, Yahtzee, Phase 10 and Flip 7. It does the same job on a board game evening, for Mille Bornes, Rummikub, 6 nimmt!, Qwirkle, Farkle or ZapZap.
 
-Complete Game History
-Review the full score history of every game and settle those "who won last time?" debates.
+If your game is not in that list, you create your own game type in a few seconds: a name, a colour, an icon, and whether the highest or the lowest score wins. Anything played for points fits.
 
-Works Offline
-Your games are stored on your device. No internet connection is needed to keep score – perfect for camping trips, flights, or anywhere you play.
+A SCORE SHEET THAT FOLLOWS YOUR RULES
 
-Group Sharing (optional)
-Keep the same games on several phones – the whole family's, say. Create a group or join one with an invite code, then share games: scores entered on one device appear on the others, and changes made offline catch up when you reconnect. Games you don't share stay on your device.
+Highest score wins, or lowest score wins — you decide, per game type. Enter positive or negative points, correct a mistake on any round, and the scoreboard recalculates itself. Set a threshold and CountScore tells you when a player is out or when the game is over, the way Skyjo ends at 100 and Belote at 1000.
 
-ZapZap Analysis (optional)
-Finished a game of ZapZap? Ask for a written commentary on how it went. It only runs when you tap the button: that game's scores, player names and round comments are sent to your server, which asks an AI model to write the analysis. If a commentary is wrong or offensive, "Report this commentary" lets you tell us by email.
+PLAYERS AND STATISTICS
 
-YOUR OWN SERVER
+Players are shared across every game, so their statistics follow them from one evening to the next: games played, games won, best and average score. Nothing to sign up for — a player is a name and a colour.
 
-Group sharing and the ZapZap analysis need a server, and CountScore ships without one. They stay switched off until you enter the address of a server you run – the server software is open source – in Settings → Server. Without it, the app makes no network request at all.
+A COMPLETE GAME HISTORY
 
-HOW IT WORKS
+Every finished game keeps its full scorecard. Open it again to see who marked what on which round, and settle "who won last time?" with the score sheet instead of from memory.
 
-1. Create or select a game type
-2. Add your players
-3. Track scores as you play
-4. View history and statistics anytime
+NO CONNECTION NEEDED TO MARK THE POINTS
+
+Your games live in a database on the phone. Counting points, adding players, reading statistics and browsing the history all work in airplane mode — in a garden, on a train, at a campsite, in a cabin with no signal.
 
 PERFECT FOR
 
-Family game nights, card tournaments, board game sessions, classroom activities and party games. If it needs a score, CountScore handles it.
+Family game nights, card tournaments, board game clubs, school and holiday activities, or a long evening with friends. If it is played for points, CountScore counts them.
 
-PRIVACY
+ADVANCED: YOUR OWN SERVER (OPTIONAL)
 
-No accounts, no ads and no tracking. Your games stay on your device unless you choose otherwise: a game you share with a group is stored on the server you configured and sent to the group's devices, and an analysis you request is sent to that server and on to the AI provider it uses. Joining a group gives your device an access token – never an account. Full details in our privacy policy. CountScore is open source (MIT License), so you can verify all of this yourself.
+Two features reach beyond the device, and both need a server you host yourself from the open-source code in the repository. CountScore ships with no address for one, so they stay switched off until you type one in Settings → Server.
+
+- Group sharing: create a group or join one with an invite code, and the games you choose to share turn up on the other phones of the group. Scores entered offline catch up when the connection comes back. Games you do not share stay on your device.
+- ZapZap analysis: ask for a written commentary on a finished game. That game's scores, player names and round comments are sent to your server, which asks an AI model to write it. It runs only when you tap the button, and "Report this commentary" flags a bad one by email.
+
+PRIVACY, STATED PLAINLY
+
+No account, no advertising, no analytics, no tracking. The Play Data Safety card lists three kinds of data, so here is what they really are: player names and game content travel only when you ask for an analysis or share a game with your group, and the "device ID" is a random token your own server issues when you join a group — not a hardware identifier, not an advertising identifier, not linked to any identity. Configure no server and the app makes no network request at all. The full policy is linked on this page, and CountScore is open source under the MIT licence, so every word of this can be checked in the code.
 
 COMPLETELY FREE
 
-No ads, no in-app purchases, no hidden costs.
+No ads, no in-app purchases, no subscription, no paid unlock.
 
 SUPPORT
 
