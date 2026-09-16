@@ -10,6 +10,7 @@ import '../providers/game_type_provider.dart';
 import '../models/game.dart';
 import '../models/game_type.dart';
 import '../services/review_prompt.dart';
+import '../utils/game_type_name.dart';
 import '../utils/insets.dart';
 import 'about_screen.dart';
 import 'create_game_screen.dart';
@@ -241,7 +242,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           color: gameType.cardColor,
                                         ),
                                         const SizedBox(width: 12),
-                                        Text(gameType.name),
+                                        Text(gameTypeDisplayName(l10n, gameType)),
                                       ],
                                     ),
                                     value: gameType.id,

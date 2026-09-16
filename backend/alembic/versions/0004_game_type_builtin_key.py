@@ -9,7 +9,7 @@ user's own type still has no key and is still unique by name.
 
 Additive: the column is nullable, and every row that exists before this revision keeps
 ``builtin_key IS NULL``, which the index ignores. Clients back-fill their own rows
-locally (mobile schema v13); the server never guesses a key from a name.
+locally (mobile schema v14); the server never guesses a key from a name.
 
 Revision ID: 0004_game_type_builtin_key
 Revises: 0003_game_type_rules

@@ -1,5 +1,10 @@
 # The home screen still shows a built-in game type's untranslated name
 
+**Status:** done (2026-09-16) — closed by fix/home-screen-game-type-name. The game-type
+filter on the home screen now renders `gameTypeDisplayName(l10n, gameType)` like every other
+site. It was left out of #75 only because `fix/end-of-game-polish` owned the file at the
+time; both have merged, so it is one line and one import.
+
 - **Noted:** 2026-09-16 — while making built-in game-type names localized (`feat/game-types-long-tail`)
 - **Theme:** game-types
 - **Area:** app
