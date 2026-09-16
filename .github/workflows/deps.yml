@@ -10,9 +10,10 @@ name: Dependencies
 # report on it and it could never merge. It pushes the branch and prints the one command
 # to run instead. No new secret is introduced on purpose.
 #
-# Known fragility, tracked in wip/todo_nr/2026-09-16-scheduled-workflow-auto-disabled.md:
-# GitHub silently disables a scheduled workflow after 60 days of repository inactivity.
-# This is the second workflow exposed to that, after ci.yml's weekly audit run.
+# Known fragility: GitHub silently disables a scheduled workflow after 60 days of repository
+# inactivity. This is the second workflow exposed to that, after ci.yml's weekly audit run.
+# Neither goes red when it stops, so scripts/check_scheduled_runs.sh watches both — the state
+# of the workflow and the age of its newest scheduled run — from the session-start hook.
 on:
   # The 4th of each month, 05:23 UTC — a quiet slot, and far enough from Dependabot's
   # Monday run (.github/dependabot.yml) that the two never race on the same lock.

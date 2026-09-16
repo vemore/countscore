@@ -12,20 +12,28 @@
 |---|---|
 | `test/database_service_test.dart` (10) | Fresh current schema (v10 tables and columns included), CRUD via the singleton, v8→v9 migration, model serialisation. `sqflite_common_ffi` in memory (`sqfliteFfiInit()`), schema built via `DatabaseService.instance.createDB`. |
 | `test/migration_v8_to_v9_test.dart` (4) | Hand-written v8 fixture; cross-game dedup and intra-game disambiguation. |
-| `test/migration_v5_to_v10_test.dart` (2) | The production upgrade: a real v5 file from tag `1.0.1+3`'s DDL, upgraded with the production callbacks (`DatabaseService.openForTesting`), then read back through Drift — games, merged players, scores, stats — and written to, `finishedAt` included. Its name understates its range: it asserts `DatabaseService.schemaVersion`, so it runs v5 → **v12** today and will follow the next bump without an edit. |
+| `test/migration_v12_to_v13_test.dart` (7) | Hand-written v12 `game_types` fixture through `applyV13`: `rules` and `rules_slug` added, the ten seeded names back-filled to their slug, a renamed or user-built type left with a NULL slug, a deleted type not resurrected. |
+| `test/migration_v13_to_v14_test.dart` (10) | The same shape one version on, through `applyV14`: the seeded rows back-filled to their `builtin_key` by name and `isDefault`, the twelve new types inserted, a deleted type not resurrected, a renamed one left keyless, two same-named rows yielding one key, a replay over that duplicate still yielding one, and a type the user made themselves neither claimed nor duplicated. |
+| `test/migration_v2_to_v14_test.dart` (3) | The two oldest shapes in the chain, through the production callbacks. Both the v2→v3 and the v4→v5 step **seed** game types, and a seed writes `GameType.toMap()` against a table many versions older than the model: one key too many and `onUpgrade` throws, leaving the database unopenable. The fixtures are deliberately *missing* seeded types, because a device that has them all never reaches the failing INSERT — which is why nothing caught it. |
+| `test/utils/game_type_name_test.dart` (10) | Every `builtinKey` has a case in the display-name switch; a built-in name follows the locale whatever the row stores; a user type and an unknown key fall back to the stored name; and `isBuiltinRename` is trimmed on both sides and compared in the locale the user is looking at. The switch is explicit because `AppLocalizations` has no lookup by name, so only this test catches a key added without its string. |
+| `test/sync/sync_engine_resolve_test.dart` (3) | The engine's reject-reason table against a `MockClient` server: `builtin_key_taken` is resolved by adopting the server's row, an unrecognised reason stays terminal, and a resolved delta does not loop the pass. The engine's `default` is `markRejected`, which is permanent and takes every dependent row with it, so each reason the server can return has to be a deliberate case. |
+| `test/migration_v5_to_v10_test.dart` (2) | The production upgrade: a real v5 file from tag `1.0.1+3`'s DDL, upgraded with the production callbacks (`DatabaseService.openForTesting`), then read back through Drift — games, merged players, scores, stats — and written to, `finishedAt` included. Its name understates its range: it asserts `DatabaseService.schemaVersion`, so it runs v5 → **v14** today and will follow the next bump without an edit. |
 | `test/drift/drift_repositories_test.dart` (19) | Full lifecycle through the Drift repositories over `AppDatabase.forTesting(NativeDatabase.memory())`; Drift `onCreate` builds the v10 tables; shared rows are tombstoned (game, round, membership, `deleteByName`), local ones deleted, and tombstones count in no statistic; `finishedAt` survives create, update and reopen — the only test that catches a field missing from `update`'s hand-written column list. |
 | `test/sync/sync_store_test.dart` (18) | Group sync without a network: capture triggers (local games capture nothing, sharing captures a game and its children, inherited `group_id`, deletes captured as deletes), `preparePush` (coalescing, uuid5 player links, parent-first order, stable lamports on retry, refused names), `applyPulled` (a full game from another device, merge by name, quarantine and replay, LWW, delete wins, own deltas skipped, score-cell adoption), `renumberRound`, `leave`; and `ended_at` both ways — sent even while open so that a reopen can clear it, a pulled null reopening the game rather than being ignored. |
 | `test/sync/sync_ids_test.dart` (4) | uuid5 against Python's `uuid.uuid5` vector, name normalisation, the player-name allow-list — combining marks accepted after a letter and refused anywhere else, the same cases as `backend/tests/test_sync.py`. |
 | `test/sync/sync_two_devices_test.dart` (5, `integration`) | Two in-memory devices through a **real** backend: a shared game and its scores both ways, the same round entered on both (renumbered, nothing lost), delete wins, same-name players merged, leaving. Skipped unless `SYNC_BACKEND_URL` is set — recipe below. |
 | `test/widgets/group_settings_section_test.dart` (1) | Settings → Group pumped with asserts on: create a group through the dialog against a `MockClient` server, and the group and its invite code appear. Guards the dialog that disposed its controllers during its exit transition (`_dependents.isEmpty`, found on a Pixel on 2026-09-13, invisible in release builds). |
-| `test/providers/game_provider_finish_test.dart` (5) | `setGameFinished` reports only the transition that finishes a game — re-finishing and reopening return false — which is the single gate on the Play review sheet, so a finish → reopen → finish evening counts once. Plus the current game updating without a reload, which needs `copyWith`'s `clearFinishedAt` escape. |
+| `test/providers/game_provider_finish_test.dart` (9) | `setGameFinished` reports only the transition that finishes a game — re-finishing and reopening return false — which is the single gate on the Play review sheet, so a finish → reopen → finish evening counts once. Plus the current game updating without a reload, which needs `copyWith`'s `clearFinishedAt` escape, and the round counts `loadGames` folds in: one grouped query, kept in step by `addRound` and `deleteRound`, with a tombstoned round counting for nothing. |
+| `test/screens/home_screen_finish_menu_test.dart` (3) | The game card's overflow menu offers `finish_game` on a played or already finished game and on nothing else — the guard that keeps three empty games from satisfying the review prompt. It reads the menu through `itemBuilder` rather than tapping it open: the test font draws every glyph an em wide, so any Material popup menu overflows its 256 px in a widget test. |
+| `test/screens/game_board_end_of_game_test.dart` (7) | The board's end of game: the finished chip appears and disappears with `finishedAt` while **Add round** stays enabled, and the game-over dialog fires after a round is added, keeps quiet for a crossing already answered "Continue playing", re-arms once the game is back under its threshold, and is **not** raised on the board's first build. `GameBoardScreen.analysisRepo` is injected for the same reason `GameProvider`'s repositories are — the default reaches the singleton. |
 | `test/providers/game_provider_sync_test.dart` (1) | A current game deleted by sync is reported once (`takeRemotelyDeletedGameName`), which the board uses to close itself. |
-| `test/drift/web_upgrade_test.dart` (1) | A v9 database (v10/v11/v12 stripped, `user_version` 9) reopened through Drift gets the sync tables, columns, triggers and `games.finishedAt` from `onUpgrade` — the PWA's upgrade path, and the only engine that runs it. |
-| `test/widget_test.dart` (8) | Model serialisation only — it pumps no widgets, despite the name. |
+| `test/drift/web_upgrade_test.dart` (1) | A v9 database (v10/v11/v12/v13/v14 stripped, `user_version` 9) reopened through Drift gets the sync tables, columns, triggers, `games.finishedAt` and the back-filled `game_types.builtin_key` from `onUpgrade` — the PWA's upgrade path, and the only engine that runs it. |
+| `test/game_rules_catalog_test.dart` (5) | The shipped rulesets in `assets/rules/`: every locale carries the same slugs, and each keeps the numbers the app actually scores on — a translation that drops a threshold contradicts the type it documents. |
+| `test/widget_test.dart` (10) | Model serialisation only — it pumps no widgets, despite the name. It pins the built-in game types **by index**: the first ten are what a pre-v14 install already holds, so a new type is appended, never inserted. |
 | `test/providers/theme_provider_test.dart` (7) | `ThemeMode` decode fallbacks and the SharedPreferences round-trip. |
 | `test/providers/backend_provider_test.dart` (10) | Backend URL validation — https anywhere, http only on a private or loopback host — and the persistence round-trip, including that a cleared setting is not re-seeded from `--dart-define`. |
-| `test/screens/game_analysis_screen_test.dart` (5) | The only widget-pumping tests: with no backend configured the analysis screen offers no generation, a cached analysis still renders, and configuring one restores the button; plus the two failure paths — a failed regeneration keeps the cached text and warns by snackbar, and with nothing cached the error state carries the HTTP status and no raw exception. |
-| `test/services/backend_client_test.dart` (4) | `BackendException` carries the status, keeps the body for logging, and decodes utf8 on both the error and the success path. `MockClient` from `package:http/testing.dart`. |
+| `test/screens/game_analysis_screen_test.dart` (11) | The only widget-pumping tests: with no backend configured the analysis screen offers no generation, a cached analysis still renders, and configuring one restores the button; the two failure paths — a failed regeneration keeps the cached text and warns by snackbar, and with nothing cached the error state carries the HTTP status and no raw exception; the commentary report; and the voice chips — every style is offered, the last pick is remembered in SharedPreferences, an unreadable stored value falls back to `professor`, and the request carries the style, the app's language and the game type's rules. |
+| `test/services/backend_client_test.dart` (6) | `BackendException` carries the status, keeps the body for logging, and decodes utf8 on both the error and the success path; a 404 on `/comments/game-analysis` is retried once on the legacy path, and a 404 from both is still a failure. `MockClient` from `package:http/testing.dart`. |
 
 Neither the `SafeArea` inset nor the scheme-derived header colour has a widget test: both
 need golden files this repo does not use, and an assertion that a `SafeArea` exists proves
@@ -36,7 +44,7 @@ _hasCachedAnalysis`) has **no** widget test: pumping the board needs a loaded ga
 repositories. It was verified on device on 2026-09-11 — both directions, and the p171 case
 where neither condition holds.
 
-`flutter test` reports **123 passing, 1 skipped, across 19 files**;
+`flutter test` reports **128 passing, 1 skipped, across 19 files**;
 `sync_two_devices_test.dart` is the skip, unless a backend is given.
 
 ### Group sync against a local backend
@@ -124,7 +132,13 @@ idempotence, round conflicts, payload bounds, player-name allow-list, and row-le
 between two devices — SQLite in memory, `pg_notify` stubbed) ·
 `test_sync_ws_integration.py` (WS handshake + push → NOTIFY → new_seq → pull on a **real
 Postgres** via testcontainers) · `test_comments.py` (mocked Anthropic, rate limit, budget,
-prompt injection) · `test_zapzap_analysis.py` · `test_llm_providers.py` ·
+prompt injection) · `test_game_analysis.py` (the route on **both** paths, bounds,
+clipping, name filtering, injection through a player name *and* through the game type, and
+the prompt builder) · `test_analysis_prompt.py` (the nine-by-ten matrix of voice by
+language, the editorial contract, and that no composed prompt names a real person) ·
+`test_analysis_game_rules.py` (the registry, the generic fallback, and that the payload's
+configuration overrides it) · `test_analysis_signals.py` (the derived facts, which the model
+is forbidden to recite and so cannot check) · `test_llm_providers.py` ·
 `test_ip_rate_limit.py` · `test_health.py` (the `/health` shape, including that the resolved
 LLM model is reported and that an unknown `LLM_PROVIDER` still answers 200).
 
@@ -242,8 +256,8 @@ advisory fails the job. One with no fix yet is ignored explicitly with `--ignore
 the step and tracked by a `wip/` entry, never left red. **It no longer runs on a pull
 request that leaves `backend/` alone** — it used to, incidentally, on every documentation
 pull request. The weekly `schedule:` run is what replaces that, and caps the exposure window
-at seven days; GitHub disables a scheduled workflow after 60 days of repository inactivity
-(`wip/todo_nr/2026-09-16-scheduled-workflow-auto-disabled.md`).
+at seven days — as long as it still fires, which is what `scripts/check_scheduled_runs.sh`
+watches (below).
 
 **The Flutter dependencies have no scanner in CI.** `.github/dependabot.yml` (weekly,
 grouped: `uv`, `pub`, `github-actions`) raises *version* updates only, and only for the
@@ -277,6 +291,20 @@ for a workflow present on the *default* branch, so `gh workflow run deps.yml --r
 <branch>` answers `HTTP 404: Not Found` from a pull request branch. A new scheduled
 workflow is therefore first exercised by `gh workflow run deps.yml` right after its merge —
 and the branch that run pushes is deleted unless it is wanted.
+
+**Both crons are watched, because GitHub turns them off.** A workflow triggered by a
+`schedule:` and nothing else is disabled after 60 days without repository activity, and
+re-enabling it is a manual click. Neither of these two goes red when it stops — a scheduled
+run has no pull request in front of it. `scripts/check_scheduled_runs.sh` asks GitHub for the
+state of `ci.yml` and `deps.yml` (`disabled_inactivity` is GitHub's own name for the rule)
+and for the age of each one's newest `schedule`-event run, against a threshold per workflow:
+10 days for the weekly, 40 for the monthly. It exits 0 silent when both are healthy, 1 with a
+report, and 3 — also silent — when it cannot ask. `.claude/hooks/session-start.sh` runs it at
+most once a day ([[Hooks]]); nothing in CI does, since a check of the crons that is itself a
+cron has the same problem. Run it by hand any time: `scripts/check_scheduled_runs.sh`.
+Its answers — fresh, overdue, disabled, never run, unauthenticated, not GitHub — are pinned
+offline in `scripts/hooks_selftest.sh` against a stubbed `gh`, together with the hook's
+once-a-day stamp.
 
 What covers them instead is **Dependabot alerts**, enabled on the repository on 2026-09-16
 together with the dependency graph they require. Both had been off since the repository was
@@ -326,8 +354,10 @@ automated coverage at all and must be checked on a device.
   App, both a new secret to store and rotate for a repository whose only user is its author;
   the branch plus a copy-pasteable `gh pr create` line costs one command and no secret.
   `deps.yml` is the second workflow exposed to GitHub disabling a scheduled workflow after
-  60 days of repository inactivity — recorded in
-  `wip/todo_nr/2026-09-16-scheduled-workflow-auto-disabled.md`, not fixed here.
+  60 days of repository inactivity — closed since by
+  `wip/done/2026-09-16-scheduled-workflow-auto-disabled.md`: both crons are now watched from
+  the session-start hook (above), rather than moved to a daily cadence, which would have
+  rested on the unverified premise that a scheduled run is itself "repository activity".
 - **The binary check is a script, not inline YAML** (2026-09-16). The same command has to
   be the CI gate, the local check and the fix (`--refresh`), or the fix drifts from what the
   gate demands — which is how `web/drift_worker.js` was left behind by Dependabot #43 in the

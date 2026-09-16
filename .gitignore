@@ -136,6 +136,11 @@ firebase_options.dart
 # Anchored: only the one at the root of a worktree means anything.
 /.countscore-setup-in-progress
 
+# The day .claude/hooks/session-start.sh last managed to ask GitHub whether the scheduled
+# workflows are still running (scripts/check_scheduled_runs.sh). One line, one date, local
+# to a checkout -- it rate-limits the check to once a day.
+/.countscore-scheduled-check
+
 # web/sqlite3.wasm and web/drift_worker.js are deliberately tracked so that a
 # fresh clone can run the PWA without fetching binaries. drift_worker.js also
 # ships prebuilt at the drift package root; sqlite3.wasm comes from the

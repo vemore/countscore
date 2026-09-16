@@ -14,22 +14,36 @@ at your own server in Settings → Server if you want the connected features.
 
 ## Features
 
-- **10 pre-configured game types** — ZapZap, Uno, Scrabble, Skyjo, Président, Belote, Tarot,
-  Bridge, Rami and a generic "Autre" — plus custom types with a user-picked icon and colour.
+- **22 pre-configured game types** — ZapZap, Uno, Scrabble, Skyjo, President, Belote, Tarot,
+  Bridge, Rummy, Coinche, Yahtzee, Phase 10, Flip 7, Mille Bornes, Rummikub, Take 6, Qwirkle,
+  Farkle, Canasta, Wizard, Triomino and a generic "Other" — each named in your own language —
+  plus custom types with a user-picked icon and colour.
 - **Flexible scoring**: lowest-wins and highest-wins, per game type.
+- **Rules for the game you are playing** — reachable from the score table and from the
+  game-type list. Nine of the pre-configured types ship a ruleset, translated into all ten
+  languages, next to a summary of how CountScore scores that type — and every type, shipped
+  or your own, gets that summary. Any of it can be
+  rewritten: your table's own rules replace the shipped text and travel with your group.
 - **Scoring grid**: rounds, running totals, live ranking and per-player statistics.
-- **An explicit end**: any game can be declared over from the board or the game list, which
-  marks it in the history; reopen it and play on. Game types that define a threshold
-  (Skyjo, Président, Belote) still offer it by themselves when the threshold is crossed.
+- **An explicit end**: any game that has been played can be declared over from the board or
+  the game list, which marks it in the history and shows it as finished in both; the
+  confirmation offers an undo, and reopening it lets you play on. Game types that define a
+  threshold (Skyjo, Président, Belote) offer it by themselves whenever a score or a round
+  takes the game past it.
 - **Global players**: a player exists once and is shared across games, so statistics follow
   them from one game to the next.
 - **10 languages**, fully translated: English, French, Spanish, German, Portuguese (BR),
   Russian, Chinese (Simplified), Japanese, Hindi and Arabic — Arabic including RTL layout.
 - **Offline-first**: everything works with no network. Data lives on the device.
-- **ZapZap analysis** (optional, network, off until you configure a server): a long-form
-  LLM commentary on a finished ZapZap game. Always user-initiated, never automatic, and
-  cached locally once generated. A **Report this commentary** action opens a prefilled email
-  to the developer if the generated text is offensive or wrong.
+- **AI game analysis** (optional, network, off until you configure a server): a one-page
+  LLM commentary on any finished game, whatever its type, in **one of nine voices** — the
+  caustic professor, a sports commentator, a wildlife documentary, a noir detective, a bard,
+  a kind coach, a corporate consultant, an astrologer or a reality-TV voice-over — and in
+  the language the app is displayed in. It tells you how each player played and what it says
+  about their habits; the numbers stay on the Ranking and Player-statistics screens. Always
+  user-initiated, never automatic, and cached locally once generated. A **Report this
+  commentary** action opens a prefilled email to the developer if the generated text is
+  offensive or wrong.
 - **Group sharing** (optional, network, off until you configure a server and join a group):
   create a group or join one with an invite code, then share games with the group's other
   devices — scores entered on one phone appear on the others within seconds, offline edits
@@ -156,6 +170,7 @@ countscore/
 │   ├── providers/       # Provider state management
 │   ├── repositories/    # Data-access interfaces + their Drift implementations
 │   ├── services/        # Drift database, sqflite bootstrap migrator, backend client, sync/
+│   ├── utils/           # Cross-cutting helpers (system inset compensation)
 │   ├── l10n/            # ARB files (10 languages) + generated localizations
 │   └── main.dart
 ├── backend/             # FastAPI service (groups, sync, LLM commentary)
@@ -165,7 +180,7 @@ countscore/
 ├── integration_test/    # End-to-end suite (web + real device)
 ├── store_listing/       # Play Store assets and the listing text, in 10 locales
 ├── docs/                # Published by GitHub Pages — the privacy policy Play links to
-├── scripts/             # Keystore, screenshots, privacy page, PWA deploy, web binaries, self-tests
+├── scripts/             # Keystore, screenshots, privacy page, PWA deploy, web binaries, CI freshness, self-tests
 ├── .llmwiki/            # Durable project knowledge — start at INDEX.md
 └── pubspec.yaml
 ```
@@ -181,12 +196,12 @@ your own, and your data stays on it. It exposes:
 | `/groups/*` | Create/join a group, device tokens, share-link rotation |
 | `/sync/push`, `/sync/pull` | Delta-log sync with row-level last-write-wins |
 | `/sync/stream` | WebSocket change signalling (Postgres `LISTEN/NOTIFY`) |
-| `/comments/*` | LLM game commentary, including the ZapZap analysis |
+| `/comments/*` | LLM game commentary, including the game analysis |
 | `$PWA_BASE_PATH/` | Optional: the web app itself, same origin as the API (off unless `PWA_BASE_PATH` is set) |
 
 **Current state, stated plainly:** the server side of groups and sync is implemented and
 tested, but **the Flutter client for it has not been written yet**. The app is therefore
-local-only today, and the single live app↔backend call is the ZapZap analysis — which
+local-only today, and the single live app↔backend call is the game analysis — which
 itself only happens once you have configured a server. See [wip/](wip/README.md) and
 `.llmwiki/Architecture.md`.
 
@@ -249,6 +264,13 @@ dependencies *written in* `pubspec.yaml`, so
 monthly for the transitive half, refreshes the committed `web/` binaries to match, runs the
 gates and pushes a `chore/deps-<date>` branch when anything moved.
 
+Both of those cadences are load-bearing and both are triggered by a `schedule:` alone, which
+GitHub disables after 60 days without repository activity — silently, since a scheduled run
+has no pull request in front of it.
+[`scripts/check_scheduled_runs.sh`](scripts/check_scheduled_runs.sh) asks GitHub whether each
+one is still enabled and still firing within its own period, and the Claude Code session-start
+hook runs it once a day.
+
 ### Contributing
 
 1. Fork the repository.
@@ -286,12 +308,14 @@ own — described below.
 - ✅ **No account**: nothing to sign up for, no identity attached to your data.
 - ✅ **Open source**: the code is publicly auditable.
 
-**Where your data lives**: game types, player names, scores, game history and app
+**Where your data lives**: game types and their rules text, player names, scores, game
+history and app
 preferences are stored in a local SQLite database on your device. Delete a game or a player
 at any time; uninstalling removes everything permanently.
 
-**When data can leave your device — 1, the ZapZap analysis**: asking for one sends that
-game's data — game type, player names, round scores and per-player history — to the
+**When data can leave your device — 1, the AI game analysis**: asking for one sends that
+game's data — game type and its scoring rules, player names, round scores and per-player
+history — plus the voice you picked and the language the app is displayed in, to the
 CountScore backend **you configured in Settings → Server**, which forwards it to an LLM
 provider to generate the commentary. Two conditions, both yours: no server configured means
 the feature is not even offered, and with one configured nothing is sent until you tap the

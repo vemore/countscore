@@ -50,10 +50,14 @@ select = ["E", "F", "I", "B", "UP", "N", "SIM", "RUF"]
 ignore = ["B008", "N805"]
 
 [tool.ruff.lint.per-file-ignores]
-# zapzap_prompt.py holds the verbatim "Professeur Claude" system prompt as a
-# multi-line French string literal: wrapping lines would corrupt the prompt (E501)
-# and it legitimately uses typographic glyphs like × and — (RUF001).
-"app/services/zapzap_prompt.py" = ["E501", "RUF001"]
+# The prose modules of app/services/analysis hold verbatim prompt text as multi-line
+# string literals: wrapping lines would corrupt the prompt (E501) and they legitimately
+# use typographic glyphs like × and — (RUF001). signals.py and builder.py are code and
+# are deliberately not exempt.
+"app/services/analysis/personas.py" = ["E501", "RUF001"]
+"app/services/analysis/game_rules.py" = ["E501", "RUF001"]
+"app/services/analysis/languages.py" = ["E501", "RUF001"]
+"app/services/analysis/contract.py" = ["E501", "RUF001"]
 
 [tool.mypy]
 python_version = "3.11"

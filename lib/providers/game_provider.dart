@@ -38,6 +38,7 @@ class GameProvider with ChangeNotifier {
   Game? _currentGame;
   List<Player> _currentPlayers = [];
   List<Round> _currentRounds = [];
+  Map<int, int> _roundCounts = {};
   final Map<String, Score> _scores = {}; // Key: "playerId_roundId"
 
   List<Game> get games => _games;
@@ -46,8 +47,17 @@ class GameProvider with ChangeNotifier {
   List<Round> get currentRounds => _currentRounds;
   Map<String, Score> get scores => _scores;
 
+  /// How many rounds each listed game has played, keyed by game id.
+  ///
+  /// Loaded with the list in one grouped query, because the game list needs the
+  /// count of every card at once: a game with no round was never played, so it
+  /// cannot be declared over. Kept in step by [addRound] and [deleteRound] so
+  /// that returning from the board does not show a stale count.
+  int roundCountOf(int gameId) => _roundCounts[gameId] ?? 0;
+
   Future<void> loadGames() async {
     _games = await _gameRepo.getAll();
+    _roundCounts = await _roundRepo.countByGame();
     notifyListeners();
   }
 
@@ -116,6 +126,7 @@ class GameProvider with ChangeNotifier {
     ));
 
     await _gameRepo.update(_currentGame!);
+    _roundCounts[_currentGame!.id!] = roundCountOf(_currentGame!.id!) + 1;
 
     notifyListeners();
   }
@@ -128,6 +139,7 @@ class GameProvider with ChangeNotifier {
 
     if (_currentGame != null) {
       await _gameRepo.update(_currentGame!);
+      _roundCounts[_currentGame!.id!] = _currentRounds.length;
     }
 
     notifyListeners();

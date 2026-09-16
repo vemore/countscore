@@ -5,6 +5,12 @@ from __future__ import annotations
 from sqlalchemy import Index, text
 
 
+def live_unique_where(name: str, condition: str, *columns: str) -> Index:
+    """A unique index over live rows that also satisfy ``condition``."""
+    where = text(f"deleted_at IS NULL AND ({condition})")
+    return Index(name, *columns, unique=True, postgresql_where=where, sqlite_where=where)
+
+
 def live_unique(name: str, *columns: str) -> Index:
     """A unique index over live rows only (``deleted_at IS NULL``).
 

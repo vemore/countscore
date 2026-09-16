@@ -3,6 +3,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
+import '../utils/insets.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -27,7 +28,7 @@ class AboutScreen extends StatelessWidget {
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: withBottomInset(context, const EdgeInsets.all(24.0)),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -110,7 +111,7 @@ class AboutScreen extends StatelessWidget {
                         _buildFeature(Icons.group, l10n.featureGroupSharing),
                         _buildFeature(
                           Icons.auto_awesome,
-                          l10n.featureZapZapAnalysis,
+                          l10n.featureGameAnalysis,
                         ),
                       ],
                     ),

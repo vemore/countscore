@@ -9,7 +9,7 @@ https://vemore.github.io/countscore/privacy-policy.html
 
 > **History — the declaration changed with 1.1.0.** Versions 1.0.x contained no networking
 > code, and the declaration for them was correctly "no data collected". Version 1.1.0 added
-> the ZapZap analysis and group sharing, which transmit game data off the device — and group
+> the game analysis and group sharing, which transmit game data off the device — and group
 > sharing **stores** it on the server the user configures. The owner updated the Console form
 > to this guide and submitted 1.1.0 (4) to production on **2026-09-15**.
 >
@@ -37,7 +37,7 @@ of their own.**
 Everything the app does by default — creating games, entering scores, viewing statistics — is
 local to the device. Two optional features use the server the user configures:
 
-- the **ZapZap analysis** sends one game's player names, scores and round comments to that
+- the **AI game analysis** sends one game's player names, scores and round comments to that
   backend, which forwards them to an LLM provider to generate the analysis text. Nothing is
   stored on the backend for this feature;
 - **group sharing**, once the user has created or joined a group, sends the games the user
@@ -82,7 +82,7 @@ for new games while the device is in a group, per game otherwise) is uploaded wi
 | Entity | Content |
 |---|---|
 | `game` | Name, game type, scoring rule, start date |
-| `game_type` | Name, icon, colour, elimination / game-over rules |
+| `game_type` | Name, built-in identifier, icon, colour, elimination / game-over rules, **free-text rules you wrote** |
 | `player` | **Player name**, colour |
 | `round` | Number, **free-text comment** |
 | `score` | Score value |
@@ -111,20 +111,29 @@ receives nothing back; the user reviews the message and sends it — or not — 
 Data a user chooses to send by email from a separate app is not collected *by this app*, so
 nothing in the form below changes.
 
-### ZapZap analysis
+### AI game analysis
 
-The ZapZap analysis feature (`lib/screens/game_analysis_screen.dart`, issuing the request via
-`lib/services/backend_client.dart`) posts a JSON payload to `POST /comments/zapzap-analysis`
-on the backend the user configured. The payload contains:
+The analysis feature (`lib/screens/game_analysis_screen.dart`, issuing the request via
+`lib/services/backend_client.dart`) posts a JSON payload to `POST /comments/game-analysis`
+on the backend the user configured. Until 2026-09-16 it covered only games of one type and
+was called the ZapZap analysis; the path `/comments/zapzap-analysis` still reaches the same
+endpoint. The payload contains:
 
 | Field | Content |
 |---|---|
 | `game` | Name, scoring rule, creation date |
-| `game_type` | e.g. "ZapZap" |
+| `game_type` | e.g. "Skyjo" — including a game type the user named themselves |
+| `game_type_rules` | That type's scoring direction and its score thresholds |
+| `style` | The voice the user picked, e.g. `noir` — app configuration, not user content |
+| `language` | The language the app is displayed in, e.g. `fr` — app configuration |
 | `players[].name` | **Player names entered by the user** |
 | `rounds[].comment` | **Free text the user typed on a round** |
 | `rounds[].scores[]` | Score values |
 | `history_by_player_name` | Past results for each player, from up to 10 of their other games |
+
+`style` and `language` are settings of the app, not content about a person, so they change
+none of the declared categories below. They are listed because this table is the inventory
+of what leaves the device.
 
 The backend is stateless for this endpoint — it persists nothing — but it forwards the payload
 to an LLM provider (**AWS Bedrock**, **Google Gemini**, or **Mistral AI**, depending on that
@@ -181,7 +190,7 @@ release manifest, because release signing needs the gitignored `android/key.prop
 **Answer**: ✅ **Yes**
 
 **Explanation**: When the user has configured a backend server of their own, (a) explicitly
-requesting a ZapZap analysis transmits that game's player names, scores and round comments to
+requesting an analysis transmits that game's player names, scores and round comments to
 that server and on to an LLM provider, and (b) joining a group and sharing a game uploads that
 game — player names, scores, comments, analysis — to that server, which stores it and serves it
 to the group's other devices. No server is configured by default, so a user who never sets one
@@ -420,7 +429,7 @@ Thank you for reviewing CountScore. Our data handling is as follows:
 1. All game data (game types, players, scores, preferences) is stored locally on the
    device using SQLite and SharedPreferences, unless the user shares a game with a
    group (point 6).
-2. One optional feature ("ZapZap analysis") transmits a single game's player names,
+2. One optional feature ("AI game analysis") transmits a single game's player names,
    scores and round comments over HTTPS to a backend server. The app ships with no
    server address and none is compiled into it: the user must first enter the address
    of a server they host themselves (the server source is in the backend/ directory of

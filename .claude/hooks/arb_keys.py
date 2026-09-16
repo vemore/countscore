@@ -54,6 +54,7 @@ SAME_AS_ENGLISH_OK = {
     "gameTypeName*": ALL_LOCALES,   # Yahtzee, Qwirkle, Uno, Skyjo, Rummikub, Farkle,
                                     # Bridge, Tarot, Canasta, Wizard, Scrabble, ZapZap --
                                     # proper nouns that most locales keep as they are
+    "gameRulesInApp": {"de"},        # "In CountScore" is the German for it too
     "ok": {"fr", "de", "pt", "ja"},  # "OK" is the loanword in all four
     "version": {"fr", "de"},         # "Version {version}"
     "score": {"fr"},                 # "Score"
@@ -70,9 +71,20 @@ _EXEMPT_PREFIXES = {k[:-1]: v for k, v in SAME_AS_ENGLISH_OK.items() if k.endswi
 
 
 def is_exempt(key, locale):
-    """True when key holding the English string in locale is deliberate."""
+    """True when key holding the English string in locale is deliberate.
+
+    A "prefix*" entry covers the camelCase family under that prefix, never the
+    bare prefix itself: "gameTypeName*" exempts gameTypeNameYahtzee and its
+    twenty-one siblings, but NOT gameTypeName, which is the form label "Game
+    type name" and has to stay translated like any other. Hence the requirement
+    that what follows the prefix start with a capital.
+    """
     candidates = [SAME_AS_ENGLISH_OK.get(key)]
-    candidates += [v for prefix, v in _EXEMPT_PREFIXES.items() if key.startswith(prefix)]
+    candidates += [
+        v
+        for prefix, v in _EXEMPT_PREFIXES.items()
+        if key.startswith(prefix) and key[len(prefix) :][:1].isupper()
+    ]
     return any(c == ALL_LOCALES or (c is not None and locale in c) for c in candidates)
 
 

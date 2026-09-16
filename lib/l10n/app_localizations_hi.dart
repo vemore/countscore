@@ -441,7 +441,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get featureGroupSharing => 'समूह साझाकरण';
 
   @override
-  String get featureZapZapAnalysis => 'ZapZap खेल विश्लेषण';
+  String get featureGameAnalysis => 'AI से खेल विश्लेषण';
 
   @override
   String get rateApp => 'CountScore को रेट करें';
@@ -532,6 +532,15 @@ class AppLocalizationsHi extends AppLocalizations {
   String get gameFinished => 'समाप्त';
 
   @override
+  String get undo => 'पूर्ववत करें';
+
+  @override
+  String get gameMarkedFinished => 'गेम समाप्त हुआ';
+
+  @override
+  String get gameReopened => 'गेम फिर से खोला गया';
+
+  @override
   String get comment => 'टिप्पणी';
 
   @override
@@ -542,6 +551,36 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get analysisTitle => 'खेल विश्लेषण';
+
+  @override
+  String get analysisStyle => 'विश्लेषण शैली';
+
+  @override
+  String get analysisStyleProfessor => 'प्रोफ़ेसर';
+
+  @override
+  String get analysisStyleCommentator => 'खेल कमेंटेटर';
+
+  @override
+  String get analysisStyleDocumentary => 'वन्यजीव वृत्तचित्र';
+
+  @override
+  String get analysisStyleNoir => 'जासूस';
+
+  @override
+  String get analysisStyleBard => 'चारण कवि';
+
+  @override
+  String get analysisStyleCoach => 'कोच';
+
+  @override
+  String get analysisStyleConsultant => 'सलाहकार';
+
+  @override
+  String get analysisStyleAstrologer => 'ज्योतिषी';
+
+  @override
+  String get analysisStyleRealityTv => 'रियलिटी शो';
 
   @override
   String get generatingAnalysis => 'विश्लेषण उत्पन्न हो रहा है…';
@@ -833,4 +872,149 @@ class AppLocalizationsHi extends AppLocalizations {
   String reportCommentaryNoMailApp(String email) {
     return 'कोई ईमेल ऐप नहीं मिला। इस टिप्पणी की रिपोर्ट करने के लिए $email पर लिखें।';
   }
+
+  @override
+  String get gameRulesTitle => 'खेल के नियम';
+
+  @override
+  String get gameRulesInApp => 'CountScore में';
+
+  @override
+  String get gameRulesSection => 'नियम';
+
+  @override
+  String get gameRulesNoElimination =>
+      'खेल के दौरान कोई खिलाड़ी बाहर नहीं होता';
+
+  @override
+  String gameRulesEliminationOver(int threshold) {
+    return '$threshold अंक से ऊपर जाने पर खिलाड़ी बाहर हो जाता है';
+  }
+
+  @override
+  String gameRulesEliminationUnder(int threshold) {
+    return '$threshold अंक से नीचे जाने पर खिलाड़ी बाहर हो जाता है';
+  }
+
+  @override
+  String gameRulesEndFirstOver(int threshold) {
+    return 'जैसे ही कोई खिलाड़ी $threshold अंक पार करता है, खेल समाप्त हो जाता है';
+  }
+
+  @override
+  String gameRulesEndFirstUnder(int threshold) {
+    return 'जैसे ही कोई खिलाड़ी $threshold अंक से नीचे आता है, खेल समाप्त हो जाता है';
+  }
+
+  @override
+  String gameRulesEndLastOver(int threshold) {
+    return 'जब एक को छोड़कर सभी खिलाड़ी $threshold अंक पार कर लेते हैं, तब खेल समाप्त होता है';
+  }
+
+  @override
+  String gameRulesEndLastUnder(int threshold) {
+    return 'जब एक को छोड़कर सभी खिलाड़ी $threshold अंक से नीचे आ जाते हैं, तब खेल समाप्त होता है';
+  }
+
+  @override
+  String get gameRulesNoEnd =>
+      'कोई स्वतः समाप्ति नहीं: खेल कब खत्म हो, यह आप तय करते हैं';
+
+  @override
+  String get gameRulesEmptyTitle => 'अभी कोई नियम नहीं';
+
+  @override
+  String get gameRulesEmptyHint =>
+      'लिख लें कि आपकी मेज़ पर अंक कैसे गिने जाते हैं — फिर सबके पास एक ही संस्करण होगा।';
+
+  @override
+  String get gameRulesWrite => 'नियम लिखें';
+
+  @override
+  String get gameRulesEditTitle => 'नियम संपादित करें';
+
+  @override
+  String get gameRulesEditorHint => 'आपकी मेज़ के नियम। Markdown समर्थित है।';
+
+  @override
+  String get gameRulesFromGroup => 'आपके समूह के नियम';
+
+  @override
+  String get gameRulesRestoreDefault => 'मूल नियम पुनर्स्थापित करें';
+
+  @override
+  String get gameRulesSaved => 'नियम सहेजे गए';
+
+  @override
+  String get gameRulesRestored => 'मूल नियम पुनर्स्थापित किए गए';
+
+  @override
+  String get gameRulesDisclaimer =>
+      'यह सारांश CountScore के लिए, आमतौर पर खेले जाने वाले नियमों के आधार पर लिखा गया है। खेलों के नाम उनके संबंधित स्वामियों के हैं और केवल वर्णनात्मक रूप से उपयोग किए गए हैं।';
+
+  @override
+  String get gameTypeNameZapzap => 'ZapZap';
+
+  @override
+  String get gameTypeNameUno => 'उनो';
+
+  @override
+  String get gameTypeNameScrabble => 'स्क्रैबल';
+
+  @override
+  String get gameTypeNameOther => 'अन्य';
+
+  @override
+  String get gameTypeNameSkyjo => 'स्काईजो';
+
+  @override
+  String get gameTypeNamePresident => 'प्रेसिडेंट';
+
+  @override
+  String get gameTypeNameBelote => 'बेलोत';
+
+  @override
+  String get gameTypeNameTarot => 'टैरो';
+
+  @override
+  String get gameTypeNameBridge => 'ब्रिज';
+
+  @override
+  String get gameTypeNameRami => 'रमी';
+
+  @override
+  String get gameTypeNameCoinche => 'कोएंश';
+
+  @override
+  String get gameTypeNameYahtzee => 'याहत्ज़ी';
+
+  @override
+  String get gameTypeNamePhase10 => 'फेज़ 10';
+
+  @override
+  String get gameTypeNameFlip7 => 'फ्लिप 7';
+
+  @override
+  String get gameTypeNameMilleBornes => 'मिल बोर्न';
+
+  @override
+  String get gameTypeNameRummikub => 'रमीक्यूब';
+
+  @override
+  String get gameTypeNameSixNimmt => '6 निम्ट';
+
+  @override
+  String get gameTypeNameQwirkle => 'क्विर्कल';
+
+  @override
+  String get gameTypeNameFarkle => 'फार्कल';
+
+  @override
+  String get gameTypeNameCanasta => 'कनास्ता';
+
+  @override
+  String get gameTypeNameWizard => 'विज़ार्ड';
+
+  @override
+  String get gameTypeNameTriomino => 'ट्रायोमिनो';
 }

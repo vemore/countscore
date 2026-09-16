@@ -89,7 +89,12 @@ flutter build web --release --no-tree-shake-icons --base-href="$PWA_BASE_PATH/"
 echo "==> Checking build/web"
 # Everything under web/ is published. A stray note or instructions file must
 # not reach a public URL again (web/CLAUDE.md did, until 2026-09-13).
-LEAKS="$(find build/web -iname '*.md')"
+#
+# `assets/` is excluded because pubspec.yaml declares what goes in there: the
+# shipped game rules are Markdown on purpose (.llmwiki/I18n.md), and publishing
+# them is the point. Everything a stray note can reach — build/web/ itself, and
+# anything copied from web/ — is still scanned.
+LEAKS="$(find build/web -iname '*.md' -not -path 'build/web/assets/assets/*')"
 if [[ -n "$LEAKS" ]]; then
     echo "Refusing to publish: markdown files in build/web:" >&2
     echo "$LEAKS" >&2

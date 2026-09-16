@@ -9,7 +9,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:countscore/l10n/app_localizations.dart';
 import 'package:countscore/screens/about_screen.dart';
 
-Widget _app(Locale locale) => MaterialApp(
+Widget _app(Locale locale, {double bottomInset = 0}) => MaterialApp(
   locale: locale,
   localizationsDelegates: const [
     AppLocalizations.delegate,
@@ -18,6 +18,12 @@ Widget _app(Locale locale) => MaterialApp(
     GlobalCupertinoLocalizations.delegate,
   ],
   supportedLocales: AppLocalizations.supportedLocales,
+  builder: (context, child) => MediaQuery(
+    data: MediaQuery.of(
+      context,
+    ).copyWith(padding: EdgeInsets.only(bottom: bottomInset)),
+    child: child!,
+  ),
   home: const AboutScreen(),
 );
 
@@ -43,7 +49,7 @@ void main() {
     expect(find.text('Version 1.1.0'), findsOneWidget);
     expect(find.textContaining('1.0.0'), findsNothing);
     expect(find.text('Group sharing'), findsOneWidget);
-    expect(find.text('ZapZap game analysis'), findsOneWidget);
+    expect(find.text('AI game analysis'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     tester.view.physicalSize = const Size(320, 568);
@@ -56,5 +62,23 @@ void main() {
     expect(find.text('Версия 1.1.0'), findsOneWidget);
     expect(find.text('Совместный доступ в группах'), findsOneWidget);
     expect(tester.takeException(), isNull);
+
+    // The About screen scrolls in a SingleChildScrollView, which never gets
+    // the BoxScrollView bottom compensation: its padding is the child
+    // Padding, and that is where the system inset has to land, or the last
+    // row is drawn behind the navigation bar.
+    tester.view.reset();
+    await tester.pumpWidget(_app(const Locale('en'), bottomInset: 48));
+    await tester.pumpAndSettle();
+
+    final padding = tester.widget<Padding>(
+      find
+          .descendant(
+            of: find.byType(SingleChildScrollView),
+            matching: find.byType(Padding),
+          )
+          .first,
+    );
+    expect(padding.padding, const EdgeInsets.fromLTRB(24, 24, 24, 72));
   });
 }

@@ -1,5 +1,22 @@
 # The weekly CI run, now the only thing auditing uv.lock on a quiet week, can be disabled silently
 
+**Status:** done (2026-09-16) — closed by `chore/scheduled-run-freshness`.
+`scripts/check_scheduled_runs.sh` asks GitHub for the state of `ci.yml` and `deps.yml`
+(`disabled_inactivity` is GitHub's own name for the 60-day rule) and for the age of each
+one's newest `schedule`-event run, against a threshold per workflow — 10 days for the
+weekly, 40 for the monthly, since one window would cry wolf at `deps.yml` every month.
+`.claude/hooks/session-start.sh` runs it at most once a day, because the moment the cron is
+found off is the moment the repository comes back to life; it is silent when healthy and
+silent when it cannot ask (no `gh`, unauthenticated, origin not GitHub, no answer under
+`timeout`), and banks no day in that case. Its answers are pinned offline in
+`scripts/hooks_selftest.sh` against a stubbed `gh`.
+
+**The "cheaper alternative" below was not taken.** GitHub's documentation says a scheduled
+workflow is disabled when no **repository activity** has occurred in 60 days, and says
+nowhere that a scheduled run is itself such activity. Moving the cron to daily therefore
+rests on an unverified premise, and would have replaced a gap that can be detected with one
+that cannot.
+
 - **Noted:** 2026-09-16 — adding the `scope` job to `.github/workflows/ci.yml`
 - **Theme:** dependencies
 - **Area:** tooling

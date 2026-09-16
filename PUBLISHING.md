@@ -27,7 +27,7 @@ These must be true. Each is a rejection, a blocked update or a policy violation 
 1. **The AAB is built and passes `verify_aab.sh`** — upload key, version code, target API ≥ 36
    (required for every update since 2026-08-31), 16 KB page-size alignment of the native
    libraries. `release-android` §6–7.
-2. **The release manifest declares `INTERNET`.** The ZapZap analysis and group sharing both
+2. **The release manifest declares `INTERNET`.** The game analysis and group sharing both
    need it and fail silently without it — see
    [Check Before Submitting](PLAY_STORE_DATA_SAFETY.md#check-before-submitting). It is not
    enough that debug builds work; they merge a different manifest.
@@ -35,7 +35,9 @@ These must be true. Each is a rejection, a blocked update or a policy violation 
    https://vemore.github.io/countscore/privacy-policy.html, serving the current text. See
    `docs/README.md` — GitHub Pages has to be enabled once, by hand.
 4. **The listing copy matches the declaration.** `store_listing/*/full_description.txt`
-   describes the ZapZap analysis and says data leaves the device when the user asks. Store
+   describes the analysis and says data leaves the device when the user asks. The ten
+   locales still call it the *ZapZap* analysis, which is now understated rather than wrong
+   — `wip/todo_nr/2026-09-16-listing-still-calls-the-analysis-zapzap.md`. Store
    copy claiming "no data collection" beside a Data Safety form saying "Yes" is the exact
    contradiction reviewers look for.
 5. **AI-generated content can be reported from inside the app.** Play's AI-Generated Content
@@ -151,8 +153,9 @@ upload the AAB → add testers (up to 100) → send for review. Give it a few da
 What testers must exercise, because no automated gate covers it:
 
 - [ ] Install over the **store** version — the database must survive the upgrade
-- [ ] The **ZapZap analysis** returns real commentary in the release build (this is the one
-      that was broken by the missing permission, and it works in debug either way)
+- [ ] The **game analysis** returns real commentary in the release build, on a game that is
+      not ZapZap and in at least one other voice (this is the one that was broken by the
+      missing permission, and it works in debug either way)
 - [ ] Creating, joining and leaving a group, and a score syncing between two devices
 - [ ] Export and import a game
 - [ ] The wakelock toggle keeps the screen on
