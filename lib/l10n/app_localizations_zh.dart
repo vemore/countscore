@@ -806,4 +806,70 @@ class AppLocalizationsZh extends AppLocalizations {
   String reportCommentaryNoMailApp(String email) {
     return '未找到电子邮件应用。请发送邮件至 $email 举报此评论。';
   }
+
+  @override
+  String get gameTypeNameZapzap => 'ZapZap';
+
+  @override
+  String get gameTypeNameUno => 'UNO';
+
+  @override
+  String get gameTypeNameScrabble => 'Scrabble';
+
+  @override
+  String get gameTypeNameOther => '其他';
+
+  @override
+  String get gameTypeNameSkyjo => 'Skyjo';
+
+  @override
+  String get gameTypeNamePresident => '总统';
+
+  @override
+  String get gameTypeNameBelote => '贝洛特';
+
+  @override
+  String get gameTypeNameTarot => '塔罗牌';
+
+  @override
+  String get gameTypeNameBridge => '桥牌';
+
+  @override
+  String get gameTypeNameRami => '拉米';
+
+  @override
+  String get gameTypeNameCoinche => 'Coinche';
+
+  @override
+  String get gameTypeNameYahtzee => '快艇骰子';
+
+  @override
+  String get gameTypeNamePhase10 => '阶段 10';
+
+  @override
+  String get gameTypeNameFlip7 => '翻牌 7';
+
+  @override
+  String get gameTypeNameMilleBornes => 'Mille Bornes';
+
+  @override
+  String get gameTypeNameRummikub => '拉密';
+
+  @override
+  String get gameTypeNameSixNimmt => '6 nimmt!';
+
+  @override
+  String get gameTypeNameQwirkle => 'Qwirkle';
+
+  @override
+  String get gameTypeNameFarkle => 'Farkle';
+
+  @override
+  String get gameTypeNameCanasta => '凯纳斯特';
+
+  @override
+  String get gameTypeNameWizard => 'Wizard';
+
+  @override
+  String get gameTypeNameTriomino => '三角骨牌';
 }

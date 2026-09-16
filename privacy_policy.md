@@ -150,8 +150,10 @@ you do not share never leave your device.
 
 For each **shared** game, and kept up to date as you play:
 
-- the game's name, its game type (name, icon, colour and rules), its scoring rule, its
-  creation date and, once you declare the game over, the date you ended it;
+- the game's name, its game type (name, icon, colour, rules, and — for one of the app's
+  own preset types — the fixed identifier that says which preset it is, so that devices set
+  to different languages agree on it), its scoring rule, its creation date and, once you
+  declare the game over, the date you ended it;
 - the **names and colours of its players**;
 - every round: its number, **any comment you typed on it**, and its scores;
 - its ZapZap analysis, if one was generated.

@@ -426,5 +426,49 @@
 
   "reportCommentaryBody": "这条 AI 生成的评论有什么问题？\n\n\n---\n参考：{reference}\n评论：\n{commentary}",
 
-  "reportCommentaryNoMailApp": "未找到电子邮件应用。请发送邮件至 {email} 举报此评论。"
+  "reportCommentaryNoMailApp": "未找到电子邮件应用。请发送邮件至 {email} 举报此评论。",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameUno": "UNO",
+
+  "gameTypeNameScrabble": "Scrabble",
+
+  "gameTypeNameOther": "其他",
+
+  "gameTypeNameSkyjo": "Skyjo",
+
+  "gameTypeNamePresident": "总统",
+
+  "gameTypeNameBelote": "贝洛特",
+
+  "gameTypeNameTarot": "塔罗牌",
+
+  "gameTypeNameBridge": "桥牌",
+
+  "gameTypeNameRami": "拉米",
+
+  "gameTypeNameCoinche": "Coinche",
+
+  "gameTypeNameYahtzee": "快艇骰子",
+
+  "gameTypeNamePhase10": "阶段 10",
+
+  "gameTypeNameFlip7": "翻牌 7",
+
+  "gameTypeNameMilleBornes": "Mille Bornes",
+
+  "gameTypeNameRummikub": "拉密",
+
+  "gameTypeNameSixNimmt": "6 nimmt!",
+
+  "gameTypeNameQwirkle": "Qwirkle",
+
+  "gameTypeNameFarkle": "Farkle",
+
+  "gameTypeNameCanasta": "凯纳斯特",
+
+  "gameTypeNameWizard": "Wizard",
+
+  "gameTypeNameTriomino": "三角骨牌"
 }

@@ -1541,6 +1541,138 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Aucune application e-mail trouvée. Écrivez à {email} pour signaler ce commentaire.'**
   String reportCommentaryNoMailApp(String email);
+
+  /// Built-in game type: ZapZap (the app's own game)
+  ///
+  /// In fr, this message translates to:
+  /// **'ZapZap'**
+  String get gameTypeNameZapzap;
+
+  /// Built-in game type: Uno
+  ///
+  /// In fr, this message translates to:
+  /// **'Uno'**
+  String get gameTypeNameUno;
+
+  /// Built-in game type: Scrabble
+  ///
+  /// In fr, this message translates to:
+  /// **'Scrabble'**
+  String get gameTypeNameScrabble;
+
+  /// Built-in game type: the catch-all type, for a game with no preset
+  ///
+  /// In fr, this message translates to:
+  /// **'Autre'**
+  String get gameTypeNameOther;
+
+  /// Built-in game type: Skyjo
+  ///
+  /// In fr, this message translates to:
+  /// **'Skyjo'**
+  String get gameTypeNameSkyjo;
+
+  /// Built-in game type: the President card game
+  ///
+  /// In fr, this message translates to:
+  /// **'Président'**
+  String get gameTypeNamePresident;
+
+  /// Built-in game type: Belote
+  ///
+  /// In fr, this message translates to:
+  /// **'Belote'**
+  String get gameTypeNameBelote;
+
+  /// Built-in game type: Tarot (the trick-taking card game)
+  ///
+  /// In fr, this message translates to:
+  /// **'Tarot'**
+  String get gameTypeNameTarot;
+
+  /// Built-in game type: Bridge
+  ///
+  /// In fr, this message translates to:
+  /// **'Bridge'**
+  String get gameTypeNameBridge;
+
+  /// Built-in game type: Rummy
+  ///
+  /// In fr, this message translates to:
+  /// **'Rami'**
+  String get gameTypeNameRami;
+
+  /// Built-in game type: Coinche (Belote with a bid)
+  ///
+  /// In fr, this message translates to:
+  /// **'Coinche'**
+  String get gameTypeNameCoinche;
+
+  /// Built-in game type: Yahtzee
+  ///
+  /// In fr, this message translates to:
+  /// **'Yahtzee'**
+  String get gameTypeNameYahtzee;
+
+  /// Built-in game type: Phase 10
+  ///
+  /// In fr, this message translates to:
+  /// **'Phase 10'**
+  String get gameTypeNamePhase10;
+
+  /// Built-in game type: Flip 7
+  ///
+  /// In fr, this message translates to:
+  /// **'Flip 7'**
+  String get gameTypeNameFlip7;
+
+  /// Built-in game type: Mille Bornes
+  ///
+  /// In fr, this message translates to:
+  /// **'Mille Bornes'**
+  String get gameTypeNameMilleBornes;
+
+  /// Built-in game type: Rummikub
+  ///
+  /// In fr, this message translates to:
+  /// **'Rummikub'**
+  String get gameTypeNameRummikub;
+
+  /// Built-in game type: the '6 takes' card game
+  ///
+  /// In fr, this message translates to:
+  /// **'6 qui prend'**
+  String get gameTypeNameSixNimmt;
+
+  /// Built-in game type: Qwirkle
+  ///
+  /// In fr, this message translates to:
+  /// **'Qwirkle'**
+  String get gameTypeNameQwirkle;
+
+  /// Built-in game type: Farkle
+  ///
+  /// In fr, this message translates to:
+  /// **'Farkle'**
+  String get gameTypeNameFarkle;
+
+  /// Built-in game type: Canasta
+  ///
+  /// In fr, this message translates to:
+  /// **'Canasta'**
+  String get gameTypeNameCanasta;
+
+  /// Built-in game type: Wizard
+  ///
+  /// In fr, this message translates to:
+  /// **'Wizard'**
+  String get gameTypeNameWizard;
+
+  /// Built-in game type: Triomino
+  ///
+  /// In fr, this message translates to:
+  /// **'Triomino'**
+  String get gameTypeNameTriomino;
 }
 
 class _AppLocalizationsDelegate

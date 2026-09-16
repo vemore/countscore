@@ -2,7 +2,7 @@
 
 > Scope: the HTTP and WebSocket surface. Source of truth is `backend/app/routes/`.
 > Related: [[Backend]] · [[Sync]] · [[LlmProviders]] · [[Security]]
-> Updated: 2026-09-14
+> Updated: 2026-09-16
 
 ## Facts
 
@@ -46,6 +46,7 @@ the top of `app/routes/sync.py`:
 | `round_number_taken` | Another live round of the game has that number |
 | `score_exists` | Another live score exists for that player and round |
 | `name_taken` | Another live player (normalised name) or game type (name) of the group |
+| `builtin_key_taken` | Another live game type of the group already claims that `builtin_key` |
 | `analysis_exists` | The game already has another live analysis |
 | `integrity constraint violation` | Anything the pre-checks missed, e.g. a NOT NULL column absent on create |
 

@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../models/game_type.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
+import '../utils/game_type_name.dart';
 
 class PlayerStatsScreen extends StatefulWidget {
   const PlayerStatsScreen({super.key});
@@ -16,7 +17,10 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
   List<String> _playerNames = [];
   Map<String, Map<String, dynamic>> _stats = {};
   Map<String, Color> _playerColors = {};
-  Map<String, GameType> _gameTypesByName = {};
+  /// Keyed the way the statistics aggregate groups: the built-in key when the
+  /// type has one, the stored name otherwise
+  /// (`COALESCE(gt.builtin_key, gt.name)`).
+  Map<String, GameType> _gameTypesByKey = {};
   bool _isLoading = true;
 
   @override
@@ -36,9 +40,9 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
     // Load game types
     await gameTypeProvider.loadGameTypes();
     final gameTypes = gameTypeProvider.gameTypes;
-    final gameTypesByName = <String, GameType>{};
+    final gameTypesByKey = <String, GameType>{};
     for (final gameType in gameTypes) {
-      gameTypesByName[gameType.name] = gameType;
+      gameTypesByKey[gameType.builtinKey ?? gameType.name] = gameType;
     }
 
     final names = await gameProvider.getAllPlayerNames();
@@ -54,7 +58,7 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
       _playerNames = names;
       _stats = stats;
       _playerColors = colors;
-      _gameTypesByName = gameTypesByName;
+      _gameTypesByKey = gameTypesByKey;
       _isLoading = false;
     });
   }
@@ -219,7 +223,10 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
     final widgets = <Widget>[];
 
     for (final entry in statsByType.entries) {
-      final gameTypeName = entry.key;
+      // The aggregate groups on COALESCE(builtin_key, name), so the key is a
+      // built-in key for a built-in type and a stored name otherwise.
+      final gameTypeKey = entry.key;
+      final gameTypeName = gameTypeDisplayNameForKey(l10n, gameTypeKey);
       final stats = entry.value;
       final gamesPlayed = stats['gamesPlayed'] ?? 0;
       final wins = stats['wins'] ?? 0;
@@ -228,7 +235,7 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
           : '0.0';
 
       // Get game type info for icon and color
-      final gameType = _gameTypesByName[gameTypeName];
+      final gameType = _gameTypesByKey[gameTypeKey];
       final iconData = gameType?.icon ?? Icons.casino;
       final iconColor = gameType?.cardColor ?? Theme.of(context).colorScheme.primary;
 

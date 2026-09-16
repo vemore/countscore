@@ -3,7 +3,7 @@
 // database. Drift's onUpgrade must then bring it to the current schema itself.
 //
 // Simulated on a native file: build the current schema, strip everything v10,
-// v11 and v12 added, stamp user_version 9, and reopen through Drift.
+// v11, v12 and v13 added, stamp user_version 9, and reopen through Drift.
 
 import 'dart:io';
 
@@ -42,6 +42,14 @@ void main() {
       await raw.execute('ALTER TABLE sync_state DROP COLUMN $column');
     }
     await raw.execute('ALTER TABLE games DROP COLUMN finishedAt');
+    await raw.execute('ALTER TABLE game_types DROP COLUMN builtin_key');
+    // A v9 browser holds the ten types the seed wrote then, and no more.
+    await raw.delete('game_types',
+        where: 'name NOT IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        whereArgs: const [
+          'ZapZap', 'Uno', 'Scrabble', 'Autre', 'Skyjo', //
+          'Président', 'Belote', 'Tarot', 'Bridge', 'Rami',
+        ]);
     await raw.execute('PRAGMA user_version = 9');
     await raw.close();
 
@@ -55,6 +63,16 @@ void main() {
     await db.customSelect('SELECT rejected_at, reject_reason FROM outbox').get();
     await db.customSelect('SELECT device_id, group_name FROM sync_state').get();
     await db.customSelect('SELECT finishedAt FROM games').get();
+    // v13: the ten are back-filled and the twelve new ones arrive.
+    final types = await db
+        .customSelect('SELECT name, builtin_key FROM game_types ORDER BY id')
+        .get();
+    expect(types, hasLength(22));
+    expect(types.first.data['builtin_key'], 'zapzap');
+    expect(
+      types.map((r) => r.data['builtin_key']).toSet(),
+      containsAll(const ['other', 'yahtzee', 'six_nimmt', 'triomino']),
+    );
     final captureTriggers = await db
         .customSelect("SELECT COUNT(*) AS c FROM sqlite_master WHERE type = 'trigger'")
         .getSingle();

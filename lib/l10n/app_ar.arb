@@ -426,5 +426,49 @@
 
   "reportCommentaryBody": "ما المشكلة في هذا التعليق المُنشأ بالذكاء الاصطناعي؟\n\n\n---\nالمرجع: {reference}\nالتعليق:\n{commentary}",
 
-  "reportCommentaryNoMailApp": "لم يتم العثور على تطبيق بريد إلكتروني. راسلنا على {email} للإبلاغ عن هذا التعليق."
+  "reportCommentaryNoMailApp": "لم يتم العثور على تطبيق بريد إلكتروني. راسلنا على {email} للإبلاغ عن هذا التعليق.",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameUno": "أونو",
+
+  "gameTypeNameScrabble": "سكرابل",
+
+  "gameTypeNameOther": "أخرى",
+
+  "gameTypeNameSkyjo": "سكايجو",
+
+  "gameTypeNamePresident": "الرئيس",
+
+  "gameTypeNameBelote": "بيلوت",
+
+  "gameTypeNameTarot": "تاروت",
+
+  "gameTypeNameBridge": "بريدج",
+
+  "gameTypeNameRami": "رامي",
+
+  "gameTypeNameCoinche": "كوانش",
+
+  "gameTypeNameYahtzee": "ياتزي",
+
+  "gameTypeNamePhase10": "فيز 10",
+
+  "gameTypeNameFlip7": "فليب 7",
+
+  "gameTypeNameMilleBornes": "ميل بورن",
+
+  "gameTypeNameRummikub": "روميكوب",
+
+  "gameTypeNameSixNimmt": "خذ 6",
+
+  "gameTypeNameQwirkle": "كويركل",
+
+  "gameTypeNameFarkle": "فاركل",
+
+  "gameTypeNameCanasta": "كاناستا",
+
+  "gameTypeNameWizard": "ويزارد",
+
+  "gameTypeNameTriomino": "تريومينو"
 }

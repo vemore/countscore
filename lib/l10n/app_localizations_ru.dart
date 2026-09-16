@@ -838,4 +838,70 @@ class AppLocalizationsRu extends AppLocalizations {
   String reportCommentaryNoMailApp(String email) {
     return 'Почтовое приложение не найдено. Напишите на $email, чтобы пожаловаться на этот комментарий.';
   }
+
+  @override
+  String get gameTypeNameZapzap => 'ZapZap';
+
+  @override
+  String get gameTypeNameUno => 'Уно';
+
+  @override
+  String get gameTypeNameScrabble => 'Скрэббл';
+
+  @override
+  String get gameTypeNameOther => 'Другое';
+
+  @override
+  String get gameTypeNameSkyjo => 'Скайджо';
+
+  @override
+  String get gameTypeNamePresident => 'Президент';
+
+  @override
+  String get gameTypeNameBelote => 'Белот';
+
+  @override
+  String get gameTypeNameTarot => 'Таро';
+
+  @override
+  String get gameTypeNameBridge => 'Бридж';
+
+  @override
+  String get gameTypeNameRami => 'Рамми';
+
+  @override
+  String get gameTypeNameCoinche => 'Куанш';
+
+  @override
+  String get gameTypeNameYahtzee => 'Яцзы';
+
+  @override
+  String get gameTypeNamePhase10 => 'Фаза 10';
+
+  @override
+  String get gameTypeNameFlip7 => 'Флип 7';
+
+  @override
+  String get gameTypeNameMilleBornes => 'Милль Борн';
+
+  @override
+  String get gameTypeNameRummikub => 'Руммикуб';
+
+  @override
+  String get gameTypeNameSixNimmt => 'Шесть берёт';
+
+  @override
+  String get gameTypeNameQwirkle => 'Квиркл';
+
+  @override
+  String get gameTypeNameFarkle => 'Фаркл';
+
+  @override
+  String get gameTypeNameCanasta => 'Канаста';
+
+  @override
+  String get gameTypeNameWizard => 'Визард';
+
+  @override
+  String get gameTypeNameTriomino => 'Триомино';
 }

@@ -293,6 +293,136 @@ async def test_duplicate_score_and_names_have_their_own_reasons(client):
     ]
 
 
+async def test_a_built_in_game_type_round_trips_its_key(client, session_factory):
+    """`builtin_key` carries a built-in type's identity, and its displayed name with it.
+
+    The `name` a device pushes is in that device's locale, so it is not the identity;
+    the key is. Both travel, so a device that does not know the key still has a name
+    to show.
+    """
+    from app.models.game import GameType
+
+    _body, headers = await _group(client)
+    entity = uuid.uuid4()
+    body = await _push(
+        client,
+        headers,
+        _delta(
+            "game_type",
+            entity,
+            1,
+            name="Autre",
+            builtin_key="other",
+            icon_code_point=1,
+            card_color_value=1,
+        ),
+    )
+    assert _statuses(body) == [("applied", None)]
+    row = await _get(session_factory, GameType, entity)
+    assert row.builtin_key == "other"
+    assert row.name == "Autre"
+
+    # A second device, in another locale, writing the same row: the name is
+    # last-writer-wins and harmless, because nothing reads it for a built-in type.
+    body = await _push(
+        client,
+        headers,
+        _delta(
+            "game_type",
+            entity,
+            2,
+            name="その他",
+            builtin_key="other",
+            icon_code_point=1,
+            card_color_value=1,
+        ),
+    )
+    assert _statuses(body) == [("applied", None)]
+    row = await _get(session_factory, GameType, entity)
+    assert (row.builtin_key, row.name) == ("other", "その他")
+
+    # The pull carries the key on to every other device.
+    r = await client.get("/sync/pull", params={"since": 0}, headers=headers)
+    assert r.status_code == 200, r.text
+    assert r.json()["deltas"][-1]["payload"]["builtin_key"] == "other"
+
+
+async def test_two_rows_cannot_claim_the_same_builtin_key(client):
+    """One live row per (group, built-in key), whatever each device calls it.
+
+    Without this, two devices that never pulled before pushing would mint two rows for
+    one built-in type and the group would show it twice.
+    """
+    _body, headers = await _group(client)
+    await _push(
+        client,
+        headers,
+        _delta(
+            "game_type",
+            uuid.uuid4(),
+            1,
+            name="Yahtzee",
+            builtin_key="yahtzee",
+            icon_code_point=1,
+            card_color_value=1,
+        ),
+    )
+
+    body = await _push(
+        client,
+        headers,
+        _delta(
+            "game_type",
+            uuid.uuid4(),
+            2,
+            name="ヤッツィー",
+            builtin_key="yahtzee",
+            icon_code_point=1,
+            card_color_value=1,
+        ),
+        # A user's own type has no key, so two of them never collide this way.
+        _delta(
+            "game_type",
+            uuid.uuid4(),
+            3,
+            name="Le jeu du jeudi",
+            icon_code_point=1,
+            card_color_value=1,
+        ),
+        _delta(
+            "game_type",
+            uuid.uuid4(),
+            4,
+            name="Le jeu du vendredi",
+            icon_code_point=1,
+            card_color_value=1,
+        ),
+    )
+    assert _statuses(body) == [
+        ("rejected", "builtin_key_taken"),
+        ("applied", None),
+        ("applied", None),
+    ]
+
+
+async def test_a_builtin_key_longer_than_the_column_is_refused(client):
+    _body, headers = await _group(client)
+    body = await _push(
+        client,
+        headers,
+        _delta(
+            "game_type",
+            uuid.uuid4(),
+            1,
+            name="X",
+            builtin_key="k" * 33,
+            icon_code_point=1,
+            card_color_value=1,
+        ),
+    )
+    assert _statuses(body) == [("rejected", "builtin_key longer than 32 characters")]
+
+
 async def test_renumbering_a_round_into_a_taken_number_is_refused(client):
     _body, headers = await _group(client)
     game, round_1, round_2 = uuid.uuid4(), uuid.uuid4(), uuid.uuid4()

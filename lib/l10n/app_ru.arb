@@ -426,5 +426,49 @@
 
   "reportCommentaryBody": "Что не так с этим комментарием, созданным ИИ?\n\n\n---\nСсылка: {reference}\nКомментарий:\n{commentary}",
 
-  "reportCommentaryNoMailApp": "Почтовое приложение не найдено. Напишите на {email}, чтобы пожаловаться на этот комментарий."
+  "reportCommentaryNoMailApp": "Почтовое приложение не найдено. Напишите на {email}, чтобы пожаловаться на этот комментарий.",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameUno": "Уно",
+
+  "gameTypeNameScrabble": "Скрэббл",
+
+  "gameTypeNameOther": "Другое",
+
+  "gameTypeNameSkyjo": "Скайджо",
+
+  "gameTypeNamePresident": "Президент",
+
+  "gameTypeNameBelote": "Белот",
+
+  "gameTypeNameTarot": "Таро",
+
+  "gameTypeNameBridge": "Бридж",
+
+  "gameTypeNameRami": "Рамми",
+
+  "gameTypeNameCoinche": "Куанш",
+
+  "gameTypeNameYahtzee": "Яцзы",
+
+  "gameTypeNamePhase10": "Фаза 10",
+
+  "gameTypeNameFlip7": "Флип 7",
+
+  "gameTypeNameMilleBornes": "Милль Борн",
+
+  "gameTypeNameRummikub": "Руммикуб",
+
+  "gameTypeNameSixNimmt": "Шесть берёт",
+
+  "gameTypeNameQwirkle": "Квиркл",
+
+  "gameTypeNameFarkle": "Фаркл",
+
+  "gameTypeNameCanasta": "Канаста",
+
+  "gameTypeNameWizard": "Визард",
+
+  "gameTypeNameTriomino": "Триомино"
 }

@@ -829,4 +829,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String reportCommentaryNoMailApp(String email) {
     return 'No email app found. Write to $email to report this commentary.';
   }
+
+  @override
+  String get gameTypeNameZapzap => 'ZapZap';
+
+  @override
+  String get gameTypeNameUno => 'Uno';
+
+  @override
+  String get gameTypeNameScrabble => 'Scrabble';
+
+  @override
+  String get gameTypeNameOther => 'Other';
+
+  @override
+  String get gameTypeNameSkyjo => 'Skyjo';
+
+  @override
+  String get gameTypeNamePresident => 'President';
+
+  @override
+  String get gameTypeNameBelote => 'Belote';
+
+  @override
+  String get gameTypeNameTarot => 'Tarot';
+
+  @override
+  String get gameTypeNameBridge => 'Bridge';
+
+  @override
+  String get gameTypeNameRami => 'Rummy';
+
+  @override
+  String get gameTypeNameCoinche => 'Coinche';
+
+  @override
+  String get gameTypeNameYahtzee => 'Yahtzee';
+
+  @override
+  String get gameTypeNamePhase10 => 'Phase 10';
+
+  @override
+  String get gameTypeNameFlip7 => 'Flip 7';
+
+  @override
+  String get gameTypeNameMilleBornes => 'Mille Bornes';
+
+  @override
+  String get gameTypeNameRummikub => 'Rummikub';
+
+  @override
+  String get gameTypeNameSixNimmt => 'Take 6';
+
+  @override
+  String get gameTypeNameQwirkle => 'Qwirkle';
+
+  @override
+  String get gameTypeNameFarkle => 'Farkle';
+
+  @override
+  String get gameTypeNameCanasta => 'Canasta';
+
+  @override
+  String get gameTypeNameWizard => 'Wizard';
+
+  @override
+  String get gameTypeNameTriomino => 'Triomino';
 }

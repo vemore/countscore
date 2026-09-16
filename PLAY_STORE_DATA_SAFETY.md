@@ -82,7 +82,7 @@ for new games while the device is in a group, per game otherwise) is uploaded wi
 | Entity | Content |
 |---|---|
 | `game` | Name, game type, scoring rule, start date |
-| `game_type` | Name, icon, colour, elimination / game-over rules |
+| `game_type` | Name, built-in identifier, icon, colour, elimination / game-over rules |
 | `player` | **Player name**, colour |
 | `round` | Number, **free-text comment** |
 | `score` | Score value |

@@ -5,12 +5,12 @@
 > Updated: 2026-09-16
 
 This page was `SchemaV9` until v10 landed on 2026-09-13; links were renamed with it.
-v11 followed the same day, and v12 on 2026-09-16; both are described here too.
+v11 followed the same day, and v12 and v13 on 2026-09-16; all are described here too.
 
 ## Facts
 
-Schema version **12**, declared in two places that must stay in sync:
-`lib/services/drift/database.dart` (`schemaVersion => 12`) and
+Schema version **13**, declared in two places that must stay in sync:
+`lib/services/drift/database.dart` (`schemaVersion => 13`) and
 `DatabaseService.schemaVersion` in `lib/services/database_service.dart`, which both
 `openDatabase` calls use.
 
@@ -18,7 +18,7 @@ Schema version **12**, declared in two places that must stay in sync:
 
 | Table | Role |
 |---|---|
-| `game_types` | Game types. uuid + sync columns. |
+| `game_types` | Game types. `builtin_key` since v13, uuid + sync columns. |
 | `games` | Games. uuid, `group_id`, sync columns, `finishedAt` since v12. |
 | `players` | **Global identity**: `(id, name, colorValue, uuid, group_id, …)`. UNIQUE on `name COLLATE NOCASE` where `group_id IS NULL`. |
 | `game_players` | **Per-game membership**: `(id, gameId, player_id FK→players, name, orderIndex, colorValue, uuid, …)`. UNIQUE `(gameId, player_id)`. |
@@ -51,13 +51,39 @@ included, so that reopening a game clears it on the other devices instead of lea
 showing it as finished forever. `lib/services/sync/sync_store.dart`, `case 'game'` and
 `_applyGame`.
 
+### `game_types.builtin_key` (since v13)
+
+TEXT, nullable. The stable identity of one of the 22 built-in types — `'zapzap'`,
+`'other'`, `'yahtzee'`, … — and null for a type the user created or renamed.
+
+**It carries the displayed name as well.** `lib/utils/game_type_name.dart` switches on it
+to an `AppLocalizations` getter, and `name` is read only when it is null. That is the whole
+point: the stored `name` of a built-in row becomes inconsequential, so two devices in two
+locales hold different names for one type, and last-writer-wins on that column is harmless.
+Renaming a built-in type in `lib/screens/game_types_screen.dart` **clears the key**, which
+is what makes the chosen name stick.
+
+`applyV13` in `lib/services/sync/sync_schema.dart`, run by both engines, does three things:
+adds the column; back-fills the ten rows the seed wrote before v13, matched by the literal
+name they were seeded with (the precedent is the v4→v5 step, `database_service.dart`), one
+row per key at most; then inserts the twelve types the seed never held, guarded by
+`WHERE NOT EXISTS`. A type the user deleted is therefore **not** resurrected — the ten old
+ones are only ever back-filled. Idempotent, so replaying it changes nothing.
+`test/migration_v12_to_v13_test.dart`.
+
+Pushed as `builtin_key`, a column the server gained in `0003_game_type_builtin_key`. The
+group link of a built-in type is derived from the key rather than the name
+(`linkedGameTypeRemoteUuid`, `lib/services/sync/sync_ids.dart`), so two devices in different
+locales compute the same server uuid. See [[Sync]].
+
 ### Upgrades on web (since v11)
 
 Drift's `onUpgrade` is **not** a no-op any more. Native still never reaches it — sqflite has
 migrated the file first — but a browser keeps its database across PWA releases, and the PWA
 has been in production at v9 since 2026-09-13. `onUpgrade` runs `applySyncV10` for
-`from < 10`, the v11 statements for `from < 11` and `applyV12` for `from < 12`: the same SQL
-sqflite runs, from `sync_schema.dart`. Covered by `test/drift/web_upgrade_test.dart`.
+`from < 10`, the v11 statements for `from < 11`, `applyV12` for `from < 12` and `applyV13`
+for `from < 13`: the same SQL sqflite runs, from `sync_schema.dart`. Covered by
+`test/drift/web_upgrade_test.dart`.
 
 ### Tombstones (since v10)
 
@@ -80,6 +106,7 @@ and scores. Deleting a game type ignores tombstoned games and clears their `game
 | v9 | Global players. |
 | **v11** | **Change capture**: `sync_flags` (one row, `suppress`), `trg_sync_*` capture triggers on games, game_players, rounds, scores, game_analyses (insert/update when `group_id` is set) and on players, game_types (update when linked), and `*_inherit` triggers that give a row inserted under a shared parent its `group_id`. SQL in `lib/services/sync/sync_schema.dart`, shared by both engines. |
 | **v12** | **`games.finishedAt`** (ISO-8601 TEXT, nullable): an explicit end for every game, not only the three types that carry a threshold. `applyV12` in `lib/services/sync/sync_schema.dart`, run by both engines. Additive only. |
+| **v13** | **`game_types.builtin_key`** (TEXT, nullable): the stable identity *and* the source of the displayed name of a built-in type, plus the twelve types the seed was missing. `applyV13` in `lib/services/sync/sync_schema.dart`, run by both engines. Additive; back-fills, never resurrects. |
 | v10 | **Sync bookkeeping**: `group_links`, `entity_versions`, `sync_inbox`; `outbox.rejected_at` / `reject_reason`; `sync_state.device_id` / `group_name`. Additive only — `_createSyncV10Tables` is the fresh-install and the upgrade path at once. |
 
 ### The v9 migration in detail
@@ -117,6 +144,18 @@ repairs the shape before the rest of the chain runs.
   a server uuid that can differ from the local one. Columns on six tables would have meant
   six `ALTER TABLE`s on every user's data and a Drift table change each; two side tables
   keyed by `(entity_type, uuid)` touch no existing row. See [[Sync]].
+- **A built-in type's identity is a key, not its name (2026-09-16).** `name` was the key
+  in five places at once — the cross-device match, the server's `unique(group_id, name)`,
+  the ZapZap detection, the statistics grouping and the form's default type — which is
+  exactly why the seeded names could not simply be translated. Making the name localized
+  and the identity a separate column decouples them: `builtinKey` carries both the identity
+  and the displayed name, and `name` survives only as the fallback for rows that have no
+  key. The alternative — translating the rows in place at each locale change — would have
+  fought the user's own renames and still left two devices in two locales disagreeing.
+- **The twelve new types are appended, never inserted (2026-09-16).** The first ten indices
+  of `defaultGameTypes()` are what an install seeded before v13 already holds, in order;
+  `test/widget_test.dart` pins them. Inserting one in the middle would silently change what
+  the v13 back-fill matches.
 - **v12 adds a column although v10 deliberately did not (2026-09-16).** The v10 decision
   below rejected "a column per synced row" — that was six `ALTER TABLE`s across six tables
   for bookkeeping keyed by `(entity_type, uuid)`, which two side tables express better.

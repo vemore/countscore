@@ -499,5 +499,49 @@
 
   "reportCommentaryBody": "What is wrong with this AI-generated commentary?\n\n\n---\nReference: {reference}\nCommentary:\n{commentary}",
 
-  "reportCommentaryNoMailApp": "No email app found. Write to {email} to report this commentary."
+  "reportCommentaryNoMailApp": "No email app found. Write to {email} to report this commentary.",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameUno": "Uno",
+
+  "gameTypeNameScrabble": "Scrabble",
+
+  "gameTypeNameOther": "Other",
+
+  "gameTypeNameSkyjo": "Skyjo",
+
+  "gameTypeNamePresident": "President",
+
+  "gameTypeNameBelote": "Belote",
+
+  "gameTypeNameTarot": "Tarot",
+
+  "gameTypeNameBridge": "Bridge",
+
+  "gameTypeNameRami": "Rummy",
+
+  "gameTypeNameCoinche": "Coinche",
+
+  "gameTypeNameYahtzee": "Yahtzee",
+
+  "gameTypeNamePhase10": "Phase 10",
+
+  "gameTypeNameFlip7": "Flip 7",
+
+  "gameTypeNameMilleBornes": "Mille Bornes",
+
+  "gameTypeNameRummikub": "Rummikub",
+
+  "gameTypeNameSixNimmt": "Take 6",
+
+  "gameTypeNameQwirkle": "Qwirkle",
+
+  "gameTypeNameFarkle": "Farkle",
+
+  "gameTypeNameCanasta": "Canasta",
+
+  "gameTypeNameWizard": "Wizard",
+
+  "gameTypeNameTriomino": "Triomino"
 }

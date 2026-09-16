@@ -14,8 +14,10 @@ at your own server in Settings → Server if you want the connected features.
 
 ## Features
 
-- **10 pre-configured game types** — ZapZap, Uno, Scrabble, Skyjo, Président, Belote, Tarot,
-  Bridge, Rami and a generic "Autre" — plus custom types with a user-picked icon and colour.
+- **22 pre-configured game types** — ZapZap, Uno, Scrabble, Skyjo, President, Belote, Tarot,
+  Bridge, Rummy, Coinche, Yahtzee, Phase 10, Flip 7, Mille Bornes, Rummikub, Take 6, Qwirkle,
+  Farkle, Canasta, Wizard, Triomino and a generic "Other" — each named in your own language —
+  plus custom types with a user-picked icon and colour.
 - **Flexible scoring**: lowest-wins and highest-wins, per game type.
 - **Scoring grid**: rounds, running totals, live ranking and per-player statistics.
 - **An explicit end**: any game can be declared over from the board or the game list, which

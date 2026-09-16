@@ -2,7 +2,7 @@
 
 > Scope: how the app reaches SQLite — Drift, the sqflite bootstrap, repositories, codegen.
 > Related: [[SchemaV10]] · [[MobileApp]] · [[Web]] · [[Testing]] · [[Sync]]
-> Updated: 2026-09-13
+> Updated: 2026-09-16
 
 ## Facts
 
@@ -24,11 +24,16 @@ All three remaining roles are inside `lib/services/database_service.dart` (1468 
 
 - `lib/services/drift/tables.dart` (162 l.) — 9 table declarations mirroring the v9 sqflite
   schema, using `.named()` to keep the legacy mixed-case column names (`gameTypeId`,
-  `orderIndex`, `created_at`).
+  `orderIndex`, `created_at`, `builtin_key`).
 - `lib/services/drift/database.dart` — `AppDatabase`, `schemaVersion => 11`.
   `onUpgrade` is **intentionally a no-op**: by the time Drift opens the file, sqflite has
   already brought it to 9, so Drift sees 9 == 9. `onCreate` (web, fresh install) builds v9
   directly: `m.createAll()` + `_createExtraIndexes()` (20 indexes) + `_insertDefaultGameTypes()`.
+
+  > **Status: Outdated** (2026-09-16) — both bullets above: `tables.dart` declares **12**
+  > tables since v10, `schemaVersion` is **13**, and `onUpgrade` has replayed the post-v9
+  > steps since v11. `_insertDefaultGameTypes()` now seeds 22 types, each with its
+  > `builtin_key`. See [[SchemaV10]].
 - `lib/services/drift/connection/connection.dart` is a three-line conditional export:
   `export 'connection_web.dart' if (dart.library.io) 'connection_native.dart';`
 
@@ -37,6 +42,15 @@ All three remaining roles are inside `lib/services/database_service.dart` (1468 
 `lib/repositories/` holds **seven abstract interfaces only** — game, player, round, score,
 game_type, player_stats, game_analysis. The single set of implementations is
 `lib/repositories/drift/drift_repositories.dart` (712 l.).
+
+`DriftGameTypeRepository.update` builds its assignment list from `GameType.toMap()`, so a
+new column reaches it for free — unlike `DriftGameRepository.update`, which lists its
+columns by hand. `test/drift/drift_repositories_test.dart` pins the `builtinKey` round trip
+either way.
+
+The statistics aggregates group on `COALESCE(gt.builtin_key, gt.name, 'Unknown')` rather
+than on `gt.name`: the name of a built-in type is localized, so grouping on it would split
+one player's Yahtzee statistics the day they switched the phone's language.
 
 Those implementations use `db.customSelect` / `customInsert` with **raw SQL**, a faithful
 port of the old sqflite queries, rather than Drift's typed query DSL. That was a

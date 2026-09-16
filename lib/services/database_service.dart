@@ -19,7 +19,7 @@ class DatabaseService {
 
   /// Must equal `AppDatabase.schemaVersion`: Drift adopts the file this chain
   /// produced and never migrates it itself.
-  static const schemaVersion = 12;
+  static const schemaVersion = 13;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -81,6 +81,7 @@ class DatabaseService {
     await db.execute('''
       CREATE TABLE game_types (
         id $idType,
+        builtin_key TEXT,
         name $textType,
         iconCodePoint $intType,
         cardColorValue $intType,
@@ -275,9 +276,12 @@ class DatabaseService {
     // exist yet; sqflite's `insert` will silently drop unknown keys, but to be
     // explicit we detect the column presence first.
     final hasSyncCols = await _hasColumn(db, 'game_types', 'uuid');
+    final hasBuiltinKey = await _hasColumn(db, 'game_types', 'builtin_key');
     final now = DateTime.now().millisecondsSinceEpoch;
     for (final gameType in GameType.defaultGameTypes()) {
       final map = gameType.toMap();
+      // The v2 -> v3 step seeds a table that predates builtin_key.
+      if (!hasBuiltinKey) map.remove('builtin_key');
       if (hasSyncCols) {
         map['uuid'] = _newUuid();
         map['created_at'] = now;
@@ -476,6 +480,10 @@ class DatabaseService {
 
     if (oldVersion < 12) {
       await applyV12(db.execute, (t) => _columnsOf(db, t));
+    }
+
+    if (oldVersion < 13) {
+      await applyV13(db.execute, (t) => _columnsOf(db, t));
     }
   }
 

@@ -426,5 +426,49 @@
 
   "reportCommentaryBody": "इस AI-जनित टिप्पणी में क्या समस्या है?\n\n\n---\nसंदर्भ: {reference}\nटिप्पणी:\n{commentary}",
 
-  "reportCommentaryNoMailApp": "कोई ईमेल ऐप नहीं मिला। इस टिप्पणी की रिपोर्ट करने के लिए {email} पर लिखें।"
+  "reportCommentaryNoMailApp": "कोई ईमेल ऐप नहीं मिला। इस टिप्पणी की रिपोर्ट करने के लिए {email} पर लिखें।",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameUno": "उनो",
+
+  "gameTypeNameScrabble": "स्क्रैबल",
+
+  "gameTypeNameOther": "अन्य",
+
+  "gameTypeNameSkyjo": "स्काईजो",
+
+  "gameTypeNamePresident": "प्रेसिडेंट",
+
+  "gameTypeNameBelote": "बेलोत",
+
+  "gameTypeNameTarot": "टैरो",
+
+  "gameTypeNameBridge": "ब्रिज",
+
+  "gameTypeNameRami": "रमी",
+
+  "gameTypeNameCoinche": "कोएंश",
+
+  "gameTypeNameYahtzee": "याहत्ज़ी",
+
+  "gameTypeNamePhase10": "फेज़ 10",
+
+  "gameTypeNameFlip7": "फ्लिप 7",
+
+  "gameTypeNameMilleBornes": "मिल बोर्न",
+
+  "gameTypeNameRummikub": "रमीक्यूब",
+
+  "gameTypeNameSixNimmt": "6 निम्ट",
+
+  "gameTypeNameQwirkle": "क्विर्कल",
+
+  "gameTypeNameFarkle": "फार्कल",
+
+  "gameTypeNameCanasta": "कनास्ता",
+
+  "gameTypeNameWizard": "विज़ार्ड",
+
+  "gameTypeNameTriomino": "ट्रायोमिनो"
 }

@@ -683,7 +683,8 @@ class DriftPlayerStatsRepository implements PlayerStatsRepository {
       final playerGames = await _db
           .customSelect(
             '''
-        SELECT g.id AS gameId, COALESCE(gt.name, 'Unknown') AS gameType,
+        SELECT g.id AS gameId,
+               COALESCE(gt.builtin_key, gt.name, 'Unknown') AS gameType,
                g.isLowestScoreWins AS isLowestScoreWins, gp.id AS gpId,
                COALESCE(SUM(s.value), 0) AS playerTotal
         FROM game_players gp
@@ -691,7 +692,7 @@ class DriftPlayerStatsRepository implements PlayerStatsRepository {
         LEFT JOIN game_types gt ON g.gameTypeId = gt.id
         LEFT JOIN scores s ON s.playerId = gp.id AND s.deleted_at IS NULL
         WHERE gp.player_id = ? AND gp.deleted_at IS NULL
-        GROUP BY g.id, gt.name, g.isLowestScoreWins, gp.id
+        GROUP BY g.id, gt.builtin_key, gt.name, g.isLowestScoreWins, gp.id
       ''',
             variables: [Variable(globalId)],
           )
@@ -853,14 +854,15 @@ class DriftGameAnalysisRepository implements GameAnalysisRepository {
     final rows = await _db.customSelect('''
       SELECT g.id AS gameId, g.name AS gameName, g.createdAt AS createdAt,
              g.isLowestScoreWins AS isLowestScoreWins,
-             COALESCE(gt.name, 'Unknown') AS gameType, gp.id AS gpId,
+             COALESCE(gt.builtin_key, gt.name, 'Unknown') AS gameType, gp.id AS gpId,
              COALESCE(SUM(s.value), 0) AS playerTotal
       FROM game_players gp
       JOIN games g ON g.id = gp.gameId AND g.deleted_at IS NULL
       LEFT JOIN game_types gt ON g.gameTypeId = gt.id
       LEFT JOIN scores s ON s.playerId = gp.id AND s.deleted_at IS NULL
       WHERE $whereClause
-      GROUP BY g.id, g.name, g.createdAt, g.isLowestScoreWins, gt.name, gp.id
+      GROUP BY g.id, g.name, g.createdAt, g.isLowestScoreWins, gt.builtin_key,
+               gt.name, gp.id
       ORDER BY g.createdAt DESC
       LIMIT ?
     ''', variables: vars).get();

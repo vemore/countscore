@@ -426,5 +426,49 @@
 
   "reportCommentaryBody": "この AI 生成コメントのどこに問題がありますか？\n\n\n---\n参照：{reference}\nコメント：\n{commentary}",
 
-  "reportCommentaryNoMailApp": "メールアプリが見つかりません。このコメントを報告するには {email} までご連絡ください。"
+  "reportCommentaryNoMailApp": "メールアプリが見つかりません。このコメントを報告するには {email} までご連絡ください。",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameUno": "ウノ",
+
+  "gameTypeNameScrabble": "スクラブル",
+
+  "gameTypeNameOther": "その他",
+
+  "gameTypeNameSkyjo": "スカイジョ",
+
+  "gameTypeNamePresident": "大富豪",
+
+  "gameTypeNameBelote": "ベロット",
+
+  "gameTypeNameTarot": "タロット",
+
+  "gameTypeNameBridge": "ブリッジ",
+
+  "gameTypeNameRami": "ラミー",
+
+  "gameTypeNameCoinche": "コワンシュ",
+
+  "gameTypeNameYahtzee": "ヤッツィー",
+
+  "gameTypeNamePhase10": "フェーズ 10",
+
+  "gameTypeNameFlip7": "フリップ 7",
+
+  "gameTypeNameMilleBornes": "ミルボルヌ",
+
+  "gameTypeNameRummikub": "ラミィキューブ",
+
+  "gameTypeNameSixNimmt": "ニムト",
+
+  "gameTypeNameQwirkle": "クワークル",
+
+  "gameTypeNameFarkle": "ファークル",
+
+  "gameTypeNameCanasta": "カナスタ",
+
+  "gameTypeNameWizard": "ウィザード",
+
+  "gameTypeNameTriomino": "トライオミノ"
 }

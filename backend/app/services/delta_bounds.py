@@ -47,6 +47,7 @@ STRING_MAX_LENGTHS: dict[str, dict[str, int]] = {
     "game_analysis": {"content": ANALYSIS_CONTENT_MAX_LENGTH, "model_id": 128},
     "game_type": {
         "name": 64,
+        "builtin_key": 32,
         "player_dead_condition_type": 16,
         "game_over_condition_type": 32,
     },

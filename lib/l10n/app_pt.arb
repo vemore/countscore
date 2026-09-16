@@ -426,5 +426,49 @@
 
   "reportCommentaryBody": "Qual é o problema deste comentário gerado por IA?\n\n\n---\nReferência: {reference}\nComentário:\n{commentary}",
 
-  "reportCommentaryNoMailApp": "Nenhum app de e-mail encontrado. Escreva para {email} para denunciar este comentário."
+  "reportCommentaryNoMailApp": "Nenhum app de e-mail encontrado. Escreva para {email} para denunciar este comentário.",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameUno": "Uno",
+
+  "gameTypeNameScrabble": "Scrabble",
+
+  "gameTypeNameOther": "Outro",
+
+  "gameTypeNameSkyjo": "Skyjo",
+
+  "gameTypeNamePresident": "Presidente",
+
+  "gameTypeNameBelote": "Belote",
+
+  "gameTypeNameTarot": "Tarô",
+
+  "gameTypeNameBridge": "Bridge",
+
+  "gameTypeNameRami": "Rummy",
+
+  "gameTypeNameCoinche": "Coinche",
+
+  "gameTypeNameYahtzee": "Yahtzee",
+
+  "gameTypeNamePhase10": "Phase 10",
+
+  "gameTypeNameFlip7": "Flip 7",
+
+  "gameTypeNameMilleBornes": "Mille Bornes",
+
+  "gameTypeNameRummikub": "Rummikub",
+
+  "gameTypeNameSixNimmt": "Pega em 6",
+
+  "gameTypeNameQwirkle": "Qwirkle",
+
+  "gameTypeNameFarkle": "Farkle",
+
+  "gameTypeNameCanasta": "Canasta",
+
+  "gameTypeNameWizard": "Wizard",
+
+  "gameTypeNameTriomino": "Triomino"
 }

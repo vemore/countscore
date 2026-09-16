@@ -15,6 +15,13 @@
 /// received from the server is not captured and sent straight back.
 library;
 
+import '../../models/game_type.dart';
+import '../uuid.dart';
+
+/// Runs one statement, with optional positional arguments. `Database.execute`
+/// (sqflite) and `AppDatabase.customStatement` (Drift) both fit.
+typedef SqlExecutor = Future<void> Function(String sql, [List<Object?> args]);
+
 /// Schema v10, shared by both engines: the sync bookkeeping tables and columns.
 /// Idempotent — it checks each column before adding it, so it can replay on a
 /// database that already has part of it.
@@ -160,5 +167,59 @@ Future<void> applyV12(
       if (existing.contains(column.key)) continue;
       await execute('ALTER TABLE ${table.key} ADD COLUMN ${column.key} ${column.value}');
     }
+  }
+}
+
+/// Schema v13, shared by both engines: `game_types.builtin_key`, the stable
+/// identity of a built-in type. Null for a type the user created or renamed.
+///
+/// It carries the displayed name as well (`lib/utils/game_type_name.dart`), so
+/// the stored `name` of a built-in row stops mattering and two devices in
+/// different locales converge on one row. See .llmwiki/SchemaV10.md.
+///
+/// Three steps, all idempotent so the step can replay:
+///
+/// 1. add the column;
+/// 2. back-fill the ten rows the seed wrote before v13, matched by the literal
+///    name they were seeded with — the precedent is the v4 to v5 step in
+///    `database_service.dart`. At most one row per key, the oldest, so a user
+///    who has two "Uno" rows does not end up with two `uno` keys;
+/// 3. insert the built-in types whose key is absent. Only types the seed never
+///    held can be absent this way, so **a type the user deleted is not
+///    resurrected**: the ten old ones are back-filled, never re-inserted.
+Future<void> applyV13(
+  SqlExecutor execute,
+  Future<Set<String>> Function(String table) columnsOf,
+) async {
+  final existing = await columnsOf('game_types');
+  if (!existing.contains('builtin_key')) {
+    await execute('ALTER TABLE game_types ADD COLUMN builtin_key TEXT');
+  }
+
+  for (final seeded in GameType.seededNamesBeforeV13.entries) {
+    await execute(
+      'UPDATE game_types SET builtin_key = ? WHERE id = ('
+      '  SELECT id FROM game_types'
+      '  WHERE builtin_key IS NULL AND name = ? COLLATE NOCASE'
+      '  ORDER BY id LIMIT 1)',
+      [seeded.key, seeded.value],
+    );
+  }
+
+  final now = DateTime.now().millisecondsSinceEpoch;
+  for (final type in GameType.defaultGameTypes()) {
+    final key = type.builtinKey;
+    if (key == null || GameType.seededNamesBeforeV13.containsKey(key)) continue;
+    final values = Map<String, Object?>.from(type.toMap())..remove('id');
+    values['uuid'] = newUuid();
+    values['created_at'] = now;
+    values['updated_at'] = now;
+    final columns = values.keys.join(', ');
+    final placeholders = List.filled(values.length, '?').join(', ');
+    await execute(
+      'INSERT INTO game_types ($columns) SELECT $placeholders '
+      'WHERE NOT EXISTS (SELECT 1 FROM game_types WHERE builtin_key = ?)',
+      [...values.values, key],
+    );
   }
 }

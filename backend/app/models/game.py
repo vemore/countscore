@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, Index, Text
 from sqlmodel import Field, SQLModel
 
-from app.models._indexes import live_unique
+from app.models._indexes import live_unique, live_unique_where
 
 
 def _utcnow() -> datetime:
@@ -20,12 +20,24 @@ class GameType(SQLModel, table=True):
     __table_args__ = (
         Index("ix_game_types_group_id", "group_id"),
         live_unique("uq_game_types_group_name", "group_id", "name"),
+        # A built-in type is one row per group whatever each device calls it:
+        # ``builtin_key`` carries the identity and the displayed name, so two
+        # devices in different locales push different names for the same type.
+        live_unique_where(
+            "uq_game_types_group_builtin_key",
+            "builtin_key IS NOT NULL",
+            "group_id",
+            "builtin_key",
+        ),
     )
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     group_id: uuid.UUID = Field(
         sa_column=Column(ForeignKey("groups.id", ondelete="CASCADE"), nullable=False)
     )
+    # The stable identity of a built-in type; NULL for one the user made or
+    # renamed. See .llmwiki/Sync.md and lib/utils/game_type_name.dart.
+    builtin_key: str | None = Field(default=None, max_length=32)
     name: str = Field(max_length=64)
     icon_code_point: int
     # ARGB as Flutter's Color.toARGB32() — opaque colours exceed the int32 range.
