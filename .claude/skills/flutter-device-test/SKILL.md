@@ -126,11 +126,11 @@ Real device > emulator for i18n because RTL behavior, font fallbacks (CJK, Devan
 
 ```bash
 # Per-app locale override (Android 13+, supported on Pixel 9 Pro XL)
-adb -s $DEV shell cmd locale set-app-locales <package> --locales=ar
-adb -s $DEV shell cmd locale set-app-locales <package> --locales=de
-adb -s $DEV shell cmd locale set-app-locales <package> --locales=ja
+adb -s $DEV shell cmd locale set-app-locales <package> --locales ar
+adb -s $DEV shell cmd locale set-app-locales <package> --locales de
+adb -s $DEV shell cmd locale set-app-locales <package> --locales ja
 # Reset
-adb -s $DEV shell cmd locale set-app-locales <package> --locales=
+adb -s $DEV shell cmd locale set-app-locales <package> --locales ""
 ```
 
 For CountScore the package is `com.vemore.countscore` (verify with `adb -s $DEV shell cmd package list packages | grep countscore`).
