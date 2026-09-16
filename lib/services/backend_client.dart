@@ -89,18 +89,26 @@ class BackendClient {
     }
   }
 
-  /// Posts a finished game to `/comments/zapzap-analysis` and returns the
-  /// generated commentary. Throws on any non-200, and on timeout.
-  Future<({String content, String? model})> zapzapAnalysis(
+  /// The path the analysis moved to once it stopped being ZapZap-only.
+  static const analysisPath = '/comments/game-analysis';
+
+  /// What the same endpoint was called until then. A self-hosted backend is
+  /// upgraded on its owner's schedule, so a phone that updates first must not
+  /// lose the feature: [gameAnalysis] retries here on a 404.
+  static const legacyAnalysisPath = '/comments/zapzap-analysis';
+
+  /// Posts a finished game for analysis and returns the generated commentary.
+  /// Throws on any non-200, and on timeout.
+  Future<({String content, String? model})> gameAnalysis(
     Map<String, dynamic> payload,
   ) async {
-    final response = await _client
-        .post(
-          Uri.parse('$baseUrl/comments/zapzap-analysis'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode(payload),
-        )
-        .timeout(analysisTimeout);
+    var response = await _postAnalysis(analysisPath, payload);
+    if (response.statusCode == 404) {
+      // A backend older than the rename. It ignores `style` and `language` —
+      // its schema drops unknown fields — so the answer is the French
+      // professor: degraded, but an analysis.
+      response = await _postAnalysis(legacyAnalysisPath, payload);
+    }
 
     if (response.statusCode != 200) {
       // bodyBytes, not body: `body` falls back to latin-1 when the response
@@ -117,6 +125,19 @@ class BackendClient {
       content: body['content'] as String,
       model: body['model'] as String?,
     );
+  }
+
+  Future<http.Response> _postAnalysis(
+    String path,
+    Map<String, dynamic> payload,
+  ) {
+    return _client
+        .post(
+          Uri.parse('$baseUrl$path'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(payload),
+        )
+        .timeout(analysisTimeout);
   }
 
   // ── Groups ────────────────────────────────────────────────────────────────

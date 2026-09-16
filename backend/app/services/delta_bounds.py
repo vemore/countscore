@@ -21,6 +21,7 @@ _UNICODE_MAX = 0x10FFFF  # highest valid code point, for icon_code_point
 _SCORE_ABS_MAX = 1_000_000
 ROUND_COMMENT_MAX_LENGTH = 500
 ANALYSIS_CONTENT_MAX_LENGTH = 20_000
+GAME_TYPE_RULES_MAX_LENGTH = 8_000
 
 # entity_type → field → (min, max), both inclusive.
 NUMERIC_BOUNDS: dict[str, dict[str, tuple[int, int]]] = {
@@ -47,8 +48,11 @@ STRING_MAX_LENGTHS: dict[str, dict[str, int]] = {
     "game_analysis": {"content": ANALYSIS_CONTENT_MAX_LENGTH, "model_id": 128},
     "game_type": {
         "name": 64,
+        "builtin_key": 32,
         "player_dead_condition_type": 16,
         "game_over_condition_type": 32,
+        "rules": GAME_TYPE_RULES_MAX_LENGTH,
+        "rules_slug": 32,
     },
 }
 

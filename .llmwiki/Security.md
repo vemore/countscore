@@ -2,7 +2,7 @@
 
 > Scope: what is defended, and what is knowingly open.
 > Related: [[Backend]] · [[Api]] · [[LlmProviders]] · [[Deployment]] · [[KnownLimits]]
-> Updated: 2026-09-14
+> Updated: 2026-09-16
 
 ## Facts
 
@@ -20,7 +20,7 @@
 | CSRF | Stateless API with a bearer token, so not applicable. |
 | CORS | Explicit origin whitelist in `config.py`; `*` is rejected at startup. |
 | Rate limiting | Per device, per group budget, and per IP — including group create/join. `/sync/push` has its own per-device limit (`SYNC_PUSH_RL_*`, in-memory bucket `sync_push`). The IP is `request.client.host`, which `TrustedProxyMiddleware` (`app/services/trusted_proxy.py`) sets from `X-Real-IP` only when the peer is in `TRUSTED_PROXY_IPS` (the pinned compose gateway, see [[Deployment]]). `X-Forwarded-For` is read by nothing: Web Station passes it through as the client wrote it. `backend/tests/test_ip_rate_limit.py`. |
-| ZapZap payload | `ZapZapPayload` (`app/schemas/comments.py`): 422 on a wrong shape or a count out of bounds (12 players, 200 rounds, 10 history entries); text clipped, player names filtered through the sync allow-list. |
+| Analysis payload | `GameAnalysisPayload` (`app/schemas/comments.py`): 422 on a wrong shape or a count out of bounds (12 players, 200 rounds, 10 history entries, thresholds ±1 000 000); text clipped, player names filtered through the sync allow-list. `style`, `language` and the two condition enums are normalised to a known value instead of refused — see [[Api]]. The **game-type name** now drives a section of the prompt rather than one data line, so it is escaped, wrapped in `<game_type>`, stripped of newlines and of a leading `#`, and named by the anti-injection rule alongside `<player_name>`. |
 | Body size | `limit_body_size` middleware, 413 above `MAX_BODY_BYTES` (262144); 411 when `Content-Length` is absent on a write. |
 | WebSocket auth | Single-use ticket from `POST /sync/ws-ticket`, 60 s TTL. `app/services/ws_ticket.py`. |
 | WebSocket cost | One shared LISTEN connection for all streams (`app/services/notify.py`), at most `MAX_STREAMS_PER_DEVICE` (3) streams per device — a member can no longer exhaust Postgres connections. See [[Sync]]. |
@@ -39,9 +39,9 @@ so it is stated once, here, and the compliance documents are written from it.
 
 | Question | Answer, and where it is verified |
 |---|---|
-| What leaves the device | One request, `POST /comments/zapzap-analysis`, built at `lib/screens/game_analysis_screen.dart:95-122`: game name and date, player **names**, every round's scores and free-text **comment**, and per-player history of up to 10 *other* games (`drift_repositories.dart:698-708`). |
+| What leaves the device | One request, `POST /comments/game-analysis`, built in `lib/screens/game_analysis_screen.dart` `_generate`: game name and date, player **names**, every round's scores and free-text **comment**, per-player history of up to 10 *other* games (`drift_repositories.dart`), and three fields that are app configuration rather than user content — the chosen `style`, the display `language`, and the game type's scoring rules. |
 | When | Only once the user has configured a backend in Settings → Server **and** taps Generate. There is no default URL, so an install that has never been configured makes no network request at all. Nothing is sent on launch, on a timer, or in the background; `initState` only reads the local cache. |
-| To whom | The backend whose URL the user entered — usually one they run themselves from `backend/` — and then the provider that backend's `LLM_PROVIDER` selects: AWS Bedrock, Google Gemini or Mistral (`backend/app/services/llm/factory.py`). The provider sees essentially the whole payload, rendered by `zapzap_prompt.py`. The recipient is the operator's choice, not ours. |
+| To whom | The backend whose URL the user entered — usually one they run themselves from `backend/` — and then the provider that backend's `LLM_PROVIDER` selects: AWS Bedrock, Google Gemini or Mistral (`backend/app/services/llm/factory.py`). The provider sees essentially the whole payload, rendered by `app/services/analysis/`. The recipient is the operator's choice, not ours. |
 | Kept where | Nowhere on the backend's side: the route takes no `session` and writes no row. The per-IP counter is process memory only. The device keeps its own copy in `game_analyses` until the user deletes it. At the provider, whatever that provider's retention policy says — which we do not control, and which is why the Play declaration does not claim the ephemeral-processing exemption. |
 | Declared as | Personal info → Name, and App activity → Other user-generated content. Both optional, App functionality, not linked to identity, not used for tracking. `PLAY_STORE_DATA_SAFETY.md`. |
 | Permission it needs | `INTERNET`, and only that, in `android/app/src/main/AndroidManifest.xml`. That manifest also points at `res/xml/network_security_config.xml`. |
@@ -106,7 +106,7 @@ proof-of-concept results are in `wip/done/2026-09-13-backend-security-review.md`
   > **Status: Outdated** (2026-09-13) — fixed by `fix/ip-spoofing-zapzap-payload`: a
   > `ZapZapPayload` schema bounds every count and clips every string; names go through the
   > sync allow-list as a filter. The endpoint is still unauthenticated and unbudgeted —
-  > the per-IP limit is its only cost control. `backend/tests/test_zapzap_analysis.py`.
+  > the per-IP limit is its only cost control. `backend/tests/test_game_analysis.py`.
 
 
 - **Backups are plain gzip and hold every `share_token` (2026-09-14).** Anyone who reads a
@@ -160,13 +160,24 @@ proof-of-concept results are in `wip/done/2026-09-13-backend-security-review.md`
   loaded CanvasKit, the Roboto fallback font and the Drift worker with no violation, and
   persisted a game across a reload.
 
+- **Nine voices did not widen the disclosure, and the regression test grew to match
+  (2026-09-16).** `style` and `language` are app configuration, not user content and not
+  personal data, so the declared Data Safety categories are unchanged — the descriptive
+  sentence in all three privacy documents was still rewritten, because the rule in
+  [[Documentation]] is about the flow, not about the categories. What did widen is the
+  output surface: nine voices, several adversarial by design. The "stay about the game,
+  never about a person's attributes" line lives once in the shared contract rather than
+  nine times in the persona blocks, and `test_no_prompt_names_a_real_person` now runs over
+  the whole nine-by-ten matrix of composed prompts, with the denylist extended to the real
+  figures one is tempted to write a commentator or a detective "in the style of".
+
 - **The ZapZap system prompt no longer names anyone (2026-09-13).** It used to hard-code
   eight first names and a reputation for each, so those names reached the third-party
   provider on every request, whoever was playing — undisclosed, because the compliance
   documents describe what leaves the *device* and this text never was on it. The section
   and the "favourite player" line were removed rather than moved to per-group configuration:
   the players and their history already arrive in the payload, which the user chose to send.
-  `test_system_prompt_names_no_real_person` keeps it that way. None of the three privacy
+  `test_no_prompt_names_a_real_person` keeps it that way. None of the three privacy
   documents described the prompt's content, so none needed a change.
 
 - **The default is no backend at all (2026-09-11).** The URL used to be compiled in, so the

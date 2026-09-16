@@ -76,10 +76,21 @@ void main() {
       expect(columns, contains('finishedAt'));
     });
 
+    test('v13 builtin_key exists on game_types', () async {
+      final columns = (await db.rawQuery('PRAGMA table_info(game_types)'))
+          .map((r) => r['name'] as String)
+          .toSet();
+      expect(columns, contains('builtin_key'));
+    });
+
     test('default game types seeded', () async {
-      final rows = await db.query('game_types', columns: ['name']);
+      final rows = await db.query('game_types', columns: ['name', 'builtin_key']);
       final names = rows.map((r) => r['name'] as String).toSet();
-      expect(names, containsAll(['ZapZap', 'Uno', 'Skyjo']));
+      expect(names, containsAll(['ZapZap', 'Uno', 'Skyjo', 'Yahtzee', 'Qwirkle']));
+      expect(rows, hasLength(22));
+      // A fresh install lands on the same shape the v13 migration produces:
+      // every seeded row carries its key.
+      expect(rows.map((r) => r['builtin_key']).whereType<String>(), hasLength(22));
     });
 
     test('CRUD via DatabaseService singleton works on injected DB', () async {

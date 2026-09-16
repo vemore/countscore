@@ -255,7 +255,7 @@
 
   "featureGroupSharing": "Gruppenfreigabe",
 
-  "featureZapZapAnalysis": "ZapZap-Spielanalyse",
+  "featureGameAnalysis": "KI-Spielanalyse",
 
   "rateApp": "CountScore bewerten",
 
@@ -301,10 +301,33 @@
   "endGame": "Spiel beenden",
   "reopenGame": "Spiel fortsetzen",
   "gameFinished": "Beendet",
+  "undo": "Rückgängig",
+  "gameMarkedFinished": "Partie beendet",
+  "gameReopened": "Partie wieder geöffnet",
   "comment": "Kommentar",
   "enterComment": "Kommentar eingeben",
   "analyzeGame": "Partie analysieren",
   "analysisTitle": "Partieanalyse",
+  "analysisStyle": "Analysestil",
+
+  "analysisStyleProfessor": "Der Professor",
+
+  "analysisStyleCommentator": "Der Sportkommentator",
+
+  "analysisStyleDocumentary": "Die Tierdokumentation",
+
+  "analysisStyleNoir": "Der Detektiv",
+
+  "analysisStyleBard": "Der Barde",
+
+  "analysisStyleCoach": "Der Coach",
+
+  "analysisStyleConsultant": "Der Berater",
+
+  "analysisStyleAstrologer": "Der Astrologe",
+
+  "analysisStyleRealityTv": "Die Realityshow",
+
   "generatingAnalysis": "Analyse wird erstellt…",
   "generateAnalysis": "Analyse erstellen",
   "regenerateAnalysis": "Analyse neu erstellen",
@@ -426,5 +449,71 @@
 
   "reportCommentaryBody": "Was ist an diesem KI-generierten Kommentar problematisch?\n\n\n---\nReferenz: {reference}\nKommentar:\n{commentary}",
 
-  "reportCommentaryNoMailApp": "Keine E-Mail-App gefunden. Schreibe an {email}, um diesen Kommentar zu melden."
+  "reportCommentaryNoMailApp": "Keine E-Mail-App gefunden. Schreibe an {email}, um diesen Kommentar zu melden.",
+
+  "gameRulesTitle": "Spielregeln",
+  "gameRulesInApp": "In CountScore",
+  "gameRulesSection": "Die Regeln",
+  "gameRulesNoElimination": "Kein Ausscheiden während des Spiels",
+  "gameRulesEliminationOver": "Ein Spieler scheidet über {threshold} Punkten aus",
+  "gameRulesEliminationUnder": "Ein Spieler scheidet unter {threshold} Punkten aus",
+  "gameRulesEndFirstOver": "Das Spiel endet, sobald ein Spieler über {threshold} Punkte kommt",
+  "gameRulesEndFirstUnder": "Das Spiel endet, sobald ein Spieler unter {threshold} Punkte fällt",
+  "gameRulesEndLastOver": "Das Spiel endet, wenn alle bis auf einen Spieler über {threshold} Punkten liegen",
+  "gameRulesEndLastUnder": "Das Spiel endet, wenn alle bis auf einen Spieler unter {threshold} Punkten liegen",
+  "gameRulesNoEnd": "Kein automatisches Ende: Sie entscheiden, wann das Spiel vorbei ist",
+  "gameRulesEmptyTitle": "Noch keine Regeln",
+  "gameRulesEmptyHint": "Halten Sie fest, wie an Ihrem Tisch gezählt wird — dann haben alle dieselbe Fassung.",
+  "gameRulesWrite": "Regeln schreiben",
+  "gameRulesEditTitle": "Regeln bearbeiten",
+  "gameRulesEditorHint": "Die Regeln Ihres Tisches. Markdown wird unterstützt.",
+  "gameRulesFromGroup": "Regeln Ihrer Gruppe",
+  "gameRulesRestoreDefault": "Ursprüngliche Regeln wiederherstellen",
+  "gameRulesSaved": "Regeln gespeichert",
+  "gameRulesRestored": "Ursprüngliche Regeln wiederhergestellt",
+  "gameRulesDisclaimer": "Zusammenfassung für CountScore, nach den üblicherweise gespielten Regeln. Spielnamen gehören ihren jeweiligen Eigentümern und werden nur beschreibend verwendet.",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameUno": "Uno",
+
+  "gameTypeNameScrabble": "Scrabble",
+
+  "gameTypeNameOther": "Andere",
+
+  "gameTypeNameSkyjo": "Skyjo",
+
+  "gameTypeNamePresident": "Präsident",
+
+  "gameTypeNameBelote": "Belote",
+
+  "gameTypeNameTarot": "Tarock",
+
+  "gameTypeNameBridge": "Bridge",
+
+  "gameTypeNameRami": "Rommé",
+
+  "gameTypeNameCoinche": "Coinche",
+
+  "gameTypeNameYahtzee": "Yahtzee",
+
+  "gameTypeNamePhase10": "Phase 10",
+
+  "gameTypeNameFlip7": "Flip 7",
+
+  "gameTypeNameMilleBornes": "Mille Bornes",
+
+  "gameTypeNameRummikub": "Rummikub",
+
+  "gameTypeNameSixNimmt": "6 nimmt!",
+
+  "gameTypeNameQwirkle": "Qwirkle",
+
+  "gameTypeNameFarkle": "Farkle",
+
+  "gameTypeNameCanasta": "Canasta",
+
+  "gameTypeNameWizard": "Wizard",
+
+  "gameTypeNameTriomino": "Triomino"
 }

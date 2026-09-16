@@ -10,6 +10,7 @@ class GameTypes extends Table {
   String get tableName => 'game_types';
 
   IntColumn get id => integer().autoIncrement()();
+  TextColumn get builtinKey => text().named('builtin_key').nullable()();
   TextColumn get name => text()();
   IntColumn get iconCodePoint => integer().named('iconCodePoint')();
   IntColumn get cardColorValue => integer().named('cardColorValue')();
@@ -24,6 +25,8 @@ class GameTypes extends Table {
       text().named('gameOverConditionType').nullable()();
   IntColumn get gameOverThreshold =>
       integer().named('gameOverThreshold').nullable()();
+  TextColumn get rules => text().nullable()();
+  TextColumn get rulesSlug => text().named('rules_slug').nullable()();
   TextColumn get uuid => text()();
   IntColumn get createdAt => integer().named('created_at')();
   IntColumn get updatedAt => integer().named('updated_at')();

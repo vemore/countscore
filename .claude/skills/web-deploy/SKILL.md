@@ -106,7 +106,8 @@ PWA folder, but an image older than the PWA mount stops serving it.
 ## Checklist
 
 - [ ] `flutter analyze` and `flutter test` green
-- [ ] `--dry-run` passes: base path read from the NAS, no `.md` in the build, both binaries present
+- [ ] `--dry-run` passes: base path read from the NAS, no stray `.md` outside the declared
+      assets (`build/web/assets/assets/`), both binaries present
 - [ ] Web e2e run if either web binary changed
 - [ ] User confirmed before the real deploy, unless deploying under `ship-parallel`, which `CLAUDE.md` already authorises
 - [ ] `$BASE/` answers 200 with the PWA CSP, `sqlite3.wasm` as `application/wasm`, `/health` still ok
