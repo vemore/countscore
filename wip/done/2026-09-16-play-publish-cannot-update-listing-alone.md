@@ -1,5 +1,11 @@
 # The store listing cannot be published without rebuilding an App Bundle
 
+**Status:** done (2026-09-16) — closed by chore/play-publish-listing. `play_publish.py` has a
+`listing [--graphics] [--commit]` subcommand that touches neither `pubspec.yaml`,
+`verify_aab.sh`, `bundles().upload()` nor `tracks().update()`, and says in its output that a
+listing has no `userFraction`. Documented in `release-android` SKILL.md §8a; tests cover the
+validate-only path, the commit path and the absence of any bundle or track call.
+
 - **Noted:** 2026-09-16 — preparing the ASO pass on the Play Store listing
 - **Theme:** release-automation
 - **Area:** tooling

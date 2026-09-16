@@ -1,5 +1,11 @@
 # One hardcoded locale list serves both the listing and the release notes
 
+**Status:** done (2026-09-16) — closed by chore/play-publish-listing. `LOCALES` is gone:
+`NOTES_LOCALES` keeps the release notes on en-US and fr-FR with a fallback to en-US, and
+`listing_locales(root)` reads the listing locales off `store_listing/`. The graphics resolve
+`store_listing/<locale>/` before `assets/`, and an optional `video.txt` fills
+`Listing.video`. Tests run the whole publish with 2 and with 10 listing locales.
+
 - **Noted:** 2026-09-16 — preparing the ASO pass on the Play Store listing
 - **Theme:** release-automation
 - **Area:** tooling
