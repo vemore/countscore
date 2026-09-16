@@ -42,7 +42,11 @@ These must be true. Each is a rejection, a blocked update or a policy violation 
    policy applies to the ZapZap commentary. `.llmwiki/Release.md` records whether the app
    has that control.
 6. **The app is registered in the Console** (Android developer verification). Unregistered
-   apps are removed from Google Play from 2026-09-30.
+   apps are removed from Google Play from 2026-09-30. Done for `com.vemore.countscore` since
+   2026-03-06, verified 2026-09-16 — Google registered its own app signing key, and the
+   upload key is deliberately absent. Registering it becomes necessary only if the app is
+   ever distributed outside Play; `.llmwiki/Release.md` §Developer verification has both
+   fingerprints and the reason.
 
 The release itself (§5) — bundle, track, release notes, and the listing text and images of
 §2 — is published from the terminal through the Play Publishing API: `release-android` §8,

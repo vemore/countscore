@@ -2,7 +2,7 @@
 
 > Scope: the Play Store configuration state. For the procedure, use the `release-android` skill.
 > Related: [[MobileApp]] · [[Testing]] · [[KnownLimits]] · [[Documentation]]
-> Updated: 2026-09-15
+> Updated: 2026-09-16
 
 ## Facts
 
@@ -19,6 +19,32 @@ repo root; the build procedure is the `release-android` skill.
 - ProGuard/R8 is **enabled**: `android/app/build.gradle.kts:54-55` sets
   `isMinifyEnabled = true` and `isShrinkResources = true`, with rules in
   `android/app/proguard-rules.pro`.
+
+Two certificates, and they are not interchangeable (both read from the Console on
+2026-09-16, the upload one also from the local keystore with `keytool -list -v`):
+
+| Certificate | SHA-256 | Signs |
+|---|---|---|
+| Upload key (`countscore-upload`, RSA 2048, created 2025-11-09, valid to 2053-03-27) | `F5:20:6A:77:22:56:89:E7:8B:09:BA:1C:C2:29:5D:D3:86:3A:14:14:F6:FF:24:5E:85:85:EE:94:5B:13:8B:D9` | the bundle uploaded to Play — nothing on a device |
+| Play app signing key (held by Google) | `17:50:BA:A1:28:2E:12:77:C4:8C:41:AD:CA:B7:D0:36:99:F9:7E:C0:39:A1:23:4D:5B:95:F5:58:7C:E9:31:01` | every APK Play serves; this is what Android verifies |
+
+The app signing fingerprint is also the `sha256_cert_fingerprints` value on the Console's
+Digital Asset Links snippet, should App Links ever be needed.
+
+### Developer verification (Android)
+
+`com.vemore.countscore` is **registered and validated** — Play Console → *Validation des
+développeurs Android* shows one package, state *Enregistrée*, one key (the Play app signing
+key above), state *Validée*, last updated 2026-03-06; the *Identité* tab is filled from the
+developer account (legal name and address), with nothing to submit. Checked 2026-09-16, so
+the 2026-09-30 removal deadline does not apply to this app.
+
+Google registered the Play app signing key on its own. **The upload key is deliberately not
+registered**, because nothing signed with it reaches a device. That changes the day CountScore
+is distributed outside Play — a GitHub release APK, F-Droid, any sideload: such an APK carries
+the *upload* key, so its SHA-256 must be added under *Ajouter une clé* first, or certified
+Android devices in the affected countries refuse to install it. As of 2026-09-16 there is no
+distribution outside Play (no GitHub release asset, no other store).
 
 > **Status: Outdated** (2026-09-13) — "Losing the keystore means the app can never be updated
 > again" holds only without Play App Signing. `PUBLISHING.md` §4 keeps Play App Signing
@@ -52,7 +78,7 @@ default, never 1.0. The Console's "Closed testing" is the API track `alpha`. Tes
   content holds `"type": "service_account"` ([[Hooks]]). As of 2026-09-15 the key does not
   exist yet: the one-time setup is `release-android` §8, *Play API access*.
 - Outside the API, still Console-only: the IARC content rating, the App content declarations,
-  the Data Safety form review, app registration, the 12-tester closed test. `stage_handoff.sh`
+  the Data Safety form review, app registration (done, see above), the 12-tester closed test. `stage_handoff.sh`
   stages a browser-agent brief for those alone (`references/play-console-handoff.md`).
 
 ### Tags
@@ -129,7 +155,7 @@ compliance documents; `scripts/build_privacy_page.py` renders the policy to
 |---|---|---|
 | New apps and updates must target API **36** since 2026-08-31 (extension to 2026-11-01 on request) | Play Console Help, target API requirements | 36 — met. `verify_aab.sh` checks it. |
 | Native libraries must support **16 KB page sizes** for apps targeting Android 15+ | Android Developers, "Support 16 KB page sizes" | Met on the 1.1.0+4 bundle (every 64-bit `.so` aligned `0x4000`). `verify_aab.sh` checks it. |
-| Apps must be **registered** (Android developer verification) by 2026-09-30, or they are removed | Android Developers Blog, 2026-06; Policy announcement 2026-07-15 | Not visible from the repository nor the Play API — Part A of the Console brief reads it. |
+| Apps must be **registered** (Android developer verification) by 2026-09-30, or they are removed | Android Developers Blog, 2026-06; Policy announcement 2026-07-15 | Met — registered and validated, checked in the Console 2026-09-16 (§Developer verification). |
 | **AI-Generated Content**: in-app reporting or flagging of offensive generated content | Play policy "AI-Generated Content"; the 2026-07-15 announcement brings third-party AI integrations under User Data | Met: the ZapZap analysis screen has a "Report this commentary" app-bar action that opens a prefilled `mailto:` to the listing contact ([[LlmProviders]]). Closed by `wip/done/2026-09-13-ai-commentary-report-control.md`. |
 | Unrated apps are not permitted | Policy announcement 2026-07-15 | IARC answers in `PUBLISHING.md` §3. |
 | Personal accounts created after 2023-11-13: closed test, 12 testers, 14 consecutive days, before production | Play Console Help, testing requirements for new personal accounts | Unknown from the repository; the Console says so on the Production page. |
@@ -178,6 +204,14 @@ resolves, then fill the form as `PLAY_STORE_DATA_SAFETY.md` describes.
 
 ## Decisions & History
 
+- **Only the Play app signing key is registered for developer verification (2026-09-16).**
+  The Console banner asking to register package names and signing keys turned out to need no
+  action: Google had already registered `com.vemore.countscore` with its own app signing key,
+  and the identity half is filled from the developer account. The upload key was left out on
+  purpose — registering it would claim a distribution channel that does not exist, and the
+  registration list is meant to describe what actually reaches devices. The condition that
+  reverses this is written above, next to the fingerprint, rather than left as a task: it only
+  becomes true if the app is ever shipped outside Play.
 - **App Bundle, not APK, for the store.** Play requires it, and it lets Google serve
   per-device slices — which partly offsets the ~200 KB the icon tree-shake opt-out costs.
 - **R8 was disabled deliberately, then re-enabled — and only the code was updated.** The
