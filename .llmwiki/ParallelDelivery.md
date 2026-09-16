@@ -3,7 +3,7 @@
 > Scope: how several changes are built at once and reach production — worktrees, one pull
 > request per theme, serial squash merges, deploy after each merge, and `wip/` work tracking.
 > Procedure: the `ship-parallel` skill. Related: [[Hooks]] · [[Deployment]] · [[Release]]
-> Updated: 2026-09-14
+> Updated: 2026-09-16
 
 ## Facts
 
@@ -12,7 +12,8 @@
 | Setting | Value | Consequence |
 |---|---|---|
 | `required_status_checks.strict` | `true` | A branch must contain the tip of `main` before it merges, so merges are **serial**: each merge makes every other open pull request stale |
-| Required checks | All five CI jobs: `Backend — ruff, mypy, pytest`, `Backend image — build, non-root, locked`, `App — codegen, analyze, test, web build`, `Sync — two devices against a real backend`, `Android debug APK — fresh-clone build proof` | `image` and `sync` were made required on 2026-09-14: a merge is followed by a deploy of that very image, and `sync` is the only end-to-end proof of group sharing. No job may get a path filter — a filtered required check leaves a doc-only pull request waiting forever |
+| Required checks | All five CI jobs: `Backend — ruff, mypy, pytest`, `Backend image — build, non-root, locked`, `App — codegen, analyze, test, web build`, `Sync — two devices against a real backend`, `Android debug APK — fresh-clone build proof` | `image` and `sync` were made required on 2026-09-14: a merge is followed by a deploy of that very image, and `sync` is the only end-to-end proof of group sharing. No job may get a workflow-level `paths:` filter — a filtered workflow reports no status at all, and a required check that never reports leaves a doc-only pull request waiting forever. Scoping is done instead by the `scope` job and a job-level `if:` on each of the five: a job skipped by a conditional reports Success, so a doc-only pull request merges with the five checks satisfied ([[Testing]]) |
+| `scope` is **not** a required check | deliberate | A failed `scope` already runs all five required jobs, so the merge stays fully gated; requiring it adds nothing there. The real risk is a `scope` that is green and wrong, which branch protection cannot see — the defences are `scripts/ci_scope_selftest.sh` and the catch-all rule. And a required `scope` that never starts (a workflow that does not parse) would hang every pull request forever, the exact failure this change exists to avoid |
 | `required_linear_history` | `true` | Merge commits are refused on `main`: **squash** (or rebase) only. The project uses squash |
 | `enforce_admins` | `false` | The owner's token can merge red pull requests (`--admin`) and push to `main`; `guard-bash.sh` refuses both instead |
 | `allow_force_pushes` | `false` | On `main` only; feature branches are protected from force-pushes by the hook |

@@ -139,17 +139,66 @@ pytest -v                        # everything; the integration marker needs Dock
 
 ### CI — `.github/workflows/ci.yml`
 
-Five parallel jobs, on every push to `main`, every pull request, and `workflow_dispatch`.
+Six jobs, on every push to `main`, every pull request, a weekly `schedule:` (Mondays 06:17
+UTC) and `workflow_dispatch`. `scope` runs first and alone, in ~25 s, and decides which of
+the other five run; they are parallel behind it. On `main`, on the weekly run and on
+`workflow_dispatch` every flag is `true` — those keep a complete verification record.
 Flutter is pinned to **3.47.2** by the `FLUTTER_VERSION` env key — that pin and the
 toolchain table in [[MobileApp]] must move together.
 
 | Job | Steps |
 |---|---|
+| `scope` | `scripts/ci_scope_selftest.sh` → `gh api repos/{owner}/{repo}/pulls/<n>/files` (`.filename` **and** `.previous_filename`) → `scripts/ci_scope.sh` → five `name=true\|false` flags into `$GITHUB_OUTPUT` |
 | `backend` | `postgres:17-alpine` service → `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` → `play_publish.py` tests (`.claude/skills/release-android/scripts/`, fake Google service) → `alembic upgrade head` → `downgrade base` → `upgrade head` → `check` (a migration round trip) → `uv export` + `pip-audit` |
 | `image` | `docker build backend` → runs as non-root, no compiler, no dev dependencies, read-only code |
 | `app` | `pub get` → `dart run build_runner build` → `analyze` → `test` → `build web --release` |
 | `android` | `pub get` → `dart run build_runner build` → `build apk --debug` |
 | `sync` | `postgres:17-alpine` service → `uv sync --locked` → `alembic upgrade head` → `.venv/bin/uvicorn` on 8765 (waits on `/health`; never `uv run`, whose parent process holds the uv cache lock and makes setup-uv's post-job `uv cache prune` time out whenever `uv.lock` changed) → `pub get` → `build_runner build` → `flutter test test/sync/sync_two_devices_test.dart` |
+
+**What `scope` decides, and what it must never do.** `scripts/ci_scope.sh` is a pure
+function — changed paths on stdin, five flags on stdout, no `gh` and no network — so it is
+replayable by hand (`git diff --name-only origin/main...HEAD | scripts/ci_scope.sh`) and
+pinned by `scripts/ci_scope_selftest.sh`, which runs as the job's first step. First match
+wins, per path:
+
+| Path | Jobs |
+|---|---|
+| `*.md`, `.llmwiki/`, `wip/`, `docs/`, `store_listing/`, `LICENSE` | *none* |
+| `backend/` | `backend`, `image`, `sync` |
+| `android/` | `android` |
+| `web/` | `app` |
+| `lib/`, `test/`, `integration_test/`, `test_driver/`, `pubspec.yaml`, `pubspec.lock`, `l10n.yaml`, `analysis_options.yaml` | `app`, `android`, `sync` |
+| **anything else** — `.github/`, `.claude/` outside its `.md` files, `scripts/`, `ios/`, a root config, an unclassified path | **all five** |
+
+A `case` glob's `*` crosses `/`, so `*.md` is `**/*.md`: `backend/README.md` and a skill's
+`SKILL.md` are documentation, and nothing outside that line is. `android` sits in the Dart
+rule on purpose — that job is the fresh-clone build proof. The catch-all is the whole safety
+argument: being wrong costs a slow run, never an untested merge.
+
+**A job-level `if:`, never a workflow-level `paths:`.** A workflow skipped by path filtering
+reports *no status at all*, so a required check stays Pending and the pull request never
+merges; a job skipped by a conditional reports **Success**
+([GitHub docs](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/troubleshooting-required-status-checks)).
+Each of the five carries `if: ${{ !cancelled() && needs.scope.outputs.<job> != 'false' }}`.
+Three details are load-bearing, and `ci_scope_selftest.sh` greps for two of them:
+
+- **`!cancelled()`** — `needs:` adds an implicit `success()`, dropped only when the
+  expression contains a status function. Without it a failed `scope` would skip all five,
+  each reporting Success, and anything would merge. `always()` would be worse: it would also
+  run them on a genuinely cancelled run, defeating `cancel-in-progress`.
+- **`!= 'false'`, not `== 'true'`** — `needs.scope.outputs.<x>` is the empty string whenever
+  the output was not written (job failed, job skipped, output name mistyped), and
+  `'' != 'false'`. Read it as *run unless `scope` succeeded and explicitly said no*.
+- **The `${{ }}` is not cosmetic** — a bare `if: !cancelled() && …` is invalid YAML (`!`
+  opens a tag), and a workflow that does not parse reports nothing, blocking every open pull
+  request.
+
+`scope` is deliberately **not** a required check: see [[ParallelDelivery]]. The
+`pulls/<n>/files` endpoint has no `path` key — `-q '.[].path'` would emit one `null` per
+file, every `null` would hit the catch-all, and the change would be green forever having
+saved nothing. It is also capped at 3000 files, which the step handles by scoping nothing
+out. Fork pull requests work: `github.token` is read-only there, but the endpoint is public
+and so is this repository.
 
 **Codegen comes before analyze, test and every build.** `*.g.dart` is gitignored, so
 `lib/services/drift/database.g.dart` does not exist in a fresh clone; skipping the step
@@ -185,7 +234,11 @@ the fast suite. A `BigInteger` primary key needs `.with_variant(Integer(), "sqli
 **The dependency audit** exports `uv.lock` with hashes — runtime, the `dev` extra and the
 `dev` group — and runs `pip-audit` 2.10.1 (pinned in the `uvx` call) with `--strict`. Any
 advisory fails the job. One with no fix yet is ignored explicitly with `--ignore-vuln <ID>` in
-the step and tracked by a `wip/` entry, never left red.
+the step and tracked by a `wip/` entry, never left red. **It no longer runs on a pull
+request that leaves `backend/` alone** — it used to, incidentally, on every documentation
+pull request. The weekly `schedule:` run is what replaces that, and caps the exposure window
+at seven days; GitHub disables a scheduled workflow after 60 days of repository inactivity
+(`wip/todo_nr/2026-09-16-scheduled-workflow-auto-disabled.md`).
 
 **The Flutter dependencies have no scanner at all.** `.github/dependabot.yml` (weekly,
 grouped: `uv`, `pub`, `github-actions`) raises *version* updates only, and only for the
@@ -241,6 +294,23 @@ automated coverage at all and must be checked on a device.
   with required checks would hang forever on docs-only PRs — and because the bug that
   motivated CI at all (`settings.gradle` shadowing `settings.gradle.kts` for years) was
   precisely a "nobody built it" bug. Narrowing when the build runs would reopen that hole.
+  > **Status: Outdated** (2026-09-16) — the second half held only for workflow-level
+  > `paths:` filters, which are still forbidden and still absent. A job-level `if:` reports
+  > Success when it skips, so the same narrowing is possible without hanging a required
+  > check; see the `scope` decision below. The `android` job still builds on every Dart
+  > change, so the "nobody built it" hole stays shut.
+- **A `scope` job, not `paths:` filters** (2026-09-16). Every pull request ran all five jobs:
+  ~4 min 30 and ~13 runner-minutes to start a Postgres and build an APK for a change to
+  `wip/`. Replaying the last 20 merged pull requests through `scripts/ci_scope.sh`, 8 would
+  have run nothing at all. Runner minutes are free on a public repository — what this buys is
+  latency on documentation and backend pull requests, and runner contention when
+  `ship-parallel` pushes four or five branches at once (5 jobs × 5 branches is past the
+  20-concurrent-job ceiling). It is **not** a win everywhere: `scope` is a serialised hop, so
+  a `lib/`-only pull request gets ~20 s *slower* and still pays the 4 min 17 `android` job.
+  Dropping `android` from the Dart rule is the only lever that would change that, and it is
+  deliberately not pulled here (`wip/todo_nr/2026-09-16-android-job-on-every-dart-change.md`).
+  Rejected alternative: classify inside each job and exit early — that boots five runners
+  instead of one, and reports a green job that did nothing.
 - **The two-device sync test runs in CI, as its own job** (2026-09-14). Not folded into
   `app`: it needs Python, a Postgres and a running server, and a failure there should read
   as a sync regression rather than a Flutter one. A `services:` container, not
