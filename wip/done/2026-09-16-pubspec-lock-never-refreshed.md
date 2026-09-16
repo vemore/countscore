@@ -1,5 +1,7 @@
 # Nothing ever refreshes the transitive half of `pubspec.lock`
 
+**Status:** done (2026-09-16) — closed by chore/web-binaries-and-lock-freshness. `.github/workflows/deps.yml` runs monthly (`cron: "23 5 4 * *"`) plus `workflow_dispatch`: `flutter pub upgrade`, `scripts/web_binaries.sh --refresh --fetch` so the committed `web/` binaries follow the new lock, then `build_runner build`, `analyze` and `test`. It pushes `chore/deps-YYYY-MM-DD` and prints the `gh pr create` line rather than opening the pull request: one created with the default `GITHUB_TOKEN` triggers no workflow, so its required checks would never report. The three SDK-pinned packages are named in a comment so nobody chases them.
+
 - **Noted:** 2026-09-16 — reviewing what dependency updates were available
 - **Theme:** dependencies
 - **Area:** tooling

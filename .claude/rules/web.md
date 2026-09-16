@@ -27,13 +27,25 @@ These instructions used to be `web/CLAUDE.md`. They moved here because Flutter c
 1. **Nothing goes in `web/` that should not be public.** Every file in it is served —
    notes, instructions, `.md` of any kind. `scripts/deploy_web.sh` refuses to publish a
    build containing a `.md` file, but a hand-copied build has no such net.
-2. **`sqlite3.wasm` (744 KB) and `drift_worker.js` (355 KB) are tracked in git on purpose**,
+2. **`sqlite3.wasm` (731 KB) and `drift_worker.js` (349 KB) are tracked in git on purpose**,
    so a fresh clone can run the PWA without fetching binaries. `drift_worker.js` ships
-   prebuilt at the drift package root (`~/.pub-cache/hosted/pub.dev/drift-<version>/`) —
-   copy it from the version in `pubspec.lock` whenever drift is bumped, then run the PWA
-   and the web e2e. `sqlite3.wasm` comes from the `sqlite3.dart` GitHub releases. There is
-   no `drift_dev make-web-worker` subcommand — do not go looking for one. **Do not delete or
+   prebuilt at the drift package root (`~/.pub-cache/hosted/pub.dev/drift-<version>/`);
+   `sqlite3.wasm` is a GitHub release asset of `sqlite3.dart`, in no package at all, so
+   `web/sqlite3.wasm.sha256` records its version and digest beside it. There is no
+   `drift_dev make-web-worker` subcommand — do not go looking for one. **Do not delete or
    gitignore these two files**; `.gitignore` carries a comment saying so.
+
+   **Do not hand-copy them.** `scripts/web_binaries.sh` is the procedure, and the same
+   script is a required check in the `app` CI job, so a binary left behind by a dependency
+   bump now fails instead of merging green:
+
+   ```bash
+   scripts/web_binaries.sh              # offline: both binaries against pubspec.lock
+   scripts/web_binaries.sh --fetch      # also compares the wasm to the upstream asset
+   scripts/web_binaries.sh --refresh    # brings both up to the lock, rewrites the .sha256
+   ```
+
+   A `--refresh` is finished only once the web e2e below has run against it.
 3. **`connection_web.dart` must keep passing `DriftWebOptions` explicitly.** Without the
    explicit `sqlite3Wasm` and `driftWorker` URIs, drift_flutter throws `ArgumentError` at
    startup and the PWA crashes — while the build still passes clean. If the web app dies

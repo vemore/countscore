@@ -151,7 +151,7 @@ toolchain table in [[MobileApp]] must move together.
 | `scope` | `scripts/ci_scope_selftest.sh` → `gh api repos/{owner}/{repo}/pulls/<n>/files` (`.filename` **and** `.previous_filename`) → `scripts/ci_scope.sh` → five `name=true\|false` flags into `$GITHUB_OUTPUT` |
 | `backend` | `postgres:17-alpine` service → `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` → `play_publish.py` tests (`.claude/skills/release-android/scripts/`, fake Google service) → `alembic upgrade head` → `downgrade base` → `upgrade head` → `check` (a migration round trip) → `uv export` + `pip-audit` |
 | `image` | `docker build backend` → runs as non-root, no compiler, no dev dependencies, read-only code |
-| `app` | `pub get` → `dart run build_runner build` → `analyze` → `test` → `build web --release` |
+| `app` | `scripts/hooks_selftest.sh` → `pub get` → `scripts/web_binaries.sh --check` (and `--fetch` on the weekly run only) → `dart run build_runner build` → `analyze` → `test` → `build web --release` |
 | `android` | `pub get` → `dart run build_runner build` → `build apk --debug` |
 | `sync` | `postgres:17-alpine` service → `uv sync --locked` → `alembic upgrade head` → `.venv/bin/uvicorn` on 8765 (waits on `/health`; never `uv run`, whose parent process holds the uv cache lock and makes setup-uv's post-job `uv cache prune` time out whenever `uv.lock` changed) → `pub get` → `build_runner build` → `flutter test test/sync/sync_two_devices_test.dart` |
 
@@ -242,9 +242,36 @@ at seven days; GitHub disables a scheduled workflow after 60 days of repository 
 
 **The Flutter dependencies have no scanner in CI.** `.github/dependabot.yml` (weekly,
 grouped: `uv`, `pub`, `github-actions`) raises *version* updates only, and only for the
-direct dependencies written in `pubspec.yaml` — a transitive package pinned in
-`pubspec.lock` is never proposed, and nothing ever runs `flutter pub upgrade`
-(`wip/todo_nr/2026-09-16-pubspec-lock-never-refreshed.md`).
+direct dependencies written in `pubspec.yaml`. The transitive half is covered by
+`.github/workflows/deps.yml` (below) — a **freshness** cadence, not a vulnerability scan:
+it proves the lock is current and that the committed `web/` binaries follow it, and it
+would not know an advisory if it saw one.
+
+**The committed `web/` binaries are gated.** `scripts/web_binaries.sh --check` runs in the
+`app` job right after `flutter pub get` and fails it when `web/drift_worker.js` does not
+match the drift version `pubspec.lock` resolves, or when `web/sqlite3.wasm` does not match
+the digest and version recorded in `web/sqlite3.wasm.sha256` beside it. It is offline
+(~20 ms) and both binaries are always checked, so one Dependabot week that moves both
+packages prints both problems. On the weekly `schedule:` run a second step adds
+`--fetch`, which compares the committed wasm with the asset GitHub serves today and so
+catches a re-cut upstream release; it is written `|| [ $? -eq 3 ]` because exit 3 is "could
+not check" (no network) while exit 1 is a real mismatch. See [[Web]] for the two sources
+and the `--refresh` procedure. This gate does **not** prove the PWA still works with the
+new binaries: the web e2e is still not in CI (§Gaps), so a `--refresh` is followed by that
+run by hand.
+
+**The transitive refresh is `.github/workflows/deps.yml`**, monthly (`cron: "23 5 4 * *"`)
+plus `workflow_dispatch`: `flutter pub upgrade` → `scripts/web_binaries.sh --refresh
+--fetch` → `build_runner build` → `analyze` → `test`, and when `pubspec.lock` or `web/`
+moved it commits to `chore/deps-YYYY-MM-DD`, pushes that branch and writes the ready-made
+`gh pr create` line into the run summary. `material_color_utilities`, `cli_util` and
+`test_api` are pinned by the Flutter SDK and only `FLUTTER_VERSION` moves them.
+
+**It cannot be dry-run before it is on `main`.** GitHub only exposes the dispatch endpoint
+for a workflow present on the *default* branch, so `gh workflow run deps.yml --ref
+<branch>` answers `HTTP 404: Not Found` from a pull request branch. A new scheduled
+workflow is therefore first exercised by `gh workflow run deps.yml` right after its merge —
+and the branch that run pushes is deleted unless it is wanted.
 
 What covers them instead is **Dependabot alerts**, enabled on the repository on 2026-09-16
 together with the dependency graph they require. Both had been off since the repository was
@@ -286,6 +313,21 @@ automated coverage at all and must be checked on a device.
 
 ## Decisions & History
 
+- **The scheduled refresh pushes a branch, it does not open the pull request**
+  (2026-09-16). A pull request created with the default `GITHUB_TOKEN` triggers no
+  workflow, by GitHub's design against recursion, so the five required checks of `ci.yml`
+  would never report on it and it could never merge — a bot pull request that is permanently
+  unmergeable is worse than none. The alternatives were a personal access token or a GitHub
+  App, both a new secret to store and rotate for a repository whose only user is its author;
+  the branch plus a copy-pasteable `gh pr create` line costs one command and no secret.
+  `deps.yml` is the second workflow exposed to GitHub disabling a scheduled workflow after
+  60 days of repository inactivity — recorded in
+  `wip/todo_nr/2026-09-16-scheduled-workflow-auto-disabled.md`, not fixed here.
+- **The binary check is a script, not inline YAML** (2026-09-16). The same command has to
+  be the CI gate, the local check and the fix (`--refresh`), or the fix drifts from what the
+  gate demands — which is how `web/drift_worker.js` was left behind by Dependabot #43 in the
+  first place. Exit 3 exists so a scheduled `--fetch` can tolerate a network failure without
+  tolerating a real mismatch.
 - **The e2e suite is one golden path, not a matrix.** It is the smallest thing that proves
   the whole stack — UI, Drift, migration defaults, network, cache — is wired together. Its
   value is breadth, not depth; depth belongs in the unit tests.
