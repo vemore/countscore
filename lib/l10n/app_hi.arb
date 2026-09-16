@@ -255,7 +255,7 @@
 
   "featureGroupSharing": "समूह साझाकरण",
 
-  "featureZapZapAnalysis": "ZapZap खेल विश्लेषण",
+  "featureGameAnalysis": "AI से खेल विश्लेषण",
 
   "rateApp": "CountScore को रेट करें",
 
@@ -305,6 +305,26 @@
   "enterComment": "टिप्पणी दर्ज करें",
   "analyzeGame": "खेल का विश्लेषण करें",
   "analysisTitle": "खेल विश्लेषण",
+  "analysisStyle": "विश्लेषण शैली",
+
+  "analysisStyleProfessor": "प्रोफ़ेसर",
+
+  "analysisStyleCommentator": "खेल कमेंटेटर",
+
+  "analysisStyleDocumentary": "वन्यजीव वृत्तचित्र",
+
+  "analysisStyleNoir": "जासूस",
+
+  "analysisStyleBard": "चारण कवि",
+
+  "analysisStyleCoach": "कोच",
+
+  "analysisStyleConsultant": "सलाहकार",
+
+  "analysisStyleAstrologer": "ज्योतिषी",
+
+  "analysisStyleRealityTv": "रियलिटी शो",
+
   "generatingAnalysis": "विश्लेषण उत्पन्न हो रहा है…",
   "generateAnalysis": "विश्लेषण उत्पन्न करें",
   "regenerateAnalysis": "विश्लेषण पुनः उत्पन्न करें",
@@ -427,6 +447,28 @@
   "reportCommentaryBody": "इस AI-जनित टिप्पणी में क्या समस्या है?\n\n\n---\nसंदर्भ: {reference}\nटिप्पणी:\n{commentary}",
 
   "reportCommentaryNoMailApp": "कोई ईमेल ऐप नहीं मिला। इस टिप्पणी की रिपोर्ट करने के लिए {email} पर लिखें।",
+
+  "gameRulesTitle": "खेल के नियम",
+  "gameRulesInApp": "CountScore में",
+  "gameRulesSection": "नियम",
+  "gameRulesNoElimination": "खेल के दौरान कोई खिलाड़ी बाहर नहीं होता",
+  "gameRulesEliminationOver": "{threshold} अंक से ऊपर जाने पर खिलाड़ी बाहर हो जाता है",
+  "gameRulesEliminationUnder": "{threshold} अंक से नीचे जाने पर खिलाड़ी बाहर हो जाता है",
+  "gameRulesEndFirstOver": "जैसे ही कोई खिलाड़ी {threshold} अंक पार करता है, खेल समाप्त हो जाता है",
+  "gameRulesEndFirstUnder": "जैसे ही कोई खिलाड़ी {threshold} अंक से नीचे आता है, खेल समाप्त हो जाता है",
+  "gameRulesEndLastOver": "जब एक को छोड़कर सभी खिलाड़ी {threshold} अंक पार कर लेते हैं, तब खेल समाप्त होता है",
+  "gameRulesEndLastUnder": "जब एक को छोड़कर सभी खिलाड़ी {threshold} अंक से नीचे आ जाते हैं, तब खेल समाप्त होता है",
+  "gameRulesNoEnd": "कोई स्वतः समाप्ति नहीं: खेल कब खत्म हो, यह आप तय करते हैं",
+  "gameRulesEmptyTitle": "अभी कोई नियम नहीं",
+  "gameRulesEmptyHint": "लिख लें कि आपकी मेज़ पर अंक कैसे गिने जाते हैं — फिर सबके पास एक ही संस्करण होगा।",
+  "gameRulesWrite": "नियम लिखें",
+  "gameRulesEditTitle": "नियम संपादित करें",
+  "gameRulesEditorHint": "आपकी मेज़ के नियम। Markdown समर्थित है।",
+  "gameRulesFromGroup": "आपके समूह के नियम",
+  "gameRulesRestoreDefault": "मूल नियम पुनर्स्थापित करें",
+  "gameRulesSaved": "नियम सहेजे गए",
+  "gameRulesRestored": "मूल नियम पुनर्स्थापित किए गए",
+  "gameRulesDisclaimer": "यह सारांश CountScore के लिए, आमतौर पर खेले जाने वाले नियमों के आधार पर लिखा गया है। खेलों के नाम उनके संबंधित स्वामियों के हैं और केवल वर्णनात्मक रूप से उपयोग किए गए हैं।",
 
   "gameTypeNameZapzap": "ZapZap",
 

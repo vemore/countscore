@@ -255,7 +255,7 @@
 
   "featureGroupSharing": "群组共享",
 
-  "featureZapZapAnalysis": "ZapZap 游戏分析",
+  "featureGameAnalysis": "AI 对局分析",
 
   "rateApp": "为 CountScore 评分",
 
@@ -305,6 +305,26 @@
   "enterComment": "输入备注",
   "analyzeGame": "分析游戏",
   "analysisTitle": "游戏分析",
+  "analysisStyle": "分析风格",
+
+  "analysisStyleProfessor": "教授",
+
+  "analysisStyleCommentator": "体育解说",
+
+  "analysisStyleDocumentary": "动物纪录片",
+
+  "analysisStyleNoir": "侦探",
+
+  "analysisStyleBard": "吟游诗人",
+
+  "analysisStyleCoach": "教练",
+
+  "analysisStyleConsultant": "顾问",
+
+  "analysisStyleAstrologer": "占星师",
+
+  "analysisStyleRealityTv": "真人秀",
+
   "generatingAnalysis": "正在生成分析…",
   "generateAnalysis": "生成分析",
   "regenerateAnalysis": "重新生成分析",
@@ -427,6 +447,28 @@
   "reportCommentaryBody": "这条 AI 生成的评论有什么问题？\n\n\n---\n参考：{reference}\n评论：\n{commentary}",
 
   "reportCommentaryNoMailApp": "未找到电子邮件应用。请发送邮件至 {email} 举报此评论。",
+
+  "gameRulesTitle": "游戏规则",
+  "gameRulesInApp": "在 CountScore 中",
+  "gameRulesSection": "规则",
+  "gameRulesNoElimination": "对局中不会淘汰玩家",
+  "gameRulesEliminationOver": "超过 {threshold} 分的玩家被淘汰",
+  "gameRulesEliminationUnder": "低于 {threshold} 分的玩家被淘汰",
+  "gameRulesEndFirstOver": "当有玩家超过 {threshold} 分时，对局结束",
+  "gameRulesEndFirstUnder": "当有玩家低于 {threshold} 分时，对局结束",
+  "gameRulesEndLastOver": "当除一名玩家外所有人都超过 {threshold} 分时，对局结束",
+  "gameRulesEndLastUnder": "当除一名玩家外所有人都低于 {threshold} 分时，对局结束",
+  "gameRulesNoEnd": "没有自动结束：由你决定何时收局",
+  "gameRulesEmptyTitle": "还没有规则",
+  "gameRulesEmptyHint": "把你们这桌的计分方式写下来，大家就有了同一个版本。",
+  "gameRulesWrite": "编写规则",
+  "gameRulesEditTitle": "编辑规则",
+  "gameRulesEditorHint": "你们这桌的规则。支持 Markdown。",
+  "gameRulesFromGroup": "你们小组的规则",
+  "gameRulesRestoreDefault": "恢复原始规则",
+  "gameRulesSaved": "规则已保存",
+  "gameRulesRestored": "已恢复原始规则",
+  "gameRulesDisclaimer": "本摘要由 CountScore 依据通行玩法编写。游戏名称归各自所有者所有，此处仅作描述性使用。",
 
   "gameTypeNameZapzap": "ZapZap",
 

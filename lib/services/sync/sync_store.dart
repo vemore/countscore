@@ -58,6 +58,10 @@ typedef ApplyReport = ({int applied, int quarantined});
 /// Server limits a payload must respect (`backend/app/services/delta_bounds.py`).
 const _gameNameMax = 64;
 const _gameTypeNameMax = 64;
+// The server bounds these too (delta_bounds.py); clipping here keeps a long
+// house ruleset from being rejected whole.
+const _gameTypeRulesMax = 8000;
+const _gameTypeRulesSlugMax = 32;
 const _roundCommentMax = 500;
 const _analysisContentMax = 20000;
 
@@ -447,6 +451,14 @@ class SyncStore {
             'player_dead_threshold': r['playerDeadThreshold'],
             'game_over_condition_type': r['gameOverConditionType'],
             'game_over_threshold': r['gameOverThreshold'],
+            'rules': switch (r['rules']) {
+              final String rules => _clip(rules, _gameTypeRulesMax),
+              _ => null,
+            },
+            'rules_slug': switch (r['rules_slug']) {
+              final String slug => _clip(slug, _gameTypeRulesSlugMax),
+              _ => null,
+            },
           },
           error: null,
         );
@@ -732,6 +744,8 @@ class SyncStore {
       if (p.containsKey('game_over_condition_type'))
         'gameOverConditionType': p['game_over_condition_type'],
       if (p.containsKey('game_over_threshold')) 'gameOverThreshold': p['game_over_threshold'],
+      if (p.containsKey('rules')) 'rules': p['rules'],
+      if (p.containsKey('rules_slug')) 'rules_slug': p['rules_slug'],
     };
     final linked = await _localOf(groupId, 'game_type', d.entityUuid);
     if (linked != null) {
@@ -777,6 +791,8 @@ class SyncStore {
         'playerDeadThreshold': p['player_dead_threshold'],
         'gameOverConditionType': p['game_over_condition_type'],
         'gameOverThreshold': p['game_over_threshold'],
+        'rules': p['rules'],
+        'rules_slug': p['rules_slug'],
         'uuid': localUuid,
         'created_at': now,
         'updated_at': now,

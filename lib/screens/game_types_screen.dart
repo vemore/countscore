@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../models/game_type.dart';
 import '../providers/game_type_provider.dart';
 import '../utils/game_type_name.dart';
+import 'game_rules_screen.dart';
 
 class GameTypesScreen extends StatefulWidget {
   const GameTypesScreen({super.key});
@@ -62,8 +63,19 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
                         ? l10n.lowestScoreWins
                         : l10n.highestScoreWins,
                   ),
+                  onTap: () => _openRules(context, gameType),
                   trailing: PopupMenuButton(
                     itemBuilder: (context) => [
+                      PopupMenuItem(
+                        value: 'rules',
+                        child: Row(
+                          children: [
+                            const Icon(Icons.menu_book_outlined),
+                            const SizedBox(width: 8),
+                            Text(l10n.gameRulesTitle),
+                          ],
+                        ),
+                      ),
                       PopupMenuItem(
                         value: 'edit',
                         child: Row(
@@ -86,7 +98,9 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
                       ),
                     ],
                     onSelected: (value) async {
-                      if (value == 'edit') {
+                      if (value == 'rules') {
+                        _openRules(context, gameType);
+                      } else if (value == 'edit') {
                         _showGameTypeDialog(context, gameType);
                       } else if (value == 'delete') {
                         _deleteGameType(context, gameType);
@@ -104,6 +118,13 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
         icon: const Icon(Icons.add),
         label: Text(l10n.newType),
       ),
+    );
+  }
+
+  void _openRules(BuildContext context, GameType gameType) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => GameRulesScreen(gameType: gameType)),
     );
   }
 

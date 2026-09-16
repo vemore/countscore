@@ -255,7 +255,7 @@
 
   "featureGroupSharing": "المشاركة الجماعية",
 
-  "featureZapZapAnalysis": "تحليل ألعاب ZapZap",
+  "featureGameAnalysis": "تحليل المباريات بالذكاء الاصطناعي",
 
   "rateApp": "قيّم CountScore",
 
@@ -305,6 +305,26 @@
   "enterComment": "أدخل تعليقًا",
   "analyzeGame": "تحليل المباراة",
   "analysisTitle": "تحليل المباراة",
+  "analysisStyle": "أسلوب التحليل",
+
+  "analysisStyleProfessor": "الأستاذ",
+
+  "analysisStyleCommentator": "المعلّق الرياضي",
+
+  "analysisStyleDocumentary": "وثائقي الحياة البرّية",
+
+  "analysisStyleNoir": "المحقّق",
+
+  "analysisStyleBard": "الشاعر الجوّال",
+
+  "analysisStyleCoach": "المدرّب",
+
+  "analysisStyleConsultant": "المستشار",
+
+  "analysisStyleAstrologer": "المنجّم",
+
+  "analysisStyleRealityTv": "تلفزيون الواقع",
+
   "generatingAnalysis": "جارٍ إنشاء التحليل…",
   "generateAnalysis": "إنشاء التحليل",
   "regenerateAnalysis": "إعادة إنشاء التحليل",
@@ -427,6 +447,28 @@
   "reportCommentaryBody": "ما المشكلة في هذا التعليق المُنشأ بالذكاء الاصطناعي؟\n\n\n---\nالمرجع: {reference}\nالتعليق:\n{commentary}",
 
   "reportCommentaryNoMailApp": "لم يتم العثور على تطبيق بريد إلكتروني. راسلنا على {email} للإبلاغ عن هذا التعليق.",
+
+  "gameRulesTitle": "قواعد اللعبة",
+  "gameRulesInApp": "في CountScore",
+  "gameRulesSection": "القواعد",
+  "gameRulesNoElimination": "لا إقصاء أثناء اللعب",
+  "gameRulesEliminationOver": "يُقصى اللاعب عند تجاوز {threshold} نقطة",
+  "gameRulesEliminationUnder": "يُقصى اللاعب عند النزول تحت {threshold} نقطة",
+  "gameRulesEndFirstOver": "تنتهي المباراة بمجرد تجاوز أحد اللاعبين {threshold} نقطة",
+  "gameRulesEndFirstUnder": "تنتهي المباراة بمجرد نزول أحد اللاعبين تحت {threshold} نقطة",
+  "gameRulesEndLastOver": "تنتهي المباراة عندما يتجاوز جميع اللاعبين إلا واحدًا {threshold} نقطة",
+  "gameRulesEndLastUnder": "تنتهي المباراة عندما ينزل جميع اللاعبين إلا واحدًا تحت {threshold} نقطة",
+  "gameRulesNoEnd": "لا نهاية تلقائية: أنت من يقرر متى تنتهي المباراة",
+  "gameRulesEmptyTitle": "لا توجد قواعد بعد",
+  "gameRulesEmptyHint": "دوّن كيف تُحتسب النقاط على طاولتك، فتصبح النسخة واحدة للجميع.",
+  "gameRulesWrite": "اكتب القواعد",
+  "gameRulesEditTitle": "تعديل القواعد",
+  "gameRulesEditorHint": "قواعد طاولتك. صيغة Markdown مدعومة.",
+  "gameRulesFromGroup": "قواعد مجموعتك",
+  "gameRulesRestoreDefault": "استعادة القواعد الأصلية",
+  "gameRulesSaved": "تم حفظ القواعد",
+  "gameRulesRestored": "تمت استعادة القواعد الأصلية",
+  "gameRulesDisclaimer": "مُلخَّص كُتب لـ CountScore استنادًا إلى القواعد الشائعة. أسماء الألعاب ملك لأصحابها وتُذكر لغرض الوصف فقط.",
 
   "gameTypeNameZapzap": "ZapZap",
 

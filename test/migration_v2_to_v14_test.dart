@@ -130,10 +130,10 @@ void main() {
 
     final rows = await db.query('game_types', columns: ['name', 'builtin_key']);
     final names = rows.map((r) => r['name'] as String).toSet();
-    // The six the v5 step re-seeds, then the twelve v13 adds.
+    // The six the v5 step re-seeds, then the twelve v14 adds.
     expect(names, containsAll(['Skyjo', 'Président', 'Belote', 'Tarot', 'Bridge', 'Rami']));
     expect(names, containsAll(['Yahtzee', 'Coinche', 'Triomino']));
-    // v5 gave the re-seeded types their thresholds, and v13 gave every one of
+    // v5 gave the re-seeded types their thresholds, and v14 gave every one of
     // the 22 its key.
     expect(rows.map((r) => r['builtin_key']).whereType<String>(), hasLength(22));
 
@@ -166,7 +166,7 @@ void main() {
   });
 
   test('a v4 device that kept every seeded type gains no duplicate', () async {
-    final db = await upgradeFrom(4, GameType.seededNamesBeforeV13.values.toList());
+    final db = await upgradeFrom(4, GameType.seededNamesBeforeV14.values.toList());
 
     final rows = await db.query('game_types', columns: ['name', 'builtin_key']);
     expect(rows, hasLength(22));

@@ -111,13 +111,13 @@ dessus.
 | Méthode | Route | Description |
 |---|---|---|
 | POST | `/comments/mvp` | **Stateless** (Jalon 4 MVP) — pas d'auth, pas de persistance |
-| POST | `/comments/zapzap-analysis` | **Stateless** — analyse caustique « professeur Claude » (provider configurable) |
+| POST | `/comments/game-analysis` | **Stateless** — analyse longue d'une partie finie, dans l'une des neuf voix et dix langues (provider configurable). Servi aussi sur `/comments/zapzap-analysis`, l'ancien nom que poste l'app publiée |
 | POST | `/groups/me/games/{game_id}/comments` | Génère + persiste un commentaire |
 | GET | `/groups/me/games/{game_id}/comments` | Liste les commentaires d'une partie |
 
-## Provider LLM (analyse ZapZap)
+## Provider LLM (analyse de partie)
 
-L'endpoint `/comments/zapzap-analysis` peut tourner sur trois fournisseurs, sélectionnés
+L'endpoint `/comments/game-analysis` peut tourner sur trois fournisseurs, sélectionnés
 par la variable `LLM_PROVIDER` (défaut `bedrock`) :
 
 | `LLM_PROVIDER` | Clé / config requises | Modèle (défaut, paramétrable) | SDK |
@@ -127,10 +127,12 @@ par la variable `LLM_PROVIDER` (défaut `bedrock`) :
 | `mistral` | `MISTRAL_API_KEY`, `MISTRAL_MODEL` | `mistral-medium-latest` | `openai` (endpoint compatible) |
 
 Gemini et Mistral exposent un endpoint **compatible OpenAI** : un seul client `openai`
-les gère via `base_url` + clé + modèle. Le **prompt système** (« professeur Claude ») et le
-**user-message** (tableau des manches, historique) sont **strictement identiques** entre
-providers (mêmes `temperature=0.4`, `top_p=0.9`, `max_tokens=8192`) — seul l'appel API change,
-pour une comparaison équitable. Sans la clé du provider sélectionné, l'endpoint retourne `503`.
+les gère via `base_url` + clé + modèle. Le **prompt système** (voix + règles du jeu + contrat
+éditorial) et le **user-message** (tableau des manches, faits dérivés, historique) sont
+**strictement identiques** entre providers (mêmes `temperature=0.4`, `top_p=0.9`,
+`max_tokens=8192`) — seul l'appel API change, pour une comparaison équitable. Aucune fonction
+de `app/services/analysis/` ne reçoit de nom de provider, et un test le vérifie. Sans la clé
+du provider sélectionné, l'endpoint retourne `503`.
 
 Pour basculer : `export LLM_PROVIDER=gemini` (ou `mistral`) puis relancer le serveur.
 
@@ -140,19 +142,28 @@ Pour basculer : `export LLM_PROVIDER=gemini` (ou `mistral`) puis relancer le ser
 # Renseigner les clés voulues dans .env (GEMINI_API_KEY, MISTRAL_API_KEY, AWS_*)
 python scripts/compare_providers.py --payload scripts/sample_payload.json \
   --providers bedrock,gemini,mistral
+
+# Comparer deux voix sur une partie qui n'est pas du ZapZap, en japonais
+python scripts/compare_providers.py --payload scripts/sample_payload_skyjo.json \
+  --styles bard,coach --language ja --providers gemini
 ```
 
-Le script construit le user-message une seule fois, lance chaque provider avec le même
-prompt, écrit un fichier par provider dans `out/zapzap_<provider>.md` et affiche un récap
-côte à côte (modèle, tokens, durée, statut). Un provider sans clé ou en erreur est reporté
-sans interrompre les autres. `--payload` attend le même JSON que celui posté par l'app mobile
-(voir `scripts/sample_payload.json`).
+Le script construit le prompt une fois par style, lance chaque provider avec le même
+prompt, écrit un fichier par style et par provider dans `out/analysis_<style>_<provider>.md`
+et affiche un récap côte à côte (modèle, tokens, **nombre de mots**, durée, statut). Un
+provider sans clé ou en erreur est reporté sans interrompre les autres. `--payload` attend
+le même JSON que celui posté par l'app mobile (voir `scripts/sample_payload.json` pour le
+cas ZapZap par défaut, `sample_payload_skyjo.json` pour un autre type de jeu).
+
+C'est le seul moyen de vérifier ce qu'aucun test unitaire ne tranche : que la réponse tient
+bien sur une page (~250-350 mots), qu'elle ne reconstruit pas le tableau des scores, et
+qu'elle se lit bien dans une langue dont la voix est décrite en anglais.
 
 ## Variables d'environnement
 
 Voir `.env.example`. Critiques :
 - `ANTHROPIC_API_KEY` : sans elle, `/comments/mvp` et `/comments/...` (Claude) retournent 503
-- `LLM_PROVIDER` + clé du provider choisi : sans elles, `/comments/zapzap-analysis` retourne 503
+- `LLM_PROVIDER` + clé du provider choisi : sans elles, `/comments/game-analysis` retourne 503
 - `POSTGRES_PASSWORD` : à durcir en production
 - `CORS_ORIGINS` : whitelist des origines (jamais `*` — rejeté au démarrage). En prod,
   l'origine qui sert le client — et, si vous hébergez le backend pour d'autres, chacune des
@@ -169,7 +180,7 @@ Voir `../.llmwiki/Security.md`. Points critiques :
 - 5 couches de défense prompt injection
 - Rate limit device + budget groupe
 - **Rate limit par IP** sur les endpoints LLM non authentifiés (`/comments/mvp`,
-  `/comments/zapzap-analysis`) — garde-fou anti-abus de coût (lit `X-Forwarded-For`)
+  `/comments/game-analysis`) — garde-fou anti-abus de coût (lit `X-Forwarded-For`)
 - **Cap de taille de requête** (413 au-delà de `MAX_BODY_BYTES`, 256 Kio par défaut)
 - CORS verrouillé (refus de `*`)
 - TLS géré par Synology Web Station (Let's Encrypt)

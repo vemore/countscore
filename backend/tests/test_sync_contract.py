@@ -548,3 +548,62 @@ async def test_opaque_argb_colours_are_accepted(client, session_factory):
 
     assert _statuses(body) == [("applied", None)]
     assert (await _get(session_factory, Player, player)).color_value == 0xFFFFC107
+
+
+async def test_game_type_rules_make_the_round_trip(client):
+    """A group's house rules travel like any other game-type column."""
+    _body, headers = await _group(client)
+    game_type = uuid.uuid4()
+    rules = "## Chez nous\nOn joue jusqu'à 150, et le dix de der compte double."
+    body = await _push(
+        client,
+        headers,
+        _delta(
+            "game_type",
+            game_type,
+            1,
+            name="Skyjo",
+            icon_code_point=1,
+            card_color_value=1,
+            rules=rules,
+            rules_slug="skyjo",
+        ),
+    )
+    assert _statuses(body) == [("applied", None)]
+
+    r = await client.get("/sync/pull", params={"since": 0}, headers=headers)
+    assert r.status_code == 200, r.text
+    pulled = [d for d in r.json()["deltas"] if d["entity_type"] == "game_type"]
+    assert len(pulled) == 1
+    assert pulled[0]["payload"]["rules"] == rules
+    assert pulled[0]["payload"]["rules_slug"] == "skyjo"
+
+
+async def test_game_type_rules_over_the_bound_are_rejected_cleanly(client):
+    """Refused at the API boundary as a rejected delta, not as a driver error."""
+    _body, headers = await _group(client)
+    body = await _push(
+        client,
+        headers,
+        _delta(
+            "game_type",
+            uuid.uuid4(),
+            1,
+            name="Skyjo",
+            icon_code_point=1,
+            card_color_value=1,
+            rules="x" * 8_001,
+        ),
+        _delta(
+            "game_type",
+            uuid.uuid4(),
+            2,
+            name="Uno",
+            icon_code_point=1,
+            card_color_value=1,
+            rules_slug="s" * 33,
+        ),
+    )
+    statuses = _statuses(body)
+    assert [s for s, _ in statuses] == ["rejected", "rejected"]
+    assert all("too long" in r or "rules" in r for _, r in statuses), statuses

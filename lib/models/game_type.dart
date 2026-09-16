@@ -55,6 +55,16 @@ class GameType {
   final GameOverConditionType? gameOverConditionType;
   final int? gameOverThreshold;
 
+  /// The rules the user wrote for this type, as Markdown. Null means "show the
+  /// ruleset shipped for [rulesSlug] instead". User content: never translated,
+  /// and it travels with the group like every other column here.
+  final String? rules;
+
+  /// Names the ruleset shipped in `assets/rules/`, or null for a type the user
+  /// created. Kept apart from [name] because the name is editable — renaming a
+  /// type must not lose its rules.
+  final String? rulesSlug;
+
   GameType({
     this.id,
     this.builtinKey,
@@ -67,6 +77,8 @@ class GameType {
     this.playerDeadThreshold,
     this.gameOverConditionType,
     this.gameOverThreshold,
+    this.rules,
+    this.rulesSlug,
   });
 
   // The code point comes from the database, so it cannot be a constant. This is
@@ -88,6 +100,8 @@ class GameType {
       'playerDeadThreshold': playerDeadThreshold,
       'gameOverConditionType': gameOverConditionType?.toDbString(),
       'gameOverThreshold': gameOverThreshold,
+      'rules': rules,
+      'rules_slug': rulesSlug,
     };
   }
 
@@ -108,6 +122,8 @@ class GameType {
         map['gameOverConditionType'] as String?,
       ),
       gameOverThreshold: map['gameOverThreshold'] as int?,
+      rules: map['rules'] as String?,
+      rulesSlug: map['rules_slug'] as String?,
     );
   }
 
@@ -126,6 +142,9 @@ class GameType {
     int? playerDeadThreshold,
     GameOverConditionType? gameOverConditionType,
     int? gameOverThreshold,
+    String? rules,
+    String? rulesSlug,
+    bool clearRules = false,
   }) {
     return GameType(
       id: id ?? this.id,
@@ -139,6 +158,10 @@ class GameType {
       playerDeadThreshold: playerDeadThreshold ?? this.playerDeadThreshold,
       gameOverConditionType: gameOverConditionType ?? this.gameOverConditionType,
       gameOverThreshold: gameOverThreshold ?? this.gameOverThreshold,
+      // `x ?? this.x` cannot express "put this back to null", and restoring the
+      // shipped rules is exactly that — same shape as Game.clearFinishedAt.
+      rules: clearRules ? null : (rules ?? this.rules),
+      rulesSlug: rulesSlug ?? this.rulesSlug,
     );
   }
 
@@ -146,6 +169,7 @@ class GameType {
   static GameType zapzap() => GameType(
         builtinKey: 'zapzap',
         name: 'ZapZap',
+        rulesSlug: 'zapzap',
         iconCodePoint: Icons.flash_on.codePoint,
         cardColorValue: Colors.amber.toARGB32(),
         isLowestScoreWins: true,
@@ -157,6 +181,7 @@ class GameType {
   static GameType uno() => GameType(
         builtinKey: 'uno',
         name: 'Uno',
+        rulesSlug: 'uno',
         iconCodePoint: Icons.style.codePoint,
         cardColorValue: Colors.red.toARGB32(),
         isLowestScoreWins: true,
@@ -166,6 +191,7 @@ class GameType {
   static GameType scrabble() => GameType(
         builtinKey: 'scrabble',
         name: 'Scrabble',
+        rulesSlug: 'scrabble',
         iconCodePoint: Icons.grid_on.codePoint,
         cardColorValue: Colors.green.toARGB32(),
         isLowestScoreWins: false,
@@ -184,6 +210,7 @@ class GameType {
   static GameType skyjo() => GameType(
         builtinKey: 'skyjo',
         name: 'Skyjo',
+        rulesSlug: 'skyjo',
         iconCodePoint: Icons.casino.codePoint,
         cardColorValue: Colors.blue.toARGB32(),
         isLowestScoreWins: true,
@@ -195,6 +222,7 @@ class GameType {
   static GameType president() => GameType(
         builtinKey: 'president',
         name: 'Président',
+        rulesSlug: 'president',
         iconCodePoint: Icons.workspace_premium.codePoint,
         cardColorValue: Colors.orange.toARGB32(),
         isLowestScoreWins: true,
@@ -206,6 +234,7 @@ class GameType {
   static GameType belote() => GameType(
         builtinKey: 'belote',
         name: 'Belote',
+        rulesSlug: 'belote',
         iconCodePoint: Icons.diamond.codePoint,
         cardColorValue: const Color(0xFF8B4513).toARGB32(), // Brown color
         isLowestScoreWins: false,
@@ -217,6 +246,7 @@ class GameType {
   static GameType tarot() => GameType(
         builtinKey: 'tarot',
         name: 'Tarot',
+        rulesSlug: 'tarot',
         iconCodePoint: Icons.auto_awesome.codePoint,
         cardColorValue: Colors.indigo.toARGB32(),
         isLowestScoreWins: false,
@@ -226,6 +256,7 @@ class GameType {
   static GameType bridge() => GameType(
         builtinKey: 'bridge',
         name: 'Bridge',
+        rulesSlug: 'bridge',
         iconCodePoint: Icons.account_tree.codePoint,
         cardColorValue: Colors.teal.toARGB32(),
         isLowestScoreWins: false,
@@ -235,6 +266,7 @@ class GameType {
   static GameType rami() => GameType(
         builtinKey: 'rami',
         name: 'Rami',
+        rulesSlug: 'rami',
         iconCodePoint: Icons.style_outlined.codePoint,
         cardColorValue: const Color(0xFF9C27B0).toARGB32(), // Deep purple
         isLowestScoreWins: true,
@@ -244,7 +276,7 @@ class GameType {
       );
 
 
-  // The long tail, added with schema v13.
+  // The long tail, added with schema v14.
   // Generic scoring shapes only: a winning direction and, where the game has a
   // widely known target total, one threshold. No published rulebook is
   // reproduced, and these are game *names* used descriptively.
@@ -369,11 +401,11 @@ class GameType {
         isDefault: true,
       );
 
-  /// The ten types seeded before schema v13, by the literal name they were
-  /// seeded with. The v13 migration back-fills [builtinKey] on an existing
+  /// The ten types seeded before schema v14, by the literal name they were
+  /// seeded with. The v14 migration back-fills [builtinKey] on an existing
   /// install by matching these names, and skips them when it inserts the types
   /// the seed never had — so a type the user deleted stays deleted.
-  static const seededNamesBeforeV13 = <String, String>{
+  static const seededNamesBeforeV14 = <String, String>{
     'zapzap': 'ZapZap',
     'uno': 'Uno',
     'scrabble': 'Scrabble',
@@ -387,7 +419,7 @@ class GameType {
   };
 
   /// The built-in catalogue, in seed order. **Append only**: the first ten
-  /// indices are what an install seeded before v13 already holds.
+  /// indices are what an install seeded before v14 already holds.
   static List<GameType> defaultGameTypes() {
     return [
       zapzap(),

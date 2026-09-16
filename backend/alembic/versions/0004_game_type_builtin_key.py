@@ -11,8 +11,8 @@ Additive: the column is nullable, and every row that exists before this revision
 ``builtin_key IS NULL``, which the index ignores. Clients back-fill their own rows
 locally (mobile schema v13); the server never guesses a key from a name.
 
-Revision ID: 0003_game_type_builtin_key
-Revises: 0002_sync_contract
+Revision ID: 0004_game_type_builtin_key
+Revises: 0003_game_type_rules
 Create Date: 2026-09-16
 
 """
@@ -25,8 +25,8 @@ import sqlalchemy as sa
 
 from alembic import op
 
-revision: str = "0003_game_type_builtin_key"
-down_revision: str | Sequence[str] | None = "0002_sync_contract"
+revision: str = "0004_game_type_builtin_key"
+down_revision: str | Sequence[str] | None = "0003_game_type_rules"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

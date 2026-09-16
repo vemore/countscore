@@ -138,9 +138,9 @@ void main() {
         'qwirkle', 'farkle', 'canasta', 'wizard', 'triomino',
       ]);
       // The ten the v13 migration back-fills rather than inserts.
-      expect(GameType.seededNamesBeforeV13.keys,
+      expect(GameType.seededNamesBeforeV14.keys,
           defaultTypes.take(10).map((t) => t.builtinKey));
-      expect(GameType.seededNamesBeforeV13.values,
+      expect(GameType.seededNamesBeforeV14.values,
           defaultTypes.take(10).map((t) => t.name));
     });
 

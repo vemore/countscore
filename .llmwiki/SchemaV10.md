@@ -5,12 +5,12 @@
 > Updated: 2026-09-16
 
 This page was `SchemaV9` until v10 landed on 2026-09-13; links were renamed with it.
-v11 followed the same day, and v12 and v13 on 2026-09-16; all are described here too.
+v11 followed the same day, and v12, v13 and v14 on 2026-09-16; all are described here too.
 
 ## Facts
 
-Schema version **13**, declared in two places that must stay in sync:
-`lib/services/drift/database.dart` (`schemaVersion => 13`) and
+Schema version **14**, declared in two places that must stay in sync:
+`lib/services/drift/database.dart` (`schemaVersion => 14`) and
 `DatabaseService.schemaVersion` in `lib/services/database_service.dart`, which both
 `openDatabase` calls use.
 
@@ -18,7 +18,7 @@ Schema version **13**, declared in two places that must stay in sync:
 
 | Table | Role |
 |---|---|
-| `game_types` | Game types. `builtin_key` since v13, uuid + sync columns. |
+| `game_types` | Game types. uuid + sync columns, `rules` and `rules_slug` since v13, `builtin_key` since v14. |
 | `games` | Games. uuid, `group_id`, sync columns, `finishedAt` since v12. |
 | `players` | **Global identity**: `(id, name, colorValue, uuid, group_id, …)`. UNIQUE on `name COLLATE NOCASE` where `group_id IS NULL`. |
 | `game_players` | **Per-game membership**: `(id, gameId, player_id FK→players, name, orderIndex, colorValue, uuid, …)`. UNIQUE `(gameId, player_id)`. |
@@ -38,6 +38,19 @@ wrong.
 
 The device token is **not** in the database: it belongs in platform secure storage.
 
+### `game_types.rules` / `game_types.rules_slug` (since v13)
+
+Both TEXT, nullable. `rules` is free Markdown the user wrote; NULL means the app shows the
+ruleset it ships for `rules_slug` instead, in the current locale. `rules_slug` names one of
+the nine rulesets in `assets/rules/` (`Autre` has none) and exists as its own column
+because `name` is user-editable — a renamed type must not lose its rules.
+
+Both push as `rules` and `rules_slug`, columns the server gained in
+`0003_game_type_rules`. Bounds in `backend/app/services/delta_bounds.py`: 8 000 and 32.
+The client clips to the same lengths (`sync_store.dart`, `_gameTypeRulesMax`).
+`defaultRulesSlugs` in `sync_schema.dart` is the single map from seeded name to slug,
+shared by the seed factories and the back-fill.
+
 ### `games.finishedAt` (since v12)
 
 ISO-8601 TEXT, nullable; null means the game is still open. Set when the user declares a
@@ -51,7 +64,7 @@ included, so that reopening a game clears it on the other devices instead of lea
 showing it as finished forever. `lib/services/sync/sync_store.dart`, `case 'game'` and
 `_applyGame`.
 
-### `game_types.builtin_key` (since v13)
+### `game_types.builtin_key` (since v14)
 
 TEXT, nullable. The stable identity of one of the 22 built-in types — `'zapzap'`,
 `'other'`, `'yahtzee'`, … — and null for a type the user created or renamed.
@@ -63,7 +76,7 @@ locales hold different names for one type, and last-writer-wins on that column i
 Renaming a built-in type in `lib/screens/game_types_screen.dart` **clears the key**, which
 is what makes the chosen name stick.
 
-`applyV13` in `lib/services/sync/sync_schema.dart`, run by both engines, does three things:
+`applyV14` in `lib/services/sync/sync_schema.dart`, run by both engines, does three things:
 
 1. adds the column;
 2. **back-fills every seeded row**, matched by the literal name it was seeded with *and* by
@@ -71,15 +84,15 @@ is what makes the chosen name stick.
    what separates a row the app wrote from one the user made, so a user's own "Yahtzee" is
    never claimed and renamed under them. At most one row per key: the guard is on the key,
    not on the row, which is what makes a replay over a duplicated name safe;
-3. **inserts the twelve types the pre-v13 seed never held**, when the key is absent *and* no
+3. **inserts the twelve types the pre-v14 seed never held**, when the key is absent *and* no
    live row already uses that name.
 
 A type the user deleted is therefore **not** resurrected — the ten old ones are only ever
 back-filled — and a user who had already made their own "Yahtzee" keeps one row rather than
 gaining a second the server's `unique(group_id, name)` would refuse for good. Step 2 covers
 all 22 rather than only the ten because the v2→v3 step seeds the *current* catalogue: a
-device coming from v2 reaches v13 with all 22 names present and none of them keyed.
-`test/migration_v12_to_v13_test.dart` and `test/migration_v2_to_v13_test.dart`.
+device coming from v2 reaches v14 with all 22 names present and none of them keyed.
+`test/migration_v13_to_v14_test.dart` and `test/migration_v2_to_v14_test.dart`.
 
 > **A seed inside a migration step writes against an older table than the model describes.**
 > sqflite builds its INSERT column list straight from the map keys, so one key too many is
@@ -88,7 +101,7 @@ device coming from v2 reaches v13 with all 22 names present and none of them key
 > `DatabaseService._gameTypeRow` filters `GameType.toMap()` against the table as it is at
 > that point, and every seed in the chain goes through it.
 
-Pushed as `builtin_key`, a column the server gained in `0003_game_type_builtin_key`. The
+Pushed as `builtin_key`, a column the server gained in `0004_game_type_builtin_key`. The
 group link of a built-in type is derived from the key rather than the name
 (`linkedGameTypeRemoteUuid`, `lib/services/sync/sync_ids.dart`), so two devices in different
 locales compute the same server uuid. See [[Sync]].
@@ -98,8 +111,8 @@ locales compute the same server uuid. See [[Sync]].
 Drift's `onUpgrade` is **not** a no-op any more. Native still never reaches it — sqflite has
 migrated the file first — but a browser keeps its database across PWA releases, and the PWA
 has been in production at v9 since 2026-09-13. `onUpgrade` runs `applySyncV10` for
-`from < 10`, the v11 statements for `from < 11`, `applyV12` for `from < 12` and `applyV13`
-for `from < 13`: the same SQL sqflite runs, from `sync_schema.dart`. Covered by
+`from < 10`, the v11 statements for `from < 11`, `applyV12` for `from < 12`, `applyV13`
+for `from < 13` and `applyV14` for `from < 14`: the same SQL sqflite runs, from `sync_schema.dart`. Covered by
 `test/drift/web_upgrade_test.dart`.
 
 ### Tombstones (since v10)
@@ -122,8 +135,9 @@ and scores. Deleting a game type ignores tombstoned games and clears their `game
 | v8 | `game_analyses` recreated to add the sync columns missing from the Bedrock prototype. |
 | v9 | Global players. |
 | **v11** | **Change capture**: `sync_flags` (one row, `suppress`), `trg_sync_*` capture triggers on games, game_players, rounds, scores, game_analyses (insert/update when `group_id` is set) and on players, game_types (update when linked), and `*_inherit` triggers that give a row inserted under a shared parent its `group_id`. SQL in `lib/services/sync/sync_schema.dart`, shared by both engines. |
+| **v13** | **`game_types.rules` / `game_types.rules_slug`** (both TEXT, nullable): the rules a group wrote for a type, and the shipped ruleset it falls back to. `applyV13` in `lib/services/sync/sync_schema.dart`, run by both engines. Additive, plus a back-fill that maps the ten seeded names to their slug — `UPDATE`s only, so a type the user deleted is not resurrected and a renamed one keeps a NULL slug. |
 | **v12** | **`games.finishedAt`** (ISO-8601 TEXT, nullable): an explicit end for every game, not only the three types that carry a threshold. `applyV12` in `lib/services/sync/sync_schema.dart`, run by both engines. Additive only. |
-| **v13** | **`game_types.builtin_key`** (TEXT, nullable): the stable identity *and* the source of the displayed name of a built-in type, plus the twelve types the seed was missing. `applyV13` in `lib/services/sync/sync_schema.dart`, run by both engines. Additive; back-fills, never resurrects. |
+| **v14** | **`game_types.builtin_key`** (TEXT, nullable): the stable identity *and* the source of the displayed name of a built-in type, plus the twelve types the seed was missing. `applyV14` in `lib/services/sync/sync_schema.dart`, run by both engines. Additive; back-fills, never resurrects. |
 | v10 | **Sync bookkeeping**: `group_links`, `entity_versions`, `sync_inbox`; `outbox.rejected_at` / `reject_reason`; `sync_state.device_id` / `group_name`. Additive only — `_createSyncV10Tables` is the fresh-install and the upgrade path at once. |
 
 ### The v9 migration in detail
@@ -170,9 +184,9 @@ repairs the shape before the rest of the chain runs.
   key. The alternative — translating the rows in place at each locale change — would have
   fought the user's own renames and still left two devices in two locales disagreeing.
 - **The twelve new types are appended, never inserted (2026-09-16).** The first ten indices
-  of `defaultGameTypes()` are what an install seeded before v13 already holds, in order;
+  of `defaultGameTypes()` are what an install seeded before v14 already holds, in order;
   `test/widget_test.dart` pins them. Inserting one in the middle would silently change what
-  the v13 back-fill matches.
+  the v14 back-fill matches.
 - **v12 adds a column although v10 deliberately did not (2026-09-16).** The v10 decision
   below rejected "a column per synced row" — that was six `ALTER TABLE`s across six tables
   for bookkeeping keyed by `(entity_type, uuid)`, which two side tables express better.

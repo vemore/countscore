@@ -88,14 +88,15 @@ th { background: var(--code-bg); }
 <main>
 <h1 id="privacy-policy-for-countscore">Privacy Policy for
 CountScore</h1>
-<p><strong>Last Updated</strong>: September 14, 2026</p>
+<p><strong>Last Updated</strong>: September 16, 2026</p>
 <p><strong>Effective Date</strong>: Applies to CountScore v1.1.0 and
 later</p>
-<p><strong>Previous versions</strong>: v2.4 (September 14, 2026), v2.3
-(September 13, 2026), v2.2 (September 11, 2026), v2.1 and v2.0
-(September 9, 2026) and v1.0 (November 9, 2025). v1.0 applies to
-CountScore 1.0.x — the versions currently on the Play Store. See <a
-href="#version-history">Version History</a>.</p>
+<p><strong>Previous versions</strong>: v2.6 and v2.5 (September 16 and
+14, 2026), v2.4 (September 14, 2026), v2.3 (September 13, 2026), v2.2
+(September 11, 2026), v2.1 and v2.0 (September 9, 2026) and v1.0
+(November 9, 2025). v1.0 applies to CountScore 1.0.x — the versions
+currently on the Play Store. See <a href="#version-history">Version
+History</a>.</p>
 <p><strong>Published at</strong>: <a
 href="https://vemore.github.io/countscore/privacy-policy.html">https://vemore.github.io/countscore/privacy-policy.html</a></p>
 <h2 id="introduction">Introduction</h2>
@@ -110,7 +111,7 @@ advertising. Out of the box it sends nothing anywhere: the app contains
 device, and both require you to first enter, in Settings → Server, the
 address of a backend <strong>you</strong> run:</p>
 <ul>
-<li>the <strong>ZapZap analysis</strong>, which runs only when you ask
+<li>the <strong>AI game analysis</strong>, which runs only when you ask
 for one; and</li>
 <li><strong>group sharing</strong>, which runs only after you also
 create or join a group, and only for the games you share with it.</li>
@@ -141,8 +142,8 @@ comment you attach to a round, timestamps, and completed-game
 results.</li>
 <li><strong>App Preferences</strong> — theme, language and other
 interface settings.</li>
-<li><strong>Cached analyses</strong> — the text of any ZapZap analysis
-you have generated.</li>
+<li><strong>Cached analyses</strong> — the text of any analysis you have
+generated, and the voice you last picked for one.</li>
 <li><strong>Group membership</strong>, if you create or join a group —
 the group's name, this device's identifier in the group, and a record of
 which changes have been sent. The two group secrets (this device's
@@ -165,10 +166,11 @@ exception you choose game by game: a game you <strong>share with a
 group</strong> is synchronised with your server and the group's other
 devices, as described in <a href="#group-sharing">Group Sharing</a>.
 Everything else stays on your device until you delete it.</p>
-<h2 id="feature-one-zapzap-analysis">Feature One: ZapZap Analysis</h2>
+<h2 id="feature-one-ai-game-analysis">Feature One: AI Game Analysis</h2>
 <p>CountScore includes an optional feature that generates a written
-analysis of a finished ZapZap game using a large language model
-(LLM).</p>
+analysis of a finished game — of any game type — using a large language
+model (LLM). You choose the voice it is written in from a list of nine,
+and it answers in the language the app is displayed in.</p>
 <p><strong>It is switched off until you supply a server.</strong> The
 app is published with no backend address, and none is compiled into it.
 Until you enter one in <strong>Settings → Server</strong>, the analysis
@@ -184,8 +186,10 @@ analysis screen and explicitly tap the button to generate one.</p>
 <p>When you request an analysis, the app sends the following for that
 game:</p>
 <ul>
-<li>the game's name, its game type, its scoring rule and its creation
-date;</li>
+<li>the game's name, its game type, that type's scoring rule and
+thresholds, and the game's creation date;</li>
+<li>the voice you picked and the language the app is displayed in — both
+are settings of the app, not information about you;</li>
 <li>the <strong>names of the players</strong> in that game;</li>
 <li>every round: its number, its scores, and <strong>any comment you
 typed on that round</strong>;</li>
@@ -253,11 +257,12 @@ group" on it. Games you do not share never leave your device.</p>
 play:</p>
 <ul>
 <li>the game's name, its game type (name, icon, colour and rules), its
-scoring rule and its creation date;</li>
+scoring rule, its creation date and, once you declare the game over, the
+date you ended it;</li>
 <li>the <strong>names and colours of its players</strong>;</li>
 <li>every round: its number, <strong>any comment you typed on
 it</strong>, and its scores;</li>
-<li>its ZapZap analysis, if one was generated.</li>
+<li>its analysis, if one was generated.</li>
 </ul>
 <p>When you create or join a group, the app also sends the <strong>group
 name</strong> and the <strong>name you give this device</strong> (both
@@ -311,10 +316,10 @@ and everything in it when its row is removed.</li>
 game — and withdrawn by leaving the group or clearing the server
 address.</p>
 <h2 id="reporting-an-ai-commentary">Reporting an AI Commentary</h2>
-<p>A ZapZap analysis is written by an LLM and can be wrong or offensive.
-The analysis screen has a <strong>Report this commentary</strong>
-action. It does not send anything itself: it opens <strong>your own
-email app</strong> with a message to <a
+<p>An analysis is written by an LLM and can be wrong or offensive. The
+analysis screen has a <strong>Report this commentary</strong> action. It
+does not send anything itself: it opens <strong>your own email
+app</strong> with a message to <a
 href="mailto:scribio.ai@gmail.com">scribio.ai@gmail.com</a> already
 filled in — a space for you to explain the problem, the analysis's local
 reference (a number, the model that wrote it and when), and the analysis
@@ -346,7 +351,7 @@ of any kind.</p>
 <ul>
 <li><strong>On your device</strong>: to store and display your games,
 scores and preferences.</li>
-<li><strong>In the ZapZap analysis</strong>: solely to generate the
+<li><strong>In the game analysis</strong>: solely to generate the
 requested analysis text and return it to you.</li>
 <li><strong>In group sharing</strong>: solely to keep the shared games
 identical on the group's devices.</li>
@@ -355,7 +360,7 @@ identical on the group's devices.</li>
 other purpose, and nothing is ever sold.</strong></p>
 <h2 id="data-sharing-and-third-parties">Data Sharing and Third
 Parties</h2>
-<p>Apart from the ZapZap analysis and group sharing described above,
+<p>Apart from the game analysis and group sharing described above,
 CountScore shares no data with anyone — and both features require you to
 nominate the server yourself. Group sharing also makes shared games
 visible to the other devices of the group you joined.</p>
@@ -426,15 +431,15 @@ kind Android asks you to approve with a dialog — at all.</p>
 <ul>
 <li><strong><code>INTERNET</code></strong> is declared in
 <code>android/app/src/main/AndroidManifest.xml</code>. It exists for the
-ZapZap analysis and for group sharing, and nothing else: the app sends
-no telemetry. It goes entirely unused until you configure a server.
-While you are in a group and the app is open, it keeps a connection to
-your server and synchronises shared games in the background of that
-session; it does not run when the app is closed. Android grants the
-permission at install time without asking you, because it is not a
-runtime permission — which is why the safeguards that matter are the
-ones described above: there is no address to send to unless you supply
-one, and no game is shared unless you join a group and share it.</li>
+game analysis and for group sharing, and nothing else: the app sends no
+telemetry. It goes entirely unused until you configure a server. While
+you are in a group and the app is open, it keeps a connection to your
+server and synchronises shared games in the background of that session;
+it does not run when the app is closed. Android grants the permission at
+install time without asking you, because it is not a runtime permission
+— which is why the safeguards that matter are the ones described above:
+there is no address to send to unless you supply one, and no game is
+shared unless you join a group and share it.</li>
 <li><strong>Unencrypted connections</strong> are allowed by the app's
 network security configuration
 (<code>android/app/src/main/res/xml/network_security_config.xml</code>)
@@ -451,7 +456,7 @@ file picker, which does not require a storage permission.</li>
 <h2 id="childrens-privacy">Children's Privacy</h2>
 <p>CountScore requires no personal information to use and is suitable
 for all ages.</p>
-<p>Please note that the ZapZap analysis and group sharing transmit the
+<p>Please note that the game analysis and group sharing transmit the
 player names entered in the app. If children use the app, we recommend
 using first names or nicknames rather than full names, or simply not
 using the analysis feature.</p>
@@ -496,6 +501,20 @@ with a new "Last Updated" date, and significant changes are announced
 through app updates on the Google Play Store.</p>
 <h3 id="version-history">Version History</h3>
 <ul>
+<li><strong>v2.7</strong> (September 16, 2026): The analysis is no
+longer restricted to one game type and no longer written in one fixed
+voice or one fixed language. Any finished game can be analysed, you pick
+the voice from a list of nine, and the text comes back in the language
+the app is displayed in. What that adds to what is sent: the game type's
+scoring rules, the voice you picked and that display language. No new
+recipient, no new category of information about you, and nothing is sent
+unless you ask for an analysis, exactly as before.</li>
+<li><strong>v2.6</strong> (September 16, 2026): A game can now be
+declared over explicitly, and a shared game carries that end date to the
+group's other devices alongside everything it already synchronised. No
+new recipient, no new category of information, and nothing is sent that
+a shared game did not already send — only one more date about a game you
+chose to share.</li>
 <li><strong>v2.5</strong> (September 14, 2026): Adds <strong>Reporting
 an AI Commentary</strong>. The analysis screen can open a prefilled
 email to the developer to report generated text; the app itself sends
@@ -551,12 +570,12 @@ href="https://github.com/vemore/countscore/issues">https://github.com/vemore/cou
 respond within 48-72 hours</p>
 <h2 id="consent">Consent</h2>
 <p>By using CountScore, you consent to this Privacy Policy. By tapping
-the button that generates a ZapZap analysis, having configured a server
-of your own, you additionally consent to that game's data being
-transmitted to that server as described above. By joining a group and
-sharing a game, you consent to that game being stored on your server and
-sent to the group's devices as described in <a
-href="#group-sharing">Group Sharing</a>.</p>
+the button that generates an analysis, having configured a server of
+your own, you additionally consent to that game's data being transmitted
+to that server as described above. By joining a group and sharing a
+game, you consent to that game being stored on your server and sent to
+the group's devices as described in <a href="#group-sharing">Group
+Sharing</a>.</p>
 <p>If you do not agree with this Privacy Policy, please do not use
 CountScore.</p>
 <hr />

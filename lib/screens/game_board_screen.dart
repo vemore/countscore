@@ -16,6 +16,7 @@ import '../repositories/game_analysis_repository.dart';
 import '../services/drift/database.dart';
 import '../services/review_prompt.dart';
 import 'game_analysis_screen.dart';
+import 'game_rules_screen.dart';
 import 'ranking_screen.dart';
 
 class GameBoardScreen extends StatefulWidget {
@@ -138,19 +139,16 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
               );
             },
           ),
-          Consumer2<GameProvider, GameTypeProvider>(
-            builder: (context, gameProvider, gameTypeProvider, child) {
-              final menuGameType = gameProvider.currentGame?.gameTypeId != null
-                  ? gameTypeProvider
-                      .getGameTypeById(gameProvider.currentGame!.gameTypeId!)
-                  : null;
-              final isZapZap = menuGameType?.builtinKey == 'zapzap';
-              // The analysis is the app's only network call, so generating one
-              // needs a server the user configured. An analysis already stored
-              // stays reachable without one — it is local data.
-              final canAnalyse = isZapZap &&
-                  (context.watch<BackendProvider>().isConfigured ||
-                      _hasCachedAnalysis);
+          Consumer<GameProvider>(
+            builder: (context, gameProvider, child) {
+              // The analysis is the app's only network call, so generating
+              // one needs a server the user configured. An analysis already
+              // stored stays reachable without one — it is local data.
+              // Every game type is analysable: the rules of the game travel in
+              // the payload, so a type the user invented reads as well as a
+              // seeded one.
+              final canAnalyse = context.watch<BackendProvider>().isConfigured ||
+                  _hasCachedAnalysis;
               final group = context.watch<GroupProvider>();
               final canShare = group.isJoined &&
                   !(gameProvider.currentGame?.isShared ?? true);
@@ -159,9 +157,26 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
               final isFinished = gameProvider.currentGame?.isFinished ?? false;
               final canFinish =
                   isFinished || gameProvider.currentRounds.isNotEmpty;
+              // Only the rules entry needs the type itself; a game whose type
+              // was deleted has gameTypeId NULL and has no rules to show.
+              final gameTypeId = gameProvider.currentGame?.gameTypeId;
+              final menuGameType = gameTypeId == null
+                  ? null
+                  : context.watch<GameTypeProvider>().getGameTypeById(gameTypeId);
 
               return PopupMenuButton<String>(
                 itemBuilder: (context) => [
+                  if (menuGameType != null)
+                    PopupMenuItem(
+                      value: 'game_rules',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.menu_book_outlined),
+                          const SizedBox(width: 8),
+                          Text(l10n.gameRulesTitle),
+                        ],
+                      ),
+                    ),
                   PopupMenuItem(
                     value: 'edit_game',
                     child: Row(
@@ -219,7 +234,14 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                     ),
                 ],
                 onSelected: (value) async {
-                  if (value == 'edit_game') {
+                  if (value == 'game_rules' && menuGameType != null) {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => GameRulesScreen(gameType: menuGameType),
+                      ),
+                    );
+                  } else if (value == 'edit_game') {
                     _showEditGameDialog();
                   } else if (value == 'delete_round' &&
                       gameProvider.currentRounds.isNotEmpty) {

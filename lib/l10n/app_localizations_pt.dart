@@ -442,7 +442,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get featureGroupSharing => 'Compartilhamento em grupo';
 
   @override
-  String get featureZapZapAnalysis => 'Análise de partidas ZapZap';
+  String get featureGameAnalysis => 'Análise de partidas por IA';
 
   @override
   String get rateApp => 'Avaliar o CountScore';
@@ -543,6 +543,36 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get analysisTitle => 'Análise da partida';
+
+  @override
+  String get analysisStyle => 'Estilo de análise';
+
+  @override
+  String get analysisStyleProfessor => 'O professor';
+
+  @override
+  String get analysisStyleCommentator => 'O narrador esportivo';
+
+  @override
+  String get analysisStyleDocumentary => 'O documentário de natureza';
+
+  @override
+  String get analysisStyleNoir => 'O detetive';
+
+  @override
+  String get analysisStyleBard => 'O bardo';
+
+  @override
+  String get analysisStyleCoach => 'O treinador';
+
+  @override
+  String get analysisStyleConsultant => 'O consultor';
+
+  @override
+  String get analysisStyleAstrologer => 'O astrólogo';
+
+  @override
+  String get analysisStyleRealityTv => 'O reality show';
 
   @override
   String get generatingAnalysis => 'Gerando análise…';
@@ -835,6 +865,85 @@ class AppLocalizationsPt extends AppLocalizations {
   String reportCommentaryNoMailApp(String email) {
     return 'Nenhum app de e-mail encontrado. Escreva para $email para denunciar este comentário.';
   }
+
+  @override
+  String get gameRulesTitle => 'Regras do jogo';
+
+  @override
+  String get gameRulesInApp => 'No CountScore';
+
+  @override
+  String get gameRulesSection => 'As regras';
+
+  @override
+  String get gameRulesNoElimination => 'Sem eliminação durante a partida';
+
+  @override
+  String gameRulesEliminationOver(int threshold) {
+    return 'Um jogador é eliminado acima de $threshold pontos';
+  }
+
+  @override
+  String gameRulesEliminationUnder(int threshold) {
+    return 'Um jogador é eliminado abaixo de $threshold pontos';
+  }
+
+  @override
+  String gameRulesEndFirstOver(int threshold) {
+    return 'A partida termina assim que um jogador passa de $threshold pontos';
+  }
+
+  @override
+  String gameRulesEndFirstUnder(int threshold) {
+    return 'A partida termina assim que um jogador cai abaixo de $threshold pontos';
+  }
+
+  @override
+  String gameRulesEndLastOver(int threshold) {
+    return 'A partida termina quando todos os jogadores, menos um, passam de $threshold pontos';
+  }
+
+  @override
+  String gameRulesEndLastUnder(int threshold) {
+    return 'A partida termina quando todos os jogadores, menos um, caem abaixo de $threshold pontos';
+  }
+
+  @override
+  String get gameRulesNoEnd =>
+      'Sem fim automático: você decide quando a partida termina';
+
+  @override
+  String get gameRulesEmptyTitle => 'Ainda sem regras';
+
+  @override
+  String get gameRulesEmptyHint =>
+      'Anote como a sua mesa conta os pontos: assim todos terão a mesma versão.';
+
+  @override
+  String get gameRulesWrite => 'Escrever as regras';
+
+  @override
+  String get gameRulesEditTitle => 'Editar as regras';
+
+  @override
+  String get gameRulesEditorHint =>
+      'As regras da sua mesa. Markdown é suportado.';
+
+  @override
+  String get gameRulesFromGroup => 'Regras do seu grupo';
+
+  @override
+  String get gameRulesRestoreDefault => 'Restaurar as regras originais';
+
+  @override
+  String get gameRulesSaved => 'Regras salvas';
+
+  @override
+  String get gameRulesRestored => 'Regras originais restauradas';
+
+  @override
+  String get gameRulesDisclaimer =>
+      'Resumo escrito para o CountScore a partir das regras como são normalmente jogadas. Os nomes dos jogos pertencem aos seus proprietários e são citados apenas de forma descritiva.';
 
   @override
   String get gameTypeNameZapzap => 'ZapZap';

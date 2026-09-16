@@ -58,14 +58,15 @@ field**, ordered lexicographically by `(client_lamport, origin_device_id)`.
    back as a stable reason code rather than a driver error — codes in [[Api]].
 7. The log stores the payload's known client columns only; that is what other devices pull.
 
-Synced entities: `player`, `game_type`, `game`, `game_player`, `round` (with `comment`),
-`score`, `game_analysis`. `game_player` still has no uuid and is hard-deleted.
+Synced entities: `player`, `game_type` (with `rules` and `rules_slug` since v13, `builtin_key` since v14), `game`,
+`game_player`, `round` (with `comment`), `score`, `game_analysis`. `game_player` still has
+no uuid and is hard-deleted.
 
 ### A built-in game type travels by key, not by name (since 2026-09-16)
 
 The `game_type` payload carries **`builtin_key`** alongside `name`
 (`lib/services/sync/sync_store.dart`, `case 'game_type'`), and the server stores it
-(`backend/app/models/game.py`, revision `0003_game_type_builtin_key`).
+(`backend/app/models/game.py`, revision `0004_game_type_builtin_key`).
 
 A built-in type's `name` is localized, so it is not its identity: two devices set to
 different languages hold "Autre" and "その他" for one and the same type. Three things follow.

@@ -432,7 +432,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get featureGroupSharing => 'グループ共有';
 
   @override
-  String get featureZapZapAnalysis => 'ZapZapゲーム分析';
+  String get featureGameAnalysis => 'AIによる対戦分析';
 
   @override
   String get rateApp => 'CountScore を評価する';
@@ -532,6 +532,36 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get analysisTitle => 'ゲーム分析';
+
+  @override
+  String get analysisStyle => '分析のスタイル';
+
+  @override
+  String get analysisStyleProfessor => '教授';
+
+  @override
+  String get analysisStyleCommentator => 'スポーツ実況';
+
+  @override
+  String get analysisStyleDocumentary => '動物ドキュメンタリー';
+
+  @override
+  String get analysisStyleNoir => '探偵';
+
+  @override
+  String get analysisStyleBard => '吟遊詩人';
+
+  @override
+  String get analysisStyleCoach => 'コーチ';
+
+  @override
+  String get analysisStyleConsultant => 'コンサルタント';
+
+  @override
+  String get analysisStyleAstrologer => '占星術師';
+
+  @override
+  String get analysisStyleRealityTv => 'リアリティ番組';
 
   @override
   String get generatingAnalysis => '分析を生成中…';
@@ -815,6 +845,82 @@ class AppLocalizationsJa extends AppLocalizations {
   String reportCommentaryNoMailApp(String email) {
     return 'メールアプリが見つかりません。このコメントを報告するには $email までご連絡ください。';
   }
+
+  @override
+  String get gameRulesTitle => 'ゲームのルール';
+
+  @override
+  String get gameRulesInApp => 'CountScore では';
+
+  @override
+  String get gameRulesSection => 'ルール';
+
+  @override
+  String get gameRulesNoElimination => '対局中の脱落はありません';
+
+  @override
+  String gameRulesEliminationOver(int threshold) {
+    return '$threshold 点を超えたプレイヤーは脱落します';
+  }
+
+  @override
+  String gameRulesEliminationUnder(int threshold) {
+    return '$threshold 点を下回ったプレイヤーは脱落します';
+  }
+
+  @override
+  String gameRulesEndFirstOver(int threshold) {
+    return 'いずれかのプレイヤーが $threshold 点を超えた時点で終了します';
+  }
+
+  @override
+  String gameRulesEndFirstUnder(int threshold) {
+    return 'いずれかのプレイヤーが $threshold 点を下回った時点で終了します';
+  }
+
+  @override
+  String gameRulesEndLastOver(int threshold) {
+    return '1人を除く全プレイヤーが $threshold 点を超えた時点で終了します';
+  }
+
+  @override
+  String gameRulesEndLastUnder(int threshold) {
+    return '1人を除く全プレイヤーが $threshold 点を下回った時点で終了します';
+  }
+
+  @override
+  String get gameRulesNoEnd => '自動終了はありません。終わりを決めるのはあなたです';
+
+  @override
+  String get gameRulesEmptyTitle => 'まだルールがありません';
+
+  @override
+  String get gameRulesEmptyHint => 'あなたの卓の点数の数え方を書いておけば、全員が同じルールを共有できます。';
+
+  @override
+  String get gameRulesWrite => 'ルールを書く';
+
+  @override
+  String get gameRulesEditTitle => 'ルールを編集';
+
+  @override
+  String get gameRulesEditorHint => 'あなたの卓のルール。Markdown が使えます。';
+
+  @override
+  String get gameRulesFromGroup => 'あなたのグループのルール';
+
+  @override
+  String get gameRulesRestoreDefault => '元のルールに戻す';
+
+  @override
+  String get gameRulesSaved => 'ルールを保存しました';
+
+  @override
+  String get gameRulesRestored => '元のルールに戻しました';
+
+  @override
+  String get gameRulesDisclaimer =>
+      'この要約は、一般的に遊ばれているルールをもとに CountScore がまとめたものです。ゲーム名は各権利者に帰属し、説明のためにのみ使用しています。';
 
   @override
   String get gameTypeNameZapzap => 'ZapZap';
