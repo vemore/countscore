@@ -468,5 +468,49 @@
   "gameRulesRestoreDefault": "元のルールに戻す",
   "gameRulesSaved": "ルールを保存しました",
   "gameRulesRestored": "元のルールに戻しました",
-  "gameRulesDisclaimer": "この要約は、一般的に遊ばれているルールをもとに CountScore がまとめたものです。ゲーム名は各権利者に帰属し、説明のためにのみ使用しています。"
+  "gameRulesDisclaimer": "この要約は、一般的に遊ばれているルールをもとに CountScore がまとめたものです。ゲーム名は各権利者に帰属し、説明のためにのみ使用しています。",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameUno": "ウノ",
+
+  "gameTypeNameScrabble": "スクラブル",
+
+  "gameTypeNameOther": "その他",
+
+  "gameTypeNameSkyjo": "スカイジョ",
+
+  "gameTypeNamePresident": "大富豪",
+
+  "gameTypeNameBelote": "ベロット",
+
+  "gameTypeNameTarot": "タロット",
+
+  "gameTypeNameBridge": "ブリッジ",
+
+  "gameTypeNameRami": "ラミー",
+
+  "gameTypeNameCoinche": "コワンシュ",
+
+  "gameTypeNameYahtzee": "ヤッツィー",
+
+  "gameTypeNamePhase10": "フェーズ 10",
+
+  "gameTypeNameFlip7": "フリップ 7",
+
+  "gameTypeNameMilleBornes": "ミルボルヌ",
+
+  "gameTypeNameRummikub": "ラミィキューブ",
+
+  "gameTypeNameSixNimmt": "ニムト",
+
+  "gameTypeNameQwirkle": "クワークル",
+
+  "gameTypeNameFarkle": "ファークル",
+
+  "gameTypeNameCanasta": "カナスタ",
+
+  "gameTypeNameWizard": "ウィザード",
+
+  "gameTypeNameTriomino": "トライオミノ"
 }

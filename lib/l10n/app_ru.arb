@@ -468,5 +468,49 @@
   "gameRulesRestoreDefault": "Восстановить исходные правила",
   "gameRulesSaved": "Правила сохранены",
   "gameRulesRestored": "Исходные правила восстановлены",
-  "gameRulesDisclaimer": "Пересказ подготовлен для CountScore по правилам в их наиболее распространённом виде. Названия игр принадлежат их правообладателям и упоминаются только описательно."
+  "gameRulesDisclaimer": "Пересказ подготовлен для CountScore по правилам в их наиболее распространённом виде. Названия игр принадлежат их правообладателям и упоминаются только описательно.",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameUno": "Уно",
+
+  "gameTypeNameScrabble": "Скрэббл",
+
+  "gameTypeNameOther": "Другое",
+
+  "gameTypeNameSkyjo": "Скайджо",
+
+  "gameTypeNamePresident": "Президент",
+
+  "gameTypeNameBelote": "Белот",
+
+  "gameTypeNameTarot": "Таро",
+
+  "gameTypeNameBridge": "Бридж",
+
+  "gameTypeNameRami": "Рамми",
+
+  "gameTypeNameCoinche": "Куанш",
+
+  "gameTypeNameYahtzee": "Яцзы",
+
+  "gameTypeNamePhase10": "Фаза 10",
+
+  "gameTypeNameFlip7": "Флип 7",
+
+  "gameTypeNameMilleBornes": "Милль Борн",
+
+  "gameTypeNameRummikub": "Руммикуб",
+
+  "gameTypeNameSixNimmt": "Шесть берёт",
+
+  "gameTypeNameQwirkle": "Квиркл",
+
+  "gameTypeNameFarkle": "Фаркл",
+
+  "gameTypeNameCanasta": "Канаста",
+
+  "gameTypeNameWizard": "Визард",
+
+  "gameTypeNameTriomino": "Триомино"
 }

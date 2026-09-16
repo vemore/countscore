@@ -15,6 +15,13 @@
 /// received from the server is not captured and sent straight back.
 library;
 
+import '../../models/game_type.dart';
+import '../uuid.dart';
+
+/// Runs one statement, with optional positional arguments. `Database.execute`
+/// (sqflite) and `AppDatabase.customStatement` (Drift) both fit.
+typedef SqlExecutor = Future<void> Function(String sql, [List<Object?> args]);
+
 /// Schema v10, shared by both engines: the sync bookkeeping tables and columns.
 /// Idempotent — it checks each column before adding it, so it can replay on a
 /// database that already has part of it.
@@ -211,6 +218,77 @@ Future<void> applyV13(
       "UPDATE game_types SET rules_slug = '${entry.value}' "
       "WHERE isDefault = 1 AND rules_slug IS NULL "
       "AND name = '${entry.key.replaceAll("'", "''")}'",
+    );
+  }
+}
+
+/// Schema v14, shared by both engines: `game_types.builtin_key`, the stable
+/// identity of a built-in type. Null for a type the user created or renamed.
+///
+/// It carries the displayed name as well (`lib/utils/game_type_name.dart`), so
+/// the stored `name` of a built-in row stops mattering and two devices in
+/// different locales converge on one row. See .llmwiki/SchemaV10.md.
+///
+/// Three steps, all idempotent so the step can replay:
+///
+/// 1. add the column;
+/// 2. back-fill every **seeded** row, matched by the literal name it was seeded
+///    with and by `isDefault = 1` — the precedent is the v4 to v5 step in
+///    `database_service.dart`. `isDefault` is what separates a row the app wrote
+///    from one the user made: a user's own "Yahtzee" carries 0 and is left
+///    alone, so the migration never hijacks their row and renames it under them.
+///    At most one row per key, the oldest: the guard is on the key, not on the
+///    row, so a user with two "Uno" rows still ends up with exactly one `uno`,
+///    on the first replay and on every one after it;
+/// 3. insert the built-in types the pre-v14 seed never held, when the key is
+///    absent **and no live row already uses that name**. The ten old ones are
+///    never re-inserted, so **a type the user deleted is not resurrected**; and
+///    a user who already made their own "Yahtzee" — the very premise of this
+///    change — keeps that one row rather than gaining a second with the same
+///    name, which the server's `unique(group_id, name)` would refuse for good
+///    anyway.
+///
+/// Step 2 covers all 22 rather than only the ten, because the v2 to v3 step
+/// seeds the *current* catalogue into an old database: a device coming from v2
+/// arrives at v14 with all 22 names already present and none of them keyed.
+Future<void> applyV14(
+  SqlExecutor execute,
+  Future<Set<String>> Function(String table) columnsOf,
+) async {
+  final existing = await columnsOf('game_types');
+  if (!existing.contains('builtin_key')) {
+    await execute('ALTER TABLE game_types ADD COLUMN builtin_key TEXT');
+  }
+
+  for (final type in GameType.defaultGameTypes()) {
+    final key = type.builtinKey;
+    if (key == null) continue;
+    await execute(
+      'UPDATE game_types SET builtin_key = ? WHERE id = ('
+      '  SELECT id FROM game_types'
+      '  WHERE builtin_key IS NULL AND name = ? COLLATE NOCASE AND isDefault = 1'
+      '  ORDER BY id LIMIT 1)'
+      ' AND NOT EXISTS (SELECT 1 FROM game_types WHERE builtin_key = ?)',
+      [key, type.name, key],
+    );
+  }
+
+  final now = DateTime.now().millisecondsSinceEpoch;
+  for (final type in GameType.defaultGameTypes()) {
+    final key = type.builtinKey;
+    if (key == null || GameType.seededNamesBeforeV14.containsKey(key)) continue;
+    final values = Map<String, Object?>.from(type.toMap())..remove('id');
+    values['uuid'] = newUuid();
+    values['created_at'] = now;
+    values['updated_at'] = now;
+    final columns = values.keys.join(', ');
+    final placeholders = List.filled(values.length, '?').join(', ');
+    await execute(
+      'INSERT INTO game_types ($columns) SELECT $placeholders '
+      'WHERE NOT EXISTS (SELECT 1 FROM game_types WHERE builtin_key = ?) '
+      'AND NOT EXISTS (SELECT 1 FROM game_types '
+      '                WHERE name = ? COLLATE NOCASE AND deleted_at IS NULL)',
+      [...values.values, key, type.name],
     );
   }
 }

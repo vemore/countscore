@@ -64,6 +64,35 @@ void main() {
       expect(await gameTypeRepo.getById(id), isNull);
     });
 
+    test('builtinKey round-trips through create, getAll and update', () async {
+      // `update` lists its columns by hand, so a new field is silently dropped
+      // there and nowhere else.
+      final id = await gameTypeRepo.create(GameType(
+        builtinKey: 'yahtzee',
+        name: 'Yahtzee',
+        iconCodePoint: 0,
+        cardColorValue: 0,
+        isLowestScoreWins: false,
+      ));
+      expect((await gameTypeRepo.getById(id))?.builtinKey, 'yahtzee');
+      expect(
+        (await gameTypeRepo.getAll()).firstWhere((t) => t.id == id).builtinKey,
+        'yahtzee',
+      );
+
+      final stored = (await gameTypeRepo.getById(id))!;
+      await gameTypeRepo.update(stored.copyWith(cardColorValue: 0xFF00FF00));
+      expect((await gameTypeRepo.getById(id))?.builtinKey, 'yahtzee');
+
+      // Renaming drops the key: from then on the chosen name is what renders.
+      await gameTypeRepo.update(
+        stored.copyWith(name: 'Mon Yahtzee', clearBuiltinKey: true),
+      );
+      final renamed = await gameTypeRepo.getById(id);
+      expect(renamed?.builtinKey, isNull);
+      expect(renamed?.name, 'Mon Yahtzee');
+    });
+
     test('carries rules and rulesSlug through create, read and update', () async {
       // The repository writes game types by map, so a new column needs no code
       // there — this is the test that proves it, and catches a Drift table that

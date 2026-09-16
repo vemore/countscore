@@ -941,4 +941,70 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get gameRulesDisclaimer =>
       'यह सारांश CountScore के लिए, आमतौर पर खेले जाने वाले नियमों के आधार पर लिखा गया है। खेलों के नाम उनके संबंधित स्वामियों के हैं और केवल वर्णनात्मक रूप से उपयोग किए गए हैं।';
+
+  @override
+  String get gameTypeNameZapzap => 'ZapZap';
+
+  @override
+  String get gameTypeNameUno => 'उनो';
+
+  @override
+  String get gameTypeNameScrabble => 'स्क्रैबल';
+
+  @override
+  String get gameTypeNameOther => 'अन्य';
+
+  @override
+  String get gameTypeNameSkyjo => 'स्काईजो';
+
+  @override
+  String get gameTypeNamePresident => 'प्रेसिडेंट';
+
+  @override
+  String get gameTypeNameBelote => 'बेलोत';
+
+  @override
+  String get gameTypeNameTarot => 'टैरो';
+
+  @override
+  String get gameTypeNameBridge => 'ब्रिज';
+
+  @override
+  String get gameTypeNameRami => 'रमी';
+
+  @override
+  String get gameTypeNameCoinche => 'कोएंश';
+
+  @override
+  String get gameTypeNameYahtzee => 'याहत्ज़ी';
+
+  @override
+  String get gameTypeNamePhase10 => 'फेज़ 10';
+
+  @override
+  String get gameTypeNameFlip7 => 'फ्लिप 7';
+
+  @override
+  String get gameTypeNameMilleBornes => 'मिल बोर्न';
+
+  @override
+  String get gameTypeNameRummikub => 'रमीक्यूब';
+
+  @override
+  String get gameTypeNameSixNimmt => '6 निम्ट';
+
+  @override
+  String get gameTypeNameQwirkle => 'क्विर्कल';
+
+  @override
+  String get gameTypeNameFarkle => 'फार्कल';
+
+  @override
+  String get gameTypeNameCanasta => 'कनास्ता';
+
+  @override
+  String get gameTypeNameWizard => 'विज़ार्ड';
+
+  @override
+  String get gameTypeNameTriomino => 'ट्रायोमिनो';
 }

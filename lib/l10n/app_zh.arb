@@ -468,5 +468,49 @@
   "gameRulesRestoreDefault": "恢复原始规则",
   "gameRulesSaved": "规则已保存",
   "gameRulesRestored": "已恢复原始规则",
-  "gameRulesDisclaimer": "本摘要由 CountScore 依据通行玩法编写。游戏名称归各自所有者所有，此处仅作描述性使用。"
+  "gameRulesDisclaimer": "本摘要由 CountScore 依据通行玩法编写。游戏名称归各自所有者所有，此处仅作描述性使用。",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameUno": "UNO",
+
+  "gameTypeNameScrabble": "Scrabble",
+
+  "gameTypeNameOther": "其他",
+
+  "gameTypeNameSkyjo": "Skyjo",
+
+  "gameTypeNamePresident": "总统",
+
+  "gameTypeNameBelote": "贝洛特",
+
+  "gameTypeNameTarot": "塔罗牌",
+
+  "gameTypeNameBridge": "桥牌",
+
+  "gameTypeNameRami": "拉米",
+
+  "gameTypeNameCoinche": "Coinche",
+
+  "gameTypeNameYahtzee": "快艇骰子",
+
+  "gameTypeNamePhase10": "阶段 10",
+
+  "gameTypeNameFlip7": "翻牌 7",
+
+  "gameTypeNameMilleBornes": "Mille Bornes",
+
+  "gameTypeNameRummikub": "拉密",
+
+  "gameTypeNameSixNimmt": "6 nimmt!",
+
+  "gameTypeNameQwirkle": "Qwirkle",
+
+  "gameTypeNameFarkle": "Farkle",
+
+  "gameTypeNameCanasta": "凯纳斯特",
+
+  "gameTypeNameWizard": "Wizard",
+
+  "gameTypeNameTriomino": "三角骨牌"
 }

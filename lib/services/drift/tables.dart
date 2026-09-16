@@ -10,6 +10,7 @@ class GameTypes extends Table {
   String get tableName => 'game_types';
 
   IntColumn get id => integer().autoIncrement()();
+  TextColumn get builtinKey => text().named('builtin_key').nullable()();
   TextColumn get name => text()();
   IntColumn get iconCodePoint => integer().named('iconCodePoint')();
   IntColumn get cardColorValue => integer().named('cardColorValue')();

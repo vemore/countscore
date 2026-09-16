@@ -6,7 +6,12 @@
 
 ## Facts
 
-65 Dart files under `lib/` (including generated localizations).
+65 Dart files under `lib/` (including generated localizations, excluding gitignored
+`*.g.dart`).
+
+`lib/utils/` exists since 2026-09-16 and holds `game_type_name.dart`: the switch from a
+built-in game type's `builtin_key` to its localized name, with the stored `name` as the
+fallback. Every screen that shows a game type's name goes through it. See [[I18n]].
 
 ### Entry point
 
@@ -23,7 +28,7 @@ themed and already knows whether the connected features exist.
 | Provider | Responsibility |
 |---|---|
 | `game_provider.dart` (339 l.) | The substantial one. Repositories are constructor-injectable, defaulting to the six Drift implementations over `AppDatabase.instance`. Owns `_games`, `_currentGame`, `_currentPlayers`, `_currentRounds` and `_scores` (keyed `"playerId_roundId"`). Game/round/score CRUD plus stats. |
-| `game_type_provider.dart` (46 l.) | Game-type list CRUD, `getGameTypeById`. |
+| `game_type_provider.dart` (46 l.) | Game-type list CRUD, `getGameTypeById`. The 22 built-in types are rows like any other; their *displayed* name comes from `lib/utils/game_type_name.dart`, not from the row. |
 | `settings_provider.dart` (72 l.) | Wakelock toggle (SharedPreferences-backed) and DB export/import. The **only** caller of `DatabaseService` for I/O. Exposes `supportsDbExportImport => !kIsWeb`. |
 | `theme_provider.dart` (33 l.) | `ThemeMode` only, persisted to SharedPreferences under `themeMode` as `ThemeMode.name`. `load()` is called from `main()` before `runApp`. |
 | `group_provider.dart` | Group membership and the sync loop — create/join/leave/rotate, the device list and `revokeDevice`, `shareGame`, `syncNow`, `SyncStatus`, and a `SyncEvent` stream shown as snackbars by `_SyncEventListener` in `main.dart`. A `ChangeNotifierProxyProvider` over `BackendProvider`: runs only with a URL **and** a device token. Calls `GameProvider.refreshFromSync` after remote changes. See [[Sync]]. |

@@ -541,5 +541,49 @@
   "gameRulesRestoreDefault": "Restore the original rules",
   "gameRulesSaved": "Rules saved",
   "gameRulesRestored": "Original rules restored",
-  "gameRulesDisclaimer": "Summary written for CountScore from the rules as they are commonly played. Game names belong to their respective owners and are used descriptively only."
+  "gameRulesDisclaimer": "Summary written for CountScore from the rules as they are commonly played. Game names belong to their respective owners and are used descriptively only.",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameUno": "Uno",
+
+  "gameTypeNameScrabble": "Scrabble",
+
+  "gameTypeNameOther": "Other",
+
+  "gameTypeNameSkyjo": "Skyjo",
+
+  "gameTypeNamePresident": "President",
+
+  "gameTypeNameBelote": "Belote",
+
+  "gameTypeNameTarot": "Tarot",
+
+  "gameTypeNameBridge": "Bridge",
+
+  "gameTypeNameRami": "Rummy",
+
+  "gameTypeNameCoinche": "Coinche",
+
+  "gameTypeNameYahtzee": "Yahtzee",
+
+  "gameTypeNamePhase10": "Phase 10",
+
+  "gameTypeNameFlip7": "Flip 7",
+
+  "gameTypeNameMilleBornes": "Mille Bornes",
+
+  "gameTypeNameRummikub": "Rummikub",
+
+  "gameTypeNameSixNimmt": "Take 6",
+
+  "gameTypeNameQwirkle": "Qwirkle",
+
+  "gameTypeNameFarkle": "Farkle",
+
+  "gameTypeNameCanasta": "Canasta",
+
+  "gameTypeNameWizard": "Wizard",
+
+  "gameTypeNameTriomino": "Triomino"
 }

@@ -468,5 +468,49 @@
   "gameRulesRestoreDefault": "استعادة القواعد الأصلية",
   "gameRulesSaved": "تم حفظ القواعد",
   "gameRulesRestored": "تمت استعادة القواعد الأصلية",
-  "gameRulesDisclaimer": "مُلخَّص كُتب لـ CountScore استنادًا إلى القواعد الشائعة. أسماء الألعاب ملك لأصحابها وتُذكر لغرض الوصف فقط."
+  "gameRulesDisclaimer": "مُلخَّص كُتب لـ CountScore استنادًا إلى القواعد الشائعة. أسماء الألعاب ملك لأصحابها وتُذكر لغرض الوصف فقط.",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameUno": "أونو",
+
+  "gameTypeNameScrabble": "سكرابل",
+
+  "gameTypeNameOther": "أخرى",
+
+  "gameTypeNameSkyjo": "سكايجو",
+
+  "gameTypeNamePresident": "الرئيس",
+
+  "gameTypeNameBelote": "بيلوت",
+
+  "gameTypeNameTarot": "تاروت",
+
+  "gameTypeNameBridge": "بريدج",
+
+  "gameTypeNameRami": "رامي",
+
+  "gameTypeNameCoinche": "كوانش",
+
+  "gameTypeNameYahtzee": "ياتزي",
+
+  "gameTypeNamePhase10": "فيز 10",
+
+  "gameTypeNameFlip7": "فليب 7",
+
+  "gameTypeNameMilleBornes": "ميل بورن",
+
+  "gameTypeNameRummikub": "روميكوب",
+
+  "gameTypeNameSixNimmt": "خذ 6",
+
+  "gameTypeNameQwirkle": "كويركل",
+
+  "gameTypeNameFarkle": "فاركل",
+
+  "gameTypeNameCanasta": "كاناستا",
+
+  "gameTypeNameWizard": "ويزارد",
+
+  "gameTypeNameTriomino": "تريومينو"
 }

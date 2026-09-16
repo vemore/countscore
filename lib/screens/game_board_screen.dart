@@ -10,6 +10,7 @@ import '../providers/backend_provider.dart';
 import '../providers/group_provider.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
+import '../utils/game_type_name.dart';
 import '../repositories/drift/drift_repositories.dart';
 import '../repositories/game_analysis_repository.dart';
 import '../services/drift/database.dart';
@@ -299,7 +300,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
           final gameType = gameProvider.currentGame?.gameTypeId != null
               ? gameTypeProvider.getGameTypeById(gameProvider.currentGame!.gameTypeId!)
               : null;
-          final isZapZap = gameType?.name.toLowerCase() == 'zapzap';
+          final isZapZap = gameType?.builtinKey == 'zapzap';
 
           // Helper function to check if player is eliminated based on game type conditions
           bool isPlayerEliminated(int playerTotal) {
@@ -589,7 +590,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                               children: [
                                 Icon(gameType.icon, size: 20, color: gameType.cardColor),
                                 const SizedBox(width: 8),
-                                Text(gameType.name),
+                                Text(gameTypeDisplayName(l10n, gameType)),
                               ],
                             ),
                           );

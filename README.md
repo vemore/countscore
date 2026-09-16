@@ -14,17 +14,20 @@ at your own server in Settings → Server if you want the connected features.
 
 ## Features
 
-- **10 pre-configured game types** — ZapZap, Uno, Scrabble, Skyjo, Président, Belote, Tarot,
-  Bridge, Rami and a generic "Autre" — plus custom types with a user-picked icon and colour.
+- **22 pre-configured game types** — ZapZap, Uno, Scrabble, Skyjo, President, Belote, Tarot,
+  Bridge, Rummy, Coinche, Yahtzee, Phase 10, Flip 7, Mille Bornes, Rummikub, Take 6, Qwirkle,
+  Farkle, Canasta, Wizard, Triomino and a generic "Other" — each named in your own language —
+  plus custom types with a user-picked icon and colour.
 - **Flexible scoring**: lowest-wins and highest-wins, per game type.
 - **Rules for the game you are playing** — reachable from the score table and from the
   game-type list. Nine of the pre-configured types ship a ruleset, translated into all ten
-  languages, next to a summary of how CountScore scores that type. Any of it can be
+  languages, next to a summary of how CountScore scores that type — and every type, shipped
+  or your own, gets that summary. Any of it can be
   rewritten: your table's own rules replace the shipped text and travel with your group.
 - **Scoring grid**: rounds, running totals, live ranking and per-player statistics.
 - **An explicit end**: any game can be declared over from the board or the game list, which
   marks it in the history; reopen it and play on. Game types that define a threshold
-  (Skyjo, Président, Belote) still offer it by themselves when the threshold is crossed.
+  (Skyjo, President, Belote) still offer it by themselves when the threshold is crossed.
 - **Global players**: a player exists once and is shared across games, so statistics follow
   them from one game to the next.
 - **10 languages**, fully translated: English, French, Spanish, German, Portuguese (BR),

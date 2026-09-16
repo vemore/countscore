@@ -468,5 +468,49 @@
   "gameRulesRestoreDefault": "मूल नियम पुनर्स्थापित करें",
   "gameRulesSaved": "नियम सहेजे गए",
   "gameRulesRestored": "मूल नियम पुनर्स्थापित किए गए",
-  "gameRulesDisclaimer": "यह सारांश CountScore के लिए, आमतौर पर खेले जाने वाले नियमों के आधार पर लिखा गया है। खेलों के नाम उनके संबंधित स्वामियों के हैं और केवल वर्णनात्मक रूप से उपयोग किए गए हैं।"
+  "gameRulesDisclaimer": "यह सारांश CountScore के लिए, आमतौर पर खेले जाने वाले नियमों के आधार पर लिखा गया है। खेलों के नाम उनके संबंधित स्वामियों के हैं और केवल वर्णनात्मक रूप से उपयोग किए गए हैं।",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameUno": "उनो",
+
+  "gameTypeNameScrabble": "स्क्रैबल",
+
+  "gameTypeNameOther": "अन्य",
+
+  "gameTypeNameSkyjo": "स्काईजो",
+
+  "gameTypeNamePresident": "प्रेसिडेंट",
+
+  "gameTypeNameBelote": "बेलोत",
+
+  "gameTypeNameTarot": "टैरो",
+
+  "gameTypeNameBridge": "ब्रिज",
+
+  "gameTypeNameRami": "रमी",
+
+  "gameTypeNameCoinche": "कोएंश",
+
+  "gameTypeNameYahtzee": "याहत्ज़ी",
+
+  "gameTypeNamePhase10": "फेज़ 10",
+
+  "gameTypeNameFlip7": "फ्लिप 7",
+
+  "gameTypeNameMilleBornes": "मिल बोर्न",
+
+  "gameTypeNameRummikub": "रमीक्यूब",
+
+  "gameTypeNameSixNimmt": "6 निम्ट",
+
+  "gameTypeNameQwirkle": "क्विर्कल",
+
+  "gameTypeNameFarkle": "फार्कल",
+
+  "gameTypeNameCanasta": "कनास्ता",
+
+  "gameTypeNameWizard": "विज़ार्ड",
+
+  "gameTypeNameTriomino": "ट्रायोमिनो"
 }

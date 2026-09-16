@@ -27,10 +27,10 @@ Load this file first. Then read only the pages your task touches.
 
 | Page | Summary | Updated |
 |---|---|---|
-| [[MobileApp]] | `lib/` layout, providers, screens, the dynamic-icon constraint | 2026-09-16 |
-| [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-09-13 |
-| [[SchemaV10]] | Schema v13: the twelve tables, sync bookkeeping and capture triggers, tombstones, the migration chain | 2026-09-16 |
-| [[I18n]] | 10 languages × 269 keys, French template, English fallback; long-form rules are assets, not ARB; store locales differ | 2026-09-16 |
+| [[MobileApp]] | `lib/` layout, providers, screens, `utils/`, the dynamic-icon constraint | 2026-09-16 |
+| [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-09-16 |
+| [[SchemaV10]] | Schema v14: the twelve tables, `rules`/`rules_slug`, `builtin_key`, sync bookkeeping and capture triggers, tombstones, the migration chain | 2026-09-16 |
+| [[I18n]] | 10 languages × 291 keys, French template, English fallback; built-in game-type names are localized; long-form rules are assets, not ARB; store locales differ | 2026-09-16 |
 | [[Web]] | PWA specifics: sqlite3.wasm, OPFS, committed binaries and the check that gates them, `kIsWeb` guards, base href | 2026-09-16 |
 
 ## Backend (FastAPI)
@@ -38,7 +38,7 @@ Load this file first. Then read only the pages your task touches.
 | Page | Summary | Updated |
 |---|---|---|
 | [[Backend]] | Stack, module layout, settings, device-token auth | 2026-09-14 |
-| [[Api]] | Every endpoint, its auth requirement and its failure modes | 2026-09-14 |
+| [[Api]] | Every endpoint, its auth requirement and its failure modes | 2026-09-16 |
 | [[Sync]] | Delta-log + row-level LWW, the Flutter client (triggers, push/pull, conflicts), WebSocket | 2026-09-16 |
 | [[LlmProviders]] | The analysis prompt — nine voices, ten languages, the game-type registry — the pluggable provider factory, the separate Claude path, the report control | 2026-09-16 |
 
