@@ -2,8 +2,14 @@
 
 Complete specifications and guidelines for creating Google Play Store visual assets.
 
-**Last Updated**: November 9, 2025
-**Target**: Google Play Store listing for CountScore v1.0.0
+**Last Updated**: September 16, 2026
+**Target**: Google Play Store listing for CountScore v1.1.0 and later
+
+> The icon, the feature graphic and eight phone screenshots are **committed and published**
+> (`assets/`), so the "what you need to create" framing below applies only to what is still
+> missing: compliant screenshots and a tablet set. See
+> `wip/todo_nr/2026-09-16-screenshots-are-raw-captures.md` and
+> `.llmwiki/StoreListing.md`.
 
 ---
 
@@ -261,15 +267,31 @@ Safe:   924 × 400 (50px padding on all sides)
 **Dimensions**:
 - Minimum width or height: 320px
 - Maximum width or height: 3840px
-- Aspect ratio: Max dimension ≤ 2× min dimension
+- **Aspect ratio: no wider than 16:9 (1.778)** in either orientation — i.e. the long side is
+  at most 1.778× the short side
+
+> **Status: Corrected** (2026-09-16) — this line read "Max dimension ≤ 2× min dimension"
+> (2:1). That is the *old* Play limit; the current requirement is 16:9. The difference is not
+> academic here: the committed captures are 1080×2400, ratio **2.222**, which fails both.
 
 **Recommended Resolution**:
-- **Phone (portrait)**: 1080 × 1920px (9:16 ratio)
+- **Phone (portrait)**: 1080 × 1920px (9:16 ratio) — the target to compose to
 - **Phone (landscape)**: 1920 × 1080px (16:9 ratio)
 - **Tablet (portrait)**: 1536 × 2048px (3:4 ratio)
 
+A modern phone screen is taller than 16:9 (a Pixel 9 Pro XL captures 1080×2400), so a raw
+`adb` capture is **never** a valid screenshot on its own. It has to be composed into a
+1080×1920 frame — which is what a caption band above the screen is for.
+
 **Format**: JPEG or 24-bit PNG
-**Alpha**: Not allowed (must be opaque)
+**Alpha**: not allowed — the image must be fully opaque, 24-bit RGB.
+
+> **Status: Violated by the committed assets** (2026-09-16) — the eight PNGs in
+> `assets/screenshots/phone/` are `8-bit/color RGBA` (PNG colour type 6), straight from
+> `scripts/capture_screenshots.sh`, which never flattens them. Verify with
+> `file assets/screenshots/phone/*.png` before uploading. Tracked in
+> `wip/todo_nr/2026-09-16-screenshots-are-raw-captures.md`, together with the ratio.
+
 **File Size**: Maximum 8 MB per screenshot
 
 ### Screenshot Strategy
@@ -364,7 +386,7 @@ adb shell screencap -p > screenshot.png
 
 Before uploading:
 - [ ] Resolution meets requirements (min 320px, max 3840px)
-- [ ] Aspect ratio is valid (max 2:1)
+- [ ] Aspect ratio no wider than 16:9 (a raw phone capture is not)
 - [ ] File format is JPEG or PNG
 - [ ] File size under 8 MB
 - [ ] No alpha channel (fully opaque)
@@ -574,7 +596,7 @@ Before submitting to Play Store:
 - [ ] Minimum 2 screenshots provided
 - [ ] Recommended 4-8 screenshots
 - [ ] Resolution meets requirements
-- [ ] Aspect ratio valid (max 2:1)
+- [ ] Aspect ratio no wider than 16:9 (a raw phone capture is not)
 - [ ] File size under 8 MB each
 - [ ] No alpha channel
 - [ ] Shows real app UI

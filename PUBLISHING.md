@@ -1,6 +1,6 @@
 # CountScore — Play Store Submission Guide
 
-**Last Updated**: September 15, 2026
+**Last Updated**: September 16, 2026
 **Scope**: what happens in the **Play Console**, for a release that is already built.
 
 Everything on the machine — keystore, signing, version bump, icons, the App Bundle — is the
@@ -15,7 +15,7 @@ the reader to answer "no data collected" about an app that transmits game data.
 | Answer the Data Safety form | `PLAY_STORE_DATA_SAFETY.md` |
 | Know what we tell users we do | `privacy_policy.md` (published from `docs/`) |
 | Know the signing/target/icon state | `.llmwiki/Release.md` |
-| Write or change the listing text | `store_listing/en-US/`, `store_listing/fr-FR/` |
+| Write or change the listing text | `store_listing/<locale>/` (10 locales), rules in `.llmwiki/StoreListing.md` |
 | Produce the listing images | `store_listing/*.md`, `scripts/capture_screenshots.sh` |
 
 ---
@@ -63,25 +63,33 @@ States), type **App**, **Free**. Free cannot be changed to paid later.
 
 ## 2. Main store listing
 
-**Store presence → Main store listing.** The text is committed, per locale — paste it, do
-not retype it:
+**Store presence → Main store listing.** The text is committed, per locale — and normally
+published by `play_publish.py publish --listing`, not pasted. If you do paste it, do not
+retype it:
 
-| Field | Source | Limit |
+| Field | Source | Play limit |
 |---|---|---|
 | App name | `store_listing/<locale>/title.txt` | 30 |
 | Short description | `store_listing/<locale>/short_description.txt` | 80 |
 | Full description | `store_listing/<locale>/full_description.txt` | 4000 |
+| Release notes | `store_listing/<locale>/release_notes_v<x.y.z>.txt` | 500 |
 
-Both `en-US` and `fr-FR` are maintained. If you change the wording in the Console, change
-the file too, or the next release silently reverts it.
+**Ten locales** are maintained — `ar`, `de-DE`, `en-US`, `es-ES`, `fr-FR`, `hi-IN`, `ja-JP`,
+`pt-BR`, `ru-RU`, `zh-CN` — and the release notes deliberately only exist for `en-US` and
+`fr-FR`. If you change the wording in the Console, change the file too, or the next release
+silently reverts it. `play_publish.py` refuses any file over its limit. What the copy must
+and must not say, and the keyword targeted in each market: `.llmwiki/StoreListing.md`.
 
 **Graphics**: app icon 512×512 (`store_listing/assets/icon_512.png`), feature graphic
-1024×500, and 2–8 phone screenshots. Requirements and design guidance are in
-`store_listing/ASSET_REQUIREMENTS.md` and the guides beside it; capture screenshots with
-`scripts/capture_screenshots.sh`.
+1024×500, and 2–8 phone screenshots — ratio no wider than 16:9, opaque. Requirements and
+design guidance are in `store_listing/ASSET_REQUIREMENTS.md` and the guides beside it;
+capture screenshots with `scripts/capture_screenshots.sh`, which does **not** produce a
+compliant ratio on its own.
 
-**Category**: Tools. **Contact email** is public — `scribio.ai@gmail.com`, matching the one
-in `privacy_policy.md`.
+**Category**: Tools. **Store tags** are set here too, and they are what builds the "similar
+apps" block — neither is reachable from the API, so both are manual
+(`wip/todo_nr/2026-09-16-store-category-and-tags-misplace-the-app.md`). **Contact email** is
+public — `scribio.ai@gmail.com`, matching the one in `privacy_policy.md`.
 
 ## 3. App content
 
@@ -92,11 +100,13 @@ This is the section that gets releases rejected. Answers below are for CountScor
 Do not answer from memory. `PLAY_STORE_DATA_SAFETY.md` walks the form question by question
 and explains *why* each answer is what it is; the short version:
 
-- Collects or shares user data: **Yes** — optional, user-initiated analysis only.
-- Two data types: **Personal info → Name** (player names) and **App activity → Other
-  user-generated content** (game names, round comments, scores).
-- Both: optional, purpose **App functionality**, **not** linked to identity, **not** used
-  for tracking. Encrypted in transit: **Yes**. Deletion available: **Yes**.
+- Collects or shares user data: **Yes** — optional, and only against a server the user
+  configures.
+- **Three** data types: **Personal info → Name** (player names), **App activity → Other
+  user-generated content** (game names, round comments, scores, analyses, group and device
+  names) and **Device or other IDs** (the random per-installation token a group issues).
+- All three: optional, purpose **App functionality**, **not** linked to identity, **not**
+  used for tracking. Encrypted in transit: **Yes**. Deletion available: **Yes**.
 
 ### Privacy policy
 
@@ -155,8 +165,10 @@ page says so if it applies.
 Then **Production → Create new release**. Staged rollout: 10–20% first, watch Crashes & ANRs
 for 48 hours, then 50%, then 100%.
 
-Release notes go in `store_listing/<locale>/release_notes_v<x.y.z>.txt`, one file per
-locale, committed alongside the release — **500 characters at most** each, Play's limit.
+Release notes go in `store_listing/<locale>/release_notes_v<x.y.z>.txt`, committed alongside
+the release — **500 characters at most** each, Play's limit. Unlike the listing text, they are
+written for **`en-US` and `fr-FR` only**, on purpose (`.llmwiki/StoreListing.md`); the other
+eight locales fall back to the default language.
 
 Google's review is typically 2–5 business days and checks policy compliance, privacy-policy
 completeness, **data safety accuracy** and content rating accuracy.
