@@ -64,8 +64,10 @@ If the tasks are "none", skip to the report.
   by question. Same rule: compare, report, then change on go.
 - **Other App content declarations** (target audience, ads, government apps, financial
   features, health…) — `PUBLISHING.md` §3. Same rule.
-- **App registration / developer verification** — report the status and what the Console asks
-  for; the owner fills in identity forms themselves (rule 3).
+- **App registration / developer verification** — `com.vemore.countscore` was registered and
+  validated as of 2026-09-16 ([[Release]] §Developer verification), so expect nothing to do:
+  report the status, and flag it only if it has changed. Never add a key — the upload key is
+  excluded on purpose. The owner fills in identity forms themselves (rule 3).
 
 ## Report to the owner
 
