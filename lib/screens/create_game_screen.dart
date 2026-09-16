@@ -5,6 +5,7 @@ import '../models/game_type.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
 import '../providers/group_provider.dart';
+import '../utils/insets.dart';
 import '../widgets/player_picker_dialog.dart';
 import 'game_board_screen.dart';
 
@@ -196,7 +197,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: withBottomInset(context, const EdgeInsets.all(16)),
           children: [
             // Nom de la partie
             TextFormField(

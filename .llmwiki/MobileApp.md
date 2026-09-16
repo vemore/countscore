@@ -6,7 +6,7 @@
 
 ## Facts
 
-49 Dart files under `lib/` (including generated localizations).
+61 Dart files tracked under `lib/` (including the committed generated localizations).
 
 ### Entry point
 
@@ -45,6 +45,26 @@ themed and already knows whether the connected features exist.
 `version:` at build time; the ARB key `version` is only the `"Version {version}"` frame.
 
 `lib/widgets/` holds exactly one component: `player_picker_dialog.dart` (291 l.).
+
+### Utilities — `lib/utils/` (1)
+
+`insets.dart` — `withBottomInset(context, base)` adds `MediaQuery.paddingOf(context).bottom`
+to an `EdgeInsets`. A `BoxScrollView` (`ListView`, `GridView`) inserts `MediaQuery.padding`
+on its main axis **only when its `padding` argument is null**, so every root scrollable that
+passes an explicit padding loses that compensation and cannot scroll its last row clear of
+the system navigation bar — the app is edge-to-edge on `targetSdk` 36 and cannot opt out
+(`android/app/src/main/kotlin/com/example/countscore/MainActivity.kt` is a bare
+`FlutterActivity`; there is no `SystemChrome` call anywhere in `lib/`). Its eight call sites
+are the root scrollables of `about_screen.dart:31` (on the child `Padding` — a
+`SingleChildScrollView` never gets the compensation at all),
+`create_game_screen.dart:200`, `game_types_screen.dart:43`,
+`home_screen.dart:91` (the drawer) and `:335`, `player_stats_screen.dart:83`,
+`players_screen.dart:61`, `ranking_screen.dart:68`. Only the bottom edge is compensated:
+`Scaffold` drops the top padding for a body under an `AppBar`
+(`scaffold.dart`, `removeTopPadding: widget.appBar != null`) and keeps the bottom one unless
+there is a `bottomNavigationBar`, and `DrawerHeader` adds the status-bar height itself.
+`settings_screen.dart:117` and `game_analysis_screen.dart` need nothing — the first passes no
+padding, the second is a `SingleChildScrollView` inside the `SafeArea(top: false)` at l. 328.
 
 ### Models — `lib/models/` (6)
 
@@ -121,5 +141,13 @@ not "fix" it by hardcoding a codepoint.
   release would have needed ten ARB edits nobody remembered. `test/screens/about_screen_test.dart`
   mocks `PackageInfo` and keeps both of its checks in one test, because a static future
   completed in one test's fake-async zone never delivers in the next.
+- **The bottom inset is a helper, not seven more `SafeArea`s** (2026-09-16). Six root
+  `ListView`s and the About screen drew their last row behind the navigation bar; the bug had
+  been fixed case by case before (`game_analysis_screen.dart:328`), never in principle.
+  `withBottomInset` reproduces exactly what `BoxScrollView` does when `padding` is null,
+  which is why it needed no measurement on hardware to be correct — a widget test that pumps
+  a `MediaQuery` with a bottom padding and reads back the resolved padding pins it
+  (`test/utils/insets_test.dart`). It uses `MediaQuery.paddingOf`, not
+  `MediaQuery.of(context).padding`, so the keyboard opening does not rebuild a whole list.
 - **The mode is stored as `ThemeMode.name`, not its index**, so reordering the enum cannot
   silently flip a user's theme. An unknown stored value decodes to `ThemeMode.system`.

@@ -156,6 +156,7 @@ countscore/
 │   ├── providers/       # Provider state management
 │   ├── repositories/    # Data-access interfaces + their Drift implementations
 │   ├── services/        # Drift database, sqflite bootstrap migrator, backend client, sync/
+│   ├── utils/           # Cross-cutting helpers (system inset compensation)
 │   ├── l10n/            # ARB files (10 languages) + generated localizations
 │   └── main.dart
 ├── backend/             # FastAPI service (groups, sync, LLM commentary)

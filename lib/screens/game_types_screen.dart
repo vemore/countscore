@@ -4,6 +4,7 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 import '../l10n/app_localizations.dart';
 import '../models/game_type.dart';
 import '../providers/game_type_provider.dart';
+import '../utils/insets.dart';
 
 class GameTypesScreen extends StatefulWidget {
   const GameTypesScreen({super.key});
@@ -39,7 +40,7 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.all(8),
+            padding: withBottomInset(context, const EdgeInsets.all(8)),
             itemCount: gameTypes.length,
             itemBuilder: (context, index) {
               final gameType = gameTypes[index];
