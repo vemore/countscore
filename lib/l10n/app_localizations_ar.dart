@@ -443,6 +443,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get featureZapZapAnalysis => 'تحليل ألعاب ZapZap';
 
   @override
+  String get rateApp => 'قيّم CountScore';
+
+  @override
   String get credits => 'الاعتمادات';
 
   @override

@@ -882,6 +882,12 @@ abstract class AppLocalizations {
   /// **'Analyse des parties ZapZap'**
   String get featureZapZapAnalysis;
 
+  /// About screen entry opening the app's Play Store listing
+  ///
+  /// In fr, this message translates to:
+  /// **'Noter CountScore'**
+  String get rateApp;
+
   /// Credits section title
   ///
   /// In fr, this message translates to:

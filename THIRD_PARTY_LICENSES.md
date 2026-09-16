@@ -4,7 +4,7 @@ CountScore uses the following open source packages and libraries. We are gratefu
 
 ## Summary
 
-All dependencies use **permissive open-source licenses** (MIT and BSD variants). There are no copyleft licenses or license conflicts.
+All Dart packages use **permissive open-source licenses** (MIT and BSD variants). There are no copyleft licenses or license conflicts. The one non-open-source item is the Google Play Core review binary that `in_app_review` links on Android, covered by Google's own Play Core SDK terms — see its entry below.
 
 ---
 
@@ -89,7 +89,18 @@ All dependencies use **permissive open-source licenses** (MIT and BSD variants).
 **License:** BSD-3-Clause
 **Copyright:** Copyright 2017 The Chromium Authors
 **Repository:** https://github.com/fluttercommunity/plus_plugins/tree/main/packages/package_info_plus
-**Description:** Reads the app's version and build number — shown on the About screen
+**Description:** Reads the app's version and build number — shown on the About screen, and the
+key the review prompt asks at most once per
+
+### in_app_review (^2.0.12)
+**License:** MIT
+**Copyright:** Copyright (c) 2020 Britannio Jarrett
+**Repository:** https://github.com/britannio/in_app_review
+**Description:** Requests the native Play Store in-app review sheet after a finished game
+**Note:** on Android it links `com.google.android.play:review` and `play-services-base`, Google
+binaries covered by the Play Core Software Development Kit Terms of Service rather than by an
+open-source licence. They are not redistributed by this repository; they are resolved by Gradle
+at build time.
 
 ---
 

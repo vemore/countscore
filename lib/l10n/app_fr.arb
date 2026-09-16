@@ -706,6 +706,11 @@
     "description": "Feature: LLM-generated analysis of ZapZap games"
   },
 
+  "rateApp": "Noter CountScore",
+  "@rateApp": {
+    "description": "About screen entry opening the app's Play Store listing"
+  },
+
   "credits": "Crédits",
   "@credits": {
     "description": "Credits section title"

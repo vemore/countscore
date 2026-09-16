@@ -1,0 +1,34 @@
+# Three wiki pages and a README permission line no longer match the code
+
+- **Noted:** 2026-09-16 — while building feat/rating-prompt, which was forbidden to edit `.llmwiki/`
+- **Theme:** docs
+- **Area:** docs
+- **Blocks release:** no
+
+`feat/rating-prompt` ran in parallel with `docs/store-listing-aso`, which owns `.llmwiki/**`,
+so the pull request could not carry its own wiki updates. Three pages are now wrong:
+
+- **`I18n.md`** — "10 languages, 235 keys each" (`rateApp` makes it **236**, verified by JSON
+  key count in all ten files).
+- **`Testing.md`** — the table has no row for `test/services/review_prompt_test.dart` (8 tests:
+  the first-launch stamp, each guard refusing on its own, the happy path asking exactly once,
+  the version and session locks, and an unavailable platform not burning the version). Its
+  total, "89 tests pass in fifteen files", was **already stale** before this change: `flutter
+  test` now reports **112 passing, 1 skipped, across 18 files**.
+- **`MobileApp.md`** — `about_screen` is 175 lines there and **195** now (a "Rate CountScore"
+  ListTile opening the Play listing through `url_launcher`); the page has no services section,
+  so the new `lib/services/review_prompt.dart` and its `ReviewPromptService.instance` singleton
+  — the second thing `main()` awaits before `runApp`, after the theme and the backend URL — are
+  recorded nowhere; and "49 Dart files under `lib/`" is now 62 as counted by `find lib -name
+  '*.dart'`, so whatever that number counted should be stated or dropped.
+
+Separately, `README.md` Privacy says "The release build declares one Android permission,
+`INTERNET`, … and nothing else". The merged manifest also carries
+`com.vemore.countscore.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, a signature-level,
+app-private permission injected by `androidx.core:core:1.18.0` (blame report,
+`build/app/intermediates/manifest_merge_blame_file/…`). It predates this change and
+`in_app_review` adds no permission at all — but the sentence is literally false.
+
+**Fix:** update the three pages and their `Updated:` dates once `docs/store-listing-aso` has
+merged, and reword the README sentence to name the one permission *the app declares* and
+acknowledge the androidx-injected one.

@@ -446,6 +446,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get featureZapZapAnalysis => 'Анализ партий ZapZap';
 
   @override
+  String get rateApp => 'Оценить CountScore';
+
+  @override
   String get credits => 'Авторы';
 
   @override
