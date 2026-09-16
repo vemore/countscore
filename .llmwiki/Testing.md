@@ -140,7 +140,7 @@ pytest -v                        # everything; the integration marker needs Dock
 ### CI — `.github/workflows/ci.yml`
 
 Six jobs, on every push to `main`, every pull request, a weekly `schedule:` (Mondays 06:17
-UTC) and `workflow_dispatch`. `scope` runs first and alone, in ~25 s, and decides which of
+UTC) and `workflow_dispatch`. `scope` runs first and alone, in ~10 s, and decides which of
 the other five run; they are parallel behind it. On `main`, on the weekly run and on
 `workflow_dispatch` every flag is `true` — those keep a complete verification record.
 Flutter is pinned to **3.47.2** by the `FLUTTER_VERSION` env key — that pin and the
@@ -315,7 +315,7 @@ automated coverage at all and must be checked on a device.
 - **A `scope` job, not `paths:` filters** (2026-09-16). Every pull request ran all five jobs:
   ~4 min 30 and ~13 runner-minutes to start a Postgres and build an APK for a change to
   `wip/`. Replaying the last 20 merged pull requests through `scripts/ci_scope.sh`, 8 would
-  have run nothing at all. Runner minutes are free on a public repository — what this buys is
+  have run nothing at all — measured at 12 s wall clock on pull request #64, against 4 min 30. Runner minutes are free on a public repository — what this buys is
   latency on documentation and backend pull requests, and runner contention when
   `ship-parallel` pushes four or five branches at once (5 jobs × 5 branches is past the
   20-concurrent-job ceiling). It is **not** a win everywhere: `scope` is a serialised hop, so

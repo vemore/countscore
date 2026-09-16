@@ -62,5 +62,8 @@ $ gh pr checks 63 --required; echo $?
 `CLEAN`, not `BLOCKED`: a required check skipped by a job-level conditional satisfies branch
 protection. That is the whole premise, and it is now measured rather than assumed.
 
-The pull request that added this paragraph is the second proof — it changes one `wip/` file,
-so `scope` is the only job that runs.
+The second proof is the real thing: pull request #64, one `wip/` file changed,
+[run 35117925885](https://github.com/vemore/countscore/actions/runs/35117925885) — `scope`
+the only job that ran, the other five `skipped`, `MERGEABLE CLEAN`, **12 s wall clock**
+(`run_started_at` 15:49:36Z → `updated_at` 15:49:48Z; the `scope` job itself 8 s) against
+the ~4 min 30 the same change used to cost.
