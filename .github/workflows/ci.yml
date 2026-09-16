@@ -5,9 +5,10 @@ on:
     branches: [main]
   pull_request:
   # Mondays 06:17 UTC, on main, with every scope flag true. The `backend` job
-  # carries `pip-audit`, the only dependency scanner this repository has, and it
-  # no longer runs on a pull request that leaves backend/ alone: this is what
-  # caps the exposure window at a week. Same cadence as .github/dependabot.yml.
+  # carries `pip-audit`, the only dependency scan that *fails a build* here
+  # (Dependabot alerts notify but gate nothing), and it no longer runs on a pull
+  # request that leaves backend/ alone: this is what caps the exposure window at
+  # a week. Same cadence as .github/dependabot.yml.
   schedule:
     - cron: "17 6 * * 1"
   workflow_dispatch:

@@ -36,3 +36,34 @@ used to be re-run incidentally by every documentation pull request
 (`wip/todo_nr/2026-09-16-scheduled-workflow-auto-disabled.md` covers how that trigger can go
 quiet). The `android` job is still triggered by every Dart change, which is why a `lib/`-only
 pull request does not get faster (`wip/todo_nr/2026-09-16-android-job-on-every-dart-change.md`).
+
+## Evidence
+
+Forced-skip dry run on the change's own branch (a temporary commit hard-coding every flag to
+`false`, reverted before merge), with the branch up to date with `main`:
+
+```
+$ gh api repos/{owner}/{repo}/commits/$sha/check-runs -q '.check_runs[] | [.name,.status,.conclusion]|@tsv'
+Backend image — build, non-root, locked         completed  skipped
+App — codegen, analyze, test, web build         completed  skipped
+Sync — two devices against a real backend       completed  skipped
+Backend — ruff, mypy, pytest                    completed  skipped
+Android debug APK — fresh-clone build proof     completed  skipped
+Scope — which jobs this change needs            completed  success
+
+$ gh pr view 63 --json mergeable,mergeStateStatus
+MERGEABLE   CLEAN          <- the branch-protection verdict, five required checks skipped
+
+$ gh pr checks 63 --required; echo $?
+… skipping ×5
+0                          <- what ship-parallel's watch loop and require-pull-request.sh read
+```
+
+`CLEAN`, not `BLOCKED`: a required check skipped by a job-level conditional satisfies branch
+protection. That is the whole premise, and it is now measured rather than assumed.
+
+The second proof is the real thing: pull request #64, one `wip/` file changed,
+[run 35117925885](https://github.com/vemore/countscore/actions/runs/35117925885) — `scope`
+the only job that ran, the other five `skipped`, `MERGEABLE CLEAN`, **12 s wall clock**
+(`run_started_at` 15:49:36Z → `updated_at` 15:49:48Z; the `scope` job itself 8 s) against
+the ~4 min 30 the same change used to cost.
