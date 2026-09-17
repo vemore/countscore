@@ -1,5 +1,7 @@
 # The store listing still sells the analysis as ZapZap-only, in ten locales
 
+**Status:** done (2026-09-17) — closed by docs/listing-analysis-any-game. Line 38 of `full_description.txt` rewritten in all ten locales: the feature is named for what it does ("AI analysis" / « Analyse IA »), works on any finished game, in nine voices and the app's language. Both Data Safety guarantees kept — the data reaches the *user's* server, and nothing leaves without a tap plus a report action. The game named ZapZap stays in the long tail on line 9. `fr-FR` had 43 characters of headroom and set the length for every locale.
+
 - **Noted:** 2026-09-16 — while opening the AI analysis to every game type
 - **Theme:** store-listing
 - **Area:** docs

@@ -4,7 +4,7 @@
 > assets behind it. The Console walkthrough is `PUBLISHING.md`; the publishing mechanism is
 > [[Release]] and the `release-android` skill.
 > Related: [[Release]] · [[I18n]] · [[Documentation]] · [[KnownLimits]]
-> Updated: 2026-09-16
+> Updated: 2026-09-17
 
 ## Facts
 
@@ -71,11 +71,16 @@ prose.
 
 ### Rules the copy must obey
 
-- **Never "our server", never a denial of sync.** Group sharing and the ZapZap analysis exist
+- **Never "our server", never a denial of sync.** Group sharing and the AI analysis exist
   and reach the server *the user hosts*; "100 % offline" or "no data ever leaves the device"
   contradicts the Data Safety declaration and is the first rejection reason listed in
   `PUBLISHING.md`. Checked against `privacy_policy.md`. This applies to **all ten** languages.
 - **No backend URL anywhere** (`CLAUDE.md`).
+- **The analysis is named for what it does, not for one game.** `ZapZap` is one of the games
+  in the long tail above; it is not the feature's name. Since `feat/ai-analysis-styles` the
+  analysis covers every game type, in nine voices and ten languages, so the descriptions say
+  "AI analysis" / « Analyse IA » and the equivalent in the other eight locales. Naming the
+  feature after a single game reads as if it only worked there.
 - **No third-party game name in `title.txt`.** Uno, Skyjo, Scrabble, Phase 10 and Yahtzee are
   trademarks; the title is where Play enforces it. Descriptive use in the descriptions is
   framed as "works for your games of …", never "official app".
@@ -154,6 +159,17 @@ store:
 
 ## Decisions & History
 
+- **The analysis line was rewritten in all ten locales, feature-first (2026-09-17).** Line 38
+  of every `full_description.txt` sold the feature as the "ZapZap analysis", which was true
+  when it only ran on that one game. It has covered every game type, in nine voices and the
+  app's language, since `feat/ai-analysis-styles` — so the copy was understating the feature
+  rather than misleading, and it wasted the one line of the description that sells it. The
+  two guarantees the line carries for Data Safety — the data goes to the *user's* server, and
+  nothing leaves without a tap, with a report action — were kept verbatim in substance. The
+  game named ZapZap stays in the long tail on line 9, where it belongs. `fr-FR` had 43
+  characters of headroom against Play's 4 000-character limit, which is what set the length
+  of the rewrite for every locale. Closed
+  `wip/done/2026-09-16-listing-still-calls-the-analysis-zapzap.md`.
 - **The keyword goes first in the title, ahead of the brand (2026-09-16).** The user's call.
   `CountScore - Score Tracker` ranked for nothing a person types: 133 impressions in 28 days,
   and absence from the 30 results of the query that defines the category. Every one of those
