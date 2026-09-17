@@ -2,7 +2,7 @@
 
 > Scope: the Play Store configuration state. For the procedure, use the `release-android` skill.
 > Related: [[MobileApp]] · [[StoreListing]] · [[Testing]] · [[KnownLimits]] · [[Documentation]]
-> Updated: 2026-09-16
+> Updated: 2026-09-17
 
 ## Facts
 
@@ -75,8 +75,9 @@ default, never 1.0. The Console's "Closed testing" is the API track `alpha`. Tes
   lives at `~/.config/countscore/play-service-account.json` (`chmod 600`), named by
   `playServiceAccount=` in `android/key.properties`, and is backed up like the keystore.
   `.gitignore` has `*service-account*.json`; `guard-bash.sh` refuses any committed JSON whose
-  content holds `"type": "service_account"` ([[Hooks]]). As of 2026-09-15 the key does not
-  exist yet: the one-time setup is `release-android` §8, *Play API access*.
+  content holds `"type": "service_account"` ([[Hooks]]). The key **exists and works** — it has
+  published 1.1.0 (4) and 1.2.0 (5). The one-time setup, should it ever be redone, is
+  `release-android` §8, *Play API access*.
 - Outside the API, still Console-only: the IARC content rating, the App content declarations,
   the Data Safety form review, app registration (done, see above), the 12-tester closed test. `stage_handoff.sh`
   stages a browser-agent brief for those alone (`references/play-console-handoff.md`).
@@ -86,7 +87,9 @@ default, never 1.0. The Console's "Closed testing" is the API track `alpha`. Tes
 A released commit gets an **annotated** tag named exactly as `version:` in `pubspec.yaml`,
 `<x.y.z+n>` — the `release-android` skill §10 creates it once the rollout is live. On
 `origin`: `1.0.0+1` → `4e52a54`, `1.0.1+2` → `1614707`, `1.0.1+3` → `ee3ff1b` (lightweight,
-predates the rule). `1.1.0+4` → `3808257` (annotated, 2026-09-15). A local `1.0.1` tag on
+predates the rule). `1.1.0+4` → `3808257` (annotated, 2026-09-15). `1.2.0+5` → `29bf108` (annotated,
+2026-09-17), which also carries the repository's **first GitHub Release** — the en-US
+release notes as its body and **no binary asset**, see §Decisions. A local `1.0.1` tag on
 `1614707` (the older scheme) was never pushed and is not part of the scheme.
 
 ### Cadence
@@ -159,9 +162,22 @@ compliance documents; `scripts/build_privacy_page.py` renders the policy to
 
 ### Submission state
 
-Nothing blocks a 1.1.0 submission in the repository any more. What is left is on the
-Console and the GitHub account, not in the code: enable GitHub Pages so the policy URL
-resolves, then fill the form as `PLAY_STORE_DATA_SAFETY.md` describes.
+**1.2.0 (5) is live on production at a 20 % staged rollout** since 2026-09-17, published with
+`play_publish.py publish --track production --rollout 0.2 --listing --commit` — the first
+release to go straight to production through the API, with no internal hop. The same edit
+published the corrected ten-locale listing text (#84); `--graphics` was deliberately left out,
+because the eight phone screenshots are still the wrong ratio
+(`wip/todo_nr/2026-09-16-screenshots-are-raw-captures.md`), so the images on Play are the ones
+1.1.0 uploaded. 1.1.0 (4) stays listed as the completed production release beside it until the
+rollout is widened. Internal is still on 1.1.0 (4); beta and closed testing on 1.0.1 (3).
+
+Left: watch Crashes & ANRs for 48 h, then widen the rollout from the Console — the API has no
+"widen" step, and `--rollout` must stay strictly between 0 and 1.
+
+> **Status: Outdated** (2026-09-15) — this paragraph read "Nothing blocks a 1.1.0 submission in
+> the repository any more. What is left is on the Console and the GitHub account, not in the
+> code: enable GitHub Pages so the policy URL resolves, then fill the form as
+> `PLAY_STORE_DATA_SAFETY.md` describes." Both were done, and 1.1.0 then 1.2.0 shipped.
 
 > **Status: Outdated** (2026-09-15, later) — the owner updated the Data Safety form to
 > `PLAY_STORE_DATA_SAFETY.md` and submitted **1.1.0 (4) to production at 100 %** from the
@@ -199,6 +215,28 @@ resolves, then fill the form as `PLAY_STORE_DATA_SAFETY.md` describes.
 > `verify_aab.sh`.
 
 ## Decisions & History
+
+- **A GitHub Release accompanies the tag from 1.2.0+5 on, with no binary attached
+  (2026-09-17).** The user asked for the release to be tagged on GitHub. The tag alone was the
+  existing scheme, so the question was whether to add a Release page — and, if so, whether to
+  attach the APK. The page is worth it: it gives the tag a body, and the en-US release notes
+  already exist and are written for readers. The **binary is not**, and this is the rule to
+  keep: an APK built here carries the *upload* key, whose SHA-256 is deliberately unregistered
+  for Android developer verification (§Developer verification). Attaching one would create the
+  distribution channel that section says does not exist, and certified devices in the affected
+  countries would refuse to install it. A GitHub Release asset therefore requires registering
+  the upload key first — it is not a packaging decision.
+- **Production directly, at 20 %, with no internal rehearsal (2026-09-17).** The user's call
+  for 1.2.0. `release-android` §8 prescribes internal → closed → production; skipping it trades
+  a rehearsal for a day, and the staged rollout plus a device test on a real release build were
+  accepted as the substitute. Recorded because the skill still prescribes the longer order, and
+  the shortcut should stay a decision rather than become the default.
+- **The device pre-flight cannot be run "over the store version" as §5 asks.** Found on
+  2026-09-17: an APK built here is signed with the upload key, the build Play serves is signed
+  with the app signing key, so `adb install -r` fails `INSTALL_FAILED_UPDATE_INCOMPATIBLE`
+  against a genuine store install. The instruction is unachievable as written wherever Play App
+  Signing is on, which is always. Filed as
+  `wip/todo_nr/2026-09-17-device-test-cannot-install-over-the-store-build.md`.
 
 - **The store listing left this page for [[StoreListing]] (2026-09-16).** Rewriting the copy
   for search added locales, keyword targets, category and tags, a competitive picture and a
