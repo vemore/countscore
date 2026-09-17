@@ -1,0 +1,9 @@
+CountScore 1.2.0
+
+• 22 types de jeux prêts à l'emploi : Coinche, Yahtzee, Phase 10, Flip 7, Mille Bornes, Rummikub, Qwirkle, Canasta et d'autres.
+• Règles : ouvrez un type de jeu pour lire son décompte, ou écrivez les vôtres.
+• L'analyse IA fonctionne sur toute partie terminée, en neuf tons et dans votre langue.
+• Terminez une partie explicitement, quel que soit son type.
+• Corrections de traductions, de défilement et de l'écran de fin.
+
+Les fonctions en ligne restent inactives sans serveur.
