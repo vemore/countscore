@@ -35,7 +35,7 @@ POUR ALLER PLUS LOIN : VOTRE PROPRE SERVEUR (OPTIONNEL)
 Deux fonctions dépassent l'appareil et exigent un serveur que vous hébergez vous-même, à partir du code open source du dépôt. CountScore n'embarque aucune adresse : elles restent désactivées tant que vous n'en saisissez pas une dans Paramètres → Serveur.
 
 - Partage en groupe : créez un groupe ou rejoignez-en un avec un code d'invitation, et les parties que vous partagez apparaissent sur les autres téléphones du groupe, les saisies hors ligne se synchronisant au retour du réseau. Les parties non partagées restent sur votre appareil.
-- Analyse ZapZap : demandez un commentaire écrit d'une partie terminée. Les scores, les noms des joueurs et les commentaires de manche partent alors vers votre serveur, qui demande à un modèle d'IA de le rédiger. Rien ne part sans appui sur le bouton, et « Signaler ce commentaire » alerte par e-mail.
+- Analyse IA : un commentaire écrit de toute partie terminée, en neuf tons et dans votre langue. Les scores, les noms des joueurs et les commentaires de manche partent alors vers votre serveur, qui le fait rédiger par un modèle d'IA. Rien ne part sans appui sur le bouton, et « Signaler ce commentaire » alerte par e-mail.
 
 CONFIDENTIALITÉ, DITE CLAIREMENT
 

@@ -35,7 +35,7 @@ FÜR FORTGESCHRITTENE: EUER EIGENER SERVER (OPTIONAL)
 Zwei Funktionen gehen über das Gerät hinaus und brauchen beide einen Server, den ihr selbst betreibt — aus dem quelloffenen Code des Projekts. CountScore bringt keine Adresse mit: Sie bleiben aus, bis ihr unter Einstellungen → Server eine eintragt.
 
 - Gruppen-Freigabe: Gruppe erstellen oder mit Einladungscode beitreten. Freigegebene Partien erscheinen auf den anderen Telefonen der Gruppe, offline eingetragene Punkte holen bei Verbindung auf. Nicht freigegebene Partien bleiben auf dem Gerät.
-- ZapZap-Analyse: ein geschriebener Kommentar zu einer beendeten Partie. Punkte, Spielernamen und Rundenkommentare gehen dafür an euren Server, der ein KI-Modell darum bittet. Nichts wird ohne Tippen auf die Schaltfläche gesendet, und "Diesen Kommentar melden" meldet einen schlechten per E-Mail.
+- KI-Analyse: ein geschriebener Kommentar zu jeder beendeten Partie, in einem von neun Stilen und in eurer Sprache. Punkte, Spielernamen und Rundenkommentare gehen dafür an euren Server, der ein KI-Modell darum bittet. Nichts wird ohne Tippen auf die Schaltfläche gesendet, und "Diesen Kommentar melden" meldet einen schlechten per E-Mail.
 
 DATENSCHUTZ, KLAR GESAGT
 

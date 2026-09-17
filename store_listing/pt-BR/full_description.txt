@@ -35,7 +35,7 @@ AVANÇADO: O SEU PRÓPRIO SERVIDOR (OPCIONAL)
 Duas funções vão além do aparelho e ambas exigem um servidor hospedado por você, a partir do código aberto do projeto. O CountScore não traz endereço nenhum: elas ficam desligadas até você digitar um em Configurações → Servidor.
 
 - Compartilhamento em grupo: crie um grupo ou entre em um com código de convite, e as partidas que você escolher compartilhar aparecem nos outros telefones do grupo; o que foi lançado offline sincroniza quando a conexão volta. As partidas não compartilhadas ficam no seu aparelho.
-- Análise ZapZap: peça um comentário escrito de uma partida encerrada. Para isso, as pontuações, os nomes dos jogadores e os comentários de rodada são enviados ao seu servidor, que pede a um modelo de IA para redigir. Nada sai sem você tocar no botão, e "Denunciar este comentário" avisa por e-mail quando um sai errado.
+- Análise IA: peça um comentário escrito de qualquer partida encerrada, em um dos nove tons, em seu idioma. Para isso, as pontuações, os nomes dos jogadores e os comentários de rodada são enviados ao seu servidor, que pede a um modelo de IA para redigir. Nada sai sem você tocar no botão, e "Denunciar este comentário" avisa por e-mail.
 
 PRIVACIDADE, DITA COM CLAREZA
 

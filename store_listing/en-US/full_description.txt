@@ -35,7 +35,7 @@ ADVANCED: YOUR OWN SERVER (OPTIONAL)
 Two features reach beyond the device, and both need a server you host yourself from the open-source code in the repository. CountScore ships with no address for one, so they stay switched off until you type one in Settings → Server.
 
 - Group sharing: create a group or join one with an invite code, and the games you choose to share turn up on the other phones of the group. Scores entered offline catch up when the connection comes back. Games you do not share stay on your device.
-- ZapZap analysis: ask for a written commentary on a finished game. That game's scores, player names and round comments are sent to your server, which asks an AI model to write it. It runs only when you tap the button, and "Report this commentary" flags a bad one by email.
+- AI analysis: a written commentary on any finished game, in one of nine voices and in your own language. That game's scores, player names and round comments are sent to your server, which has an AI model write it. It runs only when you tap the button, and "Report this commentary" flags a bad one by email.
 
 PRIVACY, STATED PLAINLY
 
