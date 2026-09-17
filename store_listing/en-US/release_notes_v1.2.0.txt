@@ -1,0 +1,9 @@
+CountScore 1.2.0
+
+• 22 game types ready to use: Coinche, Yahtzee, Phase 10, Flip 7, Mille Bornes, Rummikub, Qwirkle, Farkle, Canasta and more.
+• Rules: open a game type to read how it is scored, and write your own.
+• AI analysis now works on any finished game, in nine voices and your language.
+• End a game explicitly, whatever its type.
+• Fixes to translations, scrolling and the end-of-game screen.
+
+Online features stay off until you enter your server.
