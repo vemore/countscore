@@ -46,7 +46,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get newWithSamePlayers => '使用相同玩家创建新游戏';
 
   @override
-  String get newGameSuffix => '(新)';
+  String get playAgain => '再来一局';
 
   @override
   String get rename => '重命名';

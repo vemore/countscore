@@ -237,7 +237,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                   inputDecorationTheme: const InputDecorationTheme(
                     border: OutlineInputBorder(),
                   ),
-                  dropdownMenuEntries: gameTypes
+                  dropdownMenuEntries: sortGameTypesByDisplayName(l10n, gameTypes)
                       .where((t) => t.id != null)
                       .map((GameType type) {
                     return DropdownMenuEntry<int>(

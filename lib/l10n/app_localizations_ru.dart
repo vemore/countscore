@@ -46,7 +46,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get newWithSamePlayers => 'Новая с теми же игроками';
 
   @override
-  String get newGameSuffix => '(новая)';
+  String get playAgain => 'Играть снова';
 
   @override
   String get rename => 'Переименовать';

@@ -5,13 +5,13 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/game_provider.dart';
-import '../providers/group_provider.dart';
 import '../providers/game_type_provider.dart';
 import '../models/game.dart';
 import '../models/game_type.dart';
 import '../services/review_prompt.dart';
 import '../utils/game_type_name.dart';
 import '../utils/insets.dart';
+import '../utils/play_again.dart';
 import 'about_screen.dart';
 import 'create_game_screen.dart';
 import 'game_board_screen.dart';
@@ -21,7 +21,11 @@ import 'players_screen.dart';
 import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.boardBuilder});
+
+  /// Injected by tests only: the board a game opens on. The default
+  /// `GameBoardScreen` reaches the `AppDatabase` singleton.
+  final WidgetBuilder? boardBuilder;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -29,6 +33,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int? _selectedGameTypeId; // null = tous les jeux
+
+  WidgetBuilder get _board =>
+      widget.boardBuilder ?? (context) => const GameBoardScreen();
 
   @override
   void initState() {
@@ -197,7 +204,8 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (BuildContext context, StateSetter setModalState) {
             return Consumer<GameTypeProvider>(
               builder: (context, gameTypeProvider, child) {
-                final gameTypes = gameTypeProvider.gameTypes;
+                final gameTypes = sortGameTypesByDisplayName(
+                    l10n, gameTypeProvider.gameTypes);
 
                 return Container(
                   padding: const EdgeInsets.all(16),
@@ -419,13 +427,19 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             trailing: PopupMenuButton(
               itemBuilder: (context) => [
+                // The same action under two names: on a finished game it is
+                // the next game of the evening.
                 PopupMenuItem(
-                  value: 'new_same',
+                  value: game.isFinished ? 'play_again' : 'new_same',
                   child: Row(
                     children: [
-                      const Icon(Icons.add_circle_outline),
+                      Icon(game.isFinished
+                          ? Icons.restart_alt
+                          : Icons.add_circle_outline),
                       const SizedBox(width: 8),
-                      Text(l10n.newWithSamePlayers),
+                      Text(game.isFinished
+                          ? l10n.playAgain
+                          : l10n.newWithSamePlayers),
                     ],
                   ),
                 ),
@@ -470,9 +484,7 @@ class _HomeScreenState extends State<HomeScreen> {
               if (context.mounted) {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const GameBoardScreen(),
-                  ),
+                  MaterialPageRoute(builder: _board),
                 );
               }
             },
@@ -516,7 +528,6 @@ class _HomeScreenState extends State<HomeScreen> {
     GameProvider gameProvider,
   ) async {
     final l10n = AppLocalizations.of(context)!;
-    final group = context.read<GroupProvider>();
     if (value == 'finish_game') {
       // Captured before the await: the card this menu belongs to may be gone
       // from the tree by the time the write returns.
@@ -541,41 +552,8 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () => gameProvider.setGameFinished(gameId, !finished),
           ),
         ));
-    } else if (value == 'new_same') {
-      await gameProvider.loadGame(game.id!);
-      final playerNames = gameProvider.currentPlayers.map((p) => p.name).toList();
-
-      // Récupérer les couleurs des joueurs actuels
-      final playerColorsMap = <String, int?>{};
-      for (final player in gameProvider.currentPlayers) {
-        playerColorsMap[player.name] = player.colorValue;
-      }
-
-      final newGameId = await gameProvider.createGame(
-        '${game.name} ${l10n.newGameSuffix}',
-        game.gameTypeId,
-        game.isLowestScoreWins,
-        playerNames,
-        playerColorsMap,
-      );
-      // A rematch of a shared game is shared too; its players already are.
-      if (game.isShared && group.isJoined) {
-        try {
-          await group.shareGame(newGameId);
-        } on GroupActionException {
-          // Names the server refuses: the new game stays local.
-        }
-      }
-
-      await gameProvider.loadGame(newGameId);
-      if (context.mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const GameBoardScreen(),
-          ),
-        );
-      }
+    } else if (value == 'new_same' || value == 'play_again') {
+      await playAgain(context, game, board: _board);
     } else if (value == 'delete') {
       final confirm = await showDialog<bool>(
         context: context,

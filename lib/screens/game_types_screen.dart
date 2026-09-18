@@ -33,7 +33,8 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
       ),
       body: Consumer<GameTypeProvider>(
         builder: (context, gameTypeProvider, child) {
-          final gameTypes = gameTypeProvider.gameTypes;
+          final gameTypes =
+              sortGameTypesByDisplayName(l10n, gameTypeProvider.gameTypes);
 
           if (gameTypes.isEmpty) {
             return Center(

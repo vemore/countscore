@@ -46,7 +46,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get newWithSamePlayers => 'Novo com os mesmos jogadores';
 
   @override
-  String get newGameSuffix => '(novo)';
+  String get playAgain => 'Jogar de novo';
 
   @override
   String get rename => 'Renomear';

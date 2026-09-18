@@ -1,5 +1,7 @@
 # The game-type list sorts on the stored name, not the one it shows
 
+**Status:** done (2026-09-18) — closed by feat/play-again-and-type-order. `sortGameTypesByDisplayName` in `lib/utils/game_type_name.dart` orders by the displayed name with `collateNames` — a small UCA-level approximation (accents and case folded, katakana onto hiragana, voiced and small kana onto their base, `ー` as its vowel), since neither the SDK nor `intl` has a collator; the game-types screen, the create-game dropdown, the home filter and the board's edit dialog call it, and `getAll` lost its `ORDER BY name`. Tested in `fr` and `ja` in `test/utils/game_type_name_test.dart`. Chinese stays in code-point order: `wip/todo_nr/2026-09-18-chinese-game-type-list-not-in-pinyin-order.md`.
+
 - **Noted:** 2026-09-16 — code review of `feat/game-types-long-tail` (#75)
 - **Theme:** game-types
 - **Area:** app

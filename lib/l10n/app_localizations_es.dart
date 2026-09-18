@@ -46,7 +46,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get newWithSamePlayers => 'Nuevo con los mismos jugadores';
 
   @override
-  String get newGameSuffix => '(nuevo)';
+  String get playAgain => 'Volver a jugar';
 
   @override
   String get rename => 'Renombrar';
