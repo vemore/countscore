@@ -31,7 +31,7 @@ class AppDatabase extends _$AppDatabase {
   static final AppDatabase instance = AppDatabase();
 
   @override
-  int get schemaVersion => 14;
+  int get schemaVersion => 15;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -41,6 +41,7 @@ class AppDatabase extends _$AppDatabase {
           for (final statement in syncV11Statements) {
             await customStatement(statement);
           }
+          await applyV15(customStatement);
           await _insertDefaultGameTypes();
         },
         onUpgrade: (m, from, to) async {
@@ -68,6 +69,9 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 14) {
             await applyV14(customStatement, _columnsOf);
+          }
+          if (from < 15) {
+            await applyV15(customStatement);
           }
         },
       );

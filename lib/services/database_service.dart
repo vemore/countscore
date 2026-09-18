@@ -19,7 +19,7 @@ class DatabaseService {
 
   /// Must equal `AppDatabase.schemaVersion`: Drift adopts the file this chain
   /// produced and never migrates it itself.
-  static const schemaVersion = 14;
+  static const schemaVersion = 15;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -231,6 +231,7 @@ class DatabaseService {
     await _createGameAnalysesTable(db);
     await _createSyncV10Tables(db);
     await _createSyncV11Capture(db);
+    await applyV15(db.execute);
 
     await _insertDefaultGameTypes(db);
   }
@@ -506,6 +507,10 @@ class DatabaseService {
 
     if (oldVersion < 14) {
       await applyV14(db.execute, (t) => _columnsOf(db, t));
+    }
+
+    if (oldVersion < 15) {
+      await applyV15(db.execute);
     }
   }
 

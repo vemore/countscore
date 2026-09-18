@@ -3,10 +3,11 @@
 // database. Drift's onUpgrade must then bring it to the current schema itself.
 //
 // Simulated on a native file: build the current schema, strip everything v10,
-// v11, v12 and v13 added, stamp user_version 9, and reopen through Drift.
+// v11, v12, v13, v14 and v15 added, stamp user_version 9, and reopen through Drift.
 
 import 'dart:io';
 
+import 'package:drift/drift.dart' show Variable;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart' as sqflite;
@@ -14,6 +15,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart' as sqflite;
 import 'package:countscore/models/game.dart';
 import 'package:countscore/repositories/drift/drift_repositories.dart';
 import 'package:countscore/services/drift/database.dart';
+import 'package:countscore/services/sync/sync_schema.dart';
 
 void main() {
   sqflite.sqfliteFfiInit();
@@ -42,6 +44,7 @@ void main() {
       await raw.execute('ALTER TABLE sync_state DROP COLUMN $column');
     }
     await raw.execute('ALTER TABLE games DROP COLUMN finishedAt');
+    await raw.execute('DROP INDEX $gameTypesBuiltinKeyIndex');
     await raw.execute('ALTER TABLE game_types DROP COLUMN builtin_key');
     // A v9 browser holds the ten types the seed wrote then, and no more.
     await raw.delete('game_types',
@@ -73,6 +76,12 @@ void main() {
       types.map((r) => r.data['builtin_key']).toSet(),
       containsAll(const ['other', 'yahtzee', 'six_nimmt', 'triomino']),
     );
+    // v15: one live row per built-in key.
+    final index = await db
+        .customSelect("SELECT 1 FROM sqlite_master WHERE type = 'index' AND name = ?",
+            variables: [const Variable(gameTypesBuiltinKeyIndex)])
+        .get();
+    expect(index, hasLength(1));
     final captureTriggers = await db
         .customSelect("SELECT COUNT(*) AS c FROM sqlite_master WHERE type = 'trigger'")
         .getSingle();
