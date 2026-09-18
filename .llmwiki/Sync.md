@@ -2,7 +2,7 @@
 
 > Scope: the offline-first sharing protocol — server and Flutter client.
 > Related: [[Api]] · [[SchemaV10]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-09-16
+> Updated: 2026-09-18
 
 ## Facts
 
@@ -113,8 +113,14 @@ turns every shared row back into a local one and empties `outbox`, `group_links`
 asks, then leaves.
 
 **Removing another device.** Settings → Group → *Devices* (`group_devices_sheet.dart`) lists
-`GET /groups/me/devices` and offers a revoke on every device but this one — this one leaves
-instead. `GroupProvider.revokeDevice` stores the rotated `share_token` the server returns, so
+`GET /groups/me/devices`, marks the owner, and — on the owner only — offers a revoke and a
+hand-over (*Make owner*, `PUT /groups/me/owner`) on every device but this one; this one leaves
+instead. A member that is not the owner sees the list and no action, and Settings → Group
+hides *New code* from it. `GroupProvider.isOwner` is held in memory, never in the database:
+true after creating, false after joining, then refreshed from `owner_device_id`
+(`GET /groups/me`) on every start and resume, from `is_owner` whenever the list loads, and
+dropped on any 403. A server that predates owners sends neither field; every device then
+keeps the actions, as before. `GroupProvider.revokeDevice` stores the rotated `share_token` the server returns, so
 the section shows the new invite code at once. The revoked device learns of it on its next
 request: a 401, shown as `SyncStatus.unauthorized` (its open stream closes with 1008 at the
 next push to the group or the next idle heartbeat, whichever comes first — see *WebSocket*). Its local copies of the games stay where they are.

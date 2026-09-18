@@ -1664,5 +1664,47 @@
 
   "@gameTypeNameTriomino": {
     "description": "Built-in game type: Triomino"
+  },
+
+  "groupDeviceOwner": "Propriétaire",
+  "@groupDeviceOwner": {
+    "description": "Marks the device that owns the group in the group's device list"
+  },
+
+  "groupDeviceMakeOwner": "Nommer propriétaire",
+  "@groupDeviceMakeOwner": {
+    "description": "Action, offered to the owner only, handing the group's owner role to another device"
+  },
+
+  "groupDeviceMakeOwnerConfirm": "Confier le groupe à « {label} » ? Cet appareil ne pourra plus exclure d'appareil ni changer le code d'invitation.",
+  "@groupDeviceMakeOwnerConfirm": {
+    "description": "Confirmation before handing the owner role to another device",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Tel Bob"
+      }
+    }
+  },
+
+  "groupDeviceOwnerChanged": "« {label} » est maintenant propriétaire du groupe.",
+  "@groupDeviceOwnerChanged": {
+    "description": "Shown after the owner role was handed to another device",
+    "placeholders": {
+      "label": {
+        "type": "String",
+        "example": "Tel Bob"
+      }
+    }
+  },
+
+  "groupDevicesExplainMember": "Seul le propriétaire du groupe peut exclure un appareil ou changer le code d'invitation.",
+  "@groupDevicesExplainMember": {
+    "description": "Explanation under the title of the devices sheet, shown to a device that does not own the group"
+  },
+
+  "groupErrorNotOwner": "Réservé au propriétaire du groupe",
+  "@groupErrorNotOwner": {
+    "description": "The server refused an action reserved to the group's owner"
   }
 }

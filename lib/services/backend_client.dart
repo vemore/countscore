@@ -31,11 +31,14 @@ typedef GroupMembership = ({
 });
 
 /// A member device of the caller's group, as `GET /groups/me/devices` lists it.
+///
+/// [isOwner] is null when the server predates group owners (every device equal).
 typedef GroupDevice = ({
   String id,
   String label,
   DateTime joinedAt,
   DateTime lastSeenAt,
+  bool? isOwner,
 });
 
 /// One delta as `/sync/pull` returns it.
@@ -177,8 +180,26 @@ class BackendClient {
           label: d['label'] as String,
           joinedAt: DateTime.parse(d['joined_at'] as String),
           lastSeenAt: DateTime.parse(d['last_seen_at'] as String),
+          isOwner: d['is_owner'] as bool?,
         ),
     ];
+  }
+
+  /// `GET /groups/me`: the id of the group's owner device.
+  ///
+  /// [known] is false when the server predates group owners and sends no
+  /// `owner_device_id` at all — every device is then equal.
+  Future<({bool known, String? ownerDeviceId})> groupOwner(String deviceToken) async {
+    final body = await _send('GET', '/groups/me', token: deviceToken);
+    return (
+      known: body.containsKey('owner_device_id'),
+      ownerDeviceId: body['owner_device_id'] as String?,
+    );
+  }
+
+  /// `PUT /groups/me/owner`: hands the owner role to [deviceId]. Owner only (403).
+  Future<void> transferOwnership(String deviceToken, String deviceId) async {
+    await _send('PUT', '/groups/me/owner', token: deviceToken, body: {'device_id': deviceId});
   }
 
   /// `POST /groups/me/devices/{id}/revoke`.

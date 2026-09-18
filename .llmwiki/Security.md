@@ -2,7 +2,7 @@
 
 > Scope: what is defended, and what is knowingly open.
 > Related: [[Backend]] · [[Api]] · [[LlmProviders]] · [[Deployment]] · [[KnownLimits]]
-> Updated: 2026-09-16
+> Updated: 2026-09-18
 
 ## Facts
 
@@ -25,7 +25,8 @@
 | WebSocket auth | Single-use ticket from `POST /sync/ws-ticket`, 60 s TTL. `app/services/ws_ticket.py`. |
 | WebSocket cost | One shared LISTEN connection for all streams (`app/services/notify.py`), at most `MAX_STREAMS_PER_DEVICE` (3) streams per device — a member can no longer exhaust Postgres connections. See [[Sync]]. |
 | LLM budget | Members set `monthly_budget_cents` only up to the operator's `MAX_BUDGET_CENTS` (unset: `DEFAULT_BUDGET_CENTS`). |
-| Revocation | Revoking another device rotates `share_token`, so the revoked device cannot rejoin with the token it learnt when joining. Its open `/sync/stream` is closed (1008) before the next frame it would receive — a push signal or the idle heartbeat (`app/routes/sync.py:_serve_stream`, `tests/test_sync_stream_cap.py`, `tests/test_sync_ws_integration.py`). |
+| Group owner | `groups.owner_device_id`: the creator, until it hands over (`PUT /groups/me/owner`) or leaves (the earliest-joined live device inherits). Only the owner may revoke another device, rotate `share_token` or hand over — 403 for any other member, checked under the group's row lock. `backend/tests/test_groups.py`. See [[Api]]. |
+| Revocation | Only the owner revokes another device ([[Api]]). Revoking another device rotates `share_token`, so the revoked device cannot rejoin with the token it learnt when joining. Its open `/sync/stream` is closed (1008) before the next frame it would receive — a push signal or the idle heartbeat (`app/routes/sync.py:_serve_stream`, `tests/test_sync_stream_cap.py`, `tests/test_sync_ws_integration.py`). |
 | Sync payload values | Per-entity bounds in `app/services/delta_bounds.py`, enforced before write. |
 | Security headers | `security_headers` middleware in `app/main.py:main`; HSTS behind `HSTS_ENABLED`. API responses get `default-src 'none'`; `/docs` a Swagger CSP, and only exists with `EXPOSE_DOCS=true`; paths under `PWA_BASE_PATH` get `_PWA_CSP` (self, `'wasm-unsafe-eval'`, CanvasKit from `www.gstatic.com`, fonts from `fonts.gstatic.com`, `connect-src 'self' https: wss:`) plus `Cache-Control: no-cache`. |
 | Container | `backend/Dockerfile`: multi-stage, `USER app` (uid 10001), code and venv owned by root, no compiler, dependencies exactly `uv.lock` (`--locked --no-dev`). Checked by the `image` CI job. See [[Deployment]]. |
@@ -134,6 +135,14 @@ proof-of-concept results are in `wip/done/2026-09-13-backend-security-review.md`
   member remove any other, and shows every member each device's name and last-seen time.
   Only the member who revoked gets the new code; the others see theirs stop working for
   invitations. An owner role is the change to make before a public launch.
+
+  > **Status: Outdated** (2026-09-18) — closed by `feat/group-owner`: the group has an owner
+  > (`groups.owner_device_id`, revision `0005_group_owner`), and only it may revoke a sibling,
+  > rotate the share token or hand the role over; every other member gets a 403 and the app
+  > hides those actions from it. What stays open to every member: leaving, reading the device
+  > list, and `PATCH /groups/me/settings` (style, language, budget up to the operator's cap).
+  > The members who stay after a revoke still hold a stale invite code until the owner shares
+  > the new one.
 - **In-memory state ties the service to one worker.** `ip_rate_limiter`, `ws_ticket`, the
   per-device stream counter and the LISTEN broker all live in process memory; horizontal scaling needs them moved to Redis or Postgres
   first. See rule 2 in `backend/CLAUDE.md`.

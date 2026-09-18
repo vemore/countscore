@@ -31,6 +31,7 @@ class DeviceInfo(BaseModel):
     label: str
     joined_at: datetime
     last_seen_at: datetime
+    is_owner: bool
 
 
 class DeviceListResponse(BaseModel):
@@ -40,13 +41,18 @@ class DeviceListResponse(BaseModel):
 class GroupPayload(BaseModel):
     """The group as any member device may read it — no share_token.
 
-    Every device in a group is equal, so a token echoed on a routine read is a token
-    every device can re-share at any time. It is returned only where the caller has
-    explicitly asked for a share link: create, join, and rotate.
+    A token echoed on a routine read is a token every device can re-share at any time.
+    It is returned only where the caller has explicitly asked for a share link: create,
+    join, rotate, and the owner's revoke.
+
+    ``owner_device_id`` is how a member learns whether it is the owner — the device that
+    may revoke a sibling, rotate the share token and hand the role over. The app compares
+    it with its own device id; nothing is stored on the device.
     """
 
     id: uuid.UUID
     name: str
+    owner_device_id: uuid.UUID | None
     comment_style: str
     comment_language: str
     monthly_budget_cents: int
@@ -65,6 +71,10 @@ class CreateGroupResponse(BaseModel):
 class JoinGroupResponse(BaseModel):
     group: GroupWithShareToken
     device: DevicePayload
+
+
+class TransferOwnershipRequest(BaseModel):
+    device_id: uuid.UUID
 
 
 class UpdateGroupSettings(BaseModel):

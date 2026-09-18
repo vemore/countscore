@@ -15,6 +15,7 @@ String groupActionErrorText(AppLocalizations l10n, GroupActionException e) => sw
       GroupActionError.unreachable => l10n.groupErrorUnreachable,
       GroupActionError.server => l10n.groupErrorServer,
       GroupActionError.invalidPlayerNames => l10n.invalidPlayerNamesForSync(e.detail.join(', ')),
+      GroupActionError.notOwner => l10n.groupErrorNotOwner,
     };
 
 /// Settings → Group: create or join a group, show its invite code and devices,
@@ -202,18 +203,22 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
               label: Text(l10n.groupDevices),
               onPressed: () => GroupDevicesSheet.show(context),
             ),
-            TextButton.icon(
-              icon: const Icon(Icons.autorenew),
-              label: Text(l10n.shareTokenRotate),
-              onPressed: _busy
-                  ? null
-                  : () async {
-                      if (!await _confirm(l10n.shareTokenRotateConfirm, l10n.shareTokenRotate)) {
-                        return;
-                      }
-                      await _run(group.rotateShareToken);
-                    },
-            ),
+            // The server refuses a rotation from any device but the owner.
+            if (group.isOwner)
+              TextButton.icon(
+                key: const Key('group_rotate_share_token'),
+                icon: const Icon(Icons.autorenew),
+                label: Text(l10n.shareTokenRotate),
+                onPressed: _busy
+                    ? null
+                    : () async {
+                        if (!await _confirm(
+                            l10n.shareTokenRotateConfirm, l10n.shareTokenRotate)) {
+                          return;
+                        }
+                        await _run(group.rotateShareToken);
+                      },
+              ),
             TextButton.icon(
               key: const Key('group_leave'),
               icon: const Icon(Icons.logout),

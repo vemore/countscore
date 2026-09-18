@@ -1877,6 +1877,42 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Triomino'**
   String get gameTypeNameTriomino;
+
+  /// Marks the device that owns the group in the group's device list
+  ///
+  /// In fr, this message translates to:
+  /// **'Propriétaire'**
+  String get groupDeviceOwner;
+
+  /// Action, offered to the owner only, handing the group's owner role to another device
+  ///
+  /// In fr, this message translates to:
+  /// **'Nommer propriétaire'**
+  String get groupDeviceMakeOwner;
+
+  /// Confirmation before handing the owner role to another device
+  ///
+  /// In fr, this message translates to:
+  /// **'Confier le groupe à « {label} » ? Cet appareil ne pourra plus exclure d\'appareil ni changer le code d\'invitation.'**
+  String groupDeviceMakeOwnerConfirm(String label);
+
+  /// Shown after the owner role was handed to another device
+  ///
+  /// In fr, this message translates to:
+  /// **'« {label} » est maintenant propriétaire du groupe.'**
+  String groupDeviceOwnerChanged(String label);
+
+  /// Explanation under the title of the devices sheet, shown to a device that does not own the group
+  ///
+  /// In fr, this message translates to:
+  /// **'Seul le propriétaire du groupe peut exclure un appareil ou changer le code d\'invitation.'**
+  String get groupDevicesExplainMember;
+
+  /// The server refused an action reserved to the group's owner
+  ///
+  /// In fr, this message translates to:
+  /// **'Réservé au propriétaire du groupe'**
+  String get groupErrorNotOwner;
 }
 
 class _AppLocalizationsDelegate
