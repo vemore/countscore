@@ -22,4 +22,9 @@ below ~600 dp keep today's layout, above it use a two-pane or multi-column arran
 `flutter-device-test` can drive the check on hardware, and `-d chrome` at a desktop window
 size covers the PWA. Then capture the tablet screenshot set.
 
-**Open question:** Which wide layout: master-detail on the home screen, or a wider score grid on the board?
+**Decided (2026-09-18, refinement):** the wider score grid on the game board first;
+master-detail on the home screen comes later, as its own entry if still wanted.
+
+**Acceptance:**
+- Above 600 dp the board's score grid uses the available width; below, the layout is unchanged (widget tests at 400 and 1000 dp).
+- No overflow on the board at a 1600 px desktop window in the PWA (`-d chrome`).

@@ -2,7 +2,7 @@
 
 > Scope: production topology and environment. For the procedure, use the `backend-deploy` skill.
 > Related: [[Backend]] · [[Security]] · [[Web]] · [[LlmProviders]]
-> Updated: 2026-09-14
+> Updated: 2026-09-18
 
 ## Facts
 
@@ -117,7 +117,10 @@ The `db-backup` sidecar (`docker-compose.prod.yml`, `docker-compose.yml`) runs
 (`postgres:17-alpine3.23` plus Alpine's `age~1.2`; `postgres:17-alpine` has no `age`). In
 production the image is `localhost:5050/countscore-backup:latest`, built and pushed by
 `deploy_nas.sh` next to the api image and tagged with the same short sha; the dev compose file
-builds it. It runs as `1027:100` in production, as before.
+builds it. It runs as `1027:100` in production, as before. The `image` CI job builds it too,
+runs the real `age --version` and `pg_dump --version` (major 17) in it, and requires
+`countscore-backup --once` without a recipient to exit non-zero, so a retired base tag or an
+`age` pin gone stale turns a pull request red instead of a deploy ([[Testing]]).
 
 Every day at 03:00 UTC (`BACKUP_AT_SECONDS`, default `10800`) it writes
 `pg_dump -Fc | gzip | age -r "$BACKUP_AGE_RECIPIENT"` into `./backups` —

@@ -39,7 +39,9 @@ while IFS= read -r path; do
         *.md|.llmwiki/*|wip/*|docs/*|store_listing/*|LICENSE) ;;
 
         # The server: its own suite, the image built from it, and the sync job,
-        # which runs that very server against two Flutter devices.
+        # which runs that very server against two Flutter devices. `image` also
+        # builds the db-backup sidecar (backend/Dockerfile.backup, backend/backup/)
+        # and resolves both compose files, all of which sit under this rule.
         backend/*) backend=true; image=true; sync=true ;;
 
         # The Gradle project, the manifest, the launcher icons: only the APK
@@ -50,7 +52,9 @@ while IFS= read -r path; do
         # drift_worker.js. Only `flutter build web` consumes it.
         web/*) app=true ;;
 
-        # Dart, its dependencies, its analysis and l10n configuration. `android`
+        # Dart, its dependencies, its analysis and l10n configuration -- `app` also
+        # runs the osv-scanner audit of pubspec.lock, so a lock-only change (a
+        # Dependabot week, deps.yml's refresh) is audited before it merges. `android`
         # is in this list on purpose: that job is the fresh-clone build proof,
         # and an AOT-only failure is exactly what it exists to catch. `app` also
         # covers scripts/hooks_selftest.sh, which reads l10n.yaml and lib/l10n/*.arb.

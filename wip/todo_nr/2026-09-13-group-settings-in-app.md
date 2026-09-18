@@ -1,14 +1,25 @@
-# Group settings in the app — for 1.2
+# The app has no screen for the group settings or the LLM usage
 
 - **Noted:** 2026-09-13 — out of scope for the sync client, decided with the user; the device list and revoke half shipped 2026-09-14
 - **Theme:** groups-v2
 - **Area:** app
 - **Blocks release:** no
 
-The app does not use `GET/PATCH /groups/me` (comment style, language, LLM budget),
-`GET /groups/me/usage`, or the group-scoped comments. Per-field LWW (`field_versions`,
-`.llmwiki/Sync.md`) belongs to the same "v2 of groups" conversation, and so does an owner
-role: today any member can remove any other (`.llmwiki/Security.md`), which the user wants
-revisited before group sharing is opened to the public.
+The app does not use `GET /groups/me`, `PATCH /groups/me/settings` (comment style, language,
+LLM budget) or `GET /groups/me/usage`. Since #76 the voice is chosen for each analysis and the
+group style is only its fallback, but the user still wants the group's comment style and
+language editable, and the usage visible.
 
-**Open question:** Split this umbrella entry into the settings/usage screen, per-field LWW and the owner role? Since #76 the voice is chosen for each analysis, and the group style is only a fallback: are the group comment style and language still wanted? Is the owner role a prerequisite for public group sharing? (The routes are `GET /groups/me`, `PATCH /groups/me/settings` and `GET /groups/me/usage`.)
+**Split (2026-09-18, refinement):** this was an umbrella entry. Per-field LWW is now
+[[2026-09-18-sync-resolves-conflicts-per-row-not-per-field]], and the owner role
+[[2026-09-18-no-owner-role-in-a-group]]. This entry keeps only the settings and usage screen.
+
+**Fix:** a group settings screen under Settings → Group: comment style and language read from
+`GET /groups/me` and written with `PATCH /groups/me/settings`, and the LLM usage from
+`GET /groups/me/usage`. Every string through `AppLocalizations`; nothing is called while no
+server URL is set.
+
+**Acceptance:**
+- The group's comment style and language are shown and edited from the app, and the change survives a restart.
+- The usage from `GET /groups/me/usage` is shown.
+- Strings exist in the ten ARB files, and no request is made without a server URL.

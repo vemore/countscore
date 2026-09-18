@@ -59,6 +59,11 @@ class OpenAICompatProvider:
             )
         except openai.RateLimitError as e:
             raise LLMRateLimitedError(f"{self.label} API rate-limited: {e}") from e
+        except openai.InternalServerError as e:
+            # A 5xx from the provider — Gemini's free tier answers 503 UNAVAILABLE "high
+            # demand, try again later". Same family as a 429: no capacity right now, the
+            # call itself is fine. See .llmwiki/Api.md.
+            raise LLMRateLimitedError(f"{self.label} API unavailable: {e}") from e
         except openai.OpenAIError as e:
             raise RuntimeError(f"{self.label} API call failed: {type(e).__name__}: {e}") from e
 

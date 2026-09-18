@@ -27,4 +27,11 @@ and to the twelve factories in `lib/models/game_type.dart`, and let
 `defaultRulesSlugs` on `builtin_key` rather than on the seeded name while doing it: the key
 is now the stable identity and the name is not.
 
-**Open question:** Re-key `defaultRulesSlugs` on `builtin_key`? That needs a migration to back-fill `rules_slug` on the 12 existing rows. And how many pull requests: one per family of games?
+**Decided (2026-09-18, refinement):** re-key `defaultRulesSlugs` on `builtin_key`, with a
+migration that back-fills `rules_slug` on the 12 existing rows (`db-migration` skill), and
+ship the twelve rulesets in **one** pull request.
+
+**Acceptance:**
+- Each of the twelve seeded types opens a rules page with text in all ten locales; `test/game_rules_catalog_test.dart` covers 21 slugs.
+- `defaultRulesSlugs` is keyed on `builtin_key`, not on the seeded name.
+- A migration test back-fills `rules_slug` on the twelve rows of an existing database, and a renamed type keeps its slug.

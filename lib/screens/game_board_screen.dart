@@ -660,7 +660,9 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                           value: null,
                           child: Text(l10n.none),
                         ),
-                        ...gameTypeProvider.gameTypes.map((gameType) {
+                        ...sortGameTypesByDisplayName(
+                                l10n, gameTypeProvider.gameTypes)
+                            .map((gameType) {
                           return DropdownMenuItem<int?>(
                             value: gameType.id,
                             child: Row(

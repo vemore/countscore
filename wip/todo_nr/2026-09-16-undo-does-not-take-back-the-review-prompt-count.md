@@ -25,4 +25,11 @@ dropped for a `COUNT(*)` over `games WHERE finishedAt IS NOT NULL` read at promp
 cannot drift from the truth at all. The second is fewer moving parts and survives a restore
 from backup; it needs `GameRepository` to expose the count.
 
-**Open question:** Should the count follow the state (count finished games when the prompt is due) or the act (decrement on undo, within the snackbar only)?
+**Decided (2026-09-18, refinement):** the count follows the state: a `COUNT(*)` of games
+with `finishedAt IS NOT NULL`, read through `GameRepository` when the prompt is due. The
+`reviewPromptGamesFinished` counter goes.
+
+**Acceptance:**
+- `ReviewPromptService` reads the finished-game count from `GameRepository`; no stored counter remains.
+- Finish then Undo leaves the count where it was (unit test).
+- Finish, reopen, finish counts one game.

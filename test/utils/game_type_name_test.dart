@@ -94,4 +94,66 @@ void main() {
     expect(gameTypeDisplayNameForKey(ja, 'Le jeu du jeudi'), 'Le jeu du jeudi');
     expect(gameTypeDisplayNameForKey(ja, 'Unknown'), 'Unknown');
   });
+
+  group('sortGameTypesByDisplayName', () {
+    List<String> sorted(AppLocalizations l10n, List<GameType> types) => [
+          for (final t in sortGameTypesByDisplayName(l10n, types))
+            gameTypeDisplayName(l10n, t),
+        ];
+
+    test('French: accents fold, digits first, the stored name is not read', () {
+      final types = [
+        ...GameType.defaultGameTypes(),
+        _type(name: 'Pétanque'),
+      ];
+      expect(sorted(fr, types), [
+        '6 qui prend', 'Autre', 'Belote', 'Bridge', 'Canasta', 'Coinche', //
+        'Farkle', 'Flip 7', 'Mille Bornes', 'Pétanque', 'Phase 10',
+        'Président', 'Qwirkle', 'Rami', 'Rummikub', 'Scrabble', 'Skyjo',
+        'Tarot', 'Triomino', 'Uno', 'Wizard', 'Yahtzee', 'ZapZap',
+      ]);
+    });
+
+    test('Japanese: dictionary order of the displayed kana, not code points',
+        () {
+      // Code-point order would put フリップ before ブリッジ (the voiced mark is
+      // a separate code point after the base) and ラミィ before ラミー (ー sits
+      // after the whole katakana block). A dictionary reads ブ as フ and ー as
+      // the vowel it lengthens.
+      expect(sorted(ja, GameType.defaultGameTypes()), [
+        'ZapZap', 'ウィザード', 'ウノ', 'カナスタ', 'クワークル', 'コワンシュ', //
+        'スカイジョ', 'スクラブル', 'その他', 'タロット', 'トライオミノ', 'ニムト',
+        'ファークル', 'フェーズ 10', 'ブリッジ', 'フリップ 7', 'ベロット',
+        'ミルボルヌ', 'ヤッツィー', 'ラミー', 'ラミィキューブ', '大富豪',
+      ]);
+    });
+
+    test('a custom type sorts by its stored name among the built-in ones', () {
+      final builtins = GameType.defaultGameTypes();
+      final inFrench = sorted(fr, [...builtins, _type(name: 'belotte du jeudi')]);
+      expect(inFrench.indexOf('belotte du jeudi'), inFrench.indexOf('Belote') + 1);
+
+      // ヴ is read as ウ, and a hiragana name sorts with its katakana peers.
+      final inJapanese =
+          sorted(ja, [...builtins, _type(name: 'ヴィラ'), _type(name: 'かるた')]);
+      expect(inJapanese.sublist(1, 4), ['ウィザード', 'ヴィラ', 'ウノ']);
+      expect(inJapanese.indexOf('かるた'), inJapanese.indexOf('カナスタ') + 1);
+    });
+
+    test('the input list is left as it was', () {
+      final types = GameType.defaultGameTypes();
+      final before = [for (final t in types) t.builtinKey];
+      sortGameTypesByDisplayName(ja, types);
+      expect([for (final t in types) t.builtinKey], before);
+    });
+
+    test('ties break on accents, then case, so the order is total', () {
+      expect(collateNames('Belote', 'Bélote'), lessThan(0));
+      expect(collateNames('は', 'ば'), lessThan(0));
+      expect(collateNames('ば', 'ぱ'), lessThan(0));
+      expect(collateNames('Uno', 'uno'), isNot(0));
+      expect(collateNames('Straße', 'strasse'), greaterThan(0));
+      expect(collateNames('Straße', 'strat'), lessThan(0));
+    });
+  });
 }

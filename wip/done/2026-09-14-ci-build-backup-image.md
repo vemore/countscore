@@ -1,5 +1,7 @@
 # CI never builds `backend/Dockerfile.backup`
 
+**Status:** done (2026-09-18) — closed by `chore/ci-image-and-osv-gates`. The `image` CI job now builds `backend/Dockerfile.backup`, runs `age --version` and `pg_dump --version` (major 17) in it, requires `countscore-backup --once` with no recipient to exit non-zero, and runs `docker compose config --quiet` on `docker-compose.prod.yml` (dummy `POSTGRES_*`/`CORS_ORIGINS`) and `docker-compose.yml` (`.env.example`), failing on any warning. `backend/*` already routed both paths to `image`; `scripts/ci_scope_selftest.sh` now pins it.
+
 - **Noted:** 2026-09-14 — while adding the age-encrypted `db-backup` image (feat/encrypted-backups)
 - **Theme:** backend-hardening
 - **Area:** backend

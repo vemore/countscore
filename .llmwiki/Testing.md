@@ -169,8 +169,8 @@ toolchain table in [[MobileApp]] must move together.
 |---|---|
 | `scope` | `scripts/ci_scope_selftest.sh` → `gh api repos/{owner}/{repo}/pulls/<n>/files` (`.filename` **and** `.previous_filename`) → `scripts/ci_scope.sh` → five `name=true\|false` flags into `$GITHUB_OUTPUT` |
 | `backend` | `postgres:17-alpine` service → `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` → `play_publish.py` tests (`.claude/skills/release-android/scripts/`, fake Google service) → `alembic upgrade head` → `downgrade base` → `upgrade head` → `check` (a migration round trip) → `uv export` + `pip-audit` |
-| `image` | `docker build backend` → runs as non-root, no compiler, no dev dependencies, read-only code |
-| `app` | `scripts/hooks_selftest.sh` → `pub get` → `scripts/web_binaries.sh --check` (and `--fetch` on the weekly run only) → `dart run build_runner build` → `analyze` → `test` → `build web --release` |
+| `image` | `docker build backend` → runs as non-root, no compiler, no dev dependencies, read-only code → `docker build -f backend/Dockerfile.backup backend` → `age --version`, `pg_dump --version` (17) → `countscore-backup --once` with no recipient must exit non-zero → `docker compose config --quiet` on both compose files, failing on any warning |
+| `app` | `scripts/hooks_selftest.sh` → `osv-scanner` on `pubspec.lock` → `pub get` → `scripts/web_binaries.sh --check` (and `--fetch` on the weekly run only) → `dart run build_runner build` → `analyze` → `test` → `build web --release` |
 | `android` | `pub get` → `dart run build_runner build` → `build apk --debug` |
 | `sync` | `postgres:17-alpine` service → `uv sync --locked` → `alembic upgrade head` → `.venv/bin/uvicorn` on 8765 (waits on `/health`; never `uv run`, whose parent process holds the uv cache lock and makes setup-uv's post-job `uv cache prune` time out whenever `uv.lock` changed) → `pub get` → `build_runner build` → `flutter test test/sync/sync_two_devices_test.dart` |
 
@@ -259,12 +259,27 @@ pull request. The weekly `schedule:` run is what replaces that, and caps the exp
 at seven days — as long as it still fires, which is what `scripts/check_scheduled_runs.sh`
 watches (below).
 
-**The Flutter dependencies have no scanner in CI.** `.github/dependabot.yml` (weekly,
-grouped: `uv`, `pub`, `github-actions`) raises *version* updates only, and only for the
-direct dependencies written in `pubspec.yaml`. The transitive half is covered by
-`.github/workflows/deps.yml` (below) — a **freshness** cadence, not a vulnerability scan:
-it proves the lock is current and that the committed `web/` binaries follow it, and it
-would not know an advisory if it saw one.
+**The Flutter dependencies have the same gate, in the `app` job (2026-09-18).**
+`osv-scanner` 2.6.0 — downloaded from its GitHub release and checked against a pinned
+SHA-256 in the step — scans every package `pubspec.lock` resolves, direct and transitive,
+with `--all-vulns`; any advisory fails the job (exit 1). `dart pub audit` does not exist.
+osv-scanner has no `--ignore-vuln` flag: its equivalent is an `[[IgnoredVulns]]` block
+(`id`, `reason`, optionally `ignoreUntil`) in `.github/osv-scanner.toml`, passed with
+`--config`, and the `reason` names the `wip/` entry that tracks it — same rule as
+`pip-audit`. It runs right after the hooks self-test, before Flutter is even installed, and
+`scripts/ci_scope.sh` sends every `pubspec.lock` change to `app`, so a Dependabot or
+`deps.yml` lock bump is audited before it merges; the weekly run covers the weeks nothing
+touched it. It found nothing on 2026-09-18 (162 packages).
+
+| Ecosystem | Version updates | Vulnerability gate (fails CI) |
+|---|---|---|
+| `uv` (backend) | `.github/dependabot.yml`, weekly | `pip-audit --strict`, `backend` job |
+| `pub` (app) | `.github/dependabot.yml`, weekly (direct only) + `deps.yml`, monthly (transitive) | `osv-scanner` on `pubspec.lock`, `app` job |
+| `github-actions` | `.github/dependabot.yml`, weekly | none — Dependabot alerts only |
+
+`.github/dependabot.yml` raises *version* updates only, and only for the direct
+dependencies written in `pubspec.yaml`. The transitive half is refreshed by
+`.github/workflows/deps.yml` (below) — a **freshness** cadence, not a vulnerability scan.
 
 **The committed `web/` binaries are gated.** `scripts/web_binaries.sh --check` runs in the
 `app` job right after `flutter pub get` and fails it when `web/drift_worker.js` does not
@@ -314,10 +329,10 @@ no open advisory on any ecosystem.
 
 Two things this does *not* give, and the difference matters:
 
-- **Nothing fails a build.** An alert is a notification on the repository, not a gate. Only
-  the backend has a gate (`pip-audit --strict`); a `pub` advisory still reaches nobody who
-  is not reading GitHub's security tab. That is why
-  `wip/todo/2026-09-16-dependabot-alerts-disabled.md` stays open for the CI half.
+- **Nothing fails a build.** An alert is a notification on the repository, not a gate. The
+  gates are `pip-audit --strict` (backend) and `osv-scanner` (`pubspec.lock`, since
+  2026-09-18, `wip/done/2026-09-16-dependabot-alerts-disabled.md`); a `github-actions`
+  advisory still reaches only GitHub's security tab.
 - **Nothing opens a fix.** *Dependabot security updates* — the setting that turns an alert
   into a pull request — is deliberately left off, so a security bump arrives on the normal
   weekly version-update schedule like any other.
@@ -413,3 +428,11 @@ automated coverage at all and must be checked on a device.
   `0001_initial.py`; the models were aligned, no revision was needed. `pip-audit` rather
   than `uv audit`, which uv 0.12 still ships as a preview command; both found nothing on
   2026-09-14.
+- **The backup sidecar and the compose files are checked in `image`, the `pub` audit in
+  `app`** (2026-09-18). Steps, not jobs, for the same reason as above: both job names are
+  required checks. The sidecar used to be built only by `deploy_nas.sh`, so a bad
+  `postgres:17-alpine3.23` / `age~1.2` pin would have surfaced as a failed production deploy
+  (`wip/done/2026-09-14-ci-build-backup-image.md`). `docker compose config` exits 0 on an
+  unset variable and only warns, hence the any-stderr rule. osv-scanner rather than a
+  GitHub action: a checksummed binary is pinned exactly, like `pip-audit@2.10.1`, and
+  needs no extra permission (`wip/done/2026-09-16-dependabot-alerts-disabled.md`).
