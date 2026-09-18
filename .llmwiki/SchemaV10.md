@@ -2,7 +2,7 @@
 
 > Scope: the mobile database — tables, the global-player model, the migration chain.
 > Related: [[DataLayer]] · [[Sync]] · [[MobileApp]] · [[Testing]]
-> Updated: 2026-09-16
+> Updated: 2026-09-18
 
 This page was `SchemaV9` until v10 landed on 2026-09-13; links were renamed with it.
 v11 followed the same day, and v12, v13 and v14 on 2026-09-16; all are described here too.
@@ -185,7 +185,7 @@ repairs the shape before the rest of the chain runs.
   fought the user's own renames and still left two devices in two locales disagreeing.
 - **The twelve new types are appended, never inserted (2026-09-16).** The first ten indices
   of `defaultGameTypes()` are what an install seeded before v14 already holds, in order;
-  `test/widget_test.dart` pins them. Inserting one in the middle would silently change what
+  `test/models_test.dart` pins them. Inserting one in the middle would silently change what
   the v14 back-fill matches.
 - **v12 adds a column although v10 deliberately did not (2026-09-16).** The v10 decision
   below rejected "a column per synced row" — that was six `ALTER TABLE`s across six tables

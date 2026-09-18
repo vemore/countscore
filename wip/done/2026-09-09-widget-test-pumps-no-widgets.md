@@ -1,5 +1,7 @@
 # `test/widget_test.dart` pumps no widgets
 
+**Status:** done (2026-09-18) — closed by chore/test-tooling-housekeeping. `test/widget_test.dart` renamed to `test/models_test.dart` (same 10 tests); `.llmwiki/Testing.md` and `.llmwiki/SchemaV10.md` name the new file, and the Testing trap about the misleading name is gone.
+
 - **Noted:** 2026-09-09 — surfaced during the LLM-wiki migration
 - **Theme:** test-tooling
 - **Area:** app
