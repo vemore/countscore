@@ -14,7 +14,7 @@ table is exactly the content that gets *better* with room.
 
 Play grades large-screen quality separately and surfaces it in the Console; the store also
 shows tablet screenshots only if tablet screenshots exist, and
-`store_listing/assets/screenshots/` has a `phone/` directory only. So this is a prerequisite
+`store_listing/assets/screenshots/tablet/` exists but is empty (checked 2026-09-18). So this is a prerequisite
 for the tablet half of `2026-09-16-screenshots-are-raw-captures.md`, not an independent nicety.
 
 **Fix:** one breakpoint, applied where it pays first — the game board and the home list:

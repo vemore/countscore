@@ -19,7 +19,11 @@ value — ARB keys must exist in all ten files, so one that equals the name ever
 APK and PWA size and whether it runs on the web build; feat/play-again-and-type-order chose
 not to add ICU data for a list of about twenty names.
 
+**Decided (2026-09-18, refinement 3):** a pinyin sort key per built-in name, no collator
+library. An ARB key next to each `gameTypeName*` value, equal to the name in every locale but
+`zh`; custom names stay in code-point order.
+
 **Acceptance:**
 - In `zh`, the game-types screen lists the built-in types in pinyin order of their displayed names.
 - `test/utils/game_type_name_test.dart` covers `zh`.
-- The APK and PWA size change is stated in the pull request.
+- The sort keys exist in all ten ARB files, and no new dependency is added.

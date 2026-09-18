@@ -20,3 +20,5 @@ output is reproducible. Consider also failing when `privacy_policy.md` changes w
 
 **Acceptance:**
 - A pull request that edits `privacy_policy.md` without regenerating the page is red.
+- The pandoc version is pinned in CI and recorded in `docs/README.md`.
+- A pull request that edits `privacy_policy.md` without changing its `**Last Updated**` line is red.
