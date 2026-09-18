@@ -51,11 +51,6 @@
     "description": "Message prompting user to create first game"
   },
 
-  "createdOn": "Créé le",
-  "@createdOn": {
-    "description": "Label for creation date"
-  },
-
   "newWithSamePlayers": "Nouvelle avec mêmes joueurs",
   "@newWithSamePlayers": {
     "description": "Menu option to create new game with same players"
@@ -1714,5 +1709,51 @@
   "whoStartsAgain": "Tirer à nouveau",
   "@whoStartsAgain": {
     "description": "Button in the Who starts? dialog that draws another player at random"
+  },
+  "resumeGame": "Reprendre",
+  "@resumeGame": {
+    "description": "Button on the home screen's Resume card: opens the most recently played game that is still open"
+  },
+  "recentGames": "Récentes",
+  "@recentGames": {
+    "description": "Section header above the list of games on the home screen, under the Resume card"
+  },
+  "gameInProgress": "En cours",
+  "@gameInProgress": {
+    "description": "Status pill on a game card of the home screen: the game is not finished"
+  },
+  "roundNumber": "tour {number}",
+  "@roundNumber": {
+    "description": "Which round an open game is at, on the home screen's Resume card, after the game type (e.g. 'ZapZap · tour 7')",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "example": "7"
+      }
+    }
+  },
+  "gameLeader": "{name} mène · {score}",
+  "@gameLeader": {
+    "description": "On the home screen's Resume card: who is in the lead and their total",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Thibaut"
+      },
+      "score": {
+        "type": "int",
+        "example": "31"
+      }
+    }
+  },
+  "gameWonBy": "Gagnée par {name}",
+  "@gameWonBy": {
+    "description": "Tooltip and screen-reader label of the winner pill on a finished game's card",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Vincent"
+      }
+    }
   }
 }

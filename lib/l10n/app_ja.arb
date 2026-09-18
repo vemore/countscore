@@ -21,8 +21,6 @@
 
   "createFirstGame": "最初のゲームを作成",
 
-  "createdOn": "作成日",
-
   "newWithSamePlayers": "同じプレイヤーで新規作成",
 
   "playAgain": "もう一度遊ぶ",
@@ -270,7 +268,6 @@
   "search": "検索",
 
   "createNewPlayer": "新しいプレイヤーを作成",
-
 
   "searchOrCreate": "検索 / 作成",
   "@searchOrCreate": {
@@ -529,5 +526,11 @@
 
   "groupErrorNotOwner": "この操作はグループのオーナーだけが行えます",
   "whoStarts": "誰から始める？",
-  "whoStartsAgain": "もう一度引く"
+  "whoStartsAgain": "もう一度引く",
+  "resumeGame": "再開",
+  "recentGames": "最近",
+  "gameInProgress": "進行中",
+  "roundNumber": "第{number}ラウンド",
+  "gameLeader": "{name}がリード · {score}",
+  "gameWonBy": "{name}の勝ち"
 }

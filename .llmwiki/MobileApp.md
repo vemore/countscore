@@ -15,7 +15,13 @@ holds rather than by a file count.
 ### Entry point
 
 `lib/main.dart` — `MyApp` wraps a `MultiProvider` (6 providers) around a `MaterialApp`.
-Material 3, seed colour `Colors.deepPurple`. 10 `supportedLocales` with a
+Material 3, seed colour `Colors.deepPurple`.
+
+> **Status: Outdated** (2026-09-18) — both themes come from `buildAppTheme` in
+> `lib/utils/app_theme.dart` (see *Utilities* below): teal seed `#0E8F88` light, `#5ED8CF`
+> dark, the bundled Nunito font. `main()` also calls `registerFontLicenses()`.
+
+10 `supportedLocales` with a
 `localeResolutionCallback` falling back to `en`. Home is `HomeScreen`.
 There is no DI container. `main()` is `async` and calls
 `WidgetsFlutterBinding.ensureInitialized()`, then awaits three things before `runApp`, in
@@ -40,12 +46,25 @@ whether the connected features exist; the third starts the review prompt's clock
 `settings_screen` is a `StatefulWidget` since the Server section (it owns the URL
 `TextEditingController`).
 
-`home_screen` (the game list) · `game_board_screen` (the scoring grid) ·
+`home_screen` (the game list, below) · `game_board_screen` (the scoring grid) ·
 `game_types_screen` · `create_game_screen` ·
 `game_analysis_screen` (the LLM analysis, with its row of voice chips — see
 [[LlmProviders]]) ·
 `players_screen` · `player_stats_screen` · `settings_screen` ·
 `about_screen` · `ranking_screen` · `game_rules_screen`.
+
+`home_screen` opens on a **Resume** card (`Key('resumeHero')`) for `resumableGame(games)` —
+the open game with the latest `lastModified ?? createdAt`, which `GameRepository.update`
+stamps on every score — showing its name, type, round (`roundCountOf`), leader and players,
+with the game's overflow menu; there is no card when every game is finished. The other games
+follow under *Recent*, each a white outlined card: a tile in the game type's colour (the
+colour lives in the tile only, never tinting the card), the name, "type · date"
+(`DateFormat.MMMd`, `yMMMd` for another year), the player avatars, and a status pill — *In
+progress*, or the winner with a trophy (*Finished* when nobody scored). Leader and winner
+come from `GameProvider.standingOf(game)`, a `GameStanding` (`lib/models/game_standing.dart`)
+of the players in seat order and their totals over the rounds that still exist, a tie going
+to the earlier seat. It is read per card, as the player names were before, without touching
+the current game. The filter applies to both the card and the list.
 
 `game_rules_screen` takes its `GameType` as a constructor argument rather than reading a
 provider: both callers — the board's overflow menu and the game-type list — already hold
@@ -63,8 +82,11 @@ prompt below.
 
 ### Widgets — `lib/widgets/`
 
-Four components shared out of the screens:
+Five components shared out of the screens:
 
+- `player_avatars.dart` — `PlayerAvatar` (an initial on a colour, drawn in
+  `onPlayerColor`) and `PlayerAvatarStack` (a game's players overlapping, in seat order and
+  in their `playerColorsById` colours, "+N" past `maxShown`).
 - `player_picker_dialog.dart` — `create_game_screen`'s player picker: searches the known
   players or creates one, giving a new player a colour no one else in the list uses, and
   returns a `PlayerSelection` (name and colour).
@@ -112,7 +134,28 @@ Four components shared out of the screens:
 
 Cross-cutting helpers, since 2026-09-16: `insets.dart`, `game_type_name.dart` — the switch
 from a built-in game type's `builtin_key` to its localized name, which every screen showing a
-game type's name goes through ([[I18n]]) — and `play_again.dart`.
+game type's name goes through ([[I18n]]) — `play_again.dart`, `app_theme.dart` and
+`player_colors.dart`.
+
+`app_theme.dart` — the one place the look is defined. `buildAppTheme(brightness)` seeds
+`ColorScheme.fromSeed` with `kBrandSeedLight` (`#0E8F88`, the icon's teal) or
+`kBrandSeedDark` (`#5ED8CF`) under `DynamicSchemeVariant.fidelity`, sets `primary` to the seed
+itself, and sets the surfaces (`#F3F8F7` / `#0E1716`), white (dark: `#172221`) cards with a
+1 px `outlineVariant` border and elevation 0, and `fontFamily: kAppFontFamily` (`Nunito`).
+`kLeaderGold` (`#F2B705`) is the leader's colour for the screens that mark one. Nunito is
+bundled under `flutter: fonts:` in `pubspec.yaml` — four static weights (400, 600, 700, 800)
+in `assets/fonts/`, cut from the variable font — never through `google_fonts`, which
+downloads from Google at runtime. Arabic, Devanagari and CJK text, which Nunito does not
+cover, falls back to the system font. `registerFontLicenses()` (called from `main()`) adds
+`assets/fonts/OFL.txt` to the licence page.
+
+`player_colors.dart` — every player colour on screen is assigned **at display time**, never
+written back. `playerColorsById(playersInSeatOrder)` returns a colour per player id:
+in seat order, a player's own `colorValue` wins unless an earlier seat already shows it;
+everyone else takes the first colour of `kPlayerPalette` (ten mid-tone colours) no one in
+the game shows; past ten the palette repeats by seat. `assignPlayerColors(colorValues)` is
+the same rule over bare colour values, and `onPlayerColor(colour)` the initial's colour on
+it. The home avatars use it; the board is to follow (`feat/board-lanes`).
 
 
 `insets.dart` — `withBottomInset(context, base)` adds `MediaQuery.paddingOf(context).bottom`
@@ -167,8 +210,8 @@ null", and reopening a game is exactly that. `GameProvider.setGameFinished` is t
 write path — it returns true only for the transition that finishes a game, which is what
 gates the Play review sheet.
 
-Both screens show the state and both can change it: a flag icon beside the name in the game
-list, a chip beside the title on the board, and a menu entry that finishes or reopens,
+Both screens show the state and both can change it: a status pill (in progress, or the winner) on the game
+list card, a chip beside the title on the board, and a menu entry that finishes or reopens,
 confirmed by a snackbar whose **Undo** action writes the previous state back (the repo's only
 `SnackBarAction`). The entry is offered on a game that has at least one round or is already
 finished — a game with no round was never played, which is why the list needs
@@ -285,6 +328,19 @@ not "fix" it by hardcoding a codepoint.
   `DriftGameRepository.getAll` returns no count, and a `FutureBuilder` per card would be one
   query per row over the whole history; `RoundRepository.countByGame` is a single `GROUP BY`
   that `loadGames` folds into the provider.
+- **The look is teal "Material soigné", with a bundled font** (2026-09-18). The deep-purple
+  seed matched nothing in the icon's teal podium, and cards tinted to 10 % of the game colour
+  turned ZapZap's amber beige. Direction A of four mock-ups
+  (`wip/assets/2026-09-18-app-looks-like-a-default-material-template/`). Nunito is bundled,
+  not fetched with `google_fonts`: a runtime download from Google would be an outbound data
+  flow in an app whose privacy model is that it makes none. Static instances rather than the
+  variable file, because Flutter does not map `fontWeight` onto a variable font's `wght`
+  axis on every renderer (`wip/done/2026-09-18-app-theme-is-default-deep-purple.md`).
+- **Player colours are computed, not stored** (2026-09-18). Two players of one game could
+  hold the same `colorValue` (global players choose theirs in other games), and ten players
+  without one all drew the same `Colors.blue` fallback. Resolving collisions at display time
+  fixes both with no migration and no sync write, and every screen gets the same answer from
+  one function.
 - **The mode is stored as `ThemeMode.name`, not its index**, so reordering the enum cannot
   silently flip a user's theme. An unknown stored value decodes to `ThemeMode.system`.
 - **Directories are described by what they hold, not by counts** (2026-09-18). The page

@@ -1,5 +1,7 @@
 # The app theme is the default deep purple, and the home list shows dates before state
 
+**Status:** done (2026-09-18) — closed by feat/theme-refresh. Both themes come from `lib/utils/app_theme.dart` (teal seeds, gold, bundled Nunito, flat outlined cards), player colours from `lib/utils/player_colors.dart` at display time, and home opens on a Resume card with icon tiles, avatars and status pills. PWA captures: [light](../assets/2026-09-18-app-theme-is-default-deep-purple/pwa-home-light.png), [dark](../assets/2026-09-18-app-theme-is-default-deep-purple/pwa-home-dark.png).
+
 - **Noted:** 2026-09-18 — visual refresh, split into one pull request per screen
 - **Theme:** visual-refresh
 - **Area:** app

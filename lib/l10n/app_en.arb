@@ -21,8 +21,6 @@
 
   "createFirstGame": "Create your first game",
 
-  "createdOn": "Created on",
-
   "newWithSamePlayers": "New with same players",
 
   "playAgain": "Play again",
@@ -270,7 +268,6 @@
   "search": "Search",
 
   "createNewPlayer": "Create new player",
-
 
   "searchOrCreate": "Search / Create",
   "@searchOrCreate": {
@@ -602,5 +599,11 @@
 
   "groupErrorNotOwner": "Only the group's owner can do this",
   "whoStarts": "Who starts?",
-  "whoStartsAgain": "Draw again"
+  "whoStartsAgain": "Draw again",
+  "resumeGame": "Resume",
+  "recentGames": "Recent",
+  "gameInProgress": "In progress",
+  "roundNumber": "round {number}",
+  "gameLeader": "{name} leads · {score}",
+  "gameWonBy": "Won by {name}"
 }

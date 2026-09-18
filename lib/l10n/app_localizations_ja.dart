@@ -40,9 +40,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get createFirstGame => '最初のゲームを作成';
 
   @override
-  String get createdOn => '作成日';
-
-  @override
   String get newWithSamePlayers => '同じプレイヤーで新規作成';
 
   @override
@@ -1025,4 +1022,28 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get whoStartsAgain => 'もう一度引く';
+
+  @override
+  String get resumeGame => '再開';
+
+  @override
+  String get recentGames => '最近';
+
+  @override
+  String get gameInProgress => '進行中';
+
+  @override
+  String roundNumber(int number) {
+    return '第$numberラウンド';
+  }
+
+  @override
+  String gameLeader(String name, int score) {
+    return '$nameがリード · $score';
+  }
+
+  @override
+  String gameWonBy(String name) {
+    return '$nameの勝ち';
+  }
 }

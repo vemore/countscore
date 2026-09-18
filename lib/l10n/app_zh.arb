@@ -21,8 +21,6 @@
 
   "createFirstGame": "创建您的第一个游戏",
 
-  "createdOn": "创建于",
-
   "newWithSamePlayers": "使用相同玩家创建新游戏",
 
   "playAgain": "再来一局",
@@ -270,7 +268,6 @@
   "search": "搜索",
 
   "createNewPlayer": "创建新玩家",
-
 
   "searchOrCreate": "搜索 / 创建",
   "@searchOrCreate": {
@@ -529,5 +526,11 @@
 
   "groupErrorNotOwner": "只有群组所有者才能执行此操作",
   "whoStarts": "谁先开始？",
-  "whoStartsAgain": "重新抽取"
+  "whoStartsAgain": "重新抽取",
+  "resumeGame": "继续",
+  "recentGames": "最近",
+  "gameInProgress": "进行中",
+  "roundNumber": "第{number}轮",
+  "gameLeader": "{name}领先 · {score}",
+  "gameWonBy": "{name}获胜"
 }

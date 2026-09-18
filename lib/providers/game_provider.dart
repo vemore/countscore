@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/game.dart';
+import '../models/game_standing.dart';
 import '../models/player.dart';
 import '../models/round.dart';
 import '../models/score.dart';
@@ -404,6 +405,28 @@ class GameProvider with ChangeNotifier {
 
   Future<List<Player>> getPlayersOfGame(int gameId) {
     return _playerRepo.getByGame(gameId);
+  }
+
+  /// [game]'s players in seat order and their totals, without making it the
+  /// current game. Only scores of rounds that still exist are counted, as on
+  /// the board.
+  Future<GameStanding> standingOf(Game game) async {
+    final players = await _playerRepo.getByGame(game.id!);
+    final roundIds = {
+      for (final round in await _roundRepo.getByGame(game.id!)) round.id,
+    };
+    final totals = <int, int>{};
+    for (final player in players) {
+      for (final score in await _scoreRepo.getByPlayer(player.id!)) {
+        if (!roundIds.contains(score.roundId)) continue;
+        totals[player.id!] = (totals[player.id!] ?? 0) + score.value;
+      }
+    }
+    return GameStanding(
+      players: players,
+      totals: totals,
+      isLowestScoreWins: game.isLowestScoreWins,
+    );
   }
 
   Future<Map<String, dynamic>> getPlayerStats(String playerName) async {

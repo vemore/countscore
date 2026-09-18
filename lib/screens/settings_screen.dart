@@ -124,7 +124,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                // From the scheme, not Colors.deepPurple: the literal is a
+                // From the scheme, not a hardcoded colour: the old violet was a
                 // low-contrast blue-violet on the dark theme's black.
                 color: Theme.of(context).colorScheme.primary,
               ),
@@ -166,7 +166,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                // From the scheme, not Colors.deepPurple: the literal is a
+                // From the scheme, not a hardcoded colour: the old violet was a
                 // low-contrast blue-violet on the dark theme's black.
                 color: Theme.of(context).colorScheme.primary,
               ),
@@ -266,7 +266,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                // From the scheme, not Colors.deepPurple: the literal is a
+                // From the scheme, not a hardcoded colour: the old violet was a
                 // low-contrast blue-violet on the dark theme's black.
                 color: Theme.of(context).colorScheme.primary,
               ),
@@ -296,7 +296,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                // From the scheme, not Colors.deepPurple: the literal is a
+                // From the scheme, not a hardcoded colour: the old violet was a
                 // low-contrast blue-violet on the dark theme's black.
                 color: Theme.of(context).colorScheme.primary,
               ),

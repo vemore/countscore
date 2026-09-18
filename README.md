@@ -64,7 +64,9 @@ at your own server in Settings → Server if you want the connected features.
   way: the sheet belongs to the Play Store.
 - **Comfort**: light/dark/system theme, screen kept awake during a game, database
   export/import (Android only).
-- **Material Design 3** throughout.
+- **Material Design 3** throughout, in a teal theme with the Nunito typeface bundled in the
+  app (no font is fetched at runtime). The game list opens on a **Resume** card for the game
+  last played, and every game shows its players and whether it is in progress or who won.
 
 ## Tech stack
 
@@ -301,7 +303,7 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 ### Third-party licenses
 
 CountScore uses several open-source packages. All dependencies use permissive licenses (MIT
-and BSD variants). See [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) for complete
+and BSD variants); the bundled Nunito font is under the SIL Open Font License 1.1. See [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) for complete
 attribution, or the built-in Flutter license viewer in the app.
 
 ## Privacy
@@ -368,6 +370,7 @@ at https://vemore.github.io/countscore/privacy-policy.html — and
 
 - Built with [Flutter](https://flutter.dev/)
 - Icons from [Material Icons](https://fonts.google.com/icons)
+- Typeface [Nunito](https://github.com/googlefonts/nunito), bundled with the app
 - State management by [Provider](https://pub.dev/packages/provider)
 - All dependency authors and contributors listed in [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md)
 

@@ -21,8 +21,6 @@
 
   "createFirstGame": "Crie seu primeiro jogo",
 
-  "createdOn": "Criado em",
-
   "newWithSamePlayers": "Novo com os mesmos jogadores",
 
   "playAgain": "Jogar de novo",
@@ -270,7 +268,6 @@
   "search": "Pesquisar",
 
   "createNewPlayer": "Criar novo jogador",
-
 
   "searchOrCreate": "Pesquisar / Criar",
   "@searchOrCreate": {
@@ -529,5 +526,11 @@
 
   "groupErrorNotOwner": "Só o proprietário do grupo pode fazer isso",
   "whoStarts": "Quem começa?",
-  "whoStartsAgain": "Sortear de novo"
+  "whoStartsAgain": "Sortear de novo",
+  "resumeGame": "Retomar",
+  "recentGames": "Recentes",
+  "gameInProgress": "Em andamento",
+  "roundNumber": "rodada {number}",
+  "gameLeader": "{name} lidera · {score}",
+  "gameWonBy": "Vencida por {name}"
 }

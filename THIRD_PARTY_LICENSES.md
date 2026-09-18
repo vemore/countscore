@@ -4,7 +4,7 @@ CountScore uses the following open source packages and libraries. We are gratefu
 
 ## Summary
 
-All Dart packages use **permissive open-source licenses** (MIT and BSD variants). There are no copyleft licenses or license conflicts. The one non-open-source item is the Google Play Core review binary that `in_app_review` links on Android, covered by Google's own Play Core SDK terms — see its entry below.
+All Dart packages use **permissive open-source licenses** (MIT and BSD variants). The one bundled font, Nunito, is under the **SIL Open Font License 1.1**, which allows bundling it in any application and asks only that the licence travel with it. There are no copyleft licenses or license conflicts. The one non-open-source item is the Google Play Core review binary that `in_app_review` links on Android, covered by Google's own Play Core SDK terms — see its entry below.
 
 ---
 
@@ -101,6 +101,18 @@ key the review prompt asks at most once per
 binaries covered by the Play Core Software Development Kit Terms of Service rather than by an
 open-source licence. They are not redistributed by this repository; they are resolved by Gradle
 at build time.
+
+---
+
+## Fonts
+
+### Nunito
+**License:** SIL Open Font License, Version 1.1
+**Copyright:** Copyright 2014 The Nunito Project Authors (https://github.com/googlefonts/nunito)
+**Source:** https://github.com/google/fonts/tree/main/ofl/nunito
+**Files:** `assets/fonts/Nunito-{Regular,SemiBold,Bold,ExtraBold}.ttf` — static instances (weights 400, 600, 700, 800) of the variable font `Nunito[wght].ttf`, cut with `fonttools varLib.instancer`
+**Licence text:** `assets/fonts/OFL.txt`, bundled with the app and shown on its licence page
+**Description:** The app's typeface. Bundled rather than fetched at runtime, so displaying text makes no network request
 
 ---
 

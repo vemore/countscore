@@ -40,9 +40,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get createFirstGame => 'أنشئ لعبتك الأولى';
 
   @override
-  String get createdOn => 'أنشئت في';
-
-  @override
   String get newWithSamePlayers => 'جديدة بنفس اللاعبين';
 
   @override
@@ -1052,4 +1049,28 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get whoStartsAgain => 'اسحب مجددًا';
+
+  @override
+  String get resumeGame => 'استئناف';
+
+  @override
+  String get recentGames => 'الأخيرة';
+
+  @override
+  String get gameInProgress => 'جارية';
+
+  @override
+  String roundNumber(int number) {
+    return 'الجولة $number';
+  }
+
+  @override
+  String gameLeader(String name, int score) {
+    return '$name في الصدارة · $score';
+  }
+
+  @override
+  String gameWonBy(String name) {
+    return 'فاز بها $name';
+  }
 }

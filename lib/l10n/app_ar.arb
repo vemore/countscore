@@ -21,8 +21,6 @@
 
   "createFirstGame": "أنشئ لعبتك الأولى",
 
-  "createdOn": "أنشئت في",
-
   "newWithSamePlayers": "جديدة بنفس اللاعبين",
 
   "playAgain": "العب مجددًا",
@@ -270,7 +268,6 @@
   "search": "بحث",
 
   "createNewPlayer": "إنشاء لاعب جديد",
-
 
   "searchOrCreate": "بحث / إنشاء",
   "@searchOrCreate": {
@@ -529,5 +526,11 @@
 
   "groupErrorNotOwner": "هذا الإجراء متاح لمالك المجموعة فقط",
   "whoStarts": "من يبدأ؟",
-  "whoStartsAgain": "اسحب مجددًا"
+  "whoStartsAgain": "اسحب مجددًا",
+  "resumeGame": "استئناف",
+  "recentGames": "الأخيرة",
+  "gameInProgress": "جارية",
+  "roundNumber": "الجولة {number}",
+  "gameLeader": "{name} في الصدارة · {score}",
+  "gameWonBy": "فاز بها {name}"
 }

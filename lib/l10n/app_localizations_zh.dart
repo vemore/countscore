@@ -40,9 +40,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get createFirstGame => '创建您的第一个游戏';
 
   @override
-  String get createdOn => '创建于';
-
-  @override
   String get newWithSamePlayers => '使用相同玩家创建新游戏';
 
   @override
@@ -1015,4 +1012,28 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get whoStartsAgain => '重新抽取';
+
+  @override
+  String get resumeGame => '继续';
+
+  @override
+  String get recentGames => '最近';
+
+  @override
+  String get gameInProgress => '进行中';
+
+  @override
+  String roundNumber(int number) {
+    return '第$number轮';
+  }
+
+  @override
+  String gameLeader(String name, int score) {
+    return '$name领先 · $score';
+  }
+
+  @override
+  String gameWonBy(String name) {
+    return '$name获胜';
+  }
 }

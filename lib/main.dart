@@ -13,9 +13,11 @@ import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
 import 'services/review_prompt.dart';
 import 'services/sync/sync_engine.dart';
+import 'utils/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  registerFontLicenses();
   // Read the theme before the first frame so a dark-mode user never sees a
   // light flash on cold start.
   final themeMode = await ThemeProvider.load();
@@ -99,32 +101,8 @@ class MyApp extends StatelessWidget {
               return const Locale('en', '');
             },
             themeMode: themeProvider.themeMode,
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: Colors.deepPurple,
-                brightness: Brightness.light,
-              ),
-              useMaterial3: true,
-              cardTheme: CardThemeData(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            darkTheme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: Colors.deepPurple,
-                brightness: Brightness.dark,
-              ),
-              useMaterial3: true,
-              cardTheme: CardThemeData(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
+            theme: buildAppTheme(Brightness.light),
+            darkTheme: buildAppTheme(Brightness.dark),
             home: const HomeScreen(),
           );
         },

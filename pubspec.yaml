@@ -100,6 +100,8 @@ flutter:
     # Shipped game rules, one Markdown file per app locale. Long-form localised
     # content lives here rather than in the ARB files — see .llmwiki/I18n.md.
     - assets/rules/
+    # The bundled font's licence, shown on the licence page (registerFontLicenses).
+    - assets/fonts/OFL.txt
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -107,25 +109,21 @@ flutter:
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/to/asset-from-package
 
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/to/font-from-package
+  # The app font, bundled rather than fetched: google_fonts downloads from
+  # Google at runtime, an outbound data flow the privacy documents do not have.
+  # Static instances of the variable font (SIL OFL 1.1, assets/fonts/OFL.txt).
+  # Scripts Nunito does not cover (ar, hi, ja, zh) fall back to the system font.
+  fonts:
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Nunito-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Nunito-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Nunito-ExtraBold.ttf
+          weight: 800
 
 # Flutter Launcher Icons Configuration
 # Generates app icons for Android from the 512x512 source icon
