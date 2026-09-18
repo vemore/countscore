@@ -2,7 +2,7 @@
 
 > Scope: what is deliberately deferred, and what is simply missing.
 > Related: [[Architecture]] · [[Sync]] · [[Security]] · [[Testing]] · [[Web]]
-> Updated: 2026-09-14
+> Updated: 2026-09-18
 
 ## Facts
 
@@ -16,7 +16,7 @@
   > **Status: Outdated** (2026-09-13) — written; see [[Sync]]. What it knowingly leaves out
   > is listed under **Group sync** below.
 - **Group sync — deliberate limits of v1** (2026-09-13):
-  - *One group per device*, no group settings or group comments in the app (`wip/todo_nr/2026-09-13-group-settings-in-app.md`).
+  - *One group per device*, no group settings or group comments in the app (`wip/todo/2026-09-13-group-settings-in-app.md`).
     The device list and revoking another device shipped on 2026-09-14 (Settings → Group →
     Devices).
   - *Row-level LWW*: two devices editing different fields of one row concurrently keep one

@@ -19,5 +19,8 @@ stays awake (`wakelock_plus`). Every string through `i18n-add-string`, no permis
 - The board's overflow menu has a turn-timer item that counts down from the chosen duration and signals zero.
 - A widget test with `tester.pump(Duration)` checks the countdown reaches zero and resets.
 - Every string exists in the ten ARB files; no permission, schema or network change.
+- Two game types each reopen the timer on their own last duration (widget test with mock `SharedPreferences`).
 
-**Open question:** remember the last duration per game type, or one global value?
+**Decided (2026-09-18, refinement 4):** the last duration is remembered **per game type**, in
+`SharedPreferences` keyed on the game type's id (no schema change), with a default for a
+type that has none yet.

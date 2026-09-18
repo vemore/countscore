@@ -1,5 +1,7 @@
 # Store screenshot 04 "game history" shows the same screen as 01
 
+**Status:** dropped (2026-09-18) — merged into [[2026-09-18-store-screenshots-show-french-ui-everywhere]] by chore/refine-2026-09-18-4.
+
 - **Noted:** 2026-09-18 — while composing the captioned screenshots (`feat/composed-screenshots`)
 - **Theme:** store-listing
 - **Area:** docs
