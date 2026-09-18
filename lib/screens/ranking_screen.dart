@@ -3,9 +3,15 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/game_provider.dart';
 import '../utils/insets.dart';
+import '../utils/play_again.dart';
+import 'game_board_screen.dart';
 
 class RankingScreen extends StatelessWidget {
-  const RankingScreen({super.key});
+  const RankingScreen({super.key, this.boardBuilder});
+
+  /// Injected by tests only: the board "Play again" opens. The default
+  /// `GameBoardScreen` reaches the `AppDatabase` singleton.
+  final WidgetBuilder? boardBuilder;
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +71,7 @@ class RankingScreen extends StatelessWidget {
               // Liste des joueurs classés
               Expanded(
                 child: ListView.builder(
-                  padding: withBottomInset(context, const EdgeInsets.all(8)),
+                  padding: const EdgeInsets.all(8),
                   itemCount: ranking.length,
                   itemBuilder: (context, index) {
                     final entry = ranking[index];
@@ -130,6 +136,30 @@ class RankingScreen extends StatelessWidget {
                       ),
                     );
                   },
+                ),
+              ),
+
+              // The next game of the evening, without the creation flow. The
+              // bottom inset is here rather than on the list: this is the last
+              // thing above the navigation bar.
+              Padding(
+                padding: withBottomInset(
+                    context, const EdgeInsets.fromLTRB(16, 8, 16, 16)),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    key: const Key('ranking_play_again'),
+                    onPressed: () => playAgain(
+                      context,
+                      game,
+                      board: boardBuilder ?? (_) => const GameBoardScreen(),
+                    ),
+                    icon: const Icon(Icons.restart_alt),
+                    label: Text(l10n.playAgain),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.all(16),
+                    ),
+                  ),
                 ),
               ),
             ],

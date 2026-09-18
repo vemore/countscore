@@ -46,7 +46,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get newWithSamePlayers => 'Neu mit denselben Spielern';
 
   @override
-  String get newGameSuffix => '(neu)';
+  String get playAgain => 'Nochmal spielen';
 
   @override
   String get rename => 'Umbenennen';

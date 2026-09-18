@@ -38,7 +38,7 @@ Load this file first. Then read only the pages your task touches.
 | Page | Summary | Updated |
 |---|---|---|
 | [[Backend]] | Stack, module layout, settings, device-token auth | 2026-09-14 |
-| [[Api]] | Every endpoint, its auth requirement and its failure modes | 2026-09-16 |
+| [[Api]] | Every endpoint, its auth requirement and its failure modes | 2026-09-18 |
 | [[Sync]] | Delta-log + row-level LWW, the Flutter client (triggers, push/pull, conflicts), WebSocket | 2026-09-16 |
 | [[LlmProviders]] | The analysis prompt — nine voices, ten languages, the game-type registry — the pluggable provider factory, the separate Claude path, the report control | 2026-09-16 |
 
@@ -46,7 +46,7 @@ Load this file first. Then read only the pages your task touches.
 
 | Page | Summary | Updated |
 |---|---|---|
-| [[Deployment]] | Synology NAS, Web Station TLS, `deploy_nas.sh`, `deploy_web.sh`, environment | 2026-09-14 |
+| [[Deployment]] | Synology NAS, Web Station TLS, `deploy_nas.sh`, `deploy_web.sh`, environment | 2026-09-18 |
 | [[Hooks]] | What Claude Code refuses mechanically, why each rule left CLAUDE.md, recovering from a stale branch | 2026-09-18 |
 | [[Documentation]] | Which documents a change implicates: wiki, README table, the three privacy documents; the CLAUDE.md budget | 2026-09-14 |
 | [[ParallelDelivery]] | Protection on main, worktrees, local cleanup, why one PR per theme and serial squash merges (`wip/` format: `wip/README.md`), the refinement pass that feeds `wip/todo/` | 2026-09-18 |

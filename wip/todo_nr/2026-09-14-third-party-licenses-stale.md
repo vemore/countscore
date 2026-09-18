@@ -17,4 +17,9 @@ changes, which is how it drifted.
 package's `LICENSE` in the pub cache), and add the file to the README table in `CLAUDE.md`'s
 "dependency added" row, or generate it with a script checked in CI.
 
-**Open question:** Keep `THIRD_PARTY_LICENSES.md` current through a written rule, or generate it with a script and check it in CI? It has fallen further behind: 4 stale constraints and 7 missing packages.
+**Decided (2026-09-18, refinement):** generate it with a script, and check it in CI.
+
+**Acceptance:**
+- A script regenerates `THIRD_PARTY_LICENSES.md` from the direct dependencies of `pubspec.yaml` and each package's `LICENSE` in the pub cache.
+- CI fails when the committed file differs from the generated one.
+- The regenerated file lists every direct dependency of `pubspec.yaml`.

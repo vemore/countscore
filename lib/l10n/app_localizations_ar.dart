@@ -46,7 +46,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get newWithSamePlayers => 'جديدة بنفس اللاعبين';
 
   @override
-  String get newGameSuffix => '(جديدة)';
+  String get playAgain => 'العب مجددًا';
 
   @override
   String get rename => 'إعادة تسمية';

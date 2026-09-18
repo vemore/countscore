@@ -25,4 +25,10 @@ a rendered image of the standings. Every string through `AppLocalizations`
 nothing leaves the device on its own and the Data Safety declaration does not move — confirm
 that reasoning against `.llmwiki/Documentation.md` before shipping.
 
-**Open question:** Text only first, or text plus an image? Does the shared text name the app with a link to the Play listing?
+**Decided (2026-09-18, refinement):** text first, naming the app with a link to its Play
+listing (no tracking parameter). The rendered image is a second pull request.
+
+**Acceptance:**
+- A share action on the end-of-game ranking and on the ZapZap analysis opens the system share sheet.
+- The shared text is localized in ten languages and holds the game type, the date, the standings and the app's name with its Play URL (unit test on the text builder).
+- `share_plus` is added with no new manifest permission, and the pull request records why the Data Safety declaration does not change.

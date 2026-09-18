@@ -2,7 +2,7 @@
 
 > Scope: the Flutter app's own structure — entry point, state, screens, models.
 > Related: [[DataLayer]] · [[SchemaV10]] · [[I18n]] · [[Web]] · [[Testing]]
-> Updated: 2026-09-16
+> Updated: 2026-09-18
 
 ## Facts
 
@@ -73,7 +73,8 @@ are the root scrollables of `about_screen.dart:31` (on the child `Padding` — a
 `SingleChildScrollView` never gets the compensation at all),
 `create_game_screen.dart:200`, `game_types_screen.dart:43`,
 `home_screen.dart:91` (the drawer) and `:335`, `player_stats_screen.dart:83`,
-`players_screen.dart:61`, `ranking_screen.dart:68`. Only the bottom edge is compensated:
+`players_screen.dart:61`, and in `ranking_screen.dart` on the *Play again* button's
+`Padding` under the list, the last thing above the navigation bar. Only the bottom edge is compensated:
 `Scaffold` drops the top padding for a body under an `AppBar`
 (`scaffold.dart`, `removeTopPadding: widget.appBar != null`) and keeps the bottom one unless
 there is a `bottomNavigationBar`, and `DrawerHeader` adds the status-bar height itself.
@@ -83,6 +84,18 @@ padding, the second is a `SingleChildScrollView` inside the `SafeArea(top: false
 `game_type_name.dart` — `gameTypeDisplayName(l10n, type)` and `isBuiltinRename(...)`. A
 built-in type's name is read from its `builtin_key`, never from the stored `name`, which is
 what lets two devices in different locales hold the same type. Renaming one clears the key.
+`sortGameTypesByDisplayName(l10n, types)` orders a list by that displayed name; every
+screen listing game types calls it, since the repository returns them unordered ([[I18n]]).
+
+`play_again.dart` — `playAgain(context, source, board:)`, the one path behind *Play again*
+(the ranking's button, and a finished game's menu entry on the home screen, where an
+unfinished game shows the same action as "New with same players"). It calls
+`GameProvider.playAgain` — `createGame` with the source's type, win rule and players in
+`orderIndex` order, nothing else read or written on the source — shares the new game if the
+source was shared, and opens its board with `pushAndRemoveUntil(isFirst)`, so back returns
+to the game list. The new game is named by `nextGameName`: `Skyjo 3` → `Skyjo 4`.
+`RankingScreen` and `HomeScreen` take an optional `boardBuilder`, for tests only, as the
+board's `analysisRepo` is.
 
 ### Models — `lib/models/` (7)
 

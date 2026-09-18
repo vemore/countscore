@@ -46,7 +46,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get newWithSamePlayers => '同じプレイヤーで新規作成';
 
   @override
-  String get newGameSuffix => '(新規)';
+  String get playAgain => 'もう一度遊ぶ';
 
   @override
   String get rename => '名前を変更';

@@ -1,5 +1,7 @@
 # `proguard-rules.pro` TESTING footer gives a command that cannot work
 
+**Status:** done (2026-09-18) — closed by chore/test-tooling-housekeeping. The TESTING footer of `android/app/proguard-rules.pro` points at `release-android` ("Verify the artifact") and installs a release APK instead of an `.aab`; the `-keep class **.g.dart` suggestion is gone. Comments only.
+
 - **Noted:** 2026-09-14 — while fixing the file's header (chore/release-housekeeping)
 - **Theme:** release-housekeeping
 - **Area:** android

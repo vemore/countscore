@@ -186,11 +186,11 @@ abstract class AppLocalizations {
   /// **'Nouvelle avec mêmes joueurs'**
   String get newWithSamePlayers;
 
-  /// Suffix added to game name when creating a copy
+  /// Button on the end-of-game ranking, and menu entry of a finished game: starts a new game with the same game type and the same players in the same order, opened on its board
   ///
   /// In fr, this message translates to:
-  /// **'(nouvelle)'**
-  String get newGameSuffix;
+  /// **'Rejouer'**
+  String get playAgain;
 
   /// Menu option to rename
   ///

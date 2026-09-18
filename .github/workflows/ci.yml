@@ -5,10 +5,11 @@ on:
     branches: [main]
   pull_request:
   # Mondays 06:17 UTC, on main, with every scope flag true. The `backend` job
-  # carries `pip-audit`, the only dependency scan that *fails a build* here
-  # (Dependabot alerts notify but gate nothing), and it no longer runs on a pull
-  # request that leaves backend/ alone: this is what caps the exposure window at
-  # a week. Same cadence as .github/dependabot.yml.
+  # carries `pip-audit` and the `app` job the osv-scanner audit of pubspec.lock,
+  # the two dependency scans that *fail a build* here (Dependabot alerts notify
+  # but gate nothing), and neither runs on a pull request that leaves its side
+  # alone: this is what caps the exposure window at a week. Same cadence as
+  # .github/dependabot.yml.
   #
   # GitHub disables a schedule-only workflow after 60 days of repository inactivity
   # and nothing here goes red when it does, so scripts/check_scheduled_runs.sh
@@ -232,6 +233,53 @@ jobs:
             echo "uid $uid, no compiler, no dev dependencies, read-only code, app imports"
           '
 
+      # The db-backup sidecar (backend/Dockerfile.backup) used to be built only by
+      # deploy_nas.sh, so a retired Alpine tag or `age` leaving the 1.2 branch surfaced
+      # as a failed production deploy. test_backup_script.py stubs age and pg_dump;
+      # this is the only place the real ones are run.
+      - name: Build the backup sidecar
+        run: docker build -t countscore-backup:ci -f backend/Dockerfile.backup backend
+
+      # pg_dump's major must match the db service (postgres:17-alpine); age must be on
+      # the PATH the script calls it from. And with no BACKUP_AGE_RECIPIENT the script
+      # must refuse, non-zero: a dump holds every share_token in clear.
+      - name: Check the backup sidecar
+        run: |
+          docker run --rm --entrypoint sh countscore-backup:ci -euc '
+            age --version
+            pg_dump --version
+            pg_dump --version | grep -q " 17\." || { echo "pg_dump is not PostgreSQL 17"; exit 1; }
+          '
+          if docker run --rm countscore-backup:ci --once; then
+            echo "::error file=backend/backup/countscore-backup.sh::--once with no BACKUP_AGE_RECIPIENT exited 0 — it must refuse to dump"
+            exit 1
+          fi
+          echo "the sidecar refuses to dump without a recipient"
+
+      # `config` exits 0 on an unset variable and only warns, so any stderr fails the
+      # step: the dummy values below are exactly the variables the production file
+      # requires, and a new one without a `:-default` must be added here on purpose.
+      # The dev file reads backend/.env, which is gitignored; .env.example stands in.
+      - name: Compose files resolve
+        env:
+          POSTGRES_USER: cs
+          POSTGRES_PASSWORD: pw
+          POSTGRES_DB: cs
+          CORS_ORIGINS: https://ci.invalid
+        run: |
+          docker compose -f backend/docker-compose.prod.yml config --quiet 2> "$RUNNER_TEMP/prod.err"
+          cp backend/.env.example backend/.env
+          env -u POSTGRES_USER -u POSTGRES_PASSWORD -u POSTGRES_DB -u CORS_ORIGINS \
+            docker compose -f backend/docker-compose.yml config --quiet 2> "$RUNNER_TEMP/dev.err"
+          for f in prod dev; do
+            if [ -s "$RUNNER_TEMP/$f.err" ]; then
+              cat "$RUNNER_TEMP/$f.err"
+              echo "::error::docker compose config warned on the $f compose file"
+              exit 1
+            fi
+          done
+          echo "docker-compose.prod.yml and docker-compose.yml resolve with no warning"
+
   app:
     name: App — codegen, analyze, test, web build
     needs: scope
@@ -246,6 +294,24 @@ jobs:
       # needs neither Flutter nor Python packages, so it runs first and fails fast.
       - name: Claude Code hooks self-test
         run: scripts/hooks_selftest.sh
+
+      # The pub twin of the backend's pip-audit: every package pubspec.lock resolves,
+      # direct and transitive, against OSV (GitHub advisories included). Any advisory
+      # fails the job; `dart pub audit` does not exist. The binary is pinned by version
+      # and checksum, like pip-audit's `uvx` pin. osv-scanner has no --ignore-vuln flag:
+      # an advisory with no fix yet goes in .github/osv-scanner.toml ([[IgnoredVulns]])
+      # with a wip/ entry naming it, never left red. Needs no Flutter, so it runs early.
+      - name: Dependency vulnerability audit (pubspec.lock)
+        env:
+          OSV_VERSION: "2.6.0"
+          OSV_SHA256: ca69b3d3cd08f889a49dc0a383122f71cc528b83803671df5fd874d97485b108
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/osv-scanner" \
+            "https://github.com/google/osv-scanner/releases/download/v$OSV_VERSION/osv-scanner_linux_amd64"
+          echo "$OSV_SHA256  $RUNNER_TEMP/osv-scanner" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/osv-scanner"
+          "$RUNNER_TEMP/osv-scanner" scan source --all-vulns \
+            --config .github/osv-scanner.toml --lockfile pubspec.lock
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
