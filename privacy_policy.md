@@ -1,10 +1,10 @@
 # Privacy Policy for CountScore
 
-**Last Updated**: September 16, 2026
+**Last Updated**: September 18, 2026
 
 **Effective Date**: Applies to CountScore v1.1.0 and later
 
-**Previous versions**: v2.6 and v2.5 (September 16 and 14, 2026), v2.4 (September 14, 2026), v2.3 (September 13, 2026), v2.2 (September 11, 2026), v2.1 and v2.0 (September 9, 2026) and v1.0 (November 9, 2025). v1.0
+**Previous versions**: v2.7 and v2.6 (September 16, 2026), v2.5 (September 14, 2026), v2.4 (September 14, 2026), v2.3 (September 13, 2026), v2.2 (September 11, 2026), v2.1 and v2.0 (September 9, 2026) and v1.0 (November 9, 2025). v1.0
 applies to CountScore 1.0.x — the versions currently on the Play Store. See
 [Version History](#version-history).
 
@@ -315,7 +315,7 @@ directly on your device. To ask a question, use the contact details above.
 
 ## Permissions
 
-**The released Android app declares exactly one permission: `INTERNET`.** It requests no
+**The one permission the released Android app declares is `INTERNET`.** It requests no
 runtime permissions — the kind Android asks you to approve with a dialog — at all.
 
 - **`INTERNET`** is declared in `android/app/src/main/AndroidManifest.xml`. It exists for the
@@ -326,6 +326,11 @@ runtime permissions — the kind Android asks you to approve with a dialog — a
   install time without asking you, because it is not a runtime permission — which is why the
   safeguards that matter are the ones described above: there is no address to send to unless
   you supply one, and no game is shared unless you join a group and share it.
+- **`com.vemore.countscore.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`** also appears in the
+  released app's manifest. The app does not declare it: the `androidx.core` library adds it
+  when the app is built. It is a signature-level permission private to the app, which lets it
+  register its own broadcast receivers without exposing them to other apps. It grants access
+  to nothing and sends nothing.
 - **Unencrypted connections** are allowed by the app's network security configuration
   (`android/app/src/main/res/xml/network_security_config.xml`) solely so that a server on your
   own local network can be reached without a TLS certificate. The app itself refuses to store
@@ -383,6 +388,16 @@ changes are announced through app updates on the Google Play Store.
 
 ### Version History
 
+- **v2.8** (September 18, 2026): Corrects the permissions section, which said the app
+  declares "exactly one permission". `INTERNET` is still the only permission the app
+  declares, but the released manifest also carries the app-private
+  `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` that the `androidx.core` library adds; the
+  section now names it and says what it does. Also publishes two details added to the
+  policy since v2.7 that this page did not yet show: the rules text you can write for a game
+  type is stored on your device and, for a shared game, sent with its game type; and a
+  shared game type carries its elimination and game-over thresholds and, for one of the
+  app's presets, the fixed identifier of that preset. No new recipient and no new category
+  of information.
 - **v2.7** (September 16, 2026): The analysis is no longer restricted to one game type and
   no longer written in one fixed voice or one fixed language. Any finished game can be
   analysed, you pick the voice from a list of nine, and the text comes back in the language

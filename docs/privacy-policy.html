@@ -88,15 +88,15 @@ th { background: var(--code-bg); }
 <main>
 <h1 id="privacy-policy-for-countscore">Privacy Policy for
 CountScore</h1>
-<p><strong>Last Updated</strong>: September 16, 2026</p>
+<p><strong>Last Updated</strong>: September 18, 2026</p>
 <p><strong>Effective Date</strong>: Applies to CountScore v1.1.0 and
 later</p>
-<p><strong>Previous versions</strong>: v2.6 and v2.5 (September 16 and
-14, 2026), v2.4 (September 14, 2026), v2.3 (September 13, 2026), v2.2
-(September 11, 2026), v2.1 and v2.0 (September 9, 2026) and v1.0
-(November 9, 2025). v1.0 applies to CountScore 1.0.x — the versions
-currently on the Play Store. See <a href="#version-history">Version
-History</a>.</p>
+<p><strong>Previous versions</strong>: v2.7 and v2.6 (September 16,
+2026), v2.5 (September 14, 2026), v2.4 (September 14, 2026), v2.3
+(September 13, 2026), v2.2 (September 11, 2026), v2.1 and v2.0
+(September 9, 2026) and v1.0 (November 9, 2025). v1.0 applies to
+CountScore 1.0.x — the versions currently on the Play Store. See <a
+href="#version-history">Version History</a>.</p>
 <p><strong>Published at</strong>: <a
 href="https://vemore.github.io/countscore/privacy-policy.html">https://vemore.github.io/countscore/privacy-policy.html</a></p>
 <h2 id="introduction">Introduction</h2>
@@ -134,7 +134,8 @@ device</strong>:</p>
 <ol type="1">
 <li><strong>Game Information</strong> — game type names and settings
 (e.g. "Uno", "Scrabble", custom games), scoring rules (lowest-wins or
-highest-wins), colours and icons.</li>
+highest-wins), colours and icons, and <strong>any rules text you write
+for a game type</strong>.</li>
 <li><strong>Player Information</strong> — player names you create, and
 their association with games.</li>
 <li><strong>Score Data</strong> — scores, round-by-round history, any
@@ -256,9 +257,12 @@ group" on it. Games you do not share never leave your device.</p>
 <p>For each <strong>shared</strong> game, and kept up to date as you
 play:</p>
 <ul>
-<li>the game's name, its game type (name, icon, colour and rules), its
-scoring rule, its creation date and, once you declare the game over, the
-date you ended it;</li>
+<li>the game's name, its game type (name, icon, colour, elimination and
+game-over thresholds, <strong>any rules text you wrote for it</strong>,
+and — for one of the app's own preset types — the fixed identifier that
+says which preset it is, so that devices set to different languages
+agree on it), its scoring rule, its creation date and, once you declare
+the game over, the date you ended it;</li>
 <li>the <strong>names and colours of its players</strong>;</li>
 <li>every round: its number, <strong>any comment you typed on
 it</strong>, and its scores;</li>
@@ -425,7 +429,7 @@ of your data and cannot identify you, most of these rights are exercised
 directly on your device. To ask a question, use the contact details
 above.</p>
 <h2 id="permissions">Permissions</h2>
-<p><strong>The released Android app declares exactly one permission:
+<p><strong>The one permission the released Android app declares is
 <code>INTERNET</code>.</strong> It requests no runtime permissions — the
 kind Android asks you to approve with a dialog — at all.</p>
 <ul>
@@ -440,6 +444,12 @@ install time without asking you, because it is not a runtime permission
 — which is why the safeguards that matter are the ones described above:
 there is no address to send to unless you supply one, and no game is
 shared unless you join a group and share it.</li>
+<li><strong><code>com.vemore.countscore.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION</code></strong>
+also appears in the released app's manifest. The app does not declare
+it: the <code>androidx.core</code> library adds it when the app is
+built. It is a signature-level permission private to the app, which lets
+it register its own broadcast receivers without exposing them to other
+apps. It grants access to nothing and sends nothing.</li>
 <li><strong>Unencrypted connections</strong> are allowed by the app's
 network security configuration
 (<code>android/app/src/main/res/xml/network_security_config.xml</code>)
@@ -501,6 +511,18 @@ with a new "Last Updated" date, and significant changes are announced
 through app updates on the Google Play Store.</p>
 <h3 id="version-history">Version History</h3>
 <ul>
+<li><strong>v2.8</strong> (September 18, 2026): Corrects the permissions
+section, which said the app declares "exactly one permission".
+<code>INTERNET</code> is still the only permission the app declares, but
+the released manifest also carries the app-private
+<code>DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION</code> that the
+<code>androidx.core</code> library adds; the section now names it and
+says what it does. Also publishes two details added to the policy since
+v2.7 that this page did not yet show: the rules text you can write for a
+game type is stored on your device and, for a shared game, sent with its
+game type; and a shared game type carries its elimination and game-over
+thresholds and, for one of the app's presets, the fixed identifier of
+that preset. No new recipient and no new category of information.</li>
 <li><strong>v2.7</strong> (September 16, 2026): The analysis is no
 longer restricted to one game type and no longer written in one fixed
 voice or one fixed language. Any finished game can be analysed, you pick
