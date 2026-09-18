@@ -15,7 +15,7 @@ It was decided on 2026-09-18 that the Regenerate button is the retry for this ro
 backoff, [[Api]]); the SDK retries were out of that pull request's scope.
 
 **Fix:** pass `max_retries=0` to `AsyncOpenAI`, matching Bedrock, and say so in
-[[LlmProviders]] next to "no retries". Check that `scripts/compare_providers.py` does not
+[[LlmProviders]] next to "no retries". Check that `backend/scripts/compare_providers.py` does not
 rely on the SDK retry.
 
 **Acceptance:**
