@@ -8,7 +8,7 @@ Complete specifications and guidelines for creating Google Play Store visual ass
 > The icon, the feature graphic and eight phone screenshots are **committed and published**
 > (`assets/`), so the "what you need to create" framing below applies only to what is still
 > missing: compliant screenshots and a tablet set. See
-> `wip/todo_nr/2026-09-16-screenshots-are-raw-captures.md` and
+> `wip/todo/2026-09-16-screenshots-are-raw-captures.md` and
 > `.llmwiki/StoreListing.md`.
 
 ---
@@ -286,11 +286,13 @@ A modern phone screen is taller than 16:9 (a Pixel 9 Pro XL captures 1080×2400)
 **Format**: JPEG or 24-bit PNG
 **Alpha**: not allowed — the image must be fully opaque, 24-bit RGB.
 
-> **Status: Violated by the committed assets** (2026-09-16) — the eight PNGs in
-> `assets/screenshots/phone/` are `8-bit/color RGBA` (PNG colour type 6), straight from
-> `scripts/capture_screenshots.sh`, which never flattens them. Verify with
-> `file assets/screenshots/phone/*.png` before uploading. Tracked in
-> `wip/todo_nr/2026-09-16-screenshots-are-raw-captures.md`, together with the ratio.
+> **Status: Composed per locale** (2026-09-18) — the eight PNGs in
+> `assets/screenshots/phone/` are still raw `8-bit/color RGBA` captures, but they are now only
+> the input of `scripts/compose_screenshots.py`, which writes the 1080×1920 opaque RGB set of
+> each locale to `<locale>/screenshots/phone/`. `--check` verifies every locale has one. Until
+> a locale has its set, `play_publish.py` falls back to the raw captures for it — `fr-FR` has
+> its set; the nine others follow once the French captions are validated
+> (`wip/todo/2026-09-16-screenshots-are-raw-captures.md`).
 
 **File Size**: Maximum 8 MB per screenshot
 

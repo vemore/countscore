@@ -16,11 +16,13 @@ store_listing/
 │   ├── title.txt                   # app name, 30 characters max
 │   ├── short_description.txt       # 80 characters max
 │   ├── full_description.txt        # 4000 characters max
+│   ├── screenshot_captions.txt     # one caption per raw capture, `<stem>: <caption>`
+│   ├── screenshots/phone/          # the composed set, 1080×1920 RGB (generated, committed)
 │   └── release_notes_v<x.y.z>.txt  # 500 characters max — en-US and fr-FR only
 ├── assets/
 │   ├── icon_512.png                # 512×512, also the source of the Android launcher icons
 │   ├── feature_graphic.png         # 1024×500, opaque
-│   └── screenshots/phone/          # 8 captures, 01_… to 08_…
+│   └── screenshots/phone/          # 8 raw captures, 01_… to 08_… — input only, not Play-valid
 ├── ASSET_REQUIREMENTS.md           # image specifications
 ├── ASSET_CREATION_CHECKLIST.md · COLOR_THEME_GUIDE.md
 ├── FEATURE_GRAPHIC_TEMPLATES.md · ICON_DESIGN_GUIDE.md · SCREENSHOT_GUIDE.md
@@ -38,6 +40,20 @@ The ten published locales are Play's identifiers, **not** the app's:
 | `fr-FR` | `app_fr.arb` | | `hi-IN` | `app_hi.arb` |
 
 Adding a language to `lib/l10n/` does not create the listing for it, and vice versa.
+
+## Screenshots
+
+The raw captures in `assets/screenshots/phone/` (from `scripts/capture_screenshots.sh`) are
+1080×2400 RGBA, which Play refuses. `scripts/compose_screenshots.py` turns them into
+1080×1920 opaque RGB, the locale's caption in a band above the screen, into
+`<locale>/screenshots/phone/` — the directory `play_publish.py --graphics` reads first:
+
+```bash
+uv run --script scripts/compose_screenshots.py --locale fr-FR   # one locale; no flag: every captioned one
+uv run --script scripts/compose_screenshots.py --check          # every locale has a compliant set
+```
+
+A new capture means a new caption line in every `screenshot_captions.txt`, then a re-run.
 
 > **Not published yet.** `play_publish.py` iterates a hardcoded `LOCALES = ("en-US", "fr-FR")`
 > for the text, the notes and the graphics, so the eight locales added on 2026-09-16 are

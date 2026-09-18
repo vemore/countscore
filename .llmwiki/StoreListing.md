@@ -4,7 +4,7 @@
 > assets behind it. The Console walkthrough is `PUBLISHING.md`; the publishing mechanism is
 > [[Release]] and the `release-android` skill.
 > Related: [[Release]] · [[I18n]] · [[Documentation]] · [[KnownLimits]]
-> Updated: 2026-09-17
+> Updated: 2026-09-18
 
 ## Facts
 
@@ -20,9 +20,32 @@ file silently reverts at the next release.
 `store_listing/assets/` has the 512×512 icon `icon_512.png` (also the source
 `flutter_launcher_icons` generates the Android densities from), the 1024×500
 `feature_graphic.png` (Template 1 of `store_listing/FEATURE_GRAPHIC_TEMPLATES.md`: icon, name,
-tagline and the scoring grid in a phone frame, drawn with Pillow), and eight phone
-screenshots under `assets/screenshots/phone/`, pulled over ADB by
+tagline and the scoring grid in a phone frame, drawn with Pillow), and eight raw phone
+captures under `assets/screenshots/phone/`, pulled over ADB by
 `scripts/capture_screenshots.sh`. Requirements: `store_listing/ASSET_REQUIREMENTS.md`.
+
+### Screenshots: raw captures in, one composed set per locale out
+
+The raw captures are 1080×2400 RGBA — ratio 2.22 and an alpha channel, both refused by Play —
+so they are **input only**. `scripts/compose_screenshots.py` (Pillow, PEP 723, `uv run
+--script`) crops the status and navigation bars (`CROP_TOP = 110`, `CROP_BOTTOM = 132`),
+scales the screen under a caption band on a Deep Purple gradient (the app's seed colour), and
+writes **1080×1920 opaque RGB** PNGs to `store_listing/<locale>/screenshots/phone/`, under the
+capture's own file name. That is the directory `play_publish.py graphics_files()` reads
+first, so `listing --graphics` publishes the composed set with no change to the publisher.
+
+- The captions are `store_listing/<locale>/screenshot_captions.txt`, one `<capture stem>:
+  <caption>` line per capture; the script refuses a missing or an unknown stem, and a caption
+  that does not fit two lines at 48 px. French uses a no-break space before `?` and `:`.
+- A locale is a directory holding `title.txt`, the rule `play_publish.py` uses. One with no
+  captions file is skipped with a warning — **and `play_publish.py` then falls back to the raw
+  captures for it**, which `--check` reports as a missing set.
+- Fonts: Roboto Bold from the Flutter SDK's `material_fonts` cache for the Latin and Cyrillic
+  locales; `ja-JP`, `zh-CN`, `hi-IN`, `ar` need a Noto font installed (`FONTS` in the script),
+  and `ar` a Pillow built with libraqm for shaping. `--font` overrides.
+- State on 2026-09-18: **`fr-FR` only** is composed; its eight captions await the user's
+  validation in the pull request, and the nine other locales are translated from them
+  afterwards (`wip/todo/2026-09-16-screenshots-are-raw-captures.md`).
 
 ### Published locales (10, since 2026-09-16)
 
@@ -100,7 +123,7 @@ prose.
 | Short description | **80** characters | idem |
 | Full description | **4000** characters | idem |
 | Release notes | **500** characters per locale | idem |
-| Phone screenshots | 2–8, ratio ≤ 16:9, opaque 24-bit, ≤ 8 MB | nothing — checked by hand |
+| Phone screenshots | 2–8, ratio ≤ 16:9, opaque 24-bit, ≤ 8 MB | `compose_screenshots.py --check` (size and mode); `play_publish.py` refuses a ninth |
 | Feature graphic | 1024×500, opaque | nothing |
 | Icon | 512×512, ≤ 1 MB | nothing |
 
@@ -158,6 +181,15 @@ store:
 | "Score Pad – board game tracker" | 1 K+ | 4.5 (33) | — | Title and description packed with keywords |
 
 ## Decisions & History
+
+- **Screenshots are composed, per locale, from one set of raw captures (2026-09-18).** Play
+  refuses the raw Pixel captures (2.22 ratio, alpha), and a carousel of bare UI says nothing
+  at thumbnail size, where the decision to tap is made. 1080×1920 was decided at the
+  2026-09-18 refinement: exactly 16:9, the widest ratio Play accepts for a phone. The captions
+  are per locale because the listing is — ten markets, ten languages — while the captures stay
+  shared: re-capturing the UI in ten languages costs a device session per locale for a screen
+  the caption already explains. Claude drafts the French captions from the listing copy, the
+  user validates them, the other locales are translated from them.
 
 - **The analysis line was rewritten in all ten locales, feature-first (2026-09-17).** Line 38
   of every `full_description.txt` sold the feature as the "ZapZap analysis", which was true
