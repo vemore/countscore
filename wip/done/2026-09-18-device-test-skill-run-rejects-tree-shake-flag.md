@@ -1,5 +1,7 @@
 # `flutter-device-test` Modes 1b and 3 pass a flag `flutter run` rejects
 
+**Status:** done (2026-09-18) — closed by chore/tooling-fixes. The Mode 1 note was right: on Flutter 3.47.2 `flutter run` and `flutter test` both exit 64 on `--no-tree-shake-icons`, so the flag is gone from Modes 1b and 3 and from the `flutter test integration_test` commands, and the note now says so for both commands.
+
 - **Noted:** 2026-09-18 — while fixing the skill's device address and debug/profile guidance (chore/test-tooling-housekeeping)
 - **Theme:** test-tooling
 - **Area:** tooling

@@ -58,7 +58,7 @@ Use `--debug` here, not `--profile`: `run-as` — pulling `databases/countscore.
 seeding `shared_prefs` (the cheatsheet below) — only works on a **debuggable** build, and a
 profile or release APK is not one. Profile is for measuring, in Mode 1b and Mode 3.
 
-> `--no-tree-shake-icons` is a `flutter build` flag only — `flutter run` rejects it with exit 64. The dev/run pipeline doesn't tree-shake icons, so the dynamic `IconData` from `GameType` works without the flag.
+> `--no-tree-shake-icons` is a `flutter build` flag only — `flutter run` and `flutter test` reject it with exit 64 (`Could not find an option named "--no-tree-shake-icons"`, checked on Flutter 3.47.2). Neither command tree-shakes icons, in any mode, `--profile` included, so the dynamic `IconData` from `GameType` works without the flag. No command in this skill passes it.
 
 Run `flutter run` as a **background Bash task** so hot reload stays available. The Monitor tool can stream its stdout for compile errors.
 
@@ -129,7 +129,7 @@ Use this for: page transitions, list scroll behavior, dialog enter/exit, snackba
 ### Mode 1b — Performance overlay (visible jank)
 
 ```bash
-flutter run -d $DEV --profile --no-tree-shake-icons
+flutter run -d $DEV --profile
 # Then in the running session, press P to toggle the perf overlay.
 # Or via service extension:
 flutter screenshot -d $DEV --type=skia --observatory-uri=<vm-uri>
@@ -202,9 +202,9 @@ void main() {
 ### Run the suite on the Pixel
 
 ```bash
-flutter test integration_test -d $DEV --no-tree-shake-icons
+flutter test integration_test -d $DEV
 # Single file:
-flutter test integration_test/app_test.dart -d $DEV --no-tree-shake-icons
+flutter test integration_test/app_test.dart -d $DEV
 ```
 
 ### Capture screenshots from inside integration tests
@@ -224,7 +224,7 @@ Screenshots end up in the test report. Pull and Read them to evaluate UX as part
 Emulator perf is meaningless. For real numbers:
 
 ```bash
-flutter run -d $DEV --profile --no-tree-shake-icons --trace-startup
+flutter run -d $DEV --profile --trace-startup
 # trace file lands in build/start_up_info.json — look at engineEnterTimestampMicros
 ```
 

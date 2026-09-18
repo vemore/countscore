@@ -1,5 +1,7 @@
 # The agent that implements a change also writes the tests that judge it
 
+**Status:** done (2026-09-18) — closed by chore/tooling-fixes. The `ship-parallel` §2 prompt carries a three-attempt circuit breaker reporting TEST_ISSUE / IMPL_ISSUE / DOC_ISSUE / UNCLEAR, §2 has the orchestrator's action per class, and `.llmwiki/ParallelDelivery.md` records why the test-designer subagent was dropped.
+
 - **Noted:** 2026-09-18 — comparing the project's SDLC with "Your SDLC is your context
   engineering" (Daniel Kravets, LeadDev, 2026-08-10)
 - **Theme:** merge-safety
