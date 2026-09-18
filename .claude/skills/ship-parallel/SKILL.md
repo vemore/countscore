@@ -75,15 +75,29 @@ Rules:
 6. Watch `gh pr checks <n> --watch` and fix what fails until every check is green **or
    skipped** — the `scope` job rules out the jobs the change does not need, and a job it
    skipped reports `skipping`, which counts as passing.
+   Circuit breaker: after three fix attempts on the same failing check (or the same failing
+   test locally), stop — no fourth attempt, no loosened assertion, no skipped test. Report
+   the failure as one of TEST_ISSUE (the test is wrong or asks for something the entry does
+   not), IMPL_ISSUE (the code cannot meet the test as far as you can tell), DOC_ISSUE (a doc,
+   wiki or entry is contradictory or wrong, and you cannot tell which side to trust) or
+   UNCLEAR, with the check name, the last error and what the three attempts tried.
 7. Never merge, never deploy, never force-push, never push to main.
 8. Report, briefly: PR URL and number, check state, files touched, Alembic revisions, ARB keys
    added, anything the orchestrator must know to merge or deploy (env vars, migrations,
-   manual steps), and entries you created.
+   manual steps), entries you created, and — if the circuit breaker tripped — its class.
 ```
 
 A `SubagentStop` hook refuses to let an agent finish while its commits have no pull request
 or while its checks are red, so a report without a green pull request means the agent was
-blocked twice — read why before relaunching.
+blocked twice — read why before relaunching. When the report carries a circuit-breaker
+class, act on the class, and never relaunch the same prompt unchanged:
+
+| Class | What the orchestrator does |
+|---|---|
+| `TEST_ISSUE` | Read the test against the entry's Acceptance. If the test is wrong, `SendMessage` the agent (or a fresh one on the same branch) the correction; if it is right, treat it as `IMPL_ISSUE`. |
+| `IMPL_ISSUE` | Read the last error and the three attempts yourself; relaunch with the diagnosis in the prompt, or narrow the pull request and move the rest to a new `wip/` entry. |
+| `DOC_ISSUE` | Decide which side is true — ask the user if it changes what the entry asks for — and relaunch with that answer. |
+| `UNCLEAR` | Ask the user, with the agent's evidence; the pull request waits and merges after its wave. |
 
 ## 3. Merge, one pull request at a time
 

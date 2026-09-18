@@ -361,6 +361,12 @@ network call against production, so it stays a manual step — on web via chrome
 device via the `flutter-device-test` skill. Export/import and the wakelock toggle have no
 automated coverage at all and must be checked on a device.
 
+**The screenshot composer's tests are local only.** `scripts/test_compose_screenshots.py`
+(output 1080×1920 opaque RGB, `--check`, caption parsing, and that every committed
+`store_listing/<locale>/screenshots/phone/*.png` is compliant) runs with
+`uv run --no-project --with pytest --with pillow pytest scripts/test_compose_screenshots.py`;
+no CI job collects it (`wip/todo_nr/2026-09-18-compose-screenshots-tests-not-in-ci.md`).
+
 **The sync conflict branch is untested.**
 
 > **Status: Outdated** (2026-09-13) — covered now. Three tests in `test_sync.py` drive two
