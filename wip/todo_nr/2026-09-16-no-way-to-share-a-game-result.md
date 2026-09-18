@@ -29,6 +29,6 @@ that reasoning against `.llmwiki/Documentation.md` before shipping.
 listing (no tracking parameter). The rendered image is a second pull request.
 
 **Acceptance:**
-- A share action on the end-of-game ranking and on the ZapZap analysis opens the system share sheet.
+- A share action on the end-of-game ranking and on the game analysis (`lib/screens/game_analysis_screen.dart`, any game type since #76) opens the system share sheet.
 - The shared text is localized in ten languages and holds the game type, the date, the standings and the app's name with its Play URL (unit test on the text builder).
 - `share_plus` is added with no new manifest permission, and the pull request records why the Data Safety declaration does not change.

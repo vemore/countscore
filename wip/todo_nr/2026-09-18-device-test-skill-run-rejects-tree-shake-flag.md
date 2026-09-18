@@ -17,3 +17,4 @@ drop the flag from Modes 1b and 3 or correct the Mode 1 note.
 **Acceptance:**
 - The skill's Mode 1 note and its Mode 1b / Mode 3 commands agree about `--no-tree-shake-icons`.
 - The Mode 1b and Mode 3 `flutter run` commands start without a usage error.
+- The `flutter test integration_test` commands (`SKILL.md:205,207`) no longer pass the flag either: `flutter test -h` does not list it.

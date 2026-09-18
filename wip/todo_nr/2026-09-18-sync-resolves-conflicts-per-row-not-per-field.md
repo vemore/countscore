@@ -15,3 +15,6 @@ the same game at the same time lose one of the two edits.
 and the matching contract on the client (`db-migration` skill, [[Sync]]). Probably more than
 one pull request: split before promotion.
 
+**Postponed (2026-09-18, refinement):** parked until a public launch — the user is still
+prod's only user. Before promotion it needs a design and a split into server table, server
+comparison and client contract entries, each with acceptance criteria.

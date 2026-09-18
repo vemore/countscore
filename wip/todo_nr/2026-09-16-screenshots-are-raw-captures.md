@@ -21,11 +21,11 @@ read the UI to know what the app does; not localized, so the ten listing locales
 French/English UI; and pale enough to be unreadable at thumbnail size, which is where the
 decision to tap is actually made.
 
-**Fix:** (lot 2, after the copy lands) a `scripts/compose_screenshots.py` — Pillow, PEP 723
+**Fix:** a `scripts/compose_screenshots.py` — Pillow, PEP 723
 inline dependencies, run with `uv run --script` like the other release scripts — that reads
 the raw captures and writes **1080×1920 RGB** compositions with a localized title band above
 the screen, one output set per store locale. Then re-publish with
-`play_publish.py publish --graphics`. Needs the per-locale caption strings, so it follows the
+`play_publish.py listing --graphics` (no version bump, no rebuild). Needs the per-locale caption strings, so it follows the
 listing copy rather than preceding it.
 
 **Decided (2026-09-18, refinement):** 1080×1920 RGB, as proposed. Claude drafts the eight

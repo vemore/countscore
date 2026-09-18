@@ -9,7 +9,7 @@
 machine has none on the PATH; `~/cft/` holds 145 while Chrome is 153. Running the suite took
 a manual Chrome for Testing lookup and download.
 
-**Proposal:** `scripts/chromedriver.sh` reading `google-chrome --version`, fetching the
+**Fix:** `scripts/chromedriver.sh` reading `google-chrome --version`, fetching the
 matching driver into a cache if absent, starting it on 4444; point `Testing.md` and
 `.claude/rules/web.md` at it.
 
