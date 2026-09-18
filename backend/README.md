@@ -92,7 +92,7 @@ dessus.
 | POST | `/groups` | Crée un groupe + premier device |
 | POST | `/groups/join` | Rejoint un groupe via share_token |
 | GET | `/groups/me` | Info du groupe du device authentifié, dont `owner_device_id` |
-| PATCH | `/groups/me/settings` | Modifie style/langue/budget |
+| PATCH | `/groups/me/settings` | Modifie style/langue (tout membre) et budget (propriétaire seul, 403 sinon) |
 | GET | `/groups/me/usage` | Consommation budget mensuelle |
 | POST | `/groups/me/devices/{id}/revoke` | Révoque un device (un autre : propriétaire seulement ; soi-même : quitter le groupe) |
 | POST | `/groups/me/rotate-share-token` | Régénère le share_token (propriétaire seulement) |

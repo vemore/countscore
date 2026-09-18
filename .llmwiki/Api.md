@@ -16,7 +16,7 @@
 | POST | `` | none | Create a group + its first device. 201. IP rate limited. |
 | POST | `/join` | none | Join via `share_token`. 201. IP rate limited. |
 | GET | `/me` | device | Returns the group. **No `share_token`** — see below. Carries `owner_device_id` (null only when no device of the group is live): how the app learns whether it is the owner. |
-| PATCH | `/me/settings` | device | 422 when `monthly_budget_cents` exceeds the operator's `MAX_BUDGET_CENTS` (unset: `DEFAULT_BUDGET_CENTS`) — members may lower their budget, not raise it past that. |
+| PATCH | `/me/settings` | device | `comment_style` and `comment_language`: every member. `monthly_budget_cents`: **owner only** (403 otherwise, whatever else the body carries — a refused request changes nothing), and 422 when it exceeds the operator's `MAX_BUDGET_CENTS` (unset: `DEFAULT_BUDGET_CENTS`) — the owner may lower the budget, not raise it past that. |
 | GET | `/me/usage` | device | Budget consumption. |
 | GET | `/me/devices` | device | The group's **active** devices, oldest first: `{"devices": [{id, label, joined_at, last_seen_at, is_owner}]}`. Revoked devices are left out; no token or hash. Feeds Settings → Group → Devices. |
 | POST | `/me/devices/{device_id}/revoke` | device | Another device: **owner only** (403 otherwise); revokes it **and rotates `share_token`**, 200 with `GroupWithShareToken` — the revoked device learnt the old token when it joined. Again on a revoked device: the current token, no new one. The caller's own id: leaving (`GroupProvider.leave`), open to every member, 204, no rotation; an owner that leaves hands the role to the earliest-joined live device (none left: `owner_device_id` null). |
@@ -27,7 +27,8 @@
 created the group, until it hands over or leaves. The check and the change run under the
 group's row lock (`_locked_group` in `app/routes/groups.py`), so two concurrent hand-overs or
 a hand-over racing a revoke cannot both pass. `PATCH /me/settings` stays open to every
-member.
+member for the comment style and language; its budget is the owner's, checked under the same
+lock.
 
 ### `app/routes/sync.py` — prefix `/sync`, tag `sync`
 
@@ -102,6 +103,12 @@ even with `EXPOSE_DOCS` off, so turning them on cannot break a deploy that start
 `tests/test_pwa.py`.
 
 ## Decisions & History
+
+- **The budget is the owner's; style and language are everyone's (2026-09-18).** The budget
+  is the one group setting that costs the operator money, so `feat/group-budget-owner-only`
+  put `monthly_budget_cents` behind the owner check. The comment style and language only
+  change how comments read, so they stay open to every member. A non-owner sending a budget
+  gets the 403 even over the cap: the cap is checked only for the owner.
 
 - **Only the owner revokes, rotates or hands over (2026-09-18).** Until `feat/group-owner`
   every device of a group was equal, so any member could shut out any other or rotate the

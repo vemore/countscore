@@ -1,5 +1,7 @@
 # Any member of a group can change its analysis budget, style and language
 
+**Status:** done (2026-09-18) — closed by feat/group-budget-owner-only. `PATCH /groups/me/settings` answers 403 when a non-owner sends `monthly_budget_cents`; style and language stay open to every member. The app sends no budget today; hiding the control is part of [[2026-09-13-group-settings-in-app]].
+
 - **Noted:** 2026-09-18 — while adding the group owner (`feat/group-owner`)
 - **Theme:** groups-v2
 - **Area:** backend

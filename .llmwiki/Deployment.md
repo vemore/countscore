@@ -235,7 +235,7 @@ scripts/deploy_web.sh --rollback   # swap pwa/current.prev back
 | `COMMENT_MODEL` | Claude model | `claude-haiku-4-5` |
 | `COMMENT_MEMORY_SIZE` | Comments kept in the sliding memory | `5` |
 | `DEFAULT_BUDGET_CENTS` | Monthly budget per group | `100` |
-| `MAX_BUDGET_CENTS` | Ceiling a member may set through `PATCH /groups/me/settings`. Unset = `DEFAULT_BUDGET_CENTS` | unset |
+| `MAX_BUDGET_CENTS` | Ceiling the group owner may set through `PATCH /groups/me/settings`. Unset = `DEFAULT_BUDGET_CENTS` | unset |
 | `MAX_STREAMS_PER_DEVICE` | Concurrent `/sync/stream` connections per device (1013 beyond) | `3` |
 | `LLM_PROVIDER` | ZapZap provider: `bedrock` \| `gemini` \| `mistral` | `bedrock` |
 | `BEDROCK_MODEL_ID` | Bedrock model | `us.meta.llama3-3-70b-instruct-v1:0` |
