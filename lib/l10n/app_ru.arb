@@ -532,5 +532,13 @@
   "gameInProgress": "Идёт",
   "roundNumber": "раунд {number}",
   "gameLeader": "{name} лидирует · {score}",
-  "gameWonBy": "Победитель: {name}"
+  "gameWonBy": "Победитель: {name}",
+  "boardRank": "{rank, plural, one{{rank}-й} few{{rank}-й} many{{rank}-й} other{{rank}-й}}",
+  "boardViewRows": "Строка на игрока",
+  "boardViewLanes": "Столбец на игрока",
+  "boardSeatOrder": "Порядок хода",
+  "boardRoundShort": "Р{number}",
+  "boardPlayer": "Игрок",
+  "boardTotal": "Итого",
+  "boardLeader": "Лидирует"
 }

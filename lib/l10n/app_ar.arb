@@ -532,5 +532,13 @@
   "gameInProgress": "جارية",
   "roundNumber": "الجولة {number}",
   "gameLeader": "{name} في الصدارة · {score}",
-  "gameWonBy": "فاز بها {name}"
+  "gameWonBy": "فاز بها {name}",
+  "boardRank": "{rank, plural, zero{المركز {rank}} one{المركز {rank}} two{المركز {rank}} few{المركز {rank}} many{المركز {rank}} other{المركز {rank}}}",
+  "boardViewRows": "صف لكل لاعب",
+  "boardViewLanes": "عمود لكل لاعب",
+  "boardSeatOrder": "ترتيب اللعب",
+  "boardRoundShort": "ج{number}",
+  "boardPlayer": "اللاعب",
+  "boardTotal": "المجموع",
+  "boardLeader": "في الصدارة"
 }

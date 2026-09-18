@@ -36,7 +36,7 @@ whether the connected features exist; the third starts the review prompt's clock
 |---|---|
 | `game_provider.dart` | The substantial one. Repositories are constructor-injectable, defaulting to the six Drift implementations over `AppDatabase.instance`. Owns `_games`, `_currentGame`, `_currentPlayers`, `_currentRounds`, `_scores` (keyed `"playerId_roundId"`) and `_roundCounts` (game id → rounds played, one grouped query in `loadGames`, kept in step by `addRound`/`deleteRound`). Game/round/score CRUD plus stats. |
 | `game_type_provider.dart` | Game-type list CRUD, `getGameTypeById`. The 22 built-in types are rows like any other; their *displayed* name comes from `lib/utils/game_type_name.dart`, not from the row. |
-| `settings_provider.dart` | Wakelock toggle (SharedPreferences-backed) and DB export/import. The **only** caller of `DatabaseService` for I/O. Exposes `supportsDbExportImport => !kIsWeb`. |
+| `settings_provider.dart` | Wakelock toggle and the board's layout, `BoardView` (`lanes` or `rows`, key `boardView`, app-wide) — both SharedPreferences-backed, read by `ready` — and DB export/import. The **only** caller of `DatabaseService` for I/O. Exposes `supportsDbExportImport => !kIsWeb`. |
 | `theme_provider.dart` | `ThemeMode` only, persisted to SharedPreferences under `themeMode` as `ThemeMode.name`. `load()` is called from `main()` before `runApp`. |
 | `group_provider.dart` | Group membership and the sync loop — create/join/leave/rotate, the device list and `revokeDevice`, `shareGame`, `syncNow`, `SyncStatus`, and a `SyncEvent` stream shown as snackbars by `_SyncEventListener` in `main.dart`. A `ChangeNotifierProxyProvider` over `BackendProvider`: runs only with a URL **and** a device token. Calls `GameProvider.refreshFromSync` after remote changes. See [[Sync]]. |
 | `backend_provider.dart` | The self-hosted backend base URL, SharedPreferences key `backendUrl`, **no default**. `check()` validates and canonicalises what the user typed; `isConfigured` gates every connected feature. `load()` is called from `main()` before `runApp`. |
@@ -82,7 +82,13 @@ prompt below.
 
 ### Widgets — `lib/widgets/`
 
-Five components shared out of the screens:
+Seven components shared out of the screens:
+
+- `board_lanes.dart` — the board's default layout ([below](#the-board)): `BoardData` (what
+  both layouts draw from: players in seat order, rounds, a `GameStanding`, colours, the
+  elimination tests, the tap callbacks), `BoardLanes`, and the pieces the rows share —
+  `BoardScoreText` (a zero on an amber pill, `·` for no score), `BoardCrown`, `boardTint`.
+- `board_rows.dart` — `BoardRows`, the one-row-per-player layout.
 
 - `player_avatars.dart` — `PlayerAvatar` (an initial on a colour, drawn in
   `onPlayerColor`) and `PlayerAvatarStack` (a game's players overlapping, in seat order and
@@ -155,7 +161,7 @@ in seat order, a player's own `colorValue` wins unless an earlier seat already s
 everyone else takes the first colour of `kPlayerPalette` (ten mid-tone colours) no one in
 the game shows; past ten the palette repeats by seat. `assignPlayerColors(colorValues)` is
 the same rule over bare colour values, and `onPlayerColor(colour)` the initial's colour on
-it. The home avatars use it; the board is to follow (`feat/board-lanes`).
+it. The home avatars and the board's lanes and rows use it.
 
 
 `insets.dart` — `withBottomInset(context, base)` adds `MediaQuery.paddingOf(context).bottom`
@@ -227,14 +233,33 @@ the condition is false again. "Continue playing" (or the back button) is also wr
 the board does not re-ask; the stored answer is removed as soon as the condition is false.
 A finished game is not asked about on open.
 
-The board's score grid has one breakpoint, `kBoardWideBreakpoint` (600 logical pixels,
-`game_board_screen.dart`), read from a `LayoutBuilder` rather than `MediaQuery`, so it is the
-width the grid is actually given. Below it the grid is the phone layout: intrinsic columns,
-centred, scrolling both ways. From 600 up it is at least as wide as the screen, the round
-column stays intrinsic, the player columns share the rest (`IntrinsicColumnWidth(flex: 1)`),
-and each score cell fills its column, so the whole column is the tap target. Too many
-players for the width still scroll sideways; no column is ever squeezed below its content.
-It is the only screen that branches on width.
+#### The board
+
+The board is **one lane per player** (`BoardLanes`, `lib/widgets/board_lanes.dart`): a band
+tinted with the player's display colour (`playerColorsById`) runs from the header — a
+two-letter `PlayerAvatar`, the name, the total, the place (`boardRank`) — down to the last
+round. A lane's header and cells are one `Column`, so they cannot drift apart; the round
+numbers are a column of their own, pinned on the left, and tapping one opens the round's
+comment. The leader (`GameStanding.leader`, following the game's `isLowestScoreWins`; none
+before the first score) has its lane outlined in its colour and a crown in `kLeaderGold`.
+Places are shared on a tie (`GameStanding.ranks`). A total within 20 points of the type's
+`playerDeadThreshold` turns orange; an eliminated player's lane is dimmed and the name struck
+through; a zero sits on an amber pill, whatever the game type.
+
+Widths come from a `LayoutBuilder`, not from a breakpoint: up to 8 players
+(`kBoardMaxFittingLanes`) the lanes share the width and never scroll; beyond, a lane keeps
+`kBoardMinLaneWidth` (56) and the lanes scroll sideways under the pinned round column, with a
+ranking ribbon of every player on top. No lane grows past `kBoardMaxLaneWidth` (180) — on a
+wide screen the lanes are centred. From 6 players (`kBoardCompactHeaderFrom`) the header is
+compact: avatar, vertical name, total.
+
+The app-bar toggle (`board_view_toggle`) switches to **one row per player** (`BoardRows`):
+seat order, or rank order through a segmented button (not remembered); the last 4 rounds
+(`kBoardRowsVisibleRounds`) as columns, older rounds a swipe to the right away, then the
+total. The layout is `SettingsProvider.boardView`, app-wide and remembered. The board reads
+the provider as nullable, so a test that does not provide one gets lanes.
+
+A cell tap still opens the score dialog.
 
 ### Toolchain
 
@@ -354,3 +379,13 @@ not "fix" it by hardcoding a codepoint.
   `DataTable` and its two scroll views, with a minimum width and flexed player columns added
   above 600 dp, so the phone layout is the same widget tree with nothing changed
   (`wip/done/2026-09-16-no-large-screen-layout.md`).
+  > **Status: Outdated** (2026-09-18) — the `DataTable` and its 600 dp breakpoint are gone;
+  > see the next entry.
+- **The board became lanes, and lost its breakpoint** (2026-09-18, `feat/board-lanes`). The
+  `DataTable` laid the header and the cells out separately, painted every cell in the game
+  type's colour and marked no leader, so with 8 players a column was tied to its player by
+  position alone. Lanes size themselves from the width they are given, so the wide/narrow
+  switch (`kBoardWideBreakpoint`) had nothing left to decide. The crown is an icon
+  (`Icons.emoji_events`), not an emoji: on the web an emoji makes CanvasKit fetch a colour
+  emoji font from Google at run time. The one-row-per-player choice is app-wide rather than
+  per game — a table that prefers rows prefers them every evening.

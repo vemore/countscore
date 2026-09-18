@@ -532,5 +532,13 @@
   "gameInProgress": "Läuft",
   "roundNumber": "Runde {number}",
   "gameLeader": "{name} führt · {score}",
-  "gameWonBy": "Gewonnen von {name}"
+  "gameWonBy": "Gewonnen von {name}",
+  "boardRank": "{rank, plural, one{{rank}.} other{{rank}.}}",
+  "boardViewRows": "Eine Zeile pro Spieler",
+  "boardViewLanes": "Eine Spalte pro Spieler",
+  "boardSeatOrder": "Spielreihenfolge",
+  "boardRoundShort": "Rd.{number}",
+  "boardPlayer": "Spieler",
+  "boardTotal": "Summe",
+  "boardLeader": "In Führung"
 }

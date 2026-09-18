@@ -1046,4 +1046,37 @@ class AppLocalizationsJa extends AppLocalizations {
   String gameWonBy(String name) {
     return '$nameの勝ち';
   }
+
+  @override
+  String boardRank(int rank) {
+    String _temp0 = intl.Intl.pluralLogic(
+      rank,
+      locale: localeName,
+      other: '$rank位',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get boardViewRows => '1人1行';
+
+  @override
+  String get boardViewLanes => '1人1列';
+
+  @override
+  String get boardSeatOrder => '手番順';
+
+  @override
+  String boardRoundShort(int number) {
+    return '$number回';
+  }
+
+  @override
+  String get boardPlayer => 'プレイヤー';
+
+  @override
+  String get boardTotal => '合計';
+
+  @override
+  String get boardLeader => 'トップ';
 }

@@ -1,5 +1,13 @@
 # The board does not show who leads, and its columns barely say whose they are
 
+**Status:** done (2026-09-18) — closed by feat/board-lanes. The board is one lane per player
+(`lib/widgets/board_lanes.dart`) with a crown on the leader, a ranking ribbon and sideways
+scroll beyond 8 players, and an app-bar toggle to one row per player
+(`lib/widgets/board_rows.dart`) remembered in `SettingsProvider.boardView`. Tests:
+`test/screens/game_board_lanes_test.dart`. PWA screenshots at 4 and 8 players and of the row
+view, light and dark: [`assets/…column-and-who-leads/`](../assets/2026-09-18-board-hides-who-owns-each-column-and-who-leads/).
+Left out: the mock-up's "players 3 to 9 of 10 · swipe" and "rounds 1 to 3" hints.
+
 - **Noted:** 2026-09-18 — visual refresh, split into one pull request per screen
 - **Theme:** visual-refresh
 - **Area:** app

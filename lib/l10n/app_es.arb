@@ -532,5 +532,13 @@
   "gameInProgress": "En curso",
   "roundNumber": "ronda {number}",
   "gameLeader": "{name} va en cabeza · {score}",
-  "gameWonBy": "Ganada por {name}"
+  "gameWonBy": "Ganada por {name}",
+  "boardRank": "{rank, plural, one{{rank}.º} other{{rank}.º}}",
+  "boardViewRows": "Una fila por jugador",
+  "boardViewLanes": "Una columna por jugador",
+  "boardSeatOrder": "Orden de juego",
+  "boardRoundShort": "M{number}",
+  "boardPlayer": "Jugador",
+  "boardTotal": "Puntos",
+  "boardLeader": "En cabeza"
 }

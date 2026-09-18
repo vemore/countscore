@@ -532,5 +532,13 @@
   "gameInProgress": "Em andamento",
   "roundNumber": "rodada {number}",
   "gameLeader": "{name} lidera · {score}",
-  "gameWonBy": "Vencida por {name}"
+  "gameWonBy": "Vencida por {name}",
+  "boardRank": "{rank, plural, one{{rank}.º} other{{rank}.º}}",
+  "boardViewRows": "Uma linha por jogador",
+  "boardViewLanes": "Uma coluna por jogador",
+  "boardSeatOrder": "Ordem de jogo",
+  "boardRoundShort": "Rd.{number}",
+  "boardPlayer": "Jogador",
+  "boardTotal": "Pontos",
+  "boardLeader": "Na liderança"
 }

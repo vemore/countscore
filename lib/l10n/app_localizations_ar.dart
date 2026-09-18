@@ -1073,4 +1073,42 @@ class AppLocalizationsAr extends AppLocalizations {
   String gameWonBy(String name) {
     return 'فاز بها $name';
   }
+
+  @override
+  String boardRank(int rank) {
+    String _temp0 = intl.Intl.pluralLogic(
+      rank,
+      locale: localeName,
+      other: 'المركز $rank',
+      many: 'المركز $rank',
+      few: 'المركز $rank',
+      two: 'المركز $rank',
+      one: 'المركز $rank',
+      zero: 'المركز $rank',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get boardViewRows => 'صف لكل لاعب';
+
+  @override
+  String get boardViewLanes => 'عمود لكل لاعب';
+
+  @override
+  String get boardSeatOrder => 'ترتيب اللعب';
+
+  @override
+  String boardRoundShort(int number) {
+    return 'ج$number';
+  }
+
+  @override
+  String get boardPlayer => 'اللاعب';
+
+  @override
+  String get boardTotal => 'المجموع';
+
+  @override
+  String get boardLeader => 'في الصدارة';
 }

@@ -605,5 +605,13 @@
   "gameInProgress": "In progress",
   "roundNumber": "round {number}",
   "gameLeader": "{name} leads · {score}",
-  "gameWonBy": "Won by {name}"
+  "gameWonBy": "Won by {name}",
+  "boardRank": "{rank, plural, one{#{rank}} other{#{rank}}}",
+  "boardViewRows": "One row per player",
+  "boardViewLanes": "One column per player",
+  "boardSeatOrder": "Seat order",
+  "boardRoundShort": "R{number}",
+  "boardPlayer": "Player",
+  "boardTotal": "Total",
+  "boardLeader": "Leading"
 }

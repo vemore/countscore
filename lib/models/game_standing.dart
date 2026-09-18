@@ -42,4 +42,21 @@ class GameStanding {
 
   /// [player]'s total, 0 when they have no score yet.
   int totalOf(Player player) => totals[player.id] ?? 0;
+
+  /// Each player's place, keyed by player id: 1 for the best total, and
+  /// players on the same total share a place (1, 2, 2, 4). Players without an
+  /// id are left out.
+  Map<int, int> get ranks {
+    final result = <int, int>{};
+    for (final player in players) {
+      if (player.id == null) continue;
+      final total = totalOf(player);
+      final better = players.where((other) {
+        final t = totalOf(other);
+        return isLowestScoreWins ? t < total : t > total;
+      }).length;
+      result[player.id!] = better + 1;
+    }
+    return result;
+  }
 }

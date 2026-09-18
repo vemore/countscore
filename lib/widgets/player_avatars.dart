@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/player.dart';
 import '../utils/player_colors.dart';
 
-/// A player's initial on their display colour.
+/// A player's initial — or first [letters] letters — on their display colour.
 class PlayerAvatar extends StatelessWidget {
   const PlayerAvatar({
     super.key,
@@ -11,11 +11,16 @@ class PlayerAvatar extends StatelessWidget {
     required this.color,
     this.size = 28,
     this.borderColor,
+    this.letters = 1,
   });
 
   final String name;
   final Color color;
   final double size;
+
+  /// How many letters of the name to show: the board shows two ("Li"), so two
+  /// players sharing an initial stay apart.
+  final int letters;
 
   /// The ring that separates overlapping avatars — the colour of what they
   /// sit on. None when null.
@@ -24,8 +29,10 @@ class PlayerAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final trimmed = name.trim();
-    final initial =
-        trimmed.isEmpty ? '?' : trimmed.characters.first.toUpperCase();
+    final chars = trimmed.characters;
+    final initial = trimmed.isEmpty
+        ? '?'
+        : chars.first.toUpperCase() + chars.skip(1).take(letters - 1).join();
     return Container(
       width: size,
       height: size,
@@ -42,7 +49,7 @@ class PlayerAvatar extends StatelessWidget {
         style: TextStyle(
           color: onPlayerColor(color),
           fontWeight: FontWeight.w800,
-          fontSize: size * 0.46,
+          fontSize: size * (letters > 1 ? 0.4 : 0.46),
           height: 1,
         ),
       ),

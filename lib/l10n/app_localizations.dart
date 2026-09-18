@@ -1955,6 +1955,54 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Gagnée par {name}'**
   String gameWonBy(String name);
+
+  /// A player's place under their total on the board (1er, 2e...)
+  ///
+  /// In fr, this message translates to:
+  /// **'{rank, plural, =1{1er} other{{rank}e}}'**
+  String boardRank(int rank);
+
+  /// Board app-bar toggle: switch to one row per player
+  ///
+  /// In fr, this message translates to:
+  /// **'Une ligne par joueur'**
+  String get boardViewRows;
+
+  /// Board app-bar toggle: switch back to one column (lane) per player
+  ///
+  /// In fr, this message translates to:
+  /// **'Une colonne par joueur'**
+  String get boardViewLanes;
+
+  /// One-row-per-player board: sort the rows in seat order (the other choice is the ranking)
+  ///
+  /// In fr, this message translates to:
+  /// **'Ordre de jeu'**
+  String get boardSeatOrder;
+
+  /// Short round column header in the one-row-per-player board (T4)
+  ///
+  /// In fr, this message translates to:
+  /// **'T{number}'**
+  String boardRoundShort(int number);
+
+  /// Column header of the player names in the one-row-per-player board
+  ///
+  /// In fr, this message translates to:
+  /// **'Joueur'**
+  String get boardPlayer;
+
+  /// Column header of the totals in the one-row-per-player board
+  ///
+  /// In fr, this message translates to:
+  /// **'Points'**
+  String get boardTotal;
+
+  /// Screen-reader label of the crown on the leading player's lane
+  ///
+  /// In fr, this message translates to:
+  /// **'En tête'**
+  String get boardLeader;
 }
 
 class _AppLocalizationsDelegate
