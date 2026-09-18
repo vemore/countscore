@@ -536,7 +536,8 @@ class _HomeScreenState extends State<HomeScreen> {
       final finished = !game.isFinished;
       final justFinished = await gameProvider.setGameFinished(gameId, finished);
       // Same guard as the board: only a game that was open and now is not
-      // counts towards the review prompt.
+      // is a moment to consider the review prompt, which counts finished
+      // games from the database itself.
       if (justFinished) {
         unawaited(ReviewPromptService.instance.onGameFinished());
       }

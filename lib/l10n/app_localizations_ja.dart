@@ -1019,4 +1019,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get groupErrorNotOwner => 'この操作はグループのオーナーだけが行えます';
+
+  @override
+  String get whoStarts => '誰から始める？';
+
+  @override
+  String get whoStartsAgain => 'もう一度引く';
 }

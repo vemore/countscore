@@ -14,7 +14,9 @@ import '../utils/game_type_name.dart';
 import '../repositories/drift/drift_repositories.dart';
 import '../repositories/game_analysis_repository.dart';
 import '../services/drift/database.dart';
+import '../services/game_over_dismissals.dart';
 import '../services/review_prompt.dart';
+import '../widgets/who_starts_dialog.dart';
 import 'game_analysis_screen.dart';
 import 'game_rules_screen.dart';
 import 'ranking_screen.dart';
@@ -44,10 +46,15 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
   /// corrected score puts the game back under its threshold, and crossing it
   /// once more is a new event worth asking about.
   ///
-  /// It is in-memory only, so leaving the board and coming back asks again.
-  /// Persisting the refusal would need a synced column; see
-  /// `wip/todo_nr/2026-09-16-game-over-dialog-only-on-score-edit.md`.
+  /// A "Continue playing" is also written to [GameOverDismissals], on this
+  /// device only, and read back into this flag by [_dismissalLoaded] — so
+  /// leaving the board and coming back does not ask again.
   bool _gameOverDismissed = false;
+
+  /// The stored "Continue playing" for this game, read once when the board
+  /// opens. Every check awaits it, so a round added in the first frames cannot
+  /// ask a question the user already answered.
+  late final Future<void> _dismissalLoaded = _loadDismissal();
 
   /// Whether this game already has an analysis stored locally. It keeps the
   /// menu entry available after the server is cleared: the generated text is
@@ -59,7 +66,10 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshCachedAnalysis());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshCachedAnalysis();
+      _checkGameOverOnOpen();
+    });
     _gameProvider.addListener(_closeIfDeletedElsewhere);
   }
 
@@ -77,6 +87,26 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     final l10n = AppLocalizations.of(context)!;
     Navigator.of(context).pop();
     messenger.showSnackBar(SnackBar(content: Text(l10n.gameDeletedElsewhere(name))));
+  }
+
+  Future<void> _loadDismissal() async {
+    final uuid = _gameProvider.currentGame?.uuid;
+    if (uuid == null) return;
+    if (await GameOverDismissals.isDismissed(uuid)) _gameOverDismissed = true;
+  }
+
+  /// A game can be past its threshold before the board opens — crossed on
+  /// another device, or in a session that ended without an answer. It is asked
+  /// about once here, unless the user already chose to keep playing. A finished
+  /// game has had its answer.
+  Future<void> _checkGameOverOnOpen() async {
+    final game = _gameProvider.currentGame;
+    if (game == null || game.isFinished) return;
+    final typeId = game.gameTypeId;
+    final gameType = typeId == null
+        ? null
+        : context.read<GameTypeProvider>().getGameTypeById(typeId);
+    await _maybeShowGameOver(_gameProvider, gameType);
   }
 
   Future<void> _refreshCachedAnalysis() async {
@@ -208,6 +238,17 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                         ],
                       ),
                     ),
+                  if (gameProvider.currentPlayers.isNotEmpty)
+                    PopupMenuItem(
+                      value: 'who_starts',
+                      child: Row(
+                        children: [
+                          const Icon(Icons.casino_outlined),
+                          const SizedBox(width: 8),
+                          Text(l10n.whoStarts),
+                        ],
+                      ),
+                    ),
                   PopupMenuItem(
                     value: 'edit_game',
                     child: Row(
@@ -272,6 +313,11 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                         builder: (_) => GameRulesScreen(gameType: menuGameType),
                       ),
                     );
+                  } else if (value == 'who_starts') {
+                    await WhoStartsDialog.show(
+                      context,
+                      [for (final p in gameProvider.currentPlayers) p.name],
+                    );
                   } else if (value == 'edit_game') {
                     _showEditGameDialog();
                   } else if (value == 'delete_round' &&
@@ -299,7 +345,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                       await gameProvider.deleteRound(lastRound.id!);
                       // Removing a round can take the game back under its
                       // threshold, or leave it over one it was already past.
-                      _maybeShowGameOver(gameProvider, menuGameType);
+                      await _maybeShowGameOver(gameProvider, menuGameType);
                     }
                   } else if (value == 'finish_game') {
                     final gameId = gameProvider.currentGame?.id;
@@ -538,7 +584,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                         // moment a game already past its threshold — crossed on
                         // another device, or in an earlier session — gets
                         // noticed.
-                        _maybeShowGameOver(gameProvider, gameType);
+                        await _maybeShowGameOver(gameProvider, gameType);
                       },
                       icon: const Icon(Icons.add),
                       label: Text(l10n.addRound),
@@ -589,13 +635,18 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
 
   /// Shows the game-over dialog once per crossing of the threshold.
   ///
-  /// Every mutation that can change a total calls this: a score edit, a round
-  /// added, a round deleted. There is deliberately no check on the board's
-  /// first build — nothing records the user's "Continue playing", so opening a
-  /// game that is past its threshold would raise the dialog every single time.
-  void _maybeShowGameOver(GameProvider gameProvider, GameType? gameType) {
+  /// Every mutation that can change a total calls this — a score edit, a round
+  /// added, a round deleted — and so does the board's first build
+  /// ([_checkGameOverOnOpen]). The stored "Continue playing" is dropped as soon
+  /// as the condition is false, so the next crossing asks again.
+  Future<void> _maybeShowGameOver(
+      GameProvider gameProvider, GameType? gameType) async {
+    await _dismissalLoaded;
+    if (!mounted) return;
     if (!_checkGameOverCondition(gameProvider, gameType)) {
       _gameOverDismissed = false;
+      final uuid = gameProvider.currentGame?.uuid;
+      if (uuid != null) await GameOverDismissals.clear(uuid);
       return;
     }
     if (_gameOverDismissed) return;
@@ -603,7 +654,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     // A slight delay so the table shows the new total before the dialog covers
     // it.
     Future.delayed(const Duration(milliseconds: 100), () {
-      if (mounted) _showGameOverDialog(context);
+      if (mounted) unawaited(_showGameOverDialog(context));
     });
   }
 
@@ -847,9 +898,13 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     );
   }
 
-  void _showGameOverDialog(BuildContext context) {
+  Future<void> _showGameOverDialog(BuildContext context) async {
     final l10n = AppLocalizations.of(context)!;
-    showDialog(
+    final uuid = context.read<GameProvider>().currentGame?.uuid;
+    // true is "End game"; "Continue playing", or the back button, is anything
+    // else, and is remembered on this device for as long as the game stays
+    // past its threshold.
+    final ended = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
@@ -857,16 +912,14 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
         content: Text(l10n.gameOverMessage),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.pop(dialogContext);
-            },
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(l10n.continuePlay),
           ),
           ElevatedButton(
             onPressed: () async {
               final gameProvider = context.read<GameProvider>();
               final gameId = gameProvider.currentGame?.id;
-              Navigator.pop(dialogContext);
+              Navigator.pop(dialogContext, true);
               Navigator.pop(context); // Return to game list
               // One trigger among several since the board and the game list can
               // declare a game over too; all of them record the same fact.
@@ -883,6 +936,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
         ],
       ),
     );
+    if (ended != true && uuid != null) await GameOverDismissals.dismiss(uuid);
   }
 
   void _showScoreDialog(
@@ -927,7 +981,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
       }
 
       // Check if game over condition is met
-      _maybeShowGameOver(gameProvider, gameType);
+      await _maybeShowGameOver(gameProvider, gameType);
     }
 
     showDialog(

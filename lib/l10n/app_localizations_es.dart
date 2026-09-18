@@ -1044,4 +1044,10 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get groupErrorNotOwner =>
       'Solo el propietario del grupo puede hacerlo';
+
+  @override
+  String get whoStarts => '¿Quién empieza?';
+
+  @override
+  String get whoStartsAgain => 'Sortear de nuevo';
 }

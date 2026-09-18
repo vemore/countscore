@@ -527,5 +527,7 @@
 
   "groupDevicesExplainMember": "Solo el propietario del grupo puede quitar un dispositivo o cambiar el código de invitación.",
 
-  "groupErrorNotOwner": "Solo el propietario del grupo puede hacerlo"
+  "groupErrorNotOwner": "Solo el propietario del grupo puede hacerlo",
+  "whoStarts": "¿Quién empieza?",
+  "whoStartsAgain": "Sortear de nuevo"
 }
