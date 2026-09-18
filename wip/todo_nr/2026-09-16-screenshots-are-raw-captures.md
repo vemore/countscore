@@ -21,11 +21,18 @@ read the UI to know what the app does; not localized, so the ten listing locales
 French/English UI; and pale enough to be unreadable at thumbnail size, which is where the
 decision to tap is actually made.
 
-**Fix (lot 2, after the copy lands):** a `scripts/compose_screenshots.py` — Pillow, PEP 723
+**Fix:** (lot 2, after the copy lands) a `scripts/compose_screenshots.py` — Pillow, PEP 723
 inline dependencies, run with `uv run --script` like the other release scripts — that reads
 the raw captures and writes **1080×1920 RGB** compositions with a localized title band above
 the screen, one output set per store locale. Then re-publish with
 `play_publish.py publish --graphics`. Needs the per-locale caption strings, so it follows the
 listing copy rather than preceding it.
 
-**Open question:** What caption goes in each locale's title band, and at what size (1080×1920 as proposed)?
+**Decided (2026-09-18, refinement):** 1080×1920 RGB, as proposed. Claude drafts the eight
+French captions from the store listing copy, the user validates them in the pull request,
+and the nine other locales are translated from them.
+
+**Acceptance:**
+- `scripts/compose_screenshots.py` writes 1080×1920 opaque RGB PNGs, one set per store locale.
+- The eight French captions are validated by the user in the pull request, then translated.
+- `play_publish.py validate` accepts the new graphics.

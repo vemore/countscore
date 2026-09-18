@@ -1,0 +1,13 @@
+# osv-scanner configuration for the `app` CI job's scan of pubspec.lock
+# (.github/workflows/ci.yml, "Dependency vulnerability audit (pubspec.lock)").
+#
+# Any advisory fails the job. An advisory with no fix yet is the only reason to add an
+# entry here, and every entry names the wip/ file that tracks it, exactly as the backend's
+# `pip-audit --ignore-vuln <ID>` does. Remove the entry in the pull request that bumps
+# the package past the fix. osv-scanner has no --ignore-vuln flag: this file is its
+# equivalent. `ignoreUntil` makes an ignore expire and turn the job red again.
+#
+# [[IgnoredVulns]]
+# id = "GHSA-xxxx-xxxx-xxxx"
+# ignoreUntil = 2026-12-31
+# reason = "no fixed release yet — wip/todo_nr/YYYY-MM-DD-<package>-<id>.md"

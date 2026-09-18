@@ -251,8 +251,12 @@ CI — it calls the production endpoint. See `.llmwiki/Testing.md`.
   exists for that audit: it is the only thing that runs it on a week where nothing touched
   `backend/`.
 - **Backend image** — builds `backend/Dockerfile` (dependencies locked to `uv.lock`) and
-  checks that the container runs as a non-root user, with no compiler and no dev dependencies.
-- **App** — checks that the two binaries committed under `web/` match the versions
+  checks that the container runs as a non-root user, with no compiler and no dev dependencies;
+  builds the backup sidecar (`backend/Dockerfile.backup`), checks its `age` and `pg_dump` and
+  that it refuses to back up without an encryption key; resolves both compose files.
+- **App** — an [`osv-scanner`](https://github.com/google/osv-scanner) audit of every package
+  in `pubspec.lock` that fails on any advisory (ignores, each with a `wip/` entry, go in
+  [`.github/osv-scanner.toml`](.github/osv-scanner.toml)), then checks that the two binaries committed under `web/` match the versions
   `pubspec.lock` resolves ([`scripts/web_binaries.sh`](scripts/web_binaries.sh)), then
   codegen, `flutter analyze`, `flutter test`, release web build.
 - **Android** — debug APK from a clean checkout, as a fresh-clone build proof, plus an

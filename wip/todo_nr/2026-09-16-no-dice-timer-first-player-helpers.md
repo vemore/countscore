@@ -26,4 +26,10 @@ search ("dé", "dice roller", "minuteur").
 string through `AppLocalizations` (`i18n-add-string`), no new permission. Ship them one at a
 time rather than as a bundle, so a bad idea is cheap to drop.
 
-**Open question:** Which helper first, and where does it live: the board's app bar or its overflow menu?
+**Decided (2026-09-18, refinement):** **Who starts?** first, in the board's overflow menu.
+The dice roller and the turn timer follow, one pull request each, once this one ships.
+
+**Acceptance:**
+- The board's overflow menu has a "Who starts?" item that picks one of the game's players at random and shows the name.
+- A widget test with N players checks the chosen name is one of them.
+- Every string exists in the ten ARB files; no permission, schema or network change.

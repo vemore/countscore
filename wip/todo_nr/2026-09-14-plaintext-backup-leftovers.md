@@ -22,4 +22,10 @@ keep it), and record in `.llmwiki/Deployment.md` that ad-hoc dumps must go throu
 `countscore-backup --once`. Check `synoacltool -get` on `backups/` and restrict it to the
 container user, or document that the ACL, not the mode, governs access there.
 
-**Open question:** Delete `backups/pre_0002_20260913.sql.gz`, or encrypt it with `age` and keep it? Restrict the `backups/` ACL to the container user, or only document that the ACL, not the mode bits, governs access?
+**Decided (2026-09-18, refinement):** delete `backups/pre_0002_20260913.sql.gz`, and
+restrict the `backups/` ACL to the container user.
+
+**Acceptance:**
+- `pre_0002_20260913.sql.gz` is gone from the NAS.
+- `synoacltool -get` on `backups/` grants access to the container user (and the admin) only.
+- `.llmwiki/Deployment.md` says ad-hoc dumps go through `countscore-backup --once`, and that the ACL governs access on the NAS.
