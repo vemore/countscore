@@ -34,6 +34,11 @@ writes **1080×1920 opaque RGB** PNGs to `store_listing/<locale>/screenshots/pho
 capture's own file name. That is the directory `play_publish.py graphics_files()` reads
 first, so `listing --graphics` publishes the composed set with no change to the publisher.
 
+> **Status: Outdated** (2026-09-18) — the app's seed colour is teal (`#0E8F88`,
+> `lib/utils/app_theme.dart`) since the theme refresh; the caption band is still Deep Purple
+> and the raw captures still show the old theme. Re-capture and re-colour:
+> `wip/todo_nr/2026-09-18-store-screenshots-show-the-old-purple-theme.md`.
+
 - The captions are `store_listing/<locale>/screenshot_captions.txt`, one `<capture stem>:
   <caption>` line per capture; the script refuses a missing or an unknown stem, and a caption
   that does not fit two lines at 48 px. French uses a no-break space before `?` and `:`.

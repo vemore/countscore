@@ -7,8 +7,10 @@ import '../l10n/app_localizations.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
 import '../models/game.dart';
+import '../models/game_standing.dart';
 import '../models/game_type.dart';
 import '../services/review_prompt.dart';
+import '../widgets/player_avatars.dart';
 import '../utils/game_type_name.dart';
 import '../utils/insets.dart';
 import '../utils/play_again.dart';
@@ -19,6 +21,43 @@ import 'game_types_screen.dart';
 import 'player_stats_screen.dart';
 import 'players_screen.dart';
 import 'settings_screen.dart';
+
+/// The game the home screen's Resume card offers: the open game played most
+/// recently (last score or rename, else creation), or null when every game is
+/// finished.
+Game? resumableGame(List<Game> games) {
+  Game? best;
+  for (final game in games) {
+    if (game.isFinished) continue;
+    final at = game.lastModified ?? game.createdAt;
+    if (best == null || at.isAfter(best.lastModified ?? best.createdAt)) {
+      best = game;
+    }
+  }
+  return best;
+}
+
+/// A rounded status label on a game card.
+class _Pill extends StatelessWidget {
+  const _Pill({super.key, required this.background, required this.child, this.tooltip});
+
+  final Color background;
+  final Widget child;
+  final String? tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    final pill = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: child,
+    );
+    return tooltip == null ? pill : Tooltip(message: tooltip!, child: pill);
+  }
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, this.boardBuilder});
@@ -340,185 +379,391 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
 
-        return ListView.builder(
-          padding: withBottomInset(context, const EdgeInsets.all(8)),
-          itemCount: games.length,
-          itemBuilder: (context, index) {
-            final game = games[index];
-            final gameType = gameTypeProvider.getGameTypeById(game.gameTypeId);
+        final resume = resumableGame(games);
+        final rest = [
+          for (final game in games)
+            if (!identical(game, resume)) game,
+        ];
 
-            return _buildGameCard(context, game, gameType, gameProvider);
-          },
+        return ListView(
+          // The bottom 88 keeps the last card clear of the extended FAB.
+          padding: withBottomInset(
+              context, const EdgeInsets.fromLTRB(16, 8, 16, 88)),
+          children: [
+            if (resume != null)
+              _buildResumeHero(context, resume,
+                  gameTypeProvider.getGameTypeById(resume.gameTypeId),
+                  gameProvider),
+            if (rest.isNotEmpty) ...[
+              Padding(
+                padding: EdgeInsetsDirectional.only(
+                    start: 4, top: resume != null ? 24 : 8, bottom: 12),
+                child: Text(
+                  l10n.recentGames.toUpperCase(),
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        letterSpacing: 1.2,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ),
+              for (final game in rest)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _buildGameCard(context, game,
+                      gameTypeProvider.getGameTypeById(game.gameTypeId),
+                      gameProvider),
+                ),
+            ],
+          ],
         );
       },
     );
   }
 
+  /// "Type · date" under a game's name; the date alone for a game without type.
+  String _typeAndDate(BuildContext context, Game game, GameType? gameType) {
+    final l10n = AppLocalizations.of(context)!;
+    final now = DateTime.now();
+    final date = game.createdAt.year == now.year
+        ? DateFormat.MMMd(l10n.localeName).format(game.createdAt)
+        : DateFormat.yMMMd(l10n.localeName).format(game.createdAt);
+    return [
+      if (gameType != null) gameTypeDisplayName(l10n, gameType),
+      date,
+    ].join(' · ');
+  }
+
+  Future<void> _openBoard(
+      BuildContext context, Game game, GameProvider gameProvider) async {
+    await gameProvider.loadGame(game.id!);
+    if (context.mounted) {
+      Navigator.push(context, MaterialPageRoute(builder: _board));
+    }
+  }
+
+  /// The most recently played open game, one tap from its board: its name,
+  /// type and round, the leader and the players.
+  Widget _buildResumeHero(BuildContext context, Game game, GameType? gameType,
+      GameProvider gameProvider) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final dark = theme.brightness == Brightness.dark;
+    // Light: the brand teal itself. Dark: a teal-tinted surface, so the card
+    // does not glare; the button carries the accent instead.
+    final background = dark
+        ? Color.alphaBlend(scheme.primary.withValues(alpha: 0.16),
+            theme.cardTheme.color ?? scheme.surface)
+        : scheme.primary;
+    final foreground = dark ? scheme.onSurface : scheme.onPrimary;
+    final rounds = gameProvider.roundCountOf(game.id!);
+    final subtitle = [
+      if (gameType != null) gameTypeDisplayName(l10n, gameType),
+      if (rounds > 0) l10n.roundNumber(rounds),
+    ].join(' · ');
+
+    return Material(
+      key: const Key('resumeHero'),
+      color: background,
+      borderRadius: BorderRadius.circular(24),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => _openBoard(context, game, gameProvider),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(20, 16, 8, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(gameType?.icon ?? Icons.sports_esports,
+                      color: foreground, size: 28),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      game.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.headlineSmall
+                          ?.copyWith(color: foreground),
+                    ),
+                  ),
+                  if (game.isShared)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Tooltip(
+                        message: l10n.gameSharedBadge,
+                        child: Icon(Icons.cloud_done_outlined,
+                            size: 18, color: foreground),
+                      ),
+                    ),
+                  _buildGameMenu(context, game, gameProvider,
+                      iconColor: foreground),
+                ],
+              ),
+              if (subtitle.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(top: 4, end: 12),
+                  child: Text(
+                    subtitle,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                        color: foreground.withValues(alpha: 0.85)),
+                  ),
+                ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsetsDirectional.only(end: 12),
+                child: FutureBuilder<GameStanding>(
+                  future: gameProvider.standingOf(game),
+                  builder: (context, snapshot) {
+                    final standing = snapshot.data;
+                    final leader = standing?.leader;
+                    return Row(
+                      children: [
+                        PlayerAvatarStack(
+                          players: standing?.players ?? const [],
+                          size: 32,
+                          maxShown: 4,
+                          borderColor: background,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: leader == null
+                              ? const SizedBox.shrink()
+                              : Text(
+                                  l10n.gameLeader(
+                                      leader.name, standing!.totalOf(leader)),
+                                  key: const Key('resumeHeroLeader'),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.bodyLarge
+                                      ?.copyWith(color: foreground),
+                                ),
+                        ),
+                        const SizedBox(width: 8),
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor:
+                                dark ? scheme.primary : scheme.onPrimary,
+                            foregroundColor:
+                                dark ? scheme.onPrimary : scheme.primary,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 22, vertical: 14),
+                          ),
+                          onPressed: () =>
+                              _openBoard(context, game, gameProvider),
+                          child: Text(l10n.resumeGame),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildGameCard(BuildContext context, Game game, GameType? gameType, GameProvider gameProvider) {
     final l10n = AppLocalizations.of(context)!;
-    final cardColor = gameType?.cardColor ?? Colors.deepPurple;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final dark = theme.brightness == Brightness.dark;
+    final gameColor = gameType?.cardColor ?? scheme.primary;
     final gameIcon = gameType?.icon ?? Icons.sports_esports;
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => _openBoard(context, game, gameProvider),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 4, 16),
+          child: FutureBuilder<GameStanding>(
+            future: gameProvider.standingOf(game),
+            builder: (context, snapshot) {
+              final standing = snapshot.data;
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // The game's colour lives in this tile only: the card
+                  // itself stays white, so amber does not turn to beige.
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: gameColor.withValues(alpha: dark ? 0.2 : 0.14),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(gameIcon, color: gameColor, size: 28),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                game.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.titleMedium,
+                              ),
+                            ),
+                            if (game.isShared) ...[
+                              const SizedBox(width: 6),
+                              Tooltip(
+                                message: l10n.gameSharedBadge,
+                                child: Icon(
+                                  Icons.cloud_done_outlined,
+                                  size: 16,
+                                  color: scheme.primary,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _typeAndDate(context, game, gameType),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodyMedium
+                              ?.copyWith(color: scheme.onSurfaceVariant),
+                        ),
+                        const SizedBox(height: 8),
+                        if (standing != null && standing.players.isEmpty)
+                          Text(l10n.noPlayers,
+                              style: theme.textTheme.bodySmall)
+                        else
+                          PlayerAvatarStack(
+                              players: standing?.players ?? const []),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: _buildStatusPill(context, game, standing),
+                  ),
+                  _buildGameMenu(context, game, gameProvider),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// "In progress" on an open game; the winner, or "Finished" when nobody
+  /// scored, on a finished one.
+  Widget _buildStatusPill(
+      BuildContext context, Game game, GameStanding? standing) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final style = theme.textTheme.labelLarge;
+
+    if (!game.isFinished) {
+      return _Pill(
+        key: const Key('statusInProgress'),
+        background: scheme.primary.withValues(alpha: 0.14),
+        child: Text(l10n.gameInProgress,
+            style: style?.copyWith(color: scheme.primary)),
+      );
+    }
+    final winner = standing?.leader;
+    final muted = scheme.onSurfaceVariant;
+    return _Pill(
+      key: const Key('statusFinished'),
+      background: scheme.surfaceContainerHighest,
+      tooltip: winner == null ? null : l10n.gameWonBy(winner.name),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(winner == null ? Icons.flag_outlined : Icons.emoji_events_outlined,
+              size: 16, color: muted),
+          const SizedBox(width: 4),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 96),
+            child: Text(
+              winner?.name ?? l10n.gameFinished,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: style?.copyWith(color: muted),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGameMenu(
+    BuildContext context,
+    Game game,
+    GameProvider gameProvider, {
+    Color? iconColor,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
     // A game with no round yet was never played, so there is nothing to declare
     // over — the same rule the board applies, and the one that keeps an empty
     // game out of the review prompt's count. Reopening stays offered whatever
     // the rounds.
     final canFinish = game.isFinished || gameProvider.roundCountOf(game.id!) > 0;
 
-    return FutureBuilder<List<dynamic>>(
-      future: _getGamePlayers(gameProvider, game.id!),
-      builder: (context, snapshot) {
-        final players = snapshot.data ?? [];
-
-        return Card(
-          color: cardColor.withValues(alpha: 0.1),
-          margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-          child: ListTile(
-            leading: Icon(
-              gameIcon,
-              size: 40,
-              color: cardColor,
-            ),
-            title: Row(
-              children: [
-                Flexible(
-                  child: Text(
-                    game.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                if (game.isShared) ...[
-                  const SizedBox(width: 6),
-                  Tooltip(
-                    message: l10n.gameSharedBadge,
-                    child: Icon(
-                      Icons.cloud_done_outlined,
-                      size: 16,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ],
-                if (game.isFinished) ...[
-                  const SizedBox(width: 6),
-                  Tooltip(
-                    message: l10n.gameFinished,
-                    child: Icon(
-                      Icons.flag,
-                      size: 16,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 4),
-                Text(
-                  '${l10n.createdOn} ${_formatDate(game.createdAt)}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).textTheme.bodySmall?.color,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                _buildPlayersList(players),
-              ],
-            ),
-            trailing: PopupMenuButton(
-              itemBuilder: (context) => [
-                // The same action under two names: on a finished game it is
-                // the next game of the evening.
-                PopupMenuItem(
-                  value: game.isFinished ? 'play_again' : 'new_same',
-                  child: Row(
-                    children: [
-                      Icon(game.isFinished
-                          ? Icons.restart_alt
-                          : Icons.add_circle_outline),
-                      const SizedBox(width: 8),
-                      Text(game.isFinished
-                          ? l10n.playAgain
-                          : l10n.newWithSamePlayers),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'rename',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.edit),
-                      const SizedBox(width: 8),
-                      Text(l10n.rename),
-                    ],
-                  ),
-                ),
-                if (canFinish)
-                  PopupMenuItem(
-                    value: 'finish_game',
-                    child: Row(
-                      children: [
-                        Icon(game.isFinished
-                            ? Icons.replay
-                            : Icons.flag_outlined),
-                        const SizedBox(width: 8),
-                        Text(game.isFinished ? l10n.reopenGame : l10n.endGame),
-                      ],
-                    ),
-                  ),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.delete, color: Colors.red),
-                      const SizedBox(width: 8),
-                      Text(l10n.delete, style: const TextStyle(color: Colors.red)),
-                    ],
-                  ),
-                ),
-              ],
-              onSelected: (value) => _handleGameMenuAction(context, value, game, gameProvider),
-            ),
-            onTap: () async {
-              await gameProvider.loadGame(game.id!);
-              if (context.mounted) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: _board),
-                );
-              }
-            },
+    return PopupMenuButton(
+      iconColor: iconColor,
+      itemBuilder: (context) => [
+        // The same action under two names: on a finished game it is
+        // the next game of the evening.
+        PopupMenuItem(
+          value: game.isFinished ? 'play_again' : 'new_same',
+          child: Row(
+            children: [
+              Icon(game.isFinished ? Icons.restart_alt : Icons.add_circle_outline),
+              const SizedBox(width: 8),
+              Text(game.isFinished ? l10n.playAgain : l10n.newWithSamePlayers),
+            ],
           ),
-        );
-      },
+        ),
+        PopupMenuItem(
+          value: 'rename',
+          child: Row(
+            children: [
+              const Icon(Icons.edit),
+              const SizedBox(width: 8),
+              Text(l10n.rename),
+            ],
+          ),
+        ),
+        if (canFinish)
+          PopupMenuItem(
+            value: 'finish_game',
+            child: Row(
+              children: [
+                Icon(game.isFinished ? Icons.replay : Icons.flag_outlined),
+                const SizedBox(width: 8),
+                Text(game.isFinished ? l10n.reopenGame : l10n.endGame),
+              ],
+            ),
+          ),
+        PopupMenuItem(
+          value: 'delete',
+          child: Row(
+            children: [
+              const Icon(Icons.delete, color: Colors.red),
+              const SizedBox(width: 8),
+              Text(l10n.delete, style: const TextStyle(color: Colors.red)),
+            ],
+          ),
+        ),
+      ],
+      onSelected: (value) => _handleGameMenuAction(context, value, game, gameProvider),
     );
-  }
-
-  Widget _buildPlayersList(List<dynamic> players) {
-    final l10n = AppLocalizations.of(context)!;
-
-    if (players.isEmpty) {
-      return Text(l10n.noPlayers, style: const TextStyle(fontSize: 12));
-    }
-
-    final names = players.join(', ');
-    final displayText = l10n.playersListSummary(players.length, names);
-
-    return Text(
-      displayText,
-      style: const TextStyle(fontSize: 12),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-    );
-  }
-
-  String _formatDate(DateTime date) {
-    return DateFormat('dd/MM/yyyy').format(date);
-  }
-
-  Future<List<String>> _getGamePlayers(GameProvider provider, int gameId) async {
-    final players = await provider.getPlayersOfGame(gameId);
-    return players.map((player) => player.name).toList();
   }
 
   Future<void> _handleGameMenuAction(

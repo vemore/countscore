@@ -212,7 +212,8 @@ class GameType {
         builtinKey: 'other',
         name: 'Autre',
         iconCodePoint: Icons.sports_esports.codePoint,
-        cardColorValue: Colors.deepPurple.toARGB32(),
+        // Material deep purple, kept as a value: it is seeded data, not theme.
+        cardColorValue: 0xFF673AB7,
         isLowestScoreWins: false,
         isDefault: true,
       );

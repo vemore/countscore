@@ -174,12 +174,6 @@ abstract class AppLocalizations {
   /// **'Créez votre première partie'**
   String get createFirstGame;
 
-  /// Label for creation date
-  ///
-  /// In fr, this message translates to:
-  /// **'Créé le'**
-  String get createdOn;
-
   /// Menu option to create new game with same players
   ///
   /// In fr, this message translates to:
@@ -1925,6 +1919,42 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Tirer à nouveau'**
   String get whoStartsAgain;
+
+  /// Button on the home screen's Resume card: opens the most recently played game that is still open
+  ///
+  /// In fr, this message translates to:
+  /// **'Reprendre'**
+  String get resumeGame;
+
+  /// Section header above the list of games on the home screen, under the Resume card
+  ///
+  /// In fr, this message translates to:
+  /// **'Récentes'**
+  String get recentGames;
+
+  /// Status pill on a game card of the home screen: the game is not finished
+  ///
+  /// In fr, this message translates to:
+  /// **'En cours'**
+  String get gameInProgress;
+
+  /// Which round an open game is at, on the home screen's Resume card, after the game type (e.g. 'ZapZap · tour 7')
+  ///
+  /// In fr, this message translates to:
+  /// **'tour {number}'**
+  String roundNumber(int number);
+
+  /// On the home screen's Resume card: who is in the lead and their total
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} mène · {score}'**
+  String gameLeader(String name, int score);
+
+  /// Tooltip and screen-reader label of the winner pill on a finished game's card
+  ///
+  /// In fr, this message translates to:
+  /// **'Gagnée par {name}'**
+  String gameWonBy(String name);
 }
 
 class _AppLocalizationsDelegate

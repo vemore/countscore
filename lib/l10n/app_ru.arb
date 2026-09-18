@@ -21,8 +21,6 @@
 
   "createFirstGame": "Создайте свою первую игру",
 
-  "createdOn": "Создано",
-
   "newWithSamePlayers": "Новая с теми же игроками",
 
   "playAgain": "Играть снова",
@@ -270,7 +268,6 @@
   "search": "Поиск",
 
   "createNewPlayer": "Создать нового игрока",
-
 
   "searchOrCreate": "Искать / Создать",
   "@searchOrCreate": {
@@ -529,5 +526,11 @@
 
   "groupErrorNotOwner": "Это может сделать только владелец группы",
   "whoStarts": "Кто начинает?",
-  "whoStartsAgain": "Выбрать заново"
+  "whoStartsAgain": "Выбрать заново",
+  "resumeGame": "Продолжить",
+  "recentGames": "Недавние",
+  "gameInProgress": "Идёт",
+  "roundNumber": "раунд {number}",
+  "gameLeader": "{name} лидирует · {score}",
+  "gameWonBy": "Победитель: {name}"
 }

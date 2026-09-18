@@ -4,6 +4,7 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 import '../l10n/app_localizations.dart';
 import '../models/game_type.dart';
 import '../providers/game_type_provider.dart';
+import '../utils/app_theme.dart';
 import '../utils/game_type_name.dart';
 import '../utils/insets.dart';
 import 'game_rules_screen.dart';
@@ -146,7 +147,7 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
       text: existingGameType?.gameOverThreshold?.toString() ?? '',
     );
     IconData selectedIcon = existingGameType?.icon ?? Icons.sports_esports;
-    Color selectedColor = existingGameType?.cardColor ?? Colors.deepPurple;
+    Color selectedColor = existingGameType?.cardColor ?? kBrandSeedLight;
     bool isLowestScoreWins = existingGameType?.isLowestScoreWins ?? false;
     PlayerDeadConditionType? playerDeadConditionType = existingGameType?.playerDeadConditionType;
     GameOverConditionType? gameOverConditionType = existingGameType?.gameOverConditionType;

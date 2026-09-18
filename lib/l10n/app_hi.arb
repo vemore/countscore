@@ -21,8 +21,6 @@
 
   "createFirstGame": "अपना पहला खेल बनाएं",
 
-  "createdOn": "बनाया गया",
-
   "newWithSamePlayers": "उन्हीं खिलाड़ियों के साथ नया",
 
   "playAgain": "फिर से खेलें",
@@ -270,7 +268,6 @@
   "search": "खोजें",
 
   "createNewPlayer": "नया खिलाड़ी बनाएं",
-
 
   "searchOrCreate": "खोजें / बनाएं",
   "@searchOrCreate": {
@@ -529,5 +526,11 @@
 
   "groupErrorNotOwner": "यह केवल समूह का स्वामी कर सकता है",
   "whoStarts": "कौन शुरू करेगा?",
-  "whoStartsAgain": "फिर से चुनें"
+  "whoStartsAgain": "फिर से चुनें",
+  "resumeGame": "जारी रखें",
+  "recentGames": "हाल की",
+  "gameInProgress": "जारी",
+  "roundNumber": "राउंड {number}",
+  "gameLeader": "{name} आगे · {score}",
+  "gameWonBy": "{name} ने जीता"
 }
