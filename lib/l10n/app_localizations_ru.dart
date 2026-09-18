@@ -1073,4 +1073,40 @@ class AppLocalizationsRu extends AppLocalizations {
   String gameWonBy(String name) {
     return 'Победитель: $name';
   }
+
+  @override
+  String boardRank(int rank) {
+    String _temp0 = intl.Intl.pluralLogic(
+      rank,
+      locale: localeName,
+      other: '$rank-й',
+      many: '$rank-й',
+      few: '$rank-й',
+      one: '$rank-й',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get boardViewRows => 'Строка на игрока';
+
+  @override
+  String get boardViewLanes => 'Столбец на игрока';
+
+  @override
+  String get boardSeatOrder => 'Порядок хода';
+
+  @override
+  String boardRoundShort(int number) {
+    return 'Р$number';
+  }
+
+  @override
+  String get boardPlayer => 'Игрок';
+
+  @override
+  String get boardTotal => 'Итого';
+
+  @override
+  String get boardLeader => 'Лидирует';
 }

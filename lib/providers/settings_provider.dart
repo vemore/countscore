@@ -1,26 +1,49 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import '../services/database_service.dart';
 
+/// How the game board lays out its scores: one lane (a column) per player,
+/// or one row per player.
+enum BoardView { lanes, rows }
+
 class SettingsProvider with ChangeNotifier {
+  /// SharedPreferences key of [boardView], stored as the enum's name.
+  static const String boardViewKey = 'boardView';
+
   bool _keepScreenAwake = false;
+  BoardView _boardView = BoardView.lanes;
 
   bool get keepScreenAwake => _keepScreenAwake;
+
+  /// The board's layout, the same for every game: the last one chosen.
+  BoardView get boardView => _boardView;
+
+  /// Completes once the stored settings are read.
+  late final Future<void> ready;
 
   /// Export/import is mobile-only in v1 (dart:io File required).
   bool get supportsDbExportImport => !kIsWeb;
 
   SettingsProvider() {
-    _loadSettings();
+    ready = _loadSettings();
   }
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     _keepScreenAwake = prefs.getBool('keepScreenAwake') ?? false;
-    await _applyWakeLock();
+    final storedView = prefs.getString(boardViewKey);
+    _boardView = BoardView.values
+            .where((v) => v.name == storedView)
+            .firstOrNull ??
+        BoardView.lanes;
     notifyListeners();
+    // Not awaited by [ready]: the settings are read, whatever the wake lock
+    // plugin does.
+    unawaited(_applyWakeLock());
   }
 
   Future<void> toggleKeepScreenAwake() async {
@@ -29,6 +52,14 @@ class SettingsProvider with ChangeNotifier {
     await prefs.setBool('keepScreenAwake', _keepScreenAwake);
     await _applyWakeLock();
     notifyListeners();
+  }
+
+  Future<void> setBoardView(BoardView view) async {
+    if (view == _boardView) return;
+    _boardView = view;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(boardViewKey, view.name);
   }
 
   Future<void> _applyWakeLock() async {

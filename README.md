@@ -24,7 +24,9 @@ at your own server in Settings → Server if you want the connected features.
   languages, next to a summary of how CountScore scores that type — and every type, shipped
   or your own, gets that summary. Any of it can be
   rewritten: your table's own rules replace the shipped text and travel with your group.
-- **Scoring grid**: rounds, running totals, live ranking and per-player statistics.
+- **Scoring grid**: one coloured lane per player — avatar, big total, place, a crown on the
+  leader — or one row per player at the tap of a button (remembered for every game); rounds,
+  live ranking and per-player statistics.
 - **An explicit end**: any game that has been played can be declared over from the board or
   the game list, which marks it in the history and shows it as finished in both; the
   confirmation offers an undo, and reopening it lets you play on. Game types that define a

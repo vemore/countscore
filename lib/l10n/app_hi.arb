@@ -532,5 +532,13 @@
   "gameInProgress": "जारी",
   "roundNumber": "राउंड {number}",
   "gameLeader": "{name} आगे · {score}",
-  "gameWonBy": "{name} ने जीता"
+  "gameWonBy": "{name} ने जीता",
+  "boardRank": "{rank, plural, one{स्थान {rank}} other{स्थान {rank}}}",
+  "boardViewRows": "हर खिलाड़ी की एक पंक्ति",
+  "boardViewLanes": "हर खिलाड़ी का एक कॉलम",
+  "boardSeatOrder": "खेल का क्रम",
+  "boardRoundShort": "रा{number}",
+  "boardPlayer": "खिलाड़ी",
+  "boardTotal": "कुल",
+  "boardLeader": "सबसे आगे"
 }

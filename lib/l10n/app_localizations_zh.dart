@@ -1036,4 +1036,37 @@ class AppLocalizationsZh extends AppLocalizations {
   String gameWonBy(String name) {
     return '$name获胜';
   }
+
+  @override
+  String boardRank(int rank) {
+    String _temp0 = intl.Intl.pluralLogic(
+      rank,
+      locale: localeName,
+      other: '第$rank',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get boardViewRows => '每位玩家一行';
+
+  @override
+  String get boardViewLanes => '每位玩家一列';
+
+  @override
+  String get boardSeatOrder => '出牌顺序';
+
+  @override
+  String boardRoundShort(int number) {
+    return '$number轮';
+  }
+
+  @override
+  String get boardPlayer => '玩家';
+
+  @override
+  String get boardTotal => '总分';
+
+  @override
+  String get boardLeader => '领先';
 }

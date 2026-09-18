@@ -532,5 +532,13 @@
   "gameInProgress": "进行中",
   "roundNumber": "第{number}轮",
   "gameLeader": "{name}领先 · {score}",
-  "gameWonBy": "{name}获胜"
+  "gameWonBy": "{name}获胜",
+  "boardRank": "{rank, plural, other{第{rank}}}",
+  "boardViewRows": "每位玩家一行",
+  "boardViewLanes": "每位玩家一列",
+  "boardSeatOrder": "出牌顺序",
+  "boardRoundShort": "{number}轮",
+  "boardPlayer": "玩家",
+  "boardTotal": "总分",
+  "boardLeader": "领先"
 }

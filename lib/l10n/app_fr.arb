@@ -1755,5 +1755,49 @@
         "example": "Vincent"
       }
     }
+  },
+  "boardRank": "{rank, plural, =1{1er} other{{rank}e}}",
+  "@boardRank": {
+    "description": "A player's place under their total on the board (1er, 2e...)",
+    "placeholders": {
+      "rank": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "boardViewRows": "Une ligne par joueur",
+  "@boardViewRows": {
+    "description": "Board app-bar toggle: switch to one row per player"
+  },
+  "boardViewLanes": "Une colonne par joueur",
+  "@boardViewLanes": {
+    "description": "Board app-bar toggle: switch back to one column (lane) per player"
+  },
+  "boardSeatOrder": "Ordre de jeu",
+  "@boardSeatOrder": {
+    "description": "One-row-per-player board: sort the rows in seat order (the other choice is the ranking)"
+  },
+  "boardRoundShort": "T{number}",
+  "@boardRoundShort": {
+    "description": "Short round column header in the one-row-per-player board (T4)",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "boardPlayer": "Joueur",
+  "@boardPlayer": {
+    "description": "Column header of the player names in the one-row-per-player board"
+  },
+  "boardTotal": "Points",
+  "@boardTotal": {
+    "description": "Column header of the totals in the one-row-per-player board"
+  },
+  "boardLeader": "En tête",
+  "@boardLeader": {
+    "description": "Screen-reader label of the crown on the leading player's lane"
   }
 }

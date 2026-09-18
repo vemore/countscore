@@ -532,5 +532,13 @@
   "gameInProgress": "進行中",
   "roundNumber": "第{number}ラウンド",
   "gameLeader": "{name}がリード · {score}",
-  "gameWonBy": "{name}の勝ち"
+  "gameWonBy": "{name}の勝ち",
+  "boardRank": "{rank, plural, other{{rank}位}}",
+  "boardViewRows": "1人1行",
+  "boardViewLanes": "1人1列",
+  "boardSeatOrder": "手番順",
+  "boardRoundShort": "{number}回",
+  "boardPlayer": "プレイヤー",
+  "boardTotal": "合計",
+  "boardLeader": "トップ"
 }
