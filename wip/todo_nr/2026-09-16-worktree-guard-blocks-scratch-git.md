@@ -33,3 +33,8 @@ a scratch repository from the command line*. If that proves to be needed often, 
 alternative is a `scripts/` helper that owns the stub, so the recipe is a command and not a
 paragraph. Loosening either guard is not proposed: both refused exactly what they promise
 to refuse.
+
+**Acceptance:**
+- `.llmwiki/Hooks.md` § what the hooks do not cover gives the recipe: extract the script, put a `git` stub first on `PATH`.
+- It says not to build a scratch repository from the command line.
+- No guard file changes.

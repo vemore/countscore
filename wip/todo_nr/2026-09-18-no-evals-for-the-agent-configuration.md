@@ -26,3 +26,5 @@ check scripts, and a workflow run on pull requests touching `CLAUDE.md`, `.claud
 `.llmwiki/**`, plus a manual trigger. Open questions: the API key as a repository secret and
 the cost per run (budget it before enabling on every PR — `workflow_dispatch` first), and
 whether a failing eval blocks the merge or only reports.
+
+**Open question:** Put an Anthropic API key in the repository secrets? With what monthly budget per run? Does a failing eval block the merge, or only report?

@@ -16,3 +16,5 @@ changes, which is how it drifted.
 **Fix:** regenerate the direct-dependency list from `pubspec.yaml` (licenses from each
 package's `LICENSE` in the pub cache), and add the file to the README table in `CLAUDE.md`'s
 "dependency added" row, or generate it with a script checked in CI.
+
+**Open question:** Keep `THIRD_PARTY_LICENSES.md` current through a written rule, or generate it with a script and check it in CI? It has fallen further behind: 4 stale constraints and 7 missing packages.

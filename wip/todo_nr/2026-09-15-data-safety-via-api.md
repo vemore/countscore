@@ -20,3 +20,5 @@ resulting change still goes through Google's review.
 diff against what the Console exported and sends the CSV only with an explicit `--commit`.
 Keep the CSV and `PLAY_STORE_DATA_SAFETY.md` in the `.llmwiki/Documentation.md` rule so a new
 data flow updates both.
+
+**Open question:** Accept an API call that overwrites the whole Data Safety declaration, gated behind `--commit`? And who exports the first CSV from the Console?

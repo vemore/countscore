@@ -20,3 +20,9 @@ the image with `--entrypoint sh -c 'age --version && pg_dump --version'`, and
 `countscore-backup --once` with no recipient must exit non-zero. Add
 `docker compose -f backend/docker-compose.prod.yml config --quiet` with dummy
 `POSTGRES_*` / `CORS_ORIGINS`.
+
+**Acceptance:**
+- The `image` CI job builds `backend/Dockerfile.backup` and fails when it does not build.
+- In that image, `age --version && pg_dump --version` exits 0.
+- `docker compose -f backend/docker-compose.prod.yml config --quiet` passes with dummy environment values.
+- `scripts/ci_scope.sh` sets `image=true` for `backend/backup/*` and `backend/Dockerfile.backup`.

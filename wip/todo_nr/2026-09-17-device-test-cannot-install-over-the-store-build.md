@@ -39,3 +39,5 @@ that the version-to-version migration tests already cover the schema path, and w
 buys is the R8-shrunk build running on hardware.
 
 Related: [[2026-09-16-device-test-skill-stale-device-and-locale]].
+
+**Open question:** What replaces `release-android` §5: Play internal app sharing (faithful, one Console step), a fresh install plus a database import (scriptable), or dropping the on-device migration check because the migration tests cover it?

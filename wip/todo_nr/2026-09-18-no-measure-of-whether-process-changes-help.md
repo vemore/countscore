@@ -19,3 +19,8 @@ same files; share of pull requests green on their first CI run; merged size dist
 `ship-parallel` §6 report and record a baseline in `.llmwiki/ParallelDelivery.md`, so the
 `release-android` §3b pruning pass can compare before and after. Keep it to the few numbers
 the pass will actually read.
+
+**Acceptance:**
+- `scripts/delivery_metrics.sh [since]` prints the `fix:` share, fixes within 48 h touching the same files, the first-run-green share, the size distribution (excluding generated files and tests), and entry ages per `wip/` folder.
+- It reproduces about 29/112 `fix:` commits for 2026-09-09..2026-09-18.
+- The baseline is recorded in `.llmwiki/ParallelDelivery.md`.

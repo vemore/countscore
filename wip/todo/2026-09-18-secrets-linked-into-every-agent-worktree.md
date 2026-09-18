@@ -15,3 +15,8 @@ reach to what its task needs. Low priority while the user is prod's sole user.
 **Fix:** link nothing by default; `worktree_setup.sh --deploy` links `deploy.env`,
 `--release` links `key.properties`. Update the calls in `ship-parallel` §4, `backend-deploy`,
 `web-deploy` and `release-android`, and `.llmwiki/ParallelDelivery.md`.
+
+**Acceptance:**
+- `scripts/worktree_setup.sh` with no flag links neither `deploy.env` nor `key.properties`.
+- `--deploy` links `deploy.env`, and `--release` links `key.properties`.
+- `ship-parallel` §4, `backend-deploy`, `web-deploy` and `release-android` pass the right flag.

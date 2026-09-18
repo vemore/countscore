@@ -23,3 +23,5 @@ ZapZap call is allowed, what a counter is — and extend the `zapzap` section of
 (`test/game_rules_catalog_test.dart`) already guards the structure, so the risk is only in
 the prose. Worth doing before the next Play release: ZapZap is the first type in the list
 and the one the store screenshots show.
+
+**Open question:** The author's input is needed: deal size, draw and discard, when ZapZap may be called, and what a counter is.

@@ -1,5 +1,7 @@
 # A bundled plugin still applies the Kotlin Gradle Plugin
 
+**Status:** dropped (2026-09-18) — chore/refine-2026-09-18. An upstream watch item with nothing to do on our side (the plugin is now `in_app_review`); the build warning brings it back if it ever becomes an error.
+
 - **Noted:** 2026-09-09 — during the Flutter 3.47 upgrade
 - **Theme:** dependencies
 - **Area:** android

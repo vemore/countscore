@@ -21,3 +21,5 @@ on the same failing check.
   same failing check, stop and report, classifying the failure as `TEST_ISSUE`, `IMPL_ISSUE`,
   `DOC_ISSUE` or `UNCLEAR` rather than trying a fourth time. The `SubagentStop` refusal then
   reads as "blocked, see report", which §2 already tells the orchestrator to read.
+
+**Open question:** Split it? The circuit breaker can ship now, lane-independent: stop after three attempts on one failing check and classify the failure. For the test-designer subagent: is it required for lanes B and C, or are acceptance criteria plus the independent review enough?

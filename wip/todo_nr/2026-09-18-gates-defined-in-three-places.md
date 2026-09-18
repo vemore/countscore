@@ -18,3 +18,8 @@ will run" as one command. The article's answer is one verification interface (`m
 § Commands and `backend/CLAUDE.md` in place of the lists. Keep the hook's missing-tool
 refusals (they belong to the hook, not to the checks). Cover it in
 `scripts/hooks_selftest.sh`. The net change should remove lines, not add them.
+
+**Acceptance:**
+- `scripts/check.sh fast|app|backend|all` exists, and `guard-bash.sh` and `ci.yml` call it instead of calling ruff, mypy or `flutter analyze` themselves.
+- `hooks_selftest.sh` passes, and the missing-tool refusals still fire.
+- Outside `check.sh`, the diff removes more lines than it adds.

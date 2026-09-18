@@ -24,3 +24,8 @@ Three things in `.claude/skills/flutter-device-test/SKILL.md` cost a detour in o
 (`adb devices` first, then ask the user for `<ip>:<port>` from Settings → Wireless debugging —
 do not scan the LAN), and say in Mode 1 that functional work uses `--debug` because `run-as`
 needs it, `--profile` being for Mode 1b and Mode 3 only.
+
+**Acceptance:**
+- No hardcoded IP:port remains in `flutter-device-test`: the setup runs `adb devices`, then asks the user for the wireless-debugging address.
+- Mode 1 uses `--debug` and says why `run-as` needs it.
+- `--profile` appears only in Modes 1b and 3.

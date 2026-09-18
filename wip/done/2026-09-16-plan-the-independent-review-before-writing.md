@@ -1,5 +1,7 @@
 # Work that will be large, complex or risky gets its independent review planned, not discovered
 
+**Status:** dropped (2026-09-18) — merged into [[2026-09-18-one-lane-for-every-change]] by chore/refine-2026-09-18.
+
 - **Noted:** 2026-09-16 — decided by the user after `feat/game-types-long-tail` (#75)
 - **Theme:** merge-safety
 - **Area:** tooling

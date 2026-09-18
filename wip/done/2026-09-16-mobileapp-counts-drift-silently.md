@@ -1,5 +1,7 @@
 # `.llmwiki/MobileApp.md` counts files, and the counts rot without anyone noticing
 
+**Status:** dropped (2026-09-18) — merged into [[2026-09-16-wiki-owed-by-rating-prompt]] by chore/refine-2026-09-18.
+
 - **Noted:** 2026-09-16 — while adding `lib/utils/` for the bottom-inset fix
 - **Theme:** docs
 - **Area:** docs

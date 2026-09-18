@@ -23,3 +23,5 @@ repository secret, never from the repository (`CLAUDE.md`: never commit a real d
 host). Check first that the host is reachable from GitHub's runners. Add the workflow to
 `scripts/check_scheduled_runs.sh`, since a cron GitHub disables goes silent. Later, not now:
 a model diagnosing the failure in read-only mode.
+
+**Open question:** Is the production host reachable from GitHub-hosted runners, and may it live in a repository secret? Does a failure open an issue or a pull request? The value is low while you are prod's only user.

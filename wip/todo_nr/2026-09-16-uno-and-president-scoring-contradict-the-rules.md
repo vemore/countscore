@@ -33,3 +33,5 @@ flipping `isLowestScoreWins` on a type that already has games would silently rev
 standings. A safer route is to leave the seeds alone and let the first-run seeding offer
 both variants as two types ("Uno (à 500)" / "Uno (pénalités)"), which also feeds the
 long-tail work in `2026-09-16-default-game-types-miss-the-long-tail.md`.
+
+**Open question:** For Uno and for Président: follow the box rule (highest wins, 500 / Président points), keep the house variant, or seed both as two types? Existing rows are never flipped. (The link to `default-game-types-miss-the-long-tail` is closed, by #75.)

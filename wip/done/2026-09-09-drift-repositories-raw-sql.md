@@ -1,5 +1,7 @@
 # The Drift repositories are raw SQL
 
+**Status:** dropped (2026-09-18) — chore/refine-2026-09-18. Internal quality with no user-visible gain: 63 raw-SQL calls, much of it shared with `sync_schema`, make the conversion cost more than it returns.
+
 - **Noted:** 2026-09-09 — surfaced during the LLM-wiki migration
 - **Theme:** drift-typed-queries
 - **Area:** app

@@ -26,3 +26,5 @@ and to the twelve factories in `lib/models/game_type.dart`, and let
 `test/game_rules_catalog_test.dart` hold the ten locales in step. Consider keying
 `defaultRulesSlugs` on `builtin_key` rather than on the seeded name while doing it: the key
 is now the stable identity and the name is not.
+
+**Open question:** Re-key `defaultRulesSlugs` on `builtin_key`? That needs a migration to back-fill `rules_slug` on the 12 existing rows. And how many pull requests: one per family of games?

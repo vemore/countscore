@@ -25,3 +25,5 @@ the rule to `android/*`, `pubspec.*` and the `.github/`/`scripts/` catch-all, an
 fresh-clone proof honest by leaving it on every push to `main` and on the weekly run — which
 already force every flag true. Do not do this without also saying so in
 `.llmwiki/Testing.md`: the 2026-09-09 decision exists because of a "nobody built it" bug.
+
+**Open question:** Should `android` stop running on pull requests that touch only `lib/` or `test/`? It would still run on pushes to `main` and weekly. First look for an Actions run where `android` failed while `app` passed.

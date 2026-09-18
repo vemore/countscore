@@ -1,5 +1,7 @@
 # Nothing independent reviews a pull request before it is merged and deployed
 
+**Status:** dropped (2026-09-18) — merged into [[2026-09-18-one-lane-for-every-change]] by chore/refine-2026-09-18.
+
 - **Noted:** 2026-09-14 — while reviewing the two weeks of work since 2026-09-09
 - **Theme:** merge-safety
 - **Area:** tooling
