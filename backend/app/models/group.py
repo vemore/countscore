@@ -13,6 +13,17 @@ def _utcnow() -> datetime:
     return datetime.now(UTC)
 
 
+def next_month_start(now: datetime) -> datetime:
+    """Midnight UTC on the first day of the month after ``now``: when a budget period ends."""
+    if now.month == 12:
+        return datetime(now.year + 1, 1, 1, tzinfo=UTC)
+    return datetime(now.year, now.month + 1, 1, tzinfo=UTC)
+
+
+def _next_budget_reset() -> datetime:
+    return next_month_start(_utcnow())
+
+
 class Group(SQLModel, table=True):
     __tablename__ = "groups"
     __table_args__ = (Index("ix_groups_share_token", "share_token", unique=True),)
@@ -38,8 +49,10 @@ class Group(SQLModel, table=True):
     comment_language: str = Field(default="fr", max_length=8)
     monthly_budget_cents: int = Field(default=100)
     current_month_used_cents: int = Field(default=0)
+    # The end of the budget period current_month_used_cents counts. A new group starts in the
+    # current month; app.services.budget.current_period rolls it over once it has passed.
     budget_resets_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=_next_budget_reset,
         sa_column=Column(DateTime(timezone=True), nullable=False),
     )
 
