@@ -25,8 +25,15 @@ from .base import (
     LLMResult,
 )
 
-# Bedrock error codes that mean "no capacity right now", not "bad request".
-_THROTTLING_CODES = frozenset({"ThrottlingException", "ServiceQuotaExceededException"})
+# Bedrock error codes that mean "no capacity right now, try later", not "bad request".
+_THROTTLING_CODES = frozenset(
+    {
+        "ThrottlingException",
+        "ServiceQuotaExceededException",
+        "ServiceUnavailableException",
+        "ModelNotReadyException",
+    }
+)
 
 
 class BedrockProvider:
@@ -109,7 +116,7 @@ class BedrockProvider:
             )
         except ClientError as e:
             if e.response.get("Error", {}).get("Code") in _THROTTLING_CODES:
-                raise LLMRateLimitedError(f"Bedrock API rate-limited: {e}") from e
+                raise LLMRateLimitedError(f"Bedrock API rate-limited or unavailable: {e}") from e
             raise
         content = (payload.get("generation") or "").strip()
         return LLMResult(

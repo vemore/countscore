@@ -1,5 +1,7 @@
 # An upstream 503 reaches the user as "HTTP 502" instead of "try again later"
 
+**Status:** done (2026-09-18) — closed by fix/llm-upstream-unavailable. `openai.InternalServerError` and the Bedrock `ServiceUnavailableException` / `ModelNotReadyException` codes now raise `LLMRateLimitedError`, so the route answers 503 + `Retry-After: 60`; any other `OpenAIError` stays a 502. Four route tests drive the real providers with the network call stubbed. No backoff: the Regenerate button is the retry. The SDK's own 2 fast retries are left as they are — `wip/todo_nr/2026-09-18-openai-sdk-fast-retries.md`.
+
 - **Noted:** 2026-09-16 — the user's second analysis of the evening failed on production
 - **Theme:** backend-hardening
 - **Area:** backend

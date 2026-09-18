@@ -2,7 +2,7 @@
 
 > Scope: the HTTP and WebSocket surface. Source of truth is `backend/app/routes/`.
 > Related: [[Backend]] · [[Sync]] · [[LlmProviders]] · [[Security]]
-> Updated: 2026-09-16
+> Updated: 2026-09-18
 
 ## Facts
 
@@ -62,7 +62,7 @@ checks gets **429** before any hashing.
 | Method | Path | Auth | Notes |
 |---|---|---|---|
 | POST | `/comments/mvp` | **none** | Stateless. Anthropic path. IP rate limited. |
-| POST | `/comments/game-analysis` | **none** | Stateless. Any game type, nine voices, ten languages. Pluggable provider. IP rate limited (429). 503 if the provider is unavailable **or rate-limited upstream** (the latter with `Retry-After: 60` and the detail `upstream LLM rate-limited`, `app/routes/comments.py`), 422 on a wrong shape or a count out of bounds (`GameAnalysisPayload`: 1–12 players, ≤ 200 rounds, ≤ 10 history entries per player, thresholds within ±1 000 000; long text is clipped, player names filtered, and an unknown `style`, `language` or condition enum is corrected — never refused), 502 on any other upstream error. |
+| POST | `/comments/game-analysis` | **none** | Stateless. Any game type, nine voices, ten languages. Pluggable provider. IP rate limited (429). 503 if the provider is unavailable **or rate-limited or overloaded upstream** — an OpenAI-compatible 429 or 5xx, a Bedrock throttling, quota, `ServiceUnavailableException` or `ModelNotReadyException` (the latter with `Retry-After: 60` and the detail `upstream LLM rate-limited`, `app/routes/comments.py`), 422 on a wrong shape or a count out of bounds (`GameAnalysisPayload`: 1–12 players, ≤ 200 rounds, ≤ 10 history entries per player, thresholds within ±1 000 000; long text is clipped, player names filtered, and an unknown `style`, `language` or condition enum is corrected — never refused), 502 on any other upstream error. |
 | POST | `/comments/zapzap-analysis` | **none** | The same handler under its former name, `include_in_schema=False`, sharing one IP-rate-limit bucket. Kept for a published app talking to a backend its owner has not upgraded. |
 | POST | `/groups/me/games/{game_id}/comments` | device | Group-scoped, budgeted. |
 | GET | `/groups/me/games/{game_id}/comments` | device | `limit` 1–100 (default 10), 422 outside. |
@@ -105,6 +105,14 @@ even with `EXPOSE_DOCS` off, so turning them on cannot break a deploy that start
   reactions. The detail stays generic, so no provider name or message reaches the client.
   The app words every 503 as "temporarily unavailable, try again later"
   (`analysisErrorUnavailable`).
+- **An upstream 503 "high demand" joins the same family (2026-09-18).** On 2026-09-16
+  Gemini's free tier answered `503 UNAVAILABLE — high demand, try again later`; it arrived
+  as `openai.InternalServerError`, fell through to the generic branch, and the user saw
+  "HTTP 502". `OpenAICompatProvider` now maps `InternalServerError` (any 5xx) to
+  `LLMRateLimitedError`, and Bedrock adds `ServiceUnavailableException` and
+  `ModelNotReadyException` to its capacity codes; any other `OpenAIError` or `ClientError`
+  still answers 502. No backoff was added: the analysis is user-initiated, so the
+  Regenerate button is the retry and no connection is held open waiting.
 
 - **The analysis route was renamed and the old name kept (2026-09-16).** It answers for
   every game type now, in nine voices and ten languages, so `zapzap-analysis` had become
