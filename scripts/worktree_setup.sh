@@ -10,10 +10,14 @@
 # Usage: scripts/worktree_setup.sh [worktree dir]   (default: the current repository)
 #        --no-app      skip the Flutter steps (backend-only work)
 #        --no-backend  skip `uv sync`
+#        --deploy      link backend/scripts/deploy.env (backend-deploy, web-deploy)
+#        --release     link android/key.properties (release-android)
 #
-# Local-only files are linked, never copied, so a rotated password is seen everywhere
-# and nothing is duplicated on disk. All of them are gitignored, and the commit hook
-# refuses a staged keystore, key.properties or .env anyway.
+# No secret reaches a worktree by default: an implementing agent never deploys and never
+# signs, so only the deploy worktree (--deploy) and the release worktree (--release) get
+# the main checkout's untracked deployment target or keystore passwords. They are linked,
+# never copied, so a rotated password is seen everywhere and nothing is duplicated on disk.
+# Both are gitignored, and the commit hook refuses a staged key.properties or .env anyway.
 #
 # While it runs, the worktree carries a `.countscore-setup-in-progress` marker (pid, date,
 # branch) and `scripts/cleanup_local.sh` refuses to remove a worktree that has one — codegen
@@ -25,12 +29,16 @@ set -euo pipefail
 
 app=1
 backend=1
+LOCAL_ONLY=()
 dir=""
 for arg in "$@"; do
     case "$arg" in
         --no-app) app=0 ;;
         --no-backend) backend=0 ;;
-        -h|--help) sed -n '3,23p' "$0"; exit 0 ;;
+        --deploy) LOCAL_ONLY+=(backend/scripts/deploy.env) ;;   # deployment target
+        --release) LOCAL_ONLY+=(android/key.properties) ;;      # upload keystore passwords
+        -h|--help) sed -n '3,26p' "$0"; exit 0 ;;
+        -*) echo "worktree_setup.sh: unknown option $arg (see --help)" >&2; exit 2 ;;
         *) dir="$arg" ;;
     esac
 done
@@ -48,13 +56,11 @@ echo "pid $$ started $(date -Iseconds) branch $(git rev-parse --abbrev-ref HEAD)
 echo "worktree: $TREE"
 echo "main checkout: $MAIN"
 
-LOCAL_ONLY=(
-    backend/scripts/deploy.env   # deployment target (backend-deploy, web-deploy)
-    android/key.properties       # upload keystore passwords (release-android)
-)
 if [ "$TREE" != "$MAIN" ]; then
-    for file in "${LOCAL_ONLY[@]}"; do
-        if [ -e "$MAIN/$file" ] && [ ! -e "$TREE/$file" ]; then
+    for file in ${LOCAL_ONLY[@]+"${LOCAL_ONLY[@]}"}; do
+        if [ ! -e "$MAIN/$file" ]; then
+            echo "not linked $file: the main checkout has none" >&2
+        elif [ ! -e "$TREE/$file" ]; then
             ln -s "$MAIN/$file" "$TREE/$file"
             echo "linked $file"
         fi

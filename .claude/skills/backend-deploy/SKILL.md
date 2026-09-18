@@ -7,7 +7,9 @@ description: Deploy or roll back the CountScore FastAPI backend on the Synology 
 
 Target: the host named by `PUBLIC_URL` in `backend/scripts/deploy.env` — untracked, because
 it is one person's infrastructure and this repository is public. Copy
-`backend/scripts/deploy.env.example` if it is missing. Topology, service list and the full
+`backend/scripts/deploy.env.example` if it is missing. A worktree reaches it only when set up
+with `scripts/worktree_setup.sh --deploy <worktree>`, which links the main checkout's copy;
+without the flag no worktree gets it. Topology, service list and the full
 environment table are in `.llmwiki/Deployment.md`. For general NAS operations unrelated to
 this app, the `deploy-nas` skill covers the machine itself.
 

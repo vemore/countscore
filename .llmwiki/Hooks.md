@@ -3,7 +3,7 @@
 > Scope: the Claude Code hooks that enforce project rules mechanically, and the reasoning
 > that used to live in `CLAUDE.md`.
 > Related: [[Web]] · [[I18n]] · [[Testing]] · [[Backend]] · [[KnownLimits]] · [[ParallelDelivery]] · [[Documentation]]
-> Updated: 2026-09-16
+> Updated: 2026-09-18
 
 ## Facts
 
@@ -49,8 +49,8 @@ from a quiet spell, which is exactly the moment a cron disabled for inactivity s
 See [[Testing]] for what the two workflows carry.
 
 `parse_command.py` and `arb_keys.py` are helpers, not handlers.
-`scripts/hooks_selftest.sh` exercises all of them, and `scripts/cleanup_local.sh` and
-`scripts/check_scheduled_runs.sh`, from a table of 138 cases and runs as the
+`scripts/hooks_selftest.sh` exercises all of them, and `scripts/cleanup_local.sh`,
+`scripts/check_scheduled_runs.sh` and `scripts/worktree_setup.sh`'s secret links, from a table of 142 cases and runs as the
 first step of the `app` job in `.github/workflows/ci.yml`.
 
 ### What is refused, and on what evidence
