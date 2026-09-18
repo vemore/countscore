@@ -1,5 +1,10 @@
 # guard-bash.sh judges `git -C $W commit` against the main checkout
 
+**Status:** done (2026-09-18) — closed by fix/guard-cd-parse-failure. A `$W` bound to a literal
+earlier on the same line is now resolved, so `W=<path>; git -C $W commit -F - <<'EOF'` is judged
+on that worktree; an operand it still cannot expand is an `unknown-repo` refusal asking for
+`git -C <literal path>`, never a verdict on main. Both shapes are `hooks_selftest.sh` cases.
+
 - **Noted:** 2026-09-18 — while committing docs/wiki-sync from a worktree agent
 - **Theme:** tooling
 - **Area:** hooks

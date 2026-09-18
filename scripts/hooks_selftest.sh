@@ -278,6 +278,8 @@ said "same-line W=<tree>; git -C \$W commit + push (b)" pass \
     "W=$TREE; git -C \$W add .llmwiki/INDEX.md && git -C \$W commit -q --no-edit 2>&1 | tail -5; git -C \$W push -q 2>&1 | tail -2; git -C \$W log --oneline -1"
 said "same-line W=<tree>; cd \$W, heredoc, git -C \$W push (a)" pass \
     "$(printf 'W=%s; cd $W && python3 - <<%sPY%s\nprint(1)\nPY\ngit -C $W add x && git -C $W commit -q --no-edit && git -C $W push -q 2>&1 | tail -2' "$TREE" "'" "'")"
+said "same-line W=<tree>; git -C \$W commit -F - heredoc" pass \
+    "$(printf 'W=%s; git -C $W commit -F - <<%sEOF%s\ndocs: x\nEOF' "$TREE" "'" "'")"
 said "export W=\"<tree>\" then git -C \"\${W}\" push" pass   "export W=\"$TREE\"; git -C \"\${W}\" push -q"
 said "cd \$UNSET, then commit"                     unknown 'cd $SOMEWHERE && git commit -m x'
 said "git -C \$UNSET commit"                       unknown 'git -C $SOMEWHERE commit -m x'

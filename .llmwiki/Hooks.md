@@ -59,7 +59,7 @@ See [[Testing]] for what the two workflows carry.
 
 `parse_command.py` and `arb_keys.py` are helpers, not handlers.
 `scripts/hooks_selftest.sh` exercises all of them, and `scripts/cleanup_local.sh`,
-`scripts/check_scheduled_runs.sh` and `scripts/worktree_setup.sh`'s secret links, from a table of 159 cases and runs as the
+`scripts/check_scheduled_runs.sh` and `scripts/worktree_setup.sh`'s secret links, from a table of 160 cases and runs as the
 first step of the `app` job in `.github/workflows/ci.yml`.
 
 ### What is refused, and on what evidence
