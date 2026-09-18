@@ -540,5 +540,16 @@
   "boardRoundShort": "{number}轮",
   "boardPlayer": "玩家",
   "boardTotal": "总分",
-  "boardLeader": "领先"
+  "boardLeader": "领先",
+  "groupSettingsTitle": "评论与用量",
+  "groupSettingsDescription": "服务器为本群组对局撰写的评论的风格和语言。任何成员都可以修改。",
+  "groupCommentStyle": "评论风格",
+  "groupCommentStyleNarrative": "叙事",
+  "groupCommentStyleHumorous": "幽默",
+  "groupCommentStyleAnalytical": "分析",
+  "groupCommentLanguage": "评论语言",
+  "groupSettingsSaved": "群组设置已保存",
+  "groupUsageTitle": "本月 LLM 用量",
+  "groupUsageAmount": "已用 {used}，预算 {budget}",
+  "groupUsageResets": "{date} 重置"
 }

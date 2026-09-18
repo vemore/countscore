@@ -2,7 +2,7 @@
 
 Complete guide for filling out the Data Safety section in Google Play Console for CountScore.
 
-**Last Updated**: September 16, 2026
+**Last Updated**: September 19, 2026
 **Applies to**: CountScore v1.1.0 and later
 **Privacy Policy**: `privacy_policy.md`, published at
 https://vemore.github.io/countscore/privacy-policy.html
@@ -101,6 +101,13 @@ outside the group: the device name is already declared above under App activity,
 server already stored both dates. The recipients are the devices of the group the user chose
 to join — the same audience that already receives the shared games — so the answers below are
 unchanged.
+
+**Comment settings and usage (September 19, 2026).** Settings → Group → *Comments and usage*
+sends the group's comment style (one of three fixed values) and language code with
+`PATCH /groups/me/settings`, and reads them back with `GET /groups/me`, along with the
+month's AI spending from `GET /groups/me/usage`. These are app settings chosen from fixed
+lists, not information about the user, and the server already stored them with the group; the
+recipient is the same self-hosted server. The answers below are unchanged.
 
 ### Report control for AI commentary (September 14, 2026)
 

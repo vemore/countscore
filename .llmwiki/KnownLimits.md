@@ -2,7 +2,7 @@
 
 > Scope: what is deliberately deferred, and what is simply missing.
 > Related: [[Architecture]] · [[Sync]] · [[Security]] · [[Testing]] · [[Web]]
-> Updated: 2026-09-18
+> Updated: 2026-09-19
 
 ## Facts
 
@@ -16,9 +16,11 @@
   > **Status: Outdated** (2026-09-13) — written; see [[Sync]]. What it knowingly leaves out
   > is listed under **Group sync** below.
 - **Group sync — deliberate limits of v1** (2026-09-13):
-  - *One group per device*, no group settings or group comments in the app (`wip/todo/2026-09-13-group-settings-in-app.md`).
+  - *One group per device*, no group comments in the app
+    (`wip/todo_nr/2026-09-19-group-comment-settings-shape-nothing-the-app-shows.md`).
     The device list and revoking another device shipped on 2026-09-14 (Settings → Group →
-    Devices).
+    Devices); the comment style, language and usage on 2026-09-19 (Settings → Group →
+    Comments and usage), without a budget control.
   - *Row-level LWW*: two devices editing different fields of one row concurrently keep one
     edit, the server's rule. Scores are one row each, so this rarely shows.
   - *No sync in the background*: only while the app (or the PWA tab) is open.

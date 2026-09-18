@@ -540,5 +540,16 @@
   "boardRoundShort": "Р{number}",
   "boardPlayer": "Игрок",
   "boardTotal": "Итого",
-  "boardLeader": "Лидирует"
+  "boardLeader": "Лидирует",
+  "groupSettingsTitle": "Комментарии и расход",
+  "groupSettingsDescription": "Стиль и язык комментариев, которые сервер пишет к партиям группы. Их может изменить любой участник.",
+  "groupCommentStyle": "Стиль комментариев",
+  "groupCommentStyleNarrative": "Повествовательный",
+  "groupCommentStyleHumorous": "Юмористический",
+  "groupCommentStyleAnalytical": "Аналитический",
+  "groupCommentLanguage": "Язык комментариев",
+  "groupSettingsSaved": "Настройки группы сохранены",
+  "groupUsageTitle": "Расход LLM в этом месяце",
+  "groupUsageAmount": "Потрачено {used} из {budget}",
+  "groupUsageResets": "Обнулится {date}"
 }

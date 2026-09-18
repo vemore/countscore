@@ -540,5 +540,16 @@
   "boardRoundShort": "ج{number}",
   "boardPlayer": "اللاعب",
   "boardTotal": "المجموع",
-  "boardLeader": "في الصدارة"
+  "boardLeader": "في الصدارة",
+  "groupSettingsTitle": "التعليقات والاستهلاك",
+  "groupSettingsDescription": "أسلوب ولغة التعليقات التي يكتبها الخادم لمباريات المجموعة. يمكن لأي عضو تغييرهما.",
+  "groupCommentStyle": "أسلوب التعليقات",
+  "groupCommentStyleNarrative": "سردي",
+  "groupCommentStyleHumorous": "فكاهي",
+  "groupCommentStyleAnalytical": "تحليلي",
+  "groupCommentLanguage": "لغة التعليقات",
+  "groupSettingsSaved": "تم حفظ إعدادات المجموعة",
+  "groupUsageTitle": "استهلاك النموذج اللغوي هذا الشهر",
+  "groupUsageAmount": "أُنفق {used} من {budget}",
+  "groupUsageResets": "يُعاد التعيين في {date}"
 }

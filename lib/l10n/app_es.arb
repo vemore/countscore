@@ -540,5 +540,16 @@
   "boardRoundShort": "M{number}",
   "boardPlayer": "Jugador",
   "boardTotal": "Puntos",
-  "boardLeader": "En cabeza"
+  "boardLeader": "En cabeza",
+  "groupSettingsTitle": "Comentarios y consumo",
+  "groupSettingsDescription": "El estilo y el idioma de los comentarios que el servidor escribe para las partidas del grupo. Cualquier miembro puede cambiarlos.",
+  "groupCommentStyle": "Estilo de los comentarios",
+  "groupCommentStyleNarrative": "Narrativo",
+  "groupCommentStyleHumorous": "Humorístico",
+  "groupCommentStyleAnalytical": "Analítico",
+  "groupCommentLanguage": "Idioma de los comentarios",
+  "groupSettingsSaved": "Ajustes del grupo guardados",
+  "groupUsageTitle": "Consumo del LLM este mes",
+  "groupUsageAmount": "{used} gastados de {budget}",
+  "groupUsageResets": "Se reinicia el {date}"
 }

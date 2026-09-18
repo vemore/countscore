@@ -288,6 +288,47 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     notifyListeners();
   }
 
+  // ── Settings and usage ────────────────────────────────────────────────────
+
+  /// True when a call to the server is possible at all: a server URL is set and
+  /// this device is in a group. Nothing below makes a request otherwise.
+  bool get canReachGroup => _baseUrl != null && isJoined;
+
+  /// The group's comment style and language, and its LLM usage this month —
+  /// fetched fresh each time, nothing kept on the device.
+  Future<({GroupSettings settings, GroupUsage usage})> groupSettings() async {
+    if (!canReachGroup) throw GroupActionException(GroupActionError.unreachable);
+    final client = _client();
+    final token = _deviceToken!;
+    try {
+      final settings = await client.groupSettings(token);
+      return (settings: settings, usage: await client.groupUsage(token));
+    } catch (e) {
+      throw _settingsError(e);
+    }
+  }
+
+  /// Changes the group's comment style and/or language — open to every member.
+  /// Returns what the server now holds.
+  Future<GroupSettings> updateGroupSettings({String? commentStyle, String? commentLanguage}) async {
+    if (!canReachGroup) throw GroupActionException(GroupActionError.unreachable);
+    try {
+      return await _client().updateGroupSettings(
+        _deviceToken!,
+        commentStyle: commentStyle,
+        commentLanguage: commentLanguage,
+      );
+    } catch (e) {
+      throw _settingsError(e);
+    }
+  }
+
+  static GroupActionException _settingsError(Object e) => GroupActionException(switch (e) {
+        BackendException(statusCode: 429) => GroupActionError.rateLimited,
+        BackendException() => GroupActionError.server,
+        _ => GroupActionError.unreachable,
+      });
+
   /// Shares a local game with the group. Refused up front when a player name is
   /// one the server would reject.
   Future<void> shareGame(int gameId) async {

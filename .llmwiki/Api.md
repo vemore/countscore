@@ -2,7 +2,7 @@
 
 > Scope: the HTTP and WebSocket surface. Source of truth is `backend/app/routes/`.
 > Related: [[Backend]] · [[Sync]] · [[LlmProviders]] · [[Security]]
-> Updated: 2026-09-18
+> Updated: 2026-09-19
 
 ## Facts
 
@@ -17,7 +17,7 @@
 | POST | `/join` | none | Join via `share_token`. 201. IP rate limited. |
 | GET | `/me` | device | Returns the group. **No `share_token`** — see below. Carries `owner_device_id` (null only when no device of the group is live): how the app learns whether it is the owner. |
 | PATCH | `/me/settings` | device | `comment_style` and `comment_language`: every member. `monthly_budget_cents`: **owner only** (403 otherwise, whatever else the body carries — a refused request changes nothing), and 422 when it exceeds the operator's `MAX_BUDGET_CENTS` (unset: `DEFAULT_BUDGET_CENTS`) — the owner may lower the budget, not raise it past that. |
-| GET | `/me/usage` | device | Budget consumption. |
+| GET | `/me/usage` | device | Budget consumption: `{current_month_used_cents, budget_cents, resets_at}`, US cents. Feeds Settings → Group → Comments and usage, with `GET /me` for the style and language. |
 | GET | `/me/devices` | device | The group's **active** devices, oldest first: `{"devices": [{id, label, joined_at, last_seen_at, is_owner}]}`. Revoked devices are left out; no token or hash. Feeds Settings → Group → Devices. |
 | POST | `/me/devices/{device_id}/revoke` | device | Another device: **owner only** (403 otherwise); revokes it **and rotates `share_token`**, 200 with `GroupWithShareToken` — the revoked device learnt the old token when it joined. Again on a revoked device: the current token, no new one. The caller's own id: leaving (`GroupProvider.leave`), open to every member, 204, no rotation; an owner that leaves hands the role to the earliest-joined live device (none left: `owner_device_id` null). |
 | POST | `/me/rotate-share-token` | device | **Owner only** (403 otherwise). Invalidates the old share link. Returns `share_token`. |

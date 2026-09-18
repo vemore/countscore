@@ -1079,4 +1079,42 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get boardLeader => 'トップ';
+
+  @override
+  String get groupSettingsTitle => 'コメントと利用状況';
+
+  @override
+  String get groupSettingsDescription =>
+      'サーバーがグループの対戦について書くコメントのスタイルと言語です。どのメンバーでも変更できます。';
+
+  @override
+  String get groupCommentStyle => 'コメントのスタイル';
+
+  @override
+  String get groupCommentStyleNarrative => '物語風';
+
+  @override
+  String get groupCommentStyleHumorous => 'ユーモア';
+
+  @override
+  String get groupCommentStyleAnalytical => '分析的';
+
+  @override
+  String get groupCommentLanguage => 'コメントの言語';
+
+  @override
+  String get groupSettingsSaved => 'グループの設定を保存しました';
+
+  @override
+  String get groupUsageTitle => '今月の LLM 利用状況';
+
+  @override
+  String groupUsageAmount(String used, String budget) {
+    return '$budget のうち $used を使用';
+  }
+
+  @override
+  String groupUsageResets(String date) {
+    return '$date にリセット';
+  }
 }

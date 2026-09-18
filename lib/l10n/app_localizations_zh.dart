@@ -1069,4 +1069,41 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get boardLeader => '领先';
+
+  @override
+  String get groupSettingsTitle => '评论与用量';
+
+  @override
+  String get groupSettingsDescription => '服务器为本群组对局撰写的评论的风格和语言。任何成员都可以修改。';
+
+  @override
+  String get groupCommentStyle => '评论风格';
+
+  @override
+  String get groupCommentStyleNarrative => '叙事';
+
+  @override
+  String get groupCommentStyleHumorous => '幽默';
+
+  @override
+  String get groupCommentStyleAnalytical => '分析';
+
+  @override
+  String get groupCommentLanguage => '评论语言';
+
+  @override
+  String get groupSettingsSaved => '群组设置已保存';
+
+  @override
+  String get groupUsageTitle => '本月 LLM 用量';
+
+  @override
+  String groupUsageAmount(String used, String budget) {
+    return '已用 $used，预算 $budget';
+  }
+
+  @override
+  String groupUsageResets(String date) {
+    return '$date 重置';
+  }
 }

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/backend_provider.dart';
 import '../providers/group_provider.dart';
+import '../screens/group_settings_screen.dart';
 import 'group_devices_sheet.dart';
 
 /// The message shown for a failed group action.
@@ -202,6 +203,14 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
               icon: const Icon(Icons.devices),
               label: Text(l10n.groupDevices),
               onPressed: () => GroupDevicesSheet.show(context),
+            ),
+            TextButton.icon(
+              key: const Key('group_settings_open'),
+              icon: const Icon(Icons.tune),
+              label: Text(l10n.groupSettingsTitle),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const GroupSettingsScreen()),
+              ),
             ),
             // The server refuses a rotation from any device but the owner.
             if (group.isOwner)

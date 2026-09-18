@@ -1,5 +1,7 @@
 # The app has no screen for the group settings or the LLM usage
 
+**Status:** done (2026-09-19) — closed by feat/group-settings-screen. Settings → Group → *Comments and usage* (`lib/screens/group_settings_screen.dart`) reads the style and language from `GET /groups/me`, writes them with `PATCH /groups/me/settings`, and shows `GET /groups/me/usage`; the budget is shown, never sent. What these settings shape in the app is [[2026-09-19-group-comment-settings-shape-nothing-the-app-shows]].
+
 - **Noted:** 2026-09-13 — out of scope for the sync client, decided with the user; the device list and revoke half shipped 2026-09-14
 - **Theme:** groups-v2
 - **Area:** app

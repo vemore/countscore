@@ -41,6 +41,15 @@ typedef GroupDevice = ({
   bool? isOwner,
 });
 
+/// The group's comment settings, as `GET /groups/me` and `PATCH /groups/me/settings`
+/// return them. [commentStyle] is one of `narrative`, `humorous`, `analytical`;
+/// [commentLanguage] a language code (`fr`, `en`, …).
+typedef GroupSettings = ({String commentStyle, String commentLanguage});
+
+/// The group's LLM spending this month, as `GET /groups/me/usage` returns it.
+/// Amounts are US cents: the operator's key is billed in dollars.
+typedef GroupUsage = ({int usedCents, int budgetCents, DateTime? resetsAt});
+
 /// One delta as `/sync/pull` returns it.
 typedef PulledDelta = ({
   String entityType,
@@ -196,6 +205,43 @@ class BackendClient {
       ownerDeviceId: body['owner_device_id'] as String?,
     );
   }
+
+  /// `GET /groups/me`: the group's comment style and language.
+  Future<GroupSettings> groupSettings(String deviceToken) async {
+    final body = await _send('GET', '/groups/me', token: deviceToken);
+    return _settings(body);
+  }
+
+  /// `PATCH /groups/me/settings`: changes the comment style and/or language, open
+  /// to every member. The monthly budget is the owner's alone on the server (403
+  /// for anyone else), and deliberately not a parameter here: no caller can send it.
+  Future<GroupSettings> updateGroupSettings(
+    String deviceToken, {
+    String? commentStyle,
+    String? commentLanguage,
+  }) async {
+    final body = await _send('PATCH', '/groups/me/settings', token: deviceToken, body: {
+      'comment_style': ?commentStyle,
+      'comment_language': ?commentLanguage,
+    });
+    return _settings(body);
+  }
+
+  /// `GET /groups/me/usage`: what the group spent this month, against its budget.
+  Future<GroupUsage> groupUsage(String deviceToken) async {
+    final body = await _send('GET', '/groups/me/usage', token: deviceToken);
+    final resetsAt = body['resets_at'] as String?;
+    return (
+      usedCents: body['current_month_used_cents'] as int,
+      budgetCents: body['budget_cents'] as int,
+      resetsAt: resetsAt == null ? null : DateTime.parse(resetsAt),
+    );
+  }
+
+  static GroupSettings _settings(Map<String, dynamic> body) => (
+        commentStyle: body['comment_style'] as String,
+        commentLanguage: body['comment_language'] as String,
+      );
 
   /// `PUT /groups/me/owner`: hands the owner role to [deviceId]. Owner only (403).
   Future<void> transferOwnership(String deviceToken, String deviceId) async {

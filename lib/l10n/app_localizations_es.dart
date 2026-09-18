@@ -1105,4 +1105,42 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get boardLeader => 'En cabeza';
+
+  @override
+  String get groupSettingsTitle => 'Comentarios y consumo';
+
+  @override
+  String get groupSettingsDescription =>
+      'El estilo y el idioma de los comentarios que el servidor escribe para las partidas del grupo. Cualquier miembro puede cambiarlos.';
+
+  @override
+  String get groupCommentStyle => 'Estilo de los comentarios';
+
+  @override
+  String get groupCommentStyleNarrative => 'Narrativo';
+
+  @override
+  String get groupCommentStyleHumorous => 'Humorístico';
+
+  @override
+  String get groupCommentStyleAnalytical => 'Analítico';
+
+  @override
+  String get groupCommentLanguage => 'Idioma de los comentarios';
+
+  @override
+  String get groupSettingsSaved => 'Ajustes del grupo guardados';
+
+  @override
+  String get groupUsageTitle => 'Consumo del LLM este mes';
+
+  @override
+  String groupUsageAmount(String used, String budget) {
+    return '$used gastados de $budget';
+  }
+
+  @override
+  String groupUsageResets(String date) {
+    return 'Se reinicia el $date';
+  }
 }

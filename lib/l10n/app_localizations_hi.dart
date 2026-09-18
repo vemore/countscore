@@ -1101,4 +1101,42 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get boardLeader => 'सबसे आगे';
+
+  @override
+  String get groupSettingsTitle => 'टिप्पणियाँ और उपयोग';
+
+  @override
+  String get groupSettingsDescription =>
+      'सर्वर समूह के खेलों के लिए जो टिप्पणियाँ लिखता है, उनकी शैली और भाषा। कोई भी सदस्य इन्हें बदल सकता है।';
+
+  @override
+  String get groupCommentStyle => 'टिप्पणी की शैली';
+
+  @override
+  String get groupCommentStyleNarrative => 'कथात्मक';
+
+  @override
+  String get groupCommentStyleHumorous => 'हास्यपूर्ण';
+
+  @override
+  String get groupCommentStyleAnalytical => 'विश्लेषणात्मक';
+
+  @override
+  String get groupCommentLanguage => 'टिप्पणी की भाषा';
+
+  @override
+  String get groupSettingsSaved => 'समूह की सेटिंग सहेजी गईं';
+
+  @override
+  String get groupUsageTitle => 'इस महीने LLM का उपयोग';
+
+  @override
+  String groupUsageAmount(String used, String budget) {
+    return '$budget में से $used खर्च';
+  }
+
+  @override
+  String groupUsageResets(String date) {
+    return '$date को रीसेट होगा';
+  }
 }

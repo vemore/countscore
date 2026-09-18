@@ -64,10 +64,17 @@ class SettingsProvider with ChangeNotifier {
 
   Future<void> _applyWakeLock() async {
     if (kIsWeb) return; // WakelockPlus not available on web.
-    if (_keepScreenAwake) {
-      await WakelockPlus.enable();
-    } else {
-      await WakelockPlus.disable();
+    try {
+      if (_keepScreenAwake) {
+        await WakelockPlus.enable();
+      } else {
+        await WakelockPlus.disable();
+      }
+    } catch (e) {
+      // A platform without the plugin — a widget test among them — keeps the
+      // screen's default. The call is unawaited at load, so an error here would
+      // otherwise surface as an uncaught one wherever it lands.
+      debugPrint('wake lock unavailable: $e');
     }
   }
 

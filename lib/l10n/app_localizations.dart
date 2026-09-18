@@ -2003,6 +2003,72 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'En tête'**
   String get boardLeader;
+
+  /// Settings → Group button, and the title of the screen it opens: the group's comment style, language and LLM usage
+  ///
+  /// In fr, this message translates to:
+  /// **'Commentaires et usage'**
+  String get groupSettingsTitle;
+
+  /// Explains what the group's comment settings apply to, at the top of the group settings screen
+  ///
+  /// In fr, this message translates to:
+  /// **'Le style et la langue des commentaires que le serveur rédige pour les parties du groupe. Tous les membres peuvent les changer.'**
+  String get groupSettingsDescription;
+
+  /// Label of the choice of the group's comment style
+  ///
+  /// In fr, this message translates to:
+  /// **'Style des commentaires'**
+  String get groupCommentStyle;
+
+  /// Group comment style: tells the game as a story
+  ///
+  /// In fr, this message translates to:
+  /// **'Narratif'**
+  String get groupCommentStyleNarrative;
+
+  /// Group comment style: funny, teasing
+  ///
+  /// In fr, this message translates to:
+  /// **'Humoristique'**
+  String get groupCommentStyleHumorous;
+
+  /// Group comment style: dry, statistics-minded
+  ///
+  /// In fr, this message translates to:
+  /// **'Analytique'**
+  String get groupCommentStyleAnalytical;
+
+  /// Label of the dropdown picking the language of the group's comments
+  ///
+  /// In fr, this message translates to:
+  /// **'Langue des commentaires'**
+  String get groupCommentLanguage;
+
+  /// Snackbar after the group's comment style or language was changed on the server
+  ///
+  /// In fr, this message translates to:
+  /// **'Réglages du groupe enregistrés'**
+  String get groupSettingsSaved;
+
+  /// Heading of the group's LLM spending this month
+  ///
+  /// In fr, this message translates to:
+  /// **'Usage du LLM ce mois-ci'**
+  String get groupUsageTitle;
+
+  /// The group's LLM spending against its monthly budget; both are formatted amounts in US dollars
+  ///
+  /// In fr, this message translates to:
+  /// **'{used} dépensés sur {budget}'**
+  String groupUsageAmount(String used, String budget);
+
+  /// When the group's monthly LLM spending starts again from zero
+  ///
+  /// In fr, this message translates to:
+  /// **'Remise à zéro le {date}'**
+  String groupUsageResets(String date);
 }
 
 class _AppLocalizationsDelegate

@@ -1111,4 +1111,42 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get boardLeader => 'في الصدارة';
+
+  @override
+  String get groupSettingsTitle => 'التعليقات والاستهلاك';
+
+  @override
+  String get groupSettingsDescription =>
+      'أسلوب ولغة التعليقات التي يكتبها الخادم لمباريات المجموعة. يمكن لأي عضو تغييرهما.';
+
+  @override
+  String get groupCommentStyle => 'أسلوب التعليقات';
+
+  @override
+  String get groupCommentStyleNarrative => 'سردي';
+
+  @override
+  String get groupCommentStyleHumorous => 'فكاهي';
+
+  @override
+  String get groupCommentStyleAnalytical => 'تحليلي';
+
+  @override
+  String get groupCommentLanguage => 'لغة التعليقات';
+
+  @override
+  String get groupSettingsSaved => 'تم حفظ إعدادات المجموعة';
+
+  @override
+  String get groupUsageTitle => 'استهلاك النموذج اللغوي هذا الشهر';
+
+  @override
+  String groupUsageAmount(String used, String budget) {
+    return 'أُنفق $used من $budget';
+  }
+
+  @override
+  String groupUsageResets(String date) {
+    return 'يُعاد التعيين في $date';
+  }
 }

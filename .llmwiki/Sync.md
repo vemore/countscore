@@ -2,7 +2,7 @@
 
 > Scope: the offline-first sharing protocol — server and Flutter client.
 > Related: [[Api]] · [[SchemaV10]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-09-18
+> Updated: 2026-09-19
 
 ## Facts
 
@@ -124,6 +124,15 @@ keeps the actions, as before. `GroupProvider.revokeDevice` stores the rotated `s
 the section shows the new invite code at once. The revoked device learns of it on its next
 request: a 401, shown as `SyncStatus.unauthorized` (its open stream closes with 1008 at the
 next push to the group or the next idle heartbeat, whichever comes first — see *WebSocket*). Its local copies of the games stay where they are.
+
+**Comment settings and usage.** Settings → Group → *Comments and usage*
+(`group_settings_screen.dart`) shows the group's `comment_style` and `comment_language` from
+`GET /groups/me` and changes them with `PATCH /groups/me/settings` — every member may — and
+the month's spending from `GET /groups/me/usage`. `BackendClient.updateGroupSettings` has no
+budget parameter, so the app never sends `monthly_budget_cents`, owner or not: the budget is
+the owner's on the server (403 otherwise) and the app offers no control for it. These
+settings shape only the group-scoped comments (`POST /groups/me/games/{id}/comments`), which
+the app does not call yet; the analysis screen keeps its own per-analysis voice.
 
 **Sharing is per game.** On by default for a new game while in a group (switch on the
 create screen), or later from the board menu; never undone. `SyncStore.shareGame` sets
