@@ -1,5 +1,7 @@
 # Deployment.md tells operators to rotate from any device, which only the owner can now do
 
+**Status:** done (2026-09-18) — closed by docs/backups-owner-only-mode. `.llmwiki/Deployment.md` § *Backups* now says to rotate from each group's owner device, that any other device gets a 403, and points at [[Api]].
+
 - **Noted:** 2026-09-18 — while adding the group owner (`feat/group-owner`), which could not
   touch `.llmwiki/Deployment.md` because `fix/backend-hardening` owned it in parallel
 - **Theme:** docs
