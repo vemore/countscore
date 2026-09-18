@@ -55,9 +55,9 @@ backup_once() {
     # looks like a backup.
     tmp="$BACKUP_DIR/.${name}.partial"
 
-    # Only the owner (the container user) may read a dump: mode 0600. Where the
-    # directory carries an ACL, the ACL governs instead of the mode — on the Synology
-    # NAS backups/ has its own, restricted to the container user and the admin
+    # Only the owner (the container user) may read a dump: mode 0600. This holds only
+    # where the directory carries no ACL — on the Synology NAS backups/ is in plain
+    # Linux mode (drwx------), and an inherited ACL would override the mode
     # (.llmwiki/Deployment.md, Backups).
     umask 077
     rm -f "$BACKUP_DIR"/.countscore_*.partial

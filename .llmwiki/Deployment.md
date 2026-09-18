@@ -148,15 +148,24 @@ against stub `pg_dump`/`age`:
   plaintext `pre_0002_20260913.sql.gz` sat in `backups/` from 2026-09-13 until it was deleted
   by hand.
 
-**On the NAS the ACL, not the mode, governs `backups/`.** The script writes with `umask 077`,
-but `$NAS_DEPLOY_DIR` is on a Synology shared folder whose ACL each new file inherits (the
-`+` in `ls -l`), and Synology ignores the mode bits where an ACL is present: the dumps listed
-as `-rwxrwxrwx+`. `backups/` therefore carries its own, non-inherited ACL granting access to
-the container user (uid 1027, the `db-backup` sidecar's `user:`) and the `administrators`
-group only, applied with `synoacltool` and pushed onto the existing files with
-`-enforce-inherit`. Check it with `sudo synoacltool -get "$NAS_DEPLOY_DIR/backups"`. On a
-host without ACLs the `0600` mode is what protects a dump. Whoever self-hosts on a Synology
-does the same once; a new `backups/` directory otherwise inherits the share's ACL.
+**On the NAS `backups/` is in plain Linux mode, owner only.** The script writes with
+`umask 077`, and that holds only because `backups/` carries no Synology ACL: `ls -la` shows
+`drwx------` owned by the container user (uid 1027, gid 100, the `db-backup` sidecar's
+`user:`, which is also the SSH user) and every dump `-rw-------`, with no `+`; `synoacltool
+-get "$NAS_DEPLOY_DIR/backups"` prints `It's Linux mode`. A file written into a Linux-mode
+directory inherits no ACL, so each new dump is `0600`. Root and DSM administrators bypass mode
+bits anyway. Until 2026-09-18 the folder inherited the shared folder's ACL (`everyone` read,
+another household user write) and the dumps listed as `-rwxrwxrwx+`.
+
+- **Restore it** if DSM (a permission edit in File Station, a shared-folder ACL change)
+  re-applies an ACL — `ls -la` shows `+` again, or `synoacltool -get` lists entries — as the
+  owner, no sudo: `chmod 700 backups && chmod 600 backups/*`. `chmod` on a Synology ACL file
+  converts it back to Linux mode.
+- **Never run `synoacltool -enforce-inherit` on a folder whose ACL has no `is_inherit`.** On
+  2026-09-18 that wiped the folder's ACL entirely and left it `d---------`, locking out the
+  owner: the sidecar failed with `Permission denied` until the `chmod` above.
+- On a host without ACLs nothing is needed: the `0600` mode is what protects a dump. Whoever
+  self-hosts on a Synology checks `ls -la` once after the first backup.
 
 The connection comes from libpq's variables, which the compose file sets from the
 `POSTGRES_*` values: `PGHOST=db`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`.
@@ -178,9 +187,9 @@ A dump still holds the whole database — every group's `share_token` in clear, 
 games, rounds, scores, player names, analyses and comments, the `change_log` payloads, device
 labels and `last_seen_at` (device tokens only as argon2 hashes). Encryption moves the secret
 from the backup files to the private key: **a leaked private key is a leaked backup.** Then
-rotate every group's invite code (Settings → Group → *New code*, or
-`POST /groups/me/rotate-share-token` from one device per group) and re-share it; devices
-already joined are unaffected.
+rotate every group's invite code from that group's owner device (Settings → Group → *New
+code*, or `POST /groups/me/rotate-share-token`; only the owner may rotate, any other device
+gets a 403 — [[Api]]) and re-share it; devices already joined are unaffected.
 
 > **Status: Outdated** (2026-09-14) — until `feat/encrypted-backups` this section was titled
 > *Backups — plain files that let their reader join every group*: the sidecar ran an inline
@@ -318,13 +327,17 @@ scripts/deploy_web.sh --rollback   # swap pwa/current.prev back
   variable is not. The loop moved from an inline compose `command` into a script so the
   refusal and the no-truncated-file rule could be tested without Postgres. The gzip stage is
   kept (custom format already compresses) so the restore line stays the obvious one.
-- **`backups/` gets its own ACL on the NAS, restricted to the container user and the admin
-  (decided 2026-09-18).** Closed `wip/done/2026-09-14-plaintext-backup-leftovers.md`. The
-  dumps are encrypted, so the inherited world-readable ACL leaked nothing readable, but it made
-  the script's "only the owner may read a dump" false on the one host it runs on. Restricting
-  the ACL over documenting the gap: one `synoacltool` pass, and the comment holds again. The
-  hand-taken plaintext `pre_0002_20260913.sql.gz` was deleted rather than encrypted: the
-  `0002_sync_contract` migration it guarded has been live since 2026-09-13.
+- **`backups/` is owner-only in plain Linux mode on the NAS, not under an ACL (decided
+  2026-09-18).** Closed `wip/done/2026-09-14-plaintext-backup-leftovers.md` and
+  `wip/done/2026-09-18-backup-docs-linux-mode.md`. The dumps are encrypted, so the inherited
+  world-readable ACL leaked nothing readable, but it made the script's "only the owner may read
+  a dump" false on the one host it runs on. The first plan was a restricted ACL for the
+  container user and `administrators`, pushed with `synoacltool -enforce-inherit`; that call
+  wiped the ACL and locked the owner out, and the recovery, `chmod 700`/`chmod 600`, turned the
+  folder into Linux mode — which is simpler than an ACL, needs no sudo to check or restore, and
+  makes `umask 077` hold by itself. Kept. The hand-taken plaintext `pre_0002_20260913.sql.gz`
+  was deleted rather than encrypted: the `0002_sync_contract` migration it guarded has been
+  live since 2026-09-13.
 - **Backups are `pg_dump` on a cron sidecar with 7-day rotation**, not a managed service.
   The dataset is small and the recovery story is "copy a file back".
 - **The backups' contents were written down before being encrypted (2026-09-14).** The
