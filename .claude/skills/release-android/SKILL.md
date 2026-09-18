@@ -22,11 +22,12 @@ git fetch --prune origin
 git worktree add ../countscore-release-<version> -b chore/release-<version> origin/main
 cd ../countscore-release-<version>
 git branch --unset-upstream          # it tracks origin/main; push it under its own name later
-scripts/worktree_setup.sh            # pub get, build_runner, gen-l10n, links key.properties
+scripts/worktree_setup.sh --release  # pub get, build_runner, gen-l10n, links key.properties
 ```
 
-`key.properties` is gitignored: without the link the release build has no signing config. Its
-`storeFile` is absolute, so the link works as is.
+`key.properties` is gitignored: without the link the release build has no signing config, and
+only `--release` makes it — no other worktree gets the keystore passwords. Its `storeFile` is
+absolute, so the link works as is.
 
 ## 1. Signing setup — first time only
 
@@ -235,8 +236,8 @@ Tests (fake Google service, no network):
    GCP role**; Keys → add a **JSON** key and download it.
 3. **On this machine**: move it to `~/.config/countscore/play-service-account.json`,
    `chmod 600` it, and add `playServiceAccount=<that absolute path>` to
-   `android/key.properties` (worktrees reach that file through `scripts/worktree_setup.sh`'s
-   link). **Back the key up like the keystore.** It never enters the repository: `.gitignore`
+   `android/key.properties` (the release worktree reaches that file through
+   `scripts/worktree_setup.sh --release`'s link). **Back the key up like the keystore.** It never enters the repository: `.gitignore`
    has `*service-account*.json`, and the commit hook refuses any JSON holding
    `"type": "service_account"`.
 4. **Play Console** → Users and permissions → invite the service account's e-mail, **limited

@@ -11,7 +11,8 @@ that already proxies that host to the container. Same origin as the API: no `COR
 entry, no mixed content.
 
 The target is the backend's: `NAS_SSH`, `NAS_DEPLOY_DIR` and `PUBLIC_URL` come from the
-untracked `backend/scripts/deploy.env`. **Never commit a real host, path or URL** into the
+untracked `backend/scripts/deploy.env`, which a worktree has only when set up with
+`scripts/worktree_setup.sh --deploy <worktree>`. **Never commit a real host, path or URL** into the
 script, this skill, the wiki or the README — placeholders only.
 
 Facts: `.llmwiki/Deployment.md` (topology, decisions), `.llmwiki/Api.md` (route behaviour),

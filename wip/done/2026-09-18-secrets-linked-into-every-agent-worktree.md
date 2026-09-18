@@ -1,5 +1,10 @@
 # Every agent worktree gets the deployment target and the keystore passwords
 
+**Status:** done (2026-09-18) — closed by chore/agent-scope-and-size-check. `scripts/worktree_setup.sh`
+links no secret by default; `--deploy` links `deploy.env`, `--release` links `key.properties`
+(`scripts/hooks_selftest.sh` covers no flag, each flag and both). `ship-parallel` §4,
+`backend-deploy`, `web-deploy`, `release-android`, `CLAUDE.md` and `.llmwiki/ParallelDelivery.md` name the flags.
+
 - **Noted:** 2026-09-18 — comparing the project's SDLC with "Your SDLC is your context
   engineering" (Daniel Kravets, LeadDev, 2026-08-10)
 - **Theme:** deploy-safety

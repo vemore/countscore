@@ -513,6 +513,35 @@ report "cleanup: worktree in setup (marker)"                   kept    "$([ -d "
 report "cleanup: the branch of a worktree in setup"            kept    "$(has_branch feat/wt-setup)"
 report "cleanup: recently modified worktree"                   kept    "$([ -d "$SANDBOX/wt-recent" ] && echo kept || echo removed)"
 
+echo "== worktree secrets =========================================="
+# scripts/worktree_setup.sh links the main checkout's untracked secrets into a worktree only
+# when asked: an implementing agent's worktree must reach neither the deployment target nor
+# the keystore passwords. --no-app --no-backend keeps it to the linking step.
+SMAIN="$SANDBOX/secrets-main"
+git init -q "$SMAIN"
+git -C "$SMAIN" config user.email t@t
+git -C "$SMAIN" config user.name t
+mkdir -p "$SMAIN/backend/scripts" "$SMAIN/android"
+touch "$SMAIN/backend/scripts/.keep" "$SMAIN/android/.keep"
+printf '/.countscore-setup-in-progress\n/backend/scripts/deploy.env\n/android/key.properties\n' > "$SMAIN/.gitignore"
+git -C "$SMAIN" add -A && git -C "$SMAIN" commit -q -m base
+echo "NAS_SSH=x" > "$SMAIN/backend/scripts/deploy.env"
+echo "storePassword=x" > "$SMAIN/android/key.properties"
+secrets_n=0
+secrets_case() {  # description, expected "<deploy.env> <key.properties>", [flag...]
+    local desc="$1" want="$2" wt
+    shift 2
+    secrets_n=$((secrets_n + 1))
+    wt="$SANDBOX/secrets-wt-$secrets_n"
+    git -C "$SMAIN" worktree add -q --detach "$wt" 2>/dev/null
+    "$ROOT/scripts/worktree_setup.sh" --no-app --no-backend "$@" "$wt" >/dev/null 2>&1
+    report "$desc" "$want" "$([ -L "$wt/backend/scripts/deploy.env" ] && echo linked || echo absent) $([ -L "$wt/android/key.properties" ] && echo linked || echo absent)"
+}
+secrets_case "setup: no flag links neither secret"         "absent absent"
+secrets_case "setup: --deploy links deploy.env only"       "linked absent" --deploy
+secrets_case "setup: --release links key.properties only"  "absent linked" --release
+secrets_case "setup: both flags link both"                 "linked linked" --deploy --release
+
 echo "== scheduled runs ============================================"
 # scripts/check_scheduled_runs.sh asks GitHub whether the two `schedule:`-only workflows
 # are still firing. Every answer it has to tell apart is exercised here against a stubbed

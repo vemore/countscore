@@ -30,9 +30,12 @@
   for an agent launched with `isolation: "worktree"`. The Agent tool removes its worktree on
   its own only when the agent changed nothing.
 - `scripts/worktree_setup.sh` makes a worktree usable: `flutter pub get`, `build_runner`,
-  `gen-l10n`, `uv sync --locked --extra dev`, and symlinks to the untracked
-  `backend/scripts/deploy.env` and `android/key.properties` of the main checkout. While it
-  runs it holds `<worktree>/.countscore-setup-in-progress` (pid, date, branch; gitignored,
+  `gen-l10n` (`--no-app` skips them), `uv sync --locked --extra dev` (`--no-backend`). It
+  links **no secret by default**: `--deploy` symlinks the main checkout's untracked
+  `backend/scripts/deploy.env` (the orchestrator's deploy worktree, `ship-parallel` §4) and
+  `--release` its `android/key.properties` (the release worktree). An implementing agent
+  never deploys and never signs, so its worktree reaches neither (`scripts/hooks_selftest.sh`
+  checks each flag). While it runs it holds `<worktree>/.countscore-setup-in-progress` (pid, date, branch; gitignored,
   `.gitignore:137`) and removes it on the `ready:` line. A **failed** setup leaves the marker
   on purpose — a half-built worktree is exactly the one not to delete. Clearing a stale one
   is a manual `rm`, named in the script's `--help`.
@@ -141,3 +144,15 @@ Store is never part of the loop (`release-android`, on request).
   entries they cost more than they decide, and reach cannot be measured on 6 monthly devices.
   A cost-of-delay class, then value against cost, ranks instead. The pass proposes, and the
   user decides.
+- **Worktrees get secrets only on request (2026-09-18).** `worktree_setup.sh` used to link
+  `deploy.env` and `key.properties` into every worktree, the implementing agents' included,
+  though those agents never deploy or sign. Following "Your SDLC is your context engineering"
+  (LeadDev, 2026-08-10), what an agent can reach is scoped to what its task needs: no link by
+  default, `--deploy` for the deploy worktree, `--release` for the release worktree. A worktree
+  set up before the change keeps its links until it is removed.
+- **The 1 500-line merge check leaves test code out (2026-09-18).** The `ship-parallel` §3.1
+  filter already dropped generated, lock and binary files; it now also drops `test/`,
+  `integration_test/` and `backend/tests/`. Counting them made a thoroughly tested pull
+  request look bigger than an untested one, so the cap pushed against the tests the project
+  most wants — the same article excludes test files from its size limits for that reason. The
+  cap is about how much production code one review has to hold, not how much is verified.

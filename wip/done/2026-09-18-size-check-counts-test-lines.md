@@ -1,5 +1,10 @@
 # The 1 500-line merge check counts test code against the pull request
 
+**Status:** done (2026-09-18) — closed by chore/agent-scope-and-size-check. The `ship-parallel`
+§3.1 size filter also leaves out `^test/`, `^integration_test/` and `^backend/tests/`, and
+`.llmwiki/ParallelDelivery.md` says why. [[2026-09-18-one-lane-for-every-change]] has not
+landed, so there is no lane-B trigger to change yet.
+
 - **Noted:** 2026-09-18 — comparing the project's SDLC with "Your SDLC is your context
   engineering" (Daniel Kravets, LeadDev, 2026-08-10)
 - **Theme:** merge-safety

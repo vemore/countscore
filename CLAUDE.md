@@ -106,7 +106,7 @@ before the first commit — not after it. The main checkout stays on `main`
 ```bash
 git fetch --prune origin
 git worktree add ../countscore-<short-topic> -b <type>/<short-topic> origin/main
-scripts/worktree_setup.sh ../countscore-<short-topic>    # pub get, codegen, local-only links
+scripts/worktree_setup.sh ../countscore-<short-topic>    # pub get, codegen; no secrets (--deploy, --release)
 ```
 
 An agent launched with `isolation: "worktree"` has its worktree already, and switches to

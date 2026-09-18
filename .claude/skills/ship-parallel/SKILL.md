@@ -93,9 +93,10 @@ order:
 
 1. `gh pr view <n> --json state,mergeable,mergeStateStatus,headRefName` and read the diff
    (`gh pr diff <n>`) — you are the only reviewer. Check it closes its entries and touches
-   what its report says. Then its size, generated, lock and binary files left out:
+   what its report says. Then its size, with generated, lock and binary files and test code
+   left out (tests are what the project most wants; a cap that counts them pushes against them):
    ```bash
-   gh pr view <n> --json files --jq '[.files[] | select(.path | test("\\.g\\.dart$|^lib/l10n/app_localizations.*\\.dart$|^pubspec\\.lock$|^backend/uv\\.lock$|^web/sqlite3\\.wasm$|^web/drift_worker\\.js$") | not) | .additions + .deletions] | add'
+   gh pr view <n> --json files --jq '[.files[] | select(.path | test("\\.g\\.dart$|^lib/l10n/app_localizations.*\\.dart$|^pubspec\\.lock$|^backend/uv\\.lock$|^web/sqlite3\\.wasm$|^web/drift_worker\\.js$|^test/|^integration_test/|^backend/tests/") | not) | .additions + .deletions] | add'
    ```
    Above **1 500** lines, do not merge without the user's go-ahead: #21 (+6.9 k) needed six
    fix pull requests the same day. (`files` stops at 100 entries: a pull request that long
@@ -136,8 +137,9 @@ After **each** merge, so a regression points at one pull request. List what chan
 Deploy from a clean tree at the merged commit, never from an agent's worktree (it is detached
 on `main`, so §6 removes it once the loop is over):
 `git worktree add ../countscore-deploy origin/main` (or `git -C ../countscore-deploy switch
---detach origin/main` when it exists), then `scripts/worktree_setup.sh ../countscore-deploy`,
-which links the untracked `backend/scripts/deploy.env`. Run the deploy skill there.
+--detach origin/main` when it exists), then `scripts/worktree_setup.sh --deploy ../countscore-deploy`:
+`--deploy` links the untracked
+`backend/scripts/deploy.env`, which no other worktree gets. Run the deploy skill there.
 
 Then smoke-test production: `/health`, the PWA loads, and the path the pull request changed,
 driven for real (Playwright on the PWA, `flutter-device-test` for the Android app when only
