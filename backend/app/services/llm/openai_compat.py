@@ -25,8 +25,15 @@ class OpenAICompatProvider:
     def __init__(self, *, label: str, base_url: str, api_key: str | None, model: str) -> None:
         self.label = label
         self.model = model
+        # max_retries=0, like Bedrock's max_attempts 0: the SDK's two retries fire within
+        # a second and land in the same capacity dip. The Regenerate button is the retry.
         self._client = (
-            AsyncOpenAI(api_key=api_key, base_url=base_url, timeout=LLM_TIMEOUT_SECONDS)
+            AsyncOpenAI(
+                api_key=api_key,
+                base_url=base_url,
+                timeout=LLM_TIMEOUT_SECONDS,
+                max_retries=0,
+            )
             if api_key
             else None
         )
