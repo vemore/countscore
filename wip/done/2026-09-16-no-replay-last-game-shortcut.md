@@ -1,5 +1,7 @@
 # Starting the next game of the evening repeats the whole creation flow
 
+**Status:** done (2026-09-18) — closed by feat/play-again-and-type-order. A *Play again* button on the ranking and a *Play again* entry in a finished game's home menu both go through `lib/utils/play_again.dart`: `GameProvider.playAgain` creates the game with the source's type, win rule and players in seat order, the board opens on it, and the source is only read. The home menu's older "New with same players" (kept on unfinished games) now takes the same path, which names the new game `Skyjo 4` after `Skyjo 3` instead of appending `(new)`; the `newGameSuffix` key went with it. New key `playAgain` in all 10 ARB files; `test/screens/play_again_test.dart`.
+
 - **Noted:** 2026-09-16 — while working out why 6 monthly active devices keep so little of the funnel
 - **Theme:** growth
 - **Area:** app

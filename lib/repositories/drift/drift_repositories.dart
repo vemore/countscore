@@ -209,11 +209,15 @@ class DriftGameTypeRepository implements GameTypeRepository {
     return row == null ? null : GameType.fromMap(row.data);
   }
 
+  /// In no particular order. A built-in type is shown under its localized
+  /// name, not the stored one, so ordering here would be ordering on the wrong
+  /// string: each screen sorts with `sortGameTypesByDisplayName`
+  /// (`lib/utils/game_type_name.dart`).
   @override
   Future<List<GameType>> getAll() async {
     final rows = await _db
         .customSelect(
-          'SELECT * FROM game_types WHERE deleted_at IS NULL ORDER BY name ASC',
+          'SELECT * FROM game_types WHERE deleted_at IS NULL',
         )
         .get();
     return rows.map((r) => GameType.fromMap(r.data)).toList();

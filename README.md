@@ -30,6 +30,8 @@ at your own server in Settings → Server if you want the connected features.
   confirmation offers an undo, and reopening it lets you play on. Game types that define a
   threshold (Skyjo, Président, Belote) offer it by themselves whenever a score or a round
   takes the game past it.
+- **Play again**: from the final ranking or a finished game in the history, one tap starts
+  the next game with the same type and the same players in the same order.
 - **Global players**: a player exists once and is shared across games, so statistics follow
   them from one game to the next.
 - **10 languages**, fully translated: English, French, Spanish, German, Portuguese (BR),

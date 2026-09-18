@@ -90,6 +90,23 @@ class GameProvider with ChangeNotifier {
     return gameId;
   }
 
+  /// Creates the next game of the evening from [source]: same type, same win
+  /// rule, same players in the same seat order and colours, named [name].
+  /// Returns the new game's id.
+  ///
+  /// [source] is only read — not its rounds, not its finished state — and the
+  /// current game is left as it was; the caller loads the new one.
+  Future<int> playAgain(Game source, String name) async {
+    final players = await _playerRepo.getByGame(source.id!); // by orderIndex
+    return createGame(
+      name,
+      source.gameTypeId,
+      source.isLowestScoreWins,
+      [for (final p in players) p.name],
+      {for (final p in players) p.name: p.colorValue},
+    );
+  }
+
   Future<void> loadGame(int gameId) async {
     _currentGame = await _gameRepo.getById(gameId);
     _currentPlayers = await _playerRepo.getByGame(gameId);
