@@ -5,12 +5,13 @@
 > Updated: 2026-09-18
 
 This page was `SchemaV9` until v10 landed on 2026-09-13; links were renamed with it.
-v11 followed the same day, and v12, v13 and v14 on 2026-09-16; all are described here too.
+v11 followed the same day, v12, v13 and v14 on 2026-09-16, and v15 on 2026-09-18; all are
+described here too.
 
 ## Facts
 
-Schema version **14**, declared in two places that must stay in sync:
-`lib/services/drift/database.dart` (`schemaVersion => 14`) and
+Schema version **15**, declared in two places that must stay in sync:
+`lib/services/drift/database.dart` (`schemaVersion => 15`) and
 `DatabaseService.schemaVersion` in `lib/services/database_service.dart`, which both
 `openDatabase` calls use.
 
@@ -18,7 +19,7 @@ Schema version **14**, declared in two places that must stay in sync:
 
 | Table | Role |
 |---|---|
-| `game_types` | Game types. uuid + sync columns, `rules` and `rules_slug` since v13, `builtin_key` since v14. |
+| `game_types` | Game types. uuid + sync columns, `rules` and `rules_slug` since v13, `builtin_key` since v14, one live row per `builtin_key` since v15. |
 | `games` | Games. uuid, `group_id`, sync columns, `finishedAt` since v12. |
 | `players` | **Global identity**: `(id, name, colorValue, uuid, group_id, …)`. UNIQUE on `name COLLATE NOCASE` where `group_id IS NULL`. |
 | `game_players` | **Per-game membership**: `(id, gameId, player_id FK→players, name, orderIndex, colorValue, uuid, …)`. UNIQUE `(gameId, player_id)`. |
@@ -106,13 +107,35 @@ group link of a built-in type is derived from the key rather than the name
 (`linkedGameTypeRemoteUuid`, `lib/services/sync/sync_ids.dart`), so two devices in different
 locales compute the same server uuid. See [[Sync]].
 
+### One live row per built-in type (since v15)
+
+`idx_game_types_builtin_key_live` (the constant `gameTypesBuiltinKeyIndex`): UNIQUE on
+`game_types(builtin_key) WHERE builtin_key IS NOT NULL AND deleted_at IS NULL`. A second
+live copy of a built-in type is refused whatever name it carries; a deleted copy does not
+block a live one; a type the user made has no key and is never constrained, so it may share
+its name with a deleted type or with anything else.
+
+`applyV15` in `lib/services/sync/sync_schema.dart` is the upgrade step of both engines *and*
+part of both fresh installs (`DatabaseService._createDB`, Drift `onCreate`), run before the
+seed. Before creating the index it clears the key of any surplus live row holding a key an
+older live row already holds — the row, its games and its settings stay; it only shows its
+stored name. Nothing in the app is known to produce such a row, but a `CREATE UNIQUE INDEX`
+that fails inside `onUpgrade` would leave the database unopenable, so the step does not
+assume it.
+
+The sync pull honours it: `_applyGameType` (`lib/services/sync/sync_store.dart`) drops an
+incoming `builtin_key` from the update of a linked row when another live local row already
+holds that key — a row linked by name before its remote became a built-in. Tests:
+`test/migration_v14_to_v15_test.dart`, `test/sync/sync_store_test.dart`,
+`test/drift/web_upgrade_test.dart`.
+
 ### Upgrades on web (since v11)
 
 Drift's `onUpgrade` is **not** a no-op any more. Native still never reaches it — sqflite has
 migrated the file first — but a browser keeps its database across PWA releases, and the PWA
 has been in production at v9 since 2026-09-13. `onUpgrade` runs `applySyncV10` for
 `from < 10`, the v11 statements for `from < 11`, `applyV12` for `from < 12`, `applyV13`
-for `from < 13` and `applyV14` for `from < 14`: the same SQL sqflite runs, from `sync_schema.dart`. Covered by
+for `from < 13`, `applyV14` for `from < 14` and `applyV15` for `from < 15`: the same SQL sqflite runs, from `sync_schema.dart`. Covered by
 `test/drift/web_upgrade_test.dart`.
 
 ### Tombstones (since v10)
@@ -138,6 +161,7 @@ and scores. Deleting a game type ignores tombstoned games and clears their `game
 | **v13** | **`game_types.rules` / `game_types.rules_slug`** (both TEXT, nullable): the rules a group wrote for a type, and the shipped ruleset it falls back to. `applyV13` in `lib/services/sync/sync_schema.dart`, run by both engines. Additive, plus a back-fill that maps the ten seeded names to their slug — `UPDATE`s only, so a type the user deleted is not resurrected and a renamed one keeps a NULL slug. |
 | **v12** | **`games.finishedAt`** (ISO-8601 TEXT, nullable): an explicit end for every game, not only the three types that carry a threshold. `applyV12` in `lib/services/sync/sync_schema.dart`, run by both engines. Additive only. |
 | **v14** | **`game_types.builtin_key`** (TEXT, nullable): the stable identity *and* the source of the displayed name of a built-in type, plus the twelve types the seed was missing. `applyV14` in `lib/services/sync/sync_schema.dart`, run by both engines. Additive; back-fills, never resurrects. |
+| **v15** | **Unique index on live built-in game types** (`builtin_key`, live rows only). `applyV15` in `lib/services/sync/sync_schema.dart`, run by both engines on upgrade and on a fresh install. Clears a surplus key rather than failing; deletes nothing. |
 | v10 | **Sync bookkeeping**: `group_links`, `entity_versions`, `sync_inbox`; `outbox.rejected_at` / `reject_reason`; `sync_state.device_id` / `group_name`. Additive only — `_createSyncV10Tables` is the fresh-install and the upgrade path at once. |
 
 ### The v9 migration in detail
@@ -196,6 +220,17 @@ repairs the shape before the rest of the chain runs.
 - **The end of a game is a timestamp, not a flag (2026-09-16).** `finishedAt` answers "when"
   as well as "whether", which a boolean cannot, and it costs the same. It also maps onto the
   server's existing `ended_at` with no migration at all.
+- **The local guard on game types is on `builtin_key`, not on `(group_id, name)` (2026-09-18).**
+  Every seeded type appeared twice in one production browser (wip entry
+  `2026-09-16-game-types-are-duplicated-in-the-pwa`); a fresh profile on the production PWA
+  listed each of the 22 once, so it was stale data in that browser, not a seeding bug, and
+  no de-duplication migration was written — clearing that browser is the fix. The guard
+  stops it coming back. The key, because it is the identity of a built-in type since v14 and
+  the name is not — two locales store two names for one type, which a name index would never
+  catch — and because it mirrors the server's `uq_game_types_group_builtin_key`. Global
+  rather than per group, because one local row stands for a built-in type in every group the
+  device is in. A name index was rejected: it would constrain the user's own types, which
+  may legitimately share a name.
 - **Tombstone shared rows only (2026-09-13).** A delete has to reach the other devices, so
   a shared row cannot vanish; a local row has nobody to tell, and tombstoning it would grow
   every existing user's database forever for nothing.
