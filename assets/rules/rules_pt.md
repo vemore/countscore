@@ -1,54 +1,119 @@
 <!--@zapzap-->
-Jogo de cartas para famílias, a partir de três jogadores. O objetivo é ter na mão o total mais baixo.
+Jogo de cartas para famílias, primo do Yaniv, a partir de três jogadores, com um baralho de
+52 cartas e curingas. O objetivo é ter na mão o total mais baixo.
 
-## O princípio
+## Valor das cartas
 
-Em cada rodada, os jogadores tentam se livrar das cartas mais altas. Um jogador que acha que tem a mão mais baixa da mesa pode anunciar **ZapZap**. O anúncio interrompe a rodada e força todos a revelar seu jogo.
+- **Ás** : 1 ponto ;
+- **2 a 10** : seu valor facial ;
+- **Valete** : 11, **Dama** : 12, **Rei** : 13 ;
+- **Curinga** : **0 ponto** enquanto a rodada é jogada, mas **25 pontos** se ainda estiver
+  na mão no momento da contagem.
+
+## A distribuição
+
+O jogador que abre a rodada escolhe quantas cartas cada um recebe, **de 4 a 7**. As cartas
+são distribuídas, o restante forma o comprador, e vira-se uma carta para abrir o descarte.
+Na rodada seguinte, é ao jogador seguinte abrir e escolher, saltando os jogadores
+eliminados.
+
+## O turno de jogo
+
+Um turno sempre se faz em dois tempos, nesta ordem:
+
+1. **Colocar** uma ou várias cartas, em uma única combinação válida. Elas permanecem
+   visíveis na mesa.
+2. **Comprar uma carta**, à sua escolha: a carta escondida do topo do comprador, ou uma
+   das cartas que o jogador anterior acabou de colocar.
+
+Não se pode comprar sem ter colocado, e não se termina o turno sem ter comprado. Quando o
+comprador está vazio, embaralha-se o descarte para fazer um novo, deixando de lado as
+últimas cartas colocadas, que permanecem disponíveis.
+
+## As combinações
+
+- **Uma carta única**.
+- **Cartas do mesmo valor** : um par, uma trinca, uma quadra.
+- **Uma sequência** de pelo menos **três cartas que se seguem no mesmo naipe**, por
+  exemplo 5♠ 6♠ 7♠.
+
+O curinga substitui qualquer carta, em um grupo como em uma sequência. Uma sequência de
+duas cartas, uma sequência que mistura naipes ou que pula um valor não se coloca.
+
+## Anunciar ZapZap
+
+Em vez de colocar, um jogador pode anunciar **ZapZap** se sua mão vale **5 pontos ou
+menos**, com curingas contando 0. O anúncio interrompe a rodada e cada um revela seu jogo.
+
+O anunciante é **bloqueado** se outro jogador tem uma mão **igual ou mais baixa** que a
+sua: não há nada a fazer para bloquear, basta ter a mão.
 
 ## Contagem
 
-- **ZapZap bem-sucedido** — o jogador que anunciou tinha realmente a mão mínima: marca **0 ponto**.
-- **ZapZap falhado ou bloqueado** — outro jogador tem uma mão igual ou mais baixa: o anunciante marca o valor de sua mão **mais uma penalidade de (número de jogadores − 1) × 5 pontos**.
-- **Os outros jogadores** marcam o valor de sua mão.
+- **A mão mais baixa** da mesa marca **0 ponto** : o anunciante se seu ZapZap sucede, o
+  bloqueador senão.
+- **Os outros jogadores** marcam o valor de sua mão, cada curinga restante na mão contando
+  **25 pontos**.
+- **O anunciante bloqueado** marca o valor de sua mão **mais uma penalidade de (número de
+  jogadores ainda em jogo − 1) × 5 pontos**.
 
 Os totais se acumulam de rodada em rodada, e tenta-se permanecer baixo.
 
 ## Eliminação e classificação
 
-Um jogador é **eliminado assim que ultrapassa 100 pontos**. A classificação final é o oposto da ordem de eliminação: o último eliminado fica em primeiro, o primeiro eliminado fica em último.
+Um jogador é **eliminado assim que ultrapassa 100 pontos**. A classificação final é
+oposta à ordem de eliminação: o último eliminado fica em primeiro, o primeiro eliminado
+fica em último.
 
-Quando restam apenas dois jogadores, a partida é jogada em **golden score**: o perdedor da final recebe o escore que o leva exatamente a 101 pontos.
+## Golden score
 
-## O resto é com vocês
-
-Os detalhes da distribuição, compra e das cartas que se pode jogar variam de um grupo para outro. Este texto descreve a contagem, que é o que o aplicativo sabe fazer. Use o botão "modificar" para adicionar seus próprios hábitos.
+Quando restam apenas dois jogadores, a rodada seguinte é uma final em **golden score**:
+a distribuição pode ser **de 4 a 10 cartas**, e é a **mão mais baixa da rodada**, e não o
+total acumulado, que designa o vencedor. Um anunciante bloqueado, inclusive em igualdade,
+perde a partida. O perdedor da final recebe o escore que o leva exatamente a 101 pontos.
 
 <!--@uno-->
-Jogo de cartas rápido, de 2 a 10 jogadores, com um baralho especial de 108 cartas. O objetivo de uma rodada é se livrar de todas as suas cartas antes dos outros.
+Jogo de cartas rápido, de 2 a 10 jogadores, com um baralho especial de 108 cartas. O objetivo
+de uma rodada é se livrar de todas as suas cartas antes dos outros.
 
 ## Preparação
 
-Cada jogador recebe **7 cartas**. O restante forma o comprador; vira-se a primeira carta para abrir o descarte.
+Cada jogador recebe **7 cartas**. O restante forma o comprador; vira-se a primeira carta
+para abrir o descarte.
 
 ## Desenvolvimento
 
-Em seu turno, você coloca uma carta que corresponde à do topo do descarte pela **cor**, pelo **número** ou pelo **símbolo**. As cartas pretas podem ser colocadas sobre qualquer coisa e permitem escolher a cor que segue. Se você não puder colocar nada, você compra, e joga a carta comprada se for adequada.
+Em seu turno, você coloca uma carta que corresponde à do topo do descarte pela **cor**,
+pelo **número** ou pelo **símbolo**. As cartas pretas podem ser colocadas sobre qualquer
+coisa e permitem escolher a cor que segue. Se você não puder colocar nada, você compra, e
+joga a carta comprada se for adequada.
 
-As cartas especiais mudam o curso do turno: **Pular** pula o jogador seguinte, **Inverter** muda o sentido do jogo, **+2** força o seguinte a comprar duas cartas e pular seu turno, o **Cuinga** define a cor, e o **Cuinga +4** força o seguinte a comprar quatro cartas.
+As cartas especiais mudam o curso do turno: **Pular** pula o jogador seguinte, **Inverter**
+muda o sentido do jogo, **+2** força o seguinte a comprar duas cartas e pular seu turno, o
+**Cuinga** define a cor, e o **Cuinga +4** força o seguinte a comprar quatro cartas.
 
-Um jogador que tem apenas uma carta deve anunciar **"Uno"**. Se esquecer e for pego antes do próximo jogador jogar, compra cartas como penalidade.
+Um jogador que tem apenas uma carta deve anunciar **"Uno"**. Se esquecer e for pego antes
+do próximo jogador jogar, compra cartas como penalidade.
 
 ## Contagem
 
-A rodada termina assim que um jogador coloca sua última carta. Contam-se então as cartas que restaram nas mãos:
+A rodada termina assim que um jogador coloca sua última carta. Ele **embolsa** então o
+valor de todas as cartas que restaram nas mãos dos outros:
 
 - **cartas numeradas**: seu valor facial;
 - **Pular, Inverter, +2**: 20 pontos cada;
 - **Cuinga e Cuinga +4**: 50 pontos cada.
 
-Na regra mais comum, quem terminou **recebe** a soma de tudo que resta nos outros, e o jogo vai até **500 pontos**.
+Os outros jogadores não marcam nada pela rodada.
 
-Muitas mesas jogam o inverso: cada um marca o que sobrou na mão, como penalidade, e o menor total ganha. Esta é a versão que CountScore espera por padrão. Se você joga a 500, mude o tipo de jogo para que o maior escore vença.
+## Fim da partida
+
+As rodadas se encadeiam até que um jogador atinja **500 pontos**: o maior total ganha. É assim que o CountScore configura o Uno: o maior escore vence, e a partida para assim que um
+total ultrapassa 500.
+
+Algumas mesas jogam ao contrário, cada um marcando em penalidade o que sobrou na mão, e o
+menor total ganhando. Se este é o seu caso, modifique o tipo de jogo para que o menor
+escore vença.
 
 <!--@scrabble-->
 Jogo de letras de 2 a 4 jogadores em um tabuleiro de 15 × 15 casas. Você marca pontos formando palavras, como em um jogo de palavras cruzadas.
@@ -115,29 +180,47 @@ Cada um soma os valores de suas cartas. Os negativos se subtraem, o que pode dar
 A partida termina no final da rodada durante a qual um jogador atinge ou ultrapassa **100 pontos**. O menor total geral ganha.
 
 <!--@president-->
-Jogo de descarte de 3 a 7 jogadores, com um baralho de 52 cartas. O objetivo de uma rodada é se livrar de todas as suas cartas primeiro, para se tornar Presidente.
+Jogo de descarte de 3 a 7 jogadores, com um baralho de 52 cartas. O objetivo de uma rodada
+é se livrar de todas as suas cartas primeiro, para se tornar Presidente.
 
 ## Preparação
 
-Todas as cartas são distribuídas. A hierarquia vai do 2, o mais fraco, até o Ás, o mais forte — em muitas mesas, o 2 é ao contrário a carta mais forte, ou funciona como curinga. Entrem em acordo antes de começar.
+Todas as cartas são distribuídas. A hierarquia vai do 2, o mais fraco, até o Ás, o mais
+forte — em muitas mesas, o 2 é ao contrário a carta mais forte, ou funciona como curinga.
+Entrem em acordo antes de começar.
 
 ## Desenvolvimento
 
-O primeiro jogador coloca uma carta, ou várias cartas de **mesmo valor**. Cada jogador seguinte deve colocar **o mesmo número de cartas**, de valor estritamente superior, ou passar seu turno. Quando todos passam, a vaza é fechada e o último a jogar começa o que quiser.
+O primeiro jogador coloca uma carta, ou várias cartas de **mesmo valor**. Cada jogador
+seguinte deve colocar **o mesmo número de cartas**, de valor estritamente superior, ou
+passar seu turno. Quando todos passam, a vaza é fechada e o último a jogar começa o que
+quiser.
 
-Quatro cartas idênticas colocadas ou completadas frequentemente fecham o turno imediatamente: é a **quadra**, e muitas mesas a fazem inverter a hierarquia até o fim da vaza.
+Quatro cartas idênticas colocadas ou completadas frequentemente fecham o turno imediatamente:
+é a **quadra**, e muitas mesas a fazem inverter a hierarquia até o fim da vaza.
 
 ## Os títulos
 
-A ordem em que os jogadores se livram de suas cartas dá os títulos da rodada: o primeiro é **Presidente**, o segundo **Vice-Presidente**, o último **Trou du cul** (servil), o penúltimo **Vice-Trou du cul**.
+A ordem em que os jogadores se livram de suas cartas dá os títulos da rodada: o primeiro é
+**Presidente**, o segundo **Vice-Presidente**, o último **Trou du cul**, o penúltimo
+**Vice-Trou du cul**.
 
-Na rodada seguinte, os títulos impõem uma troca antes de jogar: o Trou du cul dá suas **duas melhores cartas** ao Presidente, que devolve duas cartas de sua escolha; o Vice-Trou du cul e o Vice-Presidente trocam uma carta da mesma forma.
+Na rodada seguinte, os títulos impõem uma troca antes de jogar: o Trou du cul dá suas
+**duas melhores cartas** ao Presidente, que devolve duas cartas de sua escolha; o
+Vice-Trou du cul e o Vice-Presidente trocam uma carta da mesma forma.
 
 ## Contagem
 
-O Presidente frequentemente conta os pontos, mas raramente da mesma forma duas vezes. Os critérios mais comuns atribuem 2 pontos ao Presidente e 1 ao Vice-Presidente, ou 3, 2 e 1 aos três primeiros.
+O baremo mais difundido recompensa apenas o topo do ranking: a cada rodada, o **Presidente
+marca 2 pontos**, o **Vice-Presidente 1 ponto**, e os outros não marcam nada. O primeiro
+jogador a atingir **10 pontos** ganha a partida. É assim que o CountScore
+configura o Presidente:
+o maior escore vence, e a partida para assim que um total ultrapassa 10.
 
-Outro hábito, mais simples de seguir em um bloco de notas, é marcar um ponto de penalidade ao último de cada rodada e eliminar quem acumula demais. Esta é a leitura que CountScore espera por padrão, com menor escore ganhando e a partida parando acima de **11 pontos**. Se sua mesa marca diretamente, mude a direção do escore no tipo de jogo.
+Existem outros baremos: 3, 2 e 1 pontos aos três primeiros, ou pontos negativos para o
+Vice-Trou du cul e o Trou du cul. Algumas mesas contam ao contrário um ponto de penalidade
+ao último de cada rodada, e o menor total ganha. Ajuste o limite ou o sentido do escore no
+tipo de jogo.
 
 <!--@belote-->
 Jogo de vazas a quatro, em duas equipes de dois, com um baralho de 32 cartas. O objetivo é chegar primeiro a um total combinado, na maioria das vezes **1 000 pontos**.

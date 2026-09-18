@@ -1,54 +1,123 @@
 <!--@zapzap-->
-Juego de cartas familiar, a partir de tres jugadores. El objetivo es tener en la mano el total más bajo.
+Juego de cartas familiar, primo del Yaniv, a partir de tres jugadores, con una baraja de 52
+cartas y comodines. El objetivo es tener en la mano el total más bajo.
 
-## El principio
+## Valor de las cartas
 
-En cada ronda, los jugadores buscan vaciar su mano de las cartas altas. Un jugador que piense tener la mano más baja de la mesa puede anunciar **ZapZap**. El anuncio detiene la ronda y obliga a todos a revelar su juego.
+- **As**: 1 punto;
+- **2 a 10**: su valor nominal;
+- **Jota**: 11, **Reina**: 12, **Rey**: 13;
+- **Comodín**: **0 puntos** mientras se juega la ronda, pero **25 puntos** si sigue en la
+  mano en el momento del conteo.
+
+## La repartición
+
+El jugador que abre la ronda elige cuántas cartas recibe cada uno, **de 4 a 7**. Se
+reparten las cartas, el resto forma el mazo, y se voltea una carta para abrir el descarte.
+En la siguiente ronda, el siguiente jugador abre y elige, saltando los jugadores
+eliminados.
+
+## El turno de juego
+
+Un turno siempre se hace en dos tiempos, en este orden:
+
+1. **Colocar** una o varias cartas, en una sola combinación válida. Permanecen visibles
+   sobre la mesa.
+2. **Tomar una carta**, a tu elección: la carta oculta de la parte superior del mazo, o
+   una de las cartas que el jugador anterior acaba de colocar.
+
+No puedes tomar sin haber colocado, y no terminas tu turno sin haber tomado. Cuando el
+mazo está vacío, se mezcla el descarte para hacer uno nuevo, dejando a un lado las
+últimas cartas colocadas, que siguen disponibles.
+
+## Las combinaciones
+
+- **Una carta sola**.
+- **Cartas del mismo valor**: un par, un trío, un póquer.
+- **Una escalera** de al menos **tres cartas consecutivas del mismo palo**, por ejemplo
+  5♠ 6♠ 7♠.
+
+El comodín reemplaza cualquier carta, tanto en un grupo como en una escalera. Una escalera
+de dos cartas, una escalera que mezcla palos o que salta un valor no se coloca.
+
+## Anunciar ZapZap
+
+En lugar de colocar, un jugador puede anunciar **ZapZap** si su mano vale **5 puntos o
+menos**, contando los comodines como 0. El anuncio detiene la ronda y cada uno revela su
+juego.
+
+El anunciante es **contrado** si otro jugador tiene una mano **igual o más baja** que la
+suya: no hay nada que hacer para contrar, basta con tener la mano.
 
 ## Conteo
 
-- **ZapZap exitoso** — el anunciante efectivamente tenía la mano mínima: marca **0 puntos**.
-- **ZapZap fallido o contraído** — otro jugador tiene una mano igual o más baja: el anunciante marca el valor de su mano **más una penalización de (número de jugadores − 1) × 5 puntos**.
-- **Los otros jugadores** marcan el valor de su mano.
+- **La mano más baja** de la mesa marca **0 puntos**: el anunciante si su ZapZap tiene
+  éxito, el que contrare si no.
+- **Los otros jugadores** marcan el valor de su mano, cada comodín que queda en la mano
+  cuenta **25 puntos**.
+- **El anunciante contrado** marca el valor de su mano **más una penalización de (número
+  de jugadores aún en juego − 1) × 5 puntos**.
 
 Los totales se acumulan de ronda en ronda, y se busca mantenerse bajo.
 
 ## Eliminación y clasificación
 
-Un jugador es **eliminado en cuanto supera 100 puntos**. La clasificación final se lee al revés del orden de eliminación: el último eliminado es primero, el primero eliminado es último.
+Un jugador es **eliminado en cuanto supera 100 puntos**. La clasificación final se lee al
+revés del orden de eliminación: el último eliminado es primero, el primero eliminado es
+último.
 
-Cuando quedan solo dos jugadores, la partida se juega en **golden score** (muerte súbita): el perdedor de la final recibe la puntuación que lo lleva exactamente a 101 puntos.
+## Golden score
 
-## El resto pertenece a tu mesa
-
-El detalle de la distribución, el robo y lo que se permite colocar varía de un grupo a otro. Este texto describe el conteo, que es lo que la aplicación sabe hacer. Usa el botón "modificar" para agregar tus propios hábitos.
+Cuando solo quedan dos jugadores, la siguiente ronda es una final en **golden score**: la
+repartición puede ir **de 4 a 10 cartas**, y es la **mano más baja de la ronda**, no el
+total acumulado, la que designa al ganador. Un anunciante contrado, incluso en empate,
+pierde la partida. El perdedor de la final recibe la puntuación que lo lleva exactamente a
+101 puntos.
 
 <!--@uno-->
-Juego de cartas rápido, de 2 a 10 jugadores, con una baraja especial de 108 cartas. El objetivo de una ronda es deshacerse de todas tus cartas antes que los demás.
+Juego de cartas rápido, de 2 a 10 jugadores, con un mazo especial de 108 cartas. El objetivo
+de una ronda es deshacerse de todas tus cartas antes que los demás.
 
 ## Preparación
 
-Cada jugador recibe **7 cartas**. El resto forma el mazo; se voltea la primera carta para abrir el descarte.
+Cada jugador recibe **7 cartas**. El resto forma el mazo; se voltea la primera carta para
+abrir el descarte.
 
 ## Desarrollo
 
-En tu turno, colocas una carta que coincida con la carta superior del descarte por el **color**, el **número** o el **símbolo**. Las cartas negras se pueden colocar sobre cualquier cosa y permiten elegir el color que sigue. Si no puedes colocar nada, robas, y juegas la carta robada si te sirve.
+En tu turno, colocas una carta que coincida con la carta de la parte superior del descarte
+por el **color**, el **número** o el **símbolo**. Las cartas negras se pueden colocar sobre
+cualquier cosa y permiten elegir el color que sigue. Si no puedes colocar nada, tomas una
+carta, y juegas la carta tomada si te sirve.
 
-Las cartas especiales cambian el curso del turno: **Pasar** salta al siguiente jugador, **Inversa** cambia el sentido del juego, **+2** obliga al siguiente a robar dos cartas y pasar su turno, el **Comodín** fija el color, y el **Comodín +4** hace robar cuatro cartas al siguiente.
+Las cartas especiales cambian el curso del turno: **Pasar** salta al siguiente jugador,
+**Inversa** cambia el sentido del juego, **+2** obliga al siguiente a tomar dos cartas y
+pasar su turno, el **Comodín** fija el color, y el **Comodín +4** hace tomar cuatro cartas
+al siguiente.
 
-Un jugador que solo tiene una carta debe anunciar **"Uno"**. Si lo olvida y se le atrapan antes de que el siguiente jugador haya jugado, roba cartas como penalización.
+Un jugador que solo tiene una carta debe anunciar **"Uno"**. Si lo olvida y se le atrapan
+antes de que el siguiente jugador haya jugado, toma cartas como penalización.
 
 ## Conteo
 
-La ronda termina en cuanto un jugador coloca su última carta. Se cuentan entonces las cartas que quedan en las manos:
+La ronda termina en cuanto un jugador coloca su última carta. Se **embolsa** entonces el valor
+de todas las cartas restantes en las manos de los otros:
 
 - **cartas numeradas**: su valor nominal;
 - **Pasar, Inversa, +2**: 20 puntos cada una;
 - **Comodín y Comodín +4**: 50 puntos cada uno.
 
-En la regla más difundida, quien terminó **recibe** la suma de todo lo que queda en los otros, y la partida va hasta **500 puntos**.
+Los otros jugadores no marcan nada en la ronda.
 
-Muchas mesas juegan lo opuesto: cada uno marca lo que le quedaba en la mano, como una penalización, y el total más bajo gana. Es esta versión la que CountScore espera por defecto. Si juegas a 500, modifica el tipo de juego para que el puntaje más alto gane.
+## Fin de la partida
+
+Las rondas se encadenan hasta que un jugador alcanza **500 puntos**: el total más alto
+gana. Así configura CountScore el Uno: el puntaje más alto gana, y la partida se detiene
+en cuanto un total supera 500.
+
+Algunas mesas juegan lo opuesto, cada uno marcando como penalización lo que le quedaba en
+la mano, y el total más bajo ganando. Si es tu caso, modifica el tipo de juego para que el
+puntaje más bajo gane.
 
 <!--@scrabble-->
 Juego de letras de 2 a 4 jugadores en un tablero de 15 × 15 casillas. Se marcan puntos formando palabras, como en un crucigrama.
@@ -115,29 +184,47 @@ Cada uno suma los valores de sus cartas. Las negativas se restan, lo que puede d
 La partida termina al final de la ronda durante la cual un jugador alcanza o supera **100 puntos**. El total general más bajo gana.
 
 <!--@president-->
-Juego de descarte de 3 a 7 jugadores, con una baraja de 52 cartas. El objetivo de una ronda es deshacerse de todas tus cartas primero, para convertirse en Presidente.
+Juego de descarte de 3 a 7 jugadores, con una baraja de 52 cartas. El objetivo de una ronda
+es deshacerse de todas tus cartas primero, para convertirse en Presidente.
 
 ## Preparación
 
-Se distribuyen todas las cartas. La jerarquía va del 2, la más débil, hasta el As, la más fuerte — en muchas mesas, el 2 es en cambio la carta más fuerte, o actúa como comodín. Acuerden antes de empezar.
+Se distribuyen todas las cartas. La jerarquía va del 2, el más débil, hasta el As, el más
+fuerte — en muchas mesas, el 2 es en cambio la carta más fuerte, o sirve como comodín.
+Acuerden antes de empezar.
 
 ## Desarrollo
 
-El primer jugador coloca una carta, o varias cartas del **mismo valor**. Cada jugador siguiente debe colocar **la misma cantidad de cartas**, de valor estrictamente superior, o pasar su turno. Cuando todos pasan, la mano se cierra y el último en colocar lanza lo que quiera.
+El primer jugador coloca una carta, o varias cartas del **mismo valor**. Cada jugador
+siguiente debe colocar **la misma cantidad de cartas**, de valor estrictamente superior, o
+pasar su turno. Cuando todos pasan, la baza se cierra y el último en colocar lanza lo que
+quiera.
 
-Cuatro cartas idénticas colocadas o completadas a menudo cierran el turno inmediatamente: es el **poker**, y muchas mesas le hacen invertir la jerarquía hasta el final de la mano.
+Cuatro cartas idénticas colocadas o completadas a menudo cierran el turno inmediatamente:
+es el **póquer**, y muchas mesas le hacen invertir la jerarquía hasta el final de la baza.
 
 ## Los títulos
 
-El orden en que los jugadores se deshacen de sus cartas da los títulos de la ronda: el primero es **Presidente**, el segundo **Vice-Presidente**, el último **Perdedor**, el penúltimo **Vice-Perdedor**.
+El orden en que los jugadores se deshacen de sus cartas da los títulos de la ronda: el
+primero es **Presidente**, el segundo **Vice-Presidente**, el último **Perdedor**, el
+penúltimo **Vice-Perdedor**.
 
-En la siguiente ronda, los títulos imponen un intercambio antes de jugar: el Perdedor da sus **dos mejores cartas** al Presidente, quien le devuelve dos cartas de su elección; el Vice-Perdedor y el Vice-Presidente intercambian una carta de la misma forma.
+En la siguiente ronda, los títulos imponen un intercambio antes de jugar: el Perdedor da
+sus **dos mejores cartas** al Presidente, quien le devuelve dos cartas de su elección; el
+Vice-Perdedor y el Vice-Presidente intercambian una carta de la misma forma.
 
 ## Conteo
 
-El Presidente a menudo cuenta los puntos, pero rara vez de la misma forma dos veces. Los sistemas más comunes asignan 2 puntos al Presidente y 1 al Vice-Presidente, o bien 3, 2 y 1 a los tres primeros.
+El sistema de puntuación más común solo premia la parte superior del ranking: en cada ronda,
+el **Presidente marca 2 puntos**, el **Vice-Presidente 1 punto**, y los demás no marcan
+nada. El primer jugador en alcanzar **10 puntos** gana la partida. Así configura CountScore el
+Presidente: el puntaje más alto gana, y la partida se detiene en cuanto un total
+supera 10.
 
-Otro hábito, más simple de llevar en un papel, consiste en marcar un punto de penalización al último de cada ronda y eliminar al que acumule demasiados. Es esta versión la que CountScore espera por defecto, con un puntaje más bajo ganando y una partida que termina por encima de **11 puntos**. Si tu mesa marca al derecho, cambia el sentido del puntaje en el tipo de juego.
+Existen otros sistemas: 3, 2 y 1 puntos para los tres primeros, o puntos negativos para el
+Vice-Perdedor y el Perdedor. Algunas mesas marcan al revés un punto de penalización al
+último de cada ronda, y el total más bajo gana. Ajusta el umbral o el sentido del puntaje
+en el tipo de juego.
 
 <!--@belote-->
 Juego de manos a cuatro, en dos equipos de dos, con una baraja de 32 cartas. El objetivo es alcanzar primero un total acordado, más a menudo **1 000 puntos**.

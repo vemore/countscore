@@ -1,5 +1,7 @@
 # The shipped ZapZap rules stop at the scoring, because nothing documents the play
 
+**Status:** done (2026-09-18) — closed by feat/game-rules-seeds. The `zapzap` section of the ten `rules_<locale>.md` now covers card values, the deal, the turn, the combinations, the ZapZap call, the counter, scoring, elimination and the golden score, from the author's `GAME_RULES.md`; `KNOWN_GAME_TYPES["zapzap"]` says the same.
+
 - **Noted:** 2026-09-16 — while writing the rules text for the game-rules page
 - **Theme:** game-types
 - **Area:** docs
