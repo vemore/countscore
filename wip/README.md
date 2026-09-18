@@ -7,6 +7,7 @@ One file per piece of work, so that parallel pull requests never conflict on a s
 | `todo/` | Open work for the release in progress (`version:` in `pubspec.yaml`) |
 | `todo_nr/` | Open work for the next release |
 | `done/` | Closed work, and `ARCHIVE-2026-09.md` — the old `DONE.md`, frozen |
+| `assets/<entry-slug>/` | Images an entry points at, such as the mock-ups that are its implementation target. The folder keeps the entry's slug and stays put when the entry moves |
 
 `scripts/wip.sh` is the index: `list [todo|todo_nr|done|all]`, `themes`, `check`, `refine`. There is
 no index file on purpose — it would be the one shared file again.
@@ -34,6 +35,10 @@ the fix, twenty lines or so.
 **Open question:** <what the user must decide before the entry is ready; a refinement
 pass writes it, and the answer replaces it.>
 ```
+
+An entry whose target is visual links its images from `assets/<its slug>/` with relative links
+(`../assets/<slug>/<image>.png`), so the target lives in the repository and not only behind a
+link to an external page.
 
 `Theme` is what groups entries into one pull request: reuse an existing tag
 (`scripts/wip.sh themes all`) before inventing one.
