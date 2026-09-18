@@ -53,8 +53,12 @@ class AnthropicClient:
         self.model = settings.comment_model
         self._client: anthropic.AsyncAnthropic | None = None
         if settings.anthropic_api_key:
+            # max_retries=0: the SDK default of 2 would retry a 5xx or 429 silently,
+            # which the module docstring rules out.
             self._client = anthropic.AsyncAnthropic(
-                api_key=settings.anthropic_api_key, timeout=LLM_TIMEOUT_SECONDS
+                api_key=settings.anthropic_api_key,
+                timeout=LLM_TIMEOUT_SECONDS,
+                max_retries=0,
             )
 
     @property

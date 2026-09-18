@@ -1,5 +1,10 @@
 # The comments path retries twice although its docstring says it never retries
 
+**Status:** done (2026-09-18) — closed by fix/anthropic-no-retries. `AsyncAnthropic` now gets
+`max_retries=0`; `test_anthropic_client_does_not_retry` pins it and
+`test_anthropic_5xx_makes_exactly_one_upstream_call` stubs a 500 at the `httpx2` transport
+and sees one call. `.llmwiki/LlmProviders.md` says so under Path 1.
+
 - **Noted:** 2026-09-18 — while removing the OpenAI SDK retries (fix/backend-hardening)
 - **Theme:** backend-hardening
 - **Area:** backend
