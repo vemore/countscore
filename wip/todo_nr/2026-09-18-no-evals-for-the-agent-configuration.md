@@ -17,14 +17,19 @@ The playbook's answer is continuous evals: 20–50 real past tasks, each a promp
 replayed non-interactively (`claude -p` with a restricted `--allowedTools`) on every change to
 the agent configuration and on a schedule; every production incident becomes a permanent case.
 
+**Decided (2026-09-18, refinement):** no API key in the repository secrets and no CI
+workflow. The evals run locally, by hand, from a session, on the user's own Claude login.
+
 **Fix:** start small — five to ten cases taken from `wip/done/`, where the right outcome is
 known and checkable by a script: add a string in ten locales (ARB key sets and values pass
 `arb_keys.py`), a migration (schema version bumped, migration test added), a problem found
 out of scope (a new `wip/todo_nr/` entry, no inline fix), a docs-only change (no gate run,
 README untouched when nothing it states changed). An `evals/` folder with the prompts and
-check scripts, and a workflow run on pull requests touching `CLAUDE.md`, `.claude/**` or
-`.llmwiki/**`, plus a manual trigger. Open questions: the API key as a repository secret and
-the cost per run (budget it before enabling on every PR — `workflow_dispatch` first), and
-whether a failing eval blocks the merge or only reports.
+check scripts, and a script that replays them with `claude -p` (restricted `--allowedTools`)
+in throwaway worktrees and prints pass or fail per case. Run it after changing `CLAUDE.md`,
+`.claude/**` or `.llmwiki/**`, and in the pruning pass (`release-android` §3b).
 
-**Open question:** Put an Anthropic API key in the repository secrets? With what monthly budget per run? Does a failing eval block the merge, or only report?
+**Acceptance:**
+- `evals/` holds at least five cases from `wip/done/`, each a prompt and a check script.
+- One local command runs them all and prints pass or fail per case; no secret and no workflow is added.
+- `.llmwiki/` says when to run them, and `release-android` §3b runs them.

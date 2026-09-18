@@ -21,4 +21,11 @@ diff against what the Console exported and sends the CSV only with an explicit `
 Keep the CSV and `PLAY_STORE_DATA_SAFETY.md` in the `.llmwiki/Documentation.md` rule so a new
 data flow updates both.
 
-**Open question:** Accept an API call that overwrites the whole Data Safety declaration, gated behind `--commit`? And who exports the first CSV from the Console?
+**Decided (2026-09-18, refinement):** yes — the overwriting call is accepted behind
+`--commit`. A browser agent (Claude in Chrome or Cowork) exports the first CSV from the
+Console; `release-android` gets the brief for it.
+
+**Acceptance:**
+- `store_listing/data_safety.csv`, exported from the Console, is committed.
+- `play_publish.py data-safety` prints a diff against the Console and sends nothing without `--commit`.
+- `.llmwiki/Documentation.md` names the CSV next to `PLAY_STORE_DATA_SAFETY.md` for any new data flow.

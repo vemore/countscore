@@ -28,4 +28,12 @@ would need a schema bump, the `sync_store` contract and LWW like `finishedAt` go
 (`db-migration` skill, [[Sync]]). Only then is a check on the board's first build worth
 adding.
 
-**Open question:** Should the refusal sync across devices (a v15 synced column), or stay on the device (SharedPreferences keyed by the game's uuid, no schema change)?
+**Decided (2026-09-18, refinement):** keep the refusal on the device —
+SharedPreferences keyed by the game's uuid, no schema change, not synced. Then add the
+first-build check.
+
+**Acceptance:**
+- "Continue playing", leaving the board, coming back and adding a round does not raise the dialog (widget test).
+- The stored refusal is cleared when the condition goes false, and a new crossing raises the dialog once.
+- Opening a game past its threshold that was never dismissed raises the dialog once on the board's first build.
+- The schema version is unchanged.

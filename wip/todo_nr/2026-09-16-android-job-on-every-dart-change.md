@@ -26,4 +26,11 @@ fresh-clone proof honest by leaving it on every push to `main` and on the weekly
 already force every flag true. Do not do this without also saying so in
 `.llmwiki/Testing.md`: the 2026-09-09 decision exists because of a "nobody built it" bug.
 
-**Open question:** Should `android` stop running on pull requests that touch only `lib/` or `test/`? It would still run on pushes to `main` and weekly. First look for an Actions run where `android` failed while `app` passed.
+**Decided (2026-09-18, refinement):** yes, if the history confirms it. The first step is
+the search for a run where `android` failed while `app` passed on a Dart-only change; if one
+exists, the entry stops there and records it.
+
+**Acceptance:**
+- The pull request cites the run-history search and its result.
+- `scripts/ci_scope.sh` no longer sets `android` for a change touching only `lib/` or `test/`, and still sets it on pushes to `main` and the weekly run.
+- `.llmwiki/Testing.md` records the change and why.

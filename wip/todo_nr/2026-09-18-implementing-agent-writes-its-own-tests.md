@@ -12,14 +12,17 @@ missing case, a loosened assertion, a fixture that is never written — #75 had 
 Nothing separates writing the tests from writing the code, and nothing stops an agent looping
 on the same failing check.
 
-**Fix:** for lanes B and C only ([[2026-09-18-one-lane-for-every-change]]), so lane A stays fast:
+**Decided (2026-09-18, refinement):** split, and the test-designer subagent is dropped.
+Acceptance criteria in the entry plus the independent review of lanes B and C
+([[2026-09-18-one-lane-for-every-change]]) are judged enough to keep an agent from grading
+its own work. What remains is the part that ships now, for every lane:
 
-- a **test-designer** subagent writes the tests from the entry's acceptance criteria
-  ([[2026-09-18-wip-entries-carry-no-acceptance-criteria]]) before the implementation, without
-  seeing it; the implementer may add tests, never weaken those;
-- a **circuit breaker** in the agent prompt, for every lane: after three fix attempts on the
-  same failing check, stop and report, classifying the failure as `TEST_ISSUE`, `IMPL_ISSUE`,
-  `DOC_ISSUE` or `UNCLEAR` rather than trying a fourth time. The `SubagentStop` refusal then
-  reads as "blocked, see report", which §2 already tells the orchestrator to read.
+**Fix:** a **circuit breaker** in the `ship-parallel` §2 agent prompt: after three fix
+attempts on the same failing check, stop and report, classifying the failure as `TEST_ISSUE`,
+`IMPL_ISSUE`, `DOC_ISSUE` or `UNCLEAR` rather than trying a fourth time. The `SubagentStop`
+refusal then reads as "blocked, see report", which §2 already tells the orchestrator to read.
 
-**Open question:** Split it? The circuit breaker can ship now, lane-independent: stop after three attempts on one failing check and classify the failure. For the test-designer subagent: is it required for lanes B and C, or are acceptance criteria plus the independent review enough?
+**Acceptance:**
+- The `ship-parallel` §2 agent prompt stops after three attempts on one failing check and reports with one of the four classes.
+- §2 tells the orchestrator what to do with each class.
+- `.llmwiki/ParallelDelivery.md` § Decisions & History records that the test-designer subagent was dropped, and why.
