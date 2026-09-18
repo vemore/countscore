@@ -306,6 +306,30 @@ void main() {
       expect(stats['gamesPlayed'], 2, reason: 'one human, both games');
     });
 
+    test('a linked type gaining a key another local row holds keeps its own', () async {
+      final m = await joined();
+      await db.customStatement(
+        'INSERT INTO game_types (name, iconCodePoint, cardColorValue, isLowestScoreWins, '
+        "isDefault, uuid, created_at, updated_at) VALUES ('Mon Uno', 0, 0, 1, 0, 'mine', 1, 1)",
+      );
+      const remote = '44444444-4444-4444-8444-444444444444';
+      await store.applyPulled(m, [_delta('game_type', remote, 1, 1, {'name': 'Mon Uno'})], 1);
+      // The remote type becomes the built-in Uno, which the seeded row already is.
+      await store.applyPulled(
+          m, [_delta('game_type', remote, 2, 2, {'name': 'Mon Uno', 'builtin_key': 'uno'})], 2);
+
+      final rows = await db
+          .customSelect("SELECT uuid FROM game_types WHERE builtin_key = 'uno' "
+              'AND deleted_at IS NULL')
+          .get();
+      expect(rows, hasLength(1));
+      expect(rows.single.data['uuid'], isNot('mine'));
+      final mine = await db
+          .customSelect("SELECT name, builtin_key FROM game_types WHERE uuid = 'mine'")
+          .getSingle();
+      expect(mine.data, {'name': 'Mon Uno', 'builtin_key': null});
+    });
+
     test('children that arrive before their parent wait, then apply', () async {
       final m = await joined();
       final report = await store.applyPulled(m, [

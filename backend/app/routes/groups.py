@@ -1,4 +1,11 @@
-"""Group CRUD + device join/revoke endpoints."""
+"""Group CRUD + device join/revoke endpoints.
+
+A group has an owner (``Group.owner_device_id``): the device that created it, until it
+hands the role over (``PUT /groups/me/owner``) or leaves. Only the owner may revoke a
+sibling device or rotate the share token; every other member gets a 403. Leaving — a
+device revoking itself — stays open to every member, and an owner that leaves passes the
+role to the earliest-joined live device, so a group with members always has an owner.
+"""
 
 from __future__ import annotations
 
@@ -24,6 +31,7 @@ from app.schemas.groups import (
     GroupWithShareToken,
     JoinGroupRequest,
     JoinGroupResponse,
+    TransferOwnershipRequest,
     UpdateGroupSettings,
     UsagePayload,
 )
@@ -36,6 +44,7 @@ def _group_payload(g: Group) -> GroupPayload:
     return GroupPayload(
         id=g.id,
         name=g.name,
+        owner_device_id=g.owner_device_id,
         comment_style=g.comment_style,
         comment_language=g.comment_language,
         monthly_budget_cents=g.monthly_budget_cents,
@@ -48,6 +57,35 @@ def _group_payload_with_token(g: Group) -> GroupWithShareToken:
         **_group_payload(g).model_dump(),
         share_token=g.share_token,
     )
+
+
+async def _locked_group(session: AsyncSession, auth: AuthContext) -> Group:
+    """The caller's group, row-locked and re-read, so a check on it holds until commit."""
+    group = await session.get(Group, auth.group.id, with_for_update=True, populate_existing=True)
+    assert group is not None
+    return group
+
+
+def _require_owner(group: Group, auth: AuthContext) -> None:
+    if group.owner_device_id != auth.device.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "only the group owner may do this")
+
+
+async def _earliest_live_device(
+    session: AsyncSession, group_id: uuid.UUID, excluding: uuid.UUID
+) -> uuid.UUID | None:
+    """The device an owner that leaves hands the group to: the one that joined first."""
+    row = await session.execute(
+        select(col(Device.id))
+        .where(
+            col(Device.group_id) == group_id,
+            col(Device.revoked_at).is_(None),
+            col(Device.id) != excluding,
+        )
+        .order_by(col(Device.joined_at), col(Device.id))
+        .limit(1)
+    )
+    return row.scalar_one_or_none()
 
 
 def _enforce_group_rate_limit(request: Request, response: Response) -> None:
@@ -98,6 +136,7 @@ async def create_group(
         label=body.device_label,
     )
     session.add(device)
+    group.owner_device_id = device.id
     await session.commit()
     await session.refresh(group)
     await session.refresh(device)
@@ -196,7 +235,13 @@ async def list_devices(
     )
     return DeviceListResponse(
         devices=[
-            DeviceInfo(id=d.id, label=d.label, joined_at=d.joined_at, last_seen_at=d.last_seen_at)
+            DeviceInfo(
+                id=d.id,
+                label=d.label,
+                joined_at=d.joined_at,
+                last_seen_at=d.last_seen_at,
+                is_owner=d.id == auth.group.owner_device_id,
+            )
             for d in rows.scalars()
         ]
     )
@@ -212,24 +257,31 @@ async def revoke_device(
     auth: AuthContext = Depends(require_device),
     session: AsyncSession = Depends(get_session),
 ) -> GroupWithShareToken | Response:
-    """Revoke a device. Revoking another one also rotates the share token.
+    """Revoke a device. Revoking another one is the owner's, and rotates the share token.
 
     Every device learns the share token when it joins, so a revoke alone let the revoked
     device join again at once. The new token goes back to the caller only, as
     ``rotate-share-token`` does. A device revoking itself is leaving (the app's
-    ``GroupProvider.leave``): nothing to shut out, so no rotation and no token — 204.
+    ``GroupProvider.leave``), open to every member: nothing to shut out, so no rotation
+    and no token — 204. An owner that leaves hands the group to the earliest-joined
+    device still live.
     """
     target = await session.get(Device, device_id)
     if target is None or target.group_id != auth.group.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "device not in this group")
+    group = await _locked_group(session, auth)
     if target.id == auth.device.id:
         if target.revoked_at is None:
             target.revoked_at = datetime.now(UTC)
+            if group.owner_device_id == target.id:
+                group.owner_device_id = await _earliest_live_device(
+                    session, group.id, excluding=target.id
+                )
+                group.updated_at = datetime.now(UTC)
             await session.commit()
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-    group = await session.get(Group, auth.group.id, with_for_update=True)
-    assert group is not None
+    _require_owner(group, auth)
     # Already revoked: its token was rotated then, so the current one is safe to return.
     if target.revoked_at is None:
         now = datetime.now(UTC)
@@ -246,10 +298,34 @@ async def rotate_share_token(
     auth: AuthContext = Depends(require_device),
     session: AsyncSession = Depends(get_session),
 ) -> GroupWithShareToken:
-    group = await session.get(Group, auth.group.id, with_for_update=True)
-    assert group is not None
+    group = await _locked_group(session, auth)
+    _require_owner(group, auth)
     group.share_token = uuid.uuid4()
     group.updated_at = datetime.now(UTC)
     await session.commit()
     await session.refresh(group)
     return _group_payload_with_token(group)
+
+
+@router.put("/me/owner", response_model=GroupPayload)
+async def transfer_ownership(
+    body: TransferOwnershipRequest,
+    auth: AuthContext = Depends(require_device),
+    session: AsyncSession = Depends(get_session),
+) -> GroupPayload:
+    """Hand the owner role to another live device of the group. The owner's only.
+
+    Naming the owner itself is a no-op. The share token is not rotated and not returned:
+    the new owner gets a fresh one the first time it rotates.
+    """
+    group = await _locked_group(session, auth)
+    _require_owner(group, auth)
+    target = await session.get(Device, body.device_id)
+    if target is None or target.group_id != auth.group.id or target.revoked_at is not None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "device not in this group")
+    if group.owner_device_id != target.id:
+        group.owner_device_id = target.id
+        group.updated_at = datetime.now(UTC)
+        await session.commit()
+        await session.refresh(group)
+    return _group_payload(group)

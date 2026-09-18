@@ -67,6 +67,10 @@ void main() {
     test('builtinKey round-trips through create, getAll and update', () async {
       // `update` lists its columns by hand, so a new field is silently dropped
       // there and nowhere else.
+      // The seed already holds the live 'yahtzee', and a second one is refused
+      // (schema v15): take the seeded row out first.
+      final seeded = (await gameTypeRepo.getAll()).firstWhere((t) => t.builtinKey == 'yahtzee');
+      await gameTypeRepo.delete(seeded.id!);
       final id = await gameTypeRepo.create(GameType(
         builtinKey: 'yahtzee',
         name: 'Yahtzee',

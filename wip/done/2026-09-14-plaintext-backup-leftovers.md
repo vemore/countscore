@@ -1,5 +1,7 @@
 # Plaintext dumps outlive backup encryption, and NAS ACLs widen backup files
 
+**Status:** done (2026-09-18) — closed by fix/backend-hardening. `.llmwiki/Deployment.md` now says ad-hoc dumps go through `countscore-backup --once` and that on the NAS the ACL on `backups/`, restricted to the container user and the admin, governs access; the script comment says the same. The NAS steps (deleting `pre_0002_20260913.sql.gz`, restricting the `backups/` ACL with `synoacltool`) are applied at deploy by the orchestrator, from the pull request body.
+
 - **Noted:** 2026-09-14 — smoke-testing the encrypted `db-backup` sidecar (#40) in production
 - **Theme:** backend-hardening
 - **Area:** backend

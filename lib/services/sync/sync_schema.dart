@@ -292,3 +292,45 @@ Future<void> applyV14(
     );
   }
 }
+
+/// The unique index [applyV15] creates: one **live** row per built-in type.
+const gameTypesBuiltinKeyIndex = 'idx_game_types_builtin_key_live';
+
+/// Schema v15, shared by both engines and by both fresh-install paths: a local
+/// uniqueness guard on built-in game types, so a seeded type can never be
+/// listed twice again.
+///
+/// The index is on `builtin_key`, not on `(group_id, name)`:
+///
+/// - `builtin_key` is the identity of a built-in type since v14, and the name
+///   is not — the stored name of a built-in row is not even displayed, and two
+///   devices in two locales hold different names for one type;
+/// - it mirrors the server's `uq_game_types_group_builtin_key`
+///   (`backend/app/models/game.py`), live rows only, key not null;
+/// - a type the user made has a null key, so it is never constrained: it may
+///   share its name with a deleted type, or with anything else.
+///
+/// Global rather than per group: one local row stands for a built-in type in
+/// every group the device is in (`group_links` maps it), and the sync pull
+/// matches an incoming built-in on its key before it would insert one.
+///
+/// Before the index, any surplus live row holding a key already held by an
+/// older live row **loses its key** — never its data. Nothing in the app should
+/// have produced one, but a failed `CREATE UNIQUE INDEX` inside `onUpgrade`
+/// would leave the database unopenable for good, so the step cannot assume it.
+/// The row keeps its games and shows its stored name instead.
+///
+/// Idempotent: the update matches nothing on a replay, and the index is
+/// `IF NOT EXISTS`.
+Future<void> applyV15(Future<void> Function(String sql) execute) async {
+  await execute(
+    'UPDATE game_types SET builtin_key = NULL '
+    'WHERE builtin_key IS NOT NULL AND deleted_at IS NULL '
+    'AND id > (SELECT MIN(o.id) FROM game_types o '
+    '          WHERE o.builtin_key = game_types.builtin_key AND o.deleted_at IS NULL)',
+  );
+  await execute(
+    'CREATE UNIQUE INDEX IF NOT EXISTS $gameTypesBuiltinKeyIndex '
+    'ON game_types(builtin_key) WHERE builtin_key IS NOT NULL AND deleted_at IS NULL',
+  );
+}

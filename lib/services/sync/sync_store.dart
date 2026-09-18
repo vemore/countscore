@@ -752,7 +752,19 @@ class SyncStore {
       final exists = await _db.customSelect('SELECT id FROM game_types WHERE uuid = ?',
           variables: [Variable(linked)]).getSingleOrNull();
       if (exists != null) {
-        await _update('game_types', exists.data['id'] as int, {...values, 'updated_at': now});
+        final id = exists.data['id'] as int;
+        // One live row per built-in key (schema v15). A row linked by name
+        // before its remote gained a key would otherwise take a key another
+        // local row already holds, and the unique index would fail the pull.
+        final key = values['builtin_key'];
+        if (key != null) {
+          final holder = await _db.customSelect(
+            'SELECT 1 FROM game_types WHERE builtin_key = ? AND deleted_at IS NULL AND id <> ?',
+            variables: [Variable(key), Variable(id)],
+          ).getSingleOrNull();
+          if (holder != null) values.remove('builtin_key');
+        }
+        await _update('game_types', id, {...values, 'updated_at': now});
         return null;
       }
     }

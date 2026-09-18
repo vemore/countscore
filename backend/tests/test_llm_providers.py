@@ -87,6 +87,13 @@ def test_sdk_clients_give_up_when_the_app_does():
     assert client._client.timeout == LLM_TIMEOUT_SECONDS
 
 
+def test_openai_compat_does_not_retry():
+    """No SDK retries, like Bedrock's max_attempts 0: Regenerate is the retry."""
+    p = OpenAICompatProvider(label="gemini", base_url="http://x", api_key="k", model="m")
+    assert p._client is not None
+    assert p._client.max_retries == 0
+
+
 def test_openai_compat_unavailable_without_key():
     p = OpenAICompatProvider(label="gemini", base_url="http://x", api_key=None, model="m")
     assert p.available is False

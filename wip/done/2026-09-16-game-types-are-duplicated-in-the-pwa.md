@@ -1,5 +1,7 @@
 # Every game type appears twice in the production PWA
 
+**Status:** done (2026-09-18) — closed by fix/game-type-unique-guard. Reproduced on a fresh browser profile on the production PWA: **Types de jeux** lists each of the 22 seeded types once, so this was stale data in one browser, not a seeding bug, and no de-duplication migration was written. Schema v15 adds a unique index on `builtin_key` over live rows (`applyV15`, both engines and both fresh installs), so a second live copy of a built-in type cannot come back; a user's own type has no key and may still share a name with a deleted one. **Left to the user:** clearing the affected browser's site data (OPFS) and checking that it then lists each type once — its unkeyed duplicates predate v14 and are not touched by the index.
+
 - **Noted:** 2026-09-16 — while smoke-testing #77 on the deployed PWA
 - **Theme:** game-types
 - **Area:** web

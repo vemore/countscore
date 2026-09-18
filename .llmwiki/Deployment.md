@@ -142,7 +142,21 @@ against stub `pg_dump`/`age`:
   (Ubuntu's BusyBox `find` has no `-delete`); a failed sweep is logged, not a failed backup.
 - `docker compose stop` is immediate: the script traps `TERM` and sleeps in the background.
 - `countscore-backup --once` takes one backup now and exits:
-  `docker compose exec db-backup countscore-backup --once`.
+  `docker compose exec db-backup countscore-backup --once`. **Every ad-hoc dump goes through
+  it** (or through `deploy_nas.sh`'s pre-migration dump), never a hand-run `pg_dump`: a dump
+  taken by hand is plaintext, and a name outside the retention globs is never swept — the
+  plaintext `pre_0002_20260913.sql.gz` sat in `backups/` from 2026-09-13 until it was deleted
+  by hand.
+
+**On the NAS the ACL, not the mode, governs `backups/`.** The script writes with `umask 077`,
+but `$NAS_DEPLOY_DIR` is on a Synology shared folder whose ACL each new file inherits (the
+`+` in `ls -l`), and Synology ignores the mode bits where an ACL is present: the dumps listed
+as `-rwxrwxrwx+`. `backups/` therefore carries its own, non-inherited ACL granting access to
+the container user (uid 1027, the `db-backup` sidecar's `user:`) and the `administrators`
+group only, applied with `synoacltool` and pushed onto the existing files with
+`-enforce-inherit`. Check it with `sudo synoacltool -get "$NAS_DEPLOY_DIR/backups"`. On a
+host without ACLs the `0600` mode is what protects a dump. Whoever self-hosts on a Synology
+does the same once; a new `backups/` directory otherwise inherits the share's ACL.
 
 The connection comes from libpq's variables, which the compose file sets from the
 `POSTGRES_*` values: `PGHOST=db`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`.
@@ -304,6 +318,13 @@ scripts/deploy_web.sh --rollback   # swap pwa/current.prev back
   variable is not. The loop moved from an inline compose `command` into a script so the
   refusal and the no-truncated-file rule could be tested without Postgres. The gzip stage is
   kept (custom format already compresses) so the restore line stays the obvious one.
+- **`backups/` gets its own ACL on the NAS, restricted to the container user and the admin
+  (decided 2026-09-18).** Closed `wip/done/2026-09-14-plaintext-backup-leftovers.md`. The
+  dumps are encrypted, so the inherited world-readable ACL leaked nothing readable, but it made
+  the script's "only the owner may read a dump" false on the one host it runs on. Restricting
+  the ACL over documenting the gap: one `synoacltool` pass, and the comment holds again. The
+  hand-taken plaintext `pre_0002_20260913.sql.gz` was deleted rather than encrypted: the
+  `0002_sync_contract` migration it guarded has been live since 2026-09-13.
 - **Backups are `pg_dump` on a cron sidecar with 7-day rotation**, not a managed service.
   The dataset is small and the recovery story is "copy a file back".
 - **The backups' contents were written down before being encrypted (2026-09-14).** The

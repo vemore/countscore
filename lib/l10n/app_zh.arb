@@ -515,5 +515,17 @@
 
   "gameTypeNameWizard": "Wizard",
 
-  "gameTypeNameTriomino": "三角骨牌"
+  "gameTypeNameTriomino": "三角骨牌",
+
+  "groupDeviceOwner": "所有者",
+
+  "groupDeviceMakeOwner": "设为所有者",
+
+  "groupDeviceMakeOwnerConfirm": "将群组移交给“{label}”？本设备将无法再移除设备或更换邀请码。",
+
+  "groupDeviceOwnerChanged": "“{label}”现在是群组的所有者。",
+
+  "groupDevicesExplainMember": "只有群组所有者才能移除设备或更换邀请码。",
+
+  "groupErrorNotOwner": "只有群组所有者才能执行此操作"
 }

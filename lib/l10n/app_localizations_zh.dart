@@ -987,4 +987,26 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get gameTypeNameTriomino => '三角骨牌';
+
+  @override
+  String get groupDeviceOwner => '所有者';
+
+  @override
+  String get groupDeviceMakeOwner => '设为所有者';
+
+  @override
+  String groupDeviceMakeOwnerConfirm(String label) {
+    return '将群组移交给“$label”？本设备将无法再移除设备或更换邀请码。';
+  }
+
+  @override
+  String groupDeviceOwnerChanged(String label) {
+    return '“$label”现在是群组的所有者。';
+  }
+
+  @override
+  String get groupDevicesExplainMember => '只有群组所有者才能移除设备或更换邀请码。';
+
+  @override
+  String get groupErrorNotOwner => '只有群组所有者才能执行此操作';
 }

@@ -345,6 +345,38 @@ async def test_analysis_upstream_unavailable_returns_503_with_retry_after(client
     assert r.json() == {"detail": "upstream LLM rate-limited"}
 
 
+async def test_analysis_upstream_503_makes_exactly_one_upstream_call(client, monkeypatch):
+    """The SDK must not retry a provider 503: one HTTP call, then the route answers 503.
+
+    Only the transport is stubbed, so the SDK's own retry loop runs as in production.
+    """
+    import httpx
+
+    from app.routes import comments as comments_route
+    from app.services.llm.openai_compat import OpenAICompatProvider
+
+    calls: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(request)
+        return httpx.Response(
+            503,
+            json={"error": {"code": 503, "message": "high demand", "status": "UNAVAILABLE"}},
+        )
+
+    provider = OpenAICompatProvider(
+        label="gemini", base_url="https://llm.invalid/v1", api_key="test-key", model="m"
+    )
+    assert provider._client is not None
+    provider._client._client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    monkeypatch.setattr(comments_route, "get_llm_provider", lambda: provider)
+
+    r = await client.post("/comments/game-analysis", json=_payload())
+    assert r.status_code == 503
+    assert r.headers["Retry-After"] == "60"
+    assert len(calls) == 1
+
+
 async def test_analysis_upstream_other_openai_error_still_returns_502(client, monkeypatch):
     """Only capacity errors become 503: a refused request stays a 502."""
     import openai

@@ -69,9 +69,10 @@ Three components shared out of the screens:
   players or creates one, giving a new player a colour no one else in the list uses, and
   returns a `PlayerSelection` (name and colour).
 - `group_settings_section.dart` — Settings → Group: create or join a group, show its invite
-  code, leave it, and show where sync stands; usable only once a server URL is set.
-- `group_devices_sheet.dart` — Settings → Group → Devices: the group's devices, this one
-  marked, and revoking any other ([[Sync]]).
+  code, leave it, and show where sync stands; usable only once a server URL is set. *New
+  code* is shown to the group's owner only.
+- `group_devices_sheet.dart` — Settings → Group → Devices: the group's devices, this one and
+  the owner marked; the owner alone gets revoke and *Make owner* on the others ([[Sync]]).
 
 ### Services — `lib/services/`
 

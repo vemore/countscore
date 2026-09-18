@@ -515,5 +515,17 @@
 
   "gameTypeNameWizard": "ويزارد",
 
-  "gameTypeNameTriomino": "تريومينو"
+  "gameTypeNameTriomino": "تريومينو",
+
+  "groupDeviceOwner": "المالك",
+
+  "groupDeviceMakeOwner": "تعيين مالكًا",
+
+  "groupDeviceMakeOwnerConfirm": "تسليم المجموعة إلى «{label}»؟ لن يتمكن هذا الجهاز بعد ذلك من إزالة الأجهزة أو تغيير رمز الدعوة.",
+
+  "groupDeviceOwnerChanged": "أصبح «{label}» مالك المجموعة.",
+
+  "groupDevicesExplainMember": "لا يمكن إلا لمالك المجموعة إزالة جهاز أو تغيير رمز الدعوة.",
+
+  "groupErrorNotOwner": "هذا الإجراء متاح لمالك المجموعة فقط"
 }
