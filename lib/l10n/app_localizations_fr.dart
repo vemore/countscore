@@ -1101,4 +1101,42 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get boardLeader => 'En tête';
+
+  @override
+  String get groupSettingsTitle => 'Commentaires et usage';
+
+  @override
+  String get groupSettingsDescription =>
+      'Le style et la langue des commentaires que le serveur rédige pour les parties du groupe. Tous les membres peuvent les changer.';
+
+  @override
+  String get groupCommentStyle => 'Style des commentaires';
+
+  @override
+  String get groupCommentStyleNarrative => 'Narratif';
+
+  @override
+  String get groupCommentStyleHumorous => 'Humoristique';
+
+  @override
+  String get groupCommentStyleAnalytical => 'Analytique';
+
+  @override
+  String get groupCommentLanguage => 'Langue des commentaires';
+
+  @override
+  String get groupSettingsSaved => 'Réglages du groupe enregistrés';
+
+  @override
+  String get groupUsageTitle => 'Usage du LLM ce mois-ci';
+
+  @override
+  String groupUsageAmount(String used, String budget) {
+    return '$used dépensés sur $budget';
+  }
+
+  @override
+  String groupUsageResets(String date) {
+    return 'Remise à zéro le $date';
+  }
 }

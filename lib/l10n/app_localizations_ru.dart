@@ -1109,4 +1109,42 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get boardLeader => 'Лидирует';
+
+  @override
+  String get groupSettingsTitle => 'Комментарии и расход';
+
+  @override
+  String get groupSettingsDescription =>
+      'Стиль и язык комментариев, которые сервер пишет к партиям группы. Их может изменить любой участник.';
+
+  @override
+  String get groupCommentStyle => 'Стиль комментариев';
+
+  @override
+  String get groupCommentStyleNarrative => 'Повествовательный';
+
+  @override
+  String get groupCommentStyleHumorous => 'Юмористический';
+
+  @override
+  String get groupCommentStyleAnalytical => 'Аналитический';
+
+  @override
+  String get groupCommentLanguage => 'Язык комментариев';
+
+  @override
+  String get groupSettingsSaved => 'Настройки группы сохранены';
+
+  @override
+  String get groupUsageTitle => 'Расход LLM в этом месяце';
+
+  @override
+  String groupUsageAmount(String used, String budget) {
+    return 'Потрачено $used из $budget';
+  }
+
+  @override
+  String groupUsageResets(String date) {
+    return 'Обнулится $date';
+  }
 }

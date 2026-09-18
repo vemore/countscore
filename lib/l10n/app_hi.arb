@@ -540,5 +540,16 @@
   "boardRoundShort": "रा{number}",
   "boardPlayer": "खिलाड़ी",
   "boardTotal": "कुल",
-  "boardLeader": "सबसे आगे"
+  "boardLeader": "सबसे आगे",
+  "groupSettingsTitle": "टिप्पणियाँ और उपयोग",
+  "groupSettingsDescription": "सर्वर समूह के खेलों के लिए जो टिप्पणियाँ लिखता है, उनकी शैली और भाषा। कोई भी सदस्य इन्हें बदल सकता है।",
+  "groupCommentStyle": "टिप्पणी की शैली",
+  "groupCommentStyleNarrative": "कथात्मक",
+  "groupCommentStyleHumorous": "हास्यपूर्ण",
+  "groupCommentStyleAnalytical": "विश्लेषणात्मक",
+  "groupCommentLanguage": "टिप्पणी की भाषा",
+  "groupSettingsSaved": "समूह की सेटिंग सहेजी गईं",
+  "groupUsageTitle": "इस महीने LLM का उपयोग",
+  "groupUsageAmount": "{budget} में से {used} खर्च",
+  "groupUsageResets": "{date} को रीसेट होगा"
 }

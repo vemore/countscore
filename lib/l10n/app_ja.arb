@@ -540,5 +540,16 @@
   "boardRoundShort": "{number}回",
   "boardPlayer": "プレイヤー",
   "boardTotal": "合計",
-  "boardLeader": "トップ"
+  "boardLeader": "トップ",
+  "groupSettingsTitle": "コメントと利用状況",
+  "groupSettingsDescription": "サーバーがグループの対戦について書くコメントのスタイルと言語です。どのメンバーでも変更できます。",
+  "groupCommentStyle": "コメントのスタイル",
+  "groupCommentStyleNarrative": "物語風",
+  "groupCommentStyleHumorous": "ユーモア",
+  "groupCommentStyleAnalytical": "分析的",
+  "groupCommentLanguage": "コメントの言語",
+  "groupSettingsSaved": "グループの設定を保存しました",
+  "groupUsageTitle": "今月の LLM 利用状況",
+  "groupUsageAmount": "{budget} のうち {used} を使用",
+  "groupUsageResets": "{date} にリセット"
 }

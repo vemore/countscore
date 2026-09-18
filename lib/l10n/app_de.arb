@@ -540,5 +540,16 @@
   "boardRoundShort": "Rd.{number}",
   "boardPlayer": "Spieler",
   "boardTotal": "Summe",
-  "boardLeader": "In Führung"
+  "boardLeader": "In Führung",
+  "groupSettingsTitle": "Kommentare und Verbrauch",
+  "groupSettingsDescription": "Stil und Sprache der Kommentare, die der Server zu den Partien der Gruppe schreibt. Jedes Mitglied kann sie ändern.",
+  "groupCommentStyle": "Kommentarstil",
+  "groupCommentStyleNarrative": "Erzählend",
+  "groupCommentStyleHumorous": "Humorvoll",
+  "groupCommentStyleAnalytical": "Analytisch",
+  "groupCommentLanguage": "Kommentarsprache",
+  "groupSettingsSaved": "Gruppeneinstellungen gespeichert",
+  "groupUsageTitle": "LLM-Verbrauch diesen Monat",
+  "groupUsageAmount": "{used} von {budget} verbraucht",
+  "groupUsageResets": "Wird am {date} zurückgesetzt"
 }

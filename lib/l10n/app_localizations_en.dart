@@ -1097,4 +1097,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get boardLeader => 'Leading';
+
+  @override
+  String get groupSettingsTitle => 'Comments and usage';
+
+  @override
+  String get groupSettingsDescription =>
+      'The style and language of the comments the server writes for the group\'s games. Any member can change them.';
+
+  @override
+  String get groupCommentStyle => 'Comment style';
+
+  @override
+  String get groupCommentStyleNarrative => 'Narrative';
+
+  @override
+  String get groupCommentStyleHumorous => 'Humorous';
+
+  @override
+  String get groupCommentStyleAnalytical => 'Analytical';
+
+  @override
+  String get groupCommentLanguage => 'Comment language';
+
+  @override
+  String get groupSettingsSaved => 'Group settings saved';
+
+  @override
+  String get groupUsageTitle => 'LLM usage this month';
+
+  @override
+  String groupUsageAmount(String used, String budget) {
+    return '$used spent of $budget';
+  }
+
+  @override
+  String groupUsageResets(String date) {
+    return 'Resets on $date';
+  }
 }

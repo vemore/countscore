@@ -192,4 +192,43 @@ void main() {
       expect(await client.revokeDevice('tok', 'self'), isNull);
     });
   });
+
+  group('group settings and usage', () {
+    test('updateGroupSettings sends only the fields it is given, never the budget', () async {
+      final seen = <http.Request>[];
+      final client = BackendClient('https://countscore.example.com',
+          httpClient: MockClient((request) async {
+        seen.add(request);
+        return http.Response.bytes(
+            utf8.encode(jsonEncode({
+              'comment_style': 'humorous',
+              'comment_language': 'fr',
+              'monthly_budget_cents': 100,
+            })),
+            200);
+      }));
+
+      final saved = await client.updateGroupSettings('tok', commentStyle: 'humorous');
+
+      expect(saved, (commentStyle: 'humorous', commentLanguage: 'fr'));
+      expect(seen.single.method, 'PATCH');
+      expect(seen.single.url.path, '/groups/me/settings');
+      expect(seen.single.headers['Authorization'], 'Bearer tok');
+      expect(jsonDecode(seen.single.body), {'comment_style': 'humorous'});
+    });
+
+    test('groupUsage reads cents and the reset date', () async {
+      final client = BackendClient('https://countscore.example.com',
+          httpClient: _answering(
+              '{"current_month_used_cents": 42, "budget_cents": 100,'
+              ' "resets_at": "2026-10-01T00:00:00Z"}',
+              200));
+
+      final usage = await client.groupUsage('tok');
+
+      expect(usage.usedCents, 42);
+      expect(usage.budgetCents, 100);
+      expect(usage.resetsAt, DateTime.utc(2026, 10, 1));
+    });
+  });
 }

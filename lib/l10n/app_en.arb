@@ -613,5 +613,16 @@
   "boardRoundShort": "R{number}",
   "boardPlayer": "Player",
   "boardTotal": "Total",
-  "boardLeader": "Leading"
+  "boardLeader": "Leading",
+  "groupSettingsTitle": "Comments and usage",
+  "groupSettingsDescription": "The style and language of the comments the server writes for the group's games. Any member can change them.",
+  "groupCommentStyle": "Comment style",
+  "groupCommentStyleNarrative": "Narrative",
+  "groupCommentStyleHumorous": "Humorous",
+  "groupCommentStyleAnalytical": "Analytical",
+  "groupCommentLanguage": "Comment language",
+  "groupSettingsSaved": "Group settings saved",
+  "groupUsageTitle": "LLM usage this month",
+  "groupUsageAmount": "{used} spent of {budget}",
+  "groupUsageResets": "Resets on {date}"
 }

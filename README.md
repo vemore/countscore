@@ -56,6 +56,8 @@ at your own server in Settings → Server if you want the connected features.
   catch up on reconnect, and players with the same name are merged. New games are shared by
   default while you are in a group; games you do not share stay on the device. A lost or sold
   phone can be removed from the group's device list, which also replaces the invite code.
+  Any member can set the style and language of the group's comments and see how much of its
+  monthly AI budget has been spent.
 - **Bring your own backend**: the server address is a setting, empty by default. Run the
   FastAPI service in `backend/` on hardware you control and your data never touches anyone
   else's infrastructure.
@@ -344,7 +346,9 @@ we receive it only if you press send.
 games you share — their name, type, player names and colours, round comments, scores,
 whether and when you ended them, and analysis — are uploaded to **your** server, which **stores** them with a log of every change,
 and downloaded by the group's other devices. Each device of the group also sees the others'
-names and when they were last seen, so a lost phone can be recognised and removed. Anyone with
+names and when they were last seen, so a lost phone can be recognised and removed. The
+group's comment style and language, if a member changes them (Settings → Group → Comments and
+usage), are stored there too. Anyone with
 the group's invite code can join, so share it only with the people you mean to. Games you do not share never leave the device.
 Leaving the group keeps your copies as local games; it does not remove them from the server,
 whose operator — you — deletes them there.

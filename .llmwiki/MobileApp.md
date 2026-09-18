@@ -2,7 +2,7 @@
 
 > Scope: the Flutter app's own structure — entry point, state, screens, models.
 > Related: [[DataLayer]] · [[SchemaV10]] · [[I18n]] · [[Web]] · [[Testing]]
-> Updated: 2026-09-18
+> Updated: 2026-09-19
 
 ## Facts
 
@@ -51,7 +51,16 @@ whether the connected features exist; the third starts the review prompt's clock
 `game_analysis_screen` (the LLM analysis, with its row of voice chips — see
 [[LlmProviders]]) ·
 `players_screen` · `player_stats_screen` · `settings_screen` ·
-`about_screen` · `ranking_screen` · `game_rules_screen`.
+`about_screen` · `ranking_screen` · `game_rules_screen` · `group_settings_screen`.
+
+`group_settings_screen` is Settings → Group → *Comments and usage*, reached only from the
+Group section once the device is in a group: the group's comment style (three chips,
+`narrative` · `humorous` · `analytical`) and language (the app's ten, by endonym), read from
+`GET /groups/me` and written back at once with `PATCH /groups/me/settings`, and the month's
+LLM spending from `GET /groups/me/usage`, in US dollars against the budget. Nothing is kept
+on the device: each visit reads the server again. It calls nothing without a server URL and
+a device token (`GroupProvider.canReachGroup`). The budget is shown, never edited — see
+[[Sync]].
 
 `home_screen` opens on a **Resume** card (`Key('resumeHero')`) for `resumableGame(games)` —
 the open game with the latest `lastModified ?? createdAt`, which `GameRepository.update`
@@ -101,7 +110,8 @@ Seven components shared out of the screens:
   nothing sent.
 - `group_settings_section.dart` — Settings → Group: create or join a group, show its invite
   code, leave it, and show where sync stands; usable only once a server URL is set. *New
-  code* is shown to the group's owner only.
+  code* is shown to the group's owner only; *Comments and usage* opens
+  `group_settings_screen`.
 - `group_devices_sheet.dart` — Settings → Group → Devices: the group's devices, this one and
   the owner marked; the owner alone gets revoke and *Make owner* on the others ([[Sync]]).
 

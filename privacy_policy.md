@@ -1,6 +1,6 @@
 # Privacy Policy for CountScore
 
-**Last Updated**: September 18, 2026
+**Last Updated**: September 19, 2026
 
 **Effective Date**: Applies to CountScore v1.1.0 and later
 
@@ -168,6 +168,12 @@ For each **shared** game, and kept up to date as you play:
 When you create or join a group, the app also sends the **group name** and the **name you give
 this device** (both typed by you). The server issues this device an identifier and a secret
 access token; the token authenticates each later request.
+
+If you change the group's **comment style or language** (Settings → Group → Comments and
+usage), the app sends your choice — one of three styles and a language code — to the server,
+which keeps it with the group, where every member can see and change it. The same screen reads
+from the server how much of the group's monthly AI budget has been spent; the app keeps none
+of it.
 
 Player names and round comments are chosen by you; please prefer first names or nicknames and
 keep anything sensitive out of comments.
@@ -388,6 +394,10 @@ changes are announced through app updates on the Google Play Store.
 
 ### Version History
 
+- **v2.9** (September 19, 2026): A member of a group can now read and change the group's
+  comment style and language, and see how much of its monthly AI budget has been spent. The
+  style and language are sent to your server, which already stored them with the group. No
+  new recipient and no new category of information about you.
 - **v2.8** (September 18, 2026): Corrects the permissions section, which said the app
   declares "exactly one permission". `INTERNET` is still the only permission the app
   declares, but the released manifest also carries the app-private

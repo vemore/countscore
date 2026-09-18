@@ -1799,5 +1799,76 @@
   "boardLeader": "En tête",
   "@boardLeader": {
     "description": "Screen-reader label of the crown on the leading player's lane"
+  },
+
+  "groupSettingsTitle": "Commentaires et usage",
+  "@groupSettingsTitle": {
+    "description": "Settings → Group button, and the title of the screen it opens: the group's comment style, language and LLM usage"
+  },
+
+  "groupSettingsDescription": "Le style et la langue des commentaires que le serveur rédige pour les parties du groupe. Tous les membres peuvent les changer.",
+  "@groupSettingsDescription": {
+    "description": "Explains what the group's comment settings apply to, at the top of the group settings screen"
+  },
+
+  "groupCommentStyle": "Style des commentaires",
+  "@groupCommentStyle": {
+    "description": "Label of the choice of the group's comment style"
+  },
+
+  "groupCommentStyleNarrative": "Narratif",
+  "@groupCommentStyleNarrative": {
+    "description": "Group comment style: tells the game as a story"
+  },
+
+  "groupCommentStyleHumorous": "Humoristique",
+  "@groupCommentStyleHumorous": {
+    "description": "Group comment style: funny, teasing"
+  },
+
+  "groupCommentStyleAnalytical": "Analytique",
+  "@groupCommentStyleAnalytical": {
+    "description": "Group comment style: dry, statistics-minded"
+  },
+
+  "groupCommentLanguage": "Langue des commentaires",
+  "@groupCommentLanguage": {
+    "description": "Label of the dropdown picking the language of the group's comments"
+  },
+
+  "groupSettingsSaved": "Réglages du groupe enregistrés",
+  "@groupSettingsSaved": {
+    "description": "Snackbar after the group's comment style or language was changed on the server"
+  },
+
+  "groupUsageTitle": "Usage du LLM ce mois-ci",
+  "@groupUsageTitle": {
+    "description": "Heading of the group's LLM spending this month"
+  },
+
+  "groupUsageAmount": "{used} dépensés sur {budget}",
+  "@groupUsageAmount": {
+    "description": "The group's LLM spending against its monthly budget; both are formatted amounts in US dollars",
+    "placeholders": {
+      "used": {
+        "type": "String",
+        "example": "$0.42"
+      },
+      "budget": {
+        "type": "String",
+        "example": "$1.00"
+      }
+    }
+  },
+
+  "groupUsageResets": "Remise à zéro le {date}",
+  "@groupUsageResets": {
+    "description": "When the group's monthly LLM spending starts again from zero",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "1 oct. 2026"
+      }
+    }
   }
 }
