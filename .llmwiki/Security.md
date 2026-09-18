@@ -24,7 +24,7 @@
 | Body size | `limit_body_size` middleware, 413 above `MAX_BODY_BYTES` (262144); 411 when `Content-Length` is absent on a write. |
 | WebSocket auth | Single-use ticket from `POST /sync/ws-ticket`, 60 s TTL. `app/services/ws_ticket.py`. |
 | WebSocket cost | One shared LISTEN connection for all streams (`app/services/notify.py`), at most `MAX_STREAMS_PER_DEVICE` (3) streams per device — a member can no longer exhaust Postgres connections. See [[Sync]]. |
-| LLM budget | Members set `monthly_budget_cents` only up to the operator's `MAX_BUDGET_CENTS` (unset: `DEFAULT_BUDGET_CENTS`). |
+| LLM budget | Only the group owner sets `monthly_budget_cents` (403 for any other member), and only up to the operator's `MAX_BUDGET_CENTS` (unset: `DEFAULT_BUDGET_CENTS`). `backend/tests/test_groups.py`. |
 | Group owner | `groups.owner_device_id`: the creator, until it hands over (`PUT /groups/me/owner`) or leaves (the earliest-joined live device inherits). Only the owner may revoke another device, rotate `share_token` or hand over — 403 for any other member, checked under the group's row lock. `backend/tests/test_groups.py`. See [[Api]]. |
 | Revocation | Only the owner revokes another device ([[Api]]). Revoking another device rotates `share_token`, so the revoked device cannot rejoin with the token it learnt when joining. Its open `/sync/stream` is closed (1008) before the next frame it would receive — a push signal or the idle heartbeat (`app/routes/sync.py:_serve_stream`, `tests/test_sync_stream_cap.py`, `tests/test_sync_ws_integration.py`). |
 | Sync payload values | Per-entity bounds in `app/services/delta_bounds.py`, enforced before write. |
@@ -140,7 +140,9 @@ proof-of-concept results are in `wip/done/2026-09-13-backend-security-review.md`
   > (`groups.owner_device_id`, revision `0005_group_owner`), and only it may revoke a sibling,
   > rotate the share token or hand the role over; every other member gets a 403 and the app
   > hides those actions from it. What stays open to every member: leaving, reading the device
-  > list, and `PATCH /groups/me/settings` (style, language, budget up to the operator's cap).
+  > list, and the comment style and language through `PATCH /groups/me/settings`. The budget
+  > became the owner's too on 2026-09-18 (`feat/group-budget-owner-only`): it is spent on the
+  > operator's key.
   > The members who stay after a revoke still hold a stale invite code until the owner shares
   > the new one.
 - **In-memory state ties the service to one worker.** `ip_rate_limiter`, `ws_ticket`, the

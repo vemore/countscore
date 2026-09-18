@@ -2,8 +2,9 @@
 
 A group has an owner (``Group.owner_device_id``): the device that created it, until it
 hands the role over (``PUT /groups/me/owner``) or leaves. Only the owner may revoke a
-sibling device or rotate the share token; every other member gets a 403. Leaving — a
-device revoking itself — stays open to every member, and an owner that leaves passes the
+sibling device, rotate the share token or set the monthly budget (it is spent on the
+operator's key); every other member gets a 403. Leaving — a device revoking itself — and the
+comment style and language stay open to every member, and an owner that leaves passes the
 role to the earliest-joined live device, so a group with members always has an owner.
 """
 
@@ -189,14 +190,17 @@ async def update_settings(
     auth: AuthContext = Depends(require_device),
     session: AsyncSession = Depends(get_session),
 ) -> GroupPayload:
-    ceiling = get_settings().effective_max_budget_cents
-    if body.monthly_budget_cents is not None and body.monthly_budget_cents > ceiling:
-        raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_CONTENT,
-            f"monthly_budget_cents is capped at {ceiling} by the operator",
-        )
-    group = await session.get(Group, auth.group.id, with_for_update=True)
-    assert group is not None
+    group = await _locked_group(session, auth)
+    if body.monthly_budget_cents is not None:
+        # The budget is spent on the operator's key: the owner's alone, up to the operator's
+        # cap. Style and language stay open to every member. A refused request changes nothing.
+        _require_owner(group, auth)
+        ceiling = get_settings().effective_max_budget_cents
+        if body.monthly_budget_cents > ceiling:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
+                f"monthly_budget_cents is capped at {ceiling} by the operator",
+            )
     if body.comment_style is not None:
         group.comment_style = body.comment_style
     if body.comment_language is not None:
