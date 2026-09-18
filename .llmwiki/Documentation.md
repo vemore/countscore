@@ -4,7 +4,7 @@
 > `README.md`, the three privacy documents — and the `CLAUDE.md` budget. No hook enforces
 > these: they need judgement ([[Hooks]]).
 > Related: [[Hooks]] · [[Release]] · [[Security]] · [[ParallelDelivery]]
-> Updated: 2026-09-14
+> Updated: 2026-09-18
 
 ## Facts
 
@@ -39,6 +39,11 @@ payload means updating all three in the same change — and checking that
 `INTERNET` lives only in the debug and profile manifests by default. A Play Store data
 safety declaration that does not match the binary is a policy violation, not a stale line.
 The flows as they stand: [[Security]].
+
+One part of this is mechanical: CI fails a pull request whose `docs/privacy-policy.html` is
+stale against `privacy_policy.md`, or whose policy changed without its `**Last Updated**` line
+changing (`scripts/build_privacy_page.py --check`, [[Testing]]). Whether the three documents
+agree with each other and with the code is still judgement.
 
 ### The `CLAUDE.md` budget
 

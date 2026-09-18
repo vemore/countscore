@@ -13,7 +13,12 @@ There are **two separate paths**, and conflating them is the usual mistake.
 `backend/app/services/anthropic_client.py`: `AnthropicClient`, `get_anthropic_client()`,
 `calculate_cost_cents()`. Model `claude-haiku-4-5` (`COMMENT_MODEL`). Prices used for
 costing: **$0.80/MTok in, $4.00/MTok out**. Serves `/comments/mvp` and the group-scoped
-comment endpoints. It is **not** part of the `llm/` factory.
+comment endpoints. It is **not** part of the `llm/` factory. `AsyncAnthropic` gets
+`timeout=LLM_TIMEOUT_SECONDS` (90 s) and `max_retries=0` (since 2026-09-18 — the SDK default
+of 2 retried a 5xx or 429 silently): a failure bubbles up as a 502 and the app's retry is the
+retry. One Anthropic 5xx is one upstream call, pinned by
+`test_anthropic_5xx_makes_exactly_one_upstream_call` (the SDK speaks `httpx2`, so the stub is
+an `httpx2.MockTransport`).
 
 Prompt built by `app/services/prompt_builder.py`:
 
