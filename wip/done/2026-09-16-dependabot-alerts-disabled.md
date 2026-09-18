@@ -1,5 +1,7 @@
 # `pub` has no vulnerability gate in CI, only Dependabot alerts on the repository
 
+**Status:** done (2026-09-18) — closed by `chore/ci-image-and-osv-gates`. The `app` CI job runs `osv-scanner` 2.6.0 (checksum-pinned) with `--all-vulns` on `pubspec.lock` and fails on any advisory; osv-scanner has no `--ignore-vuln` flag, so the escape is an `[[IgnoredVulns]]` entry in `.github/osv-scanner.toml` whose `reason` names a `wip/` entry. No advisory on 2026-09-18 (162 packages). `github-actions` still has alerts but no gate.
+
 - **Noted:** 2026-09-16 — reviewing what dependency updates were available
 - **Theme:** dependencies
 - **Area:** tooling

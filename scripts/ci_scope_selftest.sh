@@ -58,6 +58,9 @@ scope "the server"           "backend image sync"  backend/app/routers/sync.py
 scope "the backend lock"     "backend image sync"  backend/uv.lock
 scope "a migration"          "backend image sync"  backend/alembic/versions/0002_x.py
 scope "a backend test"       "backend image sync"  backend/tests/test_sync.py
+scope "the backup sidecar"   "backend image sync"  backend/Dockerfile.backup
+scope "the backup script"    "backend image sync"  backend/backup/countscore-backup.sh
+scope "the prod compose"     "backend image sync"  backend/docker-compose.prod.yml
 scope "the Gradle project"   "android"             android/app/build.gradle.kts
 scope "the manifest"         "android"             android/app/src/main/AndroidManifest.xml
 scope "the web shell"        "app"                 web/index.html
@@ -68,12 +71,14 @@ scope "the l10n config"      "app android sync"    l10n.yaml
 scope "a Dart test"          "app android sync"    test/drift/drift_repositories_test.dart
 scope "the e2e suite"        "app android sync"    integration_test/app_test.dart
 scope "a Flutter dependency" "app android sync"    pubspec.yaml pubspec.lock
+scope "the pub lock alone"    "app android sync"    pubspec.lock
 scope "the analysis options" "app android sync"    analysis_options.yaml
 
 echo "== everything ================================================"
 all="backend image app android sync"
 scope "the workflow itself"    "$all"  .github/workflows/ci.yml
 scope "dependabot"             "$all"  .github/dependabot.yml
+scope "the OSV ignore list"     "$all"  .github/osv-scanner.toml
 scope "a Claude Code hook"     "$all"  .claude/hooks/guard-bash.sh
 scope "the hook settings"      "$all"  .claude/settings.json
 scope "the release tooling"    "$all"  .claude/skills/release-android/scripts/play_publish.py
@@ -130,6 +135,22 @@ if grep -Eq '^\s*(paths|paths-ignore):' "$WORKFLOW"; then
     echo "  FAIL  ci.yml has a workflow-level paths: filter — a filtered required check never reports"
 else
     pass=$((pass + 1))
+fi
+
+# The rules above route pubspec.lock to `app` and backend/Dockerfile.backup to
+# `image` because those jobs gate them; a routing with nothing behind it is a lie.
+if grep -q 'lockfile pubspec.lock' "$WORKFLOW"; then
+    pass=$((pass + 1))
+else
+    fail=$((fail + 1))
+    echo "  FAIL  ci.yml no longer audits pubspec.lock with osv-scanner"
+fi
+
+if grep -q 'Dockerfile.backup' "$WORKFLOW"; then
+    pass=$((pass + 1))
+else
+    fail=$((fail + 1))
+    echo "  FAIL  ci.yml no longer builds backend/Dockerfile.backup"
 fi
 
 if [ -x "$SCOPE" ]; then
