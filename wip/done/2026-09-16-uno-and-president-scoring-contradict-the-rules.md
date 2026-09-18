@@ -1,5 +1,7 @@
 # The seeded Uno and Président types score the opposite way from the usual rules
 
+**Status:** done (2026-09-18) — closed by feat/game-rules-seeds. `GameType.uno()` seeds highest-wins, `firstPlayerOver` 500; `GameType.president()` seeds highest-wins, `firstPlayerOver` 10 (Président 2, Vice-Président 1, others 0, first to 10 — cartesetcie.fr); no migration touches an existing row (`test/seeded_scoring_test.dart`), and the ten rules texts describe the seeded scoring.
+
 - **Noted:** 2026-09-16 — while researching the rules text for the game-rules page
 - **Theme:** game-types
 - **Area:** app

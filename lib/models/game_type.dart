@@ -178,14 +178,24 @@ class GameType {
         playerDeadThreshold: 100,
       );
 
+  // Uno and Président follow the box rule — highest total wins — since
+  // feat/game-rules-seeds (2026-09-18). They were lowest-wins before, and no
+  // migration flips an existing row: a type that already has games would see
+  // its finished standings reversed. Only a new database seeds these values.
+  // assets/rules/rules_<locale>.md describes the same scoring.
+
+  /// The player who goes out collects the cards left in the other hands; the
+  /// first total past 500 ends the game.
   static GameType uno() => GameType(
         builtinKey: 'uno',
         name: 'Uno',
         rulesSlug: 'uno',
         iconCodePoint: Icons.style.codePoint,
         cardColorValue: Colors.red.toARGB32(),
-        isLowestScoreWins: true,
+        isLowestScoreWins: false,
         isDefault: true,
+        gameOverConditionType: GameOverConditionType.firstPlayerOver,
+        gameOverThreshold: 500,
       );
 
   static GameType scrabble() => GameType(
@@ -219,16 +229,18 @@ class GameType {
         gameOverThreshold: 100,
       );
 
+  /// The usual barème: 2 points for the Président, 1 for the Vice-Président,
+  /// 0 for everyone else, played to 10 points.
   static GameType president() => GameType(
         builtinKey: 'president',
         name: 'Président',
         rulesSlug: 'president',
         iconCodePoint: Icons.workspace_premium.codePoint,
         cardColorValue: Colors.orange.toARGB32(),
-        isLowestScoreWins: true,
+        isLowestScoreWins: false,
         isDefault: true,
         gameOverConditionType: GameOverConditionType.firstPlayerOver,
-        gameOverThreshold: 11,
+        gameOverThreshold: 10,
       );
 
   static GameType belote() => GameType(

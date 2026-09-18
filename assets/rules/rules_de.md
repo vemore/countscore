@@ -1,38 +1,80 @@
 <!--@zapzap-->
-Ein Familienkartenspiel für mindestens drei Spieler. Das Ziel ist es, die niedrigste Summe
-in der Hand zu haben.
+Ein Familienkartenspiel, Cousin des Yaniv, für mindestens drei Spieler mit einem 52er-Blatt
+und Jokern. Das Ziel ist es, die niedrigste Summe in der Hand zu haben.
 
-## Das Prinzip
+## Kartenwerte
 
-In jeder Runde versuchen die Spieler, ihre hohen Karten loszuwerden. Ein Spieler, der glaubt,
-die niedrigste Hand am Tisch zu haben, kann **ZapZap** ansagen. Die Ansage beendet die Runde
-und zwingt alle, ihre Karten zu zeigen.
+- **Ass**: 1 Punkt;
+- **2 bis 10**: Augenwert;
+- **Bube**: 11, **Dame**: 12, **König**: 13;
+- **Joker**: **0 Punkte** während der Runde, aber **25 Punkte**, wenn er noch in der Hand
+  ist, wenn die Punkte gezählt werden.
+
+## Die Kartenverteilung
+
+Der Spieler, der die Runde eröffnet, wählt, wie viele Karten jeder erhält, **von 4 bis 7**.
+Die Karten werden verteilt, der Rest bildet den Nachziehstapel, und man deckt eine Karte
+auf, um den Ablagestapel zu eröffnen. In der nächsten Runde ist der nächste Spieler dran,
+die Runde zu eröffnen und zu wählen, wobei ausgeschiedene Spieler übersprungen werden.
+
+## Der Spielzug
+
+Ein Zug läuft immer in zwei Schritten ab, in dieser Reihenfolge:
+
+1. **Kartenkombination ablegen**: eine oder mehrere Karten in einer gültigen Kombination.
+   Sie bleiben offen auf dem Tisch.
+2. **Eine Karte ziehen**, nach Wahl: die verdeckte oberste Karte des Nachziehstapels,
+   oder eine der Karten, die der vorherige Spieler gerade abgelegt hat.
+
+Man kann nicht ziehen ohne abzulegen, und man beendet seinen Zug nicht ohne zu ziehen.
+Wenn der Nachziehstapel leer ist, mischt man den Ablagestapel, um einen neuen zu bilden,
+wobei man die zuletzt abgelegten Karten beiseite lässt, die verfügbar bleiben.
+
+## Die Kombinationen
+
+- **Eine einzelne Karte**.
+- **Karten gleichen Wertes**: ein Paar, ein Drilling, ein Vierling.
+- **Eine Folge** von mindestens **drei Karten gleicher Farbe, die sich nacheinander folgen**,
+  zum Beispiel 5♠ 6♠ 7♠.
+
+Der Joker ersetzt jede beliebige Karte in einer Gruppe oder einer Folge. Eine Folge von
+zwei Karten, eine Folge, die Farben mischt oder einen Wert überspringt, darf nicht gelegt
+werden.
+
+## ZapZap ankündigen
+
+Statt abzulegen, kann ein Spieler **ZapZap** ansagen, wenn seine Hand **5 Punkte oder
+weniger** wert ist, wobei Joker als 0 zählen. Die Ansage beendet die Runde und jeder zeigt
+seine Karten.
+
+Der Ansager wird **gekontert**, wenn ein anderer Spieler eine Hand hat, die **gleich oder
+niedriger** als die seine ist: es gibt nichts zu tun, um zu kontern, man muss einfach die
+Hand haben.
 
 ## Punktezählung
 
-- **ZapZap erfolgreich** — der Spieler, der ansagte, hatte tatsächlich die niedrigste Hand:
-  er erhält **0 Punkte**.
-- **ZapZap misslungen oder kontern** — ein anderer Spieler hat eine Hand mit gleichem oder
-  niedrigerem Wert: der Ansagende erhält die Punktzahl seiner Hand **plus eine Strafe von
-  (Anzahl der Spieler − 1) × 5 Punkte**.
-- **Die anderen Spieler** erhalten die Punktzahl ihrer Hand.
+- **Die niedrigste Hand** am Tisch erhält **0 Punkte**: der Ansager, wenn sein ZapZap
+  erfolgreich ist, der Konterer sonst.
+- **Die anderen Spieler** erhalten die Punktzahl ihrer Hand, jeder Joker, der in der Hand
+  bleibt, zählt **25 Punkte**.
+- **Der gekonterte Ansager** erhält die Punktzahl seiner Hand **plus eine Strafe von
+  (Anzahl der noch spielenden Spieler − 1) × 5 Punkte**.
 
-Die Gesamtpunkte summieren sich von Runde zu Runde, und das Ziel ist, niedrig zu bleiben.
+Die Gesamtpunkte summieren sich Runde für Runde, und das Ziel ist, niedrig zu bleiben.
 
-## Ausscheidung und Ranking
+## Ausscheidung und Platzierung
 
 Ein Spieler wird **ausgeschieden, sobald er 100 Punkte überschreitet**. Die abschließende
-Rangliste ergibt sich aus der Reihenfolge der Ausscheidungen in umgekehrter Reihenfolge:
-der zuletzt Ausgeschiedene wird Erster, der zuerst Ausgeschiedene wird Letzter.
+Platzierung ergibt sich aus der umgekehrten Reihenfolge der Ausscheidungen: der zuletzt
+Ausgeschiedene ist erste, der zuerst Ausgeschiedene ist letzte.
 
-Wenn nur noch zwei Spieler übrig sind, wird das Spiel im **golden score** Modus gespielt:
-der Verlierer des Finales erhält die Punktzahl, die ihn auf genau 101 Punkte bringt.
+## Golden Score
 
-## Das Übrige ist Sache eures Tisches
-
-Die Details der Kartenverteilung, des Nachziehens und der Spielregeln unterscheiden sich
-von Gruppe zu Gruppe. Dieser Text beschreibt die Punktezählung, die die App beherrscht.
-Nutzt den Button „Bearbeiten", um eure eigenen Regeln hinzuzufügen.
+Wenn nur noch zwei Spieler übrig sind, ist die nächste Runde ein Finale in **Golden Score**:
+die Kartenverteilung kann **von 4 bis 10 Karten** reichen, und es ist die **niedrigste Hand
+der Runde**, nicht die Gesamtpunktzahl, die den Gewinner bestimmt. Ein gekonterter Ansager,
+auch bei Gleichstand, verliert die Partie. Der Verlierer des Finales erhält die Punktzahl,
+die ihn auf genau 101 Punkte bringt.
 
 <!--@uno-->
 Ein schnelles Kartenspiel für 2 bis 10 Spieler mit einem Spezialblatt von 108 Karten.
@@ -40,19 +82,19 @@ Das Ziel einer Runde ist es, alle Karten vor den anderen loszuwerden.
 
 ## Spielaufbau
 
-Jeder Spieler erhält **7 Karten**. Die übrigen Karten bilden den Nachziehstapel; die erste
-Karte wird umgedreht, um den Ablagestapel zu öffnen.
+Jeder Spieler erhält **7 Karten**. Der Rest bildet den Nachziehstapel; man deckt die erste
+Karte auf, um den Ablagestapel zu eröffnen.
 
 ## Spielablauf
 
-Man legt eine Karte ab, die der obersten Karte des Ablagestapels nach **Farbe**, **Zahl**
-oder **Symbol** entspricht. Schwarze Karten lassen sich auf alles ablegen und ermöglichen
-die Wahl der nächsten Farbe. Wenn man keine Karte ablegen kann, zieht man eine Karte und
-spielt sie, falls sie passt.
+Zu seinem Zug legt man eine Karte ab, die der obersten Karte des Ablagestapels nach
+**Farbe**, **Zahl** oder **Symbol** entspricht. Schwarze Karten lassen sich auf alles
+ablegen und ermöglichen die Wahl der nächsten Farbe. Wenn man keine Karte ablegen kann,
+zieht man eine Karte und spielt sie, falls sie passt.
 
 Spezielle Karten verändern den Spielablauf: **Aussetzen** überspringt den nächsten Spieler,
 **Richtungswechsel** dreht die Spielrichtung um, **+2** zwingt den nächsten Spieler, zwei
-Karten zu ziehen und eine Runde auszusetzen, der **Joker** bestimmt die Farbe, und der
+Karten zu ziehen und eine Runde auszusetzen, der **Joker** legt die Farbe fest, und der
 **Joker +4** lässt den nächsten Spieler vier Karten ziehen.
 
 Ein Spieler, der nur noch eine Karte hat, muss **„Uno"** ansagen. Wenn er es vergisst und
@@ -61,20 +103,24 @@ Strafkarten.
 
 ## Punktezählung
 
-Die Runde endet, sobald ein Spieler seine letzte Karte abgeworfen hat. Man zählt dann die
-Karten, die in den Händen der anderen Spieler verbleiben:
+Die Runde endet, sobald ein Spieler seine letzte Karte abgeworfen hat. Er **kassiert** dann den Wert
+aller Karten, die in den Händen der anderen Spieler verbleiben:
 
 - **nummerierte Karten**: ihr Nennwert;
 - **Aussetzen, Richtungswechsel, +2**: je 20 Punkte;
 - **Joker und Joker +4**: je 50 Punkte.
 
-Nach der häufigsten Regel **kassiert** der Spieler, der fertig ist, die Summe aller Karten,
-die die anderen noch in der Hand haben, und das Spiel geht bis **500 Punkte**.
+Die anderen Spieler zählen nichts für die Runde.
 
-Viele Tische spielen es umgekehrt: jeder verbucht, was ihm in der Hand bleibt, als Strafe,
-und der niedrigste Gesamtpunktstand gewinnt. Das ist die Version, die CountScore standardmäßig
-erwartet. Wenn ihr nach 500 Punkte spielt, ändert den Spieltyp, damit der höhere Punktstand
-gewinnt.
+## Spielende
+
+Die Runden gehen weiter, bis ein Spieler **500 Punkte** erreicht: der höchste Gesamtstand
+gewinnt. So ist Uno in CountScore eingestellt: der höchste Punktstand gewinnt, und das Spiel endet,
+sobald ein Gesamtstand 500 überschreitet.
+
+Manche Tische spielen umgekehrt: jeder zählt als Strafe, was ihm in der Hand bleibt, und
+der niedrigste Gesamtstand gewinnt. Wenn das euer Fall ist, ändert den Spieltyp, damit der
+niedrigere Punktstand gewinnt.
 
 <!--@scrabble-->
 Ein Wortspiel für 2 bis 4 Spieler auf einem Brett mit 15 × 15 Feldern. Man sammelt Punkte,
@@ -168,8 +214,8 @@ Das Spiel endet am Ende der Runde, in der ein Spieler **100 Punkte erreicht oder
 Der niedrigste Gesamtpunktstand gewinnt.
 
 <!--@president-->
-Ein Ablegespiel für 3 bis 7 Spieler mit einem 52er-Blatt. Das Ziel einer Runde ist es, als
-Erster alle Karten loszuwerden und Präsident zu werden.
+Ein Ablegespiel für 3 bis 7 Spieler mit einem 52er-Blatt. Das Ziel einer Runde ist es, alle
+Karten als Erster loszuwerden, um Präsident zu werden.
 
 ## Spielaufbau
 
@@ -180,11 +226,11 @@ als Wildcard. Einigt euch vorher.
 ## Spielablauf
 
 Der erste Spieler legt eine Karte oder mehrere Karten **gleichen Wertes**. Jeder folgende
-Spieler muss **die gleiche Anzahl Karten** legen, mit streng höherem Wert, oder passen. Wenn
-alle gepasst haben, wird der Stich geschlossen und der zuletzt Gespielte eröffnet einen neuen
-Stich mit einer Karte seiner Wahl.
+Spieler muss **die gleiche Anzahl Karten** mit streng höherem Wert ablegen, oder passen.
+Wenn alle gepasst haben, wird der Stich geschlossen und der zuletzt Spielende eröffnet einen
+neuen Stich mit einer Karte seiner Wahl.
 
-Vier identische Karten in einem Stich schließen den Stich oft sofort: das ist ein **Vierling**,
+Vier identische Karten in einem Stich schließen ihn oft sofort: das ist ein **Vierling**,
 und bei vielen Tischen kehrt er die Hierarchie bis zum Ende des Stiches um.
 
 ## Die Titel
@@ -194,20 +240,21 @@ der erste ist **Präsident**, der zweite **Vizepräsident**, der letzte **Arsch*
 vorletzte **Vize-Arsch**.
 
 In der nächsten Runde erzwingen die Titel einen Austausch, bevor man spielt: Der Arsch gibt
-seine **zwei besten Karten** dem Präsidenten, der ihm zwei Karten seiner Wahl zurückgibt; der
-Vize-Arsch und der Vizepräsident tauschen auf die gleiche Weise eine Karte.
+seine **zwei besten Karten** dem Präsidenten, der ihm zwei Karten seiner Wahl zurückgibt;
+der Vize-Arsch und der Vizepräsident tauschen auf die gleiche Weise eine Karte.
 
 ## Punktezählung
 
-Der Präsident zählt oft die Punkte, aber selten auf die gleiche Weise zweimal. Die häufigsten
-Systeme vergeben 2 Punkte für den Präsidenten und 1 für den Vizepräsidenten, oder 3, 2 und 1
-für die ersten drei.
+Das am weitesten verbreitete System belohnt nur die Spitze des Klassements: bei jeder Runde
+**erhält der Präsident 2 Punkte**, der **Vizepräsident 1 Punkt**, und die anderen zählen
+nichts. Der erste Spieler, der **10 Punkte** erreicht, gewinnt das Spiel. So ist Präsident in CountScore
+eingestellt: der höchste Punktstand gewinnt, und das Spiel endet, sobald
+ein Gesamtstand 10 überschreitet.
 
-Eine andere, einfacher zu verfolgende Methode besteht darin, jedem Letzten jeder Runde einen
-Strafpunkt zu geben und denjenigen auszuschließen, der zu viele sammelt. Das ist die Version,
-die CountScore standardmäßig erwartet, mit niedrigerem Punktstand als Gewinn und einem Spiel,
-das über **11 Punkte** endet. Wenn euer Tisch in die andere Richtung zählt, ändert die
-Richtung im Spieltyp.
+Es gibt andere Systeme: 3, 2 und 1 Punkte für die ersten drei, oder negative Punkte für
+Vize-Arsch und Arsch. Manche Tische zählen umgekehrt einen Strafpunkt für den Letzten jeder
+Runde, und der niedrigste Gesamtstand gewinnt. Passt den Schwellenwert oder die Richtung des
+Punktstands im Spieltyp an.
 
 <!--@belote-->
 Ein Stichspiel zu viert, in zwei Zweierteams, mit einem 32er-Blatt. Das Ziel ist es,

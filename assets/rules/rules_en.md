@@ -1,54 +1,121 @@
 <!--@zapzap-->
-Family card game, three or more players. The goal is to hold the lowest total in hand.
+Family card game, cousin of Yaniv, with three or more players, using a deck of 52 cards
+and jokers. The goal is to have the lowest total in hand.
 
-## The Principle
+## Card Values
 
-In each round, players try to rid their hand of high cards. A player who believes they hold the lowest hand at the table can announce **ZapZap**. This declaration stops the round and forces everyone to reveal their cards.
+- **Ace**: 1 point;
+- **2 to 10**: their face value;
+- **Jack**: 11, **Queen**: 12, **King**: 13;
+- **Joker**: **0 points** as long as the round is being played, but **25 points** if still
+  in hand when counting.
+
+## Dealing
+
+The player opening the round chooses how many cards each player receives, **from 4 to 7**.
+Cards are dealt, the rest forms the draw pile, and one card is turned over to open the
+discard pile. In the next round, it is the next player's turn to open and choose, skipping
+eliminated players.
+
+## Game Turn
+
+A turn always happens in two steps, in this order:
+
+1. **Play** one or more cards, in a single valid combination. They remain visible on the
+   table.
+2. **Draw a card**, your choice: the card from the top of the draw pile, or one of the
+   cards the previous player just played.
+
+You cannot draw without having played, and you do not end your turn without drawing. When
+the draw pile is empty, shuffle the discard pile to make a new one, setting aside the last
+cards played, which remain available.
+
+## Combinations
+
+- **A single card**.
+- **Cards of the same value**: a pair, three of a kind, four of a kind.
+- **A sequence** of at least **three cards in sequence in the same suit**, for example
+  5♠ 6♠ 7♠.
+
+The joker replaces any card, in a group or in a sequence. A sequence of two cards, a
+sequence that mixes suits, or one that skips a value cannot be played.
+
+## Announcing ZapZap
+
+Instead of playing, a player can announce **ZapZap** if their hand is worth **5 points or
+less**, with jokers counting as 0. The announcement stops the round and everyone reveals
+their hand.
+
+The announcer is **countered** if another player has a hand **equal to or lower** than theirs:
+nothing has to be done to
+counter, holding the hand is enough.
 
 ## Scoring
 
-- **Successful ZapZap** — the caller indeed had the lowest hand: they score **0 points**.
-- **Failed or beaten ZapZap** — another player has an equal or lower hand: the caller scores their hand value **plus a penalty of (number of players − 1) × 5 points**.
-- **Other players** score their hand value.
+- **The lowest hand** on the table scores **0 points**: the announcer if their ZapZap
+  succeeds, the counter otherwise.
+- **The other players** score the value of their hand, each joker remaining in hand
+  counting **25 points**.
+- **A countered announcer** scores the value of their hand **plus a penalty of (number of
+  players still in play − 1) × 5 points**.
 
-Scores accumulate round after round, and you try to stay low.
+Totals accumulate round after round, and you try to stay low.
 
 ## Elimination and Rankings
 
-A player is **eliminated as soon as they exceed 100 points**. The final ranking is the reverse of elimination order: the last eliminated finishes first, the first eliminated finishes last.
+A player is **eliminated as soon as they exceed 100 points**. The final ranking is read in
+reverse order of elimination: the last eliminated is first, the first eliminated is last.
 
-When only two players remain, the game is played in **golden score**: the loser of the finals receives the score that brings them to exactly 101 points.
+## Golden Score
 
-## The Rest is Up to Your Table
-
-The details of dealing, drawing, and what you may play vary from group to group. This text describes scoring, which is what the app can do. Use the "Edit" button to add your own house rules.
+When only two players remain, the next round is a **golden score** final: the deal can
+go **from 4 to 10 cards**, and it is the **lowest hand of the round**, not the accumulated
+total, that determines the winner. A countered announcer, even on a tie, loses the
+game. The loser of the final receives the score that brings them to exactly 101 points.
 
 <!--@uno-->
-Fast-paced card game, 2 to 10 players, with a special deck of 108 cards. The goal of a round is to get rid of all your cards before the others.
+Fast-paced card game, 2 to 10 players, with a special deck of 108 cards. The goal of a
+round is to get rid of all your cards before the others.
 
 ## Setup
 
-Each player receives **7 cards**. The rest forms the draw pile; the first card is turned over to start the discard pile.
+Each player receives **7 cards**. The rest forms the draw pile; the first card is turned
+over to open the discard pile.
 
 ## Gameplay
 
-On your turn, you play a card that matches the top card of the discard pile by **color**, **number**, or **symbol**. Black cards can be played on anything and let you choose the color that follows. If you cannot play, you draw, and play that card if it matches.
+On your turn, you play a card that matches the one on top of the discard pile by
+**color**, by **number**, or by **symbol**. Black cards can be played on anything and let
+you choose the color that follows. If you cannot play anything, you draw, and you play the
+card you drew if it matches.
 
-Special cards change the course of play: **Skip** skips the next player, **Reverse** changes the direction of play, **+2** makes the next player draw two cards and skip their turn, the **Wild card** lets you choose the color, and the **Wild +4** makes the next player draw four cards.
+Special cards change the course of the turn: **Skip** skips the next player, **Reverse**
+changes the direction of play, **+2** forces the next player to draw two cards and skip
+their turn, the **Wild** sets the color, and the **Wild +4** makes the next player draw
+four cards.
 
-A player with only one card left must announce **"Uno"**. If they forget and are caught before the next player plays, they draw penalty cards.
+A player who has only one card left must announce **"Uno"**. If they forget and are caught
+before the next player plays, they draw penalty cards.
 
 ## Scoring
 
-The round ends as soon as a player plays their last card. The remaining cards in hand are then counted:
+The round stops as soon as a player plays their last card. They then **collect** the value
+of all the cards left in the hands of the others:
 
-- **Number cards**: their face value;
+- **number cards**: their face value;
 - **Skip, Reverse, +2**: 20 points each;
 - **Wild and Wild +4**: 50 points each.
 
-In the most common rule, the player who finished **collects** the sum of everything left in the others' hands, and the game goes to **500 points**.
+The other players score nothing for the round.
 
-Many groups play the opposite: each player scores what remained in their hand as a penalty, and the lowest total wins. This is the version CountScore uses by default. If you play to 500 points, change the game type so the highest score wins.
+## End of the Game
+
+Rounds continue until a player reaches **500 points**: the highest total wins. This is how CountScore sets up Uno: the highest score wins, and the game stops as soon as a total exceeds
+500.
+
+Some groups play the opposite, each scoring as a penalty what they had left in hand, and
+the smallest total winning. If that is your case, modify the game type so the smallest
+score wins.
 
 <!--@scrabble-->
 Word game for 2 to 4 players on a 15 × 15 board. You score points by forming words, like in a crossword puzzle.
@@ -115,29 +182,45 @@ Each player adds up their card values. Negative cards are subtracted, which can 
 The game ends at the end of the round during which a player reaches or exceeds **100 points**. The lowest overall total wins.
 
 <!--@president-->
-Card game for 3 to 7 players, with a standard deck of 52 cards. The goal of each round is to get rid of all your cards first to become President.
+Discard game for 3 to 7 players, with a deck of 52 cards. The goal of a round is to get
+rid of all your cards first to become President.
 
 ## Setup
 
-All cards are dealt. The hierarchy runs from 2, the weakest, up to Ace, the strongest — at many tables, the 2 is instead the strongest card, or acts as a wildcard. Agree on this before you start.
+All cards are dealt. The hierarchy runs from 2, the weakest, to Ace, the strongest — at
+many tables, the 2 is instead the strongest card, or acts as a wildcard. Agree on this
+before you start.
 
 ## Gameplay
 
-The first player plays a card, or multiple cards of the **same value**. Each following player must play **the same number of cards** of strictly higher value, or pass. When everyone has passed, the trick is closed and the last player to play starts a new trick with any cards they wish.
+The first player plays a card, or multiple cards of **the same value**. Each following
+player must play **the same number of cards**, of strictly higher value, or pass their turn.
+When everyone has passed, the trick is closed and the last to have played starts a new
+trick with whatever they want.
 
-Four identical cards played or completed often close the trick immediately: this is a **four of a kind**, and many tables reverse the card hierarchy until the end of that trick.
+Four identical cards played or completed often close the trick immediately: this is a
+**four of a kind**, and many tables reverse the hierarchy until the end of the trick.
 
 ## The Titles
 
-The order in which players get rid of their cards determines the rankings for that round: first is **President**, second is **Vice-President**, last is **Asshole**, second-to-last is **Vice-Asshole**.
+The order in which players get rid of their cards determines the rankings for that round:
+the first is **President**, the second **Vice-President**, the last **Asshole**, the
+second-to-last **Vice-Asshole**.
 
-In the next round, the titles require an exchange before play: the Asshole gives their **two best cards** to the President, who returns two cards of their choice; the Vice-Asshole and Vice-President exchange one card the same way.
+In the next round, the titles require an exchange before play: the Asshole gives their
+**two best cards** to the President, who returns two cards of their choice; the
+Vice-Asshole and Vice-President exchange one card the same way.
 
 ## Scoring
 
-The President often keeps score, but rarely the same way twice. The most common scoring gives 2 points to the President and 1 to the Vice-President, or 3, 2, and 1 to the top three.
+The most common scoring rewards only the top of the rankings: in each round, the
+**President scores 2 points**, the **Vice-President 1 point**, and the others score
+nothing. The first player to reach **10 points** wins the game. This is how CountScore sets up President: the highest score wins, and the game stops as soon as a total exceeds 10.
 
-Another common approach, easier to track on paper, is to give a penalty point to the last-place finisher each round and eliminate whoever accumulates too many. This is what CountScore uses by default, with the lowest score winning and the game ending above **11 points**. If your group scores the other way, change the score direction in your game type settings.
+Other scoring systems exist: 3, 2, and 1 points to the top three, or negative points for
+the Vice-Asshole and Asshole. Some groups score the opposite: a penalty point to the
+last-place finisher each round, and the lowest total wins. Adjust the threshold or the
+direction of the score in the game type.
 
 <!--@belote-->
 Trick-taking game for four, in two teams of two, with a 32-card deck. The goal is to be the first team to reach an agreed total, usually **1,000 points**.

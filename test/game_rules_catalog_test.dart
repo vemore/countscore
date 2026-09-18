@@ -34,9 +34,10 @@ void main() {
     // A translation that loses a number silently contradicts the game type it
     // documents, which is worse than shipping no rules at all.
     const critical = {
-      'zapzap': ['100', '101'],
+      'zapzap': ['100', '101', '25'],
       'uno': ['500', '50'],
       'skyjo': ['100', '12'],
+      'president': ['10'],
       'belote': ['162', '81'],
       'tarot': ['56', '51', '41', '36'],
       'rami': ['51', '100'],

@@ -1,19 +1,61 @@
 <!--@zapzap-->
-Jeu de cartes de famille, à partir de trois joueurs. Le but est d'avoir en main le total le
-plus bas.
+Jeu de cartes de famille, cousin du Yaniv, à partir de trois joueurs, avec un jeu de 52
+cartes et des jokers. Le but est d'avoir en main le total le plus bas.
 
-## Le principe
+## Valeur des cartes
 
-À chaque manche, les joueurs cherchent à vider leur main de ses grosses cartes. Un joueur
-qui pense détenir la main la plus basse de la table peut annoncer **ZapZap**. L'annonce
-arrête la manche et oblige tout le monde à découvrir son jeu.
+- **As** : 1 point ;
+- **2 à 10** : leur valeur faciale ;
+- **Valet** : 11, **Dame** : 12, **Roi** : 13 ;
+- **Joker** : **0 point** tant que la manche se joue, mais **25 points** s'il est encore en
+  main au moment du comptage.
+
+## La donne
+
+Le joueur qui ouvre la manche choisit combien de cartes chacun reçoit, **de 4 à 7**. Les
+cartes sont distribuées, le reste forme la pioche, et l'on retourne une carte pour ouvrir
+la défausse. À la manche suivante, c'est au joueur suivant d'ouvrir et de choisir, en
+sautant les joueurs éliminés.
+
+## Le tour de jeu
+
+Un tour se fait toujours en deux temps, dans cet ordre :
+
+1. **Poser** une ou plusieurs cartes, en une seule combinaison valide. Elles restent
+   visibles sur la table.
+2. **Piocher une carte**, au choix : la carte cachée du dessus de la pioche, ou l'une des
+   cartes que le joueur précédent vient de poser.
+
+On ne peut pas piocher sans avoir posé, et on ne termine pas son tour sans avoir pioché.
+Quand la pioche est vide, on mélange la défausse pour en faire une nouvelle, en laissant de
+côté les dernières cartes posées, qui restent disponibles.
+
+## Les combinaisons
+
+- **Une carte seule**.
+- **Des cartes de même valeur** : une paire, un brelan, un carré.
+- **Une suite** d'au moins **trois cartes qui se suivent dans la même couleur**, par
+  exemple 5♠ 6♠ 7♠.
+
+Le joker remplace n'importe quelle carte, dans un groupe comme dans une suite. Une suite de
+deux cartes, une suite qui mélange les couleurs ou qui saute une valeur ne se pose pas.
+
+## Annoncer ZapZap
+
+Au lieu de poser, un joueur peut annoncer **ZapZap** si sa main vaut **5 points ou moins**,
+les jokers comptant alors 0. L'annonce arrête la manche et chacun découvre son jeu.
+
+L'annonceur est **contré** si un autre joueur a une main **égale ou plus basse** que la
+sienne : il n'y a rien à faire pour contrer, il suffit d'avoir la main.
 
 ## Comptage
 
-- **ZapZap réussi** — l'annonceur avait bien la main minimale : il marque **0 point**.
-- **ZapZap raté ou contré** — un autre joueur a une main égale ou plus basse : l'annonceur
-  marque la valeur de sa main **plus une pénalité de (nombre de joueurs − 1) × 5 points**.
-- **Les autres joueurs** marquent la valeur de leur main.
+- **La main la plus basse** de la table marque **0 point** : l'annonceur si son ZapZap
+  réussit, le contreur sinon.
+- **Les autres joueurs** marquent la valeur de leur main, chaque joker restant en main
+  comptant **25 points**.
+- **L'annonceur contré** marque la valeur de sa main **plus une pénalité de (nombre de
+  joueurs encore en jeu − 1) × 5 points**.
 
 Les totaux s'accumulent de manche en manche, et on cherche à rester bas.
 
@@ -23,14 +65,13 @@ Un joueur est **éliminé dès qu'il dépasse 100 points**. Le classement final 
 l'envers de l'ordre d'élimination : le dernier éliminé est premier, le premier éliminé est
 dernier.
 
-Quand il ne reste que deux joueurs, la partie se joue en **golden score** : le perdant de
-la finale se voit attribuer le score qui l'amène exactement à 101 points.
+## Golden score
 
-## Le reste appartient à votre table
-
-Le détail de la distribution, de la pioche et de ce qu'on a le droit de poser varie d'un
-groupe à l'autre. Ce texte décrit le comptage, qui est ce que l'application sait faire.
-Servez-vous du bouton « modifier » pour y ajouter vos propres habitudes.
+Quand il ne reste que deux joueurs, la manche suivante est une finale en **golden score** :
+la donne peut aller **de 4 à 10 cartes**, et c'est la **main la plus basse de la manche**,
+et non le total accumulé, qui désigne le vainqueur. Un annonceur contré, y compris à
+égalité, perd la partie. Le perdant de la finale se voit attribuer le score qui l'amène
+exactement à 101 points.
 
 <!--@uno-->
 Jeu de cartes rapide, de 2 à 10 joueurs, avec un paquet spécial de 108 cartes. Le but d'une
@@ -58,19 +99,24 @@ prend en défaut avant que le joueur suivant ait joué, il pioche des cartes en 
 
 ## Comptage
 
-La manche s'arrête dès qu'un joueur a posé sa dernière carte. On compte alors les cartes
-restées dans les mains :
+La manche s'arrête dès qu'un joueur a posé sa dernière carte. Il **encaisse** alors la
+valeur de toutes les cartes restées dans les mains des autres :
 
 - **cartes chiffrées** : leur valeur faciale ;
 - **Passer, Inversion, +2** : 20 points chacune ;
 - **Joker et Joker +4** : 50 points chacune.
 
-Dans la règle la plus répandue, celui qui a terminé **encaisse** la somme de tout ce qui
-reste chez les autres, et la partie va jusqu'à **500 points**.
+Les autres joueurs ne marquent rien pour la manche.
 
-Beaucoup de tables jouent l'inverse : chacun marque ce qu'il lui restait en main, comme une
-pénalité, et le plus petit total gagne. C'est cette version que CountScore attend par
-défaut. Si vous jouez à 500, modifiez le type de jeu pour que le plus haut score l'emporte.
+## Fin de la partie
+
+Les manches s'enchaînent jusqu'à ce qu'un joueur atteigne **500 points** : le plus haut
+total gagne. C'est ainsi que CountScore règle Uno : le plus haut score l'emporte, et la
+partie s'arrête dès qu'un total passe 500.
+
+Certaines tables jouent à l'inverse, chacun marquant en pénalité ce qu'il lui restait en
+main, et le plus petit total gagnant. Si c'est votre cas, modifiez le type de jeu pour que
+le plus petit score l'emporte.
 
 <!--@scrabble-->
 Jeu de lettres de 2 à 4 joueurs sur un plateau de 15 × 15 cases. On marque des points en
@@ -193,15 +239,16 @@ Vice-Trou du cul et le Vice-Président échangent une carte de la même façon.
 
 ## Comptage
 
-Le Président compte souvent les points, mais rarement de la même manière deux fois. Les
-barèmes les plus courants attribuent 2 points au Président et 1 au Vice-Président, ou bien
-3, 2 et 1 aux trois premiers.
+Le barème le plus répandu ne récompense que le haut du classement : à chaque manche, le
+**Président marque 2 points**, le **Vice-Président 1 point**, et les autres ne marquent
+rien. Le premier joueur à atteindre **10 points** remporte la partie. C'est ainsi que
+CountScore règle le Président : le plus haut score l'emporte, et la partie s'arrête dès
+qu'un total passe 10.
 
-Une autre habitude, plus simple à suivre sur un carnet, consiste à marquer un point de
-pénalité au dernier de chaque manche et à sortir celui qui en accumule trop. C'est cette
-lecture que CountScore attend par défaut, avec un plus petit score gagnant et une partie
-qui s'arrête au-dessus de **11 points**. Si votre table marque à l'endroit, changez le sens
-du score dans le type de jeu.
+D'autres barèmes existent : 3, 2 et 1 points aux trois premiers, ou bien des points
+négatifs pour le Vice-Trou du cul et le Trou du cul. Certaines tables comptent à l'inverse
+un point de pénalité au dernier de chaque manche, et le plus petit total gagne. Ajustez le
+seuil ou le sens du score dans le type de jeu.
 
 <!--@belote-->
 Jeu de plis à quatre, en deux équipes de deux, avec un jeu de 32 cartes. Le but est

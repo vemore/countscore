@@ -90,7 +90,15 @@ void main() {
 
       final uno = GameType.uno();
       expect(uno.name, 'Uno');
-      expect(uno.isLowestScoreWins, true);
+      // The box rule: highest total wins, the game ends past 500.
+      expect(uno.isLowestScoreWins, false);
+      expect(uno.gameOverConditionType, GameOverConditionType.firstPlayerOver);
+      expect(uno.gameOverThreshold, 500);
+
+      final president = GameType.president();
+      expect(president.isLowestScoreWins, false);
+      expect(president.gameOverConditionType, GameOverConditionType.firstPlayerOver);
+      expect(president.gameOverThreshold, 10);
 
       final scrabble = GameType.scrabble();
       expect(scrabble.name, 'Scrabble');

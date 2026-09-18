@@ -73,23 +73,35 @@ def normalise_game_type(name: object) -> str:
 # lib/models/game_type.dart defaultGameTypes().
 KNOWN_GAME_TYPES: dict[str, str] = {
     "zapzap": (
-        "ZapZap is a card game where each player tries to hold the lowest hand. A player "
-        'may call "ZapZap" when they believe their hand is the lowest: if they are right '
-        "they score 0 for that round, and if they are wrong or get countered they take "
-        "their hand plus a penalty proportional to the number of opponents. Read the "
-        "scores accordingly: a 0 is a successful call, a very high round is usually a call "
-        "that failed or a hand nobody managed to empty. A player who scores very low in a "
-        "round where everyone else scored high called early and caught the table with "
-        "their hands full. A single huge score late in the game is a desperate attempt by "
-        "someone with their back to the wall. Final standing follows elimination order "
-        "reversed: the last player eliminated finishes first."
+        "ZapZap is a family card game, a variant of Yaniv, where each player tries to hold "
+        "the lowest hand. Aces count 1, number cards their face value, Jack 11, Queen 12, "
+        "King 13; a Joker counts 0 during play but 25 if it is still in hand at the count. "
+        "The player who opens a round chooses the hand size, 4 to 7 cards. On a turn a "
+        "player first lays down a single card, a set of the same rank, or a run of three or "
+        "more consecutive cards of one suit, then draws one card, from the deck or from the "
+        "cards the previous player just laid down. Instead of playing, a player whose hand "
+        'is worth 5 points or less may call "ZapZap", which ends the round. The lowest hand '
+        "scores 0; everyone else scores their hand. The caller is countered when another "
+        "player holds an equal or lower hand, and then scores their hand plus (players "
+        "still in - 1) x 5. Read the scores accordingly: a 0 is the lowest hand of the "
+        "round, usually a successful call, and a very high round is a call that was "
+        "countered or a hand caught full of high cards and Jokers. A player who scores very "
+        "low in a round where everyone else scored high called early and caught the table "
+        "with their hands full. A single huge score late in the game is a desperate attempt "
+        "by someone with their back to the wall. A player is eliminated past 100 points, "
+        "and final standing follows elimination order reversed: the last player eliminated "
+        "finishes first. With two players left, the final round is a golden score: the "
+        "lower hand of that round wins the game whatever the totals, a countered caller "
+        "loses it, and the loser is taken to exactly 101."
     ),
     "uno": (
-        "A fast card game played in short rounds. Only the players who fail to go out "
-        "score, and they score the cards left in their hand, so a round is either a zero "
-        "or a penalty. Big numbers mean a hand full of special cards at the wrong moment. "
-        "Rounds are quick, so a total is the accumulation of small disasters rather than "
-        "one catastrophe."
+        "A fast card game played in short rounds. The player who goes out first collects "
+        "the value of the cards left in everyone else's hand, number cards at face value, "
+        "action cards 20, wild cards 50, and the game usually runs to 500 points, highest "
+        "total winning; some tables score it the other way round, each player taking what "
+        "was left in their own hand as a penalty. A big round means catching the table "
+        "with hands full of special cards. Rounds are quick, so a total is built from many "
+        "small hauls rather than one windfall."
     ),
     "scrabble": (
         "A word game where points are gains, accumulated word by word. Round scores are "
@@ -105,9 +117,11 @@ KNOWN_GAME_TYPES: dict[str, str] = {
     ),
     "president": (
         "A shedding game played in short hands, where finishing order decides the points "
-        "and the pecking order at the table carries from one hand to the next. Scores are "
-        "small integers, so the story is in streaks: who stayed at the top, who got stuck "
-        "at the bottom and could not climb back."
+        "and the pecking order at the table carries from one hand to the next. The usual "
+        "count gives 2 points to the President and 1 to the Vice-President each hand, "
+        "played to 10, highest total winning. Scores are small integers, so the story is "
+        "in streaks: who stayed at the top, who got stuck at the bottom and could not "
+        "climb back."
     ),
     "belote": (
         "A trick-taking partnership game played to a target over many deals. Points are "
