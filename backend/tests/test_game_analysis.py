@@ -300,6 +300,87 @@ async def test_analysis_upstream_rate_limit_returns_503_with_retry_after(client,
     assert r.json() == {"detail": "upstream LLM rate-limited"}
 
 
+# The next tests drive the real providers with only the network call stubbed, so they pin
+# the mapping from each SDK's error to the route's status code.
+
+
+def _openai_provider_raising(monkeypatch, exc: Exception):
+    from app.routes import comments as comments_route
+    from app.services.llm.openai_compat import OpenAICompatProvider
+
+    provider = OpenAICompatProvider(
+        label="gemini", base_url="https://llm.invalid/v1", api_key="test-key", model="m"
+    )
+    monkeypatch.setattr(
+        provider._client.chat.completions,  # type: ignore[union-attr]
+        "create",
+        AsyncMock(side_effect=exc),
+    )
+    monkeypatch.setattr(comments_route, "get_llm_provider", lambda: provider)
+
+
+def _openai_status_error(cls, status_code: int, message: str):
+    import httpx
+
+    request = httpx.Request("POST", "https://llm.invalid/v1/chat/completions")
+    return cls(message, response=httpx.Response(status_code, request=request), body=None)
+
+
+async def test_analysis_upstream_unavailable_returns_503_with_retry_after(client, monkeypatch):
+    """Gemini's 503 "high demand, try again later" is "try later", not a broken upstream."""
+    import openai
+
+    _openai_provider_raising(
+        monkeypatch,
+        _openai_status_error(
+            openai.InternalServerError,
+            503,
+            "This model is currently experiencing high demand. Please try again later.",
+        ),
+    )
+
+    r = await client.post("/comments/game-analysis", json=_payload())
+    assert r.status_code == 503
+    assert r.headers["Retry-After"] == "60"
+    assert r.json() == {"detail": "upstream LLM rate-limited"}
+
+
+async def test_analysis_upstream_other_openai_error_still_returns_502(client, monkeypatch):
+    """Only capacity errors become 503: a refused request stays a 502."""
+    import openai
+
+    _openai_provider_raising(
+        monkeypatch,
+        _openai_status_error(openai.PermissionDeniedError, 403, "tier_not_allowed"),
+    )
+
+    r = await client.post("/comments/game-analysis", json=_payload())
+    assert r.status_code == 502
+    assert "Retry-After" not in r.headers
+
+
+@pytest.mark.parametrize("code", ["ServiceUnavailableException", "ModelNotReadyException"])
+async def test_analysis_bedrock_unavailable_returns_503_with_retry_after(client, monkeypatch, code):
+    from unittest.mock import MagicMock
+
+    from botocore.exceptions import ClientError
+
+    from app.routes import comments as comments_route
+    from app.services.llm.bedrock import BedrockProvider
+
+    provider = BedrockProvider()
+    provider._client = MagicMock()
+    provider._client.invoke_model.side_effect = ClientError(
+        {"Error": {"Code": code, "Message": "try again later"}}, "InvokeModel"
+    )
+    monkeypatch.setattr(comments_route, "get_llm_provider", lambda: provider)
+
+    r = await client.post("/comments/game-analysis", json=_payload())
+    assert r.status_code == 503
+    assert r.headers["Retry-After"] == "60"
+    assert r.json() == {"detail": "upstream LLM rate-limited"}
+
+
 # --- Prompt builder unit tests -------------------------------------------------
 
 

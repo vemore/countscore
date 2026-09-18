@@ -26,7 +26,8 @@ LLM_TIMEOUT_SECONDS = 90
 
 
 class LLMRateLimitedError(RuntimeError):
-    """The provider refused the call on quota or rate grounds (HTTP 429, throttling).
+    """The provider has no capacity right now: quota, rate or availability (HTTP 429 or
+    5xx, Bedrock throttling or unavailability).
 
     Distinct from any other upstream failure because it is not a defect: the call is
     well formed, the account simply has no capacity left right now. The route maps it to
