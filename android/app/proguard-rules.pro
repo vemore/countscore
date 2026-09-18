@@ -134,9 +134,6 @@
 # Uncomment and modify if you have model classes that use reflection
 # -keep class com.vemore.countscore.models.** { *; }
 
-# If using JSON serialization with code generation
-# -keep class **.g.dart { *; }
-
 # ============================================================================
 # DEBUGGING
 # ============================================================================
@@ -177,18 +174,13 @@
 # TESTING
 # ============================================================================
 
-# After enabling these rules, always test your release build thoroughly:
-# 1. Build release: flutter build appbundle --release
-# 2. Install on device: adb install build/app/outputs/bundle/release/app-release.aab
-# 3. Test all features, especially:
-#    - Database operations (SQLite)
-#    - File operations
-#    - All app functionality
-# 4. Check logs for missing class warnings
-#
-# If you encounter issues:
-# - Check logcat for ProGuard-related errors
-# - Add keep rules for affected classes
-# - Use -whyareyoukeeping to debug rule issues
+# Release verification is owned by the release-android skill
+# (.claude/skills/release-android/SKILL.md, "Verify the artifact"). To exercise these
+# rules on a phone, install a release APK — adb cannot install an App Bundle:
+#   flutter build apk --release --no-tree-shake-icons
+#   adb install -r build/app/outputs/flutter-apk/app-release.apk
+# (not over the Play Store install: Play re-signs it, so the signatures differ).
+# A class R8 strips shows up in logcat as ClassNotFoundException or NoSuchMethodError: add
+# a -keep rule for it, and use -whyareyoukeeping to debug a rule.
 #
 # ============================================================================

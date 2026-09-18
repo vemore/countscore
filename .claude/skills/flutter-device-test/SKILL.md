@@ -12,21 +12,36 @@ End-to-end workflow for testing Flutter apps on the user's physical Pixel 9 Pro 
 | Detail | Value |
 |--------|-------|
 | Model | Pixel 9 Pro XL |
-| ADB ID | `192.168.1.199:44249` (Wi-Fi ADB) |
+| ADB ID | `<ip>:<port>` over Wi-Fi ADB — changes on every reboot of wireless debugging; ask the user |
 | Android | 16 (API 36) |
 | Screen | 1008×2244 logical px @ 360 dpi (≈2992×6656 physical, 3×) |
 | `adb` path | `/home/vemore/sdk/android/platform-tools/adb` |
 
-Use `flutter devices` to confirm the device is visible. If absent or `device offline`, reconnect:
+### Find the device
+
+The address is never hardcoded here: the phone's IP and the wireless-debugging port both
+change, and `adb mdns services` sees nothing from WSL2.
 
 ```bash
-adb disconnect 192.168.1.199:44249
-adb connect 192.168.1.199:44249
+adb devices          # already connected? its id is the <ip>:<port> in the first column
 ```
 
-If a fresh pairing is needed (port changed after reboot), the user must approve the prompt on the phone — ask them to do so. **Do not** run `adb pair` blindly; it requires a 6-digit code only the user can read.
+If the Pixel is not listed (or shows `offline`), **ask the user for `<ip>:<port>`** from the
+phone's Settings → Developer options → Wireless debugging ("IP address & Port"). **Never scan
+the LAN for it.** Then:
 
-For brevity below, the device id is referenced as `$DEV` — `export DEV=192.168.1.199:44249` before running commands, or substitute inline.
+```bash
+adb disconnect <ip>:<port>   # only if listed as offline
+adb connect <ip>:<port>
+flutter devices              # confirm Flutter sees it
+```
+
+If a fresh pairing is needed, the user must approve it on the phone — ask them to do so. **Do
+not** run `adb pair` blindly; it requires a 6-digit code (and a separate pairing port) only
+the user can read.
+
+For brevity below, the device id is referenced as `$DEV` — `export DEV=<ip>:<port>` once the
+address is known, or substitute inline.
 
 ## Mode 1 — Interactive UX/UI Inspection (the killer loop)
 
@@ -35,11 +50,13 @@ This is what makes a real-device skill different from `flutter test`. The LLM dr
 ### Setup once per session
 
 ```bash
-# Build & install in profile mode (realistic perf, debuggable)
-flutter run -d $DEV --profile
-# Or for fastest iteration during UI work:
-flutter run -d $DEV
+# Functional and UX/UI work: a debug build
+flutter run -d $DEV --debug
 ```
+
+Use `--debug` here, not `--profile`: `run-as` — pulling `databases/countscore.db`, reading or
+seeding `shared_prefs` (the cheatsheet below) — only works on a **debuggable** build, and a
+profile or release APK is not one. Profile is for measuring, in Mode 1b and Mode 3.
 
 > `--no-tree-shake-icons` is a `flutter build` flag only — `flutter run` rejects it with exit 64. The dev/run pipeline doesn't tree-shake icons, so the dynamic `IconData` from `GameType` works without the flag.
 
@@ -238,14 +255,14 @@ adb -s $DEV shell pm clear com.vemore.countscore                  # wipe app dat
 adb -s $DEV logcat -c                                             # clear buffer
 adb -s $DEV logcat flutter:I '*:E'                                # flutter info + errors only
 
-# Files (e.g. pull the SQLite db)
+# Files (e.g. pull the SQLite db) — debug build only: run-as needs a debuggable app
 adb -s $DEV shell run-as com.vemore.countscore ls databases/
 adb -s $DEV exec-out run-as com.vemore.countscore cat databases/countscore.db > /tmp/db.sqlite
 ```
 
 ## Preflight checklist before any test session
 
-1. `flutter devices` — Pixel visible? If not, reconnect (see Device Reference).
+1. `adb devices` — Pixel listed? If not, ask the user for its address (see Find the device).
 2. `adb -s $DEV shell dumpsys battery | grep level` — > 30%? Profile builds drain fast.
 3. `adb -s $DEV shell svc power stayon true` — keep screen on while plugged/connected (resets on reboot).
 4. Disable "Don't keep activities" in dev options if it's on — it breaks Flutter state restoration tests.

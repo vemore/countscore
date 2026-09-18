@@ -29,7 +29,7 @@
 | `test/providers/game_provider_sync_test.dart` (1) | A current game deleted by sync is reported once (`takeRemotelyDeletedGameName`), which the board uses to close itself. |
 | `test/drift/web_upgrade_test.dart` (1) | A v9 database (v10/v11/v12/v13/v14 stripped, `user_version` 9) reopened through Drift gets the sync tables, columns, triggers, `games.finishedAt` and the back-filled `game_types.builtin_key` from `onUpgrade` — the PWA's upgrade path, and the only engine that runs it. |
 | `test/game_rules_catalog_test.dart` (5) | The shipped rulesets in `assets/rules/`: every locale carries the same slugs, and each keeps the numbers the app actually scores on — a translation that drops a threshold contradicts the type it documents. |
-| `test/widget_test.dart` (10) | Model serialisation only — it pumps no widgets, despite the name. It pins the built-in game types **by index**: the first ten are what a pre-v14 install already holds, so a new type is appended, never inserted. |
+| `test/models_test.dart` (10) | Model serialisation. It pins the built-in game types **by index**: the first ten are what a pre-v14 install already holds, so a new type is appended, never inserted. |
 | `test/providers/theme_provider_test.dart` (7) | `ThemeMode` decode fallbacks and the SharedPreferences round-trip. |
 | `test/providers/backend_provider_test.dart` (10) | Backend URL validation — https anywhere, http only on a private or loopback host — and the persistence round-trip, including that a cleared setting is not re-seeded from `--dart-define`. |
 | `test/screens/game_analysis_screen_test.dart` (11) | The only widget-pumping tests: with no backend configured the analysis screen offers no generation, a cached analysis still renders, and configuring one restores the button; the two failure paths — a failed regeneration keeps the cached text and warns by snackbar, and with nothing cached the error state carries the HTTP status and no raw exception; the commentary report; and the voice chips — every style is offered, the last pick is remembered in SharedPreferences, an unreadable stored value falls back to `professor`, and the request carries the style, the app's language and the game type's rules. |
@@ -371,8 +371,6 @@ automated coverage at all and must be checked on a device.
 - **The WS integration test uses testcontainers instead of a stub** because
   `LISTEN/NOTIFY` and JSONB are exactly the Postgres-specific behaviour the rest of the
   suite mocks away. It is marked `integration` so the default run stays Docker-free.
-- **`test/widget_test.dart` is misnamed** — it is a model serialisation suite. Left as is to
-  avoid churn; do not assume widget coverage exists because of the filename.
 - **CI runs the full backend suite, integration tests included** (2026-09-09). The runner
   has Docker, so paying ~40 s to start `postgres:17-alpine` buys mechanical coverage of
   `LISTEN/NOTIFY` and JSONB, which nothing else exercises. `TESTCONTAINERS_RYUK_DISABLED`

@@ -1,5 +1,7 @@
 # `flutter-device-test` sends you to the wrong address, the wrong locale syntax and a build without `run-as`
 
+**Status:** done (2026-09-18) — closed by chore/test-tooling-housekeeping. `flutter-device-test` has no hardcoded address: a *Find the device* step runs `adb devices`, then asks the user for `<ip>:<port>` from Settings → Wireless debugging, never scanning the LAN. Mode 1 runs `--debug` and says `run-as` needs a debuggable build; `--profile` is left in Modes 1b and 3 only.
+
 - **Noted:** 2026-09-16 — running the skill to test everything since tag 1.1.0+4
 - **Theme:** test-tooling
 - **Area:** tooling
