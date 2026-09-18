@@ -1,5 +1,7 @@
 # Three wiki pages and a README permission line no longer match the code
 
+**Status:** done (2026-09-18) — closed by docs/wiki-sync. `Testing.md` now has a row for every test file (review_prompt, commentary_report, play_again, game_rules_screen, about_screen, insets added), drops the per-file counts, and records the 2026-09-18 `flutter test` total of 207 passing, 1 skipped, across 30 files; `MobileApp.md` records `ReviewPromptService` and its `main()` wiring in a services section, names the three widgets, and drops the `lib/` file total and every `(N l.)` size; README Privacy names `INTERNET` as the declared permission and the androidx-injected signature permission. The same sentence in `privacy_policy.md` is left to `wip/todo_nr/2026-09-18-privacy-policy-exactly-one-permission.md`.
+
 - **Noted:** 2026-09-16 — while building feat/rating-prompt, which was forbidden to edit `.llmwiki/`
 - **Theme:** docs
 - **Area:** docs

@@ -343,8 +343,12 @@ the group's invite code can join, so share it only with the people you mean to. 
 Leaving the group keeps your copies as local games; it does not remove them from the server,
 whose operator — you — deletes them there.
 
-The release build declares one Android permission, `INTERNET`, for these two features and
-nothing else. It is unused until you configure a server.
+The one Android permission the app declares is `INTERNET`, for these two features and
+nothing else. It is unused until you configure a server. The merged release manifest also
+carries `com.vemore.countscore.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, which
+`androidx.core` injects: a signature-level permission private to the app, which lets it
+register its own broadcast receivers without exposing them to other apps. It grants access to
+nothing and sends nothing.
 
 **Privacy Policy**: [privacy_policy.md](privacy_policy.md) for complete details — published
 at https://vemore.github.io/countscore/privacy-policy.html — and
