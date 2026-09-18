@@ -29,7 +29,9 @@ at your own server in Settings → Server if you want the connected features.
   the game list, which marks it in the history and shows it as finished in both; the
   confirmation offers an undo, and reopening it lets you play on. Game types that define a
   threshold (Skyjo, Président, Belote) offer it by themselves whenever a score or a round
-  takes the game past it.
+  takes the game past it, or when you open a game already past it — once: "Continue
+  playing" is remembered on the device until the game drops back under its threshold.
+- **Who starts?**: the score table's menu draws one of the game's players at random.
 - **Play again**: from the final ranking or a finished game in the history, one tap starts
   the next game with the same type and the same players in the same order.
 - **Global players**: a player exists once and is shared across games, so statistics follow

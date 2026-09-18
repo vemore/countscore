@@ -527,5 +527,7 @@
 
   "groupDevicesExplainMember": "केवल समूह का स्वामी ही किसी डिवाइस को हटा सकता है या आमंत्रण कोड बदल सकता है।",
 
-  "groupErrorNotOwner": "यह केवल समूह का स्वामी कर सकता है"
+  "groupErrorNotOwner": "यह केवल समूह का स्वामी कर सकता है",
+  "whoStarts": "कौन शुरू करेगा?",
+  "whoStartsAgain": "फिर से चुनें"
 }

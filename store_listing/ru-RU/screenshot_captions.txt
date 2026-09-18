@@ -1,0 +1,12 @@
+# Captions of the store screenshots, one per raw capture in
+# store_listing/assets/screenshots/phone/ — `<capture stem>: <caption>`.
+# Translated from the validated fr-FR captions. Composed by scripts/compose_screenshots.py
+# into screenshots/phone/ next to this file.
+01_main_screen: Все ваши партии — с одного взгляда
+02_player_management: Ваши игроки — от вечера к вечеру
+03_game_types: Любимые игры — сразу готовы к подсчёту
+04_game_history: Каждая сыгранная партия сохранена
+05_game_board: Итоги считаются сами
+06_customization: Вашей игры нет? Создайте её
+07_score_entry: Вводите очки раунд за раундом
+08_statistics: Партии, победы, процент: ваша статистика

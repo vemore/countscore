@@ -27,7 +27,7 @@
 | `test/widgets/group_settings_section_test.dart` | Settings → Group pumped with asserts on: create a group through the dialog against a `MockClient` server, and the group and its invite code appear; and removing a lost device shows the rotated invite code. Guards the dialog that disposed its controllers during its exit transition (`_dependents.isEmpty`, found on a Pixel on 2026-09-13, invisible in release builds). |
 | `test/providers/game_provider_finish_test.dart` | `setGameFinished` reports only the transition that finishes a game — re-finishing and reopening return false — which is the single gate on the Play review sheet, so a finish → reopen → finish evening counts once. Plus the current game updating without a reload, which needs `copyWith`'s `clearFinishedAt` escape, and the round counts `loadGames` folds in: one grouped query, kept in step by `addRound` and `deleteRound`, with a tombstoned round counting for nothing. |
 | `test/screens/home_screen_finish_menu_test.dart` | The game card's overflow menu offers `finish_game` on a played or already finished game and on nothing else — the guard that keeps three empty games from satisfying the review prompt. It reads the menu through `itemBuilder` rather than tapping it open: the test font draws every glyph an em wide, so any Material popup menu overflows its 256 px in a widget test. |
-| `test/screens/game_board_end_of_game_test.dart` | The board's end of game: the finished chip appears and disappears with `finishedAt` while **Add round** stays enabled, and the game-over dialog fires after a round is added, keeps quiet for a crossing already answered "Continue playing", re-arms once the game is back under its threshold, and is **not** raised on the board's first build. `GameBoardScreen.analysisRepo` is injected for the same reason `GameProvider`'s repositories are — the default reaches the singleton. |
+| `test/screens/game_board_end_of_game_test.dart` | The board's end of game: the finished chip appears and disappears with `finishedAt` while **Add round** stays enabled, and the game-over dialog fires after a round is added, keeps quiet for a crossing already answered "Continue playing", re-arms once the game is back under its threshold, is raised once on the board's first build for an open game past its threshold and not for a finished one, and remembers "Continue playing" across leaving the board (SharedPreferences, cleared when the game goes back under). `GameBoardScreen.analysisRepo` is injected for the same reason `GameProvider`'s repositories are — the default reaches the singleton. |
 | `test/providers/game_provider_sync_test.dart` | A current game deleted by sync is reported once (`takeRemotelyDeletedGameName`), which the board uses to close itself. |
 | `test/drift/web_upgrade_test.dart` | A v9 database (v10 to v15 stripped, `user_version` 9) reopened through Drift gets the sync tables, columns, triggers, `games.finishedAt` the back-filled `game_types.builtin_key` and its v15 unique index from `onUpgrade` — the PWA's upgrade path, and the only engine that runs it. |
 | `test/game_rules_catalog_test.dart` | The shipped rulesets in `assets/rules/`: every locale carries the same slugs, and each keeps the numbers the app actually scores on — a translation that drops a threshold contradicts the type it documents. |
@@ -36,7 +36,8 @@
 | `test/providers/backend_provider_test.dart` | Backend URL validation — https anywhere, http only on a private or loopback host — and the persistence round-trip, including that a cleared setting is not re-seeded from `--dart-define`. |
 | `test/screens/game_analysis_screen_test.dart` | With no backend configured the analysis screen offers no generation, a cached analysis still renders, and configuring one restores the button; the two failure paths — a failed regeneration keeps the cached text and warns by snackbar, and with nothing cached the error state carries the HTTP status and no raw exception; the commentary report (a `mailto:`, disabled with nothing to report, explained when there is no mail app); a 503 asking to retry later rather than showing a code; and the voice chips — every style is offered, the last pick is remembered in SharedPreferences, an unreadable stored value falls back to `professor`, and the request carries the style, the app's language and the game type's rules. |
 | `test/services/backend_client_test.dart` | `BackendException` carries the status, keeps the body for logging, and decodes utf8 on both the error and the success path; a 404 on `/comments/game-analysis` is retried once on the legacy path, and a 404 from both is still a failure; the group's device list sends the device token, revoking another device returns the rotated invite code, and revoking this one is leaving (204, no code). `MockClient` from `package:http/testing.dart`. |
-| `test/services/review_prompt_test.dart` | `ReviewPromptService`'s guards around the Play in-app review sheet, through a fake `ReviewRequester` and a hand-moved clock, so no platform channel is touched: the first launch is stamped once and never moves; each guard refuses on its own — too few games however old the install, too young an install however many games, a clock that never started; with every guard satisfied it asks exactly once; a new session does not ask again for a version that already asked, an update does; and an unavailable platform does not burn the version. |
+| `test/services/review_prompt_test.dart` | `ReviewPromptService`'s guards around the Play in-app review sheet, through a fake `ReviewRequester` and a hand-moved clock, so no platform channel is touched: the first launch is stamped once and never moves; each guard refuses on its own — too few games however old the install, too young an install however many games, a clock that never started; with every guard satisfied it asks exactly once; a new session does not ask again for a version that already asked, an update does; and an unavailable platform does not burn the version. The game count is `GameRepository.countFinished()`: a fake holds it for the guards, and the real Drift repository behind `GameProvider` shows that finish then Undo leaves it unchanged and finish, reopen, finish counts one; the legacy `reviewPromptGamesFinished` key is removed. |
+| `test/screens/game_board_who_starts_test.dart` | The board's overflow menu offers **Who starts?**; with N players every draw is one of their names, drawing again changes it, a single player is always the one. The menu is driven through `itemBuilder`/`onSelected`, for the popup-overflow reason above. |
 | `test/services/commentary_report_test.dart` | The AI-commentary report `mailto:`: addressed to the listing contact with an encoded subject and body, an ampersand in the body unable to start a new parameter, truncation that counts code points so an emoji is never split, and the reference line skipping what is unknown. |
 | `test/screens/play_again_test.dart` | *Play again* (`lib/utils/play_again.dart`): the ranking offers it and opens the new game — same type, win rule and players in order, the source game left untouched; a finished game's home menu offers it, a game still in play keeps "New with same players"; and `nextGameName` counts on from the last number. The board is injected (`boardBuilder`) and the home menu read through `itemBuilder`, as in the finish-menu test. |
 | `test/screens/game_rules_screen_test.dart` | The rules page's precedence: the shipped ruleset when the user wrote none, the user's own rules winning over it, the scoring summary derived from the type rather than the text, the empty state for a type with neither, restore clearing the stored rules and not offered without a shipped ruleset, and an emptied editor meaning "no rules of mine" rather than an empty string. The ruleset is served from memory, never the asset bundle. |
@@ -176,7 +177,7 @@ toolchain table in [[MobileApp]] must move together.
 | Job | Steps |
 |---|---|
 | `scope` | `scripts/ci_scope_selftest.sh` → `gh api repos/{owner}/{repo}/pulls/<n>/files` (`.filename` **and** `.previous_filename`) → `scripts/ci_scope.sh` → five `name=true\|false` flags into `$GITHUB_OUTPUT` |
-| `backend` | `postgres:17-alpine` service → `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` → `play_publish.py` tests (`.claude/skills/release-android/scripts/`, fake Google service) → `alembic upgrade head` → `downgrade base` → `upgrade head` → `check` (a migration round trip) → `uv export` + `pip-audit` |
+| `backend` | `postgres:17-alpine` service → checkout at depth 2 → privacy page tests (`scripts/test_build_privacy_page.py`) → pandoc **3.6.4** (release archive, checksum-pinned) → `scripts/build_privacy_page.py --check --base HEAD^1` → `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` → `play_publish.py` tests (`.claude/skills/release-android/scripts/`, fake Google service) → `alembic upgrade head` → `downgrade base` → `upgrade head` → `check` (a migration round trip) → `uv export` + `pip-audit` |
 | `image` | `docker build backend` → runs as non-root, no compiler, no dev dependencies, read-only code → `docker build -f backend/Dockerfile.backup backend` → `age --version`, `pg_dump --version` (17) → `countscore-backup --once` with no recipient must exit non-zero → `docker compose config --quiet` on both compose files, failing on any warning |
 | `app` | `scripts/hooks_selftest.sh` → `osv-scanner` on `pubspec.lock` → `pub get` → `scripts/web_binaries.sh --check` (and `--fetch` on the weekly run only) → `dart run build_runner build` → `analyze` → `test` → `build web --release` |
 | `android` | `pub get` → `dart run build_runner build` → `build apk --debug` |
@@ -190,6 +191,7 @@ wins, per path:
 
 | Path | Jobs |
 |---|---|
+| `privacy_policy.md`, `docs/privacy-policy.html` | `backend` (the privacy page check) |
 | `*.md`, `.llmwiki/`, `wip/`, `docs/`, `store_listing/`, `LICENSE` | *none* |
 | `backend/` | `backend`, `image`, `sync` |
 | `android/` | `android` |
@@ -358,6 +360,12 @@ network call against production, so it stays a manual step — on web via chrome
 device via the `flutter-device-test` skill. Export/import and the wakelock toggle have no
 automated coverage at all and must be checked on a device.
 
+**The screenshot composer's tests are local only.** `scripts/test_compose_screenshots.py`
+(output 1080×1920 opaque RGB, `--check`, caption parsing, and that every committed
+`store_listing/<locale>/screenshots/phone/*.png` is compliant) runs with
+`uv run --no-project --with pytest --with pillow pytest scripts/test_compose_screenshots.py`;
+no CI job collects it (`wip/todo_nr/2026-09-18-compose-screenshots-tests-not-in-ci.md`).
+
 **The sync conflict branch is untested.**
 
 > **Status: Outdated** (2026-09-13) — covered now. Three tests in `test_sync.py` drive two
@@ -436,6 +444,18 @@ automated coverage at all and must be checked on a device.
   `0001_initial.py`; the models were aligned, no revision was needed. `pip-audit` rather
   than `uv audit`, which uv 0.12 still ships as a preview command; both found nothing on
   2026-09-14.
+- **The privacy page is checked in `backend`** (2026-09-18). #75 and #77 edited
+  `privacy_policy.md` without running `scripts/build_privacy_page.py`, so the page Play links
+  to went two days without their details, and neither added a Version History entry.
+  `build_privacy_page.py --check --base HEAD^1` renders the page and diffs it against the
+  committed one, and fails when the policy changed but its `**Last Updated**` line did not.
+  A step of `backend`, not a job, for the same reason as below: that job is a required check
+  and already has Python. `scope` sends both files there, ahead of the documentation rule
+  that used to run nothing for them; a privacy-only pull request now pays the backend suite,
+  which is rare enough not to matter. `--check` diffs in Python instead of
+  `git diff --exit-code`, so it works on an uncommitted page locally and writes nothing.
+  pandoc is pinned at 3.6.4 by version and checksum — the page on `main` rendered
+  byte-identical with that release archive, so it was not regenerated.
 - **The backup sidecar and the compose files are checked in `image`, the `pub` audit in
   `app`** (2026-09-18). Steps, not jobs, for the same reason as above: both job names are
   required checks. The sidecar used to be built only by `deploy_nas.sh`, so a bad

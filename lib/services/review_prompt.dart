@@ -3,6 +3,10 @@ import 'package:in_app_review/in_app_review.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../repositories/drift/drift_repositories.dart';
+import '../repositories/game_repository.dart';
+import 'drift/database.dart';
+
 /// The slice of `in_app_review` [ReviewPromptService] needs, so that the guard
 /// logic can be unit-tested without a platform channel.
 abstract class ReviewRequester {
@@ -46,9 +50,11 @@ class ReviewPromptService {
     ReviewRequester? requester,
     Future<String> Function()? currentVersion,
     DateTime Function()? now,
+    GameRepository? games,
   })  : _requester = requester ?? const PlatformReviewRequester(),
         _currentVersion = currentVersion ?? _platformVersion,
-        _now = now ?? _systemNow;
+        _now = now ?? _systemNow,
+        _injectedGames = games;
 
   /// The instance the app uses. The "once per session" guard is instance
   /// state, so the screens must all go through this one.
@@ -57,8 +63,12 @@ class ReviewPromptService {
   /// ISO-8601 instant of the first launch that ran [recordFirstLaunch].
   static const prefsFirstLaunch = 'reviewPromptFirstLaunch';
 
-  /// How many games the user has declared over on this device.
-  static const prefsGamesFinished = 'reviewPromptGamesFinished';
+  /// The stored counter of finished games this service kept until 2026-09-18.
+  /// The count is now read from [GameRepository.countFinished], so an undone
+  /// finish cannot leave it one too high; [recordFirstLaunch] removes the key
+  /// from installs that still carry it.
+  @visibleForTesting
+  static const legacyPrefsGamesFinished = 'reviewPromptGamesFinished';
 
   /// The app version whose sheet was already requested.
   static const prefsPromptedVersion = 'reviewPromptVersion';
@@ -72,12 +82,20 @@ class ReviewPromptService {
   final ReviewRequester _requester;
   final Future<String> Function() _currentVersion;
   final DateTime Function() _now;
+  final GameRepository? _injectedGames;
+
+  /// Resolved on first use, so building [instance] never opens the database.
+  late final GameRepository _games =
+      _injectedGames ?? DriftGameRepository(AppDatabase.instance);
 
   /// Asking twice in one run would be noise even across two app versions.
   bool _requestedThisSession = false;
 
   @visibleForTesting
   bool get requestedThisSession => _requestedThisSession;
+
+  /// The number [minGamesFinished] is compared with.
+  Future<int> finishedGames() => _games.countFinished();
 
   static DateTime _systemNow() => DateTime.now();
 
@@ -92,22 +110,27 @@ class ReviewPromptService {
   /// waiting is the conservative half of that trade.
   Future<void> recordFirstLaunch() async {
     final prefs = await SharedPreferences.getInstance();
+    if (prefs.containsKey(legacyPrefsGamesFinished)) {
+      await prefs.remove(legacyPrefsGamesFinished);
+    }
     if (prefs.getString(prefsFirstLaunch) != null) return;
     await prefs.setString(prefsFirstLaunch, _now().toIso8601String());
   }
 
-  /// The user has just declared a game over. Counts it, and asks for a review
-  /// when every guard is satisfied.
+  /// The user has just declared a game over. Asks for a review when every
+  /// guard is satisfied.
+  ///
+  /// The game count is not kept here: it is the number of games whose
+  /// `finishedAt` is set, read from [GameRepository] now. Call this after the
+  /// finish is written. A finish undone or reopened drops out of the count, and
+  /// finishing the same game again counts it once, not twice.
   ///
   /// Returns whether the request was handed to the platform — which is *not*
   /// the same as the sheet having been shown, and never means a review exists.
   Future<bool> onGameFinished() async {
-    final prefs = await SharedPreferences.getInstance();
-    final gamesFinished = (prefs.getInt(prefsGamesFinished) ?? 0) + 1;
-    await prefs.setInt(prefsGamesFinished, gamesFinished);
-
     if (_requestedThisSession) return false;
-    if (gamesFinished < minGamesFinished) return false;
+
+    final prefs = await SharedPreferences.getInstance();
 
     final firstLaunch =
         DateTime.tryParse(prefs.getString(prefsFirstLaunch) ?? '');
@@ -115,6 +138,16 @@ class ReviewPromptService {
     // unknown install date as an old one.
     if (firstLaunch == null) return false;
     if (_now().difference(firstLaunch) < minAge) return false;
+
+    // The database is read only once the cheap guards pass, and a failed read
+    // is silence: nobody asked for this sheet.
+    final int finished;
+    try {
+      finished = await finishedGames();
+    } catch (_) {
+      return false;
+    }
+    if (finished < minGamesFinished) return false;
 
     final version = await _currentVersion();
     if (prefs.getString(prefsPromptedVersion) == version) return false;

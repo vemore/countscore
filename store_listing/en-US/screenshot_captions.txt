@@ -1,0 +1,12 @@
+# Captions of the store screenshots, one per raw capture in
+# store_listing/assets/screenshots/phone/ — `<capture stem>: <caption>`.
+# Translated from the validated fr-FR captions. Composed by scripts/compose_screenshots.py
+# into screenshots/phone/ next to this file.
+01_main_screen: All your games at a glance
+02_player_management: Your players, from one game night to the next
+03_game_types: Your favorite games, ready to score
+04_game_history: Look back at every finished game
+05_game_board: Totals add up on their own
+06_customization: Game not listed? Create it
+07_score_entry: Enter points round by round
+08_statistics: Games, wins, win rate: your stats

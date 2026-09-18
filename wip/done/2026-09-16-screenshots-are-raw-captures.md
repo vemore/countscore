@@ -1,5 +1,7 @@
 # The 8 store screenshots are raw captures in a ratio Play does not accept
 
+**Status:** done (2026-09-18) — closed by feat/composed-screenshots (#113). `scripts/compose_screenshots.py` writes a 1080×1920 opaque RGB set per store locale into `store_listing/<locale>/screenshots/phone/`; the French captions were validated by the user (#3 changed to « Vos jeux préférés, prêts à compter »), the nine others translated from them; `--check` exits 0 on all ten. `play_publish.py validate` was not run: it has no offline mode, validation happens inside `listing --graphics`, which is the user's go.
+
 - **Noted:** 2026-09-16 — while auditing the listing assets against `ASSET_REQUIREMENTS.md`
 - **Theme:** store-listing
 - **Area:** docs

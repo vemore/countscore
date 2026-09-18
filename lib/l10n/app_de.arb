@@ -527,5 +527,7 @@
 
   "groupDevicesExplainMember": "Nur der Eigentümer der Gruppe kann ein Gerät entfernen oder den Einladungscode ändern.",
 
-  "groupErrorNotOwner": "Nur der Eigentümer der Gruppe kann das tun"
+  "groupErrorNotOwner": "Nur der Eigentümer der Gruppe kann das tun",
+  "whoStarts": "Wer fängt an?",
+  "whoStartsAgain": "Neu auslosen"
 }

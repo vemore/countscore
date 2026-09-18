@@ -1046,4 +1046,10 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get groupErrorNotOwner => 'Это может сделать только владелец группы';
+
+  @override
+  String get whoStarts => 'Кто начинает?';
+
+  @override
+  String get whoStartsAgain => 'Выбрать заново';
 }

@@ -1,5 +1,7 @@
 # The app looks like the default Material template, and hides who is winning
 
+**Status:** dropped (2026-09-18) — split into four entries, each ready for one pull request: [[2026-09-18-app-theme-is-default-deep-purple]], [[2026-09-18-board-hides-who-owns-each-column-and-who-leads]], [[2026-09-18-score-entry-takes-a-dialog-per-cell]] and [[2026-09-18-finishing-a-game-has-no-end-screen]]. The target images stay in `wip/assets/2026-09-18-app-looks-like-a-default-material-template/`.
+
 - **Noted:** 2026-09-18 — during a visual review against competing score apps, with mock-ups
 - **Theme:** visual-refresh
 - **Area:** app

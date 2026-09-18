@@ -1913,6 +1913,18 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Réservé au propriétaire du groupe'**
   String get groupErrorNotOwner;
+
+  /// Game board overflow-menu item and dialog title: draws one of the game's players at random to start
+  ///
+  /// In fr, this message translates to:
+  /// **'Qui commence ?'**
+  String get whoStarts;
+
+  /// Button in the Who starts? dialog that draws another player at random
+  ///
+  /// In fr, this message translates to:
+  /// **'Tirer à nouveau'**
+  String get whoStartsAgain;
 }
 
 class _AppLocalizationsDelegate
