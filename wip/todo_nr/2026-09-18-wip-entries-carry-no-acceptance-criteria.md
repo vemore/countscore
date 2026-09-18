@@ -1,5 +1,9 @@
 # A wip/ entry says what to fix, never how we will know it is fixed
 
+**Partly done (2026-09-18)** — chore/wip-refine added the `**Acceptance:**` section to the entry
+format and made it a condition of promotion to `todo/` (`wip-refine` §4). What is left: making
+it mandatory by lane, and mapping each criterion to its test in `ship-parallel` §1 and §2.
+
 - **Noted:** 2026-09-18 — comparing the project's SDLC with "Your SDLC is your context
   engineering" (Daniel Kravets, LeadDev, 2026-08-10)
 - **Theme:** merge-safety

@@ -309,4 +309,5 @@ Adaptive icon on white `#FFFFFF`; every density is generated.
       user told that `listing --commit` is live at once with no staged rollout
 - [ ] Console-only tasks (content rating, declarations, Data Safety, category and tags) checked, through the brief if needed
 - [ ] Tag pushed, `Release.md` Submission state updated, worktree and brief folder removed
+- [ ] A `wip-refine` pass proposed to the user for the next release
 - [ ] Keystore and service-account key backups exist and are current

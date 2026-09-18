@@ -8,7 +8,7 @@ One file per piece of work, so that parallel pull requests never conflict on a s
 | `todo_nr/` | Open work for the next release |
 | `done/` | Closed work, and `ARCHIVE-2026-09.md` — the old `DONE.md`, frozen |
 
-`scripts/wip.sh` is the index: `list [todo|todo_nr|done|all]`, `themes`, `check`. There is
+`scripts/wip.sh` is the index: `list [todo|todo_nr|done|all]`, `themes`, `check`, `refine`. There is
 no index file on purpose — it would be the one shared file again.
 
 ## An entry
@@ -27,6 +27,9 @@ the fix, twenty lines or so.
 <The problem, with file paths and evidence.>
 
 **Fix:** <the proposed change.>
+
+**Acceptance:** <optional when written; required to be promoted to todo/ —
+2 to 5 statements a test or a command can check.>
 ```
 
 `Theme` is what groups entries into one pull request: reuse an existing tag
@@ -37,7 +40,8 @@ the fix, twenty lines or so.
 A problem a task surfaces but was not asked to fix is neither fixed inline nor dropped: it
 becomes an entry with enough context to act on later, and the task carries on.
 `todo_nr/` by default. `todo/` only when it blocks the release in progress: a store policy
-violation, a security flaw, a crash, data loss. The user promotes the rest.
+violation, a security flaw, a crash, data loss. The user promotes the rest, from the proposal
+of a refinement pass (below).
 
 ## Tooling entries
 
@@ -62,8 +66,18 @@ and the change proposed.
   then a line under the title:
   `**Status:** done (YYYY-MM-DD) — closed by <branch or #PR>. <What closed it, in one or two sentences.>`
 - **Partly done** stays open. Say what landed, and keep only what is left.
+- **Dropping** an entry that is obsolete, or merged into another, is a move to `done/` too, with
+  `**Status:** dropped (YYYY-MM-DD) — <why, or: merged into [[survivor]]>`. `done/` keeps what
+  was dropped next to what shipped, so an idea that comes back finds its history.
 - **Never delete an entry, and never edit one another pull request owns.**
-- **After a release ships**, the user decides what moves from `todo_nr/` to `todo/`.
+
+## Refinement
+
+Moving an entry from `todo_nr/` to `todo/` is the commitment point, and `todo/` holds at most
+12 entries. The `wip-refine` skill prepares that decision: it checks each open entry against
+the code, sorts it (already fixed, obsolete, merge, needs detail, ready, promote), and ranks
+what is ready. The user decides, and one pull request applies the decision. It runs after each
+release ships, when `todo_nr/` passes 30 entries, or on request.
 
 A commit hook refuses a root `TODO.md` or `DONE.md` next to `wip/`, and any edit to the
 archive (`.llmwiki/Hooks.md`).

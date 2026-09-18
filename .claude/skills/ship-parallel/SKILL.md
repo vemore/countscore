@@ -25,6 +25,7 @@ behind each choice: `.llmwiki/ParallelDelivery.md`.
 
 1. `git fetch --prune origin`, then `scripts/wip.sh list all` and read every entry the user
    named (`wip/todo*/`). An entry that is not in `wip/` yet gets written first (`wip/README.md`).
+   A `todo_nr/` entry that is not *ready* (`wip-refine` §4) goes through `wip-refine` first.
 2. Group by `Theme`, then **split or merge on the files each group will touch**, not on the
    tag alone:
    - two groups editing the same screen, the same Alembic head, or adding strings to the ARB
