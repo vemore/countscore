@@ -27,3 +27,5 @@ the raw captures and writes **1080×1920 RGB** compositions with a localized tit
 the screen, one output set per store locale. Then re-publish with
 `play_publish.py publish --graphics`. Needs the per-locale caption strings, so it follows the
 listing copy rather than preceding it.
+
+**Open question:** What caption goes in each locale's title band, and at what size (1080×1920 as proposed)?

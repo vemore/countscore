@@ -39,3 +39,9 @@ as temporary. A test per case, next to the existing `test_analysis_upstream_rate
 Then decide separately whether this path deserves a real backoff (a few seconds, once) or
 whether the Regenerate button is retry enough — the analysis is user-initiated, so leaving the
 retry to the user is defensible and costs no held connection.
+
+**Acceptance:**
+- An `openai.InternalServerError` (503) from the provider makes the analysis route answer 503 with `Retry-After`.
+- Bedrock `ServiceUnavailableException` and `ModelNotReadyException` do the same.
+- Any other `OpenAIError` still answers 502.
+- One test per case, next to `test_analysis_upstream_rate_limit_returns_503_with_retry_after` (`backend/tests/test_game_analysis.py`). No backoff: retrying stays the Regenerate button's job.

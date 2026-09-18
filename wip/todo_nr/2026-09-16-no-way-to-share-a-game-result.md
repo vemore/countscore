@@ -24,3 +24,5 @@ a rendered image of the standings. Every string through `AppLocalizations`
 (`i18n-add-string`). Sharing is user-initiated and goes through the system share sheet, so
 nothing leaves the device on its own and the Data Safety declaration does not move — confirm
 that reasoning against `.llmwiki/Documentation.md` before shipping.
+
+**Open question:** Text only first, or text plus an image? Does the shared text name the app with a link to the Play listing?

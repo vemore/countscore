@@ -14,3 +14,8 @@ App Bundle; it needs an APK (`flutter build apk --release --no-tree-shake-icons`
 
 **Fix:** replace the footer with a pointer to the `release-android` skill (which owns release
 verification) and drop the `.g.dart` comment.
+
+**Acceptance:**
+- The TESTING footer of `android/app/proguard-rules.pro` points at `release-android` and has no `adb install *.aab`.
+- The `.g.dart` keep suggestion is gone.
+- A release build still succeeds (only comments change).

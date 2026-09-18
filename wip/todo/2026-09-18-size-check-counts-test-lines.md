@@ -15,3 +15,7 @@ project most wants. The article excludes test files from its size limits for tha
 **Fix:** add `^test/`, `^integration_test/` and `^backend/tests/` to the regex, and say why in
 `.llmwiki/ParallelDelivery.md`. A one-line change; if [[2026-09-18-one-lane-for-every-change]]
 lands first, apply the same exclusion to its lane-B size trigger.
+
+**Acceptance:**
+- The `ship-parallel` §3.1 size regex also excludes `^test/`, `^integration_test/` and `^backend/tests/`.
+- `.llmwiki/ParallelDelivery.md` says why.

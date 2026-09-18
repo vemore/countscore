@@ -21,3 +21,9 @@ history, creating a new game with the same game type and the same players, strai
 board screen. It reuses the existing repository calls — no schema change — and adds one
 localized string (`i18n-add-string`). Worth pairing with the share action of
 `2026-09-16-no-way-to-share-a-game-result.md`, since both live on the ranking screen.
+
+**Acceptance:**
+- The end-of-game ranking offers "Play again": a new game with the same type and the same players in the same order, opened on its board.
+- A finished game's menu on the home screen offers the same action.
+- The source game is unchanged.
+- The new string exists in all 10 ARB files.

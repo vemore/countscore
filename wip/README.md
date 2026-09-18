@@ -30,6 +30,9 @@ the fix, twenty lines or so.
 
 **Acceptance:** <optional when written; required to be promoted to todo/ —
 2 to 5 statements a test or a command can check.>
+
+**Open question:** <what the user must decide before the entry is ready; a refinement
+pass writes it, and the answer replaces it.>
 ```
 
 `Theme` is what groups entries into one pull request: reuse an existing tag

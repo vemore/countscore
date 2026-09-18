@@ -40,3 +40,15 @@ durable half is a CI gate symmetric to the backend's `pip-audit`: an OSV scan of
 `pubspec.lock` in the `app` job, failing on any advisory, with the same `--ignore-vuln <ID>`
 + `wip/` entry escape. `osv-scanner` reads `pubspec.lock` natively; `dart pub audit` does not
 exist (checked: `Could not find a subcommand named "audit" for "dart pub"`).
+
+**Changed (2026-09-18, refinement):** the repository's Dependabot alerts are on since #62.
+What is left is the gate: nothing in CI fails on an advisory against `pubspec.lock`
+(`pip-audit` covers the backend only).
+
+**Fix:** an `osv-scanner` step on `pubspec.lock` in the `app` job.
+
+**Acceptance:**
+- The `app` CI job runs an OSV scan of `pubspec.lock` and fails on any advisory.
+- Ignoring an advisory takes `--ignore-vuln <ID>` plus a `wip/` entry that names it.
+- `scripts/ci_scope.sh` runs that job when `pubspec.lock` changes.
+- `.llmwiki/Testing.md` shows the `pub` gate next to `pip-audit`.

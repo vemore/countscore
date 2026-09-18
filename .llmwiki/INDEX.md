@@ -51,7 +51,7 @@ Load this file first. Then read only the pages your task touches.
 | [[Documentation]] | Which documents a change implicates: wiki, README table, the three privacy documents; the CLAUDE.md budget | 2026-09-14 |
 | [[ParallelDelivery]] | Protection on main, worktrees, local cleanup, why one PR per theme and serial squash merges (`wip/` format: `wip/README.md`), the refinement pass that feeds `wip/todo/` | 2026-09-18 |
 | [[Security]] | Defended surfaces, and the security debt that is knowingly open | 2026-09-14 |
-| [[Testing]] | Unit, Drift, migration, e2e web and device; backend pytest, release tooling; CI jobs and how `scope` picks them, `alembic check`, dependency audit, the `web/` binary gate and the monthly lock refresh | 2026-09-16 |
+| [[Testing]] | Unit, Drift, migration, e2e web and device; backend pytest, release tooling; CI jobs and how `scope` picks them, `alembic check`, dependency audit, the `web/` binary gate and the monthly lock refresh | 2026-09-18 |
 | [[Release]] | Play Store signing state, publishing through the Play API, target API, 2026 Play policy constraints, release cadence and pruning pass | 2026-09-17 |
 | [[StoreListing]] | The 10 store locales, the keyword per market, category and tags, the assets, Play's text limits, and the 2026-09-16 acquisition baseline | 2026-09-16 |
 

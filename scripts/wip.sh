@@ -94,6 +94,7 @@ case "$cmd" in
             flags=""
             grep -q '^\*\*Acceptance:\*\*' "$path" || flags="$flags no-acceptance"
             grep -q '^\*\*Fix:\*\*' "$path" || flags="$flags no-fix"
+            grep -q '^\*\*Open question:\*\*' "$path" && flags="$flags open-question"
             [ "$idle" != new ] && [ "$idle" -gt 60 ] && flags="$flags stale"
             # Repository paths quoted in backticks that no longer exist.
             dead=$(grep -oE '`(lib|backend|scripts|test|integration_test|web|android|\.claude|\.llmwiki|\.github|store_listing|tool)/[^` :]*`' "$path" \

@@ -31,6 +31,7 @@ scripts/wip.sh check           # header fields, Status line in done/
 | `dead-path:[…]` | a path in backticks no longer exists | refactored away (the evidence is stale), **or** a file the fix proposes to create. Read the sentence. |
 | `links-closed:[…]` | links an entry already in `done/` | a dependency now met, or a problem the other entry already solved |
 | `no-fix` / `no-acceptance` | the section is missing | a candidate for *needs detail* |
+| `open-question` | a question waits on the user | ask it again, or keep it in *needs detail* |
 | `crowded theme` | a theme with more than 4 entries | overlaps and supersessions: *merge* |
 | `BLOCKS-RELEASE` | `Blocks release: yes` | always **promote**, whatever the rest |
 
@@ -107,7 +108,8 @@ Work in a fresh worktree off `origin/main`, on branch `chore/refine-<YYYY-MM-DD>
 - every move is a `git mv`, and the file name never changes (`wip/README.md` § Lifecycle);
 - a closed or dropped entry gets its `**Status:**` line directly under the title;
 - the answers to the *needs detail* questions and the approved acceptance criteria are written
-  into the entries;
+  into the entries; a question the user leaves for later becomes an `**Open question:**` line
+  (flagged `open-question` by `refine`), replaced by its answer at a later pass;
 - `scripts/wip.sh check` is green, then commit, push, `gh pr create --base main`, `gh pr
   checks`, and squash-merge through `ship-parallel` §3. Only `wip/` changes, so there is
   nothing to deploy.

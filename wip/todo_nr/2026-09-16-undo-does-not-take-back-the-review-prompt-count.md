@@ -24,3 +24,5 @@ snackbar's lifetime** (the undo, not a considered reopen days later), or the cou
 dropped for a `COUNT(*)` over `games WHERE finishedAt IS NOT NULL` read at prompt time, which
 cannot drift from the truth at all. The second is fewer moving parts and survives a restore
 from backup; it needs `GameRepository` to expose the count.
+
+**Open question:** Should the count follow the state (count finished games when the prompt is due) or the act (decrement on undo, within the snackbar only)?

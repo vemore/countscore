@@ -21,3 +21,5 @@ for the tablet half of `2026-09-16-screenshots-are-raw-captures.md`, not an inde
 below ~600 dp keep today's layout, above it use a two-pane or multi-column arrangement.
 `flutter-device-test` can drive the check on hardware, and `-d chrome` at a desktop window
 size covers the PWA. Then capture the tablet screenshot set.
+
+**Open question:** Which wide layout: master-detail on the home screen, or a wider score grid on the board?

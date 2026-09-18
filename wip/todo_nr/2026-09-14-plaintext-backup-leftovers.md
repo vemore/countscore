@@ -21,3 +21,5 @@ low impact, but the script's "only the owner may read a dump" comment and
 keep it), and record in `.llmwiki/Deployment.md` that ad-hoc dumps must go through
 `countscore-backup --once`. Check `synoacltool -get` on `backups/` and restrict it to the
 container user, or document that the ACL, not the mode, governs access there.
+
+**Open question:** Delete `backups/pre_0002_20260913.sql.gz`, or encrypt it with `age` and keep it? Restrict the `backups/` ACL to the container user, or only document that the ACL, not the mode bits, governs access?

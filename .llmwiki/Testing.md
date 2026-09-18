@@ -2,7 +2,7 @@
 
 > Scope: what is tested, how to run it, and the traps.
 > Related: [[MobileApp]] · [[DataLayer]] · [[SchemaV10]] · [[Backend]] · [[Web]] · [[KnownLimits]]
-> Updated: 2026-09-16
+> Updated: 2026-09-18
 
 ## Facts
 
@@ -317,7 +317,7 @@ Two things this does *not* give, and the difference matters:
 - **Nothing fails a build.** An alert is a notification on the repository, not a gate. Only
   the backend has a gate (`pip-audit --strict`); a `pub` advisory still reaches nobody who
   is not reading GitHub's security tab. That is why
-  `wip/todo_nr/2026-09-16-dependabot-alerts-disabled.md` stays open for the CI half.
+  `wip/todo/2026-09-16-dependabot-alerts-disabled.md` stays open for the CI half.
 - **Nothing opens a fix.** *Dependabot security updates* — the setting that turns an alert
   into a pull request — is deliberately left off, so a security bump arrives on the normal
   weekly version-update schedule like any other.

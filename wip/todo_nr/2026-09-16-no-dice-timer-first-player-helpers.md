@@ -25,3 +25,5 @@ search ("dé", "dice roller", "minuteur").
 **Fix:** one widget each, reachable from the game board's app bar or overflow menu, every
 string through `AppLocalizations` (`i18n-add-string`), no new permission. Ship them one at a
 time rather than as a bundle, so a bad idea is cheap to drop.
+
+**Open question:** Which helper first, and where does it live: the board's app bar or its overflow menu?

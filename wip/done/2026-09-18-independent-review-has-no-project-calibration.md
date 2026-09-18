@@ -1,5 +1,7 @@
 # The planned independent review has no project-specific instructions
 
+**Status:** dropped (2026-09-18) — merged into [[2026-09-18-one-lane-for-every-change]] by chore/refine-2026-09-18.
+
 - **Noted:** 2026-09-18 — comparing the project's SDLC with "Your SDLC is your context
   engineering" (Daniel Kravets, LeadDev, 2026-08-10)
 - **Theme:** merge-safety

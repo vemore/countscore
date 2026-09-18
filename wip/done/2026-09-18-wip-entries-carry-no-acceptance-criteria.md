@@ -1,5 +1,7 @@
 # A wip/ entry says what to fix, never how we will know it is fixed
 
+**Status:** dropped (2026-09-18) — merged into [[2026-09-18-one-lane-for-every-change]] by chore/refine-2026-09-18.
+
 **Partly done (2026-09-18)** — chore/wip-refine added the `**Acceptance:**` section to the entry
 format and made it a condition of promotion to `todo/` (`wip-refine` §4). What is left: making
 it mandatory by lane, and mapping each criterion to its test in `ship-parallel` §1 and §2.

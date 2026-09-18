@@ -27,3 +27,5 @@ the condition goes false, would survive the board closing — and, being on a sy
 would need a schema bump, the `sync_store` contract and LWW like `finishedAt` got in v12
 (`db-migration` skill, [[Sync]]). Only then is a check on the board's first build worth
 adding.
+
+**Open question:** Should the refusal sync across devices (a v15 synced column), or stay on the device (SharedPreferences keyed by the game's uuid, no schema change)?

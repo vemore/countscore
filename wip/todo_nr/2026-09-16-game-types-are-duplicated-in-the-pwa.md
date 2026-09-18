@@ -34,3 +34,5 @@ and repoints any `games.gameTypeId` at the survivor — with the same care as th
 merge (`.llmwiki/SchemaV10.md`). A `UNIQUE` index on live default rows would stop it
 recurring, but it must not fire on the user's own types, which may legitimately share a
 name with a deleted one.
+
+**Open question:** Evidence first: does it reproduce on a fresh OPFS profile? Since v14 (#75), only the lowest-id copy gets `builtin_key`, so the duplicate now shows as the stored French name. If it does not reproduce, is a cleanup migration still wanted, or is clearing that one browser enough?

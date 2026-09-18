@@ -12,3 +12,8 @@ a manual Chrome for Testing lookup and download.
 **Proposal:** `scripts/chromedriver.sh` reading `google-chrome --version`, fetching the
 matching driver into a cache if absent, starting it on 4444; point `Testing.md` and
 `.claude/rules/web.md` at it.
+
+**Acceptance:**
+- `scripts/chromedriver.sh` reads the major version of `google-chrome --version` and downloads the matching driver into a cache when it is missing.
+- It starts the driver on port 4444.
+- `.llmwiki/Testing.md` and `.claude/rules/web.md` call the script instead of a bare `chromedriver`.
