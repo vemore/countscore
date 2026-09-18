@@ -18,6 +18,10 @@ qu'un total passe 10").
 languages), or keep `>` and seed 499 / 9 / 99 — which reads oddly on the rules page. The
 first is cleaner; it changes when existing Skyjo and Belote games end, which needs saying.
 
+**Decided (2026-09-18, refinement 3):** `>=`. `firstPlayerOver` means "reaches"; the
+label `gameRulesEndFirstOver` is reworded in ten languages, and the pull request says that
+existing Skyjo and Belote games now end one step earlier.
+
 **Acceptance:**
-- A Président game with a player on exactly 10 is over, or the decision to keep `>` is recorded in the wiki.
+- A Président game with a player on exactly 10 is over (widget or unit test); one on 9 is not.
 - The rules page label and the ten rules texts use the same comparison as the code.

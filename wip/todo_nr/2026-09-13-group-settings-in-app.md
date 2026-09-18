@@ -5,8 +5,9 @@
 - **Area:** app
 - **Blocks release:** no
 
-The app does not use `GET /groups/me`, `PATCH /groups/me/settings` (comment style, language,
-LLM budget) or `GET /groups/me/usage`. Since #76 the voice is chosen for each analysis and the
+The app calls `GET /groups/me` only for the owner (#104), and does not use `PATCH /groups/me/settings` (comment style, language,
+LLM budget) or `GET /groups/me/usage`. The budget control is shown to the owner only
+([[2026-09-18-group-settings-open-to-every-member]]). Since #76 the voice is chosen for each analysis and the
 group style is only its fallback, but the user still wants the group's comment style and
 language editable, and the usage visible.
 

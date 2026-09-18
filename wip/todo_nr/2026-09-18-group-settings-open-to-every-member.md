@@ -14,4 +14,10 @@ stays open.
 **Fix:** decide whether `monthly_budget_cents` (and possibly style and language) become
 owner-only, and hide the control from other members in the app as the devices sheet does.
 
-**Open question:** owner-only for the budget alone, or for every group setting?
+**Decided (2026-09-18, refinement 3):** the budget alone. `monthly_budget_cents` becomes
+owner-only (it costs the operator money); comment style and language stay open to every member.
+
+**Acceptance:**
+- `PATCH /groups/me/settings` with `monthly_budget_cents` from a non-owner device answers 403; from the owner it succeeds (backend test).
+- A non-owner can still change `comment_style` and `comment_language`.
+- `.llmwiki/Security.md` no longer lists the budget as open to every member.
