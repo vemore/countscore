@@ -14,10 +14,23 @@ the app itself ships in their language.
 **Fix:** let the composer read `store_listing/<locale>/raw/*.png` before the shared set, and
 capture each locale with the device (or an emulator) switched to that language
 (`scripts/capture_screenshots.sh` with a locale argument, `adb shell cmd locale` or the
-per-app language setting). Players and game names in the demo data can stay the same. Best
-done in the same session as the re-capture in
-`wip/todo_nr/2026-09-18-screenshot-04-duplicates-01.md`.
+per-app language setting). Players and game names in the demo data can stay the same. The retake of 04 below happens in
+the same session.
+
+**Absorbed (2026-09-18, refinement 4):** [[2026-09-18-screenshot-04-duplicates-01]].
+`store_listing/assets/screenshots/phone/04_game_history.png` is the main game list, the same
+screen and games as `01_main_screen.png`: there is no history screen distinct from home. Retake
+04 as a finished game's score sheet (the end-of-game podium or final totals), or as a screen the
+carousel lacks (AI analysis, group sharing), and adjust the `04_*` caption in every
+`screenshot_captions.txt`. All eight captures predate the visual refresh, so all eight are
+retaken, in every locale, in one device session.
+
+**Decided (2026-09-18, refinement 4):** one entry, and the retake waits until
+[[2026-09-18-app-theme-is-default-deep-purple]] and
+[[2026-09-18-board-hides-who-owns-each-column-and-who-leads]] have landed (not the end screen
+or keypad).
 
 **Acceptance:**
+- No two raw captures of one locale show the same screen.
 - The composed `ja-JP` set shows the Japanese UI under the Japanese caption.
 - `compose_screenshots.py --check` still exits 0 on all ten locales.

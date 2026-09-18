@@ -11,8 +11,7 @@ the turn timer. The Yahtzee/Farkle long tail needs dice the user may not have at
 "dé" / "dice roller" are words typed into Play search.
 
 **Fix:** a dialog or sheet reachable from the board's overflow menu, next to **Who
-starts?**: choose how many dice (1–6?) and which kind (d6 at least; d4/d8/d10/d12/d20 is
-the open question), roll, show each die and the total. Everything local, every string
+starts?**: choose how many dice (1–6?) and which kind (d6 only, decided below), roll, show each die and the total. Everything local, every string
 through `i18n-add-string`, no permission, schema or network change.
 
 **Acceptance:**
@@ -20,4 +19,4 @@ through `i18n-add-string`, no permission, schema or network change.
 - A widget test with a seeded `Random` checks the values are in range and the total is their sum.
 - Every string exists in the ten ARB files; no permission, schema or network change.
 
-**Open question:** which kinds of dice beyond d6 are worth the UI.
+**Decided (2026-09-18, refinement 4):** d6 only — no kind selector; choose 1–6 dice.

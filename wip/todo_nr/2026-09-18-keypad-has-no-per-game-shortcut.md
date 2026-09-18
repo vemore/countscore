@@ -16,5 +16,6 @@ is set on the built-in types (`lib/models/game_type.dart`) and editable on custo
 `game_types_screen.dart`. This probably means a schema change (the `db-migration` skill),
 which is synced.
 
-**Open question:** which games get which shortcut, and does a shortcut have to be a value, or
-also an operation (×2)?
+**Decided (2026-09-18, refinement 4):** a shortcut is either a value or an operation (such as ×2).
+
+**Open question:** which built-in games get which shortcut? Check the hypotheses above against the rules in `assets/rules/` and propose the list.

@@ -15,5 +15,9 @@ on the home screen to its own entry, "if still wanted".
 game's board on the right) or, cheaper, a multi-column grid of the same cards. Reuse
 `kBoardWideBreakpoint` / `isBoardGridWide` rather than a second constant.
 
-**Open question:** master-detail, a card grid, or nothing — is the home screen worth it before
-the tablet screenshots are captured?
+**Decided (2026-09-18, refinement 4):** a card grid, not master-detail.
+
+**Acceptance:**
+- Above `kBoardWideBreakpoint`, home lays the game cards out in more than one column; below it, one column as today (widget tests at 400 and 1200 dp).
+- No second breakpoint constant is added.
+- A PWA screenshot at 1600 px is attached to the pull request.
