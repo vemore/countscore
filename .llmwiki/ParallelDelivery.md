@@ -3,7 +3,7 @@
 > Scope: how several changes are built at once and reach production — worktrees, one pull
 > request per theme, serial squash merges, deploy after each merge, and `wip/` work tracking.
 > Procedure: the `ship-parallel` skill. Related: [[Hooks]] · [[Deployment]] · [[Release]]
-> Updated: 2026-09-16
+> Updated: 2026-09-18
 
 ## Facts
 
@@ -66,7 +66,10 @@ windows that cost work in practice — the five-minute setup, and an agent betwe
 
 ### Work tracking, and what a merge deploys
 
-Work tracking: `wip/README.md`. What a merge deploys, and how: `ship-parallel` §4 — the Play
+Work tracking: `wip/README.md`. What enters `wip/todo/` is decided by a refinement pass
+(`wip-refine`): the move from `todo_nr/` is the commitment point, `todo/` holds at most 12
+entries, and an entry needs to be *ready* (still true, one pull request, acceptance criteria,
+unblocked, themed) to be promoted. What a merge deploys, and how: `ship-parallel` §4 — the Play
 Store is never part of the loop (`release-android`, on request).
 
 ## Decisions & History
@@ -127,3 +130,14 @@ Store is never part of the loop (`release-android`, on request).
   changes the rules under agents still running. Such a pull request waits until every agent of
   its wave has reported. Recording the hooks' commit per session and warning on change was
   rejected as more process for the same result.
+- **A refinement pass decides what enters `wip/todo/` (2026-09-18).** With 43 entries in
+  `todo_nr/` and `wip/README.md` saying only "the user decides", nothing sorted the stale from
+  the ready, closed the obsolete (entries could not be deleted, and `done/` accepted only
+  `Status: done`), or noticed that one entry already replaced two others. Borrowed from
+  standard practice: a definition of ready and acceptance criteria (Scrum, INVEST); a backlog
+  detailed only near its top (DEEP); the commitment point and a WIP limit (Kanban
+  replenishment); dropping freely, because an idea that matters comes back (Shape Up); and
+  hygiene before ranking. RICE and WSJF were rejected: for one developer and a few dozen
+  entries they cost more than they decide, and reach cannot be measured on 6 monthly devices.
+  A cost-of-delay class, then value against cost, ranks instead. The pass proposes, and the
+  user decides.

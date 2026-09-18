@@ -7,9 +7,11 @@
 #
 # Usage: scripts/wip.sh [list] [todo|todo_nr|done|all]   entries, grouped by theme
 #        scripts/wip.sh themes [todo|todo_nr|all]         themes with their entry count
-#        scripts/wip.sh check                             entries missing a header field
+#        scripts/wip.sh check [todo|todo_nr|done|all]     entries missing a header field
+#        scripts/wip.sh refine [todo|todo_nr|all]         signals for a refinement pass
+#                                                         (wip-refine skill)
 #
-# Default: list todo.
+# Default: list todo; check reads all.
 
 set -uo pipefail
 
@@ -17,8 +19,9 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WIP="$ROOT/wip"
 
 cmd="${1:-list}"
-case "$cmd" in list|themes|check) shift || true ;; *) cmd=list ;; esac
-scope="${1:-todo}"
+case "$cmd" in list|themes|check|refine) shift || true ;; *) cmd=list ;; esac
+default=todo; [ "$cmd" = check ] && default=all
+scope="${1:-$default}"
 case "$scope" in
     all) dirs=(todo todo_nr done) ;;
     todo|todo_nr|done) dirs=("$scope") ;;
@@ -45,6 +48,10 @@ rows() {  # prints: folder<TAB>theme<TAB>blocks<TAB>area<TAB>file<TAB>title
     done
 }
 
+fields() {  # rows with "-" for an empty field: `read` with a tab IFS merges empty ones
+    rows | sed -e 's/\t\t/\t-\t/g' -e 's/\t\t/\t-\t/g' -e 's/\t$/\t-/'
+}
+
 case "$cmd" in
     list)
         rows | sort -t$'\t' -k1,1 -k2,2 -k5,5 | awk -F'\t' '
@@ -59,16 +66,56 @@ case "$cmd" in
             | awk -F'\t' '{ printf "%-8s %-28s %d\n", $1, ($2 == "" ? "(none)" : $2), $3 }'
         ;;
     check)
-        status=0
-        rows | while IFS=$'\t' read -r folder theme blocks area file title; do
+        out=$(fields | while IFS=$'\t' read -r folder theme blocks area file title; do
             missing=""
-            [ -z "$title" ] && missing="$missing title"
-            [ -z "$theme" ] && missing="$missing Theme"
-            [ -z "$area" ] && missing="$missing Area"
-            [ "$folder" != done ] && [ -z "$blocks" ] && missing="$missing Blocks-release"
-            [ "$folder" = done ] && ! grep -q '^\*\*Status:\*\* done' "$ROOT/$file" && missing="$missing Status"
+            [ "$title" = - ] && missing="$missing title"
+            [ "$theme" = - ] && missing="$missing Theme"
+            [ "$area" = - ] && missing="$missing Area"
+            [ "$folder" != done ] && [ "$blocks" = - ] && missing="$missing Blocks-release"
+            [ "$folder" = done ] && ! grep -Eq '^(- )?\*\*Status:\*\* (done|dropped)' "$ROOT/$file" && missing="$missing Status"
             [ -n "$missing" ] && echo "$file: missing$missing"
-        done | tee /dev/stderr | grep -q . && status=1
-        exit $status
+        done)
+        [ -z "$out" ] && exit 0
+        echo "$out" >&2
+        exit 1
+        ;;
+    refine)
+        # Mechanical signals only; the judgement is the wip-refine skill's.
+        [ "$scope" = done ] && { echo "refine reads open entries: todo, todo_nr or all" >&2; exit 2; }
+        today=$(date +%s)
+        days_since() { echo $(( (today - $(date -d "$1" +%s 2>/dev/null || echo "$today")) / 86400 )); }
+        fields | grep -v '^done'$'\t' | sort -t$'\t' -k1,1 -k2,2 -k5,5 \
+            | while IFS=$'\t' read -r folder theme blocks area file title; do
+            path="$ROOT/$file"
+            noted=$(field "$path" Noted | grep -oE '^[0-9]{4}-[0-9]{2}-[0-9]{2}')
+            touched=$(git -C "$ROOT" log -1 --format=%cs -- "$file" 2>/dev/null)
+            age=$([ -n "$noted" ] && days_since "$noted" || echo "?")
+            idle=$([ -n "$touched" ] && days_since "$touched" || echo "new")
+            flags=""
+            grep -q '^\*\*Acceptance:\*\*' "$path" || flags="$flags no-acceptance"
+            grep -q '^\*\*Fix:\*\*' "$path" || flags="$flags no-fix"
+            [ "$idle" != new ] && [ "$idle" -gt 60 ] && flags="$flags stale"
+            # Repository paths quoted in backticks that no longer exist.
+            dead=$(grep -oE '`(lib|backend|scripts|test|integration_test|web|android|\.claude|\.llmwiki|\.github|store_listing|tool)/[^` :]*`' "$path" \
+                | tr -d '`' | sed 's/[.,;)]*$//' | sort -u | while read -r p; do
+                    case "$p" in *'*'*|*'<'*|*'{'*) continue ;; esac
+                    [ -e "$ROOT/$p" ] || echo "$p"
+                done | tr '\n' ' ')
+            [ -n "$dead" ] && flags="$flags dead-path:[${dead% }]"
+            # Links to entries that are already closed.
+            closed=$(grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]+' "$path" | sort -u | while read -r slug; do
+                    [ "$(basename "$file" .md)" = "$slug" ] && continue
+                    [ -e "$WIP/done/$slug.md" ] && echo "$slug"
+                done | tr '\n' ' ')
+            [ -n "$closed" ] && flags="$flags links-closed:[${closed% }]"
+            [[ "$blocks" =~ ^yes ]] && flags="$flags BLOCKS-RELEASE"
+            printf '%-7s %-22s age %3sd idle %3sd  %s\n        %s\n' \
+                "$folder" "$theme" "$age" "$idle" "$title" "$(basename "$file")${flags:+ →$flags}"
+        done
+        echo
+        rows | grep -v '^done'$'\t' | awk -F'\t' '{ n[$2]++; t++ } END {
+            for (k in n) if (n[k] > 4) printf "crowded theme: %s (%d entries) — look for merges\n", k, n[k]
+            printf "%d open entries\n", t }'
+        [ -d "$WIP/todo" ] && printf "wip/todo/: %d of a WIP limit of 12\n" "$(find "$WIP/todo" -name '*.md' | wc -l)"
         ;;
 esac

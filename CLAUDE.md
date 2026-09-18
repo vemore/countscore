@@ -19,7 +19,7 @@ page resolves to `.llmwiki/Name.md`.
 
 Repeatable procedures are **skills** in `.claude/skills/` — check them before writing steps
 out by hand: `i18n-add-string`, `db-migration`, `release-android`, `backend-deploy`,
-`web-deploy`, `flutter-device-test`, `ship-parallel`.
+`web-deploy`, `flutter-device-test`, `ship-parallel`, `wip-refine`.
 
 Scoped instructions: `backend/CLAUDE.md` (Python/FastAPI) and `.claude/rules/web.md` (PWA —
 not in `web/`, because everything under `web/` is published with the build).
