@@ -94,6 +94,44 @@ def test_openai_compat_does_not_retry():
     assert p._client.max_retries == 0
 
 
+def test_anthropic_client_does_not_retry():
+    """The comments client never retries: the app's retry button is the retry."""
+    from app.services.anthropic_client import AnthropicClient
+
+    get_settings().anthropic_api_key = "k"
+    client = AnthropicClient()
+    assert client._client is not None
+    assert client._client.max_retries == 0
+
+
+async def test_anthropic_5xx_makes_exactly_one_upstream_call():
+    """Only the transport is stubbed, so the SDK's own retry loop runs as in production.
+
+    The anthropic SDK speaks ``httpx2`` (not ``httpx``), so the stub is an httpx2 transport.
+    """
+    import anthropic
+    import httpx2
+
+    from app.services.anthropic_client import AnthropicClient
+
+    calls: list[httpx2.Request] = []
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        calls.append(request)
+        return httpx2.Response(
+            500, json={"type": "error", "error": {"type": "api_error", "message": "boom"}}
+        )
+
+    get_settings().anthropic_api_key = "k"
+    client = AnthropicClient()
+    assert client._client is not None
+    client._client._client = httpx2.AsyncClient(transport=httpx2.MockTransport(handler))
+
+    with pytest.raises(anthropic.InternalServerError):
+        await client.generate_comment([{"type": "text", "text": "s"}], "u")
+    assert len(calls) == 1
+
+
 def test_openai_compat_unavailable_without_key():
     p = OpenAICompatProvider(label="gemini", base_url="http://x", api_key=None, model="m")
     assert p.available is False
