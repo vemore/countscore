@@ -1,5 +1,7 @@
 # The OpenAI SDK's own retries only delay a capacity error by three seconds
 
+**Status:** done (2026-09-18) — closed by fix/backend-hardening. `AsyncOpenAI(max_retries=0)` in `OpenAICompatProvider`, matching Bedrock; pinned by `test_openai_compat_does_not_retry` and by `test_analysis_upstream_503_makes_exactly_one_upstream_call`, which stubs only the transport. `compare_providers.py` reports a failed call as an error and never relied on the retry.
+
 - **Noted:** 2026-09-18 — while fixing the upstream-503 mapping (fix/llm-upstream-unavailable)
 - **Theme:** backend-hardening
 - **Area:** backend

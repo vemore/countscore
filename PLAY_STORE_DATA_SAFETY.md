@@ -526,7 +526,9 @@ Data types declared:
 All three: collected YES, shared YES, optional, App functionality,
       NOT linked to identity, NOT used for tracking.
 
-Permissions: INTERNET (declared in the main manifest; the only one)
+Permissions: INTERNET (declared in the main manifest; the only one the app declares)
+             + DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION, injected by androidx.core:
+               signature-level, private to the app, grants access to nothing.
              No WAKE_LOCK, no storage permissions.
              networkSecurityConfig points at res/xml/network_security_config.xml.
 
