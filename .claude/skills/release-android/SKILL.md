@@ -219,7 +219,11 @@ store_listing/
 ```
 
 - The per-locale artwork is **opt-in**: with nothing under `store_listing/<locale>/`, every
-  locale gets `assets/` — which is the nominal path today.
+  locale gets `assets/`. For the **phone screenshots that fallback is wrong**: the files in
+  `assets/screenshots/phone/` are raw 1080×2400 RGBA captures Play refuses. Compose each
+  locale's set first, then check that none is missing, before any `--graphics`:
+  `uv run --script scripts/compose_screenshots.py` then `... --check`
+  (captions: `store_listing/<locale>/screenshot_captions.txt`; `.llmwiki/StoreListing.md`).
 - The screenshot glob is **`*.png` only**. A JPEG in that directory is ignored in silence;
   convert it. Play's limit is **8 phone screenshots**, and the script refuses a ninth.
 - `video.txt` absent means the `video` field is not sent at all, so Play keeps whatever is

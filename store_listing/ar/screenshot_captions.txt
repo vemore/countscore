@@ -1,0 +1,12 @@
+# Captions of the store screenshots, one per raw capture in
+# store_listing/assets/screenshots/phone/ — `<capture stem>: <caption>`.
+# Translated from the validated fr-FR captions. Composed by scripts/compose_screenshots.py
+# into screenshots/phone/ next to this file.
+01_main_screen: كل جلسات لعبك في لمحة واحدة
+02_player_management: لاعبوك، من سهرة إلى أخرى
+03_game_types: ألعابك المفضلة، جاهزة لحساب النقاط
+04_game_history: راجع كل جلسة انتهت
+05_game_board: المجاميع تُحسب تلقائيًا
+06_customization: لعبتك غير موجودة؟ أنشئها
+07_score_entry: أدخل النقاط جولة بعد جولة
+08_statistics: الجلسات والانتصارات والنسبة: إحصاءاتك

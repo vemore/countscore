@@ -1,0 +1,13 @@
+# Captions of the store screenshots, one per raw capture in
+# store_listing/assets/screenshots/phone/ — `<capture stem>: <caption>`.
+# Translated from the validated fr-FR captions. Composed by scripts/compose_screenshots.py
+# into screenshots/phone/ next to this file.
+# `|` forces the line break: the automatic wrap would split words here.
+01_main_screen: 所有对局|一目了然
+02_player_management: 你们的玩家|每次聚会都记得
+03_game_types: 你们爱玩的游戏|随时开始计分
+04_game_history: 每一局结束的游戏|随时回看
+05_game_board: 总分自动计算
+06_customization: 没有你们的游戏？|自己创建
+07_score_entry: 一轮一轮|录入分数
+08_statistics: 局数、胜场、胜率：|你们的统计

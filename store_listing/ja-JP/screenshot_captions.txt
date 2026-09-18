@@ -1,0 +1,13 @@
+# Captions of the store screenshots, one per raw capture in
+# store_listing/assets/screenshots/phone/ — `<capture stem>: <caption>`.
+# Translated from the validated fr-FR captions. Composed by scripts/compose_screenshots.py
+# into screenshots/phone/ next to this file.
+# `|` forces the line break: the automatic wrap would split words here.
+01_main_screen: すべての対戦を|ひと目で
+02_player_management: プレイヤーの記録は|次の集まりにも
+03_game_types: お気に入りのゲームを|すぐに記録
+04_game_history: 終わったゲームを|いつでも振り返り
+05_game_board: 合計は自動で計算
+06_customization: ないゲームは|自分で作成
+07_score_entry: ラウンドごとに|点数を入力
+08_statistics: 対戦数・勝利数・勝率を|統計で

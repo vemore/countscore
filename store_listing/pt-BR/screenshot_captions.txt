@@ -1,0 +1,12 @@
+# Captions of the store screenshots, one per raw capture in
+# store_listing/assets/screenshots/phone/ — `<capture stem>: <caption>`.
+# Translated from the validated fr-FR captions. Composed by scripts/compose_screenshots.py
+# into screenshots/phone/ next to this file.
+01_main_screen: Todas as suas partidas de relance
+02_player_management: Seus jogadores, de uma noite de jogos para outra
+03_game_types: Seus jogos favoritos, prontos para pontuar
+04_game_history: Reveja cada partida terminada
+05_game_board: Os totais se calculam sozinhos
+06_customization: Seu jogo não está na lista? Crie-o
+07_score_entry: Lance os pontos rodada a rodada
+08_statistics: Partidas, vitórias, taxa: suas estatísticas
