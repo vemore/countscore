@@ -6,13 +6,11 @@
 
 ## Facts
 
-70 Dart files tracked under `lib/` (including the committed generated localizations,
-excluding gitignored `*.g.dart`).
-
-`lib/utils/` exists since 2026-09-16 and holds two cross-cutting helpers, detailed below:
-`game_type_name.dart` — the switch from a built-in game type's `builtin_key` to its
-localized name, which every screen showing a game type's name goes through ([[I18n]]) —
-and `insets.dart`.
+`lib/` holds `main.dart` and eight directories: `screens/`, `widgets/`, `models/`,
+`providers/`, `repositories/` (the interfaces, and their Drift implementations in
+`repositories/drift/`), `services/`, `utils/` and `l10n/` (the ARB files and the committed
+generated localizations; `*.g.dart` is gitignored). Each is described below, by what it
+holds rather than by a file count.
 
 ### Entry point
 
@@ -20,32 +18,34 @@ and `insets.dart`.
 Material 3, seed colour `Colors.deepPurple`. 10 `supportedLocales` with a
 `localeResolutionCallback` falling back to `en`. Home is `HomeScreen`.
 There is no DI container. `main()` is `async` and calls
-`WidgetsFlutterBinding.ensureInitialized()` to `await ThemeProvider.load()` and
-`BackendProvider.load()` and hand both results to `MyApp`, so the first frame is already
-themed and already knows whether the connected features exist.
+`WidgetsFlutterBinding.ensureInitialized()`, then awaits three things before `runApp`, in
+this order: `ThemeProvider.load()`, `BackendProvider.load()`, and
+`ReviewPromptService.instance.recordFirstLaunch()` (`lib/main.dart:27`). The first two
+results are handed to `MyApp`, so the first frame is already themed and already knows
+whether the connected features exist; the third starts the review prompt's clock (below).
 
 ### Providers — `lib/providers/`, all `ChangeNotifier` (provider ^6.1.2)
 
 | Provider | Responsibility |
 |---|---|
-| `game_provider.dart` (415 l.) | The substantial one. Repositories are constructor-injectable, defaulting to the six Drift implementations over `AppDatabase.instance`. Owns `_games`, `_currentGame`, `_currentPlayers`, `_currentRounds`, `_scores` (keyed `"playerId_roundId"`) and `_roundCounts` (game id → rounds played, one grouped query in `loadGames`, kept in step by `addRound`/`deleteRound`). Game/round/score CRUD plus stats. |
-| `game_type_provider.dart` (46 l.) | Game-type list CRUD, `getGameTypeById`. The 22 built-in types are rows like any other; their *displayed* name comes from `lib/utils/game_type_name.dart`, not from the row. |
-| `settings_provider.dart` (72 l.) | Wakelock toggle (SharedPreferences-backed) and DB export/import. The **only** caller of `DatabaseService` for I/O. Exposes `supportsDbExportImport => !kIsWeb`. |
-| `theme_provider.dart` (33 l.) | `ThemeMode` only, persisted to SharedPreferences under `themeMode` as `ThemeMode.name`. `load()` is called from `main()` before `runApp`. |
+| `game_provider.dart` | The substantial one. Repositories are constructor-injectable, defaulting to the six Drift implementations over `AppDatabase.instance`. Owns `_games`, `_currentGame`, `_currentPlayers`, `_currentRounds`, `_scores` (keyed `"playerId_roundId"`) and `_roundCounts` (game id → rounds played, one grouped query in `loadGames`, kept in step by `addRound`/`deleteRound`). Game/round/score CRUD plus stats. |
+| `game_type_provider.dart` | Game-type list CRUD, `getGameTypeById`. The 22 built-in types are rows like any other; their *displayed* name comes from `lib/utils/game_type_name.dart`, not from the row. |
+| `settings_provider.dart` | Wakelock toggle (SharedPreferences-backed) and DB export/import. The **only** caller of `DatabaseService` for I/O. Exposes `supportsDbExportImport => !kIsWeb`. |
+| `theme_provider.dart` | `ThemeMode` only, persisted to SharedPreferences under `themeMode` as `ThemeMode.name`. `load()` is called from `main()` before `runApp`. |
 | `group_provider.dart` | Group membership and the sync loop — create/join/leave/rotate, the device list and `revokeDevice`, `shareGame`, `syncNow`, `SyncStatus`, and a `SyncEvent` stream shown as snackbars by `_SyncEventListener` in `main.dart`. A `ChangeNotifierProxyProvider` over `BackendProvider`: runs only with a URL **and** a device token. Calls `GameProvider.refreshFromSync` after remote changes. See [[Sync]]. |
 | `backend_provider.dart` | The self-hosted backend base URL, SharedPreferences key `backendUrl`, **no default**. `check()` validates and canonicalises what the user typed; `isConfigured` gates every connected feature. `load()` is called from `main()` before `runApp`. |
 
-### Screens — `lib/screens/` (11)
+### Screens — `lib/screens/`
 
 `settings_screen` is a `StatefulWidget` since the Server section (it owns the URL
 `TextEditingController`).
 
-`home_screen` (628 l.) · `game_board_screen` (1017 l., the scoring grid) ·
-`game_types_screen` (491 l.) · `create_game_screen` (372 l.) ·
+`home_screen` (the game list) · `game_board_screen` (the scoring grid) ·
+`game_types_screen` · `create_game_screen` ·
 `game_analysis_screen` (the LLM analysis, with its row of voice chips — see
 [[LlmProviders]]) ·
-`players_screen` (326 l.) · `player_stats_screen` (299 l.) · `settings_screen` (368 l.) ·
-`about_screen` (175 l.) · `ranking_screen` (140 l.) · `game_rules_screen`.
+`players_screen` · `player_stats_screen` · `settings_screen` ·
+`about_screen` · `ranking_screen` · `game_rules_screen`.
 
 `game_rules_screen` takes its `GameType` as a constructor argument rather than reading a
 provider: both callers — the board's overflow menu and the game-type list — already hold
@@ -57,10 +57,53 @@ why those rulesets are assets and not ARB keys.
 `about_screen` reads the displayed version from `package_info_plus`
 (`PackageInfo.fromPlatform()`, held in a `static final` future) — i.e. from `pubspec.yaml`
 `version:` at build time; the ARB key `version` is only the `"Version {version}"` frame.
+It also carries a "Rate CountScore" `ListTile` (ARB key `rateApp`) that opens the Play
+listing through `url_launcher` — the one rating path the user can take at will, next to the
+prompt below.
 
-`lib/widgets/` holds exactly one component: `player_picker_dialog.dart` (291 l.).
+### Widgets — `lib/widgets/`
 
-### Utilities — `lib/utils/` (2)
+Three components shared out of the screens:
+
+- `player_picker_dialog.dart` — `create_game_screen`'s player picker: searches the known
+  players or creates one, giving a new player a colour no one else in the list uses, and
+  returns a `PlayerSelection` (name and colour).
+- `group_settings_section.dart` — Settings → Group: create or join a group, show its invite
+  code, leave it, and show where sync stands; usable only once a server URL is set.
+- `group_devices_sheet.dart` — Settings → Group → Devices: the group's devices, this one
+  marked, and revoking any other ([[Sync]]).
+
+### Services — `lib/services/`
+
+- `review_prompt.dart` — `ReviewPromptService`, and its `ReviewPromptService.instance`
+  singleton, which decides when to hand the Play in-app review sheet (`in_app_review`) to
+  the user. `recordFirstLaunch()` is awaited in `main()` and stamps the first launch once
+  (SharedPreferences `reviewPromptFirstLaunch`). `onGameFinished()` is called, unawaited,
+  wherever `GameProvider.setGameFinished` reports the transition that finishes a game — the
+  board's finish menu entry and its game-over dialog (`game_board_screen.dart`) and the game list's card menu
+  (`home_screen.dart`). It asks only when every guard holds: at least `minGamesFinished`
+  (3) games finished, `minAge` (7 days) since the first launch, not already asked for this
+  app version (`reviewPromptVersion`), not already asked this session. There is no
+  pre-prompt and nothing depends on the outcome, which Play never reports. The platform is
+  behind the `ReviewRequester` seam; `PlatformReviewRequester` answers unavailable on the
+  web, where `in_app_review` has no implementation, and an unavailable platform does not
+  burn the version. The session guard is instance state, which is why every caller goes
+  through `instance`.
+- `backend_client.dart` — HTTP to the self-hosted backend, `BackendException` ([[Api]]).
+- `commentary_report.dart` — the `mailto:` that reports an AI commentary, sent from the
+  user's own mail app.
+- `game_rules_catalog.dart` — the rulesets shipped under `assets/rules/` ([[I18n]]).
+- `database_service.dart` — the sqflite bootstrap migrator; `drift/` — `AppDatabase` and
+  its tables ([[DataLayer]]).
+- `sync/` — the group-sync engine, store and stream ([[Sync]]).
+- `uuid.dart` — platform-neutral v4 UUIDs.
+
+### Utilities — `lib/utils/`
+
+Cross-cutting helpers, since 2026-09-16: `insets.dart`, `game_type_name.dart` — the switch
+from a built-in game type's `builtin_key` to its localized name, which every screen showing a
+game type's name goes through ([[I18n]]) — and `play_again.dart`.
+
 
 `insets.dart` — `withBottomInset(context, base)` adds `MediaQuery.paddingOf(context).bottom`
 to an `EdgeInsets`. A `BoxScrollView` (`ListView`, `GridView`) inserts `MediaQuery.padding`
@@ -97,7 +140,7 @@ to the game list. The new game is named by `nextGameName`: `Skyjo 3` → `Skyjo 
 `RankingScreen` and `HomeScreen` take an optional `boardBuilder`, for tests only, as the
 board's `analysisRepo` is.
 
-### Models — `lib/models/` (7)
+### Models — `lib/models/`
 
 `game`, `game_type`, `player`, `round`, `score`, `game_analysis`, `analysis_style`. Plain classes with
 `toMap`/`fromMap`. `player.dart` has no `gameId` since v9 — its `id` is a
@@ -159,7 +202,7 @@ produces `ClassCastException: ...ApplicationExtensionImpl... cannot be cast to B
 
 ### The dynamic-icon constraint
 
-`lib/models/game_type.dart` (228 l.) holds `defaultGameTypes()` and builds `IconData`
+`lib/models/game_type.dart` holds `defaultGameTypes()` and builds `IconData`
 from codepoints stored in the database. Flutter's icon tree-shaker cannot see those
 references, so **every** build must pass `--no-tree-shake-icons` — apk, appbundle, ios and
 web alike. It costs roughly 200 KB. Omitting it fails the build with a tree-shake error.
@@ -209,3 +252,8 @@ not "fix" it by hardcoding a codepoint.
   that `loadGames` folds into the provider.
 - **The mode is stored as `ThemeMode.name`, not its index**, so reordering the enum cannot
   silently flip a user's theme. An unknown stored value decodes to `ThemeMode.system`.
+- **Directories are described by what they hold, not by counts** (2026-09-18). The page
+  said "70 Dart files" under `lib/`, "exactly one" widget and gave `(N l.)` sizes; each drifted
+  within days, and nothing in the code pins them. The only counts left are ones the code
+  fixes: the 10 `supportedLocales` and the 6 providers in `MultiProvider`
+  (`wip/done/2026-09-16-wiki-owed-by-rating-prompt.md`).
