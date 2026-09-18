@@ -1,5 +1,12 @@
 # The commit guard sometimes judges the main checkout instead of the worktree the command cd's into
 
+**Status:** done (2026-09-18) — closed by fix/guard-cd-parse-failure. `parse_command.py` now
+refuses a `git commit` or bare `git push` whose repository it cannot tell (an unparseable line
+holding `cd` / `git -C`, or an unexpanded `$VAR` operand) with "could not tell which repository
+this runs in — use `git -C <literal path>`", resolves a same-line `W=/literal` first, and splits
+the `);` runs shlex glued together; the #88 line and both 2026-09-18 reproductions are selftest
+cases.
+
 - **Noted:** 2026-09-18 — moving a wip entry from a worktree
 - **Theme:** hooks
 - **Area:** tooling

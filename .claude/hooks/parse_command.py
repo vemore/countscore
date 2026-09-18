@@ -25,6 +25,14 @@ Failure policy: an unparseable command yields no blocks (fail open -- a guard
 that refuses every command it cannot read is worse than the risk it covers) but
 parse_ok=false, which the caller treats as "assume a commit" (fail closed -- a
 skipped gate is a silent regression, a spurious gate costs seconds).
+
+The one exception is a commit or push whose repository cannot be told: a line
+that fails to parse but holds a `cd` or `git -C`, or one whose `cd` / `git -C`
+operand is a shell variable not bound to a literal earlier on the same line.
+Judging the payload cwd there judges the wrong checkout -- the main one, on
+`main` -- and the refusal would point at a stale-branch recovery that does not
+apply. It yields an `unknown-repo` block that says so and asks for
+`git -C <literal path>`.
 """
 
 import json
@@ -94,7 +102,31 @@ def strip_heredocs(text):
 def _lex(text):
     lexer = shlex.shlex(text, posix=True, punctuation_chars=True)
     lexer.whitespace_split = True
-    return list(lexer)
+    tokens = []
+    for token in lexer:
+        tokens.extend(split_punctuation(token))
+    return tokens
+
+
+PUNCTUATION = sorted((OPERATORS | REDIRECTS) - {"\n"}, key=len, reverse=True)
+
+
+def split_punctuation(token):
+    """shlex glues a run of punctuation into one token: the `);` closing
+    `W=$(pwd); git commit` would hide the `;`, and the commit with it. Split such a
+    run into the operators it is made of, longest first."""
+    if token in OPERATORS or token in REDIRECTS or not re.fullmatch(r"[();<>|&]+", token):
+        return [token]
+    parts = []
+    while token:
+        for operator in PUNCTUATION:
+            if token.startswith(operator):
+                parts.append(operator)
+                token = token[len(operator):]
+                break
+        else:
+            return parts + [token]
+    return parts
 
 
 def tokenize(text):
@@ -116,7 +148,10 @@ def tokenize(text):
 
 
 def segments(tokens):
-    """Split a token stream into commands, dropping operators and redirections."""
+    """Split a token stream into commands, dropping operators and redirections.
+
+    Heads are left as written: the caller reads `VAR=value` assignments off them
+    before `normalize_head` drops them."""
     result, current, skip_next = [], [], False
     for token in tokens:
         if skip_next:
@@ -133,7 +168,7 @@ def segments(tokens):
         current.append(token)
     if current:
         result.append(current)
-    return [normalize_head(s) for s in result if s]
+    return [s for s in result if s]
 
 
 def normalize_head(tokens):
@@ -409,13 +444,23 @@ def git_subcommand(tokens):
     return None, []
 
 
-def git_cwd(tokens, cwd):
-    """The directory a `git` segment runs in, following every `-C <dir>`."""
+def git_cwd(tokens, cwd, variables):
+    """The directory a `git` segment runs in, following every `-C <dir>`.
+
+    Returns (cwd, resolved, absolute): resolved is False once a `-C` operand cannot
+    be told from the command line; absolute is True when the last `-C` was an
+    absolute path, which settles the directory whatever `cd` did before."""
+    resolved, absolute = True, False
     index = 1
     while index < len(tokens) - 1:
         token = tokens[index]
         if token == "-C":
-            cwd = posixpath.normpath(posixpath.join(cwd, tokens[index + 1]))
+            target = resolve_path(tokens[index + 1], variables)
+            if target is None:
+                resolved, absolute = False, False
+            else:
+                cwd = posixpath.normpath(posixpath.join(cwd, target))
+                absolute = absolute or target.startswith("/")
             index += 2
             continue
         if token in GIT_GLOBAL_WITH_ARG:
@@ -425,7 +470,62 @@ def git_cwd(tokens, cwd):
             index += 1
             continue
         break
-    return cwd
+    return cwd, resolved, absolute
+
+
+# What the shell would still expand in a path this parser has to follow.
+UNEXPANDED = re.compile(r"[$`*?\[]")
+ASSIGNMENT = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)=(.*)$", re.S)
+VARIABLE = re.compile(r"\$(?:\{([A-Za-z_][A-Za-z0-9_]*)\}|([A-Za-z_][A-Za-z0-9_]*))")
+
+
+def resolve_path(token, variables):
+    """A `cd` or `git -C` operand as the shell would see it, or None when it cannot
+    be told from the command line.
+
+    Only `$VAR` / `${VAR}` bound earlier on the same line to a literal, and a
+    leading `~`, are expanded. Anything else -- a variable from the environment,
+    `$(...)`, a glob -- is unknown, and the caller refuses rather than guess."""
+    def substitute(match):
+        value = variables.get(match.group(1) or match.group(2))
+        return value if value is not None else match.group(0)
+    token = VARIABLE.sub(substitute, token)
+    if token == "~" or token.startswith("~/"):
+        home = os.environ.get("HOME")
+        if not home:
+            return None
+        token = home + token[1:]
+    if UNEXPANDED.search(token) or token.startswith("~"):
+        return None
+    return token
+
+
+def record_assignments(tokens, variables):
+    """Bind `VAR=value` when a segment is nothing but assignments (optionally after
+    `export`). A prefix assignment (`VAR=x cmd`) is not visible to the shell's own
+    expansion of that command's arguments, so it is not recorded."""
+    words = tokens[1:] if tokens and tokens[0] == "export" else tokens
+    if not words or not all(ASSIGNMENT.match(t) for t in words):
+        return False
+    for token in words:
+        name, value = ASSIGNMENT.match(token).groups()
+        variables[name] = None if UNEXPANDED.search(value) else value
+    return True
+
+
+def unknown_repo(what):
+    return {
+        "rule": "unknown-repo",
+        "message": (
+            "Refused: could not tell which repository this `{what}` runs in.\n"
+            "The guard judges a commit or a bare push on the branch of the repository it "
+            "runs in, and follows `cd` and `git -C` to find it -- but not through a shell "
+            "variable it cannot resolve, a command substitution, or a line it cannot parse. "
+            "Rather than judge the wrong checkout, it refuses. This says nothing about your "
+            "branch: it is not stale.\n"
+            "Re-run it with the path written out: `git -C <literal path> {verb}`."
+        ).format(what=what, verb=what.split()[-1]),
+    }
 
 
 def parse_commit(tokens):
@@ -478,22 +578,41 @@ def main():
     if not ok:
         # Fail closed on the commit question only: a regex is enough to decide
         # whether the gates should run, and running them spuriously is cheap.
-        if re.search(r"\bgit\b[^\n]*\bcommit\b", command) and "--dry-run" not in command:
+        commits = re.search(r"\bgit\b[^\n]*\bcommit\b", command) and "--dry-run" not in command
+        pushes = re.search(r"\bgit\b[^\n]*\bpush\b", command)
+        # A `cd` or `git -C` the parser could not follow means the payload cwd is
+        # probably not where the commit runs: judging it would judge the wrong branch.
+        moves = re.search(r"(^|[\s;&|(])cd(\s|$)", command) \
+            or re.search(r"\bgit\s[^\n]*\s-C\s", command)
+        if moves and (commits or pushes):
+            verdict["blocks"].append(unknown_repo("git commit" if commits else "git push"))
+        elif commits:
             verdict["commit"] = {"all": True, "amend": True, "pathspecs": [],
                                  "cwd": posixpath.normpath(cwd)}
         print(json.dumps(verdict))
         return
 
     notional_cwd = posixpath.normpath(cwd)
-    for tokens_of_segment in segments(tokens):
+    cwd_known = True
+    variables = {}
+    for raw_segment in segments(tokens):
+        if record_assignments(raw_segment, variables):
+            continue
+        tokens_of_segment = normalize_head(raw_segment)
         if not tokens_of_segment:
             continue
         if base(tokens_of_segment[0]) == "cd":
             args = operands(tokens_of_segment)
             if args and args[0] != "-":
-                notional_cwd = posixpath.normpath(posixpath.join(notional_cwd, args[0]))
+                target = resolve_path(args[0], variables)
+                if target is None:
+                    cwd_known = False
+                elif target.startswith("/"):
+                    notional_cwd, cwd_known = posixpath.normpath(target), True
+                else:
+                    notional_cwd = posixpath.normpath(posixpath.join(notional_cwd, target))
             else:
-                notional_cwd = posixpath.normpath(cwd)
+                notional_cwd, cwd_known = posixpath.normpath(cwd), True
             continue
         for finding in (
             check_flutter_build(tokens_of_segment),
@@ -503,21 +622,26 @@ def main():
         ):
             if finding:
                 verdict["blocks"].append(finding)
-        segment_cwd = notional_cwd
+        segment_cwd, segment_known = notional_cwd, cwd_known
         if base(tokens_of_segment[0]) == "git":
-            segment_cwd = git_cwd(tokens_of_segment, notional_cwd)
+            segment_cwd, resolved, absolute = git_cwd(tokens_of_segment, notional_cwd, variables)
+            segment_known = resolved and (cwd_known or absolute)
         push, finding = parse_push(tokens_of_segment)
         if finding:
             verdict["blocks"].append(finding)
         if push:
             push["cwd"] = segment_cwd
             verdict["push"] = push
+            # Only a bare push depends on the branch the repository is on.
+            if not segment_known and not push["refspecs"]:
+                verdict["blocks"].append(unknown_repo("git push"))
         commit = parse_commit(tokens_of_segment)
         if commit:
             commit["cwd"] = segment_cwd
             verdict["commit"] = commit
+            if not segment_known:
+                verdict["blocks"].append(unknown_repo("git commit"))
     print(json.dumps(verdict))
-
 
 if __name__ == "__main__":
     main()

@@ -29,6 +29,15 @@ commit in a worktree is judged on the worktree's branch and gated on the worktre
 hook *scripts* themselves are still read from `${CLAUDE_PROJECT_DIR}/.claude/hooks`: the rules
 in force are the main checkout's copy, which is why it stays on `main` ([[ParallelDelivery]]).
 
+**When it cannot tell, it says so.** `parse_command.py` follows a `cd` or `git -C` operand
+only when it is literal, a leading `~`, or a `$VAR` / `${VAR}` bound to a literal earlier on
+the same line (`W=/abs/path;` or `export W=...` as a command of its own — a prefix
+`W=x git ...` is not, as in the shell). Any other operand — an inherited variable, `$(...)`, a
+glob — or a line that fails to parse yet holds a `cd` or `git -C`, makes a `git commit` or a
+*bare* `git push` an `unknown-repo` refusal: "could not tell which repository this runs in",
+with `git -C <literal path>` as the remedy. A later absolute `cd` or `git -C` settles it again;
+a push with an explicit refspec and a read-only `git` never need it.
+
 `session-start.sh` also lists the repository's other worktrees and counts the local branches
 whose remote is gone, pointing at `scripts/cleanup_local.sh`; and it reports any pull request merged in the last 14 days whose base was
 not `main` and whose commits are not on `main` — work that merged into a dead-end branch.
@@ -50,7 +59,7 @@ See [[Testing]] for what the two workflows carry.
 
 `parse_command.py` and `arb_keys.py` are helpers, not handlers.
 `scripts/hooks_selftest.sh` exercises all of them, and `scripts/cleanup_local.sh`,
-`scripts/check_scheduled_runs.sh` and `scripts/worktree_setup.sh`'s secret links, from a table of 142 cases and runs as the
+`scripts/check_scheduled_runs.sh` and `scripts/worktree_setup.sh`'s secret links, from a table of 159 cases and runs as the
 first step of the `app` job in `.github/workflows/ci.yml`.
 
 ### What is refused, and on what evidence
@@ -70,6 +79,7 @@ first step of the `app` job in `.github/workflows/ci.yml`.
 | `gh pr merge` with `--admin`, or without `--squash`, or with `--merge`/`--rebase` | parsed flags, bundled short flags included |
 | `git push` with `--force`, `-f`, `--force-with-lease`, `--mirror` or a `+refspec` | parsed flags and refspecs; `--dry-run` passes |
 | `git push` to `main`: a refspec whose destination is `main`, `--all`, or a bare `git push` while on `main` | parsed refspecs; the current branch of the repository the push runs in |
+| A `git commit` or bare `git push` whose repository cannot be told (`unknown-repo`) | a `cd` / `git -C` operand left unexpanded, or an unparseable line holding `cd` / `git -C` |
 
 The path set that decides which gates run is a union, not `git diff --cached` alone:
 `git commit -a` stages tracked changes *after* the hook has read the index, so `--cached`
@@ -134,7 +144,18 @@ cherry-pick the commits `git cherry -v origin/main <old-branch>` marks with `+`.
   guard fire on the file that documents it. `.claude/hooks/parse_command.py` strips heredoc
   bodies, tokenises with `shlex`, segments on operators, and follows `cd`. A command it
   cannot parse yields no refusal (a guard that blocks what it cannot read is worse than the
-  risk) but is assumed to be a commit (a skipped gate is a silent regression).
+  risk) but is assumed to be a commit (a skipped gate is a silent regression) — unless it
+  holds a `cd` or `git -C`, below.
+- **Why "could not tell" rather than judging the launch checkout (2026-09-18).** An
+  unparseable line (the `'"'"'` quoting inside a `gh pr create --body "$(printf ...)"`) and a
+  `cd $W` / `git -C $W` the parser could not expand both fell back to the payload `cwd` — the
+  main checkout, on `main` — so work in a worktree was refused as "committing directly on
+  main" or "`git push` from main", with a stale-branch recovery that did not apply. Three
+  sessions hit it on one day. Resolving a same-line `W=/literal` covers the common shape
+  cheaply; anything further (the environment, `$(...)`) would make the parser a shell, so it
+  refuses instead, and says why. The same change split the runs of punctuation `shlex` glues
+  together (`);` after a `$(...)`), which had hidden the command that followed — a commit
+  there ran no gates. `wip/done/2026-09-18-guard-loses-the-cd-on-some-command-lines.md`.
 - **Why `[gone]` and not just `git cherry` (2026-09-09).** `CLAUDE.md` described a branch
   whose merged pull request the remote deleted. Under a squash merge, N commits become one
   upstream commit with a different patch-id, so `git cherry` shows no `-` line and would

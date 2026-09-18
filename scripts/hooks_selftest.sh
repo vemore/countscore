@@ -101,6 +101,7 @@ commit_field "the word in an echo"              null '.commit'       'echo "git 
 commit_field "unparseable assumes a commit"    true  '.commit.all'   'git commit -m "unbalanced'
 commit_field "the commit runs where cd left it" /tmp '.commit.cwd'  'cd /tmp && git commit -m x'
 commit_field "git -C moves the commit"      "$(dirname "$ROOT")/wt" '.commit.cwd' 'git -C ../wt commit -m x'
+commit_field "a commit after $(...); is still seen" false '.commit.all' 'X=$(date); git commit -m x'
 
 echo "== .gitignore ================================================"
 SANDBOX=$(mktemp -d)
@@ -255,6 +256,42 @@ out=$(payload "git push" "$WORK" | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/guard-bash
 report "a bare push from main" 2 "$?"
 out=$(payload "git push" "$TREE" | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/guard-bash.sh" 2>/dev/null)
 report "a bare push from a worktree branch" 0 "$?"
+
+# The guard must know which repository a commit or a bare push runs in; when it
+# cannot -- a line it fails to parse, a `cd $W` / `git -C $W` it cannot expand --
+# it refuses, and says so, rather than judge the launch checkout on main and point
+# at a stale-branch recovery (wip/done/2026-09-18-guard-loses-the-cd-on-some-command-lines.md).
+said() {  # description, expected verdict, command, [payload cwd]
+    local err rc got
+    err=$(payload "$3" "${4:-$WORK}" | CLAUDE_PROJECT_DIR="$WORK" "$HOOKS/guard-bash.sh" 2>&1 >/dev/null)
+    rc=$?
+    case "$rc:$err" in
+        0:*) got=pass ;;
+        2:*"could not tell which repository"*) got=unknown ;;
+        2:*) got=judged ;;
+        *) got="exit $rc" ;;
+    esac
+    report "$1" "$2" "$got"
+}
+said "same-line W=<tree>; cd \$W, then commit"      pass    "W=$TREE; cd \$W && git commit -m x"
+said "same-line W=<tree>; git -C \$W commit + push (b)" pass \
+    "W=$TREE; git -C \$W add .llmwiki/INDEX.md && git -C \$W commit -q --no-edit 2>&1 | tail -5; git -C \$W push -q 2>&1 | tail -2; git -C \$W log --oneline -1"
+said "same-line W=<tree>; cd \$W, heredoc, git -C \$W push (a)" pass \
+    "$(printf 'W=%s; cd $W && python3 - <<%sPY%s\nprint(1)\nPY\ngit -C $W add x && git -C $W commit -q --no-edit && git -C $W push -q 2>&1 | tail -2' "$TREE" "'" "'")"
+said "export W=\"<tree>\" then git -C \"\${W}\" push" pass   "export W=\"$TREE\"; git -C \"\${W}\" push -q"
+said "cd \$UNSET, then commit"                     unknown 'cd $SOMEWHERE && git commit -m x'
+said "git -C \$UNSET commit"                       unknown 'git -C $SOMEWHERE commit -m x'
+said "git -C \$UNSET bare push"                    unknown 'git -C $SOMEWHERE push -q'
+said "W=\$(pwd); git -C \$W commit"                 unknown 'W=$(pwd); git -C $W commit -m x'
+said "cd \$UNSET, then git -C <relative> commit"   unknown 'cd $SOMEWHERE && git -C sub commit -m x'
+said "cd \$UNSET, then git -C <absolute> commit"   pass    "cd \$SOMEWHERE && git -C $TREE commit -m x"
+said "cd \$UNSET, then cd <absolute>, commit"      pass    "cd \$SOMEWHERE && cd $TREE && git commit -m x"
+said "cd \$UNSET, push with an explicit refspec"   pass    'cd $SOMEWHERE && git push -u origin feat/x'
+said "cd \$UNSET, read-only git"                   pass    'cd $SOMEWHERE && git log --oneline -1'
+said "a prefix VAR=x is not a binding"             unknown "W=$TREE git -C \$W commit -m x"
+said "the #88 line: cd, heredoc commit, '\"'\"' in gh" unknown \
+    "$(printf 'cd %s && git commit -q -F - <<%sEOF%s\ndocs: move\nEOF\ngit push -q -u origin feat/in-tree 2>&1 | grep -v remote; gh pr create --base main --title t --body "$(printf %sit%s"%s"%ss done%s)"' "$TREE" "'" "'" "'" "'" "'" "'" "'")"
+said "unparseable, no cd: still judged where it runs" judged 'git commit -m "unbalanced'
 
 # Work tracking: one file per entry under wip/, never a shared TODO.md/DONE.md again.
 mkdir -p "$TREE/wip/done"
