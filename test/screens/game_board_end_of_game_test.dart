@@ -4,22 +4,21 @@
 // The game-over dialog fires on every path that can cross the threshold, and
 // asks once per crossing.
 //
-// It used to have a single call site — the score dialog — so a game could sit
-// past its condition with no dialog as long as the crossing score was not the
-// last cell touched. It now also runs after a round is added and after one is
-// deleted, behind `_gameOverDismissed`: the dialog is not raised again for a
-// crossing the user already answered, and the flag re-arms as soon as the
-// condition is false again, so crossing a second time asks again.
+// It runs after a score edit, after a round is added or deleted, and on the
+// board's first build, behind `_gameOverDismissed`: the dialog is not raised
+// again for a crossing the user already answered, and the flag re-arms as soon
+// as the condition is false again, so crossing a second time asks again.
 //
-// The flag is in-memory only, by decision: nothing records "Continue playing",
-// so a check on the board's first build would reopen the dialog every time the
-// board is opened for a game past its threshold.
+// "Continue playing" is also stored on the device (SharedPreferences, keyed by
+// the game's uuid, see `GameOverDismissals`), so leaving the board and coming
+// back does not ask again — and the first-build check can exist at all.
 
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:countscore/l10n/app_localizations.dart';
 import 'package:countscore/models/game_analysis.dart';
@@ -32,6 +31,7 @@ import 'package:countscore/repositories/drift/drift_repositories.dart';
 import 'package:countscore/repositories/game_analysis_repository.dart';
 import 'package:countscore/screens/game_board_screen.dart';
 import 'package:countscore/services/drift/database.dart';
+import 'package:countscore/services/game_over_dismissals.dart';
 
 /// The board asks on open whether this game has a stored analysis; nothing in
 /// these tests is about that, and the default reaches the real database.
@@ -65,6 +65,7 @@ void main() {
   });
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     db = AppDatabase.forTesting(NativeDatabase.memory());
     games = GameProvider(
       gameRepo: DriftGameRepository(db),
@@ -136,64 +137,60 @@ void main() {
     await settleTheDialog(tester);
   }
 
-  testWidgets('opening a board past its threshold raises nothing',
-      (tester) async {
-    await aGamePast(150);
+  Future<void> continuePlaying(WidgetTester tester) async {
+    await tester.tap(find.text(l10n.continuePlay));
+    await tester.pumpAndSettle();
+  }
+
+  /// Opens the board and answers the dialog its first build raises.
+  Future<void> openAndContinue(WidgetTester tester) async {
     await tester.pumpWidget(wrap());
     await settleTheDialog(tester);
-
-    expect(find.text(l10n.gameOverTitle), findsNothing,
-        reason: 'nothing records "Continue playing", so a check on first build '
-            'would reopen the dialog on every single opening');
-  });
-
-  testWidgets('adding a round notices a threshold already crossed',
-      (tester) async {
-    await aGamePast(150);
-    await tester.pumpWidget(wrap());
-    await settleTheDialog(tester);
-
-    await addARound(tester);
     expect(find.text(l10n.gameOverTitle), findsOneWidget);
-  });
+    await continuePlaying(tester);
+  }
 
-  testWidgets('"Continue playing" is not asked again for the same crossing',
-      (tester) async {
+  /// Leaves the board — its State is disposed — and opens it again.
+  Future<void> leaveAndComeBack(WidgetTester tester) async {
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(wrap());
+    await settleTheDialog(tester);
+  }
+
+  Future<bool> storedDismissal() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(GameOverDismissals.key(games.currentGame!.uuid!)) ??
+        false;
+  }
+
+  testWidgets('opening a board past its threshold asks once', (tester) async {
     await aGamePast(150);
     await tester.pumpWidget(wrap());
     await settleTheDialog(tester);
+    expect(find.text(l10n.gameOverTitle), findsOneWidget);
 
+    await continuePlaying(tester);
     await addARound(tester);
-    await tester.tap(find.text(l10n.continuePlay));
-    await tester.pumpAndSettle();
     expect(find.text(l10n.gameOverTitle), findsNothing);
-
-    await addARound(tester);
-    expect(find.text(l10n.gameOverTitle), findsNothing,
-        reason: 'the answer holds while the game stays over its threshold');
   });
 
-  testWidgets('a game brought back under its threshold asks again',
+  testWidgets('opening a finished game past its threshold raises nothing',
       (tester) async {
     await aGamePast(150);
+    await games.setGameFinished(games.currentGame!.id!, true);
     await tester.pumpWidget(wrap());
     await settleTheDialog(tester);
+    expect(find.text(l10n.gameOverTitle), findsNothing);
+  });
 
-    await addARound(tester);
-    await tester.tap(find.text(l10n.continuePlay));
-    await tester.pumpAndSettle();
-
-    // A correction puts Alice back under 100: the crossing is undone, so the
-    // flag re-arms.
-    await games.updateScore(
-      games.currentPlayers.first.id!,
-      games.currentRounds.first.id!,
-      10,
-    );
-    await addARound(tester);
+  testWidgets('a crossing on a score edit is noticed by the next round',
+      (tester) async {
+    await aGamePast(10);
+    await tester.pumpWidget(wrap());
+    await settleTheDialog(tester);
     expect(find.text(l10n.gameOverTitle), findsNothing);
 
-    // And crossing it a second time is a new event.
+    // Crossed outside the board — another device, a sync.
     await games.updateScore(
       games.currentPlayers.first.id!,
       games.currentRounds.first.id!,
@@ -201,6 +198,50 @@ void main() {
     );
     await addARound(tester);
     expect(find.text(l10n.gameOverTitle), findsOneWidget);
+  });
+
+  testWidgets('"Continue playing" survives leaving the board', (tester) async {
+    await aGamePast(150);
+    await openAndContinue(tester);
+    expect(await storedDismissal(), isTrue);
+
+    await leaveAndComeBack(tester);
+    expect(find.text(l10n.gameOverTitle), findsNothing,
+        reason: 'the first build must not ask a question already answered');
+
+    await addARound(tester);
+    expect(find.text(l10n.gameOverTitle), findsNothing,
+        reason: 'the answer is stored on the device, not in the board State');
+  });
+
+  testWidgets('a game brought back under its threshold asks again',
+      (tester) async {
+    await aGamePast(150);
+    await openAndContinue(tester);
+
+    // A correction puts Alice back under 100: the crossing is undone, so the
+    // stored answer goes.
+    await games.updateScore(
+      games.currentPlayers.first.id!,
+      games.currentRounds.first.id!,
+      10,
+    );
+    await addARound(tester);
+    expect(find.text(l10n.gameOverTitle), findsNothing);
+    expect(await storedDismissal(), isFalse);
+
+    // And crossing it a second time is a new event, asked once — even after
+    // the board was left in between.
+    await games.updateScore(
+      games.currentPlayers.first.id!,
+      games.currentRounds.first.id!,
+      150,
+    );
+    await leaveAndComeBack(tester);
+    expect(find.text(l10n.gameOverTitle), findsOneWidget);
+    await continuePlaying(tester);
+    await addARound(tester);
+    expect(find.text(l10n.gameOverTitle), findsNothing);
   });
 
   testWidgets('a game that never crosses its threshold is left alone',

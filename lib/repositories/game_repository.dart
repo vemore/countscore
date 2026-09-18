@@ -12,4 +12,9 @@ abstract class GameRepository {
   Future<List<Game>> getByType(int gameTypeId);
   Future<int> update(Game game);
   Future<int> delete(int id);
+
+  /// How many live games are declared over (`finishedAt` set). Read by the
+  /// review prompt at the moment it is due, so the count follows the state:
+  /// an undone finish or a reopen takes the game back out of it.
+  Future<int> countFinished();
 }

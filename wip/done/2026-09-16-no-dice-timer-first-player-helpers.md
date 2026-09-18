@@ -1,5 +1,12 @@
 # The phone on the table does everything except the small things the table needs
 
+**Status:** done (2026-09-18) — closed by feat/board-growth. **Who starts?** is in the
+board's overflow menu (`lib/widgets/who_starts_dialog.dart`, ARB keys `whoStarts`,
+`whoStartsAgain`), tested with N players in `test/screens/game_board_who_starts_test.dart`.
+The dice roller and the turn timer, decided to follow one pull request each, carry on as
+`wip/todo_nr/2026-09-18-no-dice-roller-on-the-board.md` and
+`wip/todo_nr/2026-09-18-no-turn-timer-on-the-board.md`.
+
 - **Noted:** 2026-09-16 — while comparing CountScore with the competing counters on the Play Store
 - **Theme:** growth
 - **Area:** app

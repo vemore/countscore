@@ -1,6 +1,13 @@
 # The game-over dialog is forgotten as soon as the board is closed
 
-**Status:** partly done (2026-09-16) — fix/end-of-game-polish gave the check every trigger
+**Status:** done (2026-09-18) — closed by feat/board-growth. "Continue playing" (or the
+back button) is stored on the device by `GameOverDismissals` (SharedPreferences
+`gameOverDismissed.<game uuid>`, not synced, no schema change — still v15), read back when the
+board opens and removed as soon as the condition is false; the board now checks once on its
+first build, for an open game past its threshold. Widget tests in
+`test/screens/game_board_end_of_game_test.dart`.
+
+Earlier, partly done (2026-09-16) — fix/end-of-game-polish gave the check every trigger
 it was missing. `_checkGameOverCondition` now runs from `_maybeShowGameOver` after a score
 edit, after `addRound` and after `deleteRound`, so a threshold crossed by any path raises the
 dialog, and `_gameOverDismissed` in `_GameBoardScreenState` keeps it to one question per

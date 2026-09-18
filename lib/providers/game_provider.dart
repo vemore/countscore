@@ -301,9 +301,11 @@ class GameProvider with ChangeNotifier {
   ///
   /// Returns true only when this call is what finished the game — a null
   /// `finishedAt` becoming set. Finishing an already finished game, or
-  /// reopening one, returns false. Callers use that to decide whether to offer
-  /// the Play review sheet, so that a finish → reopen → finish cycle counts
-  /// once rather than twice.
+  /// reopening one, returns false. Callers use that to decide whether to consider
+  /// the Play review sheet at all; how many games count towards it is the
+  /// number of finished games in the database (`GameRepository.countFinished`),
+  /// so a finish → reopen → finish cycle counts once and an undone finish not
+  /// at all.
   ///
   /// Nothing is locked: a finished game still accepts rounds and score edits.
   Future<bool> setGameFinished(int gameId, bool finished) async {

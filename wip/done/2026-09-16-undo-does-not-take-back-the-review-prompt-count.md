@@ -1,5 +1,11 @@
 # Undoing a finish leaves the review-prompt count incremented
 
+**Status:** done (2026-09-18) — closed by feat/board-growth. `reviewPromptGamesFinished`
+is gone (and removed from existing installs by `recordFirstLaunch`); `ReviewPromptService`
+reads `GameRepository.countFinished()` — live games with `finishedAt` set — once the cheap
+guards pass. `test/services/review_prompt_test.dart` checks finish then Undo leaves the count
+unchanged and finish, reopen, finish counts one.
+
 - **Noted:** 2026-09-16 — adding the undo snackbar (fix/end-of-game-polish)
 - **Theme:** growth
 - **Area:** app

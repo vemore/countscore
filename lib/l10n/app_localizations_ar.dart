@@ -1046,4 +1046,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get groupErrorNotOwner => 'هذا الإجراء متاح لمالك المجموعة فقط';
+
+  @override
+  String get whoStarts => 'من يبدأ؟';
+
+  @override
+  String get whoStartsAgain => 'اسحب مجددًا';
 }

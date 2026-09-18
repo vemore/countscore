@@ -3,10 +3,31 @@
 //
 // The platform channel is never touched — `ReviewRequester` is the seam, and
 // the fake below records what the service would have asked Play to do.
+//
+// The game count is not stored by the service: it is the number of games whose
+// `finishedAt` is set, read from `GameRepository`. The guard tests use a fake
+// repository that holds that number; the last group runs the real Drift
+// repository behind `GameProvider`, where undo and reopen happen.
 
+import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:countscore/providers/game_provider.dart';
+import 'package:countscore/repositories/drift/drift_repositories.dart';
+import 'package:countscore/repositories/game_repository.dart';
+import 'package:countscore/services/drift/database.dart';
 import 'package:countscore/services/review_prompt.dart';
+
+/// Only the count is read by the service; everything else is unused here.
+class _FakeGames implements GameRepository {
+  int finished = 0;
+
+  @override
+  Future<int> countFinished() async => finished;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 class _FakeRequester implements ReviewRequester {
   _FakeRequester({this.available = true});
@@ -39,22 +60,27 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late _Clock clock;
+  late _FakeGames games;
 
   ReviewPromptService service(
     _FakeRequester requester, {
     String version = '1.1.0',
+    GameRepository? repo,
   }) =>
       ReviewPromptService(
         requester: requester,
         currentVersion: () async => version,
         now: clock.call,
+        games: repo ?? games,
       );
 
-  /// Finishes [count] games and returns whether the last one asked for a
-  /// review. Each call goes through the same service instance, as the app does.
+  /// Finishes [count] games — one more row with `finishedAt` set each time —
+  /// and returns whether the last one asked for a review. Each call goes
+  /// through the same service instance, as the app does.
   Future<bool> finishGames(ReviewPromptService s, int count) async {
     var asked = false;
     for (var i = 0; i < count; i++) {
+      games.finished++;
       asked = await s.onGameFinished();
     }
     return asked;
@@ -62,6 +88,7 @@ void main() {
 
   setUp(() {
     clock = _Clock();
+    games = _FakeGames();
     SharedPreferences.setMockInitialValues({});
   });
 
@@ -76,6 +103,18 @@ void main() {
       clock.advance(const Duration(days: 30));
       await s.recordFirstLaunch();
       expect(prefs.getString(ReviewPromptService.prefsFirstLaunch), stamped);
+    });
+
+    test('removes the counter older versions stored', () async {
+      SharedPreferences.setMockInitialValues({
+        ReviewPromptService.legacyPrefsGamesFinished: 7,
+      });
+      await service(_FakeRequester()).recordFirstLaunch();
+      final prefs = await SharedPreferences.getInstance();
+      expect(
+        prefs.containsKey(ReviewPromptService.legacyPrefsGamesFinished),
+        isFalse,
+      );
     });
   });
 
@@ -93,12 +132,13 @@ void main() {
       );
       expect(requester.requests, 0);
 
-      // The games still counted, so the next one can ask.
+      // Nothing is stored: the count is whatever the database says.
       final prefs = await SharedPreferences.getInstance();
       expect(
-        prefs.getInt(ReviewPromptService.prefsGamesFinished),
-        ReviewPromptService.minGamesFinished - 1,
+        prefs.containsKey(ReviewPromptService.legacyPrefsGamesFinished),
+        isFalse,
       );
+      expect(await finishGames(s, 1), isTrue);
     });
 
     test('stays quiet below the age threshold, however many games', () async {
@@ -200,6 +240,74 @@ void main() {
       final available = _FakeRequester();
       expect(await service(available).onGameFinished(), isTrue);
       expect(available.requests, 1);
+    });
+  });
+
+  // The count follows the state: the real repository, behind the provider
+  // whose `setGameFinished` the board, the list and the Undo snackbar call.
+  group('the count follows the finished games', () {
+    late AppDatabase db;
+    late GameProvider provider;
+    late ReviewPromptService s;
+
+    setUp(() {
+      db = AppDatabase.forTesting(NativeDatabase.memory());
+      final repo = DriftGameRepository(db);
+      provider = GameProvider(
+        gameRepo: repo,
+        playerRepo: DriftPlayerRepository(db),
+        roundRepo: DriftRoundRepository(db),
+        scoreRepo: DriftScoreRepository(db),
+        gameTypeRepo: DriftGameTypeRepository(db),
+        statsRepo: DriftPlayerStatsRepository(db),
+      );
+      s = service(_FakeRequester(), repo: repo);
+    });
+
+    tearDown(() => db.close());
+
+    Future<int> aGame() =>
+        provider.createGame('Partie', null, false, ['Alice', 'Bob'], null);
+
+    test('finish then Undo leaves the count where it was', () async {
+      final before = await aGame();
+      await provider.setGameFinished(before, true);
+      expect(await s.finishedGames(), 1);
+
+      final id = await aGame();
+      expect(await provider.setGameFinished(id, true), isTrue);
+      expect(await s.finishedGames(), 2);
+      // The snackbar's Undo is `setGameFinished(id, false)`.
+      await provider.setGameFinished(id, false);
+      expect(await s.finishedGames(), 1);
+    });
+
+    test('finish, reopen, finish counts one game', () async {
+      final id = await aGame();
+      await provider.setGameFinished(id, true);
+      await provider.setGameFinished(id, false);
+      await provider.setGameFinished(id, true);
+      expect(await s.finishedGames(), 1);
+    });
+
+    test('a deleted finished game no longer counts', () async {
+      final id = await aGame();
+      await provider.setGameFinished(id, true);
+      await DriftGameRepository(db).delete(id);
+      expect(await s.finishedGames(), 0);
+    });
+
+    test('the Undo of a third finish keeps the sheet away', () async {
+      await s.recordFirstLaunch();
+      clock.advance(ReviewPromptService.minAge);
+      for (var i = 0; i < ReviewPromptService.minGamesFinished - 1; i++) {
+        await provider.setGameFinished(await aGame(), true);
+      }
+      final id = await aGame();
+      await provider.setGameFinished(id, true);
+      await provider.setGameFinished(id, false);
+      // Whatever calls the service next, the undone finish is not counted.
+      expect(await s.onGameFinished(), isFalse);
     });
   });
 }
