@@ -184,6 +184,15 @@ the condition is false again. "Continue playing" (or the back button) is also wr
 the board does not re-ask; the stored answer is removed as soon as the condition is false.
 A finished game is not asked about on open.
 
+The board's score grid has one breakpoint, `kBoardWideBreakpoint` (600 logical pixels,
+`game_board_screen.dart`), read from a `LayoutBuilder` rather than `MediaQuery`, so it is the
+width the grid is actually given. Below it the grid is the phone layout: intrinsic columns,
+centred, scrolling both ways. From 600 up it is at least as wide as the screen, the round
+column stays intrinsic, the player columns share the rest (`IntrinsicColumnWidth(flex: 1)`),
+and each score cell fills its column, so the whole column is the tap target. Too many
+players for the width still scroll sideways; no column is ever squeezed below its content.
+It is the only screen that branches on width.
+
 ### Toolchain
 
 | | Version | Set in |
@@ -283,3 +292,9 @@ not "fix" it by hardcoding a codepoint.
   within days, and nothing in the code pins them. The only counts left are ones the code
   fixes: the 10 `supportedLocales` and the 6 providers in `MultiProvider`
   (`wip/done/2026-09-16-wiki-owed-by-rating-prompt.md`).
+- **The large-screen layout starts with the score grid, not with a two-pane home** (2026-09-18,
+  refinement). A score table is the content that gets better with width; a master-detail home
+  is a separate entry (`wip/todo_nr/2026-09-18-home-master-detail.md`). The grid keeps its
+  `DataTable` and its two scroll views, with a minimum width and flexed player columns added
+  above 600 dp, so the phone layout is the same widget tree with nothing changed
+  (`wip/done/2026-09-16-no-large-screen-layout.md`).

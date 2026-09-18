@@ -1,5 +1,7 @@
 # No screen adapts to a tablet, foldable or the web PWA on a desktop
 
+**Status:** done (2026-09-18) — closed by feat/board-wide-layout. From 600 dp the board's score grid spreads over the available width (player columns share it, score cells fill their column); below it the phone layout is unchanged — `test/screens/game_board_wide_layout_test.dart` at 400 and 1000 dp, and the release PWA checked at 1600×1000, 700 and 400 px with no overflow. The home master-detail moved to `wip/todo_nr/2026-09-18-home-master-detail.md`; the tablet screenshot capture stays with `2026-09-16-screenshots-are-raw-captures.md`.
+
 - **Noted:** 2026-09-16 — while establishing what tablet store screenshots would need
 - **Theme:** large-screen
 - **Area:** app

@@ -21,6 +21,13 @@ import 'game_analysis_screen.dart';
 import 'game_rules_screen.dart';
 import 'ranking_screen.dart';
 
+/// The width, in logical pixels, from which the board's score grid spreads
+/// over the available width instead of keeping its intrinsic phone width.
+const double kBoardWideBreakpoint = 600;
+
+/// Whether a board given [width] lays its score grid out wide.
+bool isBoardGridWide(double width) => width >= kBoardWideBreakpoint;
+
 class GameBoardScreen extends StatefulWidget {
   const GameBoardScreen({super.key, this.analysisRepo});
 
@@ -423,149 +430,171 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
             children: [
               // Tableau scrollable
               Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: SingleChildScrollView(
-                    child: DataTable(
-                      columnSpacing: 16,
-                      headingRowHeight: 56,
-                      dataRowMinHeight: 48,
-                      dataRowMaxHeight: 48,
-                      columns: [
-                        DataColumn(
-                          label: Text(
-                            l10n.round,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    // Above the breakpoint the grid spreads over the width
+                    // it is given; below it, it keeps its intrinsic width.
+                    final wide = isBoardGridWide(constraints.maxWidth);
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: SingleChildScrollView(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minWidth: wide ? constraints.maxWidth : 0,
                           ),
-                        ),
-                        ...players.map((player) {
-                          final playerTotal = gameProvider.getPlayerTotal(player.id!);
-                          final isEliminated = isPlayerEliminated(playerTotal);
-
-                          return DataColumn(
-                            label: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  player.name,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    decoration: isEliminated
-                                        ? TextDecoration.lineThrough
-                                        : null,
-                                    decorationColor: isEliminated
-                                        ? Colors.red
-                                        : null,
-                                    decorationThickness: isEliminated
-                                        ? 2.0
-                                        : null,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '$playerTotal',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.color,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
-                      ],
-                      rows: rounds.map((round) {
-                        final hasComment = round.comment != null &&
-                            round.comment!.trim().isNotEmpty;
-                        return DataRow(
-                          cells: [
-                            DataCell(
-                              InkWell(
-                                onTap: () => _showCommentDialog(
-                                  context,
-                                  gameProvider,
-                                  round,
-                                ),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 8,
-                                  ),
-                                  child: Text(
-                                    round.roundNumber.toString(),
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      decoration: hasComment
-                                          ? TextDecoration.underline
-                                          : null,
-                                      decorationThickness:
-                                          hasComment ? 2.0 : null,
-                                    ),
-                                  ),
+                          child: DataTable(
+                            key: const Key('board_score_grid'),
+                            columnSpacing: 16,
+                            headingRowHeight: 56,
+                            dataRowMinHeight: 48,
+                            dataRowMaxHeight: 48,
+                            columns: [
+                              DataColumn(
+                                label: Text(
+                                  l10n.round,
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
                                 ),
                               ),
-                            ),
-                            ...players.map((player) {
-                              final score = gameProvider.getScore(
-                                player.id!,
-                                round.id!,
-                              );
-                              final isZeroScore = isZapZap && score == 0;
-                              final cellColor = gameType?.cardColor ?? Theme.of(context).colorScheme.primaryContainer;
+                              ...players.map((player) {
+                                final playerTotal = gameProvider.getPlayerTotal(player.id!);
+                                final isEliminated = isPlayerEliminated(playerTotal);
 
-                              return DataCell(
-                                InkWell(
-                                  onTap: () {
-                                    _showScoreDialog(
-                                      context,
-                                      gameProvider,
-                                      gameType,
-                                      player,
-                                      round.roundNumber,
-                                      round.id!,
-                                      score ?? 0,
-                                    );
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 8,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: score != null
-                                          ? cellColor.withValues(alpha: 0.3)
-                                          : null,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      score?.toString() ?? '-',
-                                      style: TextStyle(
-                                        fontWeight: score != null
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                        decoration: isZeroScore
-                                            ? TextDecoration.underline
-                                            : null,
-                                        decorationColor: isZeroScore
-                                            ? cellColor
-                                            : null,
-                                        decorationThickness: isZeroScore
-                                            ? 2.0
-                                            : null,
+                                return DataColumn(
+                                  // Wide: the player columns share what the
+                                  // round column leaves, never below their
+                                  // intrinsic width.
+                                  columnWidth: wide
+                                      ? const IntrinsicColumnWidth(flex: 1)
+                                      : null,
+                                  label: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        player.name,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          decoration: isEliminated
+                                              ? TextDecoration.lineThrough
+                                              : null,
+                                          decorationColor: isEliminated
+                                              ? Colors.red
+                                              : null,
+                                          decorationThickness: isEliminated
+                                              ? 2.0
+                                              : null,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '$playerTotal',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.color,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }),
+                            ],
+                            rows: rounds.map((round) {
+                              final hasComment = round.comment != null &&
+                                  round.comment!.trim().isNotEmpty;
+                              return DataRow(
+                                cells: [
+                                  DataCell(
+                                    InkWell(
+                                      onTap: () => _showCommentDialog(
+                                        context,
+                                        gameProvider,
+                                        round,
+                                      ),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
+                                        child: Text(
+                                          round.roundNumber.toString(),
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            decoration: hasComment
+                                                ? TextDecoration.underline
+                                                : null,
+                                            decorationThickness:
+                                                hasComment ? 2.0 : null,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
+                                  ...players.map((player) {
+                                    final score = gameProvider.getScore(
+                                      player.id!,
+                                      round.id!,
+                                    );
+                                    final isZeroScore = isZapZap && score == 0;
+                                    final cellColor = gameType?.cardColor ?? Theme.of(context).colorScheme.primaryContainer;
+
+                                    return DataCell(
+                                      InkWell(
+                                        onTap: () {
+                                          _showScoreDialog(
+                                            context,
+                                            gameProvider,
+                                            gameType,
+                                            player,
+                                            round.roundNumber,
+                                            round.id!,
+                                            score ?? 0,
+                                          );
+                                        },
+                                        child: Container(
+                                          // Wide: the cell fills its column,
+                                          // so the whole column is the target.
+                                          width: wide ? double.infinity : null,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 8,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: score != null
+                                                ? cellColor.withValues(alpha: 0.3)
+                                                : null,
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          child: Text(
+                                            score?.toString() ?? '-',
+                                            style: TextStyle(
+                                              fontWeight: score != null
+                                                  ? FontWeight.bold
+                                                  : FontWeight.normal,
+                                              decoration: isZeroScore
+                                                  ? TextDecoration.underline
+                                                  : null,
+                                              decorationColor: isZeroScore
+                                                  ? cellColor
+                                                  : null,
+                                              decorationThickness: isZeroScore
+                                                  ? 2.0
+                                                  : null,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ],
                               );
-                            }),
-                          ],
-                        );
-                      }).toList(),
-                    ),
-                  ),
+                            }).toList(),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
 
