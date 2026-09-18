@@ -2,7 +2,7 @@
 
 > Scope: both LLM paths — Claude for short comments, a pluggable provider for the game
 > analysis. Related: [[Api]] · [[Backend]] · [[Security]] · [[MobileApp]] · [[Deployment]]
-> Updated: 2026-09-16
+> Updated: 2026-09-18
 
 ## Facts
 
@@ -83,10 +83,14 @@ a 404 (`lib/services/backend_client.dart`).
   "gemini", "mistral")`, raises `ValueError` on an unknown name.
 - **Implementations**: `bedrock.py` (`BedrockProvider`, boto3 `bedrock-runtime`, Llama-3
   wire format, wrapped in `asyncio.to_thread`, `read_timeout=LLM_TIMEOUT_SECONDS` (90, `llm/base.py` — also passed to
-  `AsyncOpenAI` and `AsyncAnthropic`, whose own default is 600 s), no retries; `available`
-  iff the AWS key and secret are set) and `openai_compat.py`
-  (`OpenAICompatProvider(label, base_url, api_key, model)` — one class serving both Gemini
-  and Mistral over OpenAI Chat Completions).
+  `AsyncOpenAI` and `AsyncAnthropic`, whose own default is 600 s), no retries
+  (`retries={"max_attempts": 0}`); `available` iff the AWS key and secret are set) and
+  `openai_compat.py` (`OpenAICompatProvider(label, base_url, api_key, model)` — one class
+  serving both Gemini and Mistral over OpenAI Chat Completions), no retries either
+  (`AsyncOpenAI(max_retries=0)`, since 2026-09-18). The SDK's default two retries fired at
+  +0.4 s and +0.9 s against Gemini's 503 "high demand" on 2026-09-16 and landed in the same
+  capacity dip; the Regenerate button is the retry ([[Api]]). One provider 503 is one
+  upstream call, pinned by `test_analysis_upstream_503_makes_exactly_one_upstream_call`.
 - **Model defaults**: `bedrock_model_id` / `gemini_model` / `mistral_model` in
   `backend/app/config.py:28,32,37`. Each is **duplicated** in `docker-compose.prod.yml`
   (`${MISTRAL_MODEL:-…}` and siblings), and the compose value wins in production — a default

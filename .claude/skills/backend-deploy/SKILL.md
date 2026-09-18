@@ -163,7 +163,10 @@ ssh "$NAS_SSH" "$NAS_PATH; cd $NAS_DEPLOY_DIR && docker compose ps db-backup && 
 ```
 
 Expect `encrypting to age1…` in the logs, `backup done: countscore_<ts>.dump.gz.age`, and
-that file in `backups/` with mode `-rw-------`. Prove it decrypts **on the machine holding
+that file in `backups/`. On the NAS its mode reads `+` and the ACL decides who reads it:
+`sudo synoacltool -get "$NAS_DEPLOY_DIR/backups"` must list the container user and
+`administrators` only (`.llmwiki/Deployment.md` *Backups*); on a host without ACLs, expect
+`-rw-------`. Prove it decrypts **on the machine holding
 the private key**, never on the NAS:
 `ssh "$NAS_SSH" "cat $NAS_DEPLOY_DIR/backups/<file>" | age -d -i countscore-backup.key | gunzip | pg_restore --list | head`.
 
