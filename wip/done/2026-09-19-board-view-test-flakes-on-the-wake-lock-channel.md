@@ -1,5 +1,7 @@
 # The board-view toggle test fails at random on the wake-lock platform channel
 
+**Status:** done (2026-09-19) — closed by feat/group-settings-screen. It failed two CI runs in a row and 3 local runs in 5, so the pull request could not go green without it: `SettingsProvider._applyWakeLock` now catches a plugin error and logs it. The test then passed 8 local runs out of 8.
+
 - **Noted:** 2026-09-19 — CI of feat/group-settings-screen (#120), run 35400576700, a change that does not touch the board
 - **Theme:** test-tooling
 - **Area:** app
