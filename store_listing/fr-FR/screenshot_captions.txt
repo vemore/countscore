@@ -4,7 +4,7 @@
 # The space before « ? » and « : » is a no-break space (U+00A0): the caption never wraps there.
 01_main_screen: Toutes vos parties, d'un coup d'œil
 02_player_management: Vos joueurs, d'une soirée à l'autre
-03_game_types: Skyjo, Uno, Scrabble… prêts à compter
+03_game_types: Vos jeux préférés, prêts à compter
 04_game_history: Retrouvez chaque partie terminée
 05_game_board: Les totaux se calculent tout seuls
 06_customization: Votre jeu n'y est pas ? Créez-le

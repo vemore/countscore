@@ -169,8 +169,8 @@ without its `**Last Updated**` line changing ([[Testing]]).
 release to go straight to production through the API, with no internal hop. The same edit
 published the corrected ten-locale listing text (#84); `--graphics` was deliberately left out,
 because the eight phone screenshots are still the wrong ratio
-(`wip/todo/2026-09-16-screenshots-are-raw-captures.md`; `scripts/compose_screenshots.py`
-now composes them, one locale at a time — [[StoreListing]]), so the images on Play are the ones
+(`scripts/compose_screenshots.py` has composed a compliant set per locale since 2026-09-18,
+not yet published — [[StoreListing]]), so the images on Play are the ones
 1.1.0 uploaded. 1.1.0 (4) stays listed as the completed production release beside it until the
 rollout is widened. Internal is still on 1.1.0 (4); beta and closed testing on 1.0.1 (3).
 

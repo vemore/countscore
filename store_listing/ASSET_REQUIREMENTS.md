@@ -5,11 +5,10 @@ Complete specifications and guidelines for creating Google Play Store visual ass
 **Last Updated**: September 16, 2026
 **Target**: Google Play Store listing for CountScore v1.1.0 and later
 
-> The icon, the feature graphic and eight phone screenshots are **committed and published**
-> (`assets/`), so the "what you need to create" framing below applies only to what is still
-> missing: compliant screenshots and a tablet set. See
-> `wip/todo/2026-09-16-screenshots-are-raw-captures.md` and
-> `.llmwiki/StoreListing.md`.
+> The icon, the feature graphic and eight phone screenshots are **committed** (`assets/`), and
+> each store locale has its composed, compliant screenshot set (`<locale>/screenshots/phone/`,
+> from `scripts/compose_screenshots.py`), so the "what you need to create" framing below
+> applies only to what is still missing: a tablet set. See `.llmwiki/StoreListing.md`.
 
 ---
 
@@ -289,10 +288,9 @@ A modern phone screen is taller than 16:9 (a Pixel 9 Pro XL captures 1080×2400)
 > **Status: Composed per locale** (2026-09-18) — the eight PNGs in
 > `assets/screenshots/phone/` are still raw `8-bit/color RGBA` captures, but they are now only
 > the input of `scripts/compose_screenshots.py`, which writes the 1080×1920 opaque RGB set of
-> each locale to `<locale>/screenshots/phone/`. `--check` verifies every locale has one. Until
-> a locale has its set, `play_publish.py` falls back to the raw captures for it — `fr-FR` has
-> its set; the nine others follow once the French captions are validated
-> (`wip/todo/2026-09-16-screenshots-are-raw-captures.md`).
+> each locale to `<locale>/screenshots/phone/`. All ten locales have their set, and `--check`
+> verifies it; a locale added without one would fall back to the raw captures. Closed
+> `wip/done/2026-09-16-screenshots-are-raw-captures.md`.
 
 **File Size**: Maximum 8 MB per screenshot
 

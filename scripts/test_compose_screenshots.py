@@ -108,3 +108,22 @@ def test_committed_sets_are_compliant() -> None:
     assert sets, "no composed set committed"
     for path in sets:
         assert cs.check_image(path) is None
+
+
+def test_a_forced_break_is_kept_and_not_drawn() -> None:
+    _, lines = cs.fit_caption("All your|games", Path(font()), "en-US")
+    assert lines == ["All your", "games"]
+
+
+def test_the_break_prefers_the_end_of_a_clause() -> None:
+    f = cs.load_font(Path(font()), 84, "en-US")
+    lines = cs.balance(
+        ["Game not", "listed? Create it"], "Game not listed? Create it", f, 936, False
+    )
+    assert lines == ["Game not listed?", "Create it"]
+
+
+def test_every_store_locale_has_captions() -> None:
+    """A store locale without captions would publish the raw captures Play refuses."""
+    for locale in cs.listing_locales(REPO):
+        assert (REPO / "store_listing" / locale / cs.CAPTIONS_FILE).is_file(), locale

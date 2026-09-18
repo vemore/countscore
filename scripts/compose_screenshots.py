@@ -13,7 +13,8 @@
 
 Input: the raw `adb` captures in store_listing/assets/screenshots/phone/ (written by
 scripts/capture_screenshots.sh) and, per locale, store_listing/<locale>/screenshot_captions.txt:
-one `<capture stem>: <caption>` line per capture, `#` for a comment.
+one `<capture stem>: <caption>` line per capture, `#` for a comment, `|` to force the line
+break (for the scripts written without spaces, where the automatic wrap may split a word).
 
 Output: store_listing/<locale>/screenshots/phone/<capture name>.png, 1080x1920 opaque RGB —
 the caption in a band above the screen, the status and navigation bars cropped off. That
@@ -72,6 +73,16 @@ FONTS: dict[str, tuple[str, ...]] = {
 }
 DEFAULT_FONTS = ("Roboto-Bold.ttf",)
 RTL_LOCALES = {"ar"}
+# A .ttc holds several faces: the CJK collection is JP, KR, SC, TC, HK in that order, and
+# the Chinese listing must get the Simplified Chinese glyph shapes, not the Japanese ones.
+FONT_INDEX = {"zh-CN": 2}
+# Scripts whose glyphs must be shaped (joined, reordered): without libraqm Pillow draws them
+# as isolated, wrongly ordered letters — legible to nobody who reads the language.
+SHAPED_LOCALES = {"ar", "hi-IN"}
+LANGUAGE = {"ar": "ar", "hi-IN": "hi", "ja-JP": "ja", "zh-CN": "zh-Hans"}
+# A line break after one of these ends a clause (Latin, Arabic, CJK and dash punctuation).
+CLAUSE_END = (",", "?", ":", "!", ";", "—", "،", "؟", "，", "？", "：", "、")
+BREAK = "|"  # in a caption, forces the line break there (and is not drawn)
 # Scripts written without spaces between words: wrap on characters, not on words.
 NO_SPACE_LOCALES = {"ja-JP", "zh-CN"}
 FONT_DIRS = (
@@ -181,19 +192,30 @@ def wrap(text: str, font: ImageFont.FreeTypeFont, max_width: int, by_char: bool)
 def balance(
     lines: list[str], text: str, font: ImageFont.FreeTypeFont, max_width: int, by_char: bool
 ) -> list[str]:
-    """Two lines of similar length read better than a full line and a widow."""
+    """Where to break two lines: after a clause if one fits, else at the most even split.
+
+    A break after the comma, question mark or colon that ends a clause reads as two phrases;
+    an even split in mid-phrase ("Your game is not / listed? Create it") reads as a typo.
+    """
     if len(lines) != 2:
         return lines
     tokens = list(text) if by_char else text.split(" ")
     joiner = "" if by_char else " "
-    best = lines
-    best_width = max(font.getlength(line) for line in lines)
+    best, best_width, best_clause = lines, max(font.getlength(line) for line in lines), False
     for i in range(1, len(tokens)):
         a, b = joiner.join(tokens[:i]), joiner.join(tokens[i:])
         width = max(font.getlength(a), font.getlength(b))
-        if width <= max_width and width < best_width:
-            best, best_width = [a, b], width
+        if width > max_width:
+            continue
+        clause = a.rstrip().endswith(CLAUSE_END)
+        if (clause and not best_clause) or (clause == best_clause and width < best_width):
+            best, best_width, best_clause = [a, b], width, clause
     return best
+
+
+def load_font(font_path: Path, size: int, locale: str) -> ImageFont.FreeTypeFont:
+    index = FONT_INDEX.get(locale, 0) if font_path.suffix.lower() == ".ttc" else 0
+    return ImageFont.truetype(str(font_path), size, index=index)
 
 
 def fit_caption(
@@ -201,8 +223,13 @@ def fit_caption(
 ) -> tuple[ImageFont.FreeTypeFont, list[str]]:
     by_char = locale in NO_SPACE_LOCALES
     max_width = WIDTH - 2 * SIDE_MARGIN
+    forced = [part.strip() for part in text.split(BREAK)] if BREAK in text else None
     for size in range(MAX_FONT_SIZE, MIN_FONT_SIZE - 1, -2):
-        font = ImageFont.truetype(str(font_path), size)
+        font = load_font(font_path, size, locale)
+        if forced:
+            if len(forced) <= MAX_LINES and all(font.getlength(p) <= max_width for p in forced):
+                return font, forced
+            continue
         lines = wrap(text, font, max_width, by_char)
         if len(lines) <= MAX_LINES and all(font.getlength(line) <= max_width for line in lines):
             return font, balance(lines, text, font, max_width, by_char)
@@ -228,12 +255,14 @@ def compose(raw: Image.Image, caption: str, font_path: Path, locale: str) -> Ima
     # Caption, centred in the band.
     font, lines = fit_caption(caption, font_path, locale)
     kwargs: dict[str, str] = {}
+    if locale in SHAPED_LOCALES and not features.check("raqm"):
+        raise ComposeError(
+            f"{locale}: Pillow was built without libraqm; the text would not be shaped"
+        )
+    if locale in LANGUAGE and features.check("raqm"):
+        kwargs["language"] = LANGUAGE[locale]
     if locale in RTL_LOCALES:
-        if not features.check("raqm"):
-            raise ComposeError(
-                f"{locale}: Pillow was built without libraqm; Arabic would not be shaped"
-            )
-        kwargs = {"direction": "rtl", "language": "ar"}
+        kwargs["direction"] = "rtl"
     line_height = round(font.size * LINE_SPACING)
     block = line_height * len(lines)
     y = (BAND_HEIGHT - block) // 2 + round(font.size * 0.1)

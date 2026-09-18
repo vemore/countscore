@@ -41,11 +41,18 @@ first, so `listing --graphics` publishes the composed set with no change to the 
   captions file is skipped with a warning — **and `play_publish.py` then falls back to the raw
   captures for it**, which `--check` reports as a missing set.
 - Fonts: Roboto Bold from the Flutter SDK's `material_fonts` cache for the Latin and Cyrillic
-  locales; `ja-JP`, `zh-CN`, `hi-IN`, `ar` need a Noto font installed (`FONTS` in the script),
-  and `ar` a Pillow built with libraqm for shaping. `--font` overrides.
-- State on 2026-09-18: **`fr-FR` only** is composed; its eight captions await the user's
-  validation in the pull request, and the nine other locales are translated from them
-  afterwards (`wip/todo/2026-09-16-screenshots-are-raw-captures.md`).
+  locales; Noto Sans CJK (face 0, Japanese, for `ja-JP`; face 2, Simplified Chinese, for
+  `zh-CN`), Noto Sans Devanagari and Noto Sans Arabic from `fonts-noto-cjk` / `fonts-noto-core`.
+  `ar` and `hi-IN` refuse to compose without a Pillow built with libraqm: unshaped, both
+  scripts render as disconnected, misordered letters. `--font` overrides.
+- A line breaks after a clause (`,` `?` `:` `—` and their Arabic and CJK forms) when one
+  fits, else at the most even split. `ja-JP` and `zh-CN` have no spaces to wrap on, so their
+  captions force the break with `|`.
+- **All ten locales are composed** (2026-09-18) and `--check` exits 0. The French captions
+  were validated by the user — with #3 changed to name no game, see the decision below — and
+  the nine others are translated from them. **Not yet on Play**: that is `play_publish.py
+  listing --graphics --commit`, on the user's go. The screens themselves stay French in every
+  locale: the captures are shared, only the caption is localized.
 
 ### Published locales (10, since 2026-09-16)
 
@@ -107,6 +114,8 @@ prose.
 - **No third-party game name in `title.txt`.** Uno, Skyjo, Scrabble, Phase 10 and Yahtzee are
   trademarks; the title is where Play enforces it. Descriptive use in the descriptions is
   framed as "works for your games of …", never "official app".
+- **No third-party game name in the screenshot captions** either (the user's call, 2026-09-18):
+  artwork reads as endorsement where a sentence of the description reads as description.
 - **No keyword stuffing** (Play Metadata policy): the games are named in sentences, not in a
   comma block.
 - The description **explains** the Data Safety card rather than contradicting it — three data
@@ -190,7 +199,11 @@ store:
   shared: re-capturing the UI in ten languages costs a device session per locale for a screen
   the caption already explains. Claude drafts the French captions from the listing copy, the
   user validates them, the other locales are translated from them.
-
+- **No game brand names in the store images (2026-09-18).** The draft caption for the game
+  types screen named three third-party games; the user replaced it with « Vos jeux préférés,
+  prêts à compter ». Brand names stay in the description, where they are framed as
+  descriptive use, and out of the artwork, where they read as endorsement. Closed
+  `wip/done/2026-09-16-screenshots-are-raw-captures.md`.
 - **The analysis line was rewritten in all ten locales, feature-first (2026-09-17).** Line 38
   of every `full_description.txt` sold the feature as the "ZapZap analysis", which was true
   when it only ran on that one game. It has covered every game type, in nine voices and the
