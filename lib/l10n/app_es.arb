@@ -515,5 +515,17 @@
 
   "gameTypeNameWizard": "Wizard",
 
-  "gameTypeNameTriomino": "Triomino"
+  "gameTypeNameTriomino": "Triomino",
+
+  "groupDeviceOwner": "Propietario",
+
+  "groupDeviceMakeOwner": "Hacer propietario",
+
+  "groupDeviceMakeOwnerConfirm": "¿Ceder el grupo a «{label}»? Este dispositivo ya no podrá quitar dispositivos ni cambiar el código de invitación.",
+
+  "groupDeviceOwnerChanged": "«{label}» es ahora el propietario del grupo.",
+
+  "groupDevicesExplainMember": "Solo el propietario del grupo puede quitar un dispositivo o cambiar el código de invitación.",
+
+  "groupErrorNotOwner": "Solo el propietario del grupo puede hacerlo"
 }

@@ -515,5 +515,17 @@
 
   "gameTypeNameWizard": "Wizard",
 
-  "gameTypeNameTriomino": "Triomino"
+  "gameTypeNameTriomino": "Triomino",
+
+  "groupDeviceOwner": "Eigentümer",
+
+  "groupDeviceMakeOwner": "Zum Eigentümer machen",
+
+  "groupDeviceMakeOwnerConfirm": "Die Gruppe an „{label}“ übergeben? Dieses Gerät kann dann keine Geräte mehr entfernen und den Einladungscode nicht mehr ändern.",
+
+  "groupDeviceOwnerChanged": "„{label}“ ist jetzt Eigentümer der Gruppe.",
+
+  "groupDevicesExplainMember": "Nur der Eigentümer der Gruppe kann ein Gerät entfernen oder den Einladungscode ändern.",
+
+  "groupErrorNotOwner": "Nur der Eigentümer der Gruppe kann das tun"
 }

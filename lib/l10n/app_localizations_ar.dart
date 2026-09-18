@@ -1023,4 +1023,27 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get gameTypeNameTriomino => 'تريومينو';
+
+  @override
+  String get groupDeviceOwner => 'المالك';
+
+  @override
+  String get groupDeviceMakeOwner => 'تعيين مالكًا';
+
+  @override
+  String groupDeviceMakeOwnerConfirm(String label) {
+    return 'تسليم المجموعة إلى «$label»؟ لن يتمكن هذا الجهاز بعد ذلك من إزالة الأجهزة أو تغيير رمز الدعوة.';
+  }
+
+  @override
+  String groupDeviceOwnerChanged(String label) {
+    return 'أصبح «$label» مالك المجموعة.';
+  }
+
+  @override
+  String get groupDevicesExplainMember =>
+      'لا يمكن إلا لمالك المجموعة إزالة جهاز أو تغيير رمز الدعوة.';
+
+  @override
+  String get groupErrorNotOwner => 'هذا الإجراء متاح لمالك المجموعة فقط';
 }

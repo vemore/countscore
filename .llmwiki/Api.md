@@ -15,12 +15,19 @@
 |---|---|---|---|
 | POST | `` | none | Create a group + its first device. 201. IP rate limited. |
 | POST | `/join` | none | Join via `share_token`. 201. IP rate limited. |
-| GET | `/me` | device | Returns the group. **No `share_token`** — see below. |
+| GET | `/me` | device | Returns the group. **No `share_token`** — see below. Carries `owner_device_id` (null only when no device of the group is live): how the app learns whether it is the owner. |
 | PATCH | `/me/settings` | device | 422 when `monthly_budget_cents` exceeds the operator's `MAX_BUDGET_CENTS` (unset: `DEFAULT_BUDGET_CENTS`) — members may lower their budget, not raise it past that. |
 | GET | `/me/usage` | device | Budget consumption. |
-| GET | `/me/devices` | device | The group's **active** devices, oldest first: `{"devices": [{id, label, joined_at, last_seen_at}]}`. Revoked devices are left out; no token or hash. Feeds Settings → Group → Devices. |
-| POST | `/me/devices/{device_id}/revoke` | device | Another device: revokes it **and rotates `share_token`**, 200 with `GroupWithShareToken` — the revoked device learnt the old token when it joined. Again on a revoked device: the current token, no new one. The caller's own id: leaving (`GroupProvider.leave`), 204, no rotation. |
-| POST | `/me/rotate-share-token` | device | Invalidates the old share link. Returns `share_token`. |
+| GET | `/me/devices` | device | The group's **active** devices, oldest first: `{"devices": [{id, label, joined_at, last_seen_at, is_owner}]}`. Revoked devices are left out; no token or hash. Feeds Settings → Group → Devices. |
+| POST | `/me/devices/{device_id}/revoke` | device | Another device: **owner only** (403 otherwise); revokes it **and rotates `share_token`**, 200 with `GroupWithShareToken` — the revoked device learnt the old token when it joined. Again on a revoked device: the current token, no new one. The caller's own id: leaving (`GroupProvider.leave`), open to every member, 204, no rotation; an owner that leaves hands the role to the earliest-joined live device (none left: `owner_device_id` null). |
+| POST | `/me/rotate-share-token` | device | **Owner only** (403 otherwise). Invalidates the old share link. Returns `share_token`. |
+| PUT | `/me/owner` | device | `{"device_id": …}`. **Owner only** (403 otherwise). Hands the owner role to a live device of the group — 404 for a revoked device or one of another group; naming itself is a no-op. Returns the group (`GroupPayload`), no `share_token`, no rotation. |
+
+**The owner.** `groups.owner_device_id` (revision `0005_group_owner`) names the device that
+created the group, until it hands over or leaves. The check and the change run under the
+group's row lock (`_locked_group` in `app/routes/groups.py`), so two concurrent hand-overs or
+a hand-over racing a revoke cannot both pass. `PATCH /me/settings` stays open to every
+member.
 
 ### `app/routes/sync.py` — prefix `/sync`, tag `sync`
 
@@ -95,6 +102,16 @@ even with `EXPOSE_DOCS` off, so turning them on cannot break a deploy that start
 `tests/test_pwa.py`.
 
 ## Decisions & History
+
+- **Only the owner revokes, rotates or hands over (2026-09-18).** Until `feat/group-owner`
+  every device of a group was equal, so any member could shut out any other or rotate the
+  invite code — fine in a household, not before opening sharing to the public. The owner is
+  the creator because that needs no new input; existing groups were given their
+  earliest-joined live device, which is the creator wherever it has not left. Leaving stays
+  open to everyone, and an owner that leaves passes the role on automatically, so a group
+  with members never ends up with nobody able to revoke. No foreign key on
+  `owner_device_id`: `devices.group_id` already points the other way, and a device row is
+  only ever deleted with its group.
 
 - **An upstream quota is a 503, not a 429 and not a 502 (2026-09-13).** On 2026-09-11 the
   Mistral account ran out of quota and every client saw "HTTP 502", the code for "something

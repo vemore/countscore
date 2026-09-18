@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from app.services import ip_rate_limiter
+
 
 async def test_create_group_and_join(client):
     # Create group → get share_token + device_token
@@ -84,7 +86,8 @@ async def test_list_devices_shows_the_active_members_of_the_callers_group(client
     devices = r.json()["devices"]
     assert [d["label"] for d in devices] == ["alice", "bob", "carol"]
     assert [d["id"] for d in devices] == [alice_id, bob_id, carol_id]
-    assert set(devices[0]) == {"id", "label", "joined_at", "last_seen_at"}
+    assert set(devices[0]) == {"id", "label", "joined_at", "last_seen_at", "is_owner"}
+    assert [d["is_owner"] for d in devices] == [True, False, False]
 
     # A revoked device drops out of the list.
     await client.post(f"/groups/me/devices/{bob_id}/revoke", headers=alice)
@@ -292,3 +295,119 @@ def test_an_empty_budget_ceiling_is_unset(monkeypatch):
     monkeypatch.setenv("MAX_BUDGET_CENTS", "")
     monkeypatch.setenv("DEFAULT_BUDGET_CENTS", "250")
     assert Settings().effective_max_budget_cents == 250
+
+
+# ── Ownership ────────────────────────────────────────────────────────────────
+
+
+async def _group_of_three(client):
+    """alice creates, bob and carol join. Returns (headers, device ids, share token)."""
+    r = await client.post("/groups", json={"name": "g", "device_label": "alice"})
+    share = r.json()["group"]["share_token"]
+    heads = {"alice": {"Authorization": f"Bearer {r.json()['device']['token']}"}}
+    ids = {"alice": r.json()["device"]["id"]}
+    for name in ("bob", "carol"):
+        r = await client.post("/groups/join", json={"share_token": share, "device_label": name})
+        heads[name] = {"Authorization": f"Bearer {r.json()['device']['token']}"}
+        ids[name] = r.json()["device"]["id"]
+    return heads, ids, share
+
+
+async def test_the_creator_owns_the_group(client):
+    heads, ids, _ = await _group_of_three(client)
+    for name in ("alice", "bob"):
+        r = await client.get("/groups/me", headers=heads[name])
+        assert r.json()["owner_device_id"] == ids["alice"]
+
+
+async def test_a_member_that_is_not_the_owner_cannot_revoke_or_rotate(client):
+    heads, ids, share = await _group_of_three(client)
+
+    r = await client.post(f"/groups/me/devices/{ids['carol']}/revoke", headers=heads["bob"])
+    assert r.status_code == 403
+    r = await client.post(f"/groups/me/devices/{ids['alice']}/revoke", headers=heads["bob"])
+    assert r.status_code == 403
+    r = await client.post("/groups/me/rotate-share-token", headers=heads["bob"])
+    assert r.status_code == 403
+    r = await client.put("/groups/me/owner", json={"device_id": ids["bob"]}, headers=heads["bob"])
+    assert r.status_code == 403
+
+    # Nothing changed: carol is still in, the invite still works, alice still owns.
+    ip_rate_limiter.reset()  # four group calls from one address pass the per-minute limit
+    assert (await client.get("/groups/me", headers=heads["carol"])).status_code == 200
+    r = await client.post("/groups/join", json={"share_token": share, "device_label": "dan"})
+    assert r.status_code == 201
+    r = await client.get("/groups/me", headers=heads["bob"])
+    assert r.json()["owner_device_id"] == ids["alice"]
+
+
+async def test_a_member_that_is_not_the_owner_can_still_leave(client):
+    heads, ids, _ = await _group_of_three(client)
+    r = await client.post(f"/groups/me/devices/{ids['bob']}/revoke", headers=heads["bob"])
+    assert r.status_code == 204
+    r = await client.get("/groups/me", headers=heads["alice"])
+    assert r.json()["owner_device_id"] == ids["alice"]
+
+
+async def test_the_owner_hands_the_group_over(client):
+    heads, ids, _ = await _group_of_three(client)
+
+    r = await client.put("/groups/me/owner", json={"device_id": ids["bob"]}, headers=heads["alice"])
+    assert r.status_code == 200, r.text
+    assert r.json()["owner_device_id"] == ids["bob"]
+    assert "share_token" not in r.json()
+
+    # The former owner has lost the role, the new one has it.
+    r = await client.post("/groups/me/rotate-share-token", headers=heads["alice"])
+    assert r.status_code == 403
+    r = await client.post(f"/groups/me/devices/{ids['alice']}/revoke", headers=heads["bob"])
+    assert r.status_code == 200
+    r = await client.get("/groups/me/devices", headers=heads["bob"])
+    assert [(d["id"], d["is_owner"]) for d in r.json()["devices"]] == [
+        (ids["bob"], True),
+        (ids["carol"], False),
+    ]
+
+
+async def test_ownership_goes_only_to_a_live_device_of_the_group(client):
+    heads, ids, _ = await _group_of_three(client)
+    ip_rate_limiter.reset()  # four group calls from one address pass the per-minute limit
+    r = await client.post("/groups", json={"name": "other", "device_label": "stranger"})
+    stranger = r.json()["device"]["id"]
+    await client.post(f"/groups/me/devices/{ids['carol']}/revoke", headers=heads["alice"])
+
+    for target in (stranger, ids["carol"], "00000000-0000-0000-0000-000000000000"):
+        r = await client.put("/groups/me/owner", json={"device_id": target}, headers=heads["alice"])
+        assert r.status_code == 404, target
+
+    # Naming itself is a no-op.
+    r = await client.put(
+        "/groups/me/owner", json={"device_id": ids["alice"]}, headers=heads["alice"]
+    )
+    assert r.status_code == 200
+    assert r.json()["owner_device_id"] == ids["alice"]
+
+
+async def test_an_owner_that_leaves_hands_the_group_to_the_earliest_member(client):
+    heads, ids, _ = await _group_of_three(client)
+    r = await client.post(f"/groups/me/devices/{ids['alice']}/revoke", headers=heads["alice"])
+    assert r.status_code == 204
+
+    r = await client.get("/groups/me", headers=heads["carol"])
+    assert r.json()["owner_device_id"] == ids["bob"]
+    r = await client.post("/groups/me/rotate-share-token", headers=heads["bob"])
+    assert r.status_code == 200
+
+
+async def test_the_last_device_leaving_leaves_no_owner(client, session):
+    import uuid
+
+    from app.models import Group
+
+    r = await client.post("/groups", json={"name": "solo", "device_label": "alone"})
+    group_id = uuid.UUID(r.json()["group"]["id"])
+    me = {"Authorization": f"Bearer {r.json()['device']['token']}"}
+    r = await client.post(f"/groups/me/devices/{r.json()['device']['id']}/revoke", headers=me)
+    assert r.status_code == 204
+    group = await session.get(Group, group_id)
+    assert group is not None and group.owner_device_id is None

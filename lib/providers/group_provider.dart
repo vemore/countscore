@@ -29,7 +29,16 @@ enum SyncStatus {
 }
 
 /// Why creating, joining or sharing did not happen. One l10n string each.
-enum GroupActionError { unknownShareToken, rateLimited, unreachable, server, invalidPlayerNames }
+enum GroupActionError {
+  unknownShareToken,
+  rateLimited,
+  unreachable,
+  server,
+  invalidPlayerNames,
+
+  /// Only the group's owner may revoke a device, rotate the code or hand over (403).
+  notOwner,
+}
 
 class GroupActionException implements Exception {
   GroupActionException(this.error, [this.detail = const []]);
@@ -72,6 +81,7 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   SyncMembership? _membership;
   String? _shareToken;
   String? _deviceToken;
+  bool _isOwner = false;
   SyncStatus _status = SyncStatus.off;
   DateTime? _lastSyncAt;
   int _pending = 0;
@@ -91,6 +101,12 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   String? get groupId => _membership?.groupId;
   String? get deviceId => _membership?.deviceId;
   String? get shareToken => _shareToken;
+
+  /// Whether this device owns the group: the only one that may remove another
+  /// device, renew the invite code or hand the role over. Held in memory only —
+  /// the server is asked on every start ([refreshOwner]) — and false until it
+  /// answers. A server that predates owners treats every device as one.
+  bool get isOwner => isJoined && _isOwner;
   SyncStatus get status => _status;
   DateTime? get lastSyncAt => _lastSyncAt;
   int get pendingChanges => _pending;
@@ -120,12 +136,12 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   // ── Membership ────────────────────────────────────────────────────────────
 
   Future<void> createGroup(String name, String deviceLabel) =>
-      _enter(() => _client().createGroup(name, deviceLabel));
+      _enter(() => _client().createGroup(name, deviceLabel), owner: true);
 
   Future<void> joinGroup(String shareToken, String deviceLabel) =>
-      _enter(() => _client().joinGroup(shareToken.trim(), deviceLabel));
+      _enter(() => _client().joinGroup(shareToken.trim(), deviceLabel), owner: false);
 
-  Future<void> _enter(Future<GroupMembership> Function() call) async {
+  Future<void> _enter(Future<GroupMembership> Function() call, {required bool owner}) async {
     if (_baseUrl == null) throw GroupActionException(GroupActionError.unreachable);
     if (_membership != null) await leave();
     final GroupMembership m;
@@ -144,8 +160,37 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     await _store.join(m);
     _deviceToken = m.deviceToken;
     _shareToken = m.shareToken;
+    _isOwner = owner;
     _membership = await _store.membership();
     await _restart();
+  }
+
+  /// Asks the server who owns the group. Silent on failure: the last answer stands.
+  Future<void> refreshOwner() async {
+    final token = _deviceToken;
+    final own = deviceId;
+    if (token == null || own == null || _baseUrl == null) return;
+    try {
+      final owner = await _client().groupOwner(token);
+      final isOwner = !owner.known || owner.ownerDeviceId == own;
+      if (isOwner != _isOwner) {
+        _isOwner = isOwner;
+        notifyListeners();
+      }
+    } catch (_) {
+      // Offline, or revoked: the sync status says so.
+    }
+  }
+
+  /// Maps a failed owner-only call, and forgets the role on a 403.
+  GroupActionException _ownerActionError(Object e) {
+    if (e is BackendException && e.statusCode == 403) {
+      _isOwner = false;
+      notifyListeners();
+      return GroupActionException(GroupActionError.notOwner);
+    }
+    return GroupActionException(
+        e is BackendException ? GroupActionError.server : GroupActionError.unreachable);
   }
 
   /// Leaves the group: revokes this device on the server when it can, and in any
@@ -166,6 +211,7 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     _membership = null;
     _deviceToken = null;
     _shareToken = null;
+    _isOwner = false;
     _status = SyncStatus.off;
     _pending = 0;
     _rejected = 0;
@@ -178,21 +224,29 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     if (token == null || _baseUrl == null) return;
     try {
       _shareToken = await _client().rotateShareToken(token);
-    } on BackendException {
-      throw GroupActionException(GroupActionError.server);
-    } catch (_) {
-      throw GroupActionException(GroupActionError.unreachable);
+    } catch (e) {
+      throw _ownerActionError(e);
     }
     await _credentials.saveShareToken(_shareToken!);
     notifyListeners();
   }
 
-  /// The group's active devices, this one included.
+  /// The group's active devices, this one included. Refreshes [isOwner] from
+  /// this device's own entry.
   Future<List<GroupDevice>> devices() async {
     final token = _deviceToken;
     if (token == null || _baseUrl == null) return const [];
     try {
-      return await _client().listDevices(token);
+      final list = await _client().listDevices(token);
+      final own = list.where((d) => d.id == deviceId).firstOrNull;
+      if (own != null) {
+        final isOwner = own.isOwner ?? true;
+        if (isOwner != _isOwner) {
+          _isOwner = isOwner;
+          notifyListeners();
+        }
+      }
+      return list;
     } on BackendException {
       throw GroupActionException(GroupActionError.server);
     } catch (_) {
@@ -200,24 +254,37 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     }
   }
 
-  /// Shuts another device out of the group — a lost or sold phone. The server
-  /// rotates the invite code at the same time, since that device knew it; the
-  /// new code replaces the stored one. This device leaves through [leave].
+  /// Shuts another device out of the group — a lost or sold phone. The owner's
+  /// only. The server rotates the invite code at the same time, since that device
+  /// knew it; the new code replaces the stored one. This device leaves through
+  /// [leave].
   Future<void> revokeDevice(String deviceId) async {
     final token = _deviceToken;
     if (token == null || _baseUrl == null || deviceId == this.deviceId) return;
     final String? newShareToken;
     try {
       newShareToken = await _client().revokeDevice(token, deviceId);
-    } on BackendException {
-      throw GroupActionException(GroupActionError.server);
-    } catch (_) {
-      throw GroupActionException(GroupActionError.unreachable);
+    } catch (e) {
+      throw _ownerActionError(e);
     }
     if (newShareToken != null) {
       _shareToken = newShareToken;
       await _credentials.saveShareToken(newShareToken);
     }
+    notifyListeners();
+  }
+
+  /// Hands the owner role to another device of the group. The owner's only; this
+  /// device is an ordinary member afterwards.
+  Future<void> transferOwnership(String deviceId) async {
+    final token = _deviceToken;
+    if (token == null || _baseUrl == null || deviceId == this.deviceId) return;
+    try {
+      await _client().transferOwnership(token, deviceId);
+    } catch (e) {
+      throw _ownerActionError(e);
+    }
+    _isOwner = false;
     notifyListeners();
   }
 
@@ -302,6 +369,7 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
       _stream = SyncStream(_client(), _deviceToken!, () => scheduleSync(Duration.zero))..start();
     }
     notifyListeners();
+    unawaited(refreshOwner());
     unawaited(syncNow());
   }
 
@@ -317,7 +385,10 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) scheduleSync(Duration.zero);
+    if (state == AppLifecycleState.resumed) {
+      scheduleSync(Duration.zero);
+      unawaited(refreshOwner());
+    }
   }
 
   @override

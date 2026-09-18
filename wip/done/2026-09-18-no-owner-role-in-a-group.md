@@ -1,5 +1,12 @@
 # A group has no owner: any member can revoke any other
 
+**Status:** done (2026-09-18) — closed by feat/group-owner. `groups.owner_device_id`
+(Alembic `0005_group_owner`, back-filled with each group's earliest-joined live device); only
+the owner may revoke another device, rotate the share token or hand over (`PUT
+/groups/me/owner`), 403 otherwise; an owner that leaves passes the role on. The app reads
+ownership from the server (no local schema change) and hides revoke, rotate and hand-over from
+other members. `.llmwiki/Security.md` marks the lateral privilege Outdated.
+
 - **Noted:** 2026-09-18 — split out of `2026-09-13-group-settings-in-app` during refinement
 - **Theme:** groups-v2
 - **Area:** backend
