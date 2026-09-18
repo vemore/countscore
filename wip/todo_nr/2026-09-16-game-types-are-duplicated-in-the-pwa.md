@@ -35,4 +35,11 @@ merge (`.llmwiki/SchemaV10.md`). A `UNIQUE` index on live default rows would sto
 recurring, but it must not fire on the user's own types, which may legitimately share a
 name with a deleted one.
 
-**Open question:** Evidence first: does it reproduce on a fresh OPFS profile? Since v14 (#75), only the lowest-id copy gets `builtin_key`, so the duplicate now shows as the stored French name. If it does not reproduce, is a cleanup migration still wanted, or is clearing that one browser enough?
+**Decided (2026-09-18, refinement):** reproduce on a fresh OPFS profile first. If it does
+not reproduce, clear that browser rather than write a de-duplication migration — but add the
+uniqueness guard anyway, so a duplicate cannot come back.
+
+**Acceptance:**
+- The pull request records a fresh OPFS profile on the production PWA listing each seeded type once.
+- The affected browser, cleared, lists each type once.
+- A unique index on live default game types (on `builtin_key`, or name and group, chosen in the pull request) stops a second copy, and a test shows a user's own type may still share a name with a deleted one.

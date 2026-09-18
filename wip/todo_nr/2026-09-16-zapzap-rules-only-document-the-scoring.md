@@ -24,4 +24,12 @@ ZapZap call is allowed, what a counter is — and extend the `zapzap` section of
 the prose. Worth doing before the next Play release: ZapZap is the first type in the list
 and the one the store screenshots show.
 
-**Open question:** The author's input is needed: deal size, draw and discard, when ZapZap may be called, and what a counter is.
+**Answered (2026-09-18, refinement):** the complete rules are the author's own, in the
+ZapZap project's `GAME_RULES.md` (outside this repository; ask the user for it). ZapZap is a
+variant of Yaniv. That file covers the card values, the valid combinations, the turn, the
+round start, the empty deck, ZapZap eligibility, the scoring, elimination and the golden score.
+
+**Acceptance:**
+- The `zapzap` section of `assets/rules/rules_fr.md` covers the deal, the turn (draw, discard, valid combinations), when ZapZap may be called, what a counter is, and the scoring.
+- The nine translations follow, and `test/game_rules_catalog_test.dart` is green.
+- Nothing in it contradicts the scoring in `backend/app/services/zapzap_prompt.py`.

@@ -40,4 +40,11 @@ buys is the R8-shrunk build running on hardware.
 
 Related: [[2026-09-16-device-test-skill-stale-device-and-locale]].
 
-**Open question:** What replaces `release-android` §5: Play internal app sharing (faithful, one Console step), a fresh install plus a database import (scriptable), or dropping the on-device migration check because the migration tests cover it?
+**Decided (2026-09-18, refinement):** a fresh install plus the app's own import.
+Pull the database with `run-as` from a debuggable build, install the release APK clean, push
+the file and restore it through Settings → Import. Scriptable, and needs no Console step.
+
+**Acceptance:**
+- `release-android` §5 no longer says to install over the store version, and gives the pull → clean install → import steps.
+- A script, or one command block, does the pull and the push.
+- The steps have been run once end to end on the Pixel, and the pull request records the result.

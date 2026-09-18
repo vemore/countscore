@@ -34,4 +34,13 @@ standings. A safer route is to leave the seeds alone and let the first-run seedi
 both variants as two types ("Uno (à 500)" / "Uno (pénalités)"), which also feeds the
 long-tail work in `2026-09-16-default-game-types-miss-the-long-tail.md`.
 
-**Open question:** For Uno and for Président: follow the box rule (highest wins, 500 / Président points), keep the house variant, or seed both as two types? Existing rows are never flipped. (The link to `default-game-types-miss-the-long-tail` is closed, by #75.)
+**Decided (2026-09-18, refinement):** follow the box rule, for new databases only.
+`GameType.uno()` becomes highest-wins, game over when the first player reaches 500;
+`GameType.president()` becomes highest-wins with the usual barème (threshold taken from the
+researched rule in the pull request). Existing rows are never flipped: no migration touches
+`isLowestScoreWins`, so no finished game changes its standings. Not two seeded variants.
+
+**Acceptance:**
+- A fresh database seeds Uno as highest-wins, `firstPlayerOver` 500, and Président as highest-wins.
+- A migration test shows an existing Uno or Président row keeps its `isLowestScoreWins`.
+- The `uno` and `president` sections of the ten `rules_<locale>.md` describe the seeded scoring, and `test/game_rules_catalog_test.dart` is green.

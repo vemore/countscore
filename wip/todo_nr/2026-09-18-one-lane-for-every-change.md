@@ -53,6 +53,12 @@ This entry is now the only one on independent review. It carries:
   section itself landed in #90): criteria are mandatory for lanes B and C. `ship-parallel` §1
   shows them in the plan, and the §2 report maps each one to the test that covers it.
 
-**Open question:** lane C's "explicit approval": an `AskUserQuestion` go-ahead in the
-session, or a required CODEOWNERS review (which blocks a solo self-merge)? Should a planned
-review also gate the agent's own completion (`SubagentStop`), or stay the orchestrator's step?
+**Decided (2026-09-18, refinement):** lane C's approval is an `AskUserQuestion` go-ahead
+in the session, not CODEOWNERS (which would block a solo self-merge). The planned review stays
+the orchestrator's step; `SubagentStop` does not gate on it.
+
+**Acceptance:**
+- `.llmwiki/ParallelDelivery.md` defines lanes A–D, their triggers, and the reviewer's four calibration rules.
+- `ship-parallel` §1 shows the lane and the acceptance criteria in the plan.
+- `ship-parallel` §3 requires `/code-review high` from an agent that did not write the change for lanes B and C, and an `AskUserQuestion` go-ahead before merging lane C.
+- The three absorbed entries' evidence is kept, and the `SubagentStop` hook is unchanged.
