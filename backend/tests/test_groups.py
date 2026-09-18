@@ -476,3 +476,65 @@ async def test_the_last_device_leaving_leaves_no_owner(client, session):
     assert r.status_code == 204
     group = await session.get(Group, group_id)
     assert group is not None and group.owner_device_id is None
+
+
+def _utc(iso: str):
+    from datetime import UTC, datetime
+
+    parsed = datetime.fromisoformat(iso.replace("Z", "+00:00"))
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
+
+
+async def test_a_new_groups_usage_resets_at_the_next_month_start(client):
+    from datetime import UTC, datetime
+
+    from app.models.group import next_month_start
+
+    r = await client.post("/groups", json={"name": "neuf", "device_label": "tel"})
+    me = {"Authorization": f"Bearer {r.json()['device']['token']}"}
+    r = await client.get("/groups/me/usage", headers=me)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    now = datetime.now(UTC)
+    assert _utc(body["resets_at"]) > now
+    assert _utc(body["resets_at"]) == next_month_start(now)
+    assert body["current_month_used_cents"] == 0
+
+
+async def test_a_passed_reset_shows_nothing_spent_until_the_next_month_start(client, session):
+    import uuid
+    from datetime import UTC, datetime, timedelta
+
+    from app.models import Group
+    from app.models.group import next_month_start
+
+    r = await client.post("/groups", json={"name": "ancien", "device_label": "tel"})
+    group_id = uuid.UUID(r.json()["group"]["id"])
+    me = {"Authorization": f"Bearer {r.json()['device']['token']}"}
+    group = await session.get(Group, group_id)
+    assert group is not None
+    group.current_month_used_cents = 42
+    group.budget_resets_at = datetime.now(UTC) - timedelta(days=3)
+    await session.commit()
+
+    r = await client.get("/groups/me/usage", headers=me)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["current_month_used_cents"] == 0
+    assert _utc(body["resets_at"]) == next_month_start(datetime.now(UTC))
+    r = await client.get("/groups/me", headers=me)
+    assert r.json()["current_month_used_cents"] == 0
+
+
+def test_current_period_rolls_over_only_once_the_reset_has_passed():
+    from datetime import UTC, datetime
+
+    from app.models import Group
+    from app.services.budget import current_period
+
+    now = datetime(2026, 12, 15, 9, 30, tzinfo=UTC)
+    group = Group(name="g", current_month_used_cents=7)
+    group.budget_resets_at = datetime(2027, 1, 1, tzinfo=UTC)
+    assert current_period(group, now) == (7, datetime(2027, 1, 1, tzinfo=UTC))
+    group.budget_resets_at = datetime(2026, 12, 1)  # naive, as SQLite hands it back
+    assert current_period(group, now) == (0, datetime(2027, 1, 1, tzinfo=UTC))

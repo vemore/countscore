@@ -36,12 +36,14 @@ from app.schemas.groups import (
     UpdateGroupSettings,
     UsagePayload,
 )
+from app.services.budget import current_period
 from app.services.ip_rate_limiter import check_ip_rate_limit, client_ip
 
 router = APIRouter(prefix="/groups", tags=["groups"])
 
 
 def _group_payload(g: Group) -> GroupPayload:
+    used_cents, _ = current_period(g, datetime.now(UTC))
     return GroupPayload(
         id=g.id,
         name=g.name,
@@ -49,7 +51,7 @@ def _group_payload(g: Group) -> GroupPayload:
         comment_style=g.comment_style,
         comment_language=g.comment_language,
         monthly_budget_cents=g.monthly_budget_cents,
-        current_month_used_cents=g.current_month_used_cents,
+        current_month_used_cents=used_cents,
     )
 
 
@@ -215,10 +217,13 @@ async def update_settings(
 
 @router.get("/me/usage", response_model=UsagePayload)
 async def get_usage(auth: AuthContext = Depends(require_device)) -> UsagePayload:
+    # The stored counter is rolled over only when a comment is charged; a read applies the
+    # same rule, so a past month's spending and a reset date in the past are never shown.
+    used_cents, resets_at = current_period(auth.group, datetime.now(UTC))
     return UsagePayload(
-        current_month_used_cents=auth.group.current_month_used_cents,
+        current_month_used_cents=used_cents,
         budget_cents=auth.group.monthly_budget_cents,
-        resets_at=auth.group.budget_resets_at,
+        resets_at=resets_at,
     )
 
 

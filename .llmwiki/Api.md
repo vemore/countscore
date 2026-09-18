@@ -17,7 +17,7 @@
 | POST | `/join` | none | Join via `share_token`. 201. IP rate limited. |
 | GET | `/me` | device | Returns the group. **No `share_token`** — see below. Carries `owner_device_id` (null only when no device of the group is live): how the app learns whether it is the owner. |
 | PATCH | `/me/settings` | device | `comment_style` and `comment_language`: every member. `monthly_budget_cents`: **owner only** (403 otherwise, whatever else the body carries — a refused request changes nothing), and 422 when it exceeds the operator's `MAX_BUDGET_CENTS` (unset: `DEFAULT_BUDGET_CENTS`) — the owner may lower the budget, not raise it past that. |
-| GET | `/me/usage` | device | Budget consumption: `{current_month_used_cents, budget_cents, resets_at}`, US cents. Feeds Settings → Group → Comments and usage, with `GET /me` for the style and language. |
+| GET | `/me/usage` | device | Budget consumption: `{current_month_used_cents, budget_cents, resets_at}`, US cents. `resets_at` is always in the future — the next month start, UTC: once the stored reset has passed, the read reports 0 spent and the next month start without waiting for a charge to roll it over (`budget.current_period`; `GET /me`'s `current_month_used_cents` too). Feeds Settings → Group → Comments and usage, with `GET /me` for the style and language. |
 | GET | `/me/devices` | device | The group's **active** devices, oldest first: `{"devices": [{id, label, joined_at, last_seen_at, is_owner}]}`. Revoked devices are left out; no token or hash. Feeds Settings → Group → Devices. |
 | POST | `/me/devices/{device_id}/revoke` | device | Another device: **owner only** (403 otherwise); revokes it **and rotates `share_token`**, 200 with `GroupWithShareToken` — the revoked device learnt the old token when it joined. Again on a revoked device: the current token, no new one. The caller's own id: leaving (`GroupProvider.leave`), open to every member, 204, no rotation; an owner that leaves hands the role to the earliest-joined live device (none left: `owner_device_id` null). |
 | POST | `/me/rotate-share-token` | device | **Owner only** (403 otherwise). Invalidates the old share link. Returns `share_token`. |
@@ -103,6 +103,14 @@ even with `EXPOSE_DOCS` off, so turning them on cannot break a deploy that start
 `tests/test_pwa.py`.
 
 ## Decisions & History
+
+- **Usage reads apply the monthly roll-over (2026-09-19).** A new group's `budget_resets_at`
+  was its creation time, and only `check_budget` rolled it to the next month start, when a
+  comment was charged — so `GET /me/usage` showed a reset in the past and possibly a past
+  month's spending. `fix/usage-resets-at-in-the-past` made `budget.current_period` the one
+  rule, applied by the charge (which persists it under the group lock) and by the reads
+  (which do not write), and a new group now starts with `budget_resets_at` at the next month
+  start (a Python-side default: no migration).
 
 - **The budget is the owner's; style and language are everyone's (2026-09-18).** The budget
   is the one group setting that costs the operator money, so `feat/group-budget-owner-only`
