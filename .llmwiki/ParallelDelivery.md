@@ -156,3 +156,15 @@ Store is never part of the loop (`release-android`, on request).
   request look bigger than an untested one, so the cap pushed against the tests the project
   most wants — the same article excludes test files from its size limits for that reason. The
   cap is about how much production code one review has to hold, not how much is verified.
+- **An implementing agent stops after three attempts on one failing check (2026-09-18).** The
+  agent that writes a change also writes the tests that judge it, and the `SubagentStop` hook
+  refuses to let it finish on red checks: together they reward the cheapest way to green — a
+  missing case, a loosened assertion, a fixture never written (#75 shipped with no v4
+  fixture) — and nothing stopped an agent looping on the same failure. The `ship-parallel` §2
+  prompt now carries a circuit breaker: three fix attempts on one check, then a report classed
+  `TEST_ISSUE`, `IMPL_ISSUE`, `DOC_ISSUE` or `UNCLEAR`, each with its own orchestrator action.
+  A separate **test-designer subagent**, writing the tests before the implementing agent
+  starts, was considered and **dropped**: the acceptance criteria an entry must carry to reach
+  `wip/todo/`, plus the independent review planned for the riskier lanes
+  (the entry `2026-09-18-one-lane-for-every-change`, lanes B and C) were judged enough, at the
+  2026-09-18 refinement, to keep an agent from grading its own work.
