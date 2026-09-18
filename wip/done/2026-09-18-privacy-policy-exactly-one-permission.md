@@ -1,5 +1,7 @@
 # privacy_policy.md says the app declares "exactly one permission"
 
+**Status:** done (2026-09-18) — closed by docs/privacy-permission. `privacy_policy.md` § Permissions now names `INTERNET` as the one permission the app declares and describes the androidx-injected, signature-level `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, under a v2.8 Version History entry and a new Last Updated date; `docs/privacy-policy.html` is regenerated (GitHub Pages publishes it from `main`/`docs` on merge); `PLAY_STORE_DATA_SAFETY.md` summary line aligned.
+
 - **Noted:** 2026-09-18 — while rewording the same sentence in `README.md` Privacy (docs/wiki-sync)
 - **Theme:** docs
 - **Area:** docs

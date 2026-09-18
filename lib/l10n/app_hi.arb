@@ -515,5 +515,17 @@
 
   "gameTypeNameWizard": "विज़ार्ड",
 
-  "gameTypeNameTriomino": "ट्रायोमिनो"
+  "gameTypeNameTriomino": "ट्रायोमिनो",
+
+  "groupDeviceOwner": "स्वामी",
+
+  "groupDeviceMakeOwner": "स्वामी बनाएँ",
+
+  "groupDeviceMakeOwnerConfirm": "समूह “{label}” को सौंपें? यह डिवाइस फिर डिवाइस नहीं हटा पाएगा और आमंत्रण कोड नहीं बदल पाएगा।",
+
+  "groupDeviceOwnerChanged": "“{label}” अब समूह का स्वामी है।",
+
+  "groupDevicesExplainMember": "केवल समूह का स्वामी ही किसी डिवाइस को हटा सकता है या आमंत्रण कोड बदल सकता है।",
+
+  "groupErrorNotOwner": "यह केवल समूह का स्वामी कर सकता है"
 }

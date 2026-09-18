@@ -515,5 +515,17 @@
 
   "gameTypeNameWizard": "Визард",
 
-  "gameTypeNameTriomino": "Триомино"
+  "gameTypeNameTriomino": "Триомино",
+
+  "groupDeviceOwner": "Владелец",
+
+  "groupDeviceMakeOwner": "Сделать владельцем",
+
+  "groupDeviceMakeOwnerConfirm": "Передать группу устройству «{label}»? Это устройство больше не сможет исключать устройства и менять код приглашения.",
+
+  "groupDeviceOwnerChanged": "«{label}» теперь владелец группы.",
+
+  "groupDevicesExplainMember": "Только владелец группы может исключить устройство или сменить код приглашения.",
+
+  "groupErrorNotOwner": "Это может сделать только владелец группы"
 }

@@ -7,10 +7,12 @@ import '../providers/group_provider.dart';
 import '../services/backend_client.dart';
 import 'group_settings_section.dart' show groupActionErrorText;
 
-/// Settings → Group → Devices: the group's devices, and a way to shut one out.
+/// Settings → Group → Devices: the group's devices, the one that owns the group,
+/// and — for the owner only — a way to shut one out or hand the group over.
 ///
 /// This device is marked and offers no revoke — leaving is the section's own
-/// button, which also turns shared games back into local ones.
+/// button, which also turns shared games back into local ones. A member that is
+/// not the owner sees the list and nothing to act on.
 class GroupDevicesSheet extends StatefulWidget {
   const GroupDevicesSheet({super.key});
 
@@ -55,24 +57,81 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
       ),
     );
     if (confirmed != true || !mounted) return;
+    await _act(
+      () => group.revokeDevice(device.id),
+      done: l10n.groupDeviceRevoked(device.label),
+    );
+  }
 
+  Future<void> _makeOwner(GroupDevice device) async {
+    final l10n = AppLocalizations.of(context)!;
+    final group = context.read<GroupProvider>();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.confirmation),
+        content: Text(l10n.groupDeviceMakeOwnerConfirm(device.label)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
+          TextButton(
+            key: const Key('group_device_make_owner_confirm'),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.groupDeviceMakeOwner),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await _act(
+      () => group.transferOwnership(device.id),
+      done: l10n.groupDeviceOwnerChanged(device.label),
+    );
+  }
+
+  /// Runs an owner action, then reloads the list — on failure too, since a
+  /// refusal usually means the owner changed meanwhile.
+  Future<void> _act(Future<void> Function() action, {required String done}) async {
+    final l10n = AppLocalizations.of(context)!;
+    final group = context.read<GroupProvider>();
     setState(() => _busy = true);
     try {
-      await group.revokeDevice(device.id);
-      _message = (text: l10n.groupDeviceRevoked(device.label), error: false);
-      _devices = group.devices();
+      await action();
+      _message = (text: done, error: false);
     } on GroupActionException catch (e) {
       _message = (text: groupActionErrorText(l10n, e), error: true);
     } finally {
+      _devices = group.devices();
       if (mounted) setState(() => _busy = false);
     }
   }
+
+  /// The owner's actions on another device: hand the group over, or shut it out.
+  Widget _ownerActions(GroupDevice device, ThemeData theme, AppLocalizations l10n) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            key: Key('group_device_make_owner_${device.id}'),
+            icon: const Icon(Icons.key_outlined),
+            tooltip: l10n.groupDeviceMakeOwner,
+            onPressed: _busy ? null : () => _makeOwner(device),
+          ),
+          IconButton(
+            key: Key('group_device_revoke_${device.id}'),
+            icon: const Icon(Icons.person_remove_outlined),
+            tooltip: l10n.groupDeviceRevoke,
+            color: theme.colorScheme.error,
+            onPressed: _busy ? null : () => _revoke(device),
+          ),
+        ],
+      );
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final ownId = context.watch<GroupProvider>().deviceId;
+    final group = context.watch<GroupProvider>();
+    final ownId = group.deviceId;
+    final isOwner = group.isOwner;
     final dateFormat = DateFormat.yMMMd(l10n.localeName).add_Hm();
     final message = _message;
 
@@ -85,7 +144,10 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
           children: [
             Text(l10n.groupDevices, style: theme.textTheme.titleLarge),
             const SizedBox(height: 4),
-            Text(l10n.groupDevicesExplain, style: theme.textTheme.bodySmall),
+            Text(
+              isOwner ? l10n.groupDevicesExplain : l10n.groupDevicesExplainMember,
+              style: theme.textTheme.bodySmall,
+            ),
             if (message != null) ...[
               const SizedBox(height: 8),
               Text(
@@ -125,18 +187,19 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
                             device.id == ownId ? Icons.smartphone : Icons.devices_other,
                           ),
                           title: Text(device.label),
-                          subtitle: Text(l10n.groupDeviceLastSeen(
-                            dateFormat.format(device.lastSeenAt.toLocal()),
-                          )),
+                          subtitle: Text([
+                            if (device.isOwner == true) l10n.groupDeviceOwner,
+                            l10n.groupDeviceLastSeen(
+                              dateFormat.format(device.lastSeenAt.toLocal()),
+                            ),
+                          ].join(' · ')),
+                          // Only the owner acts on another device; the server
+                          // refuses anyone else.
                           trailing: device.id == ownId
                               ? Text(l10n.groupDeviceThisOne, style: theme.textTheme.labelMedium)
-                              : IconButton(
-                                  key: Key('group_device_revoke_${device.id}'),
-                                  icon: const Icon(Icons.person_remove_outlined),
-                                  tooltip: l10n.groupDeviceRevoke,
-                                  color: theme.colorScheme.error,
-                                  onPressed: _busy ? null : () => _revoke(device),
-                                ),
+                              : isOwner
+                                  ? _ownerActions(device, theme, l10n)
+                                  : null,
                         ),
                     ],
                   );

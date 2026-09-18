@@ -515,5 +515,17 @@
 
   "gameTypeNameWizard": "ウィザード",
 
-  "gameTypeNameTriomino": "トライオミノ"
+  "gameTypeNameTriomino": "トライオミノ",
+
+  "groupDeviceOwner": "オーナー",
+
+  "groupDeviceMakeOwner": "オーナーにする",
+
+  "groupDeviceMakeOwnerConfirm": "グループを「{label}」に引き継ぎますか？このデバイスはデバイスの削除や招待コードの変更ができなくなります。",
+
+  "groupDeviceOwnerChanged": "「{label}」がグループのオーナーになりました。",
+
+  "groupDevicesExplainMember": "デバイスの削除や招待コードの変更ができるのはグループのオーナーだけです。",
+
+  "groupErrorNotOwner": "この操作はグループのオーナーだけが行えます"
 }

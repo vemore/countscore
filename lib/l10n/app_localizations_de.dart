@@ -1017,4 +1017,27 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get gameTypeNameTriomino => 'Triomino';
+
+  @override
+  String get groupDeviceOwner => 'Eigentümer';
+
+  @override
+  String get groupDeviceMakeOwner => 'Zum Eigentümer machen';
+
+  @override
+  String groupDeviceMakeOwnerConfirm(String label) {
+    return 'Die Gruppe an „$label“ übergeben? Dieses Gerät kann dann keine Geräte mehr entfernen und den Einladungscode nicht mehr ändern.';
+  }
+
+  @override
+  String groupDeviceOwnerChanged(String label) {
+    return '„$label“ ist jetzt Eigentümer der Gruppe.';
+  }
+
+  @override
+  String get groupDevicesExplainMember =>
+      'Nur der Eigentümer der Gruppe kann ein Gerät entfernen oder den Einladungscode ändern.';
+
+  @override
+  String get groupErrorNotOwner => 'Nur der Eigentümer der Gruppe kann das tun';
 }
