@@ -17,9 +17,9 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = None
     comment_model: str = "claude-haiku-4-5"
     default_budget_cents: int = 100
-    # Ceiling on what a member may set through PATCH /groups/me/settings. The budget is
+    # Ceiling on what the group owner may set through PATCH /groups/me/settings. The budget is
     # spent on the operator's key, so the operator owns the ceiling; unset, it is the
-    # default budget — members may lower theirs but not raise it.
+    # default budget — an owner may lower it but not raise it.
     max_budget_cents: int | None = None
     comment_memory_size: int = 5
 

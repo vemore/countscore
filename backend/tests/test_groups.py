@@ -341,6 +341,71 @@ async def test_a_member_that_is_not_the_owner_cannot_revoke_or_rotate(client):
     assert r.json()["owner_device_id"] == ids["alice"]
 
 
+async def test_only_the_owner_sets_the_budget(client):
+    """The budget is spent on the operator's key: a member that is not the owner gets a 403."""
+    heads, _, _ = await _group_of_three(client)
+    before = (await client.get("/groups/me", headers=heads["alice"])).json()
+
+    r = await client.patch(
+        "/groups/me/settings", json={"monthly_budget_cents": 20}, headers=heads["bob"]
+    )
+    assert r.status_code == 403
+    # Even over the cap, the answer is the 403: the cap is none of a member's business.
+    r = await client.patch(
+        "/groups/me/settings", json={"monthly_budget_cents": 9_999}, headers=heads["bob"]
+    )
+    assert r.status_code == 403
+    # A refused request changes nothing, not even the fields that are open to a member.
+    r = await client.patch(
+        "/groups/me/settings",
+        json={"comment_style": "humorous", "monthly_budget_cents": 20},
+        headers=heads["bob"],
+    )
+    assert r.status_code == 403
+    after = (await client.get("/groups/me", headers=heads["alice"])).json()
+    assert after["monthly_budget_cents"] == before["monthly_budget_cents"]
+    assert after["comment_style"] == before["comment_style"]
+
+    r = await client.patch(
+        "/groups/me/settings", json={"monthly_budget_cents": 20}, headers=heads["alice"]
+    )
+    assert r.status_code == 200
+    assert r.json()["monthly_budget_cents"] == 20
+
+
+async def test_a_member_that_is_not_the_owner_sets_style_and_language(client):
+    heads, _, _ = await _group_of_three(client)
+    r = await client.patch(
+        "/groups/me/settings",
+        json={"comment_style": "humorous", "comment_language": "en"},
+        headers=heads["bob"],
+    )
+    assert r.status_code == 200
+    assert r.json()["comment_style"] == "humorous"
+    assert r.json()["comment_language"] == "en"
+    # An explicit null budget is no budget change: still open to a member.
+    r = await client.patch(
+        "/groups/me/settings",
+        json={"comment_style": "analytical", "monthly_budget_cents": None},
+        headers=heads["carol"],
+    )
+    assert r.status_code == 200
+
+
+async def test_the_budget_follows_the_owner_role(client):
+    heads, ids, _ = await _group_of_three(client)
+    r = await client.put("/groups/me/owner", json={"device_id": ids["bob"]}, headers=heads["alice"])
+    assert r.status_code == 200
+    r = await client.patch(
+        "/groups/me/settings", json={"monthly_budget_cents": 20}, headers=heads["alice"]
+    )
+    assert r.status_code == 403
+    r = await client.patch(
+        "/groups/me/settings", json={"monthly_budget_cents": 20}, headers=heads["bob"]
+    )
+    assert r.status_code == 200
+
+
 async def test_a_member_that_is_not_the_owner_can_still_leave(client):
     heads, ids, _ = await _group_of_three(client)
     r = await client.post(f"/groups/me/devices/{ids['bob']}/revoke", headers=heads["bob"])
