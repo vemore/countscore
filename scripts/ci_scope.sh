@@ -30,6 +30,12 @@ everything() { backend=true; image=true; app=true; android=true; sync=true; }
 while IFS= read -r path; do
     [ -n "$path" ] || continue
     case "$path" in
+        # The privacy policy and the page Play links to, rendered from it: the
+        # `backend` job checks the page is not stale and that **Last Updated** moved
+        # (scripts/build_privacy_page.py --check). Before the documentation rule,
+        # which would otherwise swallow both.
+        privacy_policy.md|docs/privacy-policy.html) backend=true ;;
+
         # Documentation and store assets. Checked 2026-09-16: no Dart test and no
         # pytest reads a .md, .llmwiki/, wip/, docs/ or store_listing/ file --
         # test_play_publish.py builds its own store_listing/ fixture under

@@ -147,6 +147,8 @@ copy must stay true to what ships — never "our server", never a denial of sync
 `privacy_policy.md`, `PLAY_STORE_DATA_SAFETY.md` and `THIRD_PARTY_LICENSES.md` are the
 compliance documents; `scripts/build_privacy_page.py` renders the policy to
 `docs/privacy-policy.html`, which GitHub Pages serves as the URL the Play Console holds.
+CI refuses a pull request whose page is stale against the policy, or whose policy changed
+without its `**Last Updated**` line changing ([[Testing]]).
 
 ### Play policy constraints (checked 2026-09-13)
 

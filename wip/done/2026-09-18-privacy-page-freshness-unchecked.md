@@ -1,5 +1,7 @@
 # Nothing checks that the published privacy page matches privacy_policy.md
 
+**Status:** done (2026-09-18) — closed by ci/privacy-page-freshness. The `backend` CI job runs `scripts/build_privacy_page.py --check --base HEAD^1` with pandoc 3.6.4 pinned by checksum: a stale page, or a policy change without a new `**Last Updated**` line, is red. `scope` routes both files to `backend`; the pin is recorded in `docs/README.md`. The page on main was byte-identical under 3.6.4 and was not regenerated.
+
 - **Noted:** 2026-09-18 — while regenerating the page for docs/privacy-permission
 - **Theme:** docs
 - **Area:** docs, CI

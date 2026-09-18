@@ -176,7 +176,7 @@ toolchain table in [[MobileApp]] must move together.
 | Job | Steps |
 |---|---|
 | `scope` | `scripts/ci_scope_selftest.sh` → `gh api repos/{owner}/{repo}/pulls/<n>/files` (`.filename` **and** `.previous_filename`) → `scripts/ci_scope.sh` → five `name=true\|false` flags into `$GITHUB_OUTPUT` |
-| `backend` | `postgres:17-alpine` service → `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` → `play_publish.py` tests (`.claude/skills/release-android/scripts/`, fake Google service) → `alembic upgrade head` → `downgrade base` → `upgrade head` → `check` (a migration round trip) → `uv export` + `pip-audit` |
+| `backend` | `postgres:17-alpine` service → checkout at depth 2 → privacy page tests (`scripts/test_build_privacy_page.py`) → pandoc **3.6.4** (release archive, checksum-pinned) → `scripts/build_privacy_page.py --check --base HEAD^1` → `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` → `play_publish.py` tests (`.claude/skills/release-android/scripts/`, fake Google service) → `alembic upgrade head` → `downgrade base` → `upgrade head` → `check` (a migration round trip) → `uv export` + `pip-audit` |
 | `image` | `docker build backend` → runs as non-root, no compiler, no dev dependencies, read-only code → `docker build -f backend/Dockerfile.backup backend` → `age --version`, `pg_dump --version` (17) → `countscore-backup --once` with no recipient must exit non-zero → `docker compose config --quiet` on both compose files, failing on any warning |
 | `app` | `scripts/hooks_selftest.sh` → `osv-scanner` on `pubspec.lock` → `pub get` → `scripts/web_binaries.sh --check` (and `--fetch` on the weekly run only) → `dart run build_runner build` → `analyze` → `test` → `build web --release` |
 | `android` | `pub get` → `dart run build_runner build` → `build apk --debug` |
@@ -190,6 +190,7 @@ wins, per path:
 
 | Path | Jobs |
 |---|---|
+| `privacy_policy.md`, `docs/privacy-policy.html` | `backend` (the privacy page check) |
 | `*.md`, `.llmwiki/`, `wip/`, `docs/`, `store_listing/`, `LICENSE` | *none* |
 | `backend/` | `backend`, `image`, `sync` |
 | `android/` | `android` |
@@ -442,6 +443,18 @@ no CI job collects it (`wip/todo_nr/2026-09-18-compose-screenshots-tests-not-in-
   `0001_initial.py`; the models were aligned, no revision was needed. `pip-audit` rather
   than `uv audit`, which uv 0.12 still ships as a preview command; both found nothing on
   2026-09-14.
+- **The privacy page is checked in `backend`** (2026-09-18). #75 and #77 edited
+  `privacy_policy.md` without running `scripts/build_privacy_page.py`, so the page Play links
+  to went two days without their details, and neither added a Version History entry.
+  `build_privacy_page.py --check --base HEAD^1` renders the page and diffs it against the
+  committed one, and fails when the policy changed but its `**Last Updated**` line did not.
+  A step of `backend`, not a job, for the same reason as below: that job is a required check
+  and already has Python. `scope` sends both files there, ahead of the documentation rule
+  that used to run nothing for them; a privacy-only pull request now pays the backend suite,
+  which is rare enough not to matter. `--check` diffs in Python instead of
+  `git diff --exit-code`, so it works on an uncommitted page locally and writes nothing.
+  pandoc is pinned at 3.6.4 by version and checksum — the page on `main` rendered
+  byte-identical with that release archive, so it was not regenerated.
 - **The backup sidecar and the compose files are checked in `image`, the `pub` audit in
   `app`** (2026-09-18). Steps, not jobs, for the same reason as above: both job names are
   required checks. The sidecar used to be built only by `deploy_nas.sh`, so a bad

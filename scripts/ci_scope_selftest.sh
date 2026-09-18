@@ -49,7 +49,7 @@ scope "a skill's prose"                 ""  .claude/skills/ship-parallel/SKILL.m
 scope "a scoped rule"                   ""  .claude/rules/web.md
 scope "the store listing and a graphic" ""  store_listing/en-US/title.txt \
                                             store_listing/assets/feature_graphic.png
-scope "the rendered privacy page"       ""  docs/privacy-policy.html
+scope "the docs/ README"                ""  docs/README.md
 scope "the licence"                     ""  LICENSE
 report "no changed file at all"         ""  "$(jobs_for < /dev/null)"
 
@@ -73,6 +73,8 @@ scope "the e2e suite"        "app android sync"    integration_test/app_test.dar
 scope "a Flutter dependency" "app android sync"    pubspec.yaml pubspec.lock
 scope "the pub lock alone"    "app android sync"    pubspec.lock
 scope "the analysis options" "app android sync"    analysis_options.yaml
+scope "the privacy policy"   "backend"             privacy_policy.md
+scope "the privacy page"     "backend"             docs/privacy-policy.html
 
 echo "== everything ================================================"
 all="backend image app android sync"
@@ -151,6 +153,14 @@ if grep -q 'Dockerfile.backup' "$WORKFLOW"; then
 else
     fail=$((fail + 1))
     echo "  FAIL  ci.yml no longer builds backend/Dockerfile.backup"
+fi
+
+# privacy_policy.md and its page go to `backend` for this step alone.
+if grep -q 'build_privacy_page.py --check --base' "$WORKFLOW"; then
+    pass=$((pass + 1))
+else
+    fail=$((fail + 1))
+    echo "  FAIL  ci.yml no longer checks docs/privacy-policy.html against privacy_policy.md"
 fi
 
 if [ -x "$SCOPE" ]; then
