@@ -1706,5 +1706,13 @@
   "groupErrorNotOwner": "Réservé au propriétaire du groupe",
   "@groupErrorNotOwner": {
     "description": "The server refused an action reserved to the group's owner"
+  },
+  "whoStarts": "Qui commence ?",
+  "@whoStarts": {
+    "description": "Game board overflow-menu item and dialog title: draws one of the game's players at random to start"
+  },
+  "whoStartsAgain": "Tirer à nouveau",
+  "@whoStartsAgain": {
+    "description": "Button in the Who starts? dialog that draws another player at random"
   }
 }

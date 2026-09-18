@@ -112,6 +112,17 @@ class DriftGameRepository implements GameRepository {
   }
 
   @override
+  Future<int> countFinished() async {
+    final row = await _db
+        .customSelect(
+          'SELECT COUNT(*) AS n FROM games '
+          'WHERE finishedAt IS NOT NULL AND deleted_at IS NULL',
+        )
+        .getSingle();
+    return row.read<int>('n');
+  }
+
+  @override
   Future<int> update(Game game) {
     final now = DateTime.now();
     return _db.customUpdate(

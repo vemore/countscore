@@ -16,6 +16,13 @@ class Game {
   /// sharing goes through `SyncStore.shareGame`, never through [toMap].
   final String? groupId;
 
+  /// The row's stable identity, the same on every device that shares the game,
+  /// or null for a [Game] built in memory and not yet stored. Read-only here,
+  /// like [groupId]: `create` mints it. Device-local state about a game — the
+  /// board's remembered "Continue playing" — is keyed by it rather than by the
+  /// local [id], which a restore may renumber.
+  final String? uuid;
+
   bool get isShared => groupId != null;
 
   bool get isFinished => finishedAt != null;
@@ -29,6 +36,7 @@ class Game {
     this.lastModified,
     this.finishedAt,
     this.groupId,
+    this.uuid,
   }) : createdAt = createdAt ?? DateTime.now();
 
   Map<String, dynamic> toMap() {
@@ -57,6 +65,7 @@ class Game {
           ? DateTime.parse(map['finishedAt'] as String)
           : null,
       groupId: map['group_id'] as String?,
+      uuid: map['uuid'] as String?,
     );
   }
 
@@ -81,6 +90,7 @@ class Game {
       lastModified: lastModified ?? this.lastModified,
       finishedAt: clearFinishedAt ? null : (finishedAt ?? this.finishedAt),
       groupId: groupId,
+      uuid: uuid,
     );
   }
 }

@@ -1009,4 +1009,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get groupErrorNotOwner => '只有群组所有者才能执行此操作';
+
+  @override
+  String get whoStarts => '谁先开始？';
+
+  @override
+  String get whoStartsAgain => '重新抽取';
 }

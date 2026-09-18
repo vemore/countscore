@@ -63,11 +63,14 @@ prompt below.
 
 ### Widgets — `lib/widgets/`
 
-Three components shared out of the screens:
+Four components shared out of the screens:
 
 - `player_picker_dialog.dart` — `create_game_screen`'s player picker: searches the known
   players or creates one, giving a new player a colour no one else in the list uses, and
   returns a `PlayerSelection` (name and colour).
+- `who_starts_dialog.dart` — the board's overflow-menu **Who starts?**: draws one of the
+  game's players at random, shows the name, and draws again on request. Nothing stored,
+  nothing sent.
 - `group_settings_section.dart` — Settings → Group: create or join a group, show its invite
   code, leave it, and show where sync stands; usable only once a server URL is set. *New
   code* is shown to the group's owner only.
@@ -83,7 +86,9 @@ Three components shared out of the screens:
   wherever `GameProvider.setGameFinished` reports the transition that finishes a game — the
   board's finish menu entry and its game-over dialog (`game_board_screen.dart`) and the game list's card menu
   (`home_screen.dart`). It asks only when every guard holds: at least `minGamesFinished`
-  (3) games finished, `minAge` (7 days) since the first launch, not already asked for this
+  (3) games finished — `GameRepository.countFinished()`, the live games whose `finishedAt`
+  is set, read when the prompt is due, so an undone finish or a reopen drops out and there
+  is no stored counter to drift — `minAge` (7 days) since the first launch, not already asked for this
   app version (`reviewPromptVersion`), not already asked this session. There is no
   pre-prompt and nothing depends on the outcome, which Play never reports. The platform is
   behind the `ReviewRequester` seam; `PlatformReviewRequester` answers unavailable on the
@@ -98,6 +103,10 @@ Three components shared out of the screens:
   its tables ([[DataLayer]]).
 - `sync/` — the group-sync engine, store and stream ([[Sync]]).
 - `uuid.dart` — platform-neutral v4 UUIDs.
+- `game_over_dismissals.dart` — `GameOverDismissals`: the games whose game-over dialog was
+  answered "Continue playing", on this device only (SharedPreferences
+  `gameOverDismissed.<game uuid>`; not synced, no schema). A deleted game leaves its key
+  behind — one boolean, never read again.
 
 ### Utilities — `lib/utils/`
 
@@ -168,8 +177,12 @@ edits.
 
 `_GameBoardScreenState._maybeShowGameOver` raises the game-over dialog after a score edit,
 after a round is added and after one is deleted — every mutation that can move a total past
-the game type's threshold. `_gameOverDismissed` keeps it to one question per crossing and
-re-arms as soon as the condition is false again.
+the game type's threshold — and once on the board's first build, for an open game already
+past it. `_gameOverDismissed` keeps it to one question per crossing and re-arms as soon as
+the condition is false again. "Continue playing" (or the back button) is also written to
+`GameOverDismissals`, keyed by `Game.uuid`, and read back when the board opens, so leaving
+the board does not re-ask; the stored answer is removed as soon as the condition is false.
+A finished game is not asked about on open.
 
 ### Toolchain
 
@@ -245,8 +258,20 @@ not "fix" it by hardcoding a codepoint.
 - **The game-over refusal is in memory, and there is no check on the board's first build**
   (2026-09-16). Nothing records the user's "Continue playing", so a first-build check would
   raise the dialog every single time the board is opened for a game past its threshold —
-  worse than the bug it fixes. Persisting the refusal needs a synced column and stays open in
-  `wip/todo_nr/2026-09-16-game-over-dialog-only-on-score-edit.md`.
+  worse than the bug it fixes.
+  > **Status: Outdated** (2026-09-18) — the refusal is now stored on the device
+  > (`GameOverDismissals`, SharedPreferences keyed by the game's uuid), and the board checks
+  > once on its first build. A synced column was weighed and not taken: the answer is a
+  > per-device courtesy, not game data, and it would have cost a schema bump and LWW
+  > (`wip/done/2026-09-16-game-over-dialog-only-on-score-edit.md`).
+- **The review prompt counts finished games from the database, not a counter** (2026-09-18).
+  `reviewPromptGamesFinished` counted the act of finishing, so an Undo left it one too high;
+  a `COUNT` over `finishedAt` follows the state, survives a backup restore, and makes the
+  finish → reopen → finish evening count once by construction. `recordFirstLaunch` removes
+  the old key (`wip/done/2026-09-16-undo-does-not-take-back-the-review-prompt-count.md`).
+- **Who starts? is the first of three table helpers** (2026-09-18) — the dice roller and
+  the turn timer follow, one pull request each, so a bad idea is cheap to drop
+  (`wip/done/2026-09-16-no-dice-timer-first-player-helpers.md`).
 - **The game list counts rounds in one grouped query, not one per card** (2026-09-16).
   `DriftGameRepository.getAll` returns no count, and a `FutureBuilder` per card would be one
   query per row over the whole history; `RoundRepository.countByGame` is a single `GROUP BY`

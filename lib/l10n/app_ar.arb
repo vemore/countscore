@@ -527,5 +527,7 @@
 
   "groupDevicesExplainMember": "لا يمكن إلا لمالك المجموعة إزالة جهاز أو تغيير رمز الدعوة.",
 
-  "groupErrorNotOwner": "هذا الإجراء متاح لمالك المجموعة فقط"
+  "groupErrorNotOwner": "هذا الإجراء متاح لمالك المجموعة فقط",
+  "whoStarts": "من يبدأ؟",
+  "whoStartsAgain": "اسحب مجددًا"
 }

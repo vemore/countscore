@@ -600,5 +600,7 @@
 
   "groupDevicesExplainMember": "Only the group's owner can remove a device or change the invite code.",
 
-  "groupErrorNotOwner": "Only the group's owner can do this"
+  "groupErrorNotOwner": "Only the group's owner can do this",
+  "whoStarts": "Who starts?",
+  "whoStartsAgain": "Draw again"
 }

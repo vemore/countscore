@@ -527,5 +527,7 @@
 
   "groupDevicesExplainMember": "デバイスの削除や招待コードの変更ができるのはグループのオーナーだけです。",
 
-  "groupErrorNotOwner": "この操作はグループのオーナーだけが行えます"
+  "groupErrorNotOwner": "この操作はグループのオーナーだけが行えます",
+  "whoStarts": "誰から始める？",
+  "whoStartsAgain": "もう一度引く"
 }
