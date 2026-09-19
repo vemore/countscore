@@ -28,5 +28,5 @@ A full-width banner is not used: the win rule becomes a single line under the ti
 - `ranking_screen.dart` no longer references `Colors.amber` or `primaryContainer`, and the
   ranking and end screens build their rows from the same widget.
 - A widget test on an open game: the ranking shows each player in their board colour, with
-  the crown on the leader, and no "Play again".
+  the crown on the leader.
 - A widget test on a lowest-wins and a highest-wins game: ranks match the end screen's.
