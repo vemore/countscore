@@ -512,14 +512,42 @@ class AppLocalizationsRu extends AppLocalizations {
   String get conditionType => 'Тип условия';
 
   @override
-  String get gameOverTitle => 'Игра окончена!';
-
-  @override
-  String get gameOverMessage =>
-      'Условие окончания игры выполнено. Завершить игру?';
-
-  @override
   String get continuePlay => 'Продолжить игру';
+
+  @override
+  String gameEndWinner(String name) {
+    return 'Побеждает $name';
+  }
+
+  @override
+  String gameEndTie(String names) {
+    return 'Ничья: $names';
+  }
+
+  @override
+  String gameEndRounds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count раунда',
+      many: '$count раундов',
+      few: '$count раунда',
+      one: '$count раунд',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get gameEndLowestWins => 'побеждает наименьший счёт';
+
+  @override
+  String get gameEndHighestWins => 'побеждает наибольший счёт';
+
+  @override
+  String get gameEndAnalysis => 'Анализ';
+
+  @override
+  String get gameEndResults => 'Итоги';
 
   @override
   String get endGame => 'Завершить игру';
@@ -532,9 +560,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get undo => 'Отменить';
-
-  @override
-  String get gameMarkedFinished => 'Игра завершена';
 
   @override
   String get gameReopened => 'Игра возобновлена';

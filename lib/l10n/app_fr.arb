@@ -816,19 +816,62 @@
     "description": "Label for condition type dropdown"
   },
 
-  "gameOverTitle": "Fin de partie !",
-  "@gameOverTitle": {
-    "description": "Title for game over dialog"
-  },
-
-  "gameOverMessage": "La condition de fin de partie est atteinte. Terminer la partie maintenant ?",
-  "@gameOverMessage": {
-    "description": "Message in game over dialog"
-  },
-
   "continuePlay": "Continuer à jouer",
   "@continuePlay": {
-    "description": "Button to continue playing despite game over"
+    "description": "Action on the game-end screen, when the rule ended the game: back to the board with the game still open"
+  },
+
+  "gameEndWinner": "{name} gagne",
+  "@gameEndWinner": {
+    "description": "Headline of the game-end screen: who won",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Thibaut"
+      }
+    }
+  },
+
+  "gameEndTie": "Égalité : {names}",
+  "@gameEndTie": {
+    "description": "Headline of the game-end screen when several players share first place",
+    "placeholders": {
+      "names": {
+        "type": "String",
+        "example": "Alice, Bob"
+      }
+    }
+  },
+
+  "gameEndRounds": "{count, plural, one{{count} tour} other{{count} tours}}",
+  "@gameEndRounds": {
+    "description": "Number of rounds played, in the game-end screen's summary line (e.g. 'ZapZap · 6 tours · le score le plus bas gagne')",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "6"
+      }
+    }
+  },
+
+  "gameEndLowestWins": "le score le plus bas gagne",
+  "@gameEndLowestWins": {
+    "description": "Win rule in the game-end screen's summary line, lower-case as it follows a separator"
+  },
+
+  "gameEndHighestWins": "le score le plus haut gagne",
+  "@gameEndHighestWins": {
+    "description": "Win rule in the game-end screen's summary line, lower-case as it follows a separator"
+  },
+
+  "gameEndAnalysis": "Analyse",
+  "@gameEndAnalysis": {
+    "description": "Button on the game-end screen that opens the game analysis"
+  },
+
+  "gameEndResults": "Résultats",
+  "@gameEndResults": {
+    "description": "Tooltip of the board's app-bar button that reopens the game-end screen of a finished game"
   },
 
   "endGame": "Terminer la partie",
@@ -849,11 +892,6 @@
   "undo": "Annuler",
   "@undo": {
     "description": "Snackbar action that reverts the action just confirmed"
-  },
-
-  "gameMarkedFinished": "Partie terminée",
-  "@gameMarkedFinished": {
-    "description": "Snackbar confirming a game was just marked finished"
   },
 
   "gameReopened": "Partie rouverte",

@@ -303,17 +303,21 @@
 
   "conditionType": "Condition Type",
 
-  "gameOverTitle": "Game Over!",
 
-  "gameOverMessage": "Game over condition reached. End game now?",
 
   "continuePlay": "Continue Playing",
+  "gameEndWinner": "{name} wins",
+  "gameEndTie": "Tie: {names}",
+  "gameEndRounds": "{count, plural, one{{count} round} other{{count} rounds}}",
+  "gameEndLowestWins": "lowest score wins",
+  "gameEndHighestWins": "highest score wins",
+  "gameEndAnalysis": "Analysis",
+  "gameEndResults": "Results",
 
   "endGame": "End Game",
   "reopenGame": "Reopen game",
   "gameFinished": "Finished",
   "undo": "Undo",
-  "gameMarkedFinished": "Game finished",
   "gameReopened": "Game reopened",
 
   "comment": "Comment",
