@@ -146,6 +146,22 @@ void main() {
         .single;
   }
 
+  // wip/done/2026-09-19-pwa-reload-reruns-the-database-creation.md: a PWA
+  // whose seeding failed had no types, and the screen said "Loading…" forever.
+  testWidgets('with no game types: an empty state, not an endless loading line',
+      (tester) async {
+    await db.customStatement('DELETE FROM game_types');
+
+    await open(tester);
+
+    expect(tester.takeException(), isNull);
+    final empty = find.byKey(const Key('game_type_empty'));
+    expect(empty, findsOneWidget);
+    expect((tester.widget<Text>(empty)).data, 'No game types');
+    expect(find.text('Loading game types...'), findsNothing);
+    expect(find.byKey(const Key('game_type_all')), findsNothing);
+  });
+
   testWidgets('at 412 dp: tiles, rule line, seats and Start, in that order',
       (tester) async {
     await aPreviousGame();

@@ -4,6 +4,7 @@
 - **Theme:** visual-refresh
 - **Area:** app
 - **Blocks release:** no
+- **Status:** done (2026-09-19) — closed by fix/board-home-tie-crown. The board's crown, outlined lane and ribbon ring, the Resume card's leader and the finished pill's winner read `GameStanding.soleLeader`; the board's rank sort and places key on `hasScores`; a finished tie shows the flag and "Finished" with every tied player in the tooltip (`gameEndTie`). `GameStanding.leader` had no reader left and was removed.
 
 The Ranking and end screens now crown `GameStanding.soleLeader`, which is null on a tie for
 the lead. Two other readers still use `GameStanding.leader`, which breaks a tie by seat

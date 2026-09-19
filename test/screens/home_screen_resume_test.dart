@@ -180,6 +180,53 @@ void main() {
         findsOneWidget);
   });
 
+  testWidgets('a finished tie names no single winner: the flag, "Finished", '
+      'every tied player in the tooltip', (tester) async {
+    await tester.runAsync(() async {
+      final id =
+          await playedGame('Draw', {'Alice': 20, 'Bob': 20, 'Chloé': 5});
+      await games.setGameFinished(id, true);
+    });
+
+    await pumpHome(tester);
+    await tester.runAsync(() => Future<void>.delayed(
+        const Duration(milliseconds: 50)));
+    await tester.pumpAndSettle();
+
+    final pill = find.byKey(const Key('statusFinished'));
+    expect(pill, findsOneWidget);
+    expect(find.descendant(of: pill, matching: find.text('Finished')),
+        findsOneWidget);
+    for (final name in ['Alice', 'Bob']) {
+      expect(find.descendant(of: pill, matching: find.text(name)),
+          findsNothing, reason: name);
+    }
+    expect(
+        find.descendant(
+            of: pill, matching: find.byIcon(Icons.emoji_events_outlined)),
+        findsNothing);
+    expect(find.descendant(of: pill, matching: find.byIcon(Icons.flag_outlined)),
+        findsOneWidget);
+    expect(find.byTooltip('Tie: Alice, Bob'), findsOneWidget);
+    expect(find.textContaining('Won by'), findsNothing);
+  });
+
+  testWidgets('an open game tied for the lead names no leader on the Resume '
+      'card', (tester) async {
+    await tester.runAsync(() async {
+      await playedGame('Level', {'Alice': 0, 'Bob': 0});
+    });
+
+    await pumpHome(tester);
+    await tester.runAsync(() => Future<void>.delayed(
+        const Duration(milliseconds: 50)));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('resumeHero')), findsOneWidget);
+    expect(find.byKey(const Key('resumeHeroLeader')), findsNothing);
+    expect(find.textContaining('leads'), findsNothing);
+  });
+
   test('resumableGame picks the open game played last', () {
     final now = DateTime(2026, 9, 18, 21);
     final older = Game(

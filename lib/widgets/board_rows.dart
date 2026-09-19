@@ -37,7 +37,7 @@ class _BoardRowsState extends State<BoardRows> {
     final theme = Theme.of(context);
     final data = widget.data;
     final players =
-        _byRank && data.leader != null ? data.byRank : data.players;
+        _byRank && data.hasScores ? data.byRank : data.players;
     final muted = TextStyle(
       fontSize: 13,
       fontWeight: FontWeight.w700,

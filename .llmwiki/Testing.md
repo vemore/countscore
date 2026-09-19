@@ -34,6 +34,7 @@
 | `test/screens/game_board_end_of_game_test.dart` | The board's end of game: the finished chip appears and disappears with `finishedAt` while **Round N** stays enabled, and the game type's rule finishes the game and opens the end screen — naming the winner on a highest-wins and on a lowest-wins type — after a round is validated on the keypad, keeps quiet for a crossing already answered "Continue playing" (which returns to the board with the game reopened; back leaves it finished), re-arms once the game is back under its threshold, is raised once on the board's first build for an open game past its threshold and not for a finished one, and remembers "Continue playing" across leaving the board (SharedPreferences, cleared when the game goes back under); a finished game's app bar reopens its end screen, without "Continue playing". `GameBoardScreen.analysisRepo` is injected for the same reason `GameProvider`'s repositories are — the default reaches the singleton. |
 | `test/providers/game_provider_sync_test.dart` | A current game deleted by sync is reported once (`takeRemotelyDeletedGameName`), which the board uses to close itself. |
 | `test/drift/web_upgrade_test.dart` | A v9 database (v10 to v16 stripped, `user_version` 9) reopened through Drift gets the sync tables, columns, triggers, `games.finishedAt` the back-filled `game_types.builtin_key`, every built-in type's `rules_slug` and the v15 unique index from `onUpgrade` — the PWA's upgrade path, and the only engine that runs it. |
+| `test/drift/persistence_flush_test.dart` | The PWA reload fix, off the browser: `PersistenceFlushInterceptor` issues its `SELECT 1` outside any transaction once after the first open and after each outermost transaction — committed, rolled back (the error still surfaces), nested (once, after the outer one) or a batch — seen through a recording interceptor over `NativeDatabase.memory()`. And `onCreate` rerun on a full file whose `user_version` was reset to 0 completes: no duplicate built-in type, a tombstoned one not resurrected, the games kept, version back to 16. |
 | `test/game_rules_catalog_test.dart` | The shipped rulesets in `assets/rules/`: every locale carries the same 21 slugs, the French and English masters say a game ends when a total *reaches* its threshold, and each keeps the numbers the app actually scores on — a translation that drops a threshold contradicts the type it documents. |
 | `test/models_test.dart` | Model serialisation. It pins the built-in game types **by index**: the first ten are what a pre-v14 install already holds, so a new type is appended, never inserted. |
 | `test/providers/theme_provider_test.dart` | `ThemeMode` decode fallbacks and the SharedPreferences round-trip. |
@@ -47,7 +48,7 @@
 | `test/services/commentary_report_test.dart` | The AI-commentary report `mailto:`: addressed to the listing contact with an encoded subject and body, an ampersand in the body unable to start a new parameter, truncation that counts code points so an emoji is never split, and the reference line skipping what is unknown. |
 | `test/screens/game_end_screen_test.dart` | The game-end screen: the winner, the podium's three places with their totals and the rest in rank order; *Play again* creates the next game with the same players and opens it; *Analysis* is absent without a server (Play again then spans the row) and present with one; and "End game" from the home card menu finishes the game and opens the screen. |
 | `test/screens/ranking_screen_test.dart` | The in-game ranking against the end screen: board colours, the sole leader crowned, the same order on both; no crown with no round played, after a round of all zeros, or on a tie, where the tied players stand on the same step and share a place number. |
-| `test/screens/create_game_screen_test.dart` | The New game screen at 412 dp: six game-type tiles three a row, the last game's type first; the name after the last game's; the rule line; the seats under it in the last game's order, the first one dealing; a full-width *Start · N players* at the bottom. A player's avatar colour here equals his colour on the real board, also when two players own the same colour; a seat dragged by its handle changes the created game's `orderIndex`; the "who's playing" sheet creates a player and seats him after the ones checked; "All games" puts a type that was not on a tile onto one; "Other" offers the win rule; the first game is named in the app's language (`en`, `fr`, `ja`). The board is injected (`boardBuilder`). |
+| `test/screens/create_game_screen_test.dart` | The New game screen at 412 dp: six game-type tiles three a row, the last game's type first; the name after the last game's; the rule line; the seats under it in the last game's order, the first one dealing; a full-width *Start · N players* at the bottom. A player's avatar colour here equals his colour on the real board, also when two players own the same colour; a seat dragged by its handle changes the created game's `orderIndex`; the "who's playing" sheet creates a player and seats him after the ones checked; "All games" puts a type that was not on a tile onto one; "Other" offers the win rule; the first game is named in the app's language (`en`, `fr`, `ja`); with no game type at all it shows "No game types" (`game_type_empty`), not an endless "Loading game types…". The board is injected (`boardBuilder`). |
 | `test/utils/recent_game_types_test.dart` | The tiles' order (types of the latest games first, the rest by display name, the selected type always on a tile) and `PlayerRepository.getGameCountsByName` — live games only. |
 | `test/screens/play_again_test.dart` | *Play again* (`lib/utils/play_again.dart`): the ranking offers it and opens the new game — same type, win rule and players in order, the source game left untouched; a finished game's home menu offers it, a game still in play keeps "New with same players"; and `nextGameName` counts on from the last number. The board is injected (`boardBuilder`) and the home menu read through `itemBuilder`, as in the finish-menu test. |
 | `test/screens/game_rules_screen_test.dart` | The rules page's precedence: the shipped ruleset when the user wrote none, the user's own rules winning over it, the scoring summary derived from the type rather than the text, the empty state for a type with neither, restore clearing the stored rules and not offered without a shipped ruleset, and an emptied editor meaning "no rules of mine" rather than an empty string. The ruleset is served from memory, never the asset bundle. |
@@ -163,6 +164,31 @@ flutter test integration_test/app_test.dart -d <device_id> \
 
 This one exercises the real network call, with no CORS in the way. For broader on-device
 work, use the `flutter-device-test` skill.
+
+### Web reload — `integration_test/reload_persistence_test.dart`
+
+Web only (skipped elsewhere), no backend. A page cannot reload itself inside an integration
+test, so the test reads what a reload would: `integration_test/support/persisted_db_web.dart`
+opens the IndexedDB database `countscore` through a fresh `IndexedDbFileSystem` and a second
+`sqlite3.wasm`, read-only — what drift's worker has not flushed is invisible to it, as to the
+next page load. Straight after the app opens the database it asserts the stored
+`user_version` is the current `schemaVersion` and the built-in types are all there; after
+creating two games and deleting one (a transaction), that the deletion is stored. Without
+`PersistenceFlushInterceptor` it fails on both (version 0; the deleted game still stored) —
+checked on 2026-09-19. `sqlite3` is a dev dependency for this, at the version drift already
+locks.
+
+```bash
+chromedriver --port=4444 &
+flutter drive --driver=test_driver/integration_test.dart \
+  --target=integration_test/reload_persistence_test.dart \
+  -d web-server --browser-name=chrome --headless
+```
+
+A real reload was checked by hand, in Chromium through Playwright on a release build: the
+IndexedDB page 1 holds `user_version` 16 after the first load and after each reload, with no
+uncaught error; a browser left at version 0 by the previous build recovers on its first load
+of the fixed one.
 
 ### Backend — `pytest`
 
@@ -429,7 +455,8 @@ release APK/AAB (needs the keystore secrets).
 
 **The e2e suite does not run in CI.** `integration_test/app_test.dart` drives a real
 network call against production, so it stays a manual step — on web via chromedriver, on a
-device via the `flutter-device-test` skill. Export/import has no automated coverage at all
+device via the `flutter-device-test` skill. The web reload test beside it is manual too: no
+CI job runs chromedriver. Export/import has no automated coverage at all
 and must be checked on a device; the wakelock toggle is covered only down to the saved
 setting (`test/screens/settings_screen_test.dart`) — whether the platform holds the lock is
 checked on a device, or in a browser through `navigator.wakeLock` ([[Web]]).

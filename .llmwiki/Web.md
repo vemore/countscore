@@ -54,10 +54,34 @@ driftDatabase(
     sqlite3Wasm: Uri.parse('sqlite3.wasm'),
     driftWorker: Uri.parse('drift_worker.js'),
   ),
-)
+).interceptWith(PersistenceFlushInterceptor())
 ```
 
 SQLite compiled to wasm, persisted through OPFS (IndexedDB fallback) by `drift_flutter`.
+
+> **Status: Outdated** (2026-09-19) — in practice the PWA is on **IndexedDB**, not OPFS.
+> drift probes the browser and, in Chromium without cross-origin isolation (no COOP/COEP
+> headers — the backend's own host, GitHub Pages and a local build alike), logs `Using
+> WasmStorageImplementation.sharedIndexedDb due to missing browser features:
+> {dedicatedWorkersInSharedWorkers, sharedArrayBuffers}`. The file then lives **in memory
+> in a shared worker** and reaches the IndexedDB database `countscore` (stores `files` and
+> `blocks`, 4096-byte blocks) only when the worker flushes.
+
+**drift 2.35.0 flushes only after a statement run outside a transaction.** Its
+`_WasmDelegate` skips the flush while `isInTransaction` is set, and a `COMMIT` runs before
+that flag is cleared; the `PRAGMA user_version` it writes once migrations have run is not
+flushed at all. So a committed transaction (deleting a game) and the schema version stayed in
+memory until some later non-transactional write happened to flush them, and were lost on a
+reload that came first: `user_version` read 0, `onCreate` ran again on a full database, and
+deleted games came back. `PersistenceFlushInterceptor`
+(`lib/services/drift/connection/persistence_flush.dart`) closes both holes by running `SELECT
+1` outside any transaction after the first open and after each outermost transaction (a
+batch included) — any flush writes every pending page, so what a call wrote is in IndexedDB
+by the time it returns. `integration_test/reload_persistence_test.dart` reads IndexedDB back as the next page
+load would, and fails on both counts without the interceptor. Seeding in `onCreate` is
+idempotent as well, so a browser already stuck at version 0 completes `onCreate` once and
+recovers on its first load of the fixed build (checked in Chromium: old build, reload,
+new build → `user_version` 16, no uncaught error).
 
 **Those explicit URIs are load-bearing.** Without them, drift_flutter 0.3.0 throws
 `ArgumentError` at startup and the PWA crashes — while the *build* still passes clean. If
@@ -260,3 +284,10 @@ address for the Android case; on web that URL still only works from an http orig
   The plugin has a real web path that the CSP allows, and a phone on a games table is
   exactly where the screen should stay on, so the guard went rather than the heading.
   `wip/done/2026-09-19-settings-screen-section-is-empty-on-the-web.md`.
+- **The web database is made durable by an interceptor, not by a storage change or an
+  upgrade (2026-09-19).** drift 2.35.0 and sqlite3 3.6.0 were the latest releases, so there
+  was nothing to upgrade to. Forcing OPFS needs `SharedArrayBuffer`, hence COOP/COEP headers,
+  which GitHub Pages cannot send and which would constrain every self-hosted deployment. An
+  extra flush on the `unload` event cannot be awaited. A `QueryInterceptor` in
+  `connection_web.dart` costs one `SELECT 1` per transaction and makes every returned call
+  durable. `wip/done/2026-09-19-pwa-reload-reruns-the-database-creation.md`.

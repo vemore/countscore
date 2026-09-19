@@ -520,7 +520,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   future: gameProvider.standingOf(game),
                   builder: (context, snapshot) {
                     final standing = snapshot.data;
-                    final leader = standing?.leader;
+                    // Nobody is named on a tie for the lead.
+                    final leader = standing?.soleLeader;
                     return Row(
                       children: [
                         // Ringed in the text colour: a teal or cyan player
@@ -682,12 +683,19 @@ class _HomeScreenState extends State<HomeScreen> {
             style: style?.copyWith(color: scheme.primary)),
       );
     }
-    final winner = standing?.leader;
+    // A tie for the lead names no single winner: the flag and "Finished",
+    // with every tied player in the tooltip, as the end screen names them.
+    final winner = standing?.soleLeader;
+    final tied = winner == null ? standing?.leaders ?? const [] : const [];
     final muted = scheme.onSurfaceVariant;
     return _Pill(
       key: const Key('statusFinished'),
       background: scheme.surfaceContainerHighest,
-      tooltip: winner == null ? null : l10n.gameWonBy(winner.name),
+      tooltip: winner != null
+          ? l10n.gameWonBy(winner.name)
+          : tied.length > 1
+              ? l10n.gameEndTie(tied.map((p) => p.name).join(', '))
+              : null,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
