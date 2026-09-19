@@ -43,6 +43,10 @@ at your own server in Settings → Server if you want the connected features.
   the system share sheet, with a link to the app's Play listing.
 - **Global players**: a player exists once and is shared across games, so statistics follow
   them from one game to the next.
+- **Player statistics**: a leaderboard of the finished games, all of them or one game type
+  at a time — win rate, wins and games, the best win rate up top — and, a tap on a player
+  away, their card on that game: average place, the place over the last 12 games, the
+  current win streak, the best and average final totals, the opponent most often beaten.
 - **10 languages**, fully translated: English, French, Spanish, German, Portuguese (BR),
   Russian, Chinese (Simplified), Japanese, Hindi and Arabic — Arabic including RTL layout.
 - **Offline-first**: everything works with no network. Data lives on the device.

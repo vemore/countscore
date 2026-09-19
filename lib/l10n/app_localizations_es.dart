@@ -1201,6 +1201,135 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get statsBestWinRate => 'Mejor porcentaje de victorias';
+
+  @override
+  String statsWinsOutOfGames(int wins, int games) {
+    String _temp0 = intl.Intl.pluralLogic(
+      wins,
+      locale: localeName,
+      other: '$wins victorias de $games',
+      one: '$wins victoria de $games',
+      zero: 'Ninguna victoria de $games',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsColumnPlayer => 'Jugador';
+
+  @override
+  String get statsColumnGames => 'Partidas';
+
+  @override
+  String statsUnranked(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count partidas · aún sin clasificar',
+      one: '$count partida · aún sin clasificar',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsLeaderboardFooter(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Clasificación a partir de $count partidas terminadas. Toca un jugador para ver su ficha.',
+      one:
+          'Clasificación a partir de $count partida terminada. Toca un jugador para ver su ficha.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsGamesLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'partidas',
+      one: 'partida',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsWinsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'victorias',
+      one: 'victoria',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsAverageRank => 'puesto medio';
+
+  @override
+  String statsRankChartTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Puesto, últimas $count partidas',
+      one: 'Puesto, última partida',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsTrendImproving => 'mejorando';
+
+  @override
+  String get statsTrendDeclining => 'en retroceso';
+
+  @override
+  String get statsTrendSteady => 'estable';
+
+  @override
+  String statsRankOrdinal(String rank) {
+    return '$rank.º';
+  }
+
+  @override
+  String statsWinStreak(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Racha: $count victorias',
+      one: 'Racha: $count victoria',
+      zero: 'Sin racha en curso',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsRecord(int total) {
+    return 'Récord: $total';
+  }
+
+  @override
+  String statsOnGameType(String gameType) {
+    return 'En $gameType';
+  }
+
+  @override
+  String get statsAverageTotal => 'Total final medio';
+
+  @override
+  String get statsBestTotal => 'Mejor total final';
+
+  @override
+  String get statsMostBeaten => 'Rival más derrotado';
+
+  @override
+  String get statsOpenPlayerCard => 'ver la ficha';
+
+  @override
   String get shareResult => 'Compartir el resultado';
 
   @override

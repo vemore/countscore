@@ -50,9 +50,31 @@ whether the connected features exist; the third starts the review prompt's clock
 `game_types_screen` · `create_game_screen` ·
 `game_analysis_screen` (the LLM analysis, with its row of voice chips — see
 [[LlmProviders]]) ·
-`players_screen` · `player_stats_screen` · `settings_screen` ·
+`players_screen` · `player_stats_screen` (the leaderboard) and `player_card_screen`, below ·
+`settings_screen` ·
 `about_screen` · `ranking_screen` (where an open game stands, below) · `game_end_screen` (who won, below) · `game_rules_screen` ·
 `group_settings_screen`.
+
+**Player statistics.** `player_stats_screen` is a leaderboard: a row of game-type chips
+(`Key('stats_chip_all')`, then `stats_chip_<key>` for each type with a finished game, most
+played first), a teal hero for the best win rate with the leader's avatar in a
+`kLeaderGold` ring, then one card per player — place, two-letter `PlayerAvatar`, games,
+wins · win rate and a bar of the rate in the player's colour. A player with fewer than
+`kMinGamesToRank` (5) finished games of the filter is listed last with no place. Tapping a
+player opens `player_card_screen` on the same filter: a strip of the leaderboard's avatars
+to switch player; games, wins and average place; the place over the last `kRankChartGames`
+(12) games, drawn by `RankChartPainter` (a `CustomPainter`, no chart package) with wins as
+gold dots and a trend; the current win streak and, on one type, the best final total; then
+the average and best final totals and the opponent most often finished ahead of. On *All
+games* the best total is left out whenever the games mix both win rules. Everything is
+computed in `lib/models/player_stats.dart` from `PlayerStatsRepository.getFinishedGameResults`
+(through `GameProvider.getFinishedGameResults`): live games with `finishedAt` set and at least
+one score on a live round, each player keyed by the global `players.uuid`. Places share on a
+tie (1, 2, 2, 4) and follow the game's `isLowestScoreWins`, like `GameStanding.ranks`.
+Colours come from `playerColorsByUuid` — `assignPlayerColors` over the players in the order
+they first appear walking back from the latest game — so the latest game shows exactly its
+board's colours and the filter never recolours anyone. Tests:
+`test/models/player_stats_test.dart`, `test/screens/player_stats_screen_test.dart`.
 
 `group_settings_screen` is Settings → Group → *Comments and usage*, reached only from the
 Group section once the device is in a group: the group's comment style (three chips,
@@ -203,11 +225,11 @@ on its main axis **only when its `padding` argument is null**, so every root scr
 passes an explicit padding loses that compensation and cannot scroll its last row clear of
 the system navigation bar — the app is edge-to-edge on `targetSdk` 36 and cannot opt out
 (`android/app/src/main/kotlin/com/example/countscore/MainActivity.kt` is a bare
-`FlutterActivity`; there is no `SystemChrome` call anywhere in `lib/`). Its eight call sites
+`FlutterActivity`; there is no `SystemChrome` call anywhere in `lib/`). Its nine call sites
 are the root scrollables of `about_screen.dart:31` (on the child `Padding` — a
 `SingleChildScrollView` never gets the compensation at all),
 `create_game_screen.dart:200`, `game_types_screen.dart:43`,
-`home_screen.dart:91` (the drawer) and `:335`, `player_stats_screen.dart:83`,
+`home_screen.dart:91` (the drawer) and `:335`, `player_stats_screen.dart:119`, `player_card_screen.dart:110`,
 `players_screen.dart:61`, and in `ranking_screen.dart` on the *Play again* button's
 `Padding` under the list, the last thing above the navigation bar. Only the bottom edge is compensated:
 `Scaffold` drops the top padding for a body under an `AppBar`
@@ -487,6 +509,15 @@ not "fix" it by hardcoding a codepoint.
   depending on whether it was finished. Both now build from `GameRanking` / `RankedPlayers`;
   the banner became a single line under the title
   (`wip/done/2026-09-19-game-ranking-ignores-the-new-theme.md`).
+- **The player statistics became a leaderboard and a player card** (2026-09-19,
+  `feat/player-stats-leaderboard`). The screen was one collapsed `ExpansionTile` per player
+  with "N games" as the only visible figure, avatars in the stored colour or `Colors.blue`
+  — Lionel and Laurent both a cyan "L" — and nothing to compare players by. From four
+  directions drawn, the user chose the leaderboard with the player card, both scoped to one
+  game type. Only *finished* games count (the old aggregate counted open ones too), and a
+  finished game with no score is left out rather than made a win for everyone. The rank
+  chart is a `CustomPainter` because one chart does not justify a dependency and its licence
+  entry. The five-game threshold keeps one lucky evening from topping the board.
 - **Sharing a result is text, and goes through the system share sheet (2026-09-19).** A
   finished game could not leave the phone, so the players around the table had nothing to
   pass on and the app nothing to advertise it (`wip/done/2026-09-16-no-way-to-share-a-game-result.md`).

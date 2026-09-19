@@ -1986,6 +1986,175 @@
     }
   },
 
+  "statsBestWinRate": "Meilleur taux de victoire",
+  "@statsBestWinRate": {
+    "description": "Title of the leaderboard's hero card: the player with the best win rate"
+  },
+
+  "statsWinsOutOfGames": "{wins, plural, =0{Aucune victoire sur {games}} one{{wins} victoire sur {games}} other{{wins} victoires sur {games}}}",
+  "@statsWinsOutOfGames": {
+    "description": "Hero card detail: wins out of games of the selected game type",
+    "placeholders": {
+      "wins": {
+        "type": "int",
+        "example": "7"
+      },
+      "games": {
+        "type": "int",
+        "example": "17"
+      }
+    }
+  },
+
+  "statsColumnPlayer": "Joueur",
+  "@statsColumnPlayer": {
+    "description": "Leaderboard column header above the players"
+  },
+
+  "statsColumnGames": "Parties",
+  "@statsColumnGames": {
+    "description": "Leaderboard column header above the number of games"
+  },
+
+  "statsUnranked": "{count, plural, one{{count} partie · hors classement} other{{count} parties · hors classement}}",
+  "@statsUnranked": {
+    "description": "Leaderboard row of a player with too few finished games to be ranked",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+
+  "statsLeaderboardFooter": "{count, plural, one{Classement à partir de {count} partie terminée. Touchez un joueur pour voir sa fiche.} other{Classement à partir de {count} parties terminées. Touchez un joueur pour voir sa fiche.}}",
+  "@statsLeaderboardFooter": {
+    "description": "Note under the leaderboard: the ranking threshold and how to open a player card",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+
+  "statsGamesLabel": "{count, plural, one{partie} other{parties}}",
+  "@statsGamesLabel": {
+    "description": "Player card tile: label under the number of games",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "18"
+      }
+    }
+  },
+
+  "statsWinsLabel": "{count, plural, one{victoire} other{victoires}}",
+  "@statsWinsLabel": {
+    "description": "Player card tile: label under the number of wins",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+
+  "statsAverageRank": "rang moyen",
+  "@statsAverageRank": {
+    "description": "Player card tile: label under the average final place"
+  },
+
+  "statsRankChartTitle": "{count, plural, one{Rang, dernière partie} other{Rang, {count} dernières parties}}",
+  "@statsRankChartTitle": {
+    "description": "Player card: title of the chart of the final place over the last games",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+
+  "statsTrendImproving": "en progrès",
+  "@statsTrendImproving": {
+    "description": "Player card: the final places are getting better"
+  },
+
+  "statsTrendDeclining": "en recul",
+  "@statsTrendDeclining": {
+    "description": "Player card: the final places are getting worse"
+  },
+
+  "statsTrendSteady": "régulier",
+  "@statsTrendSteady": {
+    "description": "Player card: the final places neither improve nor decline"
+  },
+
+  "statsRankOrdinal": "{rank, select, 1{1er} other{{rank}e}}",
+  "@statsRankOrdinal": {
+    "description": "Short ordinal of a final place, on the rank chart axis (1st, 4th). The place is passed as a string so that a select can pick the irregular forms.",
+    "placeholders": {
+      "rank": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+
+  "statsWinStreak": "{count, plural, =0{Pas de série en cours} one{Série : {count} victoire} other{Série : {count} victoires}}",
+  "@statsWinStreak": {
+    "description": "Player card chip: the current run of consecutive wins",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+
+  "statsRecord": "Record : {total}",
+  "@statsRecord": {
+    "description": "Player card chip: the best final total on this game type",
+    "placeholders": {
+      "total": {
+        "type": "int",
+        "example": "34"
+      }
+    }
+  },
+
+  "statsOnGameType": "Sur {gameType}",
+  "@statsOnGameType": {
+    "description": "Player card section header: figures on one game type",
+    "placeholders": {
+      "gameType": {
+        "type": "String",
+        "example": "ZapZap"
+      }
+    }
+  },
+
+  "statsAverageTotal": "Total final moyen",
+  "@statsAverageTotal": {
+    "description": "Player card row: the mean final total"
+  },
+
+  "statsBestTotal": "Meilleur total final",
+  "@statsBestTotal": {
+    "description": "Player card row: the best final total (lowest when the lowest score wins)"
+  },
+
+  "statsMostBeaten": "Adversaire le plus battu",
+  "@statsMostBeaten": {
+    "description": "Player card row: the opponent this player most often finished ahead of"
+  },
+
+  "statsOpenPlayerCard": "voir la fiche",
+  "@statsOpenPlayerCard": {
+    "description": "Accessibility hint on a leaderboard row: opens the player's card"
+  },
+
   "shareResult": "Partager le résultat",
   "@shareResult": {
     "description": "Tooltip of the share button on the game-end and ranking screens: opens the system share sheet with the standings as text"
