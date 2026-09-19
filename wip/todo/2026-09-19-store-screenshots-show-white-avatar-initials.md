@@ -35,3 +35,5 @@ Best done right before the next Play release.
   contrast-picked initial colour of the current build.
 - No committed raw capture shows the old purple theme.
 - A locale with captions and no `raw/` set is refused by the composer with a clear message.
+
+**Promoted (2026-09-19):** by the user, for 1.3.0 — the listing should match the build it ships with.

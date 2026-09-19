@@ -1,5 +1,7 @@
 # A Chinese game-type list is sorted by code point, not by pinyin
 
+**Status:** done (2026-09-19) — closed by fix/i18n-zh-pinyin-and-unused-keys. Each `gameTypeName*` has a `gameTypeName*SortKey` sibling in all ten ARB files — the name everywhere, its numbered pinyin in `zh` — read by `builtinGameTypeSortKey` in `sortGameTypesByDisplayName`; custom names keep code-point order, no dependency added. `test/utils/game_type_name_test.dart` pins the `zh` order.
+
 - **Noted:** 2026-09-18 — while closing `2026-09-16-game-type-list-sorts-on-the-untranslated-name.md` in feat/play-again-and-type-order
 - **Theme:** game-types
 - **Area:** app

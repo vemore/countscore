@@ -72,6 +72,69 @@ String? builtinGameTypeName(AppLocalizations l10n, String? builtinKey) {
   }
 }
 
+/// What the built-in name of [builtinKey] sorts by, or null where
+/// [builtinGameTypeName] is null.
+///
+/// Equal to the displayed name in every locale but `zh`, where it is the
+/// pinyin of the name — tone numbers after each syllable, one space between
+/// syllables (`qi2 ta1` for `其他`) — because no collator ships with the SDK or
+/// `intl` and Han characters would otherwise sort by code point. The space puts
+/// `qi2 ta1` before `qiao2 pai2`, as a syllable-by-syllable dictionary does; the
+/// tone number puts `拉米` (`la1 mi3`) before `拉密` (`la1 mi4`).
+///
+/// Every key in `GameType.defaultGameTypes()` must have a case here too;
+/// `test/utils/game_type_name_test.dart` fails if one is missing.
+String? builtinGameTypeSortKey(AppLocalizations l10n, String? builtinKey) {
+  switch (builtinKey) {
+    case 'zapzap':
+      return l10n.gameTypeNameZapzapSortKey;
+    case 'uno':
+      return l10n.gameTypeNameUnoSortKey;
+    case 'scrabble':
+      return l10n.gameTypeNameScrabbleSortKey;
+    case 'other':
+      return l10n.gameTypeNameOtherSortKey;
+    case 'skyjo':
+      return l10n.gameTypeNameSkyjoSortKey;
+    case 'president':
+      return l10n.gameTypeNamePresidentSortKey;
+    case 'belote':
+      return l10n.gameTypeNameBeloteSortKey;
+    case 'tarot':
+      return l10n.gameTypeNameTarotSortKey;
+    case 'bridge':
+      return l10n.gameTypeNameBridgeSortKey;
+    case 'rami':
+      return l10n.gameTypeNameRamiSortKey;
+    case 'coinche':
+      return l10n.gameTypeNameCoincheSortKey;
+    case 'yahtzee':
+      return l10n.gameTypeNameYahtzeeSortKey;
+    case 'phase10':
+      return l10n.gameTypeNamePhase10SortKey;
+    case 'flip7':
+      return l10n.gameTypeNameFlip7SortKey;
+    case 'mille_bornes':
+      return l10n.gameTypeNameMilleBornesSortKey;
+    case 'rummikub':
+      return l10n.gameTypeNameRummikubSortKey;
+    case 'six_nimmt':
+      return l10n.gameTypeNameSixNimmtSortKey;
+    case 'qwirkle':
+      return l10n.gameTypeNameQwirkleSortKey;
+    case 'farkle':
+      return l10n.gameTypeNameFarkleSortKey;
+    case 'canasta':
+      return l10n.gameTypeNameCanastaSortKey;
+    case 'wizard':
+      return l10n.gameTypeNameWizardSortKey;
+    case 'triomino':
+      return l10n.gameTypeNameTriominoSortKey;
+    default:
+      return null;
+  }
+}
+
 /// Whether saving [typedName] over [type] gives up its built-in key.
 ///
 /// It does when, and only when, the user actually changed the name of a built-in
@@ -107,13 +170,28 @@ String gameTypeDisplayNameForKey(AppLocalizations l10n, String keyOrName) =>
 /// A custom type (no `builtinKey`) sorts by its stored name among the built-in
 /// ones, since that is what [gameTypeDisplayName] shows for it.
 ///
+/// A built-in type sorts by [builtinGameTypeSortKey] — its pinyin in `zh`, its
+/// name everywhere else — so a Chinese list reads in pinyin order, with the
+/// Han names among the Latin ones by their initial letter. A custom name has no
+/// reading to sort by and keeps its code-point order, which puts a Han custom
+/// name after every Latin one.
+///
 /// A new list is returned; [types] is left as it was.
 List<GameType> sortGameTypesByDisplayName(
     AppLocalizations l10n, Iterable<GameType> types) {
   final keyed = [
-    for (final t in types) (type: t, name: gameTypeDisplayName(l10n, t)),
+    for (final t in types)
+      (
+        type: t,
+        name: gameTypeDisplayName(l10n, t),
+        sortKey: builtinGameTypeSortKey(l10n, t.builtinKey) ??
+            gameTypeDisplayName(l10n, t),
+      ),
   ];
-  keyed.sort((a, b) => collateNames(a.name, b.name));
+  keyed.sort((a, b) {
+    final bySortKey = collateNames(a.sortKey, b.sortKey);
+    return bySortKey != 0 ? bySortKey : collateNames(a.name, b.name);
+  });
   return [for (final k in keyed) k.type];
 }
 
@@ -133,8 +211,9 @@ List<GameType> sortGameTypesByDisplayName(
 ///    `Belote` < `Bélote` and `は` < `ば`.
 /// 3. **Tertiary** — the raw string, so the order is total and stable.
 ///
-/// Han characters keep their code-point order: a Chinese list is not in pinyin
-/// order, which only real collation data can give.
+/// Han characters keep their code-point order here: a built-in Chinese name is
+/// put in pinyin order by its sort key ([builtinGameTypeSortKey]), a custom one
+/// stays in code-point order, which only real collation data could improve.
 int collateNames(String a, String b) {
   final primary = _primaryKey(a).compareTo(_primaryKey(b));
   if (primary != 0) return primary;

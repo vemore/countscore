@@ -1,5 +1,7 @@
 # Eight more ARB keys are read by no screen
 
+**Status:** done (2026-09-19) — closed by fix/i18n-zh-pinyin-and-unused-keys. None of the eight is built dynamically (`AppLocalizations` has no lookup by name, and no file outside the generated ones names them); all eight left the ten ARB files and their `@` blocks in `app_fr.arb`. `arb_keys.py --unused` exits 0.
+
 - **Noted:** 2026-09-19 — while adding `arb_keys.py --unused` in fix/i18n-cleanup
 - **Theme:** i18n
 - **Area:** app

@@ -72,9 +72,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get save => 'Save';
 
   @override
-  String get filterByGameType => 'Filter by game type';
-
-  @override
   String get allGames => 'All games';
 
   @override
@@ -111,17 +108,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pleaseEnterName => 'Please enter a name';
 
   @override
-  String get atLeast2PlayersRequired => 'At least 2 players are required';
-
-  @override
-  String playerNumber(int index) {
-    return 'Player $index';
-  }
-
-  @override
-  String get selectPlayer => 'Select a player...';
-
-  @override
   String get clear => 'Clear';
 
   @override
@@ -135,9 +121,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editGameDialogTitle => 'Edit game';
-
-  @override
-  String get gameSettings => 'Game settings';
 
   @override
   String get removePlayer => 'Remove player';
@@ -288,18 +271,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noPlayers => 'No players';
 
   @override
-  String playersListSummary(int count, String names) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count players: $names',
-      one: '1 player: $names',
-      zero: 'No players',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get playersAppearMessage =>
       'Players will appear here once\nyou have created games';
 
@@ -361,9 +332,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noGameTypes => 'No game types';
 
   @override
-  String get predefined => 'Default';
-
-  @override
   String get edit => 'Edit';
 
   @override
@@ -416,9 +384,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get winRate => 'Win rate';
-
-  @override
-  String get overallStatistics => 'Overall Statistics';
 
   @override
   String get byGameType => 'By game type';
@@ -982,67 +947,133 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gameTypeNameZapzap => 'ZapZap';
 
   @override
+  String get gameTypeNameZapzapSortKey => 'ZapZap';
+
+  @override
   String get gameTypeNameUno => 'Uno';
+
+  @override
+  String get gameTypeNameUnoSortKey => 'Uno';
 
   @override
   String get gameTypeNameScrabble => 'Scrabble';
 
   @override
+  String get gameTypeNameScrabbleSortKey => 'Scrabble';
+
+  @override
   String get gameTypeNameOther => 'Other';
+
+  @override
+  String get gameTypeNameOtherSortKey => 'Other';
 
   @override
   String get gameTypeNameSkyjo => 'Skyjo';
 
   @override
+  String get gameTypeNameSkyjoSortKey => 'Skyjo';
+
+  @override
   String get gameTypeNamePresident => 'President';
+
+  @override
+  String get gameTypeNamePresidentSortKey => 'President';
 
   @override
   String get gameTypeNameBelote => 'Belote';
 
   @override
+  String get gameTypeNameBeloteSortKey => 'Belote';
+
+  @override
   String get gameTypeNameTarot => 'Tarot';
+
+  @override
+  String get gameTypeNameTarotSortKey => 'Tarot';
 
   @override
   String get gameTypeNameBridge => 'Bridge';
 
   @override
+  String get gameTypeNameBridgeSortKey => 'Bridge';
+
+  @override
   String get gameTypeNameRami => 'Rummy';
+
+  @override
+  String get gameTypeNameRamiSortKey => 'Rummy';
 
   @override
   String get gameTypeNameCoinche => 'Coinche';
 
   @override
+  String get gameTypeNameCoincheSortKey => 'Coinche';
+
+  @override
   String get gameTypeNameYahtzee => 'Yahtzee';
+
+  @override
+  String get gameTypeNameYahtzeeSortKey => 'Yahtzee';
 
   @override
   String get gameTypeNamePhase10 => 'Phase 10';
 
   @override
+  String get gameTypeNamePhase10SortKey => 'Phase 10';
+
+  @override
   String get gameTypeNameFlip7 => 'Flip 7';
+
+  @override
+  String get gameTypeNameFlip7SortKey => 'Flip 7';
 
   @override
   String get gameTypeNameMilleBornes => 'Mille Bornes';
 
   @override
+  String get gameTypeNameMilleBornesSortKey => 'Mille Bornes';
+
+  @override
   String get gameTypeNameRummikub => 'Rummikub';
+
+  @override
+  String get gameTypeNameRummikubSortKey => 'Rummikub';
 
   @override
   String get gameTypeNameSixNimmt => 'Take 6';
 
   @override
+  String get gameTypeNameSixNimmtSortKey => 'Take 6';
+
+  @override
   String get gameTypeNameQwirkle => 'Qwirkle';
+
+  @override
+  String get gameTypeNameQwirkleSortKey => 'Qwirkle';
 
   @override
   String get gameTypeNameFarkle => 'Farkle';
 
   @override
+  String get gameTypeNameFarkleSortKey => 'Farkle';
+
+  @override
   String get gameTypeNameCanasta => 'Canasta';
+
+  @override
+  String get gameTypeNameCanastaSortKey => 'Canasta';
 
   @override
   String get gameTypeNameWizard => 'Wizard';
 
   @override
+  String get gameTypeNameWizardSortKey => 'Wizard';
+
+  @override
   String get gameTypeNameTriomino => 'Triomino';
+
+  @override
+  String get gameTypeNameTriominoSortKey => 'Triomino';
 
   @override
   String get groupDeviceOwner => 'Owner';
