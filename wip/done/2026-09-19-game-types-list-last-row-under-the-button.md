@@ -1,5 +1,7 @@
 # The last game type is hidden under the "New type" button, and the new-type dialog predates the refresh
 
+**Status:** done (2026-09-19) — closed by fix/app-bar-actions-and-labels. The list's bottom padding is `kFabClearance` (`lib/utils/insets.dart`) through `withBottomInset`; the dialog's icon and colour buttons carry the `chooseIcon` and `chooseColor` tooltips as their semantics. `test/screens/game_types_screen_test.dart`. The dialog's restyle stays out of scope.
+
 - **Noted:** 2026-09-19 — full test pass of the production PWA (fresh Chromium profiles, Playwright, fr-FR at 412 × 860)
 - **Theme:** visual-refresh
 - **Area:** app

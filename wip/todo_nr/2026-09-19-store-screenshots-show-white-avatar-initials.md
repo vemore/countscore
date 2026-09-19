@@ -1,0 +1,21 @@
+# The store screenshots show white avatar initials the app no longer draws
+
+- **Noted:** 2026-09-19 — merging `fix/player-avatars-colours-keypad` (#152)
+- **Theme:** store-listing
+- **Area:** docs
+- **Blocks release:** no
+
+#152 picks each avatar's initial colour by WCAG contrast (`onPlayerColor`,
+`lib/utils/player_colors.dart`), so most palette discs now carry a dark initial instead of a
+white one, on the board, the keypad, the home hero, the Players screen and the rankings. It
+also drew two-letter avatars on the keypad, the hero and the podium. The eight screenshots
+retaken in all ten locales by #147 (`store_listing/<locale>/raw/`) show the old white,
+partly one-letter avatars, so the Play listing no longer matches the app.
+
+**Fix:** retake the raw captures on the demo data and recompose the ten locales, as #147 did
+(`release-android`, store listing section). Best folded into the next retake, together with
+[[2026-09-19-shared-raw-screenshot-set-is-stale]].
+
+**Acceptance:**
+- Every `store_listing/<locale>/raw/` capture shows the two-letter avatars with the
+  contrast-picked initial colour of the current build.

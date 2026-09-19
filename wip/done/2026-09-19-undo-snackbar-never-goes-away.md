@@ -19,3 +19,5 @@ Undo (home and board), and hide them on navigation.
 
 **Acceptance:**
 - A widget test: the snackbar with Undo is gone after its duration without any interaction.
+
+**Status:** done (2026-09-19) — closed by fix/board-scroll-and-undo-snackbar. Home and board build the reopen snackbar through `undoSnackBar` (`lib/utils/undo_snack_bar.dart`): `persist: false`, 6 s. Not hidden on navigation — the 6 s bound covers it without an app-wide observer that would also hide unrelated snackbars.
