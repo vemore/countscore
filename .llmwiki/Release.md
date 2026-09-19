@@ -242,7 +242,14 @@ Left: watch Crashes & ANRs for 48 h, then widen the rollout from the Console —
   with the app signing key, so `adb install -r` fails `INSTALL_FAILED_UPDATE_INCOMPATIBLE`
   against a genuine store install. The instruction is unachievable as written wherever Play App
   Signing is on, which is always. Filed as
-  `wip/todo_nr/2026-09-17-device-test-cannot-install-over-the-store-build.md`.
+  `wip/todo/2026-09-17-device-test-cannot-install-over-the-store-build.md`.
+  **Decided 2026-09-18 (refinement): a clean install plus the app's own import.** §5 now pulls
+  the old database with `run-as` from a debuggable build, installs the release APK clean and
+  restores the file through Settings → Import (`device_db_roundtrip.sh pull`/`push`). Chosen
+  over Play internal app sharing — the only faithful in-place upgrade, but a Console round trip
+  the API cannot script — because the schema path is already covered by the version-to-version
+  migration tests; what §5 uniquely buys is the migration and the import running in the
+  R8-shrunk build on hardware.
 
 - **The store listing left this page for [[StoreListing]] (2026-09-16).** Rewriting the copy
   for search added locales, keyword targets, category and tags, a competitive picture and a
