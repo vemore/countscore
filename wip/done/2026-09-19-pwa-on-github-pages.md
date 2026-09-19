@@ -1,5 +1,15 @@
 # The PWA is only published behind a self-hosted backend, not on GitHub Pages
 
+**Status:** done (2026-09-19) — closed by ci/pwa-github-pages. `.github/workflows/deploy-pages.yml`
+builds with `--base-href=/<repo>/` from the repository name, runs `scripts/web_binaries.sh --check`
+and `scripts/check_web_build.sh` (now shared with `deploy_web.sh`, self-tested in CI), and
+publishes the PWA plus the privacy page, on a push to `main` touching the app and on
+`workflow_dispatch`. Pages is currently the legacy `main:/docs` source; switching it to
+*GitHub Actions*, running the workflow, and the two remaining acceptance items (the Pages URL
+loads and keeps a game across a reload; CORS with a backend listing the Pages origin) are
+verified by the orchestrator after merge. GitHub's hosting logs were judged not a new data
+flow ([[Web]]).
+
 - **Noted:** 2026-09-19 — asked whether the PWA can be deployed on GitHub Pages
 - **Theme:** web
 - **Area:** web
