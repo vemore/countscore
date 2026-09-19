@@ -510,14 +510,40 @@ class AppLocalizationsHi extends AppLocalizations {
   String get conditionType => 'शर्त का प्रकार';
 
   @override
-  String get gameOverTitle => 'खेल समाप्त!';
-
-  @override
-  String get gameOverMessage =>
-      'खेल समाप्ति की शर्त पूरी हो गई। अभी खेल समाप्त करें?';
-
-  @override
   String get continuePlay => 'खेलते रहें';
+
+  @override
+  String gameEndWinner(String name) {
+    return '$name की जीत';
+  }
+
+  @override
+  String gameEndTie(String names) {
+    return 'बराबरी: $names';
+  }
+
+  @override
+  String gameEndRounds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count राउंड',
+      one: '$count राउंड',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get gameEndLowestWins => 'सबसे कम स्कोर जीतता है';
+
+  @override
+  String get gameEndHighestWins => 'सबसे अधिक स्कोर जीतता है';
+
+  @override
+  String get gameEndAnalysis => 'विश्लेषण';
+
+  @override
+  String get gameEndResults => 'परिणाम';
 
   @override
   String get endGame => 'खेल समाप्त करें';
@@ -530,9 +556,6 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get undo => 'पूर्ववत करें';
-
-  @override
-  String get gameMarkedFinished => 'गेम समाप्त हुआ';
 
   @override
   String get gameReopened => 'गेम फिर से खोला गया';

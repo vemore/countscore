@@ -17,6 +17,7 @@ import '../utils/play_again.dart';
 import 'about_screen.dart';
 import 'create_game_screen.dart';
 import 'game_board_screen.dart';
+import 'game_end_screen.dart';
 import 'game_types_screen.dart';
 import 'player_stats_screen.dart';
 import 'players_screen.dart';
@@ -777,6 +778,7 @@ class _HomeScreenState extends State<HomeScreen> {
       // Captured before the await: the card this menu belongs to may be gone
       // from the tree by the time the write returns.
       final messenger = ScaffoldMessenger.of(context);
+      final navigator = Navigator.of(context);
       final gameId = game.id!;
       final finished = !game.isFinished;
       final justFinished = await gameProvider.setGameFinished(gameId, finished);
@@ -786,16 +788,23 @@ class _HomeScreenState extends State<HomeScreen> {
       if (justFinished) {
         unawaited(ReviewPromptService.instance.onGameFinished());
       }
-      // The whole feedback used to be a 16 px flag appearing under the user's
-      // finger. The action is reversible, so say what happened and offer it.
+      if (finished) {
+        // Who won, rather than a snackbar that never said: the end screen
+        // reads the current game, so it is loaded first.
+        await gameProvider.loadGame(gameId);
+        await navigator.push(MaterialPageRoute(
+          builder: (_) => GameEndScreen(boardBuilder: widget.boardBuilder),
+        ));
+        return;
+      }
+      // Reopening is reversible, so say what happened and offer it back.
       messenger
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(
-          content:
-              Text(finished ? l10n.gameMarkedFinished : l10n.gameReopened),
+          content: Text(l10n.gameReopened),
           action: SnackBarAction(
             label: l10n.undo,
-            onPressed: () => gameProvider.setGameFinished(gameId, !finished),
+            onPressed: () => gameProvider.setGameFinished(gameId, true),
           ),
         ));
     } else if (value == 'new_same' || value == 'play_again') {
