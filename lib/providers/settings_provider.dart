@@ -62,8 +62,11 @@ class SettingsProvider with ChangeNotifier {
     await prefs.setString(boardViewKey, view.name);
   }
 
+  /// On the web, wakelock_plus loads its bundled `no_sleep.js` from the app's own
+  /// origin and asks `navigator.wakeLock` for a screen lock, which the PWA's CSP
+  /// allows (`script-src 'self'`); a browser without the API, or a page that is
+  /// not a secure context, rejects the request and lands in the catch below.
   Future<void> _applyWakeLock() async {
-    if (kIsWeb) return; // WakelockPlus not available on web.
     try {
       if (_keepScreenAwake) {
         await WakelockPlus.enable();
