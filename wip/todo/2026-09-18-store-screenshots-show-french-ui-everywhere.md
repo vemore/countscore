@@ -60,3 +60,28 @@ next to the `play_publish.py tests` step, makes `store_listing/*/screenshots/*` 
 - Every `store_listing/<locale>/screenshots/phone/` image shows the teal theme, the keypad sheet and the end screen.
 - `.llmwiki/StoreListing.md` no longer carries the Outdated block about the caption colour.
 - A pull request that commits a 1080×2400 PNG under `store_listing/fr-FR/screenshots/phone/` goes red in CI.
+
+**Progress (2026-09-19, `feat/store-screenshot-composer-locales`):** the device-free half.
+Satisfied: `compose_screenshots.py --check` still exits 0 on all ten locales; the composer has
+no deep-purple colour, its gradient runs from `BRAND = #0E8F88` (a test compares it with
+`kBrandSeedLight`); the Outdated block is gone from `.llmwiki/StoreListing.md`; and a pull
+request committing a 1080×2400 PNG — or any PNG with no raw capture of its name — under
+`store_listing/fr-FR/screenshots/phone/` goes red in the `backend` job (composer tests and
+`--check`, which `scope` now selects for those paths). The composer reads
+`store_listing/<locale>/raw/*.png` whole before the shared set, and removes a composed PNG
+with no capture. Still open: the device retake — the Japanese UI under the Japanese caption,
+every image teal with the keypad sheet and the end screen, no two captures of one locale on
+the same screen. Once the four blocking entries above have landed, per locale (`ar de-DE
+en-US es-ES fr-FR hi-IN ja-JP pt-BR ru-RU zh-CN`), with the Pixel on `adb`:
+
+    scripts/capture_screenshots.sh <locale>          # CountScore alone switches language
+    uv run --script scripts/compose_screenshots.py --locale <locale>
+
+then `scripts/capture_screenshots.sh --reset`, `uv run --script scripts/compose_screenshots.py
+--check`, and commit each `store_listing/<locale>/raw/` with its `screenshots/phone/`. The
+capture script already names 04 **`04_podium`**, the end-of-game podium and final totals:
+rename the `04_game_history:` line to `04_podium:` with a new caption in all ten
+`screenshot_captions.txt` in the same change, or the composer refuses the set (the old
+`04_game_history.png` composed file is then removed by the compose). `set-app-locales` needs
+Android 13; the app declares no `android:localeConfig`, which the shell command does not
+require — if the UI stays French, switch the phone's own language instead.

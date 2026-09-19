@@ -212,6 +212,18 @@ jobs:
         working-directory: .
         run: uv run --no-project --with pytest --with google-api-python-client --with google-auth pytest -v .claude/skills/release-android/scripts/
 
+      # The store screenshot composer, on synthetic captures, and every committed
+      # store_listing/<locale>/screenshots/phone/*.png: a raw 1080x2400 capture, or any PNG
+      # the composer did not write, turns this red before Play gets it. The tests draw
+      # Latin captions in Roboto Bold, which the runner does not have.
+      - name: compose_screenshots.py tests and --check
+        working-directory: .
+        run: |
+          sudo apt-get install -y -q --no-install-recommends fonts-roboto-unhinted > /dev/null \
+            || { sudo apt-get update -q && sudo apt-get install -y -q --no-install-recommends fonts-roboto-unhinted; }
+          uv run --no-project --with pytest --with pillow pytest -v scripts/test_compose_screenshots.py
+          uv run --script scripts/compose_screenshots.py --check
+
       # Every downgrade() must run, and the migrations and the SQLModel models must
       # describe the same schema: migrate an empty Postgres up, all the way down and up
       # again, then let autogenerate compare. Any diff fails, which is what

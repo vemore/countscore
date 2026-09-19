@@ -76,6 +76,14 @@ scope "the analysis options" "app android sync"    analysis_options.yaml
 scope "the privacy policy"   "backend"             privacy_policy.md
 scope "the privacy page"     "backend"             docs/privacy-policy.html
 scope "the licence list"     "app"                 THIRD_PARTY_LICENSES.md
+scope "a composed screenshot" "backend"            store_listing/fr-FR/screenshots/phone/01_main_screen.png
+scope "a locale raw capture" "backend"             store_listing/ja-JP/raw/04_podium.png
+scope "the shared raw set"   "backend"             store_listing/assets/screenshots/phone/01_main_screen.png
+scope "screenshot captions"  "backend"             store_listing/ar/screenshot_captions.txt
+scope "the composer"         "backend"             scripts/compose_screenshots.py
+scope "the composer's tests" "backend"             scripts/test_compose_screenshots.py
+scope "listing text next to a screenshot" "backend" store_listing/de-DE/title.txt \
+                                                   store_listing/de-DE/screenshots/phone/02_player_management.png
 
 echo "== everything ================================================"
 all="backend image app android sync"
