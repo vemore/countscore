@@ -1112,6 +1112,20 @@ class AppLocalizationsEs extends AppLocalizations {
   String get whoStartsAgain => 'Sortear de nuevo';
 
   @override
+  String get diceRoller => 'Tirar los dados';
+
+  @override
+  String get diceCount => 'Número de dados';
+
+  @override
+  String get diceRollAgain => 'Volver a tirar';
+
+  @override
+  String diceTotal(int total) {
+    return 'Suma: $total';
+  }
+
+  @override
   String get resumeGame => 'Reanudar';
 
   @override

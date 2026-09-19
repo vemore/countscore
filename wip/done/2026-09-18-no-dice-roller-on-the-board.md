@@ -1,5 +1,7 @@
 # The board has no dice roller
 
+**Status:** done (2026-09-19) — closed by feat/dice-roller. `lib/widgets/dice_roller_dialog.dart`, opened from the board's overflow menu right after **Who starts?**: 1–6 d6, each die and the total, four new ARB keys in the ten files; tested with a seeded `Random` in `test/widgets/dice_roller_dialog_test.dart`. No permission, schema or network change.
+
 - **Noted:** 2026-09-18 — split out of `wip/done/2026-09-16-no-dice-timer-first-player-helpers.md` when feat/board-growth shipped **Who starts?** alone
 - **Theme:** growth
 - **Area:** app

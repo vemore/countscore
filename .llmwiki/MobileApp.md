@@ -192,6 +192,10 @@ Twelve components shared out of the screens:
 - `who_starts_dialog.dart` — the board's overflow-menu **Who starts?**: draws one of the
   game's players at random, shows the name, and draws again on request. Nothing stored,
   nothing sent.
+- `dice_roller_dialog.dart` — the board's overflow-menu **Roll dice**, next to **Who
+  starts?** and offered whatever the players: choose 1 to 6 six-sided dice (chips), each
+  choice rolls at once, *Roll again* re-rolls; each die and the total are shown. Opens on
+  2 dice; the count is not remembered. Nothing stored, nothing sent.
 - `group_settings_section.dart` — Settings → Group: create or join a group, show its invite
   code, leave it, and show where sync stands; usable only once a server URL is set. *New
   code* is shown to the group's owner only; *Comments and usage* opens
@@ -575,6 +579,10 @@ not "fix" it by hardcoding a codepoint.
 - **Who starts? is the first of three table helpers** (2026-09-18) — the dice roller and
   the turn timer follow, one pull request each, so a bad idea is cheap to drop
   (`wip/done/2026-09-16-no-dice-timer-first-player-helpers.md`).
+- **The dice roller is d6 only** (2026-09-19) — the refinement dropped a kind selector
+  (d4 … d20) as clutter for the games CountScore scores; 1–6 dice cover Yahtzee (5) and
+  Farkle (6). A die shows its numeral rather than pips, which reads the same in every
+  locale and needs no asset (`wip/done/2026-09-18-no-dice-roller-on-the-board.md`).
 - **The game list counts rounds in one grouped query, not one per card** (2026-09-16).
   `DriftGameRepository.getAll` returns no count, and a `FutureBuilder` per card would be one
   query per row over the whole history; `RoundRepository.countByGame` is a single `GROUP BY`

@@ -1077,6 +1077,20 @@ class AppLocalizationsZh extends AppLocalizations {
   String get whoStartsAgain => '重新抽取';
 
   @override
+  String get diceRoller => '掷骰子';
+
+  @override
+  String get diceCount => '骰子数量';
+
+  @override
+  String get diceRollAgain => '再掷一次';
+
+  @override
+  String diceTotal(int total) {
+    return '总计：$total';
+  }
+
+  @override
   String get resumeGame => '继续';
 
   @override

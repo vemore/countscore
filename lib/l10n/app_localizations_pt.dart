@@ -1109,6 +1109,20 @@ class AppLocalizationsPt extends AppLocalizations {
   String get whoStartsAgain => 'Sortear de novo';
 
   @override
+  String get diceRoller => 'Lançar os dados';
+
+  @override
+  String get diceCount => 'Número de dados';
+
+  @override
+  String get diceRollAgain => 'Lançar de novo';
+
+  @override
+  String diceTotal(int total) {
+    return 'Soma: $total';
+  }
+
+  @override
   String get resumeGame => 'Retomar';
 
   @override

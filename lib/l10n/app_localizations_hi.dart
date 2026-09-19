@@ -1108,6 +1108,20 @@ class AppLocalizationsHi extends AppLocalizations {
   String get whoStartsAgain => 'फिर से चुनें';
 
   @override
+  String get diceRoller => 'पासे फेंकें';
+
+  @override
+  String get diceCount => 'पासों की संख्या';
+
+  @override
+  String get diceRollAgain => 'फिर से फेंकें';
+
+  @override
+  String diceTotal(int total) {
+    return 'कुल: $total';
+  }
+
+  @override
   String get resumeGame => 'जारी रखें';
 
   @override

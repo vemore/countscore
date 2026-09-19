@@ -23,6 +23,7 @@ import '../services/game_over_dismissals.dart';
 import '../services/review_prompt.dart';
 import '../widgets/board_lanes.dart';
 import '../widgets/board_rows.dart';
+import '../widgets/dice_roller_dialog.dart';
 import '../widgets/score_keypad_sheet.dart';
 import '../widgets/who_starts_dialog.dart';
 import 'game_analysis_screen.dart';
@@ -303,6 +304,16 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                       ),
                     ),
                   PopupMenuItem(
+                    value: 'roll_dice',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.casino),
+                        const SizedBox(width: 8),
+                        Text(l10n.diceRoller),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
                     value: 'edit_game',
                     child: Row(
                       children: [
@@ -371,6 +382,8 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                       context,
                       [for (final p in gameProvider.currentPlayers) p.name],
                     );
+                  } else if (value == 'roll_dice') {
+                    await DiceRollerDialog.show(context);
                   } else if (value == 'edit_game') {
                     _showEditGameDialog();
                   } else if (value == 'delete_round' &&
