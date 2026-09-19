@@ -25,6 +25,7 @@ on:
       # The About screen's icon is an app asset declared in pubspec.yaml.
       - "store_listing/assets/icon_512.png"
       - "docs/privacy-policy.html"
+      - "scripts/build_web.sh"
       - "scripts/check_web_build.sh"
       - "scripts/web_binaries.sh"
       - ".github/workflows/deploy-pages.yml"
@@ -83,15 +84,24 @@ jobs:
           esac
           echo "href=$href" | tee -a "$GITHUB_OUTPUT"
 
-      # --no-tree-shake-icons is mandatory on every target (game-type icons come from
-      # database codepoints). No --dart-define=BACKEND_URL, ever: the backend is a user
-      # setting with no default, and a published build must not carry one.
-      - name: Build web (release)
-        run: >-
-          flutter build web --release --no-tree-shake-icons
-          --base-href="${{ steps.base.outputs.href }}"
+      # Same cache as ci.yml's `app` job: the fallback fonts scripts/build_web.sh
+      # mirrors into the build, at versioned, immutable paths.
+      - name: Cache the web fallback fonts
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/countscore/fallback-fonts
+          key: web-fallback-fonts-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: web-fallback-fonts-${{ runner.os }}-
 
-      # The checks scripts/deploy_web.sh runs: no Markdown, nothing missing.
+      # scripts/build_web.sh: --no-tree-shake-icons (game-type icons come from database
+      # codepoints), CanvasKit and the fallback fonts served from the build, so a visitor
+      # makes no request to Google. No --dart-define=BACKEND_URL, ever: the backend is a
+      # user setting with no default, and a published build must not carry one.
+      - name: Build web (release)
+        run: scripts/build_web.sh --base-href="${{ steps.base.outputs.href }}"
+
+      # The checks scripts/deploy_web.sh runs: no Markdown, nothing missing, nothing
+      # fetched from Google.
       - name: Check the build is publishable
         run: scripts/check_web_build.sh build/web
 

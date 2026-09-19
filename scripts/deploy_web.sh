@@ -84,10 +84,12 @@ cd "$ROOT"
 
 echo "==> Building the PWA for $PWA_BASE_PATH/"
 # No BACKEND_URL: the backend is a user setting, never baked into a published build.
-flutter build web --release --no-tree-shake-icons --base-href="$PWA_BASE_PATH/"
+# scripts/build_web.sh self-hosts CanvasKit and the fallback fonts: no Google request.
+scripts/build_web.sh --base-href="$PWA_BASE_PATH/"
 
 echo "==> Checking build/web"
-# No Markdown in the build, and the files the PWA cannot start without. The same
+# No Markdown in the build, the files the PWA cannot start without, nothing fetched
+# from Google (CanvasKit, fallback fonts). The same
 # script gates the GitHub Pages workflow (.github/workflows/deploy-pages.yml).
 scripts/check_web_build.sh build/web
 

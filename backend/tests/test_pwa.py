@@ -60,7 +60,11 @@ async def test_index_is_served_with_the_pwa_csp(pwa_client):
     assert r.headers["content-type"].startswith("text/html")
     csp = r.headers["Content-Security-Policy"]
     assert "'wasm-unsafe-eval'" in csp
-    assert "https://www.gstatic.com" in csp
+    assert "script-src 'self' 'wasm-unsafe-eval';" in csp
+    # CanvasKit and the fallback fonts are served from the build (scripts/build_web.sh):
+    # no Google host, so a visitor's browser makes no request to one.
+    assert "gstatic" not in csp
+    assert "google" not in csp
     assert "frame-ancestors 'none'" in csp
     # The sync stream: https: does not match wss:, so a PWA pointed at another server
     # could not open its WebSocket without this.

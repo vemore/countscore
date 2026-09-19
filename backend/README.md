@@ -202,7 +202,8 @@ Voir `../.llmwiki/Security.md`. Points critiques :
   `X-Frame-Options`, `Referrer-Policy`, `Cross-Origin-Opener-Policy`, CSP), HSTS derrière
   `HSTS_ENABLED`. Web Station reste le terminateur TLS.
 - **PWA servie par l'API** (2026-09-13) : les chemins sous `PWA_BASE_PATH` reçoivent leur
-  propre CSP (CanvasKit et polices depuis gstatic, `'wasm-unsafe-eval'`) au lieu de
+  propre CSP (tout en `'self'` — CanvasKit et polices servis par le build —,
+  `'wasm-unsafe-eval'`) au lieu de
   `default-src 'none'` ; montage en lecture seule, un préfixe qui masquerait une route de
   l'API empêche le démarrage.
 

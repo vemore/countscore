@@ -28,7 +28,7 @@
 | Group owner | `groups.owner_device_id`: the creator, until it hands over (`PUT /groups/me/owner`) or leaves (the earliest-joined live device inherits). Only the owner may revoke another device, rotate `share_token` or hand over — 403 for any other member, checked under the group's row lock. `backend/tests/test_groups.py`. See [[Api]]. |
 | Revocation | Only the owner revokes another device ([[Api]]). Revoking another device rotates `share_token`, so the revoked device cannot rejoin with the token it learnt when joining. Its open `/sync/stream` is closed (1008) before the next frame it would receive — a push signal or the idle heartbeat (`app/routes/sync.py:_serve_stream`, `tests/test_sync_stream_cap.py`, `tests/test_sync_ws_integration.py`). |
 | Sync payload values | Per-entity bounds in `app/services/delta_bounds.py`, enforced before write. |
-| Security headers | `security_headers` middleware in `app/main.py:main`; HSTS behind `HSTS_ENABLED`. API responses get `default-src 'none'`; `/docs` a Swagger CSP, and only exists with `EXPOSE_DOCS=true`; paths under `PWA_BASE_PATH` get `_PWA_CSP` (self, `'wasm-unsafe-eval'`, CanvasKit from `www.gstatic.com`, fonts from `fonts.gstatic.com`, `connect-src 'self' https: wss:`) plus `Cache-Control: no-cache`. |
+| Security headers | `security_headers` middleware in `app/main.py:main`; HSTS behind `HSTS_ENABLED`. API responses get `default-src 'none'`; `/docs` a Swagger CSP, and only exists with `EXPOSE_DOCS=true`; paths under `PWA_BASE_PATH` get `_PWA_CSP` (`'self'` for scripts, fonts and everything else — no third-party host, CanvasKit and the fallback fonts being served from the build — plus `'wasm-unsafe-eval'` and `connect-src 'self' https: wss:`) plus `Cache-Control: no-cache`. |
 | Container | `backend/Dockerfile`: multi-stage, `USER app` (uid 10001), code and venv owned by root, no compiler, dependencies exactly `uv.lock` (`--locked --no-dev`). Checked by the `image` CI job. See [[Deployment]]. |
 | PWA static files | Read-only bind mount; Starlette `StaticFiles` rejects traversal out of `PWA_DIR`; `deploy_web.sh` refuses a build containing any `.md`. |
 | Backups | Daily `pg_dump`, 7-day rotation, encrypted with `age` to a public key whose private half is kept off the server (`backend/backup/countscore-backup.sh`). The sidecar refuses to dump without `BACKUP_AGE_RECIPIENT`. See [[Deployment]] *Backups*. |
@@ -172,6 +172,18 @@ proof-of-concept results are in `wip/done/2026-09-13-backend-security-review.md`
   guessed: a `--base-href=/countscore/` release build served by uvicorn under this policy
   loaded CanvasKit, the Roboto fallback font and the Drift worker with no violation, and
   persisted a game across a reload.
+
+  > **Status: Outdated** (2026-09-19) — `www.gstatic.com` and `fonts.gstatic.com` left the
+  > policy: `scripts/build_web.sh` serves CanvasKit and the fallback fonts from the build, so
+  > scripts and fonts are `'self'` alone.
+- **No Google host in the PWA's CSP (2026-09-19).** Every visitor's browser used to fetch
+  CanvasKit from `www.gstatic.com` and fonts from `fonts.gstatic.com`, a flow no privacy
+  document named. Self-hosting them (`--no-web-resources-cdn`, the engine's fallback fonts
+  mirrored at build time) made the README's claim true instead of disclosing the flow, and
+  narrowed `script-src` to `'self'` — one less origin an XSS could load code from. Verified
+  in Chromium under the new policy, fr/zh/ar/hi locales, from load to a game created with a
+  CJK-and-emoji player name: every request to the serving host, no CSP violation.
+  `wip/done/2026-09-19-pwa-gstatic-undisclosed.md`.
 
 - **Nine voices did not widen the disclosure, and the regression test grew to match
   (2026-09-16).** `style` and `language` are app configuration, not user content and not

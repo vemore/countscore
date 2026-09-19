@@ -24,19 +24,23 @@ logger = logging.getLogger(__name__)
 _DOCS_PATHS = frozenset({"/docs", "/redoc", "/openapi.json"})
 _BODY_METHODS = frozenset({"POST", "PUT", "PATCH"})
 
-# What the Flutter web build needs, and nothing more. CanvasKit (script + wasm) comes
-# from www.gstatic.com and the fallback fonts from fonts.gstatic.com; sqlite3.wasm and
-# CanvasKit need 'wasm-unsafe-eval'; the Drift worker and the service worker are
-# same-origin. connect-src allows any https origin because the backend URL is a user
-# setting: a PWA served here may still be pointed at another server. wss: for the same
+# What the Flutter web build needs, and nothing more. Everything it loads is same-origin:
+# scripts/build_web.sh serves CanvasKit from the build (--no-web-resources-cdn) and
+# mirrors the engine's fallback fonts into fallback-fonts/, so no Google host is allowed
+# here (it was, for www.gstatic.com and fonts.gstatic.com, until 2026-09-19); a build
+# that still asked for them would be refused by scripts/check_web_build.sh, and then by
+# this policy. sqlite3.wasm and CanvasKit need 'wasm-unsafe-eval'; the Drift worker and
+# the service worker are same-origin. connect-src allows any https origin because the
+# backend URL is a user setting: a PWA served here may still be pointed at another
+# server. wss: for the same
 # reason — CSP 'self' covers a same-host WebSocket, but https: does not cover wss:, so
 # the sync stream of such a server would otherwise be blocked.
 _PWA_CSP = (
     "default-src 'self'; "
-    "script-src 'self' 'wasm-unsafe-eval' https://www.gstatic.com; "
+    "script-src 'self' 'wasm-unsafe-eval'; "
     "style-src 'self' 'unsafe-inline'; "
     "img-src 'self' data: blob:; "
-    "font-src 'self' data: https://fonts.gstatic.com; "
+    "font-src 'self' data:; "
     "connect-src 'self' https: wss:; "
     "worker-src 'self' blob:; "
     "manifest-src 'self'; "

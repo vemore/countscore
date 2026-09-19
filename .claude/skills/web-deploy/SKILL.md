@@ -26,7 +26,8 @@ Facts: `.llmwiki/Deployment.md` (topology, decisions), `.llmwiki/Api.md` (route 
 | `PWA_BASE_PATH` | NAS `$NAS_DEPLOY_DIR/.env` — **its only home** | The container mounts the PWA there; `deploy_web.sh` reads it over ssh for `--base-href` |
 | `pwa/current` | `$NAS_DEPLOY_DIR/pwa/` on the NAS | The live build. `pwa/` is bind-mounted read-only at `/srv/pwa` |
 | `_mount_pwa` / `_PWA_CSP` | `backend/app/main.py` | Static mount + the CSP and `Cache-Control: no-cache` for those paths |
-| `scripts/deploy_web.sh` | repo | Build, check, upload to `pwa/current.new`, rename swap, keep `pwa/current.prev` |
+| `scripts/build_web.sh` | repo | The build: release flags, `--no-web-resources-cdn`, the fallback fonts mirrored into `build/web/fallback-fonts/` |
+| `scripts/deploy_web.sh` | repo | Build (through `build_web.sh`), check, upload to `pwa/current.new`, rename swap, keep `pwa/current.prev` |
 
 ## 1. One-time setup
 
@@ -79,7 +80,8 @@ curl -s  "$PUBLIC_URL/health"                                                 # 
 ```
 
 Then open `$PUBLIC_URL$BASE/` in a browser: home screen renders, no CSP or wasm error in the
-console, and a game created before a reload is still there after it.
+console, no request to a host other than `$PUBLIC_URL`'s (DevTools, Network), and a game
+created before a reload is still there after it.
 
 Symptoms and causes:
 
@@ -88,8 +90,13 @@ Symptoms and causes:
 - **Blank page, assets 404** — the build's base href differs from the served path. Cannot
   happen through the script (it reads the same value); a hand-built upload can do it.
 - **CSP violation in the console** — Flutter started loading something `_PWA_CSP` does not
-  allow (a new CDN host after an SDK upgrade, typically). Fix the policy in
-  `backend/app/main.py` with a test, not by loosening `default-src`.
+  allow (a new CDN host after an SDK upgrade, typically). `_PWA_CSP` names no host but
+  `'self'` on purpose: serve the resource from the build, as `scripts/build_web.sh` does for
+  CanvasKit and the fonts, rather than allowing the host — and never by loosening
+  `default-src`.
+- **Tofu (empty boxes) for Chinese, Arabic, emoji...** — `fallback-fonts/` missing from the
+  deployed folder, or a build made without `scripts/build_web.sh`. `check_web_build.sh`
+  refuses both; a hand-copied build has no such net.
 - **An old version keeps loading** — Flutter's service worker; a second reload picks up the
   new release. Responses carry `Cache-Control: no-cache`, so HTTP caching is not the cause.
 
@@ -108,7 +115,8 @@ PWA folder, but an image older than the PWA mount stops serving it.
 
 - [ ] `flutter analyze` and `flutter test` green
 - [ ] `--dry-run` passes: base path read from the NAS, no stray `.md` outside the declared
-      assets (`build/web/assets/assets/`), both binaries present
+      assets (`build/web/assets/assets/`), both binaries present, CanvasKit and the
+      fallback fonts in the build
 - [ ] Web e2e run if either web binary changed
 - [ ] User confirmed before the real deploy, unless deploying under `ship-parallel`, which `CLAUDE.md` already authorises
 - [ ] `$BASE/` answers 200 with the PWA CSP, `sqlite3.wasm` as `application/wasm`, `/health` still ok

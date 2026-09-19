@@ -1,5 +1,7 @@
 # The PWA fetches CanvasKit and fonts from Google, and no privacy document says so
 
+**Status:** done (2026-09-19) — closed by fix/pwa-self-host-web-resources. `scripts/build_web.sh` builds with `--no-web-resources-cdn` and mirrors the engine's own fallback fonts (read from `main.dart.js`, 725 files, ~22 MB, Noto OFL + Roboto Apache, licences in `web/fallback-fonts/`) into `build/web/fallback-fonts/`, where `web/flutter_bootstrap.js` points `fontFallbackBaseUrl`; `check_web_build.sh` refuses a build without them, and `_PWA_CSP` names no gstatic host. Mirroring rather than bundling one fallback font: the ten languages need CJK, Arabic and Devanagari plus emoji in names ([[Web]], Decisions). Verified in Chromium under the CSP, fr/zh/ar/hi, load to a game created: every request to the serving host.
+
 - **Noted:** 2026-09-19 — deciding whether the GitHub Pages build is a new data flow (ci/pwa-github-pages)
 - **Theme:** web
 - **Area:** web

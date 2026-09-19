@@ -1,5 +1,7 @@
 # The PWA shell still carries template metadata and promises an offline mode it does not have
 
+**Status:** done (2026-09-19) — closed by fix/pwa-self-host-web-resources. `theme_color` and a new `<meta name="theme-color">` are the brand teal `#0E8F88`, the description is real, the title and apple title are "CountScore"; the manifest keeps "works offline" for [[2026-09-19-pwa-has-no-offline-service-worker]].
+
 - **Noted:** 2026-09-19 — full test pass of the production PWA (fresh Chromium profiles, Playwright, fr-FR at 412 × 860)
 - **Theme:** web
 - **Area:** web

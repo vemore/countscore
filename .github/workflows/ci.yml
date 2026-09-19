@@ -447,12 +447,24 @@ jobs:
       - name: flutter test
         run: scripts/retry_sqlite3_hash.sh flutter test
 
-      # --no-tree-shake-icons is mandatory on every build target: game-type icons
-      # are built from database codepoints, which the tree-shaker cannot see.
+      # scripts/build_web.sh mirrors the engine's fallback fonts into the build, so a
+      # visitor never asks fonts.gstatic.com for them. Their paths are versioned and
+      # immutable, so the cache only ever grows by what a new SDK names: the ~22 MB
+      # are downloaded once, not on every run.
+      - name: Cache the web fallback fonts
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/countscore/fallback-fonts
+          key: web-fallback-fonts-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: web-fallback-fonts-${{ runner.os }}-
+
+      # scripts/build_web.sh passes --no-tree-shake-icons, mandatory on every build
+      # target (game-type icons are built from database codepoints, which the
+      # tree-shaker cannot see), and --no-web-resources-cdn (CanvasKit from the build).
       # No --dart-define=BACKEND_URL: the backend URL is a runtime setting with
       # no default, and this job only proves the build compiles.
       - name: Build web (release)
-        run: flutter build web --release --no-tree-shake-icons
+        run: scripts/build_web.sh
 
       - name: The web build is publishable
         run: scripts/check_web_build.sh build/web

@@ -81,7 +81,7 @@ at your own server in Settings → Server if you want the connected features.
 - **Comfort**: light/dark/system theme, screen kept awake during a game, database
   export/import (Android only).
 - **Material Design 3** throughout, in a teal theme with the Nunito typeface bundled in the
-  app (no font is fetched at runtime). The game list opens on a **Resume** card for the game
+  app (no font is fetched at runtime; the PWA serves its fallback fonts itself). The game list opens on a **Resume** card for the game
   last played, and every game shows its players and whether it is in progress or who won.
 
 ## Tech stack
@@ -159,13 +159,18 @@ editing an `.arb` file.
 ```bash
 flutter build apk       --release --no-tree-shake-icons
 flutter build appbundle --release --no-tree-shake-icons   # Play Store
-flutter build web       --release --no-tree-shake-icons
+scripts/build_web.sh                                       # the PWA, see below
 ```
 
 **`--no-tree-shake-icons` is mandatory on every target.** Game-type icons are `IconData`
 built from codepoints stored in the database, so Flutter's icon tree-shaker cannot see those
 references and the build fails without the flag. It costs roughly 200 KB. See
 [CLAUDE.md](CLAUDE.md).
+
+**The PWA is built by `scripts/build_web.sh`**, which adds `--no-web-resources-cdn` and copies
+the engine's fallback fonts (Noto, Roboto) into the build, so a browser loading the PWA asks
+nothing of Google: CanvasKit and every font come from whoever serves the app. Extra arguments
+(`--base-href=/subpath/`) are passed to `flutter build web`.
 
 ### Publishing the PWA
 

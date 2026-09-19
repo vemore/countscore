@@ -4,7 +4,7 @@
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FFFFFF",
-    "theme_color": "#673AB7",
+    "theme_color": "#0E8F88",
     "description": "Score tracking for card and board games — works offline.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,

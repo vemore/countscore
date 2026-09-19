@@ -82,7 +82,7 @@ flutter analyze
 flutter test
 flutter build apk        --release --no-tree-shake-icons
 flutter build appbundle  --release --no-tree-shake-icons    # Play Store
-flutter build web        --release --no-tree-shake-icons
+scripts/build_web.sh             # web: + --no-web-resources-cdn, self-hosted fonts
 ```
 
 Backend commands are in `backend/CLAUDE.md`.
