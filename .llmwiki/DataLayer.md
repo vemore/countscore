@@ -2,7 +2,7 @@
 
 > Scope: how the app reaches SQLite — Drift, the sqflite bootstrap, repositories, codegen.
 > Related: [[SchemaV10]] · [[MobileApp]] · [[Web]] · [[Testing]] · [[Sync]]
-> Updated: 2026-09-16
+> Updated: 2026-09-19
 
 ## Facts
 
@@ -34,6 +34,10 @@ All three remaining roles are inside `lib/services/database_service.dart` (1468 
   > tables since v10, `schemaVersion` is **13**, and `onUpgrade` has replayed the post-v9
   > steps since v11. `_insertDefaultGameTypes()` now seeds 22 types, each with its
   > `builtin_key`. See [[SchemaV10]].
+- On the web the executor is wrapped in `PersistenceFlushInterceptor`
+  (`lib/services/drift/connection/persistence_flush.dart`): drift's IndexedDB storage would
+  otherwise leave committed transactions and the schema version unwritten until the next
+  non-transactional statement. See [[Web]] § Persistence.
 - `lib/services/drift/connection/connection.dart` is a three-line conditional export:
   `export 'connection_web.dart' if (dart.library.io) 'connection_native.dart';`
 
