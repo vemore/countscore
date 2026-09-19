@@ -43,8 +43,10 @@ Adding a language to `lib/l10n/` does not create the listing for it, and vice ve
 
 ## Screenshots
 
-The raw captures in `assets/screenshots/phone/` (from `scripts/capture_screenshots.sh`) are
-1080×2400 RGBA, which Play refuses. `scripts/compose_screenshots.py` turns them into
+The raw captures are 1080×2400 RGBA, which Play refuses. Each locale's own set is in
+`<locale>/raw/`, taken with the app in that language by `scripts/capture_screenshots.sh
+<locale>`; a locale without one falls back to the shared French set in
+`assets/screenshots/phone/`. `scripts/compose_screenshots.py` turns them into
 1080×1920 opaque RGB, the locale's caption in a band above the screen, into
 `<locale>/screenshots/phone/` — the directory `play_publish.py --graphics` reads first:
 
@@ -106,8 +108,8 @@ release rejected or wasted:
 ## Assets
 
 Committed and published since 2026-09-15: the icon, the feature graphic and eight phone
-screenshots. Specifications are in `ASSET_REQUIREMENTS.md`; `scripts/capture_screenshots.sh`
-pulls fresh captures over ADB.
+screenshots. Specifications are in `ASSET_REQUIREMENTS.md`; `scripts/capture_screenshots.sh
+<locale>` pulls fresh captures of one locale over ADB into `<locale>/raw/`.
 
 Known gap: the eight screenshots are raw 1080×2400 RGBA captures, which is wider than the
 16:9 Play asks for and carries an alpha channel it does not allow, with no caption and no

@@ -198,7 +198,7 @@ toolchain table in [[MobileApp]] must move together.
 | Job | Steps |
 |---|---|
 | `scope` | `scripts/ci_scope_selftest.sh` → `gh api repos/{owner}/{repo}/pulls/<n>/files` (`.filename` **and** `.previous_filename`) → `scripts/ci_scope.sh` → five `name=true\|false` flags into `$GITHUB_OUTPUT` |
-| `backend` | `postgres:17-alpine` service → checkout at depth 2 → privacy page tests (`scripts/test_build_privacy_page.py`) → pandoc **3.6.4** (release archive, checksum-pinned) → `scripts/build_privacy_page.py --check --base HEAD^1` → `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` → `play_publish.py` tests (`.claude/skills/release-android/scripts/`, fake Google service) → `alembic upgrade head` → `downgrade base` → `upgrade head` → `check` (a migration round trip) → `uv export` + `pip-audit` |
+| `backend` | `postgres:17-alpine` service → checkout at depth 2 → privacy page tests (`scripts/test_build_privacy_page.py`) → pandoc **3.6.4** (release archive, checksum-pinned) → `scripts/build_privacy_page.py --check --base HEAD^1` → `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` → `play_publish.py` tests (`.claude/skills/release-android/scripts/`, fake Google service) → `fonts-roboto-unhinted` → `scripts/test_compose_screenshots.py` → `compose_screenshots.py --check` → `alembic upgrade head` → `downgrade base` → `upgrade head` → `check` (a migration round trip) → `uv export` + `pip-audit` |
 | `image` | `docker build backend` → runs as non-root, no compiler, no dev dependencies, read-only code → `docker build -f backend/Dockerfile.backup backend` → `age --version`, `pg_dump --version` (17) → `countscore-backup --once` with no recipient must exit non-zero → `docker compose config --quiet` on both compose files, failing on any warning |
 | `app` | `scripts/hooks_selftest.sh` → `scripts/check_web_build_selftest.sh` → `osv-scanner` on `pubspec.lock` → `pub get` → `scripts/web_binaries.sh --check` (and `--fetch` on the weekly run only) → `scripts/test_third_party_licenses.py` → `scripts/third_party_licenses.py --check` → `dart run build_runner build` → `analyze` → `test` → `build web --release` → `scripts/check_web_build.sh build/web` |
 | `android` | `pub get` → `dart run build_runner build` → `build apk --debug` |
@@ -214,6 +214,7 @@ wins, per path:
 |---|---|
 | `privacy_policy.md`, `docs/privacy-policy.html` | `backend` (the privacy page check) |
 | `THIRD_PARTY_LICENSES.md` | `app` (the licence list check) |
+| `store_listing/*/screenshots/*`, `store_listing/*/raw/*`, `store_listing/*/screenshot_captions.txt`, `scripts/compose_screenshots.py`, `scripts/test_compose_screenshots.py` | `backend` (the composer's tests and `--check`) |
 | `*.md`, `.llmwiki/`, `wip/`, `docs/`, `store_listing/`, `LICENSE` | *none* |
 | `backend/` | `backend`, `image`, `sync` |
 | `android/` | `android` |
@@ -399,12 +400,6 @@ and must be checked on a device; the wakelock toggle is covered only down to the
 setting (`test/screens/settings_screen_test.dart`) — whether the platform holds the lock is
 checked on a device, or in a browser through `navigator.wakeLock` ([[Web]]).
 
-**The screenshot composer's tests are local only.** `scripts/test_compose_screenshots.py`
-(output 1080×1920 opaque RGB, `--check`, caption parsing, and that every committed
-`store_listing/<locale>/screenshots/phone/*.png` is compliant) runs with
-`uv run --no-project --with pytest --with pillow pytest scripts/test_compose_screenshots.py`;
-no CI job collects it (`wip/todo_nr/2026-09-18-compose-screenshots-tests-not-in-ci.md`).
-
 **The sync conflict branch is untested.**
 
 > **Status: Outdated** (2026-09-13) — covered now. Three tests in `test_sync.py` drive two
@@ -515,3 +510,12 @@ no CI job collects it (`wip/todo_nr/2026-09-18-compose-screenshots-tests-not-in-
   `app`, the one required job that already has the pub cache. No versions in the file: they
   would turn every Dependabot week red for no compliance gain, and `pubspec.lock` has them
   (`wip/done/2026-09-14-third-party-licenses-stale.md`).
+- **The screenshot composer's tests run in `backend` (2026-09-19).** They were local only,
+  and nothing refused a raw 1080×2400 capture committed under
+  `store_listing/<locale>/screenshots/phone/`: `store_listing/` selected no job. A step of
+  `backend`, the required job that already has uv, like `play_publish.py`'s tests; `scope`
+  routes the screenshots, the raw captures, the captions and the composer to it, ahead of the
+  documentation rule. `--check` also refuses a PNG there that matches no raw capture, so a
+  file the composer did not write cannot ride along. The runner has no Roboto, so the step
+  installs `fonts-roboto-unhinted`; the CJK, Arabic and Devanagari fonts are not needed, the
+  tests draw Latin only (`wip/todo/2026-09-18-store-screenshots-show-french-ui-everywhere.md`).

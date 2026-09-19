@@ -41,6 +41,15 @@ while IFS= read -r path; do
         # fails when it differs. Before the documentation rule, like the policy.
         THIRD_PARTY_LICENSES.md) app=true ;;
 
+        # The store screenshots, their raw captures and captions, and the composer:
+        # the `backend` job runs scripts/test_compose_screenshots.py and
+        # `compose_screenshots.py --check`, which refuse a committed screenshot Play
+        # would refuse or the composer did not write. Before the documentation rule,
+        # which would otherwise swallow the store_listing/ ones. A glob's `*` crosses
+        # `/`, so the first pattern also takes assets/screenshots/phone/.
+        store_listing/*/screenshots/*|store_listing/*/raw/*|store_listing/*/screenshot_captions.txt|scripts/compose_screenshots.py|scripts/test_compose_screenshots.py)
+            backend=true ;;
+
         # Documentation and store assets. Checked 2026-09-16: no Dart test and no
         # pytest reads a .md, .llmwiki/, wip/, docs/ or store_listing/ file --
         # test_play_publish.py builds its own store_listing/ fixture under

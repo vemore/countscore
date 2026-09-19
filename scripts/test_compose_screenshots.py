@@ -5,6 +5,7 @@ uv run --no-project --with pytest --with pillow pytest scripts/test_compose_scre
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -127,3 +128,78 @@ def test_every_store_locale_has_captions() -> None:
     """A store locale without captions would publish the raw captures Play refuses."""
     for locale in cs.listing_locales(REPO):
         assert (REPO / "store_listing" / locale / cs.CAPTIONS_FILE).is_file(), locale
+
+
+def _raw(directory: Path, names: tuple[str, ...], colour: tuple[int, int, int, int]) -> None:
+    directory.mkdir(parents=True, exist_ok=True)
+    for name in names:
+        Image.new("RGBA", (1080, 2400), colour).save(directory / f"{name}.png")
+
+
+def test_a_locale_raw_set_replaces_the_shared_one(repo: Path) -> None:
+    """The ja-JP carousel is composed from Japanese captures, not the shared French ones."""
+    own = repo / "store_listing" / "fr-FR" / cs.LOCALE_RAW_DIR
+    _raw(own, ("01_a", "02_b"), (0, 0, 255, 255))
+    assert cs.raw_dir(repo, "fr-FR") == own
+    assert cs.raw_dir(repo, "en-US") == repo / "store_listing" / cs.RAW_DIR
+    written = cs.compose_locale(repo, "fr-FR", font())
+    with Image.open(written[0]) as im:
+        # The centre of the screen area is the locale's blue capture, not the shared lilac.
+        assert im.getpixel((540, 1200)) == (0, 0, 255)
+
+
+def test_a_locale_raw_set_is_taken_whole(repo: Path) -> None:
+    """One file in raw/ does not borrow the others from the shared set: no mixed languages."""
+    _raw(repo / "store_listing" / "fr-FR" / cs.LOCALE_RAW_DIR, ("01_a",), (0, 0, 255, 255))
+    assert [p.stem for p in cs.raw_captures(repo, "fr-FR")] == ["01_a"]
+    with pytest.raises(cs.ComposeError, match="no raw capture named 02_b"):
+        cs.compose_locale(repo, "fr-FR", font())
+
+
+def test_compose_removes_a_screenshot_with_no_capture(repo: Path) -> None:
+    out = repo / "store_listing" / "fr-FR" / "screenshots" / "phone"
+    out.mkdir(parents=True)
+    Image.new("RGB", (1080, 1920)).save(out / "04_old.png")
+    cs.compose_locale(repo, "fr-FR", font())
+    assert sorted(p.name for p in out.glob("*.png")) == ["01_a.png", "02_b.png"]
+
+
+def test_check_flags_a_png_the_composer_did_not_write(repo: Path) -> None:
+    """A stray capture committed next to the composed set turns --check (and CI) red."""
+    cs.compose_locale(repo, "fr-FR", font())
+    out = repo / "store_listing" / "fr-FR" / "screenshots" / "phone"
+    Image.new("RGBA", (1080, 2400)).save(out / "09_raw.png")
+    problems = cs.check(repo, ["fr-FR"])
+    assert len(problems) == 1 and "09_raw.png matches no raw capture" in problems[0]
+
+
+def test_check_follows_the_locale_raw_set(repo: Path) -> None:
+    cs.compose_locale(repo, "fr-FR", font())
+    _raw(
+        repo / "store_listing" / "fr-FR" / cs.LOCALE_RAW_DIR,
+        ("01_a", "02_b", "03_c"),
+        (0, 0, 0, 255),
+    )
+    problems = cs.check(repo, ["fr-FR"])
+    assert len(problems) == 1 and problems[0].startswith("fr-FR: missing") and "03_c" in problems[0]
+
+
+def test_the_band_is_the_app_teal() -> None:
+    """The gradient starts on kBrandSeedLight, and nothing is left of the old deep purple."""
+    theme = (REPO / "lib" / "utils" / "app_theme.dart").read_text(encoding="utf-8")
+    match = re.search(r"kBrandSeedLight = Color\(0xFF([0-9A-Fa-f]{6})\)", theme)
+    assert match, "kBrandSeedLight not found in app_theme.dart"
+    seed = tuple(int(match.group(1)[i : i + 2], 16) for i in (0, 2, 4))
+    assert cs.BRAND == seed
+    canvas = cs.gradient()
+    assert canvas.getpixel((0, 0)) == seed
+    assert canvas.getpixel((0, cs.HEIGHT - 1)) == cs.BACKGROUND_BOTTOM
+    source = (REPO / "scripts" / "compose_screenshots.py").read_text(encoding="utf-8")
+    assert "0x67, 0x3A, 0xB7" not in source and "Deep Purple" not in source
+
+
+def test_the_committed_raw_sets_match_their_captions() -> None:
+    """A locale's raw/ set and its captions name the same captures, or compose would refuse."""
+    for locale in cs.listing_locales(REPO):
+        stems = [p.stem for p in cs.raw_captures(REPO, locale)]
+        cs.read_captions(REPO / "store_listing" / locale / cs.CAPTIONS_FILE, stems)
