@@ -567,5 +567,70 @@
   "groupSettingsSaved": "群组设置已保存",
   "groupUsageTitle": "本月 LLM 用量",
   "groupUsageAmount": "已用 {used}，预算 {budget}",
-  "groupUsageResets": "{date} 重置"
+  "groupUsageResets": "{date} 重置",
+  "statsBestWinRate": "最高胜率",
+  "statsWinsOutOfGames": "{wins, plural, =0{{games} 局未胜} other{{games} 局 {wins} 胜}}",
+  "statsColumnPlayer": "玩家",
+  "statsColumnGames": "局数",
+  "statsUnranked": "{count, plural, other{{count} 局 · 暂未排名}}",
+  "statsLeaderboardFooter": "{count, plural, other{完成 {count} 局后参与排名。点按玩家查看其卡片。}}",
+  "statsGamesLabel": "{count, plural, other{局}}",
+  "statsWinsLabel": "{count, plural, other{胜}}",
+  "statsAverageRank": "平均名次",
+  "statsRankChartTitle": "{count, plural, other{名次，最近 {count} 局}}",
+  "statsTrendImproving": "上升中",
+  "statsTrendDeclining": "下滑中",
+  "statsTrendSteady": "稳定",
+  "statsRankOrdinal": "第{rank}",
+  "statsWinStreak": "{count, plural, =0{暂无连胜} other{连胜 {count} 局}}",
+  "statsRecord": "纪录：{total}",
+  "statsOnGameType": "{gameType} 战绩",
+  "statsAverageTotal": "平均最终总分",
+  "statsBestTotal": "最佳最终总分",
+  "statsMostBeaten": "最常击败的对手",
+  "statsOpenPlayerCard": "打开玩家卡片",
+
+  "shareResult": "分享结果",
+
+  "shareAnalysis": "分享分析",
+
+  "shareResultSubject": "结果：{gameName}",
+
+  "shareResultTitle": "{date} 的对局",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, other{{points} 分}}",
+
+  "shareResultFooter": "用 {appName} 记分：{url}",
+
+  "shareFailed": "无法打开分享",
+
+  "newGameNameLabel": "名称",
+
+  "newGameGameLabel": "游戏",
+
+  "newGameAllGames": "全部游戏（{count}）",
+
+  "newGamePlayersLabel": "玩家 · 座位顺序",
+
+  "newGameDragToReorder": "拖动以调整顺序",
+
+  "newGameDealer": "发牌",
+
+  "newGameAddPlayer": "添加玩家",
+
+  "newGameStart": "{count, plural, =0{开始} other{开始 · {count} 名玩家}}",
+
+  "whoIsPlayingTitle": "谁来玩？",
+
+  "whoIsPlayingSearchHint": "姓名，或新玩家",
+
+  "whoIsPlayingFrequent": "常和你一起玩",
+
+  "whoIsPlayingSameAs": "与“{gameName}”相同的玩家",
+
+  "whoIsPlayingCreate": "创建“{name}”",
+
+  "whoIsPlayingConfirm": "{count, plural, =0{完成} other{添加 {count} 名玩家}}",
+
+  "defaultGameName": "游戏 {number}"
 }
