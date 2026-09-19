@@ -1,5 +1,7 @@
 # Player statistics are a list of collapsed tiles that says little and looks unrelated to the app
 
+**Status:** done (2026-09-19) — closed by feat/player-stats-leaderboard. `player_stats_screen.dart` is the leaderboard (game-type chips, best-win-rate hero, ranked rows with win-rate bars, unranked below 5 games) and the new `player_card_screen.dart` the card on the same filter, with a `CustomPainter` rank chart; both computed in `lib/models/player_stats.dart` from `PlayerStatsRepository.getFinishedGameResults`, keyed by player uuid, colours from `player_colors.dart`, two-letter avatars.
+
 - **Noted:** 2026-09-19 — reported by the user; needs design exploration with mock-ups
 - **Theme:** visual-refresh
 - **Area:** app

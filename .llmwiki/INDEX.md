@@ -30,7 +30,7 @@ Load this file first. Then read only the pages your task touches.
 | [[MobileApp]] | `lib/` layout, providers, screens, widgets, services (the review prompt), `utils/`, the dynamic-icon constraint | 2026-09-19 |
 | [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-09-16 |
 | [[SchemaV10]] | Schema v15: the twelve tables, `rules`/`rules_slug`, `builtin_key` and its live-unique index, sync bookkeeping and capture triggers, tombstones, the migration chain | 2026-09-19 |
-| [[I18n]] | 10 languages × 336 keys, French template, English fallback; built-in game-type names are localized; the key *and* value checks; long-form rules are assets, not ARB; store locales differ | 2026-09-19 |
+| [[I18n]] | 10 languages × 357 keys, French template, English fallback; built-in game-type names are localized; the key *and* value checks; long-form rules are assets, not ARB; store locales differ | 2026-09-19 |
 | [[Web]] | PWA specifics: sqlite3.wasm, OPFS, committed binaries and the check that gates them, `kIsWeb` guards, base href | 2026-09-16 |
 
 ## Backend (FastAPI)
