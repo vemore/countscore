@@ -105,6 +105,14 @@ rounds that still exist: `soleLeader`, null on a tie, so a tied Resume card name
 It is read per card, as the player names were before, without touching
 the current game. The filter applies to both the card and the list.
 
+From `kHomeGridBreakpoint` (600 dp, `home_screen.dart`) the *Recent* cards form a grid:
+`homeGridColumns(width)` fits as many cards of at least `kHomeGridMinCardWidth` (360 dp) as
+the padded width holds, and never fewer than two — 3 columns at 1200 dp, 4 at 1600. Each
+grid row is an `IntrinsicHeight` row of equal-height cards, not a `GridView`, because a card
+is as tall as its content. A grid card narrower than 360 dp (two columns, 600–775 dp) is
+`compact`: its status pill moves beside the players, under the name. The Resume card keeps
+the full width, and below 600 dp the list is one column as before.
+
 `game_rules_screen` takes its `GameType` as a constructor argument rather than reading a
 provider: both callers — the board's overflow menu and the game-type list — already hold
 it, and the list has no "current game". It shows, in order, the type's own scoring summary
@@ -494,6 +502,14 @@ not "fix" it by hardcoding a codepoint.
 
 ## Decisions & History
 
+- **Home is a card grid on a wide screen, not master-detail (2026-09-19,
+  `feat/home-card-grid`).** At 1600 px a game card was a 1 568 px strip. A master-detail
+  home would need a detail pane to show; the cards already carry what the list needs, so
+  width buys more of them per screen. Home has its own 600 dp constant: the board has
+  none since its lanes size themselves. Two columns start at 600 dp even though a card is
+  then only 278 dp, so the compact card exists rather than a later breakpoint; a phone's
+  one-column card is never compact (`wip/done/2026-09-18-home-master-detail.md`).
+
 - **The board and the home card crown only a sole leader (2026-09-19,
   `fix/board-home-tie-crown`).** The board's crown, outlined lane and ribbon ring, the Resume
   card's leader and a finished card's winner all read `GameStanding.soleLeader`; the board's
@@ -601,7 +617,7 @@ not "fix" it by hardcoding a codepoint.
   (`wip/done/2026-09-16-wiki-owed-by-rating-prompt.md`).
 - **The large-screen layout starts with the score grid, not with a two-pane home** (2026-09-18,
   refinement). A score table is the content that gets better with width; a master-detail home
-  is a separate entry (`wip/todo_nr/2026-09-18-home-master-detail.md`). The grid keeps its
+  is a separate entry (`wip/done/2026-09-18-home-master-detail.md`). The grid keeps its
   `DataTable` and its two scroll views, with a minimum width and flexed player columns added
   above 600 dp, so the phone layout is the same widget tree with nothing changed
   (`wip/done/2026-09-16-no-large-screen-layout.md`).
