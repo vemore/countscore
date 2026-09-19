@@ -145,7 +145,7 @@ prompt below.
 
 ### Widgets — `lib/widgets/`
 
-Twelve components shared out of the screens:
+Thirteen components shared out of the screens:
 
 - `board_lanes.dart` — the board's default layout ([below](#the-board)): `BoardData` (what
   both layouts draw from: players in seat order, rounds, a `GameStanding`, colours, the
@@ -162,10 +162,18 @@ Twelve components shared out of the screens:
 - `score_keypad_sheet.dart` — `ScoreKeypadSheet`, the bottom sheet every score is entered
   through ([below](#the-board)).
 - `share_result_button.dart` — `ShareResultButton`, the app-bar share action of the end
-  screen, the ranking and the analysis: builds the text from `GameRanking.of` with
-  `buildGameResultShareText` and hands it to `share_plus` (`SharePlus.instance.share`), a
-  failure to open becoming a `shareFailed` snackbar. Its `share` seam (`ShareTextFn`) is
-  passed through by the three screens for tests.
+  screen, the ranking and the analysis: from one `GameRanking.of` it builds the text
+  (`buildGameResultShareText`) and a `ResultShareCard`, draws the card to a PNG
+  (`renderWidgetToPng`), and hands both to `systemShareResult` — `share_plus` with the PNG as
+  an `XFile.fromData` (`kShareImageName`) and `downloadFallbackEnabled: false`; if that share
+  throws (a browser that cannot share files), the text alone is shared, as before. A card
+  that fails to draw costs only the image; a sheet that fails to open becomes a `shareFailed`
+  snackbar. Its `share` seam (`ShareResultFn`: text, subject, image) is passed through by the
+  three screens for tests; `renderImage` catches the card instead of drawing it.
+- `result_share_card.dart` — `ResultShareCard`, the shared picture: `shareResultTitle` (the
+  date), the `rankingSummary` line, `RankedPlayers` itself — so the image ranks, colours and
+  crowns as the screen does — and `appTitle`, 400 logical pixels wide on the theme's
+  `surface`. No new string: it reuses the shared text's keys.
 
 - `player_avatars.dart` — `PlayerAvatar` (an initial, or the first `letters` letters, on a
   colour, drawn in `onPlayerColor`) and `PlayerAvatarStack` (a game's players overlapping,
@@ -240,7 +248,7 @@ Cross-cutting helpers, since 2026-09-16: `insets.dart`, `game_type_name.dart` �
 from a built-in game type's `builtin_key` to its localized name, which every screen showing a
 game type's name goes through ([[I18n]]) — `play_again.dart`, `app_theme.dart`,
 `player_colors.dart`, `recent_game_types.dart` (the New game screen's tile order),
-`game_result_share.dart` and `undo_snack_bar.dart` — `undoSnackBar`, the one snackbar that
+`game_result_share.dart`, `widget_image.dart` and `undo_snack_bar.dart` — `undoSnackBar`, the one snackbar that
 offers an action back: `persist: false` and `kUndoSnackBarDuration` (6 s), so the Undo
 goes away on its own instead of staying up until dismissed, Flutter's default for a
 snackbar with an action.
@@ -252,7 +260,15 @@ ranking's order (ties share a place), the commentary when sharing the analysis, 
 `shareResultFooter` naming `appTitle` with `kPlayStoreUrl` —
 `https://play.google.com/store/apps/details?id=com.vemore.countscore`, built from the
 application id, no tracking parameter. Tested in `test/utils/game_result_share_test.dart`
-(a lowest-wins and a highest-wins game, all ten locales).
+(a lowest-wins and a highest-wins game, all ten locales). It also names the shared PNG,
+`kShareImageName` (`countscore-result.png`).
+
+`widget_image.dart` — `renderWidgetToPng(context, widget)`: builds, lays out and paints a
+widget in a `PipelineOwner`/`BuildOwner` of its own under a loose `BoxConstraints` (default
+400 × 4000 logical, drawn at 3x), lending it the tapped context's themes
+(`InheritedTheme.captureAll`), localizations (`Localizations.override`) and media query,
+then `RenderRepaintBoundary.toImage` → PNG, and unmounts the tree. Nothing is shown on
+screen. In a widget test its future completes only under `tester.runAsync`.
 
 `app_theme.dart` — the one place the look is defined. `buildAppTheme(brightness)` seeds
 `ColorScheme.fromSeed` with `kBrandSeedLight` (`#0E8F88`, the icon's teal) or
@@ -381,7 +397,7 @@ filled block keeps `onPrimary` — and an eliminated player is faded and struck 
 (`playAgain`) and **Analysis** (`GameAnalysisScreen`), the latter only when
 `BackendProvider.isConfigured` — Play again then spans the row. Unlike the board's menu, a
 cached analysis alone does not bring the button back. The app bar's share action
-(`ShareResultButton`) sends the standings as text. Every path that finishes a game —
+(`ShareResultButton`) sends the standings as text and as a picture (`ResultShareCard`). Every path that finishes a game —
 rule, board menu, home menu — calls `ReviewPromptService.onGameFinished` once, on the
 transition `setGameFinished` reports.
 
@@ -391,7 +407,7 @@ transition `setGameFinished` reports.
 shows an open game with the same `RankedPlayers` as the end screen, so the two cannot rank
 differently; above it, the win rule is one line (`rankingSummary`) under the *Ranking*
 title, and **Play again** stays at the bottom. No headline: the game is not over. The app
-bar shares the standings as text, as on the end screen; the analysis screen's share adds the
+bar shares the standings as text and picture, as on the end screen; the analysis screen's share adds the
 commentary, and is offered only once there is one.
 
 #### The board
@@ -660,6 +676,19 @@ not "fix" it by hardcoding a codepoint.
   parameter. Being user-initiated through the platform sheet, it is not an outbound data flow
   of the app and the Data Safety answers do not move ([[Documentation]]). A rendered image of
   the standings is a later change (`wip/todo_nr/2026-09-19-share-result-as-image.md`).
+  > **Status: Outdated** (2026-09-19) — the image shipped the same day (below).
+- **2026-09-19 — The shared result carries a picture of the podium** (`feat/share-result-image`,
+  `wip/done/2026-09-19-share-result-as-image.md`). In a group chat a picture stands out where
+  a text line is scrolled past. The card is a widget built on `RankedPlayers`, not a
+  screenshot of the screen: the screen scrolls and carries buttons, and a dedicated widget
+  drawn from the same `GameRanking` cannot rank differently (the ranking test pumps the card
+  the button drew and compares its order to the screen's). It is drawn in a pipeline of its
+  own (`lib/utils/widget_image.dart`) so nothing flashes on screen; the themes, localizations
+  and media query are lent from the tapped context. The image is a bonus — a card that fails
+  to draw, or a browser that cannot share files, still gets the text — and share_plus's
+  download fallback is off because a downloaded PNG would replace the text rather than join
+  it. Keep the card free of `Ink`/`ListTile`: in the off-screen pipeline a `ListTile` failed a
+  null check on the web and left CanvasKit with no picture to read (seen while probing).
 - **2026-09-19 — New game redrawn in direction A** (`feat/new-game-screen`). The form was
   the one screen between home and the end of a game the refresh had not reached, and it
   coloured players by their stored `colorValue` while the board used the display-time
