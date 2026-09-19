@@ -50,9 +50,31 @@ whether the connected features exist; the third starts the review prompt's clock
 `game_types_screen` · `create_game_screen` ·
 `game_analysis_screen` (the LLM analysis, with its row of voice chips — see
 [[LlmProviders]]) ·
-`players_screen` · `player_stats_screen` · `settings_screen` ·
+`players_screen` · `player_stats_screen` (the leaderboard) and `player_card_screen`, below ·
+`settings_screen` ·
 `about_screen` · `ranking_screen` (where an open game stands, below) · `game_end_screen` (who won, below) · `game_rules_screen` ·
 `group_settings_screen`.
+
+**Player statistics.** `player_stats_screen` is a leaderboard: a row of game-type chips
+(`Key('stats_chip_all')`, then `stats_chip_<key>` for each type with a finished game, most
+played first), a teal hero for the best win rate with the leader's avatar in a
+`kLeaderGold` ring, then one card per player — place, two-letter `PlayerAvatar`, games,
+wins · win rate and a bar of the rate in the player's colour. A player with fewer than
+`kMinGamesToRank` (5) finished games of the filter is listed last with no place. Tapping a
+player opens `player_card_screen` on the same filter: a strip of the leaderboard's avatars
+to switch player; games, wins and average place; the place over the last `kRankChartGames`
+(12) games, drawn by `RankChartPainter` (a `CustomPainter`, no chart package) with wins as
+gold dots and a trend; the current win streak and, on one type, the best final total; then
+the average and best final totals and the opponent most often finished ahead of. On *All
+games* the best total is left out whenever the games mix both win rules. Everything is
+computed in `lib/models/player_stats.dart` from `PlayerStatsRepository.getFinishedGameResults`
+(through `GameProvider.getFinishedGameResults`): live games with `finishedAt` set and at least
+one score on a live round, each player keyed by the global `players.uuid`. Places share on a
+tie (1, 2, 2, 4) and follow the game's `isLowestScoreWins`, like `GameStanding.ranks`.
+Colours come from `playerColorsByUuid` — `assignPlayerColors` over the players in the order
+they first appear walking back from the latest game — so the latest game shows exactly its
+board's colours and the filter never recolours anyone. Tests:
+`test/models/player_stats_test.dart`, `test/screens/player_stats_screen_test.dart`.
 
 `group_settings_screen` is Settings → Group → *Comments and usage*, reached only from the
 Group section once the device is in a group: the group's comment style (three chips,
@@ -108,7 +130,7 @@ prompt below.
 
 ### Widgets — `lib/widgets/`
 
-Eleven components shared out of the screens:
+Twelve components shared out of the screens:
 
 - `board_lanes.dart` — the board's default layout ([below](#the-board)): `BoardData` (what
   both layouts draw from: players in seat order, rounds, a `GameStanding`, colours, the
@@ -117,11 +139,17 @@ Eleven components shared out of the screens:
 - `board_rows.dart` — `BoardRows`, the one-row-per-player layout.
 - `game_ranking.dart` — the one ranking both `RankingScreen` and `GameEndScreen` draw
   ([below](#the-game-end-screen)): `GameRanking.of` (the current game best first, its ranks,
-  colours, leader, winners and elimination tests), `RankedPlayers` (podium and rows),
+  colours, leader, winners and elimination tests; `GameRanking.fromStanding` builds the same
+  from a `GameStanding`, for a test or a caller without a provider), `RankedPlayers` (podium and rows),
   `rankingSummary` (type · rounds · win rule), and `isEliminatedBy` /
   `isNearEliminationBy`, the type's elimination rule on a total.
 - `score_keypad_sheet.dart` — `ScoreKeypadSheet`, the bottom sheet every score is entered
   through ([below](#the-board)).
+- `share_result_button.dart` — `ShareResultButton`, the app-bar share action of the end
+  screen, the ranking and the analysis: builds the text from `GameRanking.of` with
+  `buildGameResultShareText` and hands it to `share_plus` (`SharePlus.instance.share`), a
+  failure to open becoming a `shareFailed` snackbar. Its `share` seam (`ShareTextFn`) is
+  passed through by the three screens for tests.
 
 - `player_avatars.dart` — `PlayerAvatar` (an initial on a colour, drawn in
   `onPlayerColor`) and `PlayerAvatarStack` (a game's players overlapping, in seat order and
@@ -186,7 +214,17 @@ Eleven components shared out of the screens:
 Cross-cutting helpers, since 2026-09-16: `insets.dart`, `game_type_name.dart` — the switch
 from a built-in game type's `builtin_key` to its localized name, which every screen showing a
 game type's name goes through ([[I18n]]) — `play_again.dart`, `app_theme.dart`,
-`player_colors.dart` and `recent_game_types.dart` (the New game screen's tile order).
+`player_colors.dart`, `recent_game_types.dart` (the New game screen's tile order) and
+`game_result_share.dart`.
+
+`game_result_share.dart` — `buildGameResultShareText`, a pure function from a `GameRanking`
+to the shared text: "Game of {date}" (`DateFormat.yMMMd` in the l10n locale, the game's
+`createdAt`), the `rankingSummary` line, one `shareResultStanding` line per player in the
+ranking's order (ties share a place), the commentary when sharing the analysis, then
+`shareResultFooter` naming `appTitle` with `kPlayStoreUrl` —
+`https://play.google.com/store/apps/details?id=com.vemore.countscore`, built from the
+application id, no tracking parameter. Tested in `test/utils/game_result_share_test.dart`
+(a lowest-wins and a highest-wins game, all ten locales).
 
 `app_theme.dart` — the one place the look is defined. `buildAppTheme(brightness)` seeds
 `ColorScheme.fromSeed` with `kBrandSeedLight` (`#0E8F88`, the icon's teal) or
@@ -216,11 +254,11 @@ on its main axis **only when its `padding` argument is null**, so every root scr
 passes an explicit padding loses that compensation and cannot scroll its last row clear of
 the system navigation bar — the app is edge-to-edge on `targetSdk` 36 and cannot opt out
 (`android/app/src/main/kotlin/com/example/countscore/MainActivity.kt` is a bare
-`FlutterActivity`; there is no `SystemChrome` call anywhere in `lib/`). Its seven call sites
+`FlutterActivity`; there is no `SystemChrome` call anywhere in `lib/`). Its eight call sites
 are the root scrollables of `about_screen.dart:31` (on the child `Padding` — a
 `SingleChildScrollView` never gets the compensation at all),
 `game_types_screen.dart:43`,
-`home_screen.dart:91` (the drawer) and `:335`, `player_stats_screen.dart:83`,
+`home_screen.dart:91` (the drawer) and `:335`, `player_stats_screen.dart:119`, `player_card_screen.dart:110`,
 `players_screen.dart:61`, and in `ranking_screen.dart` on the *Play again* button's
 `Padding` under the list, the last thing above the navigation bar. Only the bottom edge is compensated:
 `Scaffold` drops the top padding for a body under an `AppBar`
@@ -295,7 +333,8 @@ points of the type's elimination threshold is orange — except on the first ste
 filled block keeps `onPrimary` — and an eliminated player is faded and struck through. Actions: **Play again**
 (`playAgain`) and **Analysis** (`GameAnalysisScreen`), the latter only when
 `BackendProvider.isConfigured` — Play again then spans the row. Unlike the board's menu, a
-cached analysis alone does not bring the button back. Every path that finishes a game —
+cached analysis alone does not bring the button back. The app bar's share action
+(`ShareResultButton`) sends the standings as text. Every path that finishes a game —
 rule, board menu, home menu — calls `ReviewPromptService.onGameFinished` once, on the
 transition `setGameFinished` reports.
 
@@ -304,7 +343,9 @@ transition `setGameFinished` reports.
 `RankingScreen` (`lib/screens/ranking_screen.dart`), from the board's leaderboard button,
 shows an open game with the same `RankedPlayers` as the end screen, so the two cannot rank
 differently; above it, the win rule is one line (`rankingSummary`) under the *Ranking*
-title, and **Play again** stays at the bottom. No headline: the game is not over.
+title, and **Play again** stays at the bottom. No headline: the game is not over. The app
+bar shares the standings as text, as on the end screen; the analysis screen's share adds the
+commentary, and is offered only once there is one.
 
 #### The board
 
@@ -497,6 +538,23 @@ not "fix" it by hardcoding a codepoint.
   depending on whether it was finished. Both now build from `GameRanking` / `RankedPlayers`;
   the banner became a single line under the title
   (`wip/done/2026-09-19-game-ranking-ignores-the-new-theme.md`).
+- **The player statistics became a leaderboard and a player card** (2026-09-19,
+  `feat/player-stats-leaderboard`). The screen was one collapsed `ExpansionTile` per player
+  with "N games" as the only visible figure, avatars in the stored colour or `Colors.blue`
+  — Lionel and Laurent both a cyan "L" — and nothing to compare players by. From four
+  directions drawn, the user chose the leaderboard with the player card, both scoped to one
+  game type. Only *finished* games count (the old aggregate counted open ones too), and a
+  finished game with no score is left out rather than made a win for everyone. The rank
+  chart is a `CustomPainter` because one chart does not justify a dependency and its licence
+  entry. The five-game threshold keeps one lucky evening from topping the board.
+- **Sharing a result is text, and goes through the system share sheet (2026-09-19).** A
+  finished game could not leave the phone, so the players around the table had nothing to
+  pass on and the app nothing to advertise it (`wip/done/2026-09-16-no-way-to-share-a-game-result.md`).
+  The text is built from the same `GameRanking` as the screen, so the message cannot rank
+  differently from the podium; it names the app with its plain Play URL and no tracking
+  parameter. Being user-initiated through the platform sheet, it is not an outbound data flow
+  of the app and the Data Safety answers do not move ([[Documentation]]). A rendered image of
+  the standings is a later change (`wip/todo_nr/2026-09-19-share-result-as-image.md`).
 - **2026-09-19 — New game redrawn in direction A** (`feat/new-game-screen`). The form was
   the one screen between home and the end of a game the refresh had not reached, and it
   coloured players by their stored `colorValue` while the board used the display-time

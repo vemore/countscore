@@ -1,5 +1,14 @@
 # A finished game cannot be shared anywhere, so the app never advertises itself
 
+**Status:** done (2026-09-19) — closed by feat/share-game-result. A share action on the end
+screen, the in-game ranking and the analysis (`ShareResultButton`) hands a localized text —
+date, game type · rounds · win rule, standings from `GameRanking`, the commentary on the
+analysis, the app's name and its plain Play URL — to the system share sheet via `share_plus`;
+the builder is `lib/utils/game_result_share.dart`, unit-tested on a lowest-wins and a
+highest-wins game. No new permission in the merged release manifest; the Data Safety answers do
+not move (dated note in `PLAY_STORE_DATA_SAFETY.md`). The rendered image is
+`wip/todo_nr/2026-09-19-share-result-as-image.md`.
+
 - **Noted:** 2026-09-16 — while looking for why 10 installs have produced 0 reviews
 - **Theme:** growth
 - **Area:** app

@@ -1985,14 +1985,257 @@
       }
     }
   },
+
+  "statsBestWinRate": "Meilleur taux de victoire",
+  "@statsBestWinRate": {
+    "description": "Title of the leaderboard's hero card: the player with the best win rate"
+  },
+
+  "statsWinsOutOfGames": "{wins, plural, =0{Aucune victoire sur {games}} one{{wins} victoire sur {games}} other{{wins} victoires sur {games}}}",
+  "@statsWinsOutOfGames": {
+    "description": "Hero card detail: wins out of games of the selected game type",
+    "placeholders": {
+      "wins": {
+        "type": "int",
+        "example": "7"
+      },
+      "games": {
+        "type": "int",
+        "example": "17"
+      }
+    }
+  },
+
+  "statsColumnPlayer": "Joueur",
+  "@statsColumnPlayer": {
+    "description": "Leaderboard column header above the players"
+  },
+
+  "statsColumnGames": "Parties",
+  "@statsColumnGames": {
+    "description": "Leaderboard column header above the number of games"
+  },
+
+  "statsUnranked": "{count, plural, one{{count} partie · hors classement} other{{count} parties · hors classement}}",
+  "@statsUnranked": {
+    "description": "Leaderboard row of a player with too few finished games to be ranked",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+
+  "statsLeaderboardFooter": "{count, plural, one{Classement à partir de {count} partie terminée. Touchez un joueur pour voir sa fiche.} other{Classement à partir de {count} parties terminées. Touchez un joueur pour voir sa fiche.}}",
+  "@statsLeaderboardFooter": {
+    "description": "Note under the leaderboard: the ranking threshold and how to open a player card",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+
+  "statsGamesLabel": "{count, plural, one{partie} other{parties}}",
+  "@statsGamesLabel": {
+    "description": "Player card tile: label under the number of games",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "18"
+      }
+    }
+  },
+
+  "statsWinsLabel": "{count, plural, one{victoire} other{victoires}}",
+  "@statsWinsLabel": {
+    "description": "Player card tile: label under the number of wins",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+
+  "statsAverageRank": "rang moyen",
+  "@statsAverageRank": {
+    "description": "Player card tile: label under the average final place"
+  },
+
+  "statsRankChartTitle": "{count, plural, one{Rang, dernière partie} other{Rang, {count} dernières parties}}",
+  "@statsRankChartTitle": {
+    "description": "Player card: title of the chart of the final place over the last games",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+
+  "statsTrendImproving": "en progrès",
+  "@statsTrendImproving": {
+    "description": "Player card: the final places are getting better"
+  },
+
+  "statsTrendDeclining": "en recul",
+  "@statsTrendDeclining": {
+    "description": "Player card: the final places are getting worse"
+  },
+
+  "statsTrendSteady": "régulier",
+  "@statsTrendSteady": {
+    "description": "Player card: the final places neither improve nor decline"
+  },
+
+  "statsRankOrdinal": "{rank, select, 1{1er} other{{rank}e}}",
+  "@statsRankOrdinal": {
+    "description": "Short ordinal of a final place, on the rank chart axis (1st, 4th). The place is passed as a string so that a select can pick the irregular forms.",
+    "placeholders": {
+      "rank": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+
+  "statsWinStreak": "{count, plural, =0{Pas de série en cours} one{Série : {count} victoire} other{Série : {count} victoires}}",
+  "@statsWinStreak": {
+    "description": "Player card chip: the current run of consecutive wins",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+
+  "statsRecord": "Record : {total}",
+  "@statsRecord": {
+    "description": "Player card chip: the best final total on this game type",
+    "placeholders": {
+      "total": {
+        "type": "int",
+        "example": "34"
+      }
+    }
+  },
+
+  "statsOnGameType": "Sur {gameType}",
+  "@statsOnGameType": {
+    "description": "Player card section header: figures on one game type",
+    "placeholders": {
+      "gameType": {
+        "type": "String",
+        "example": "ZapZap"
+      }
+    }
+  },
+
+  "statsAverageTotal": "Total final moyen",
+  "@statsAverageTotal": {
+    "description": "Player card row: the mean final total"
+  },
+
+  "statsBestTotal": "Meilleur total final",
+  "@statsBestTotal": {
+    "description": "Player card row: the best final total (lowest when the lowest score wins)"
+  },
+
+  "statsMostBeaten": "Adversaire le plus battu",
+  "@statsMostBeaten": {
+    "description": "Player card row: the opponent this player most often finished ahead of"
+  },
+
+  "statsOpenPlayerCard": "voir la fiche",
+  "@statsOpenPlayerCard": {
+    "description": "Accessibility hint on a leaderboard row: opens the player's card"
+  },
+
+  "shareResult": "Partager le résultat",
+  "@shareResult": {
+    "description": "Tooltip of the share button on the game-end and ranking screens: opens the system share sheet with the standings as text"
+  },
+
+  "shareAnalysis": "Partager l'analyse",
+  "@shareAnalysis": {
+    "description": "Tooltip of the share button on the game analysis screen: shares the standings and the commentary as text"
+  },
+
+  "shareResultSubject": "Résultat : {gameName}",
+  "@shareResultSubject": {
+    "description": "Subject of the shared result (used by e-mail apps and the web e-mail fallback)",
+    "placeholders": {
+      "gameName": {
+        "type": "String",
+        "example": "ZapZap du 19/09"
+      }
+    }
+  },
+
+  "shareResultTitle": "Partie du {date}",
+  "@shareResultTitle": {
+    "description": "First line of the shared result text: when the game was played",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "19 sept. 2026"
+      }
+    }
+  },
+
+  "shareResultStanding": "{rank}. {name} : {points, plural, one{{points} point} other{{points} points}}",
+  "@shareResultStanding": {
+    "description": "One line of the standings in the shared result text: place, player name, total",
+    "placeholders": {
+      "rank": {
+        "type": "int",
+        "example": "1"
+      },
+      "name": {
+        "type": "String",
+        "example": "Alice"
+      },
+      "points": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+
+  "shareResultFooter": "Scores comptés avec {appName} : {url}",
+  "@shareResultFooter": {
+    "description": "Last line of the shared result text: names the app and links to its Play Store listing (no tracking parameter)",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "CountScore"
+      },
+      "url": {
+        "type": "String",
+        "example": "https://play.google.com/store/apps/details?id=com.vemore.countscore"
+      }
+    }
+  },
+
+  "shareFailed": "Le partage n'a pas pu s'ouvrir",
+  "@shareFailed": {
+    "description": "Snackbar when the system share sheet (or the web fallback) could not be opened"
+  },
+
   "newGameNameLabel": "Nom",
   "@newGameNameLabel": {
     "description": "Overline above the game name field on the New game screen (shown in capitals)"
   },
+
   "newGameGameLabel": "Jeu",
   "@newGameGameLabel": {
     "description": "Overline above the game-type tiles on the New game screen (shown in capitals)"
   },
+
   "newGameAllGames": "Tous les jeux ({count})",
   "@newGameAllGames": {
     "description": "Link that opens the full list of game types; count is how many exist",
@@ -2003,22 +2246,27 @@
       }
     }
   },
+
   "newGamePlayersLabel": "Joueurs · ordre de jeu",
   "@newGamePlayersLabel": {
     "description": "Overline above the players on the New game screen: their order is the seat order (shown in capitals)"
   },
+
   "newGameDragToReorder": "glisser pour réordonner",
   "@newGameDragToReorder": {
     "description": "Hint next to the players overline: drag a row by its handle to change the seat order"
   },
+
   "newGameDealer": "donne",
   "@newGameDealer": {
     "description": "Small badge on the first seat: this player deals (plays first)"
   },
+
   "newGameAddPlayer": "Ajouter un joueur",
   "@newGameAddPlayer": {
     "description": "Dashed row under the players that opens the \"who's playing\" sheet"
   },
+
   "newGameStart": "{count, plural, =0{Commencer} =1{Commencer · 1 joueur} other{Commencer · {count} joueurs}}",
   "@newGameStart": {
     "description": "Primary button that creates the game and opens its board",
@@ -2029,18 +2277,22 @@
       }
     }
   },
+
   "whoIsPlayingTitle": "Qui joue ?",
   "@whoIsPlayingTitle": {
     "description": "Title of the sheet where players are picked for a new game"
   },
+
   "whoIsPlayingSearchHint": "Nom, ou nouveau joueur",
   "@whoIsPlayingSearchHint": {
     "description": "Hint of the search field that filters known players, or names a new one"
   },
+
   "whoIsPlayingFrequent": "Joue souvent avec vous",
   "@whoIsPlayingFrequent": {
     "description": "Overline above the known players, most frequent first (shown in capitals)"
   },
+
   "whoIsPlayingSameAs": "Mêmes joueurs que « {gameName} »",
   "@whoIsPlayingSameAs": {
     "description": "Action that picks the players of the last game, in the same order",
@@ -2051,6 +2303,7 @@
       }
     }
   },
+
   "whoIsPlayingCreate": "Créer « {name} »",
   "@whoIsPlayingCreate": {
     "description": "Action that creates a new player with the name typed in the search field",
@@ -2061,6 +2314,7 @@
       }
     }
   },
+
   "whoIsPlayingConfirm": "{count, plural, =0{Valider} =1{Ajouter 1 joueur} other{Ajouter {count} joueurs}}",
   "@whoIsPlayingConfirm": {
     "description": "Button that closes the sheet and seats the chosen players; count is how many are chosen",
@@ -2071,6 +2325,7 @@
       }
     }
   },
+
   "defaultGameName": "Partie {number}",
   "@defaultGameName": {
     "description": "Name the New game screen suggests for the very first game; later games count on from the previous game's name",

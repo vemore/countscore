@@ -568,19 +568,69 @@
   "groupUsageTitle": "Consumo del LLM este mes",
   "groupUsageAmount": "{used} gastados de {budget}",
   "groupUsageResets": "Se reinicia el {date}",
+  "statsBestWinRate": "Mejor porcentaje de victorias",
+  "statsWinsOutOfGames": "{wins, plural, =0{Ninguna victoria de {games}} one{{wins} victoria de {games}} other{{wins} victorias de {games}}}",
+  "statsColumnPlayer": "Jugador",
+  "statsColumnGames": "Partidas",
+  "statsUnranked": "{count, plural, one{{count} partida · aún sin clasificar} other{{count} partidas · aún sin clasificar}}",
+  "statsLeaderboardFooter": "{count, plural, one{Clasificación a partir de {count} partida terminada. Toca un jugador para ver su ficha.} other{Clasificación a partir de {count} partidas terminadas. Toca un jugador para ver su ficha.}}",
+  "statsGamesLabel": "{count, plural, one{partida} other{partidas}}",
+  "statsWinsLabel": "{count, plural, one{victoria} other{victorias}}",
+  "statsAverageRank": "puesto medio",
+  "statsRankChartTitle": "{count, plural, one{Puesto, última partida} other{Puesto, últimas {count} partidas}}",
+  "statsTrendImproving": "mejorando",
+  "statsTrendDeclining": "en retroceso",
+  "statsTrendSteady": "estable",
+  "statsRankOrdinal": "{rank}.º",
+  "statsWinStreak": "{count, plural, =0{Sin racha en curso} one{Racha: {count} victoria} other{Racha: {count} victorias}}",
+  "statsRecord": "Récord: {total}",
+  "statsOnGameType": "En {gameType}",
+  "statsAverageTotal": "Total final medio",
+  "statsBestTotal": "Mejor total final",
+  "statsMostBeaten": "Rival más derrotado",
+  "statsOpenPlayerCard": "ver la ficha",
+
+  "shareResult": "Compartir el resultado",
+
+  "shareAnalysis": "Compartir el análisis",
+
+  "shareResultSubject": "Resultado: {gameName}",
+
+  "shareResultTitle": "Partida del {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} punto} other{{points} puntos}}",
+
+  "shareResultFooter": "Puntuaciones llevadas con {appName}: {url}",
+
+  "shareFailed": "No se pudo abrir el menú para compartir",
+
   "newGameNameLabel": "Nombre",
+
   "newGameGameLabel": "Juego",
+
   "newGameAllGames": "Todos los juegos ({count})",
+
   "newGamePlayersLabel": "Jugadores · orden de juego",
+
   "newGameDragToReorder": "arrastra para reordenar",
+
   "newGameDealer": "reparte",
+
   "newGameAddPlayer": "Añadir un jugador",
+
   "newGameStart": "{count, plural, =0{Empezar} =1{Empezar · 1 jugador} other{Empezar · {count} jugadores}}",
+
   "whoIsPlayingTitle": "¿Quién juega?",
+
   "whoIsPlayingSearchHint": "Nombre, o jugador nuevo",
+
   "whoIsPlayingFrequent": "Juega a menudo contigo",
+
   "whoIsPlayingSameAs": "Los mismos jugadores que «{gameName}»",
+
   "whoIsPlayingCreate": "Crear «{name}»",
+
   "whoIsPlayingConfirm": "{count, plural, =0{Listo} =1{Añadir 1 jugador} other{Añadir {count} jugadores}}",
+
   "defaultGameName": "Partida {number}"
 }

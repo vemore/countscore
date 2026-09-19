@@ -1164,6 +1164,160 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get statsBestWinRate => '最高胜率';
+
+  @override
+  String statsWinsOutOfGames(int wins, int games) {
+    String _temp0 = intl.Intl.pluralLogic(
+      wins,
+      locale: localeName,
+      other: '$games 局 $wins 胜',
+      zero: '$games 局未胜',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsColumnPlayer => '玩家';
+
+  @override
+  String get statsColumnGames => '局数';
+
+  @override
+  String statsUnranked(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 局 · 暂未排名',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsLeaderboardFooter(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '完成 $count 局后参与排名。点按玩家查看其卡片。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsGamesLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '局',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsWinsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '胜',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsAverageRank => '平均名次';
+
+  @override
+  String statsRankChartTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '名次，最近 $count 局',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsTrendImproving => '上升中';
+
+  @override
+  String get statsTrendDeclining => '下滑中';
+
+  @override
+  String get statsTrendSteady => '稳定';
+
+  @override
+  String statsRankOrdinal(String rank) {
+    return '第$rank';
+  }
+
+  @override
+  String statsWinStreak(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '连胜 $count 局',
+      zero: '暂无连胜',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsRecord(int total) {
+    return '纪录：$total';
+  }
+
+  @override
+  String statsOnGameType(String gameType) {
+    return '$gameType 战绩';
+  }
+
+  @override
+  String get statsAverageTotal => '平均最终总分';
+
+  @override
+  String get statsBestTotal => '最佳最终总分';
+
+  @override
+  String get statsMostBeaten => '最常击败的对手';
+
+  @override
+  String get statsOpenPlayerCard => '打开玩家卡片';
+
+  @override
+  String get shareResult => '分享结果';
+
+  @override
+  String get shareAnalysis => '分享分析';
+
+  @override
+  String shareResultSubject(String gameName) {
+    return '结果：$gameName';
+  }
+
+  @override
+  String shareResultTitle(String date) {
+    return '$date 的对局';
+  }
+
+  @override
+  String shareResultStanding(int rank, String name, int points) {
+    String _temp0 = intl.Intl.pluralLogic(
+      points,
+      locale: localeName,
+      other: '$points 分',
+    );
+    return '$rank. $name — $_temp0';
+  }
+
+  @override
+  String shareResultFooter(String appName, String url) {
+    return '用 $appName 记分：$url';
+  }
+
+  @override
+  String get shareFailed => '无法打开分享';
+
+  @override
   String get newGameNameLabel => '名称';
 
   @override

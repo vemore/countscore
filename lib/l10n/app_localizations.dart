@@ -2135,6 +2135,174 @@ abstract class AppLocalizations {
   /// **'Remise à zéro le {date}'**
   String groupUsageResets(String date);
 
+  /// Title of the leaderboard's hero card: the player with the best win rate
+  ///
+  /// In fr, this message translates to:
+  /// **'Meilleur taux de victoire'**
+  String get statsBestWinRate;
+
+  /// Hero card detail: wins out of games of the selected game type
+  ///
+  /// In fr, this message translates to:
+  /// **'{wins, plural, =0{Aucune victoire sur {games}} one{{wins} victoire sur {games}} other{{wins} victoires sur {games}}}'**
+  String statsWinsOutOfGames(int wins, int games);
+
+  /// Leaderboard column header above the players
+  ///
+  /// In fr, this message translates to:
+  /// **'Joueur'**
+  String get statsColumnPlayer;
+
+  /// Leaderboard column header above the number of games
+  ///
+  /// In fr, this message translates to:
+  /// **'Parties'**
+  String get statsColumnGames;
+
+  /// Leaderboard row of a player with too few finished games to be ranked
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, one{{count} partie · hors classement} other{{count} parties · hors classement}}'**
+  String statsUnranked(int count);
+
+  /// Note under the leaderboard: the ranking threshold and how to open a player card
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, one{Classement à partir de {count} partie terminée. Touchez un joueur pour voir sa fiche.} other{Classement à partir de {count} parties terminées. Touchez un joueur pour voir sa fiche.}}'**
+  String statsLeaderboardFooter(int count);
+
+  /// Player card tile: label under the number of games
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, one{partie} other{parties}}'**
+  String statsGamesLabel(int count);
+
+  /// Player card tile: label under the number of wins
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, one{victoire} other{victoires}}'**
+  String statsWinsLabel(int count);
+
+  /// Player card tile: label under the average final place
+  ///
+  /// In fr, this message translates to:
+  /// **'rang moyen'**
+  String get statsAverageRank;
+
+  /// Player card: title of the chart of the final place over the last games
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, one{Rang, dernière partie} other{Rang, {count} dernières parties}}'**
+  String statsRankChartTitle(int count);
+
+  /// Player card: the final places are getting better
+  ///
+  /// In fr, this message translates to:
+  /// **'en progrès'**
+  String get statsTrendImproving;
+
+  /// Player card: the final places are getting worse
+  ///
+  /// In fr, this message translates to:
+  /// **'en recul'**
+  String get statsTrendDeclining;
+
+  /// Player card: the final places neither improve nor decline
+  ///
+  /// In fr, this message translates to:
+  /// **'régulier'**
+  String get statsTrendSteady;
+
+  /// Short ordinal of a final place, on the rank chart axis (1st, 4th). The place is passed as a string so that a select can pick the irregular forms.
+  ///
+  /// In fr, this message translates to:
+  /// **'{rank, select, 1{1er} other{{rank}e}}'**
+  String statsRankOrdinal(String rank);
+
+  /// Player card chip: the current run of consecutive wins
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Pas de série en cours} one{Série : {count} victoire} other{Série : {count} victoires}}'**
+  String statsWinStreak(int count);
+
+  /// Player card chip: the best final total on this game type
+  ///
+  /// In fr, this message translates to:
+  /// **'Record : {total}'**
+  String statsRecord(int total);
+
+  /// Player card section header: figures on one game type
+  ///
+  /// In fr, this message translates to:
+  /// **'Sur {gameType}'**
+  String statsOnGameType(String gameType);
+
+  /// Player card row: the mean final total
+  ///
+  /// In fr, this message translates to:
+  /// **'Total final moyen'**
+  String get statsAverageTotal;
+
+  /// Player card row: the best final total (lowest when the lowest score wins)
+  ///
+  /// In fr, this message translates to:
+  /// **'Meilleur total final'**
+  String get statsBestTotal;
+
+  /// Player card row: the opponent this player most often finished ahead of
+  ///
+  /// In fr, this message translates to:
+  /// **'Adversaire le plus battu'**
+  String get statsMostBeaten;
+
+  /// Accessibility hint on a leaderboard row: opens the player's card
+  ///
+  /// In fr, this message translates to:
+  /// **'voir la fiche'**
+  String get statsOpenPlayerCard;
+
+  /// Tooltip of the share button on the game-end and ranking screens: opens the system share sheet with the standings as text
+  ///
+  /// In fr, this message translates to:
+  /// **'Partager le résultat'**
+  String get shareResult;
+
+  /// Tooltip of the share button on the game analysis screen: shares the standings and the commentary as text
+  ///
+  /// In fr, this message translates to:
+  /// **'Partager l\'analyse'**
+  String get shareAnalysis;
+
+  /// Subject of the shared result (used by e-mail apps and the web e-mail fallback)
+  ///
+  /// In fr, this message translates to:
+  /// **'Résultat : {gameName}'**
+  String shareResultSubject(String gameName);
+
+  /// First line of the shared result text: when the game was played
+  ///
+  /// In fr, this message translates to:
+  /// **'Partie du {date}'**
+  String shareResultTitle(String date);
+
+  /// One line of the standings in the shared result text: place, player name, total
+  ///
+  /// In fr, this message translates to:
+  /// **'{rank}. {name} : {points, plural, one{{points} point} other{{points} points}}'**
+  String shareResultStanding(int rank, String name, int points);
+
+  /// Last line of the shared result text: names the app and links to its Play Store listing (no tracking parameter)
+  ///
+  /// In fr, this message translates to:
+  /// **'Scores comptés avec {appName} : {url}'**
+  String shareResultFooter(String appName, String url);
+
+  /// Snackbar when the system share sheet (or the web fallback) could not be opened
+  ///
+  /// In fr, this message translates to:
+  /// **'Le partage n\'a pas pu s\'ouvrir'**
+  String get shareFailed;
+
   /// Overline above the game name field on the New game screen (shown in capitals)
   ///
   /// In fr, this message translates to:
