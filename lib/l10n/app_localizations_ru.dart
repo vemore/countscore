@@ -1115,6 +1115,20 @@ class AppLocalizationsRu extends AppLocalizations {
   String get whoStartsAgain => 'Выбрать заново';
 
   @override
+  String get diceRoller => 'Бросить кубики';
+
+  @override
+  String get diceCount => 'Количество кубиков';
+
+  @override
+  String get diceRollAgain => 'Бросить ещё раз';
+
+  @override
+  String diceTotal(int total) {
+    return 'Сумма: $total';
+  }
+
+  @override
   String get resumeGame => 'Продолжить';
 
   @override
