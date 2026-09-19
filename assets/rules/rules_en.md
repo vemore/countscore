@@ -623,9 +623,9 @@ card, **2** for multiples of 5, **3** for multiples of 10, **5** for doubles suc
 
 ## End of the game
 
-Rounds follow one another, and the lowest total wins. CountScore eliminates a player as
-soon as they exceed **66 bull heads**. The original rule ends the game as soon as a player
-has 66: to follow it to the letter, set the threshold to 65 in the game type.
+Rounds follow one another, and the lowest total wins. As in the original rule, CountScore
+eliminates a player as soon as they reach **66 bull heads**: the game type's threshold is 65,
+and a total over it is out.
 
 <!--@qwirkle-->
 A tile game for 2 to 4 players, with **108 tiles**: six shapes in six colours, each tile in

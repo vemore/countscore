@@ -446,35 +446,10 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
               ? gameTypeProvider.getGameTypeById(gameProvider.currentGame!.gameTypeId!)
               : null;
 
-          // Helper function to check if player is eliminated based on game type conditions
-          bool isPlayerEliminated(int playerTotal) {
-            if (gameType?.playerDeadConditionType == null || gameType?.playerDeadThreshold == null) {
-              return false;
-            }
-            switch (gameType!.playerDeadConditionType!) {
-              case PlayerDeadConditionType.over:
-                return playerTotal > gameType.playerDeadThreshold!;
-              case PlayerDeadConditionType.under:
-                return playerTotal < gameType.playerDeadThreshold!;
-            }
-          }
-
           if (players.isEmpty) {
             return Center(
               child: Text(l10n.noPlayersInGame),
             );
-          }
-
-          // Near the threshold: within 20 points of being out, not out yet.
-          bool isNearThreshold(int total) {
-            final threshold = gameType?.playerDeadThreshold;
-            final condition = gameType?.playerDeadConditionType;
-            if (threshold == null || condition == null) return false;
-            if (isPlayerEliminated(total)) return false;
-            return switch (condition) {
-              PlayerDeadConditionType.over => total >= threshold - 20,
-              PlayerDeadConditionType.under => total <= threshold + 20,
-            };
           }
 
           // No leader, no place, until a score has been entered.
@@ -493,8 +468,9 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                   gameProvider.currentGame?.isLowestScoreWins ?? false,
             ),
             colors: playerColorsById(players),
-            isEliminated: isPlayerEliminated,
-            isNearThreshold: isNearThreshold,
+            isEliminated: (total) => gameType?.isEliminated(total) ?? false,
+            isNearThreshold: (total) =>
+                gameType?.isNearElimination(total) ?? false,
             onRoundTap: (round) =>
                 _showCommentDialog(context, gameProvider, round),
             onCellTap: (player, round) =>
@@ -531,18 +507,6 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
         },
       ),
     );
-  }
-
-  bool _isPlayerEliminatedByTotal(int playerTotal, GameType gameType) {
-    if (gameType.playerDeadConditionType == null || gameType.playerDeadThreshold == null) {
-      return false;
-    }
-    switch (gameType.playerDeadConditionType!) {
-      case PlayerDeadConditionType.over:
-        return playerTotal > gameType.playerDeadThreshold!;
-      case PlayerDeadConditionType.under:
-        return playerTotal < gameType.playerDeadThreshold!;
-    }
   }
 
   bool _checkGameOverCondition(GameProvider gameProvider, GameType? gameType) {
@@ -880,7 +844,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
         ? players
         : [
             for (final p in players)
-              if (!_isPlayerEliminatedByTotal(before[p.id]!, gameType)) p
+              if (!gameType.isEliminated(before[p.id]!)) p
           ];
     final scores = await ScoreKeypadSheet.round(
       context,
@@ -935,9 +899,8 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     var someoneOut = false;
     setState(() {
       for (final e in before.entries) {
-        final was = _isPlayerEliminatedByTotal(e.value, gameType);
-        final now = _isPlayerEliminatedByTotal(
-            gameProvider.getPlayerTotal(e.key), gameType);
+        final was = gameType.isEliminated(e.value);
+        final now = gameType.isEliminated(gameProvider.getPlayerTotal(e.key));
         if (!was && now && _eliminatedPlayers.add(e.key)) {
           someoneOut = true;
         } else if (was && !now) {

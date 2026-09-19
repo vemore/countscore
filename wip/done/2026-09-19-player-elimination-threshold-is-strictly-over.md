@@ -1,5 +1,7 @@
 # 6 qui prend eliminates a player one point later than its rule says
 
+**Status:** done (2026-09-19) — closed by fix/elimination-and-crown. The board's three copies of the elimination test are gone: board, ranking and end screen call `GameType.isEliminated` / `isNearElimination`. `GameType.sixNimmt()` seeds 65 (new databases only; an existing row keeps 66), and the ten `six_nimmt` rules texts say a player is out on reaching 66. Tested in `test/drift/six_nimmt_seed_test.dart` and `test/models_test.dart`.
+
 - **Noted:** 2026-09-19 — writing the long-tail rulesets in feat/game-rules-twelve
 - **Theme:** game-types
 - **Area:** app
