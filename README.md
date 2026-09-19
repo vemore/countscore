@@ -267,8 +267,9 @@ CI — it calls the production endpoint. See `.llmwiki/Testing.md`.
 - **App** — an [`osv-scanner`](https://github.com/google/osv-scanner) audit of every package
   in `pubspec.lock` that fails on any advisory (ignores, each with a `wip/` entry, go in
   [`.github/osv-scanner.toml`](.github/osv-scanner.toml)), then checks that the two binaries committed under `web/` match the versions
-  `pubspec.lock` resolves ([`scripts/web_binaries.sh`](scripts/web_binaries.sh)), then
-  codegen, `flutter analyze`, `flutter test`, release web build.
+  `pubspec.lock` resolves ([`scripts/web_binaries.sh`](scripts/web_binaries.sh)) and that
+  `THIRD_PARTY_LICENSES.md` matches `pubspec.yaml`
+  ([`scripts/third_party_licenses.py`](scripts/third_party_licenses.py)), then codegen, `flutter analyze`, `flutter test`, release web build.
 - **Android** — debug APK from a clean checkout, as a fresh-clone build proof, plus an
   assertion that the release manifest still declares `INTERNET`.
 - **Sync** — the backend on a real Postgres, then the two-device group sync test against it.
@@ -277,7 +278,8 @@ CI — it calls the production endpoint. See `.llmwiki/Testing.md`.
 for the backend (`uv`), the app (`pub`) and the GitHub Actions. It only proposes the
 dependencies *written in* `pubspec.yaml`, so
 [`.github/workflows/deps.yml`](.github/workflows/deps.yml) runs `flutter pub upgrade`
-monthly for the transitive half, refreshes the committed `web/` binaries to match, runs the
+monthly for the transitive half, refreshes the committed `web/` binaries and
+`THIRD_PARTY_LICENSES.md` to match, runs the
 gates and pushes a `chore/deps-<date>` branch when anything moved.
 
 Both of those cadences are load-bearing and both are triggered by a `schedule:` alone, which
@@ -310,7 +312,9 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 CountScore uses several open-source packages. All dependencies use permissive licenses (MIT
 and BSD variants); the bundled Nunito font is under the SIL Open Font License 1.1. See [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) for complete
-attribution, or the built-in Flutter license viewer in the app.
+attribution, or the built-in Flutter license viewer in the app. That file is generated from
+`pubspec.yaml` by `scripts/third_party_licenses.py` (after `flutter pub get`), and CI fails
+when the committed copy differs.
 
 ## Privacy
 
