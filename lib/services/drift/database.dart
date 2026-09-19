@@ -113,6 +113,15 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
+  /// Seeds the built-in types, skipping any whose `builtin_key` is already
+  /// present, a tombstone included, so a deleted shared type is not
+  /// resurrected.
+  ///
+  /// Idempotent because `onCreate` can run on a database that already holds
+  /// them: a PWA whose `user_version` never reached IndexedDB (see
+  /// `PersistenceFlushInterceptor`) reads version 0 on every load. Every other
+  /// step of `onCreate` is `IF NOT EXISTS` already, so such a browser now
+  /// completes `onCreate`, gets its version written, and recovers.
   Future<void> _insertDefaultGameTypes() async {
     final now = DateTime.now().millisecondsSinceEpoch;
     for (final gt in GameType.defaultGameTypes()) {
@@ -123,8 +132,12 @@ class AppDatabase extends _$AppDatabase {
       final cols = m.keys.join(', ');
       final ph = List.filled(m.length, '?').join(', ');
       await customInsert(
-        'INSERT INTO game_types ($cols) VALUES ($ph)',
-        variables: m.values.map<Variable>((v) => Variable(v)).toList(),
+        'INSERT INTO game_types ($cols) SELECT $ph '
+        'WHERE NOT EXISTS (SELECT 1 FROM game_types WHERE builtin_key = ?)',
+        variables: [
+          ...m.values.map<Variable>((v) => Variable(v)),
+          Variable(gt.builtinKey),
+        ],
       );
     }
   }

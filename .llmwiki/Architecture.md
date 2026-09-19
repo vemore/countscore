@@ -2,7 +2,7 @@
 
 > Scope: what CountScore is made of and how far each part has got.
 > Related: [[MobileApp]] · [[Backend]] · [[Web]] · [[Sync]] · [[Deployment]] · [[KnownLimits]]
-> Updated: 2026-09-13
+> Updated: 2026-09-19
 
 ## Facts
 
@@ -52,6 +52,10 @@ CountScore Mobile            CountScore Web
 > **Status: Outdated** (2026-09-13) — the sync client exists (`lib/services/sync/`,
 > `lib/providers/group_provider.dart`): groups, per-game sharing, push/pull, WebSocket, on
 > Android and the PWA. See [[Sync]].
+
+> **Status: Outdated** (2026-09-19) — row 8 and the diagram above: the PWA's database is in
+> IndexedDB (drift's `sharedIndexedDb`), not OPFS, since no deployment is cross-origin
+> isolated. See [[Web]] § Persistence.
 
 The server side of milestones 5–7 is complete, but **the Flutter client for sync does not
 exist**: `sync_service.dart` is designed and referenced but is not on disk.
