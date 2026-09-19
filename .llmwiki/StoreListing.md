@@ -4,7 +4,7 @@
 > assets behind it. The Console walkthrough is `PUBLISHING.md`; the publishing mechanism is
 > [[Release]] and the `release-android` skill.
 > Related: [[Release]] · [[I18n]] · [[Documentation]] · [[KnownLimits]]
-> Updated: 2026-09-18
+> Updated: 2026-09-19
 
 ## Facts
 
@@ -58,6 +58,16 @@ first, so `listing --graphics` publishes the composed set with no change to the 
   the nine others are translated from them. **Not yet on Play**: that is `play_publish.py
   listing --graphics --commit`, on the user's go. The screens themselves stay French in every
   locale: the captures are shared, only the caption is localized.
+
+### Promo video
+
+`store_listing/<locale>/video.txt` holds the Listing `video` field, a YouTube URL, which
+`play_publish.py listing` sends when the file exists (absent: the field is not sent, and Play
+keeps what it has). All ten locales point at the same **unlisted** video,
+`https://www.youtube.com/watch?v=WnYxasc4dV0` (24 s, English narration and UI, embedding
+allowed), rendered by the `/brag` plugin into the ignored `brag-output/`: the teal board
+lanes, the keypad with its "0 ZapZap" key, the end-screen podium and the analysis voices,
+rebuilt in HTML from the widgets rather than captured.
 
 ### Published locales (10, since 2026-09-16)
 
@@ -196,6 +206,10 @@ store:
 
 ## Decisions & History
 
+- **One English promo video for every locale (2026-09-19).** The user's call: a video in a
+  language the visitor may not read still shows the app working, which ten empty slots do
+  not. Unlisted, because the listing is its only audience. A localized cut replaces the URL in
+  the locale's `video.txt` alone.
 - **Screenshots are composed, per locale, from one set of raw captures (2026-09-18).** Play
   refuses the raw Pixel captures (2.22 ratio, alpha), and a carousel of bare UI says nothing
   at thumbnail size, where the decision to tap is made. 1080×1920 was decided at the
