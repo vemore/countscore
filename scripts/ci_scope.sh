@@ -46,7 +46,8 @@ while IFS= read -r path; do
         # `compose_screenshots.py --check`, which refuse a committed screenshot Play
         # would refuse or the composer did not write. Before the documentation rule,
         # which would otherwise swallow the store_listing/ ones. A glob's `*` crosses
-        # `/`, so the first pattern also takes assets/screenshots/phone/.
+        # `/`, so the first pattern also takes assets/screenshots/ — where a PNG, the
+        # deleted shared raw set coming back, turns the composer's tests red.
         store_listing/*/screenshots/*|store_listing/*/raw/*|store_listing/*/screenshot_captions.txt|scripts/compose_screenshots.py|scripts/test_compose_screenshots.py)
             backend=true ;;
 

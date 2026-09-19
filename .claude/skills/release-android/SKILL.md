@@ -234,19 +234,23 @@ second list to drift from. Release notes are the other half and stay on `NOTES_L
 
 ```
 store_listing/
-  assets/                          # shared fallback: feature_graphic.png, screenshots/phone/
+  assets/                          # shared fallback: feature_graphic.png only
   <locale>/                        # a locale iff it holds title.txt
     title.txt  short_description.txt  full_description.txt
     video.txt                      # optional: a YouTube URL -> the Listing `video` field
     feature_graphic.png            # optional: overrides assets/feature_graphic.png
-    screenshots/phone/*.png        # optional: overrides assets/screenshots/phone/
+    raw/*.png                      # the locale's raw captures (scripts/capture_screenshots.sh)
+    screenshot_captions.txt        # one caption per raw capture
+    screenshots/phone/*.png        # required: the composed set, no fallback
     release_notes_v<x.y.z>.txt     # NOTES_LOCALES only (en-US, fr-FR)
 ```
 
-- The per-locale artwork is **opt-in**: with nothing under `store_listing/<locale>/`, every
-  locale gets `assets/`. For the **phone screenshots that fallback is wrong**: the files in
-  `assets/screenshots/phone/` are raw 1080×2400 RGBA captures Play refuses. Compose each
-  locale's set first, then check that none is missing, before any `--graphics`:
+- A per-locale **feature graphic** is opt-in: without one, the locale gets
+  `assets/feature_graphic.png`. The **phone screenshots have no fallback**: `--graphics`
+  uploads only `<locale>/screenshots/phone/` and refuses a locale without it, and the
+  composer takes a locale's own `raw/` set only (the old shared captures were deleted
+  2026-09-19). Compose each locale's set first, then check that none is missing, before any
+  `--graphics`:
   `uv run --script scripts/compose_screenshots.py` then `... --check`
   (captions: `store_listing/<locale>/screenshot_captions.txt`; `.llmwiki/StoreListing.md`).
 - The screenshot glob is **`*.png` only**. A JPEG in that directory is ignored in silence;

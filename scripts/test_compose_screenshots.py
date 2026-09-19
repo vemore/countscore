@@ -6,6 +6,7 @@ uv run --no-project --with pytest --with pillow pytest scripts/test_compose_scre
 from __future__ import annotations
 
 import re
+import shutil
 import sys
 from pathlib import Path
 
@@ -18,15 +19,20 @@ import compose_screenshots as cs
 REPO = Path(__file__).resolve().parents[1]
 
 
+def _raw(directory: Path, names: tuple[str, ...], colour: tuple[int, int, int, int]) -> None:
+    directory.mkdir(parents=True, exist_ok=True)
+    for name in names:
+        Image.new("RGBA", (1080, 2400), colour).save(directory / f"{name}.png")
+
+
 @pytest.fixture()
 def repo(tmp_path: Path) -> Path:
-    raw = tmp_path / "store_listing" / "assets" / "screenshots" / "phone"
-    raw.mkdir(parents=True)
-    for name in ("01_a", "02_b"):
-        Image.new("RGBA", (1080, 2400), (250, 240, 255, 255)).save(raw / f"{name}.png")
+    # Two store locales, each with its own raw/ set; only fr-FR has captions.
     for locale in ("fr-FR", "en-US"):
-        (tmp_path / "store_listing" / locale).mkdir()
+        (tmp_path / "store_listing" / locale).mkdir(parents=True)
         (tmp_path / "store_listing" / locale / "title.txt").write_text("t", encoding="utf-8")
+        _raw(tmp_path / "store_listing" / locale / cs.LOCALE_RAW_DIR, ("01_a", "02_b"),
+             (250, 240, 255, 255))
     (tmp_path / "store_listing" / "fr-FR" / cs.CAPTIONS_FILE).write_text(
         "# comment\n01_a: Toutes vos parties, d'un coup d'œil\n02_b: Votre jeu n'y est pas ? Créez-le\n",
         encoding="utf-8",
@@ -94,18 +100,31 @@ def test_main_skips_locales_without_captions(
     repo: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     assert cs.main(["--root", str(repo), "--font", font()]) == 0
-    assert "no screenshot_captions.txt for en-US" in capsys.readouterr().err
+    err = capsys.readouterr().err
+    assert "no screenshot_captions.txt for en-US" in err and "assets/" not in err
     assert cs.main(["--root", str(repo), "--check", "--locale", "fr-FR"]) == 0
     assert cs.main(["--root", str(repo), "--check"]) == 1
 
 
+def test_a_locale_without_a_raw_set_is_refused(
+    repo: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Captions and no raw/: refused, even with a shared set lying where the old one was."""
+    shutil.rmtree(repo / "store_listing" / "fr-FR" / cs.LOCALE_RAW_DIR)
+    _raw(repo / "store_listing" / "assets" / "screenshots" / "phone", ("01_a", "02_b"),
+         (250, 240, 255, 255))
+    with pytest.raises(cs.ComposeError, match="fr-FR: no raw capture in store_listing/fr-FR/raw"):
+        cs.raw_captures(repo, "fr-FR")
+    assert cs.main(["--root", str(repo), "--font", font()]) == 2
+    assert "no shared fallback" in capsys.readouterr().err
+    assert cs.main(["--root", str(repo), "--check", "--locale", "fr-FR"]) == 2
+    assert "fr-FR: no raw capture" in capsys.readouterr().err
+    assert not (repo / "store_listing" / "fr-FR" / "screenshots").exists()
+
+
 def test_committed_sets_are_compliant() -> None:
     """Every composed set in the repository is what Play accepts."""
-    sets = [
-        p
-        for p in sorted((REPO / "store_listing").glob("*/screenshots/phone/*.png"))
-        if p.parts[-4] != "assets"
-    ]
+    sets = sorted((REPO / "store_listing").glob("*/screenshots/phone/*.png"))
     assert sets, "no composed set committed"
     for path in sets:
         assert cs.check_image(path) is None
@@ -130,27 +149,21 @@ def test_every_store_locale_has_captions() -> None:
         assert (REPO / "store_listing" / locale / cs.CAPTIONS_FILE).is_file(), locale
 
 
-def _raw(directory: Path, names: tuple[str, ...], colour: tuple[int, int, int, int]) -> None:
-    directory.mkdir(parents=True, exist_ok=True)
-    for name in names:
-        Image.new("RGBA", (1080, 2400), colour).save(directory / f"{name}.png")
-
-
-def test_a_locale_raw_set_replaces_the_shared_one(repo: Path) -> None:
-    """The ja-JP carousel is composed from Japanese captures, not the shared French ones."""
+def test_a_locale_is_composed_from_its_own_raw_set(repo: Path) -> None:
+    """The fr-FR carousel is composed from fr-FR/raw/, not from another locale's captures."""
     own = repo / "store_listing" / "fr-FR" / cs.LOCALE_RAW_DIR
     _raw(own, ("01_a", "02_b"), (0, 0, 255, 255))
     assert cs.raw_dir(repo, "fr-FR") == own
-    assert cs.raw_dir(repo, "en-US") == repo / "store_listing" / cs.RAW_DIR
     written = cs.compose_locale(repo, "fr-FR", font())
     with Image.open(written[0]) as im:
-        # The centre of the screen area is the locale's blue capture, not the shared lilac.
+        # The centre of the screen area is the locale's blue capture, not en-US's lilac.
         assert im.getpixel((540, 1200)) == (0, 0, 255)
 
 
-def test_a_locale_raw_set_is_taken_whole(repo: Path) -> None:
-    """One file in raw/ does not borrow the others from the shared set: no mixed languages."""
-    _raw(repo / "store_listing" / "fr-FR" / cs.LOCALE_RAW_DIR, ("01_a",), (0, 0, 255, 255))
+def test_a_missing_capture_is_borrowed_from_nowhere(repo: Path) -> None:
+    """A capture missing from raw/ is not taken from a shared set: no mixed languages."""
+    (repo / "store_listing" / "fr-FR" / cs.LOCALE_RAW_DIR / "02_b.png").unlink()
+    _raw(repo / "store_listing" / "assets" / "screenshots" / "phone", ("02_b",), (0, 0, 0, 255))
     assert [p.stem for p in cs.raw_captures(repo, "fr-FR")] == ["01_a"]
     with pytest.raises(cs.ComposeError, match="no raw capture named 02_b"):
         cs.compose_locale(repo, "fr-FR", font())
@@ -196,6 +209,11 @@ def test_the_band_is_the_app_teal() -> None:
     assert canvas.getpixel((0, cs.HEIGHT - 1)) == cs.BACKGROUND_BOTTOM
     source = (REPO / "scripts" / "compose_screenshots.py").read_text(encoding="utf-8")
     assert "0x67, 0x3A, 0xB7" not in source and "Deep Purple" not in source
+
+
+def test_the_shared_raw_set_is_gone() -> None:
+    """The stale shared captures of 2026-09 are not back: every locale has its own raw/."""
+    assert not list((REPO / "store_listing" / "assets" / "screenshots" / "phone").glob("*.png"))
 
 
 def test_the_committed_raw_sets_match_their_captions() -> None:

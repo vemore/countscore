@@ -2,12 +2,12 @@
 
 Complete specifications and guidelines for creating Google Play Store visual assets.
 
-**Last Updated**: September 16, 2026
+**Last Updated**: September 19, 2026
 **Target**: Google Play Store listing for CountScore v1.1.0 and later
 
-> The icon, the feature graphic and eight phone screenshots are **committed** (`assets/`), and
-> each store locale has its composed, compliant screenshot set (`<locale>/screenshots/phone/`,
-> from `scripts/compose_screenshots.py`), so the "what you need to create" framing below
+> The icon and the feature graphic are **committed** (`assets/`), and each store locale has
+> its own raw captures (`<locale>/raw/`) and its composed, compliant screenshot set
+> (`<locale>/screenshots/phone/`, from `scripts/compose_screenshots.py`), so the "what you need to create" framing below
 > applies only to what is still missing: a tablet set. See `.llmwiki/StoreListing.md`.
 
 ---
@@ -271,25 +271,26 @@ Safe:   924 × 400 (50px padding on all sides)
 
 > **Status: Corrected** (2026-09-16) — this line read "Max dimension ≤ 2× min dimension"
 > (2:1). That is the *old* Play limit; the current requirement is 16:9. The difference is not
-> academic here: the committed captures are 1080×2400, ratio **2.222**, which fails both.
+> academic here: the raw captures of the time were 1080×2400, ratio **2.222**, which fails both.
 
 **Recommended Resolution**:
 - **Phone (portrait)**: 1080 × 1920px (9:16 ratio) — the target to compose to
 - **Phone (landscape)**: 1920 × 1080px (16:9 ratio)
 - **Tablet (portrait)**: 1536 × 2048px (3:4 ratio)
 
-A modern phone screen is taller than 16:9 (a Pixel 9 Pro XL captures 1080×2400), so a raw
+A modern phone screen is taller than 16:9 (a Pixel 9 Pro XL captures 1008×2244), so a raw
 `adb` capture is **never** a valid screenshot on its own. It has to be composed into a
 1080×1920 frame — which is what a caption band above the screen is for.
 
 **Format**: JPEG or 24-bit PNG
 **Alpha**: not allowed — the image must be fully opaque, 24-bit RGB.
 
-> **Status: Composed per locale** (2026-09-18) — the eight PNGs in
-> `assets/screenshots/phone/` are still raw `8-bit/color RGBA` captures, but they are now only
-> the input of `scripts/compose_screenshots.py`, which writes the 1080×1920 opaque RGB set of
-> each locale to `<locale>/screenshots/phone/`. All ten locales have their set, and `--check`
-> verifies it; a locale added without one would fall back to the raw captures. Closed
+> **Status: Composed per locale** (2026-09-18; no shared set since 2026-09-19) — the raw
+> `RGBA` captures of each locale, in `<locale>/raw/`, are only the input of
+> `scripts/compose_screenshots.py`, which writes the 1080×1920 opaque RGB set of each locale
+> to `<locale>/screenshots/phone/`. All ten locales have their set, and `--check` verifies it.
+> There is no fallback: the composer refuses a captioned locale without `raw/`, and
+> `play_publish.py --graphics` a locale without a composed set. Closed
 > `wip/done/2026-09-16-screenshots-are-raw-captures.md`.
 
 **File Size**: Maximum 8 MB per screenshot
@@ -547,24 +548,18 @@ Before uploading:
 
 ## File Organization
 
-**Recommended structure**:
+**The structure** (`README.md` has the full layout):
 ```
 store_listing/
 ├── assets/
 │   ├── icon_512.png (512×512, <1MB)
-│   ├── feature_graphic.png (1024×500)
-│   ├── screenshots/
-│   │   ├── phone/
-│   │   │   ├── 01_main_screen.png
-│   │   │   ├── 02_player_management.png
-│   │   │   ├── 03_game_history.png
-│   │   │   └── 04_game_types.png
-│   │   └── tablet/ (optional)
-│   │       ├── 01_main_screen_tablet.png
-│   │       └── ...
-│   └── source_files/ (optional, for future edits)
-│       ├── icon.fig or .psd
-│       └── feature_graphic.fig or .psd
+│   └── feature_graphic.png (1024×500) — every locale's, unless it has its own
+├── <locale>/
+│   ├── raw/ (the locale's raw captures, scripts/capture_screenshots.sh <locale>)
+│   │   ├── 01_main_screen.png
+│   │   └── ...
+│   ├── screenshot_captions.txt
+│   └── screenshots/phone/ (composed by scripts/compose_screenshots.py — what Play gets)
 └── ASSET_REQUIREMENTS.md (this file)
 ```
 

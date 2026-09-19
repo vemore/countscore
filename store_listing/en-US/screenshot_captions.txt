@@ -1,5 +1,5 @@
 # Captions of the store screenshots, one per raw capture in
-# store_listing/assets/screenshots/phone/ — `<capture stem>: <caption>`.
+# raw/ next to this file — `<capture stem>: <caption>`.
 # Translated from the validated fr-FR captions. Composed by scripts/compose_screenshots.py
 # into screenshots/phone/ next to this file.
 01_main_screen: All your games at a glance

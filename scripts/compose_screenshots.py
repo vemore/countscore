@@ -12,10 +12,9 @@
     uv run --script scripts/compose_screenshots.py --check         # verify, write nothing
 
 Input, per locale: the raw `adb` captures in store_listing/<locale>/raw/, taken with the app in
-that locale's language (scripts/capture_screenshots.sh <locale>) — or, for a locale with no
-raw/ directory yet, the shared set in store_listing/assets/screenshots/phone/. A locale's raw/
-set replaces the shared one whole, never file by file: one carousel never mixes two UI
-languages. And store_listing/<locale>/screenshot_captions.txt:
+that locale's language (scripts/capture_screenshots.sh <locale>). There is no shared fallback:
+a locale with captions and no raw/ set is refused, so one carousel never shows another
+locale's UI language. And store_listing/<locale>/screenshot_captions.txt:
 one `<capture stem>: <caption>` line per capture, `#` for a comment, `|` to force the line
 break (for the scripts written without spaces, where the automatic wrap may split a word).
 
@@ -23,13 +22,13 @@ Output: store_listing/<locale>/screenshots/phone/<capture name>.png, 1080x1920 o
 the caption in a band above the screen, the status and navigation bars cropped off, on a
 gradient of the app's teal (BRAND). The directory holds exactly the composed set: a PNG there
 with no raw capture of that name is removed on compose and reported by --check. That
-directory is exactly where play_publish.py looks first for a locale's screenshots, so
+directory is the only place play_publish.py takes a locale's screenshots from, so
 `play_publish.py listing --graphics` picks the composed set up with no change.
 
 A locale is a directory of store_listing/ holding a title.txt, the same rule as
 play_publish.py's listing_locales(). A locale with no captions file is skipped with a
-warning, and --check fails on it: until it has a composed set, Play would get the raw
-captures from the assets/ fallback, which Play refuses (ratio 2.22, alpha channel).
+warning, and --check fails on it: until it has a composed set, play_publish.py refuses to
+upload its screenshots.
 
 Fonts: Roboto Bold (Latin, Cyrillic) is taken from the Flutter SDK's material_fonts cache;
 the other scripts need a Noto font installed (see FONTS). --font overrides both.
@@ -47,7 +46,6 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont, features
 
 WIDTH, HEIGHT = 1080, 1920
 LISTING_ROOT = "store_listing"
-RAW_DIR = Path("assets") / "screenshots" / "phone"  # the shared set, the fallback
 LOCALE_RAW_DIR = "raw"  # store_listing/<locale>/raw/, the locale's own captures
 CAPTIONS_FILE = "screenshot_captions.txt"
 OUT_DIR = Path("screenshots") / "phone"
@@ -55,8 +53,8 @@ OUT_DIR = Path("screenshots") / "phone"
 # The status bar (clock, notification icons) and the gesture/navigation bar carry nothing
 # about the app, and the notification icons date the picture: both are cropped. Pixels of
 # (top, bottom) per capture size, measured on real captures — the navigation bar is 48 dp, so
-# its height follows the phone's density. 1080x2400: the 2026-09 shared set; 1008x2244: the
-# Pixel 9 Pro XL at its default resolution, the per-locale sets of 2026-09-19 (status-bar
+# its height follows the phone's density. 1080x2400: a 1080p capture (the shared set of
+# 2026-09, since deleted); 1008x2244: the Pixel 9 Pro XL at its default resolution, the per-locale sets of 2026-09-19 (status-bar
 # icons end at row 90, the app bar's first ink is row 189, the navigation bar starts at 2136).
 # Any other size is refused rather than cropped by guess.
 SYSTEM_BARS = {
@@ -146,20 +144,19 @@ def listing_locales(root: Path) -> list[str]:
     )
 
 
-def raw_dir(root: Path, locale: str | None = None) -> Path:
-    """The locale's own raw/ set when it has one, else the shared set."""
-    if locale:
-        own = root / LISTING_ROOT / locale / LOCALE_RAW_DIR
-        if any(own.glob("*.png")):
-            return own
-    return root / LISTING_ROOT / RAW_DIR
+def raw_dir(root: Path, locale: str) -> Path:
+    """The locale's own raw/ set — the only source; there is no shared fallback."""
+    return root / LISTING_ROOT / locale / LOCALE_RAW_DIR
 
 
-def raw_captures(root: Path, locale: str | None = None) -> list[Path]:
+def raw_captures(root: Path, locale: str) -> list[Path]:
     directory = raw_dir(root, locale)
     shots = sorted(directory.glob("*.png"), key=lambda p: p.name)
     if not shots:
-        raise ComposeError(f"no raw capture in {directory}")
+        raise ComposeError(
+            f"{locale}: no raw capture in {directory.relative_to(root)} — take the locale's own "
+            f"set first (scripts/capture_screenshots.sh {locale}); there is no shared fallback"
+        )
     return shots
 
 
@@ -444,8 +441,8 @@ def main(argv: list[str] | None = None) -> int:
             compose_locale(root, locale, args.font)
         if skipped:
             print(
-                f"warning: no {CAPTIONS_FILE} for {', '.join(skipped)} — Play would get the raw "
-                "captures from the assets/ fallback there",
+                f"warning: no {CAPTIONS_FILE} for {', '.join(skipped)} — no composed "
+                "screenshots there, and play_publish.py --graphics will refuse the locale",
                 file=sys.stderr,
             )
     except ComposeError as e:

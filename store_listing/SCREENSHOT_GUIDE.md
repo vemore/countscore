@@ -2,7 +2,7 @@
 
 Step-by-step guide for capturing high-quality screenshots for the Google Play Store listing.
 
-**Last Updated**: November 9, 2025
+**Last Updated**: September 19, 2026
 **Target**: 4-8 phone screenshots (1080×1920 portrait)
 
 ---
@@ -113,6 +113,11 @@ adb install build/app/outputs/flutter-apk/app-release.apk
 
 ## Capture Methods
 
+> The repository's way is `scripts/capture_screenshots.sh <locale>`: it switches CountScore
+> alone to the locale's language and pulls each capture into `store_listing/<locale>/raw/`.
+> The manual methods below save to the same place — every locale has its own raw set, there
+> is no shared one.
+
 ### Method 1: Physical Device (Recommended)
 
 **Using Device Buttons**:
@@ -128,7 +133,7 @@ adb install build/app/outputs/flutter-apk/app-release.apk
 adb devices
 
 # Pull all screenshots
-adb pull /sdcard/Pictures/Screenshots/ ./store_listing/assets/screenshots/phone/
+adb pull /sdcard/Pictures/Screenshots/ ./store_listing/<locale>/raw/
 
 # Or pull specific file
 adb pull /sdcard/DCIM/Screenshots/Screenshot_20251109_100000.png ./01_main_screen.png
@@ -141,11 +146,11 @@ adb pull /sdcard/DCIM/Screenshots/Screenshot_20251109_100000.png ./01_main_scree
 adb devices
 
 # Navigate to screen in app, then capture:
-adb exec-out screencap -p > store_listing/assets/screenshots/phone/01_main.png
+adb exec-out screencap -p > store_listing/<locale>/raw/01_main_screen.png
 
 # Repeat for each screenshot
-adb exec-out screencap -p > store_listing/assets/screenshots/phone/02_players.png
-adb exec-out screencap -p > store_listing/assets/screenshots/phone/03_games.png
+adb exec-out screencap -p > store_listing/<locale>/raw/02_player_management.png
+adb exec-out screencap -p > store_listing/<locale>/raw/03_game_types.png
 ```
 
 ### Method 3: Android Studio
@@ -154,7 +159,7 @@ adb exec-out screencap -p > store_listing/assets/screenshots/phone/03_games.png
 2. Open **Logcat** panel (bottom of screen)
 3. Click **Camera icon** in Logcat toolbar
 4. Click **Save** to save screenshot
-5. Choose location: `store_listing/assets/screenshots/phone/`
+5. Choose location: `store_listing/<locale>/raw/`
 
 ### Method 4: Emulator (If No Physical Device)
 
@@ -340,8 +345,13 @@ Screenshot 4: "Complete Game History"
 
 ### File Organization
 
+Each store locale has its own raw set, with no shared fallback — the composer refuses a
+captioned locale without `raw/`, and `play_publish.py --graphics` a locale without a composed
+set. What Play gets is the composed set, `store_listing/<locale>/screenshots/phone/`, written
+by `scripts/compose_screenshots.py` under the raw captures' own names:
+
 ```
-store_listing/assets/screenshots/phone/
+store_listing/<locale>/raw/
 ├── 01_main_screen.png
 ├── 02_player_management.png
 ├── 03_game_types.png
@@ -357,17 +367,13 @@ store_listing/assets/screenshots/phone/
 Run these checks:
 
 ```bash
-# Check file count
-ls store_listing/assets/screenshots/phone/*.png | wc -l
+# Compose every captioned locale, then verify: every locale has a 1080×1920 opaque RGB set
+uv run --script scripts/compose_screenshots.py
+uv run --script scripts/compose_screenshots.py --check
+
+# Check file count of one locale's composed set
+ls store_listing/fr-FR/screenshots/phone/*.png | wc -l
 # Should show: 4-8
-
-# Check file sizes
-ls -lh store_listing/assets/screenshots/phone/
-# All should be under 8 MB
-
-# Check dimensions
-file store_listing/assets/screenshots/phone/*.png
-# Should show reasonable dimensions (1080+ width)
 ```
 
 ### Play Console Upload
@@ -375,7 +381,8 @@ file store_listing/assets/screenshots/phone/*.png
 1. Go to **Play Console > Store presence > Main store listing**
 2. Scroll to **Phone screenshots**
 3. Click **Add screenshots**
-4. Select all screenshots from `store_listing/assets/screenshots/phone/`
+4. Select all screenshots from `store_listing/<locale>/screenshots/phone/` (or let
+   `play_publish.py listing --graphics` upload every locale, `release-android`)
 5. Drag to reorder (first 2-3 are most important!)
 6. Click **Save**
 

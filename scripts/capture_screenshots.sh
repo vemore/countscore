@@ -5,8 +5,8 @@
 # Switches CountScore alone to the locale's language (per-app language, Android 13+:
 # `cmd locale set-app-locales`; the phone's own language is not touched), restarts it,
 # then walks you through the eight screens and pulls each capture into
-# store_listing/<locale>/raw/. scripts/compose_screenshots.py composes that set, not the
-# shared store_listing/assets/screenshots/phone/, for the locale.
+# store_listing/<locale>/raw/ — the only set scripts/compose_screenshots.py composes the
+# locale from: there is no shared fallback, a locale without raw/ is refused.
 #
 # Prerequisites: adb in PATH, one device (or ANDROID_SERIAL naming one), CountScore
 # installed with the demo data (players and game names can stay the same in every locale).

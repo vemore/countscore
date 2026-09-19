@@ -37,3 +37,5 @@ Best done right before the next Play release.
 - A locale with captions and no `raw/` set is refused by the composer with a clear message.
 
 **Promoted (2026-09-19):** by the user, for 1.3.0 — the listing should match the build it ships with.
+
+**Status:** done (2026-09-19) — closed by docs/store-screenshots-retake. The eight raw captures retaken in all ten locales on the Pixel 9 Pro XL (profile build of main at 038a76a, demo data), showing the two-letter, contrast-picked avatars; all ten sets recomposed, `compose_screenshots.py --check` exits 0. The shared set is deleted and the composer refuses a locale with no `raw/` set.

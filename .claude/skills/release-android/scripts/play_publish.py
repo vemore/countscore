@@ -189,8 +189,11 @@ def read_listing(root: Path) -> dict[str, dict[str, str]]:
 def graphics_files(root: Path, locale: str) -> tuple[Path, list[Path]]:
     """The feature graphic and the phone screenshots for one locale.
 
-    store_listing/<locale>/ first, store_listing/assets/ as the fallback — which is still the
-    nominal path: localised artwork is opt-in, one directory at a time. The screenshot glob
+    The feature graphic: store_listing/<locale>/ first, store_listing/assets/ as the fallback
+    — still the nominal path, a localised feature graphic is opt-in. The screenshots have no
+    fallback: only a locale's composed set, store_listing/<locale>/screenshots/phone/
+    (scripts/compose_screenshots.py), is uploaded. A raw capture is what Play refuses (ratio,
+    alpha), and a shared set would show one language in every listing. The screenshot glob
     is `*.png` only, so a JPEG dropped in that directory is ignored in silence.
     """
     base = root / LISTING_ROOT
@@ -202,10 +205,10 @@ def graphics_files(root: Path, locale: str) -> tuple[Path, list[Path]]:
     phone = base / locale / "screenshots" / "phone"
     shots = _pngs(phone)
     if not shots:
-        phone = base / ASSETS_DIR / "screenshots" / "phone"
-        shots = _pngs(phone)
-    if not shots:
-        raise PublishError(f"no PNG in {phone}")
+        raise PublishError(
+            f"no PNG in {phone}: compose the locale's screenshots first "
+            f"(uv run --script scripts/compose_screenshots.py --locale {locale})"
+        )
     if len(shots) > MAX_PHONE_SCREENSHOTS:
         raise PublishError(f"{len(shots)} phone screenshots; Play allows {MAX_PHONE_SCREENSHOTS}")
     return feature, shots
