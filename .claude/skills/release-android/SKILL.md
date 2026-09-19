@@ -110,14 +110,39 @@ flutter test
 
 Then a real device — the `flutter-device-test` skill. **Export/import, the wakelock toggle,
 the ZapZap analysis and group join/leave have no automated coverage in a release build**;
-exercise them on the release APK:
+exercise them on the release APK, installed as below.
+
+**Not over the store version.** An APK built here carries the upload key, the store build the
+app signing key (`.llmwiki/Release.md` §Signing), so `adb install -r` over a Play install fails
+`INSTALL_FAILED_UPDATE_INCOMPATIBLE` — and over a debug build it fails the same way. The
+upgrade is tested instead by carrying an old database into a **clean** release install through
+the app's own Settings → Import, which runs the migration chain inside the R8-shrunk build.
+`device_db_roundtrip.sh` does the pull and the push; the device is `-s <serial>` or
+`ANDROID_SERIAL`, never guessed:
 
 ```bash
-flutter build apk --release --no-tree-shake-icons && adb install -r build/app/outputs/flutter-apk/app-release.apk
+export ANDROID_SERIAL=<ip>:<port>              # flutter-device-test: ask, never scan
+S=.claude/skills/release-android/scripts
+
+# 1. An old database. `run-as` needs a debuggable build: the Pixel's own debug install, or a
+#    debug APK of the previous tag (git worktree add ../countscore-prev <tag>; setup; build
+#    apk --debug; install), used for a few games. From a Play install, use Settings → Export
+#    instead and `adb pull` the file it writes — then skip `pull`.
+$S/device_db_roundtrip.sh pull                 # → build/device_db/countscore.db, prints user_version and row counts
+
+# 2. A clean release install — only once pull has printed user_version=…; this wipes the data.
+flutter build apk --release --no-tree-shake-icons
+adb uninstall com.vemore.countscore
+adb install build/app/outputs/flutter-apk/app-release.apk
+
+# 3. The file to /sdcard/Download/countscore-upgrade-test.db, then in the app: Settings →
+#    Import → that file → confirm; the app closes, reopen it.
+$S/device_db_roundtrip.sh push
 ```
 
-Install it **over the store version**, not over a debug build: the database must survive the
-upgrade.
+Pass: the games, players and scores of the old database are on screen after the reopen, and
+the counts `pull` printed match. `pull` folds a leftover `-wal` into one file, so a killed app
+loses nothing. Then exercise export, the wakelock, ZapZap and groups on that same install.
 
 ## 6. Build
 
@@ -229,7 +254,7 @@ store_listing/
 - `video.txt` absent means the `video` field is not sent at all, so Play keeps whatever is
   already there. It must hold an `http(s)` URL.
 
-Tests (fake Google service, no network):
+Tests (fake Google service, fake `adb` for `device_db_roundtrip.sh`; no network, no device):
 `uv run --no-project --with pytest --with google-api-python-client --with google-auth pytest .claude/skills/release-android/scripts/`
 
 ### Play API access — first time only (the user does this)
@@ -305,7 +330,7 @@ Adaptive icon on white `#FFFFFF`; every density is generated.
 - [ ] Release notes en-US and fr-FR, ≤ 500 characters, no claim contradicting Data Safety
 - [ ] Pruning pass (§3b) proposed to the user
 - [ ] Policy gate (§4) passed, or its failures in `wip/todo/` and cleared by the user
-- [ ] `flutter analyze` and `flutter test` clean; release APK exercised on a device over the store version
+- [ ] `flutter analyze` and `flutter test` clean; release APK installed clean on a device, an old database restored into it through Settings → Import (`device_db_roundtrip.sh pull`/`push`, §5)
 - [ ] `verify_aab.sh` all OK
 - [ ] No keystore, `key.properties`, `.env` or service-account key staged
 - [ ] `play_publish.py status` read; `publish` without `--commit` validated
