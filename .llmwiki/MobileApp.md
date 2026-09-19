@@ -91,13 +91,15 @@ prompt below.
 
 ### Widgets — `lib/widgets/`
 
-Seven components shared out of the screens:
+Eight components shared out of the screens:
 
 - `board_lanes.dart` — the board's default layout ([below](#the-board)): `BoardData` (what
   both layouts draw from: players in seat order, rounds, a `GameStanding`, colours, the
   elimination tests, the tap callbacks), `BoardLanes`, and the pieces the rows share —
   `BoardScoreText` (a zero on an amber pill, `·` for no score), `BoardCrown`, `boardTint`.
 - `board_rows.dart` — `BoardRows`, the one-row-per-player layout.
+- `score_keypad_sheet.dart` — `ScoreKeypadSheet`, the bottom sheet every score is entered
+  through ([below](#the-board)).
 
 - `player_avatars.dart` — `PlayerAvatar` (an initial on a colour, drawn in
   `onPlayerColor`) and `PlayerAvatarStack` (a game's players overlapping, in seat order and
@@ -269,7 +271,22 @@ seat order, or rank order through a segmented button (not remembered); the last 
 total. The layout is `SettingsProvider.boardView`, app-wide and remembered. The board reads
 the provider as nullable, so a test that does not provide one gets lanes.
 
-A cell tap still opens the score dialog.
+**Scores are entered through a keypad bottom sheet** (`ScoreKeypadSheet`,
+`lib/widgets/score_keypad_sheet.dart`); there is no text field and no system keyboard.
+The board's button reads "Round N" (`boardRoundButton`, N from `GameProvider.nextRoundNumber`)
+and opens the sheet on the first player in seat order, skipping the eliminated ones: chips of
+the players (the current one outlined in its colour, the scores already typed under the
+names), the large number, the total after it, and a 0-9 pad with ± and ⌫. "Next <name>"
+moves on; on the last player the key reads "Validate round", and only then is the round
+written, in one go (`GameProvider.addRoundWithScores`, one notification) — closing the sheet
+drops it, so an abandoned round leaves no empty row. An untouched player scores 0. For
+ZapZap (`builtinKey == 'zapzap'`) the bottom-left key is "0 ZapZap", a zero that moves on;
+for every other game it is the plain 0 (per-game shortcuts are
+`wip/todo_nr/2026-09-18-keypad-has-no-per-game-shortcut.md`). From five players
+(`kKeypadPositionFrom`) the chips scroll with the current one kept in view, and the caption
+adds the position ("4/8"). A cell tap opens the same sheet on that one score, prefilled —
+the first digit replaces it — with "Save". Both paths play the elimination alert and then
+run the game-over check, as the score dialog they replace did.
 
 ### Toolchain
 
@@ -399,3 +416,10 @@ not "fix" it by hardcoding a codepoint.
   (`Icons.emoji_events`), not an emoji: on the web an emoji makes CanvasKit fetch a colour
   emoji font from Google at run time. The one-row-per-player choice is app-wide rather than
   per game — a table that prefers rows prefers them every evening.
+- **2026-09-19 — a keypad sheet replaces the per-cell score dialog**
+  (`wip/done/2026-09-18-score-entry-takes-a-dialog-per-cell.md`, `feat/score-keypad`). The
+  dialog cost four gestures per score and left empty rows when a round was abandoned halfway;
+  "Add round" inserted the row first. The round is now held in the sheet and written only on
+  validation. The ZapZap key is the only per-game shortcut for now; the others wait for a
+  per-type setting, which needs a schema change. The ARB keys `addRound`, `score` and
+  `enterScore` went with the dialog.

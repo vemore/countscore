@@ -113,11 +113,23 @@
 
   "round": "ラウンド",
 
-  "addRound": "ラウンドを追加",
+  "boardRoundButton": "ラウンド {round}",
 
-  "score": "スコア",
+  "keypadCaption": "{player} · ラウンド {round}",
 
-  "enterScore": "スコアを入力",
+  "keypadCaptionWithPosition": "{player} · ラウンド {round} · {position}/{count}",
+
+  "keypadTotalAfter": "入力後の合計: {total}",
+
+  "keypadNext": "次へ: {player}",
+
+  "keypadValidateRound": "ラウンドを確定",
+
+  "keypadZeroZapZap": "0 ZapZap",
+
+  "keypadToggleSign": "符号を切り替え",
+
+  "keypadBackspace": "1桁削除",
 
   "appearance": "外観",
 

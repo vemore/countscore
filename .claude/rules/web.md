@@ -92,4 +92,4 @@ flutter drive --driver=test_driver/integration_test.dart \
   `http://192.168.x.x` backend only works for a PWA that is itself served over http.
 - **`pumpAndSettle` is insufficient in web tests.** The Drift web worker resolves
   asynchronously without scheduling a frame. Use the `_waitFor` / `_waitEnabled` /
-  `_waitDashes` helpers in `integration_test/app_test.dart`; do not "simplify" them away.
+  `_pumpUntil` helpers in `integration_test/app_test.dart`; do not "simplify" them away.

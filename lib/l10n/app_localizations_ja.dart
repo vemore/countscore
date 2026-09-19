@@ -185,13 +185,46 @@ class AppLocalizationsJa extends AppLocalizations {
   String get round => 'ラウンド';
 
   @override
-  String get addRound => 'ラウンドを追加';
+  String boardRoundButton(int round) {
+    return 'ラウンド $round';
+  }
 
   @override
-  String get score => 'スコア';
+  String keypadCaption(String player, int round) {
+    return '$player · ラウンド $round';
+  }
 
   @override
-  String get enterScore => 'スコアを入力';
+  String keypadCaptionWithPosition(
+    String player,
+    int round,
+    int position,
+    int count,
+  ) {
+    return '$player · ラウンド $round · $position/$count';
+  }
+
+  @override
+  String keypadTotalAfter(int total) {
+    return '入力後の合計: $total';
+  }
+
+  @override
+  String keypadNext(String player) {
+    return '次へ: $player';
+  }
+
+  @override
+  String get keypadValidateRound => 'ラウンドを確定';
+
+  @override
+  String get keypadZeroZapZap => '0 ZapZap';
+
+  @override
+  String get keypadToggleSign => '符号を切り替え';
+
+  @override
+  String get keypadBackspace => '1桁削除';
 
   @override
   String get appearance => '外観';

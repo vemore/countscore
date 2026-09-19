@@ -1,5 +1,7 @@
 # Entering a round takes one dialog and one system keyboard per player
 
+**Status:** done (2026-09-19) — closed by feat/score-keypad. `lib/widgets/score_keypad_sheet.dart` (`ScoreKeypadSheet`) replaces the per-cell `AlertDialog`; the board's "Round N" opens it on the first player still in, "Next <name>" / "Validate round" write the round in one go through `GameProvider.addRoundWithScores`, closing drops it; a tapped cell opens it on that score with "Save"; "0 ZapZap" for ZapZap only. Tests: `test/screens/game_board_keypad_test.dart`.
+
 - **Noted:** 2026-09-18 — visual refresh, split into one pull request per screen
 - **Theme:** visual-refresh
 - **Area:** app

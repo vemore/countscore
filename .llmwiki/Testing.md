@@ -2,7 +2,7 @@
 
 > Scope: what is tested, how to run it, and the traps.
 > Related: [[MobileApp]] · [[DataLayer]] · [[SchemaV10]] · [[Backend]] · [[Web]] · [[KnownLimits]]
-> Updated: 2026-09-18
+> Updated: 2026-09-19
 
 ## Facts
 
@@ -27,7 +27,7 @@
 | `test/widgets/group_settings_section_test.dart` | Settings → Group pumped with asserts on: create a group through the dialog against a `MockClient` server, and the group and its invite code appear; and removing a lost device shows the rotated invite code. Guards the dialog that disposed its controllers during its exit transition (`_dependents.isEmpty`, found on a Pixel on 2026-09-13, invisible in release builds). |
 | `test/providers/game_provider_finish_test.dart` | `setGameFinished` reports only the transition that finishes a game — re-finishing and reopening return false — which is the single gate on the Play review sheet, so a finish → reopen → finish evening counts once. Plus the current game updating without a reload, which needs `copyWith`'s `clearFinishedAt` escape, and the round counts `loadGames` folds in: one grouped query, kept in step by `addRound` and `deleteRound`, with a tombstoned round counting for nothing. |
 | `test/screens/home_screen_finish_menu_test.dart` | The game card's overflow menu offers `finish_game` on a played or already finished game and on nothing else — the guard that keeps three empty games from satisfying the review prompt. It reads the menu through `itemBuilder` rather than tapping it open: the test font draws every glyph an em wide, so any Material popup menu overflows its 256 px in a widget test. |
-| `test/screens/game_board_end_of_game_test.dart` | The board's end of game: the finished chip appears and disappears with `finishedAt` while **Add round** stays enabled, and the game-over dialog fires after a round is added, keeps quiet for a crossing already answered "Continue playing", re-arms once the game is back under its threshold, is raised once on the board's first build for an open game past its threshold and not for a finished one, and remembers "Continue playing" across leaving the board (SharedPreferences, cleared when the game goes back under). `GameBoardScreen.analysisRepo` is injected for the same reason `GameProvider`'s repositories are — the default reaches the singleton. |
+| `test/screens/game_board_end_of_game_test.dart` | The board's end of game: the finished chip appears and disappears with `finishedAt` while **Round N** stays enabled, and the game-over dialog fires after a round is validated on the keypad, keeps quiet for a crossing already answered "Continue playing", re-arms once the game is back under its threshold, is raised once on the board's first build for an open game past its threshold and not for a finished one, and remembers "Continue playing" across leaving the board (SharedPreferences, cleared when the game goes back under). `GameBoardScreen.analysisRepo` is injected for the same reason `GameProvider`'s repositories are — the default reaches the singleton. |
 | `test/providers/game_provider_sync_test.dart` | A current game deleted by sync is reported once (`takeRemotelyDeletedGameName`), which the board uses to close itself. |
 | `test/drift/web_upgrade_test.dart` | A v9 database (v10 to v15 stripped, `user_version` 9) reopened through Drift gets the sync tables, columns, triggers, `games.finishedAt` the back-filled `game_types.builtin_key` and its v15 unique index from `onUpgrade` — the PWA's upgrade path, and the only engine that runs it. |
 | `test/game_rules_catalog_test.dart` | The shipped rulesets in `assets/rules/`: every locale carries the same slugs, and each keeps the numbers the app actually scores on — a translation that drops a threshold contradicts the type it documents. |
@@ -38,6 +38,7 @@
 | `test/services/backend_client_test.dart` | `BackendException` carries the status, keeps the body for logging, and decodes utf8 on both the error and the success path; a 404 on `/comments/game-analysis` is retried once on the legacy path, and a 404 from both is still a failure; the group's device list sends the device token, revoking another device returns the rotated invite code, and revoking this one is leaving (204, no code). `MockClient` from `package:http/testing.dart`. |
 | `test/services/review_prompt_test.dart` | `ReviewPromptService`'s guards around the Play in-app review sheet, through a fake `ReviewRequester` and a hand-moved clock, so no platform channel is touched: the first launch is stamped once and never moves; each guard refuses on its own — too few games however old the install, too young an install however many games, a clock that never started; with every guard satisfied it asks exactly once; a new session does not ask again for a version that already asked, an update does; and an unavailable platform does not burn the version. The game count is `GameRepository.countFinished()`: a fake holds it for the guards, and the real Drift repository behind `GameProvider` shows that finish then Undo leaves it unchanged and finish, reopen, finish counts one; the legacy `reviewPromptGamesFinished` key is removed. |
 | `test/screens/game_board_who_starts_test.dart` | The board's overflow menu offers **Who starts?**; with N players every draw is one of their names, drawing again changes it, a single player is always the one. The menu is driven through `itemBuilder`/`onSelected`, for the popup-overflow reason above. |
+| `test/screens/game_board_keypad_test.dart` | The score keypad sheet: a full 4-player round entered with no `TextField` in the tree, no round row until **Validate round**, then one; the total after the typed score (digits, ⌫, ±); closing the sheet halfway leaves the round count unchanged, in the provider and in the database; a tapped past cell opens on that score (first digit replaces it) and **Save** updates the score and the lane total, closing leaves it; "0 ZapZap" for ZapZap (a zero, then the next player) and a plain 0 with no shortcut key for Tarot; an eliminated player is skipped and gets no score; from five players the caption carries the position. |
 | `test/screens/game_board_lanes_test.dart` | The board as lanes and as rows: the crown on the lowest total for a lowest-wins game and on the highest otherwise, none before a score; at 400 dp eight players fit without a sideways scroll, ten scroll with the round column staying put and a ranking ribbon on top; with 4, 8 and 10 players each lane header's left edge and width equal its cells'; at 1000 dp the lanes are capped and centred; the app-bar toggle shows one row per player in seat order (rank order on request), and a new `SettingsProvider` over the same SharedPreferences opens in rows; places are shared on a tie. The view size is set on `tester.view`, at a device pixel ratio of 1. |
 | `test/services/commentary_report_test.dart` | The AI-commentary report `mailto:`: addressed to the listing contact with an encoded subject and body, an ampersand in the body unable to start a new parameter, truncation that counts code points so an emoji is never split, and the reference line skipping what is unknown. |
 | `test/screens/play_again_test.dart` | *Play again* (`lib/utils/play_again.dart`): the ranking offers it and opens the new game — same type, win rule and players in order, the source game left untouched; a finished game's home menu offers it, a game still in play keeps "New with same players"; and `nextGameName` counts on from the last number. The board is injected (`boardBuilder`) and the home menu read through `itemBuilder`, as in the finish-menu test. |
@@ -91,7 +92,8 @@ lowest-wins) → generate a ZapZap analysis over a real network call → prove t
 backend is configured, so the teardown always runs.
 
 Finders are locale-proof across all 10 languages: `Key`s (`player_picker_search`,
-`player_picker_create`, `create_game_submit`, `board_add_round`, `analysis_generate`), icons,
+`player_picker_create`, `create_game_submit`, `board_add_round`, the keypad's
+`keypad_digit_<d>` and `keypad_primary`, `analysis_generate`), icons,
 and the untranslated literal `ZapZap`.
 
 **`pumpAndSettle` cannot be used while the analysis screen is loading.** Its
@@ -101,7 +103,7 @@ tests hand-pump instead — see `_pumpFailure` in `test/screens/game_analysis_sc
 
 **`pumpAndSettle` is not sufficient on web.** The Drift web worker resolves asynchronously
 without scheduling a frame, so the suite uses hand-rolled waiters `_waitFor`, `_waitEnabled`
-and `_waitDashes`. Do not "simplify" them back to `pumpAndSettle`.
+and `_pumpUntil` (which also waits for the keypad's round to reach the database). Do not "simplify" them back to `pumpAndSettle`.
 
 **Web run** — `chromedriver` major version must match the installed Chrome:
 

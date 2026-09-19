@@ -185,13 +185,46 @@ class AppLocalizationsAr extends AppLocalizations {
   String get round => 'الجولة';
 
   @override
-  String get addRound => 'إضافة جولة';
+  String boardRoundButton(int round) {
+    return 'الجولة $round';
+  }
 
   @override
-  String get score => 'النتيجة';
+  String keypadCaption(String player, int round) {
+    return '$player · الجولة $round';
+  }
 
   @override
-  String get enterScore => 'أدخل النتيجة';
+  String keypadCaptionWithPosition(
+    String player,
+    int round,
+    int position,
+    int count,
+  ) {
+    return '$player · الجولة $round · $position/$count';
+  }
+
+  @override
+  String keypadTotalAfter(int total) {
+    return 'المجموع بعدها: $total';
+  }
+
+  @override
+  String keypadNext(String player) {
+    return 'التالي: $player';
+  }
+
+  @override
+  String get keypadValidateRound => 'تأكيد الجولة';
+
+  @override
+  String get keypadZeroZapZap => '0 ZapZap';
+
+  @override
+  String get keypadToggleSign => 'تغيير الإشارة';
+
+  @override
+  String get keypadBackspace => 'حذف رقم';
 
   @override
   String get appearance => 'المظهر';

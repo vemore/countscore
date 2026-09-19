@@ -124,14 +124,39 @@ class GameProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// The number the next round of the current game gets.
+  ///
+  /// Max, not count: after a round in the middle is deleted, count + 1 names a
+  /// round that still exists — which a shared game's server refuses.
+  int get nextRoundNumber =>
+      _currentRounds.fold<int>(
+          0, (m, r) => r.roundNumber > m ? r.roundNumber : m) +
+      1;
+
   Future<void> addRound() async {
     if (_currentGame == null) return;
+    await _insertRound();
+    notifyListeners();
+  }
 
-    // Max, not count: after a round in the middle is deleted, count + 1 names a
-    // round that still exists — which a shared game's server refuses.
-    final roundNumber = _currentRounds.fold<int>(
-            0, (m, r) => r.roundNumber > m ? r.roundNumber : m) +
-        1;
+  /// Adds a round with its [scores] (keyed by player id) already in it, and
+  /// notifies once: the board's keypad writes a round only when it is
+  /// validated, so no empty row is ever shown or left behind.
+  Future<void> addRoundWithScores(Map<int, int> scores) async {
+    if (_currentGame == null) return;
+    final roundId = await _insertRound();
+    for (final e in scores.entries) {
+      await _scoreRepo.upsert(
+          Score(playerId: e.key, roundId: roundId, value: e.value));
+      final stored = await _scoreRepo.getByPlayerAndRound(e.key, roundId);
+      if (stored != null) _scores['${e.key}_$roundId'] = stored;
+    }
+    notifyListeners();
+  }
+
+  /// Creates the next round of the current game, without notifying.
+  Future<int> _insertRound() async {
+    final roundNumber = nextRoundNumber;
     final roundId = await _roundRepo.create(Round(
       gameId: _currentGame!.id!,
       roundNumber: roundNumber,
@@ -145,8 +170,7 @@ class GameProvider with ChangeNotifier {
 
     await _gameRepo.update(_currentGame!);
     _roundCounts[_currentGame!.id!] = roundCountOf(_currentGame!.id!) + 1;
-
-    notifyListeners();
+    return roundId;
   }
 
   Future<void> deleteRound(int roundId) async {

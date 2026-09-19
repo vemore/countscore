@@ -113,11 +113,23 @@
 
   "round": "Rodada",
 
-  "addRound": "Adicionar rodada",
+  "boardRoundButton": "Rodada {round}",
 
-  "score": "Pontuação",
+  "keypadCaption": "{player} · rodada {round}",
 
-  "enterScore": "Inserir pontuação",
+  "keypadCaptionWithPosition": "{player} · rodada {round} · {position}/{count}",
+
+  "keypadTotalAfter": "total depois: {total}",
+
+  "keypadNext": "Próximo: {player}",
+
+  "keypadValidateRound": "Validar rodada",
+
+  "keypadZeroZapZap": "0 ZapZap",
+
+  "keypadToggleSign": "Trocar sinal",
+
+  "keypadBackspace": "Apagar um dígito",
 
   "appearance": "Aparência",
 

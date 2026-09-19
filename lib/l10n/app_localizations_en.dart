@@ -185,13 +185,46 @@ class AppLocalizationsEn extends AppLocalizations {
   String get round => 'Round';
 
   @override
-  String get addRound => 'Add round';
+  String boardRoundButton(int round) {
+    return 'Round $round';
+  }
 
   @override
-  String get score => 'Score';
+  String keypadCaption(String player, int round) {
+    return '$player · round $round';
+  }
 
   @override
-  String get enterScore => 'Enter score';
+  String keypadCaptionWithPosition(
+    String player,
+    int round,
+    int position,
+    int count,
+  ) {
+    return '$player · round $round · $position/$count';
+  }
+
+  @override
+  String keypadTotalAfter(int total) {
+    return 'total after: $total';
+  }
+
+  @override
+  String keypadNext(String player) {
+    return 'Next $player';
+  }
+
+  @override
+  String get keypadValidateRound => 'Validate round';
+
+  @override
+  String get keypadZeroZapZap => '0 ZapZap';
+
+  @override
+  String get keypadToggleSign => 'Change sign';
+
+  @override
+  String get keypadBackspace => 'Delete a digit';
 
   @override
   String get appearance => 'Appearance';

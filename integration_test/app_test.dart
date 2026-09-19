@@ -66,19 +66,25 @@ void main() {
       await tester.tap(find.byKey(const Key('create_game_submit')));
       await _waitFor(tester, find.byType(DataTable));
 
-      // === Step 4: enter 3 rounds of scores.
+      // === Step 4: enter 3 rounds of scores through the keypad sheet: one
+      // player after the other in seat order, "Next" then "Validate round".
+      final sheet = find.byKey(const Key('keypad_sheet'));
       for (final round in scores) {
+        final before = gp.currentRounds.length;
         await tester.tap(find.byKey(const Key('board_add_round')));
-        await _waitDashes(tester, 2);
-        for (var j = 0; j < round.length; j++) {
-          // The leftmost remaining empty cell ('-') belongs to the next player.
-          await tester.tap(find.text('-').first);
-          await _waitFor(tester, find.byType(TextField));
-          await tester.enterText(find.byType(TextField), '${round[j]}');
-          await tester.testTextInput.receiveAction(TextInputAction.done);
+        await _waitFor(tester, sheet);
+        for (final score in round) {
+          for (final digit in '$score'.split('')) {
+            await tester.tap(find.byKey(Key('keypad_digit_$digit')));
+            await tester.pump();
+          }
+          await tester.tap(find.byKey(const Key('keypad_primary')));
           await tester.pumpAndSettle();
-          await _waitDashes(tester, 2 - (j + 1));
         }
+        // The round is written on "Validate round", through the Drift worker.
+        await _pumpUntil(tester,
+            () => sheet.evaluate().isEmpty && gp.currentRounds.length == before + 1,
+            timeout: const Duration(seconds: 15));
       }
 
       // === Step 5: totals (15 / 17) shown under the column headers.
@@ -213,13 +219,6 @@ Future<void> _waitEnabled(
     return w is ButtonStyleButton && w.onPressed != null;
   }, timeout: timeout);
   expect(f, findsOneWidget);
-}
-
-/// Waits until exactly [n] empty score cells ('-') are visible on the board.
-Future<void> _waitDashes(WidgetTester tester, int n) async {
-  await _pumpUntil(tester, () => find.text('-').evaluate().length == n,
-      timeout: const Duration(seconds: 15));
-  expect(find.text('-'), findsNWidgets(n));
 }
 
 /// Deletes the test game and players if present. Safe to call when absent.

@@ -113,11 +113,23 @@
 
   "round": "Runde",
 
-  "addRound": "Runde hinzufügen",
+  "boardRoundButton": "Runde {round}",
 
-  "score": "Punktzahl",
+  "keypadCaption": "{player} · Runde {round}",
 
-  "enterScore": "Punktzahl eingeben",
+  "keypadCaptionWithPosition": "{player} · Runde {round} · {position}/{count}",
+
+  "keypadTotalAfter": "danach gesamt: {total}",
+
+  "keypadNext": "Weiter: {player}",
+
+  "keypadValidateRound": "Runde bestätigen",
+
+  "keypadZeroZapZap": "0 ZapZap",
+
+  "keypadToggleSign": "Vorzeichen wechseln",
+
+  "keypadBackspace": "Ziffer löschen",
 
   "appearance": "Erscheinungsbild",
 

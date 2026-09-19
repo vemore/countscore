@@ -184,13 +184,46 @@ class AppLocalizationsZh extends AppLocalizations {
   String get round => '轮次';
 
   @override
-  String get addRound => '添加轮次';
+  String boardRoundButton(int round) {
+    return '第 $round 轮';
+  }
 
   @override
-  String get score => '分数';
+  String keypadCaption(String player, int round) {
+    return '$player · 第 $round 轮';
+  }
 
   @override
-  String get enterScore => '输入分数';
+  String keypadCaptionWithPosition(
+    String player,
+    int round,
+    int position,
+    int count,
+  ) {
+    return '$player · 第 $round 轮 · $position/$count';
+  }
+
+  @override
+  String keypadTotalAfter(int total) {
+    return '录入后总分：$total';
+  }
+
+  @override
+  String keypadNext(String player) {
+    return '下一位：$player';
+  }
+
+  @override
+  String get keypadValidateRound => '确认本轮';
+
+  @override
+  String get keypadZeroZapZap => '0 ZapZap';
+
+  @override
+  String get keypadToggleSign => '切换正负号';
+
+  @override
+  String get keypadBackspace => '删除一位数字';
 
   @override
   String get appearance => '外观';
