@@ -177,6 +177,31 @@ void main() {
     expect(find.byKey(const Key('ranking_play_again')), findsOneWidget);
   });
 
+  testWidgets('a highest-wins game is shared in the order the screen draws',
+      (tester) async {
+    await tester.runAsync(() => anOpenGame(lowestWins: false));
+    String? shared;
+    await tester.pumpWidget(wrap(RankingScreen(
+      boardBuilder: _board,
+      share: (text, {subject}) async => shared = text,
+    )));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('share_result')));
+    await tester.pumpAndSettle();
+
+    expect(rankedNames(tester), ['Eve', 'Chloé', 'Alice', 'Bob', 'Dora']);
+    expect(
+      shared,
+      contains('1. Eve — 50 points\n'
+          '2. Chloé — 40 points\n'
+          '3. Alice — 30 points\n'
+          '4. Bob — 20 points\n'
+          '5. Dora — 10 points'),
+    );
+    expect(shared, contains('Soirée · ${l10n.gameEndRounds(1)}'));
+  });
+
   testWidgets('near the threshold in orange, eliminated players struck out',
       (tester) async {
     await tester.runAsync(() => anOpenGame(lowestWins: true, scores: {

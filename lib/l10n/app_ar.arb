@@ -567,5 +567,19 @@
   "groupSettingsSaved": "تم حفظ إعدادات المجموعة",
   "groupUsageTitle": "استهلاك النموذج اللغوي هذا الشهر",
   "groupUsageAmount": "أُنفق {used} من {budget}",
-  "groupUsageResets": "يُعاد التعيين في {date}"
+  "groupUsageResets": "يُعاد التعيين في {date}",
+
+  "shareResult": "مشاركة النتيجة",
+
+  "shareAnalysis": "مشاركة التحليل",
+
+  "shareResultSubject": "النتيجة: {gameName}",
+
+  "shareResultTitle": "مباراة {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, zero{{points} نقطة} one{نقطة واحدة} two{نقطتان} few{{points} نقاط} many{{points} نقطة} other{{points} نقطة}}",
+
+  "shareResultFooter": "سُجّلت النقاط باستخدام {appName}: {url}",
+
+  "shareFailed": "تعذّر فتح المشاركة"
 }

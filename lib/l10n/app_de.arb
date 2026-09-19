@@ -567,5 +567,19 @@
   "groupSettingsSaved": "Gruppeneinstellungen gespeichert",
   "groupUsageTitle": "LLM-Verbrauch diesen Monat",
   "groupUsageAmount": "{used} von {budget} verbraucht",
-  "groupUsageResets": "Wird am {date} zurückgesetzt"
+  "groupUsageResets": "Wird am {date} zurückgesetzt",
+
+  "shareResult": "Ergebnis teilen",
+
+  "shareAnalysis": "Analyse teilen",
+
+  "shareResultSubject": "Ergebnis: {gameName}",
+
+  "shareResultTitle": "Partie vom {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} Punkt} other{{points} Punkte}}",
+
+  "shareResultFooter": "Punkte gezählt mit {appName}: {url}",
+
+  "shareFailed": "Teilen konnte nicht geöffnet werden"
 }

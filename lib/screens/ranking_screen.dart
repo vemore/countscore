@@ -6,15 +6,21 @@ import '../providers/game_type_provider.dart';
 import '../utils/insets.dart';
 import '../utils/play_again.dart';
 import '../widgets/game_ranking.dart';
+import '../widgets/share_result_button.dart';
 import 'game_board_screen.dart';
 
 /// Where an open game stands, from the board's leaderboard button: the win
 /// rule on one line, then the same podium and ranked rows as the end screen
 /// (`RankedPlayers`) — player colours, the leader's crown, totals near the
 /// elimination threshold in orange, eliminated players struck out — and
-/// "Play again".
+/// "Play again". The app bar shares the standings as text
+/// (`ShareResultButton`).
 class RankingScreen extends StatelessWidget {
-  const RankingScreen({super.key, this.boardBuilder});
+  const RankingScreen({super.key, this.boardBuilder, this.share});
+
+  /// Injected by tests only: receives the shared text instead of the system
+  /// share sheet.
+  final ShareTextFn? share;
 
   /// Injected by tests only: the board "Play again" opens. The default
   /// `GameBoardScreen` reaches the `AppDatabase` singleton.
@@ -23,9 +29,12 @@ class RankingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final canShare = context.select<GameProvider, bool>(
+        (g) => g.currentGame != null && g.currentPlayers.isNotEmpty);
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.ranking),
+        actions: [if (canShare) ShareResultButton(share: share)],
       ),
       body: Builder(
         builder: (context) {

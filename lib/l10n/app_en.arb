@@ -640,5 +640,19 @@
   "groupSettingsSaved": "Group settings saved",
   "groupUsageTitle": "LLM usage this month",
   "groupUsageAmount": "{used} spent of {budget}",
-  "groupUsageResets": "Resets on {date}"
+  "groupUsageResets": "Resets on {date}",
+
+  "shareResult": "Share the result",
+
+  "shareAnalysis": "Share the analysis",
+
+  "shareResultSubject": "Result: {gameName}",
+
+  "shareResultTitle": "Game of {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} point} other{{points} points}}",
+
+  "shareResultFooter": "Scores kept with {appName}: {url}",
+
+  "shareFailed": "Sharing could not be opened"
 }

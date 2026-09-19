@@ -1984,5 +1984,76 @@
         "example": "1 oct. 2026"
       }
     }
+  },
+
+  "shareResult": "Partager le résultat",
+  "@shareResult": {
+    "description": "Tooltip of the share button on the game-end and ranking screens: opens the system share sheet with the standings as text"
+  },
+
+  "shareAnalysis": "Partager l'analyse",
+  "@shareAnalysis": {
+    "description": "Tooltip of the share button on the game analysis screen: shares the standings and the commentary as text"
+  },
+
+  "shareResultSubject": "Résultat : {gameName}",
+  "@shareResultSubject": {
+    "description": "Subject of the shared result (used by e-mail apps and the web e-mail fallback)",
+    "placeholders": {
+      "gameName": {
+        "type": "String",
+        "example": "ZapZap du 19/09"
+      }
+    }
+  },
+
+  "shareResultTitle": "Partie du {date}",
+  "@shareResultTitle": {
+    "description": "First line of the shared result text: when the game was played",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "19 sept. 2026"
+      }
+    }
+  },
+
+  "shareResultStanding": "{rank}. {name} : {points, plural, one{{points} point} other{{points} points}}",
+  "@shareResultStanding": {
+    "description": "One line of the standings in the shared result text: place, player name, total",
+    "placeholders": {
+      "rank": {
+        "type": "int",
+        "example": "1"
+      },
+      "name": {
+        "type": "String",
+        "example": "Alice"
+      },
+      "points": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+
+  "shareResultFooter": "Scores comptés avec {appName} : {url}",
+  "@shareResultFooter": {
+    "description": "Last line of the shared result text: names the app and links to its Play Store listing (no tracking parameter)",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "CountScore"
+      },
+      "url": {
+        "type": "String",
+        "example": "https://play.google.com/store/apps/details?id=com.vemore.countscore"
+      }
+    }
+  },
+
+  "shareFailed": "Le partage n'a pas pu s'ouvrir",
+  "@shareFailed": {
+    "description": "Snackbar when the system share sheet (or the web fallback) could not be opened"
   }
 }

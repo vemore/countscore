@@ -1209,4 +1209,43 @@ class AppLocalizationsAr extends AppLocalizations {
   String groupUsageResets(String date) {
     return 'يُعاد التعيين في $date';
   }
+
+  @override
+  String get shareResult => 'مشاركة النتيجة';
+
+  @override
+  String get shareAnalysis => 'مشاركة التحليل';
+
+  @override
+  String shareResultSubject(String gameName) {
+    return 'النتيجة: $gameName';
+  }
+
+  @override
+  String shareResultTitle(String date) {
+    return 'مباراة $date';
+  }
+
+  @override
+  String shareResultStanding(int rank, String name, int points) {
+    String _temp0 = intl.Intl.pluralLogic(
+      points,
+      locale: localeName,
+      other: '$points نقطة',
+      many: '$points نقطة',
+      few: '$points نقاط',
+      two: 'نقطتان',
+      one: 'نقطة واحدة',
+      zero: '$points نقطة',
+    );
+    return '$rank. $name — $_temp0';
+  }
+
+  @override
+  String shareResultFooter(String appName, String url) {
+    return 'سُجّلت النقاط باستخدام $appName: $url';
+  }
+
+  @override
+  String get shareFailed => 'تعذّر فتح المشاركة';
 }

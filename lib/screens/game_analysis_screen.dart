@@ -19,6 +19,7 @@ import '../repositories/game_analysis_repository.dart';
 import '../services/backend_client.dart';
 import '../services/commentary_report.dart';
 import '../services/drift/database.dart';
+import '../widgets/share_result_button.dart';
 import 'settings_screen.dart';
 
 class GameAnalysisScreen extends StatefulWidget {
@@ -28,7 +29,12 @@ class GameAnalysisScreen extends StatefulWidget {
     this.repository,
     this.httpClient,
     this.launcher,
+    this.share,
   });
+
+  /// Injection seam for tests: receives the shared text instead of the
+  /// system share sheet.
+  final ShareTextFn? share;
 
   final GameAnalysisRepository? repository;
 
@@ -365,6 +371,14 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
       appBar: AppBar(
         title: Text(l10n.analysisTitle),
         actions: [
+          // The standings, then the commentary: shared only once there is
+          // one, and not mid-generation.
+          if (hasContent && !_isLoading)
+            ShareResultButton(
+              commentary: _analysisText,
+              tooltip: l10n.shareAnalysis,
+              share: widget.share,
+            ),
           IconButton(
             key: const Key('analysis_report'),
             icon: const Icon(Icons.flag_outlined),

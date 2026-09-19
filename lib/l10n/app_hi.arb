@@ -567,5 +567,19 @@
   "groupSettingsSaved": "समूह की सेटिंग सहेजी गईं",
   "groupUsageTitle": "इस महीने LLM का उपयोग",
   "groupUsageAmount": "{budget} में से {used} खर्च",
-  "groupUsageResets": "{date} को रीसेट होगा"
+  "groupUsageResets": "{date} को रीसेट होगा",
+
+  "shareResult": "परिणाम साझा करें",
+
+  "shareAnalysis": "विश्लेषण साझा करें",
+
+  "shareResultSubject": "परिणाम: {gameName}",
+
+  "shareResultTitle": "{date} का खेल",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} अंक} other{{points} अंक}}",
+
+  "shareResultFooter": "{appName} से स्कोर रखे गए: {url}",
+
+  "shareFailed": "साझा करना नहीं खुल सका"
 }

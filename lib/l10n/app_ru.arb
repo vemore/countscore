@@ -567,5 +567,19 @@
   "groupSettingsSaved": "Настройки группы сохранены",
   "groupUsageTitle": "Расход LLM в этом месяце",
   "groupUsageAmount": "Потрачено {used} из {budget}",
-  "groupUsageResets": "Обнулится {date}"
+  "groupUsageResets": "Обнулится {date}",
+
+  "shareResult": "Поделиться результатом",
+
+  "shareAnalysis": "Поделиться анализом",
+
+  "shareResultSubject": "Результат: {gameName}",
+
+  "shareResultTitle": "Партия от {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} очко} few{{points} очка} many{{points} очков} other{{points} очка}}",
+
+  "shareResultFooter": "Счёт вёлся в {appName}: {url}",
+
+  "shareFailed": "Не удалось открыть меню «Поделиться»"
 }

@@ -9,7 +9,7 @@ CountScore uses the following open-source packages. We are grateful to their aut
 
 ## Summary
 
-The 22 direct dependencies the app ships with are under: BSD-2-Clause (1), BSD-3-Clause (15), MIT (6). Every licence below is permissive; none is copyleft, and there is no licence conflict. The one bundled font, Nunito, is under the **SIL Open Font License 1.1**, which allows bundling it in any application and asks only that the licence travel with it. The one non-open-source item is the Google Play Core review binary that `in_app_review` links on Android — see its note below.
+The 23 direct dependencies the app ships with are under: BSD-2-Clause (1), BSD-3-Clause (16), MIT (6). Every licence below is permissive; none is copyleft, and there is no licence conflict. The one bundled font, Nunito, is under the **SIL Open Font License 1.1**, which allows bundling it in any application and asks only that the licence travel with it. The one non-open-source item is the Google Play Core review binary that `in_app_review` links on Android — see its note below.
 
 Only direct dependencies are listed; their versions, and every transitive package, are in `pubspec.lock`. The app's licence page (About → Licenses, Flutter's `showLicensePage`) shows the full text of every package compiled into it, transitive ones included.
 
@@ -127,6 +127,11 @@ Only direct dependencies are listed; their versions, and every transitive packag
 **Copyright:** Copyright (c) 2020 Britannio Jarrett  
 **Repository:** https://github.com/britannio/in_app_review  
 **Note:** on Android it links `com.google.android.play:review` and `play-services-base`, Google binaries covered by the Play Core Software Development Kit Terms of Service rather than by an open-source licence. They are not redistributed by this repository; Gradle resolves them at build time.
+
+### share_plus
+**License:** BSD-3-Clause  
+**Copyright:** Copyright 2017, the Flutter project authors. All rights reserved.  
+**Repository:** https://github.com/fluttercommunity/plus_plugins/tree/main/packages/share_plus/share_plus
 
 ---
 

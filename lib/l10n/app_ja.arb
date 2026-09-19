@@ -567,5 +567,19 @@
   "groupSettingsSaved": "グループの設定を保存しました",
   "groupUsageTitle": "今月の LLM 利用状況",
   "groupUsageAmount": "{budget} のうち {used} を使用",
-  "groupUsageResets": "{date} にリセット"
+  "groupUsageResets": "{date} にリセット",
+
+  "shareResult": "結果を共有",
+
+  "shareAnalysis": "分析を共有",
+
+  "shareResultSubject": "結果：{gameName}",
+
+  "shareResultTitle": "{date}のゲーム",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, other{{points}点}}",
+
+  "shareResultFooter": "{appName}でスコアを記録：{url}",
+
+  "shareFailed": "共有を開けませんでした"
 }

@@ -1162,4 +1162,38 @@ class AppLocalizationsZh extends AppLocalizations {
   String groupUsageResets(String date) {
     return '$date 重置';
   }
+
+  @override
+  String get shareResult => '分享结果';
+
+  @override
+  String get shareAnalysis => '分享分析';
+
+  @override
+  String shareResultSubject(String gameName) {
+    return '结果：$gameName';
+  }
+
+  @override
+  String shareResultTitle(String date) {
+    return '$date 的对局';
+  }
+
+  @override
+  String shareResultStanding(int rank, String name, int points) {
+    String _temp0 = intl.Intl.pluralLogic(
+      points,
+      locale: localeName,
+      other: '$points 分',
+    );
+    return '$rank. $name — $_temp0';
+  }
+
+  @override
+  String shareResultFooter(String appName, String url) {
+    return '用 $appName 记分：$url';
+  }
+
+  @override
+  String get shareFailed => '无法打开分享';
 }

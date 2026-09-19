@@ -1196,4 +1196,39 @@ class AppLocalizationsDe extends AppLocalizations {
   String groupUsageResets(String date) {
     return 'Wird am $date zurückgesetzt';
   }
+
+  @override
+  String get shareResult => 'Ergebnis teilen';
+
+  @override
+  String get shareAnalysis => 'Analyse teilen';
+
+  @override
+  String shareResultSubject(String gameName) {
+    return 'Ergebnis: $gameName';
+  }
+
+  @override
+  String shareResultTitle(String date) {
+    return 'Partie vom $date';
+  }
+
+  @override
+  String shareResultStanding(int rank, String name, int points) {
+    String _temp0 = intl.Intl.pluralLogic(
+      points,
+      locale: localeName,
+      other: '$points Punkte',
+      one: '$points Punkt',
+    );
+    return '$rank. $name — $_temp0';
+  }
+
+  @override
+  String shareResultFooter(String appName, String url) {
+    return 'Punkte gezählt mit $appName: $url';
+  }
+
+  @override
+  String get shareFailed => 'Teilen konnte nicht geöffnet werden';
 }

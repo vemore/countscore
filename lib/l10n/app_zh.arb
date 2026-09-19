@@ -567,5 +567,19 @@
   "groupSettingsSaved": "群组设置已保存",
   "groupUsageTitle": "本月 LLM 用量",
   "groupUsageAmount": "已用 {used}，预算 {budget}",
-  "groupUsageResets": "{date} 重置"
+  "groupUsageResets": "{date} 重置",
+
+  "shareResult": "分享结果",
+
+  "shareAnalysis": "分享分析",
+
+  "shareResultSubject": "结果：{gameName}",
+
+  "shareResultTitle": "{date} 的对局",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, other{{points} 分}}",
+
+  "shareResultFooter": "用 {appName} 记分：{url}",
+
+  "shareFailed": "无法打开分享"
 }

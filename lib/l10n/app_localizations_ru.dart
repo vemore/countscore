@@ -1205,4 +1205,41 @@ class AppLocalizationsRu extends AppLocalizations {
   String groupUsageResets(String date) {
     return 'Обнулится $date';
   }
+
+  @override
+  String get shareResult => 'Поделиться результатом';
+
+  @override
+  String get shareAnalysis => 'Поделиться анализом';
+
+  @override
+  String shareResultSubject(String gameName) {
+    return 'Результат: $gameName';
+  }
+
+  @override
+  String shareResultTitle(String date) {
+    return 'Партия от $date';
+  }
+
+  @override
+  String shareResultStanding(int rank, String name, int points) {
+    String _temp0 = intl.Intl.pluralLogic(
+      points,
+      locale: localeName,
+      other: '$points очка',
+      many: '$points очков',
+      few: '$points очка',
+      one: '$points очко',
+    );
+    return '$rank. $name — $_temp0';
+  }
+
+  @override
+  String shareResultFooter(String appName, String url) {
+    return 'Счёт вёлся в $appName: $url';
+  }
+
+  @override
+  String get shareFailed => 'Не удалось открыть меню «Поделиться»';
 }

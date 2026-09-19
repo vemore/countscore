@@ -567,5 +567,19 @@
   "groupSettingsSaved": "Configurações do grupo salvas",
   "groupUsageTitle": "Consumo do LLM este mês",
   "groupUsageAmount": "{used} gastos de {budget}",
-  "groupUsageResets": "Reinicia em {date}"
+  "groupUsageResets": "Reinicia em {date}",
+
+  "shareResult": "Partilhar o resultado",
+
+  "shareAnalysis": "Partilhar a análise",
+
+  "shareResultSubject": "Resultado: {gameName}",
+
+  "shareResultTitle": "Partida de {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} ponto} other{{points} pontos}}",
+
+  "shareResultFooter": "Pontuações registadas com {appName}: {url}",
+
+  "shareFailed": "Não foi possível abrir a partilha"
 }

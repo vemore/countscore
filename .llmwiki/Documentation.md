@@ -4,7 +4,7 @@
 > `README.md`, the three privacy documents — and the `CLAUDE.md` budget. No hook enforces
 > these: they need judgement ([[Hooks]]).
 > Related: [[Hooks]] · [[Release]] · [[Security]] · [[ParallelDelivery]]
-> Updated: 2026-09-18
+> Updated: 2026-09-19
 
 ## Facts
 
@@ -39,6 +39,12 @@ payload means updating all three in the same change — and checking that
 `INTERNET` lives only in the debug and profile manifests by default. A Play Store data
 safety declaration that does not match the binary is a policy violation, not a stale line.
 The flows as they stand: [[Security]].
+
+A user-initiated hand-off to another app — the system share sheet (`share_plus`, since
+2026-09-19), a `mailto:` in the user's own mail app — is **not** such a flow: the app sends
+nothing and receives nothing, and the user picks the recipient. It moves no Data Safety
+answer; `PLAY_STORE_DATA_SAFETY.md` records each one in a dated note saying so, and the
+merged release manifest must still gain no permission from it.
 
 One part of this is mechanical: CI fails a pull request whose `docs/privacy-policy.html` is
 stale against `privacy_policy.md`, or whose policy changed without its `**Last Updated**` line
