@@ -1,5 +1,7 @@
 # `release-android` §5 asks for a device test that cannot be run
 
+**Status:** done (2026-09-19) — closed by docs/release-device-upgrade-test. Run end to end on the Pixel 9 Pro XL: the phone held the Play build 1.2.0 (not debuggable), so the old database came from Settings → Export (schema v14, integrity ok, 65 games, 24 players, 563 rounds, 2341 scores) rather than `pull`; `adb uninstall`, a clean install of the release APK built at 0a63e06 (schema v15), then `device_db_roundtrip.sh push` and Settings → Import → Downloads → countscore-upgrade-test.db: "Import réussi", and after the reopen the same games show (p165 in progress, p172 won by Vincent, yaniv1 by Lilian), with no crash. `pull` itself was not exercised (needs a debuggable build).
+
 - **Noted:** 2026-09-17 — while releasing 1.2.0+5
 - **Theme:** release-automation
 - **Area:** tooling
