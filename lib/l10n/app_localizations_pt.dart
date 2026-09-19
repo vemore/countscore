@@ -212,7 +212,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String keypadNext(String player) {
-    return 'Próximo: $player';
+    return 'Próximo\n$player';
   }
 
   @override

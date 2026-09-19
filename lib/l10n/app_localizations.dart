@@ -479,10 +479,10 @@ abstract class AppLocalizations {
   /// **'total après : {total}'**
   String keypadTotalAfter(int total);
 
-  /// Score keypad key that moves to the next player of the round, named
+  /// Score keypad key that moves to the next player of the round, named. The name goes on its own line, after the line break: the key is narrow, and a label left to wrap by itself can break inside a word or before punctuation
   ///
   /// In fr, this message translates to:
-  /// **'Suivant {player}'**
+  /// **'Suivant\n{player}'**
   String keypadNext(String player);
 
   /// Score keypad key, on the round's last player: writes the whole round

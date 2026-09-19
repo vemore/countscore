@@ -523,11 +523,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     final leader = standing?.leader;
                     return Row(
                       children: [
+                        // Ringed in the text colour: a teal or cyan player
+                        // would vanish into the teal hero otherwise.
                         PlayerAvatarStack(
+                          key: const Key('resumeHeroAvatars'),
                           players: standing?.players ?? const [],
                           size: 32,
                           maxShown: 4,
-                          borderColor: background,
+                          borderColor: foreground,
                         ),
                         const SizedBox(width: 12),
                         Expanded(

@@ -210,7 +210,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String keypadNext(String player) {
-    return '下一位：$player';
+    return '下一位\n$player';
   }
 
   @override

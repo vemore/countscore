@@ -80,9 +80,55 @@ void main() {
     expect(players.every((p) => p.colorValue == null), isTrue);
   });
 
-  test('the initial is drawn in white on a dark colour, dark on a light one',
+  test('Material green and lightGreen in one game resolve to two colours that '
+      'do not clash', () {
+    final colours = playerColorsById([
+      seat(1, colorValue: Colors.green.toARGB32()),
+      seat(2, colorValue: Colors.lightGreen.toARGB32()),
+    ]);
+
+    // The first seat keeps its own colour; the second takes the palette.
+    expect(colours[1]!.toARGB32(), Colors.green.toARGB32());
+    expect(kPlayerPalette, contains(colours[2]));
+    expect(playerColorsClash(colours[1]!, colours[2]!), isFalse);
+  });
+
+  test('a palette colour close to an own colour is skipped', () {
+    // Material blue is a near-twin of the palette blue.
+    final colours = assignPlayerColors([null, null, Colors.blue.toARGB32()]);
+
+    expect(colours[0], kPlayerPalette[0]);
+    expect(colours[1], isNot(kPlayerPalette[1]));
+    expect(playerColorsClash(colours[1], colours[2]), isFalse);
+  });
+
+  test('no two palette colours clash', () {
+    for (var i = 0; i < kPlayerPalette.length; i++) {
+      for (var j = i + 1; j < kPlayerPalette.length; j++) {
+        expect(playerColorsClash(kPlayerPalette[i], kPlayerPalette[j]), isFalse,
+            reason: '$i and $j');
+      }
+    }
+  });
+
+  test('colours already shown elsewhere on the screen are not handed out', () {
+    final colours =
+        assignPlayerColors([null], alreadyShown: [kPlayerPalette[0]]);
+    expect(colours.single, kPlayerPalette[1]);
+  });
+
+  test('every palette colour gets an initial with a WCAG contrast of 4.5:1',
       () {
-    expect(onPlayerColor(const Color(0xFF3B82F6)), Colors.white);
+    for (final colour in kPlayerPalette) {
+      final text = Color.alphaBlend(onPlayerColor(colour), colour);
+      expect(contrastRatio(text, colour), greaterThanOrEqualTo(4.5),
+          reason: '$colour');
+    }
+  });
+
+  test('the initial is white on a dark colour, dark on a light one', () {
+    expect(onPlayerColor(const Color(0xFF1E3A8A)), Colors.white);
+    expect(onPlayerColor(const Color(0xFFFFEB3B)), Colors.black87);
     expect(onPlayerColor(const Color(0xFFFFF59D)), Colors.black87);
   });
 }

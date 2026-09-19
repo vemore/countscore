@@ -16,6 +16,7 @@
 
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -34,6 +35,8 @@ import 'package:countscore/screens/player_stats_screen.dart';
 import 'package:countscore/services/drift/database.dart';
 import 'package:countscore/utils/player_colors.dart';
 import 'package:countscore/widgets/player_avatars.dart';
+
+import '../support/label_lines.dart';
 
 const _zapzap = [
   [10, 20, 30],
@@ -135,7 +138,7 @@ void main() {
 
   tearDown(() => db.close());
 
-  Future<void> open(WidgetTester tester) async {
+  Future<void> open(WidgetTester tester, {String locale = 'en'}) async {
     tester.view.physicalSize = const Size(412, 915);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -144,16 +147,16 @@ void main() {
         ChangeNotifierProvider<GameProvider>.value(value: games),
         ChangeNotifierProvider<GameTypeProvider>.value(value: gameTypes),
       ],
-      child: const MaterialApp(
-        localizationsDelegates: [
+      child: MaterialApp(
+        localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        supportedLocales: [Locale('en', ''), Locale('fr', '')],
-        locale: Locale('en', ''),
-        home: PlayerStatsScreen(),
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: Locale(locale),
+        home: const PlayerStatsScreen(),
       ),
     ));
     await tester.runAsync(
@@ -195,6 +198,21 @@ void main() {
     expect(find.text('Al'), findsWidgets);
     expect(board[seated[1].id], Color(_bobColour));
   });
+
+  for (final locale in AppLocalizations.supportedLocales) {
+    testWidgets('${locale.languageCode}: every column header reads on one line',
+        (tester) async {
+      await open(tester, locale: locale.languageCode);
+      for (final column in ['player', 'games', 'wins']) {
+        final header = tester.renderObject<RenderParagraph>(find.descendant(
+          of: find.byKey(Key('stats_header_$column')),
+          matching: find.byType(RichText),
+        ));
+        expect(lineCount(header), 1,
+            reason: '$column: "${header.text.toPlainText()}"');
+      }
+    });
+  }
 
   testWidgets('a game-type chip changes the ranks and the wins',
       (tester) async {

@@ -1,5 +1,7 @@
 # The Players screen counts open games and still draws players in blue
 
+**Status:** done (2026-09-19) — closed by fix/player-avatars-colours-keypad. The Players screen counts through `buildLeaderboard(getFinishedGameResults, kAllGameTypes)` and draws a two-letter `PlayerAvatar` in `playerColorsByUuid` (a player with no finished game takes the next colour nobody on the screen shows); the delete confirmation counts every game through `getPlayerGameCounts`. `getStatsByName` and `GameProvider.getPlayerStats` are deleted. Tests: `test/screens/players_screen_test.dart`.
+
 - **Noted:** 2026-09-19 — while replacing the player statistics with the leaderboard (feat/player-stats-leaderboard)
 - **Theme:** visual-refresh
 - **Area:** app
