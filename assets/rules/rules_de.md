@@ -116,7 +116,7 @@ Die anderen Spieler zählen nichts für die Runde.
 
 Die Runden gehen weiter, bis ein Spieler **500 Punkte** erreicht: der höchste Gesamtstand
 gewinnt. So ist Uno in CountScore eingestellt: der höchste Punktstand gewinnt, und das Spiel endet,
-sobald ein Gesamtstand 500 überschreitet.
+sobald ein Gesamtstand 500 erreicht.
 
 Manche Tische spielen umgekehrt: jeder zählt als Strafe, was ihm in der Hand bleibt, und
 der niedrigste Gesamtstand gewinnt. Wenn das euer Fall ist, ändert den Spieltyp, damit der
@@ -249,7 +249,7 @@ Das am weitesten verbreitete System belohnt nur die Spitze des Klassements: bei 
 **erhält der Präsident 2 Punkte**, der **Vizepräsident 1 Punkt**, und die anderen zählen
 nichts. Der erste Spieler, der **10 Punkte** erreicht, gewinnt das Spiel. So ist Präsident in CountScore
 eingestellt: der höchste Punktstand gewinnt, und das Spiel endet, sobald
-ein Gesamtstand 10 überschreitet.
+ein Gesamtstand 10 erreicht.
 
 Es gibt andere Systeme: 3, 2 und 1 Punkte für die ersten drei, oder negative Punkte für
 Vize-Arsch und Arsch. Manche Tische zählen umgekehrt einen Strafpunkt für den Letzten jeder
@@ -451,3 +451,458 @@ Ein Spieler wird **ausgeschieden, sobald er 100 Punkte überschreitet**. Das Spi
 zwischen den Überlebenden fort; der letzte verbleibende Spieler oder der mit der niedrigsten
 Gesamtpunkte gewinnt. Viele Tische spielen mit 200 oder 500 Punkte: passt die Schwelle in
 deinem Spieltyp an.
+
+<!--@coinche-->
+Eine Variante von Belote, bei der der Kontrakt in einer Versteigerung angesagt wird, zu
+viert in zwei Zweierteams, mit einem 32er-Blatt. Das Ziel ist es, als Erstes die vereinbarte
+Gesamtpunkte zu erreichen, die CountScore auf **1.000 Punkte** setzt.
+
+## Kartenwerte
+
+Die gleichen wie bei Belote: im Trumpf: Bube (20), 9 (14), Ass (11), 10 (10), König (4),
+Dame (3), 8 und 7 (0); in der Farbe: Ass (11), 10 (10), König (4), Dame (3), Bube (2), 9, 8
+und 7 (0). Eine Partie ist immer **162 Punkte** wert, *dix de der* inbegriffen.
+
+## Die Versteigerung
+
+Jeder erhält acht Karten, und es wird keine Karte aufgedeckt. Reihum passen die Spieler oder
+reizen einen Punktwert und eine Trumpffarbe: mindestens **80**, dann in Schritten von 10,
+wobei jeder Reiz höher sein muss als der vorherige. **Capot** — alle acht Stiche zu
+versprechen — ist der höchste Reiz. Viele Tische erlauben auch *Ohne Trumpf* und *Alles
+Trumpf*.
+
+Ein Gegner, der am Kontrakt zweifelt, kann ihn **coinchen**, wodurch der Einsatz verdoppelt
+wird; das Reizteam kann dann **surcoinchen**, wodurch er sich vervierfacht. Die Reizung
+stoppt nach drei aufeinanderfolgenden Pässen, oder sobald eine Coinche nicht beantwortet
+wird.
+
+## Spielablauf
+
+Die acht Stiche werden wie bei Belote gespielt: Farbe bedienen, Trumpf spielen, wenn nicht
+möglich, und überstechen. Der König und die Dame des Trumpfes, wenn *Belote* und *Rebelote*
+angesagt werden, sind **20 Punkte** wert für das Team, das sie hält.
+
+## Punktezählung
+
+- **Kontrakt erfüllt** — das Reizteam hat mindestens die angesagten Punkte erreicht. Es
+  bekommt den Wert seines Kontrakts plus die gemachten Punkte, und die Gegner bekommen das,
+  was sie gemacht haben.
+- **Kontrakt verfehlt** — das Reizteam bekommt nichts, und die Gegner bekommen **160 Punkte**
+  plus den Wert des Kontrakts.
+- Ein Coinch multipliziert den Kontraktwert mit **2**, ein Surcoinch mit **4**.
+
+Wie die gemachten Punkte gerundet und gezählt werden, unterscheidet sich von Tisch zu Tisch;
+notieren Sie bei jeder Partie den Punktstand jedes Teams so, wie es Ihr Tisch handhabt.
+
+## Spielende
+
+Das Spiel endet, sobald ein Team **1.000 Punkte** erreicht, und der höchste Gesamtstand
+gewinnt. Tische, die zu 2.000 Punkten spielen, ändern die Schwelle im Spieltyp.
+
+<!--@yahtzee-->
+Ein Würfelspiel für einen oder mehrere Spieler mit **fünf Würfeln** und einer Punkteliste.
+Das Spiel dauert **13 Runden**: in jeder Runde füllt jeder Spieler ein Kästchen auf seiner
+Liste aus.
+
+## Der Spielzug
+
+Werfen Sie alle fünf Würfel, dann würfeln Sie beliebig viele davon erneut, höchstens
+**zweimal**: insgesamt drei Würfe. Notieren Sie dann das Ergebnis in einem noch leeren
+Kästchen Ihrer Wahl. Passt das Ergebnis in kein Kästchen, streichen Sie eins durch: das
+zählt null.
+
+## Oberer Bereich
+
+Sechs Kästchen, **von Einsen bis Sechsen**: notieren Sie die Summe der Würfel mit dieser
+Augenzahl. Drei Fünfen im Kästchen der Fünfen ergeben 15.
+
+Eine Summe von mindestens **63 Punkten** im oberen Bereich — drei Würfel jeder Augenzahl —
+bringt einen Bonus von **35 Punkten**.
+
+## Unterer Bereich
+
+- **Dreier** — drei gleiche Würfel: Summe aller fünf Würfel.
+- **Vierer** — vier gleiche Würfel: Summe aller fünf Würfel.
+- **Full House** — drei gleiche und ein Paar: **25 Punkte**.
+- **Kleine Straße** — vier aufeinanderfolgende Augenzahlen: **30 Punkte**.
+- **Große Straße** — fünf aufeinanderfolgende Augenzahlen: **40 Punkte**.
+- **Yahtzee** — fünf gleiche Würfel: **50 Punkte**.
+- **Chance** — eine beliebige Kombination: Summe aller fünf Würfel.
+
+Ein weiterer Yahtzee, wenn das Yahtzee-Kästchen bereits 50 hat, bringt einen Bonus von
+**100 Punkten** und wird zusätzlich in ein anderes leeres Kästchen eingetragen.
+
+## Spielende
+
+Nach der 13. Runde addiert jeder seine beiden Bereiche und seine Boni zusammen; der höchste
+Gesamtstand gewinnt. In CountScore können Sie die Punkte des ausgefüllten Kästchens als eine
+Runde notieren, oder das Gesamtergebnis der Liste als eine einzelne Runde.
+
+<!--@phase10-->
+Ein Kombinationsspiel für 2 bis 6 Spieler mit einem Spezialblatt aus Karten mit Nummern 1
+bis 12 in vier Farben, **Joker** und **Aussetzer**. Jeder Spieler muss in Reihenfolge zehn
+festgelegte Kombinationen erfüllen: die **Phasen**.
+
+## Die zehn Phasen
+
+1. zwei Drillinge;
+2. ein Drilling und eine Folge von vier;
+3. ein Vierling und eine Folge von vier;
+4. eine Folge von sieben;
+5. eine Folge von acht;
+6. eine Folge von neun;
+7. zwei Vierlinge;
+8. sieben Karten einer Farbe;
+9. ein Fünfling und ein Paar;
+10. ein Fünfling und ein Drilling.
+
+Eine Folge kann Farben mischen. Der Joker ersetzt jede beliebige Karte; der Aussetzer lässt
+einen Spieler einen Zug aussetzen.
+
+## Spielablauf
+
+Jeder Spieler erhält **10 Karten**. Ein Spieler zieht in seinem Zug eine Karte — vom Stapel
+oder vom Ablagestapel — und wirft dann eine Karte ab. Ein Spieler, der die Phase hat, die er
+erfüllen muss, kann sie auslegen, ganz und auf einmal; von da an kann er die auf dem Tisch
+liegenden Kombinationen ergänzen, seine eigenen und die der anderen.
+
+Die Runde endet, sobald ein Spieler alle seine Karten losgeworden ist. Diejenigen, die ihre
+Phase ausgelegt haben, gehen zur nächsten Phase über; die anderen versuchen es in der
+nächsten Runde erneut.
+
+## Punktezählung
+
+Karten, die in der Hand bleiben, zählen **als Strafpunkte**: **5 Punkte** für 1 bis 9,
+**10 Punkte** für 10 bis 12, **15 Punkte** für einen Aussetzer, **25 Punkte** für einen
+Joker.
+
+## Spielende
+
+Der erste Spieler, der seine **zehnte Phase** auslegt, gewinnt. Wenn mehrere dies in der
+gleichen Runde schaffen, gewinnt der niedrigste Gesamtstand. CountScore verfolgt die Phasen
+nicht: notieren Sie diese im Kommentar der Runde und erklären Sie das Spiel für beendet,
+wenn die zehnte Phase ausgelegt ist.
+
+<!--@flip7-->
+Ein Push-your-Luck-Kartenspiel für drei oder mehr Spieler mit einem Blatt aus Karten mit den
+Nummern **0 bis 12** — so viele Exemplare jeder Zahl wie ihr Wert, und eine 0 — plus Bonus-
+und Aktionskarten. Das Ziel ist es, als Erster **200 Punkte** zu erreichen.
+
+## Der Spielzug
+
+In jeder Runde entscheidet sich jeder noch spielende Spieler für **nehmen** — eine weitere
+Karte offen vor sich auslegen — oder für **stoppen** — und das sichern, was er bereits hat.
+
+Wer **eine Zahl umdreht, die er bereits hat**, **platzt**: er bekommt für die Runde nichts. Wer
+**sieben verschiedene Zahlen** aufreiht, stoppt sofort die Runde für alle.
+
+## Die Spezialkarten
+
+- **Modifikatoren**: +2, +4, +6, +8, +10, die zur Summe addiert werden, und **×2**, die die
+  Summe der Zahlen verdoppelt.
+- **Gefrieren**: der Zielspieler stoppt sofort mit dem, was er hat.
+- **Drei in Folge**: der Zielspieler muss drei Karten hintereinander nehmen.
+- **Zweite Chance**: wird mit einer doppelten Zahl abgelegt, anstatt zu platzen.
+
+## Punktezählung
+
+Ein Spieler, der nicht geplatzt ist, bekommt die Summe seiner Zahlen, verdoppelt, wenn er ×2
+hat, dann plus seine Boni. **Sieben verschiedene Zahlen** aufreihen bringt **15 Punkte**
+mehr. Ein Spieler, der geplatzt ist, bekommt null, egal welche Karten er hat.
+
+## Spielende
+
+Das Spiel endet am Ende der Runde, in der ein Spieler **200 Punkte** erreicht, und der
+höchste Gesamtstand gewinnt.
+
+<!--@mille_bornes-->
+Ein Autorenn-Kartenspiel für 2 bis 6 Spieler, oft zu viert in zwei 2er-Teams. Jede Partie
+ist eine Fahrt von **1.000 Kilometern**; das Spiel wird mit **5.000 Punkten** gewonnen.
+
+## Die Karten
+
+- **Etappen**: 25, 50, 75, 100 und 200 Kilometer.
+- **Attacken**: Rotlicht, Tempolimit, Kein Benzin, Reifenpanne, Unfall.
+- **Reparaturen**: Grünlicht, Ende Tempolimit, Benzin, Ersatzreifen, Reparatur.
+- **Sicherungen**: Recht auf Vorfahrt, Zusatztank, Pannensicher, Rennfahrer — jede schützt
+  wirksam vor einer Attacke.
+
+## Spielablauf
+
+Jeder Spieler erhält sechs Karten. In Ihrem Zug ziehen Sie eine Karte und spielen oder
+werfen eine ab. Um fahren zu können, brauchen Sie erst ein **Grünlicht**. Legen Sie Ihre
+Etappen vor sich aus, attackieren Sie einen Gegner, und beheben Sie die gegen Sie gespielten
+Attacken. Unter Tempolimit können Sie nur Etappenkarten von 50 Kilometern oder weniger
+spielen.
+
+Eine Sicherung, die im gleichen Moment gespielt wird, in dem Sie die Attacke erhalten, die
+sie abwehrt, ist ein **Coup fourré**: die Attacke wird aufgehoben, und Sie spielen sofort
+erneut.
+
+Die Partie endet, wenn ein Spieler **genau 1.000 Kilometer** erreicht, oder wenn der Stapel
+leer ist und niemand mehr spielen kann.
+
+## Punktezählung
+
+- je gefahrener Kilometer: **1 Punkt**;
+- je Sicherung: **100 Punkte**, und **300 Punkte** mehr für alle vier;
+- je Coup fourré: **300 Punkte**;
+- Fahrt beendet: **400 Punkte**;
+- Fahrt beendet nach Stapelleerung: **300 Punkte** mehr;
+- Fahrt beendet ohne 200er-Etappe: **300 Punkte** mehr;
+- Fahrt beendet, ohne dass ein Gegner fuhr: **500 Punkte** mehr.
+
+Die Werte unterscheiden sich leicht je nach Ausgabe; folgen Sie denen in Ihrer Box.
+
+## Spielende
+
+Das Spiel endet, sobald ein Spieler oder Team **5.000 Punkte** erreicht, und der höchste
+Gesamtstand gewinnt.
+
+<!--@rummikub-->
+Ein Kombinationsspiel für 2 bis 4 Spieler mit **106 Steinen**: die Zahlen 1 bis 13 in vier
+Farben, zweimal, und zwei Joker. Das Ziel einer Runde ist es, alle Ihre Steine auszulegen.
+
+## Vorbereitung
+
+Jeder Spieler zieht **14 Steine** und legt sie auf seinem Ständer aus. Der Rest bildet den
+Nachziehstapel, verdeckt.
+
+## Die Kombinationen
+
+- **Eine Gruppe**: drei oder vier Steine mit der gleichen Zahl, alle in verschiedenen
+  Farben.
+- **Eine Folge**: mindestens drei aufeinanderfolgende Zahlen in einer Farbe. Die 1 folgt
+  nicht auf die 13.
+
+Ein Joker ersetzt jeden beliebigen Stein.
+
+## Spielablauf
+
+Ihr **erstes Auslegen** muss mindestens **30 Punkte** wert sein, nur mit Ihren eigenen
+Steinen. Danach können Sie in Ihrem Zug beliebig viele Steine auslegen und die auf dem Tisch
+frei umordnen — eine Folge teilen, eine Gruppe erweitern, einen Joker zurücknehmen, indem
+Sie ihn ersetzen — vorausgesetzt, jede Kombination ist am Ende gültig. Ein Spieler, der
+nichts auslegt, zieht einen Stein.
+
+## Punktezählung
+
+Die Runde endet, sobald ein Spieler seinen letzten Stein ausgelegt hat. Die anderen zählen
+die Punkte ihrer verbleibenden Steine **als Minusstand**, ein Joker zählt **30 Punkte**; der
+Gewinner bekommt die Summe dieser Strafpunkte als Pluspunkte.
+
+## Spielende
+
+Sie spielen die Anzahl der Runden, auf die Sie sich geeinigt haben, und der höchste
+Gesamtstand gewinnt.
+
+<!--@six_nimmt-->
+Ein Kartenspiel für 2 bis 10 Spieler mit **104 Karten** mit den Nummern 1 bis 104. Jede
+Karte trägt **Hornochsen**, von eins bis sieben: das sind Strafpunkte, und das Ziel ist es,
+so wenige wie möglich zu sammeln.
+
+## Vorbereitung
+
+Jeder Spieler erhält **10 Karten**. Vier Karten werden aufgedeckt in die Mitte gelegt: jede
+eröffnet eine Reihe.
+
+## Spielablauf
+
+In jeder Runde wählen alle Spieler geheim eine Karte und decken sie zusammen auf. Die Karten
+werden von der niedrigsten zur höchsten gelegt. Jede Karte schließt sich der Reihe an, deren
+letzte Karte **die nächste darunter** ist.
+
+- Wer die **sechste** Karte einer Reihe legt, nimmt die ersten fünf und seine Karte eröffnet
+  eine neue Reihe.
+- Wer eine Karte legt, die niedriger ist als alle Reihenendkarten, wählt eine Reihe, nimmt
+  sie, und seine Karte ersetzt sie.
+
+## Punktezählung
+
+Nach zehn Runden zählt jeder die Hornochsen, die er gesammelt hat. Üblicherweise: 1
+Hornochse pro Karte, **2** für Vielfache von 5, **3** für Vielfache von 10, **5** für
+Doppelzahlen wie 11 oder 22, und **7** für die 55.
+
+## Spielende
+
+Die Runden folgen aufeinander, und der niedrigste Gesamtstand gewinnt. CountScore
+eliminiert einen Spieler, sobald er **66 Hornochsen überschreitet**. Die Originalregel
+beendet das Spiel, sobald ein Spieler 66 hat: um sie genau zu befolgen, stellen Sie die
+Schwelle auf 65 im Spieltyp.
+
+<!--@qwirkle-->
+Ein Steine-Spiel für 2 bis 4 Spieler mit **108 Steinen**: sechs Formen in sechs Farben,
+jeder Stein dreimal. Sie machen Punkte, indem Sie Linien bilden.
+
+## Vorbereitung
+
+Jeder Spieler zieht **6 Steine** und hält sie verborgen. Der Spieler, der die längste Linie
+legen kann, beginnt.
+
+## Spielablauf
+
+In Ihrem Zug tun Sie eines der Folgenden:
+
+- **legen** Sie einen oder mehrere Steine, alle in eine Linie, die bereits gelegte Steine
+  berührt;
+- **tauschen** Sie Steine gegen den Vorrat, ohne zu legen.
+
+Alle Steine einer Linie teilen sich **entweder die Farbe oder die Form**, und eine Linie
+enthält nie zweimal den gleichen Stein — höchstens sechs Steine. Nach dem Legen füllen Sie
+Ihre Hand bis sechs auf.
+
+## Punktezählung
+
+Sie bekommen **einen Punkt pro Stein** in jeder Linie, die Sie in diesem Zug schaffen oder
+verlängern, einschließlich bereits gelegter Steine. Ein Stein, der zwei Linien angehört,
+zählt in jeder.
+
+Eine Linie mit sechs Steinen zu vervollständigen ist ein **Qwirkle**: das bringt
+**6 Punkte** mehr, insgesamt **12 Punkte** für die Linie.
+
+## Spielende
+
+Wenn der Vorrat leer ist, bekommt der erste Spieler, der alle seine Steine legt, **6 Punkte**
+mehr und beendet das Spiel. Der höchste Gesamtstand gewinnt.
+
+<!--@farkle-->
+Ein Würfelspiel für zwei oder mehr Spieler mit **sechs Würfeln**. Das Ziel ist es, als
+Erster **10.000 Punkte** zu erreichen und zu wissen, wann man aufhört, bevor man alles
+verliert.
+
+## Der Spielzug
+
+Werfen Sie alle sechs Würfel, dann legen Sie mindestens einen Würfel beiseite, der zählt.
+Sie können dann **stoppen** und die angesammelten Punkte buchen, oder **nochmal werfen**, um
+mehr zu sammeln.
+
+Ein Wurf, der nichts bringt, ist ein **Farkle**: alle Punkte des Zuges gehen verloren. Wenn
+alle sechs Würfel gezählt haben, können Sie alle wieder nehmen und weitermachen.
+
+## Die Kombinationen
+
+Ein übliches Punkteschema:
+
+- eine **1**: **100 Punkte**; eine **5**: **50 Punkte**;
+- drei gleiche: **100 Punkte × Augenzahl**, und **1.000 Punkte** für drei 1er;
+- vier, fünf oder sechs gleiche: ein Mehrfaches der Dreier, je nach Ihrem Tisch;
+- eine Straße von 1 bis 6: **1.500 Punkte**; drei Paare: **1.500 Punkte**.
+
+Nur Würfel vom gleichen Wurf kombinieren sich. Viele Tische verlangen mindestens
+**500 Punkte** in einem Zug, bevor ein Spieler seine ersten Punkte buchen kann.
+
+## Spielende
+
+Sobald ein Spieler **10.000 Punkte** erreicht, spielt jeder andere einen letzten Zug, und
+der höchste Gesamtstand gewinnt. CountScore zeigt den Endbildschirm an, sobald die Schwelle
+erreicht ist: wählen Sie „Weiterspielen", um den anderen einen letzten Zug zu erlauben.
+
+<!--@canasta-->
+Ein Kombinationsspiel zu viert, in zwei 2er-Teams, mit zwei 52er-Blättern und vier Jokern.
+Das Ziel ist es, **Canastas** zu bilden — Kombinationen von sieben Karten — und als Erster
+**5.000 Punkte** zu erreichen.
+
+## Die Karten
+
+**Joker** und **2er** ersetzen jede beliebige Karte. **Rote 3er** werden nicht gespielt: man
+legt sie sofort aus, sobald man sie erhält, und sie bringen einen Bonus. **Schwarze 3er**
+werden verwendet, um den Ablagestapel zu sperren.
+
+## Spielablauf
+
+Jeder Spieler erhält **11 Karten**. In seinem Zug zieht man zwei Karten — oder den ganzen
+Ablagestapel, wenn man die oberste Karte verwenden kann — legt Kombinationen aus, dann wirft
+man eine Karte ab.
+
+Eine Kombination hat mindestens drei Karten gleichen Wertes, mit mindestens zwei natürlichen
+Karten und höchstens drei wilden Karten. Sieben Karten bilden eine **Canasta**: **rein**
+ohne wilde Karte, **gemischt** mit einer.
+
+Das erste Auslegen eines Teams muss eine Mindestgrenze erreichen, die mit seinem Punktstand
+steigt: **50 Punkte** bis 1.495, **90** bis 2.995, **120** darüber, und 15 mit negativem
+Stand. Ein Team kann die Runde nur mit mindestens einer Canasta **beenden**.
+
+## Punktezählung
+
+- ausgelegte Karten: Joker **50**, Ass und 2 **20**, König bis 8 **10**, 7 bis 4 und
+  schwarze 3 **5**;
+- reine Canasta: **500 Punkte**; gemischte Canasta: **300 Punkte**;
+- Runde beenden: **100 Punkte**;
+- je rote 3: **100 Punkte**, und **800** für alle vier.
+
+Karten in der Hand werden abgezogen, und rote 3er eines Teams, das nichts ausgelegt hat,
+zählen dagegen.
+
+## Spielende
+
+Das Spiel endet, sobald ein Team **5.000 Punkte** erreicht, und der höchste Gesamtstand
+gewinnt.
+
+<!--@wizard-->
+Ein Stichspiel mit Geboten für 3 bis 6 Spieler mit **60 Karten**: ein 52er-Blatt plus vier
+**Zauberer** und vier **Narren**. Das Ziel ist es, genau vorherzusagen, wie viele Stiche Sie
+machen werden.
+
+## Die Runden
+
+In der ersten Runde bekommt jeder Spieler **eine Karte**, zwei in der zweiten, und so weiter
+bis der Stapel leer ist: 20 Runden zu dritt, 15 zu viert, 12 zu fünft, 10 zu sechst. Die
+nächste Karte wird aufgedeckt und zeigt die Trumpffarbe.
+
+## Die Gebote
+
+Nachdem sie ihre Karten angesehen haben, sagt jeder reihum an, wie viele Stiche er zu machen
+erwartet.
+
+## Spielablauf
+
+Sie müssen die verlangte Farbe bedienen. Ein **Zauberer** kann immer gespielt werden und
+gewinnt den Stich — der erste gespielte gewinnt. Ein **Narr** kann immer gespielt werden und
+verliert den Stich. Ansonsten gewinnt der höchste Trumpf oder die höchste Karte der
+verlangten Farbe.
+
+## Punktezählung
+
+- **genaues Gebot**: **20 Punkte**, plus **10 Punkte** pro gemachtem Stich;
+- **verfehltes Gebot**: **−10 Punkte** pro Stich Differenz, über oder unter.
+
+## Spielende
+
+Nach der letzten Runde gewinnt der höchste Gesamtstand.
+
+<!--@triomino-->
+Ein dreieckiges Domino-Spiel für 2 bis 6 Spieler mit **56 Steinen**, deren Ecken je eine
+Zahl von 0 bis 5 tragen. Sie machen Punkte, indem Sie Steine legen, und noch mehr, indem Sie
+Figuren bilden.
+
+## Vorbereitung
+
+Die Steine werden verdeckt gemischt. Jeder zieht **9** bei zwei Spielern, **7** bei drei
+oder vier, **6** darüber hinaus. Der Spieler mit dem höchsten Drilling beginnt.
+
+## Spielablauf
+
+In Ihrem Zug legen Sie einen Stein, dessen **zwei Ecken** einer Seite mit denen der Seite
+übereinstimmen, die er berührt. Sie machen dann **die Summe der drei Zahlen** des Steins.
+
+Wer nicht spielen kann, zieht einen Stein, bis zu dreimal: **−5 Punkte** pro gezogener
+Stein, und **−10 Punkte** mehr, wenn er immer noch nicht spielen kann.
+
+## Die Boni
+
+- das Spiel mit einem Drilling eröffnen: **10 Punkte** mehr, mehr für den Drilling 0;
+- eine **Brücke** schließen: **40 Punkte**;
+- ein **Hexagon** schließen: **50 Punkte**.
+
+Die Boni unterscheiden sich je nach Ausgabe; folgen Sie denen in Ihrer Box.
+
+## Rundenende
+
+Die Runde endet, wenn ein Spieler seinen letzten Stein gelegt hat: er bekommt **25 Punkte**
+plus die Summe der Steine, die die anderen noch haben. Wenn der Vorrat leer ist und niemand
+spielen kann, bekommt der Spieler mit den wenigsten Punkten in der Hand die Differenz.
+
+## Spielende
+
+Die Runden folgen aufeinander bis zur vereinbarten Gesamtpunkte, oft 400 Punkte, und der
+höchste Gesamtstand gewinnt. Stellen Sie diese Schwelle im Spieltyp ein.

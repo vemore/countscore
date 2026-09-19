@@ -110,7 +110,7 @@ The other players score nothing for the round.
 
 ## End of the Game
 
-Rounds continue until a player reaches **500 points**: the highest total wins. This is how CountScore sets up Uno: the highest score wins, and the game stops as soon as a total exceeds
+Rounds continue until a player reaches **500 points**: the highest total wins. This is how CountScore sets up Uno: the highest score wins, and the game stops as soon as a total reaches
 500.
 
 Some groups play the opposite, each scoring as a penalty what they had left in hand, and
@@ -215,7 +215,7 @@ Vice-Asshole and Vice-President exchange one card the same way.
 
 The most common scoring rewards only the top of the rankings: in each round, the
 **President scores 2 points**, the **Vice-President 1 point**, and the others score
-nothing. The first player to reach **10 points** wins the game. This is how CountScore sets up President: the highest score wins, and the game stops as soon as a total exceeds 10.
+nothing. The first player to reach **10 points** wins the game. This is how CountScore sets up President: the highest score wins, and the game stops as soon as a total reaches 10.
 
 Other scoring systems exist: 3, 2, and 1 points to the top three, or negative points for
 the Vice-Asshole and Asshole. Some groups score the opposite: a penalty point to the
@@ -361,3 +361,434 @@ Penalties accumulate round after round, and you try to stay low.
 ## End of Game
 
 A player is **eliminated as soon as they exceed 100 points**. The game continues among the survivors; the last player standing, or the lowest total, wins. Many groups play to 200 or 500 points: adjust the threshold in your game type settings.
+
+<!--@coinche-->
+A variant of Belote in which the contract is bid at auction, for four players in two teams
+of two, with a 32-card deck. The goal is to be first to the agreed total, which CountScore
+sets at **1000 points**.
+
+## Card order and values
+
+The same as Belote: in trumps, Jack (20), 9 (14), Ace (11), 10 (10), King (4), Queen (3),
+8 and 7 (0); in the other suits, Ace (11), 10 (10), King (4), Queen (3), Jack (2), 9, 8 and
+7 (0). A deal is always worth **162 points**, the *dix de der* included.
+
+## Bidding
+
+Each player receives their eight cards, and no card is turned up. In turn, each player
+passes or bids a number of points and a trump suit: at least **80**, then in steps of 10,
+each bid higher than the last. **Capot** — promising all eight tricks — is the highest
+bid. Many tables also allow *no trumps* and *all trumps*.
+
+An opponent who doubts the contract can **coinche** it, which doubles the stakes; the
+bidding team can then **surcoinche**, which quadruples them. Bidding ends after three
+passes in a row, or as soon as a coinche is not answered.
+
+## Play
+
+The eight tricks are played as in Belote: follow suit, trump if you cannot, and overtrump.
+The King and Queen of trumps, announced as *belote* and *rebelote*, are worth **20 points**
+to the team that holds them.
+
+## Scoring
+
+- **Contract made** — the bidding team gathered at least the points it bid. It scores the
+  value of its contract plus the points it took, and the defence scores what it took.
+- **Contract failed** — the bidding team scores nothing, and the defence scores
+  **160 points** plus the value of the contract.
+- A coinche multiplies the value of the contract by **2**, a surcoinche by **4**.
+
+How the points taken are rounded and counted varies from table to table; enter each
+team's score for the deal as your table works it out.
+
+## End of the game
+
+The game ends as soon as a team reaches **1000 points**, and the highest total wins.
+Tables that play to 2000 points change the threshold in the game type.
+
+<!--@yahtzee-->
+A dice game for one player or more, with **five dice** and a score sheet. The game lasts
+**13 turns**: on each turn, every player fills one box on their sheet.
+
+## A turn
+
+Roll all five dice, then reroll any of them, **twice** at most: three rolls in all. Then
+write the result in any box that is still empty. If the result fits no box, strike one
+out: it scores zero.
+
+## Upper section
+
+Six boxes, **Ones to Sixes**: write the sum of the dice showing that value. Three Fives in
+the Fives box score 15.
+
+An upper section total of at least **63 points** — three dice of each value — earns a
+bonus of **35 points**.
+
+## Lower section
+
+- **Three of a kind** — three matching dice: the sum of all five dice.
+- **Four of a kind** — four matching dice: the sum of all five dice.
+- **Full house** — three of a kind and a pair: **25 points**.
+- **Small straight** — four values in a row: **30 points**.
+- **Large straight** — five values in a row: **40 points**.
+- **Yahtzee** — five matching dice: **50 points**.
+- **Chance** — anything at all: the sum of all five dice.
+
+Another Yahtzee, when the Yahtzee box already holds 50, earns a bonus of **100 points** and
+is also written into another empty box.
+
+## End of the game
+
+After the thirteenth turn, each player adds up both sections and their bonuses; the
+highest total wins. In CountScore, enter the points of the box you filled as a round, or
+the sheet's total as a single round.
+
+<!--@phase10-->
+A melding game for 2 to 6 players, with a special deck of cards numbered 1 to 12 in four
+colours, plus **Wild** cards and **Skip** cards. Each player must complete ten set
+combinations, the **phases**, in order.
+
+## The ten phases
+
+1. two sets of three;
+2. one set of three and one run of four;
+3. one set of four and one run of four;
+4. one run of seven;
+5. one run of eight;
+6. one run of nine;
+7. two sets of four;
+8. seven cards of one colour;
+9. one set of five and one set of two;
+10. one set of five and one set of three.
+
+A run may mix colours. A Wild stands in for any card; a Skip makes a player miss a turn.
+
+## Play
+
+Each player is dealt **10 cards**. On your turn, draw one card, from the deck or the
+discard pile, then discard one card. A player holding the phase they need may lay it
+down, complete and in one go; from then on, they may add cards to the combinations on the
+table, their own and everyone else's.
+
+The round ends as soon as a player has got rid of all their cards. Those who laid down
+their phase move on to the next one; the others try it again in the next round.
+
+## Scoring
+
+Cards left in hand count as **penalty points**: **5 points** for 1 to 9, **10 points** for
+10 to 12, **15 points** for a Skip, **25 points** for a Wild.
+
+## End of the game
+
+The first player to lay down their **tenth phase** wins. If several do so in the same
+round, the lowest total wins. CountScore does not track phases: note them in the round
+comment, and declare the game over when the tenth is laid down.
+
+<!--@flip7-->
+A push-your-luck card game for three players or more, with a deck of cards numbered
+**0 to 12** — as many copies of each number as its value, and a single 0 — plus modifier
+cards and action cards. The goal is to be first to **200 points**.
+
+## A round
+
+On every turn, each player still in the round chooses: **hit**, taking one more card face
+up in front of them, or **stay**, banking what they already have.
+
+A player who turns over **a number they already have** **busts**: they score nothing for
+the round. A player who lines up **seven different numbers** ends the round at once for
+everyone.
+
+## Special cards
+
+- **Modifiers**: +2, +4, +6, +8, +10, added to the total, and **×2**, which doubles the
+  sum of the numbers.
+- **Freeze**: the targeted player stays at once with what they have.
+- **Flip Three**: the targeted player must take three cards in a row.
+- **Second Chance**: discarded along with a duplicate number instead of busting.
+
+## Scoring
+
+A player who did not bust scores the sum of their numbers, doubled if they hold the ×2,
+then plus their modifiers. Lining up **seven different numbers** earns **15 points** more.
+A player who busted scores zero, whatever their cards.
+
+## End of the game
+
+The game ends at the end of the round in which a player reaches **200 points**, and the
+highest total wins.
+
+<!--@mille_bornes-->
+A car-racing card game for 2 to 6 players, most often four in two teams of two. Each hand
+is a trip of **1000 kilometres**; the game is won at **5000 points**.
+
+## The cards
+
+- **Distance**: 25, 50, 75, 100 and 200 kilometres.
+- **Hazards**: Stop, Speed Limit, Out of Gas, Flat Tire, Accident.
+- **Remedies**: Roll, End of Limit, Gasoline, Spare Tire, Repairs.
+- **Safeties**: Right of Way, Extra Tank, Puncture-Proof, Driving Ace — each one protects
+  for good against one hazard.
+
+## Play
+
+Each player is dealt six cards. On your turn, draw, then play or discard one card. You
+need a **Roll** card before you can move. Lay your distance cards in front of you, attack
+an opponent, remedy the hazards played on you. Under a speed limit, you may only play
+distance cards of 50 kilometres or less.
+
+A safety played at the very moment you receive the hazard it counters is a **coup
+fourré**: the hazard is cancelled, and you play again at once.
+
+The hand ends when a player reaches **exactly 1000 kilometres**, or when the draw pile is
+exhausted and nobody can play.
+
+## Scoring
+
+- each kilometre travelled: **1 point**;
+- each safety: **100 points**, and **300 points** more for all four;
+- each coup fourré: **300 points**;
+- trip completed: **400 points**;
+- trip completed after the draw pile ran out: **300 points** more;
+- trip completed without a 200: **300 points** more;
+- trip completed while no opponent moved at all: **500 points** more.
+
+The schedules differ slightly between editions; follow the one in your box.
+
+## End of the game
+
+The game ends as soon as a player or a team reaches **5000 points**, and the highest total
+wins.
+
+<!--@rummikub-->
+A tile-melding game for 2 to 4 players, with **106 tiles**: the numbers 1 to 13 in four
+colours, twice over, and two jokers. The goal of a round is to lay down all your tiles.
+
+## Setup
+
+Each player draws **14 tiles** and places them on their rack. The rest form the pool,
+face down.
+
+## Combinations
+
+- **A group**: three or four tiles of the same number, all in different colours.
+- **A run**: at least three consecutive numbers in one colour. The 1 does not follow the
+  13.
+
+A joker stands in for any tile.
+
+## Play
+
+Your **first meld** must total at least **30 points**, from your own tiles only. After
+that, on your turn, lay down as many tiles as you like, freely rearranging those on the
+table — splitting a run, extending a group, taking back a joker by replacing it — as long
+as every combination is valid at the end of your turn. A player who lays nothing down
+draws one tile.
+
+## Scoring
+
+The round ends as soon as a player has laid down their last tile. The others count the
+value of their remaining tiles **as a negative score**, a joker left over counting
+**30 points**; the winner scores the sum of those penalties as a positive score.
+
+## End of the game
+
+Play the number of rounds you agreed on, and the highest total wins.
+
+<!--@six_nimmt-->
+A card game for 2 to 10 players, with **104 cards** numbered 1 to 104. Each card carries
+between one and seven **bull heads**: they are penalty points, and the aim is to collect
+as few as possible.
+
+## Setup
+
+Each player is dealt **10 cards**. Four cards are turned face up in the middle: each one
+starts a row.
+
+## Play
+
+On every turn, all players choose a card in secret and reveal them together. The cards
+are placed from lowest to highest. Each card joins the row whose last card is **the
+closest below** its own.
+
+- A player whose card would be the **sixth** in a row takes the first five, and their card
+  starts a new row.
+- A player whose card is lower than every row's last card chooses a row, takes it, and
+  their card replaces it.
+
+## Scoring
+
+After ten turns, each player counts the bull heads they collected. Usually: 1 head per
+card, **2** for multiples of 5, **3** for multiples of 10, **5** for doubles such as 11 or
+22, and **7** for the 55.
+
+## End of the game
+
+Rounds follow one another, and the lowest total wins. CountScore eliminates a player as
+soon as they exceed **66 bull heads**. The original rule ends the game as soon as a player
+has 66: to follow it to the letter, set the threshold to 65 in the game type.
+
+<!--@qwirkle-->
+A tile game for 2 to 4 players, with **108 tiles**: six shapes in six colours, each tile in
+three copies. You score by making lines.
+
+## Setup
+
+Each player draws **6 tiles** and keeps them hidden. The player who can lay the longest
+line starts.
+
+## Play
+
+On your turn, do one of the following:
+
+- **place** one or more tiles, all in one line, touching the tiles already on the table;
+- **trade** tiles with the bag, without placing any.
+
+All the tiles in a line share **either their colour or their shape**, and a line never
+holds the same tile twice — so six tiles at most. After placing, draw back up to six.
+
+## Scoring
+
+Score **one point per tile** in every line you created or extended this turn, including
+the tiles already there. A tile that belongs to two lines counts in each.
+
+Completing a line of six tiles is a **Qwirkle**: it earns **6 points** more, so
+**12 points** for that line.
+
+## End of the game
+
+Once the bag is empty, the first player to place all their tiles earns **6 points** more
+and ends the game. The highest total wins.
+
+<!--@farkle-->
+A dice game for two players or more, with **six dice**. The goal is to be first to
+**10000 points**, knowing when to stop before losing it all.
+
+## A turn
+
+Roll all six dice, then set aside at least one scoring die. You may then **stop** and bank
+the points you have gathered, or **roll again** with the remaining dice to add more.
+
+A roll that scores nothing is a **Farkle**: all the points of the turn are lost. If all
+six dice have scored, you may pick them all up and keep going.
+
+## Combinations
+
+A common schedule:
+
+- a **1**: **100 points**; a **5**: **50 points**;
+- three of a kind: **100 points × the face value**, and **1000 points** for three 1s;
+- four, five or six of a kind: a multiple of the three of a kind, as your table decides;
+- a straight from 1 to 6: **1500 points**; three pairs: **1500 points**.
+
+Only dice from the same roll combine. Many tables require a minimum of **500 points** in
+one turn before a player's first points can be banked.
+
+## End of the game
+
+As soon as a player reaches **10000 points**, every other player takes one last turn, and
+the highest total wins. CountScore offers the end screen as soon as the threshold is
+reached: choose "Continue Playing" to let the others take their last turn.
+
+<!--@canasta-->
+A melding game for four, in two teams of two, with two 52-card decks and four jokers. The
+goal is to build **canastas** — melds of seven cards — and to be first to **5000 points**.
+
+## The cards
+
+**Jokers** and **2s** are wild. **Red 3s** are not played: they are laid down as soon as
+they are received and earn a bonus. **Black 3s** are used to block the discard pile.
+
+## Play
+
+Each player is dealt **11 cards**. On your turn, draw two cards — or the whole discard
+pile, if you can use its top card — lay down melds, then discard one card.
+
+A meld holds at least three cards of the same rank, with at least two natural cards and
+no more than three wild ones. Seven cards make a **canasta**: **natural** with no wild
+card, **mixed** with one.
+
+A team's first meld must reach a minimum that rises with its score: **50 points** up to
+1495, **90** up to 2995, **120** beyond, and 15 with a negative score. A team may only
+**go out** once it has at least one canasta.
+
+## Scoring
+
+- cards melded: joker **50**, Ace and 2 **20**, King down to 8 **10**, 7 down to 4 and the
+  black 3 **5**;
+- natural canasta: **500 points**; mixed canasta: **300 points**;
+- going out: **100 points**;
+- each red 3: **100 points**, and **800** for all four.
+
+Cards left in hand are subtracted, and the red 3s of a team that has melded nothing count
+against it.
+
+## End of the game
+
+The game ends as soon as a team reaches **5000 points**, and the highest total wins.
+
+<!--@wizard-->
+A trick-taking game with bids, for 3 to 6 players, with **60 cards**: a 52-card deck plus
+four **Wizards** and four **Jesters**. The goal is to predict exactly how many tricks you
+will take.
+
+## The rounds
+
+In the first round each player gets **one card**, two in the second, and so on until the
+deck runs out: 20 rounds with three players, 15 with four, 12 with five, 10 with six. The
+next card is turned up and sets the trump suit.
+
+## Bidding
+
+After looking at their cards, each player in turn announces how many tricks they expect to
+take.
+
+## Play
+
+Follow the suit led if you can. A **Wizard** may always be played and wins the trick — the
+first one played takes it. A **Jester** may always be played and loses the trick.
+Otherwise, the trick goes to the highest trump, or to the highest card of the suit led.
+
+## Scoring
+
+- **exact bid**: **20 points**, plus **10 points** per trick taken;
+- **missed bid**: **−10 points** per trick of difference, over or under.
+
+## End of the game
+
+After the last round, the highest total wins.
+
+<!--@triomino-->
+A triangular domino game for 2 to 6 players, with **56 tiles**, each corner bearing a
+number from 0 to 5. You score by placing tiles, and more by building shapes.
+
+## Setup
+
+The tiles are shuffled face down. Each player draws **9** with two players, **7** with
+three or four, **6** with more. The player holding the highest triple starts.
+
+## Play
+
+On your turn, place a tile whose **two corners** on one side match those of the side it
+touches. You then score the **sum of the tile's three numbers**.
+
+A player who cannot play draws a tile, up to three times: **−5 points** per tile drawn,
+and **−10 points** more if they still cannot play.
+
+## Bonuses
+
+- opening the game with a triple: **10 points** more, extra for the triple 0;
+- completing a **bridge**: **40 points**;
+- completing a **hexagon**: **50 points**.
+
+Bonuses differ between editions; follow the ones in your box.
+
+## End of a round
+
+The round ends when a player has placed their last tile: they score **25 points** plus the
+sum of the tiles the others still hold. If the pool is empty and nobody can play, the
+player with the fewest points in hand scores the difference.
+
+## End of the game
+
+Rounds follow one another up to the agreed total, often 400 points, and the highest total
+wins. Set that threshold in the game type.

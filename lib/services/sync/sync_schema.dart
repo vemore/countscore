@@ -170,19 +170,38 @@ Future<void> applyV12(
   }
 }
 
-/// The ten game types seeded at first run, mapped to the ruleset shipped in
-/// `assets/rules/`. `Autre` is a catch-all with no rules of its own, so it is
-/// absent: a type without a slug shows the "write your own" empty state.
+/// Every built-in game type that ships a ruleset in `assets/rules/`, keyed on
+/// `game_types.builtin_key` and mapped to its `rules_slug`. `other` (`Autre`)
+/// is a catch-all with no rules of its own, so it is absent: a type without a
+/// slug shows the "write your own" empty state.
+///
+/// Keyed on the builtin key rather than on the seeded name since v16: the key
+/// is the stable identity of a built-in type, and the name is not — it is
+/// user-editable, and not even what the app displays (`game_type_name.dart`).
+/// The v13 back-fill, which runs before `builtin_key` exists, reaches the
+/// seeded names through `GameType.seededNamesBeforeV14`.
 const defaultRulesSlugs = <String, String>{
-  'ZapZap': 'zapzap',
-  'Uno': 'uno',
-  'Scrabble': 'scrabble',
-  'Skyjo': 'skyjo',
-  'Président': 'president',
-  'Belote': 'belote',
-  'Tarot': 'tarot',
-  'Bridge': 'bridge',
-  'Rami': 'rami',
+  'zapzap': 'zapzap',
+  'uno': 'uno',
+  'scrabble': 'scrabble',
+  'skyjo': 'skyjo',
+  'president': 'president',
+  'belote': 'belote',
+  'tarot': 'tarot',
+  'bridge': 'bridge',
+  'rami': 'rami',
+  'coinche': 'coinche',
+  'yahtzee': 'yahtzee',
+  'phase10': 'phase10',
+  'flip7': 'flip7',
+  'mille_bornes': 'mille_bornes',
+  'rummikub': 'rummikub',
+  'six_nimmt': 'six_nimmt',
+  'qwirkle': 'qwirkle',
+  'farkle': 'farkle',
+  'canasta': 'canasta',
+  'wizard': 'wizard',
+  'triomino': 'triomino',
 };
 
 /// Schema v13, shared by both engines: `game_types.rules` and
@@ -213,11 +232,16 @@ Future<void> applyV13(
       await execute('ALTER TABLE ${table.key} ADD COLUMN ${column.key} ${column.value}');
     }
   }
+  // Only the nine rulesets that shipped with v13, matched by the name they were
+  // seeded with: `builtin_key` does not exist yet at this step. The twelve
+  // types added in v14 get theirs from [applyV16], by key.
   for (final entry in defaultRulesSlugs.entries) {
+    final name = GameType.seededNamesBeforeV14[entry.key];
+    if (name == null) continue;
     await execute(
       "UPDATE game_types SET rules_slug = '${entry.value}' "
       "WHERE isDefault = 1 AND rules_slug IS NULL "
-      "AND name = '${entry.key.replaceAll("'", "''")}'",
+      "AND name = '${name.replaceAll("'", "''")}'",
     );
   }
 }
@@ -333,4 +357,26 @@ Future<void> applyV15(Future<void> Function(String sql) execute) async {
     'CREATE UNIQUE INDEX IF NOT EXISTS $gameTypesBuiltinKeyIndex '
     'ON game_types(builtin_key) WHERE builtin_key IS NOT NULL AND deleted_at IS NULL',
   );
+}
+
+/// Schema v16, shared by both engines: the rulesets of the twelve built-in
+/// types added in v14 (Coinche, Yahtzee, Phase 10 …), back-filled on
+/// `rules_slug` by `builtin_key`.
+///
+/// No column changes. Only rows whose slug is still NULL are touched, so a
+/// slug already set is kept; a type the user renamed has lost its key and is
+/// left alone, exactly as the v13 back-fill leaves a renamed type. Keyed on
+/// `builtin_key` rather than on the name, so the stored name — French on one
+/// device, Japanese on another — does not matter.
+///
+/// Idempotent: a replay matches nothing. It never inserts, so a type the user
+/// deleted is not resurrected.
+Future<void> applyV16(SqlExecutor execute) async {
+  for (final entry in defaultRulesSlugs.entries) {
+    await execute(
+      'UPDATE game_types SET rules_slug = ? '
+      'WHERE builtin_key = ? AND rules_slug IS NULL',
+      [entry.value, entry.key],
+    );
+  }
 }

@@ -961,7 +961,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String gameRulesEndFirstOver(int threshold) {
-    return 'تنتهي المباراة بمجرد تجاوز أحد اللاعبين $threshold نقطة';
+    return 'تنتهي المباراة بمجرد بلوغ أحد اللاعبين $threshold نقطة';
   }
 
   @override

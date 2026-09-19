@@ -109,7 +109,7 @@ Os outros jogadores não marcam nada pela rodada.
 ## Fim da partida
 
 As rodadas se encadeiam até que um jogador atinja **500 pontos**: o maior total ganha. É assim que o CountScore configura o Uno: o maior escore vence, e a partida para assim que um
-total ultrapassa 500.
+total atinge 500.
 
 Algumas mesas jogam ao contrário, cada um marcando em penalidade o que sobrou na mão, e o
 menor total ganhando. Se este é o seu caso, modifique o tipo de jogo para que o menor
@@ -215,7 +215,7 @@ O baremo mais difundido recompensa apenas o topo do ranking: a cada rodada, o **
 marca 2 pontos**, o **Vice-Presidente 1 ponto**, e os outros não marcam nada. O primeiro
 jogador a atingir **10 pontos** ganha a partida. É assim que o CountScore
 configura o Presidente:
-o maior escore vence, e a partida para assim que um total ultrapassa 10.
+o maior escore vence, e a partida para assim que um total atinge 10.
 
 Existem outros baremos: 3, 2 e 1 pontos aos três primeiros, ou pontos negativos para o
 Vice-Trou du cul e o Trou du cul. Algumas mesas contam ao contrário um ponto de penalidade
@@ -361,3 +361,330 @@ As penalidades se acumulam de rodada em rodada, e tenta-se permanecer baixo.
 ## Fim da partida
 
 Um jogador é **eliminado assim que ultrapassa 100 pontos**. A partida continua entre os sobreviventes; o último em jogo, ou o menor total, ganha. Muitas mesas jogam a 200 ou 500 pontos: ajuste o limite no tipo de jogo.
+
+<!--@coinche-->
+Variante do Belote onde o contrato é licitado em leilão, para quatro jogadores em duas equipes de dois, com um baralho de 32 cartas. O objetivo é chegar primeiro ao total combinado, que o CountScore define como **1000 pontos**.
+
+## A ordem e o valor das cartas
+
+As mesmas do Belote: no trunfo, Valete (20), 9 (14), Ás (11), 10 (10), Rei (4), Dama (3), 8 e 7 (0); nos outros naipes, Ás (11), 10 (10), Rei (4), Dama (3), Valete (2), 9, 8 e 7 (0). Uma mão vale sempre **162 pontos**, o *dix de der* incluído.
+
+## A licitação
+
+Cada jogador recebe suas oito cartas, e nenhuma carta é virada. Por sua vez, cada jogador passa ou anuncia um número de pontos e um naipe de trunfo: pelo menos **80**, depois em incrementos de 10, cada licitação superior à anterior. **Capot** — prometer as oito vazas — é o lance mais alto. Muitas mesas também permitem *sem-trunfo* e *todo-trunfo*.
+
+Um adversário que duvida do contrato pode **coinchar**, o que dobra a aposta; a equipe licitante pode então **surcoinchar**, o que a quadruplica. A licitação termina após três passes consecutivos, ou assim que um coinche não é respondido.
+
+## Desenvolvimento
+
+As oito vazas são jogadas como no Belote: fornecer o naipe pedido, cortar se não puder, e sobre-cortar. O Rei e a Dama de trunfo, anunciados como *belote* e *rebelote*, valem **20 pontos** para a equipe que os detém.
+
+## Contagem
+
+- **Contrato realizado** — a equipe licitante reuniu pelo menos os pontos que licitou. Ela marca o valor de seu contrato mais os pontos que pegou, e a defesa marca o que pegou.
+- **Contrato fracassado** — a equipe licitante não marca nada, e a defesa marca **160 pontos** mais o valor do contrato.
+- Um coinche multiplica o valor do contrato por **2**, um surcoinche por **4**.
+
+Como os pontos pegados são arredondados e contados varia de mesa em mesa; registre o escore de cada equipe para a mão conforme sua mesa o calcula.
+
+## Fim da partida
+
+A partida termina assim que uma equipe atinge **1000 pontos**, e o maior total ganha. Mesas que jogam a 2000 pontos mudam o limite no tipo de jogo.
+
+<!--@yahtzee-->
+Jogo de dados para um ou mais jogadores, com **cinco dados** e uma folha de pontuação. A partida dura **13 turnos**: em cada turno, cada jogador preenche uma casa em sua folha.
+
+## Um turno
+
+Role todos os cinco dados, depois relance quantos quiser, **duas vezes** no máximo: três lançamentos no total. Escreva o resultado em qualquer casa que ainda esteja vazia. Se o resultado não se encaixa em nenhuma casa, risque uma: ela marca zero.
+
+## Seção alta
+
+Seis casas, **de Uns a Seis**: escreva a soma dos dados mostrando esse valor. Três Cincos na casa dos Cincos marcam 15.
+
+Um total na seção alta de pelo menos **63 pontos** — três dados de cada valor — ganha um bônus de **35 pontos**.
+
+## Seção baixa
+
+- **Trinca** — três dados iguais: a soma de todos os cinco dados.
+- **Quadra** — quatro dados iguais: a soma de todos os cinco dados.
+- **Full** — uma trinca e um par: **25 pontos**.
+- **Sequência pequena** — quatro valores seguidos: **30 pontos**.
+- **Sequência grande** — cinco valores seguidos: **40 pontos**.
+- **Yahtzee** — cinco dados iguais: **50 pontos**.
+- **Chance** — qualquer combinação: a soma de todos os cinco dados.
+
+Um novo Yahtzee, quando a casa de Yahtzee já tem 50, ganha um bônus de **100 pontos** e é também escrito em outra casa vazia.
+
+## Fim da partida
+
+Após o décimo terceiro turno, cada jogador soma suas duas seções e seus bônus; o maior total ganha. No CountScore, registre os pontos da casa preenchida como uma rodada, ou o total da folha como uma única rodada.
+
+<!--@phase10-->
+Jogo de combinações para 2 a 6 jogadores, com um baralho especial de cartas numeradas de 1 a 12 em quatro cores, mais cartas **Coringa** e cartas **Passa**. Cada jogador deve completar dez combinações obrigatórias em ordem: as **fases**.
+
+## As dez fases
+
+1. duas trincas;
+2. uma trinca e uma sequência de quatro;
+3. uma quadra e uma sequência de quatro;
+4. uma sequência de sete;
+5. uma sequência de oito;
+6. uma sequência de nove;
+7. duas quadras;
+8. sete cartas de uma cor;
+9. cinco cartas iguais e um par;
+10. cinco cartas iguais e uma trinca.
+
+Uma sequência pode misturar cores. Um Coringa substitui qualquer carta; uma carta Passa faz um jogador perder seu turno.
+
+## Desenvolvimento
+
+Cada jogador recebe **10 cartas**. Em seu turno, compre uma carta do comprador ou do descarte, depois descarte uma. Um jogador que tiver a fase que precisa completar pode jogá-la, inteira e de uma vez; a partir daí, pode adicionar cartas às combinações na mesa, as suas e as dos outros.
+
+A rodada termina assim que um jogador se livrou de todas as suas cartas. Os que jogaram sua fase passam para a próxima; os outros tentam novamente na rodada seguinte.
+
+## Contagem
+
+Cartas que permanecem na mão contam como **pontos de penalidade**: **5 pontos** de 1 a 9, **10 pontos** de 10 a 12, **15 pontos** por um Passa, **25 pontos** por um Coringa.
+
+## Fim da partida
+
+O primeiro jogador a jogar sua **décima fase** ganha. Se vários o fizerem na mesma rodada, o menor total ganha. O CountScore não acompanha as fases: anote-as no comentário da rodada e declare a partida terminada quando a décima for jogada.
+
+<!--@flip7-->
+Jogo de cartas de risco para três ou mais jogadores, com um baralho de cartas numeradas **de 0 a 12** — quantas cópias de cada número quanto seu valor, e um único 0 — mais cartas modificadoras e cartas de ação. O objetivo é chegar primeiro a **200 pontos**.
+
+## Um turno
+
+Em cada turno, cada jogador ainda na partida escolhe: **comprar** uma carta a mais, colocada descoberta na sua frente, ou **parar** e guardar o que já tem.
+
+Um jogador que vira **um número que já tem** **estoura**: não marca nada para a rodada. Um jogador que alinha **sete números diferentes** encerra a rodada imediatamente para todos.
+
+## Cartas especiais
+
+- **Modificadores**: +2, +4, +6, +8, +10, que se adicionam ao total, e **×2**, que dobra a soma dos números.
+- **Congelamento**: o jogador alvo para imediatamente com o que tem.
+- **Três Seguidas**: o jogador alvo deve comprar três cartas seguidas.
+- **Segunda Chance**: descartada junto com um número duplicado em vez de estourar.
+
+## Contagem
+
+Um jogador que não estourou marca a soma de seus números, dobrada se tiver o ×2, depois mais seus modificadores. Alinhar **sete números diferentes** ganha **15 pontos** a mais. Um jogador que estourou marca zero, sejam quais forem suas cartas.
+
+## Fim da partida
+
+A partida termina no final da rodada em que um jogador atinge **200 pontos**, e o maior total ganha.
+
+<!--@mille_bornes-->
+Jogo de cartas de corrida de carros para 2 a 6 jogadores, mais frequentemente quatro em duas equipes de dois. Cada mão é uma viagem de **1000 quilômetros**; a partida é vencida em **5000 pontos**.
+
+## As cartas
+
+- **Distância**: 25, 50, 75, 100 e 200 quilômetros.
+- **Perigos**: Semáforo vermelho, Limite de velocidade, Sem gasolina, Pneu furado, Acidente.
+- **Remédios**: Semáforo verde, Fim do limite, Gasolina, Pneu sobressalente, Reparos.
+- **Proteções**: Direito de passagem, Tanque extra, À prova de furos, Ás do volante — cada uma protege definitivamente contra um perigo.
+
+## Desenvolvimento
+
+Cada jogador recebe seis cartas. Em seu turno, compre e depois jogue ou descarte uma carta. Você precisa de um **Semáforo verde** antes de poder se mover. Coloque suas cartas de distância na sua frente, ataque um adversário, remedeie os perigos contra você. Sob um limite de velocidade, você pode jogar apenas cartas de distância de 50 quilômetros ou menos.
+
+Uma proteção jogada no exato momento em que você recebe o perigo que a anula é um **golpe astuto**: o perigo é cancelado e você joga novamente imediatamente.
+
+A mão termina quando um jogador atinge **exatamente 1000 quilômetros**, ou quando o comprador está esgotado e ninguém pode mais jogar.
+
+## Contagem
+
+- cada quilômetro percorrido: **1 ponto**;
+- cada proteção: **100 pontos**, e **300 pontos** a mais pelas quatro;
+- cada golpe astuto: **300 pontos**;
+- viagem completa: **400 pontos**;
+- viagem completa após o comprador se esgotar: **300 pontos** a mais;
+- viagem completa sem uma carta de 200: **300 pontos** a mais;
+- viagem completa enquanto nenhum adversário se moveu: **500 pontos** a mais.
+
+Os esquemas diferem levemente entre edições; siga o da sua caixa.
+
+## Fim da partida
+
+A partida termina assim que um jogador ou equipe atinge **5000 pontos**, e o maior total ganha.
+
+<!--@rummikub-->
+Jogo de combinações para 2 a 4 jogadores, com **106 peças**: os números de 1 a 13 em quatro cores, em duplicata, e dois curingas. O objetivo de uma rodada é colocar todas as suas peças.
+
+## Preparação
+
+Cada jogador tira **14 peças** e as coloca no seu suporte. O resto forma o comprador, face para baixo.
+
+## Combinações
+
+- **Um grupo**: três ou quatro peças do mesmo número, todas em cores diferentes.
+- **Uma sequência**: pelo menos três números consecutivos em uma cor. O 1 não segue o 13.
+
+Um curinga substitui qualquer peça.
+
+## Desenvolvimento
+
+Sua **primeira colocação** deve totalizar pelo menos **30 pontos**, apenas com suas peças. Depois disso, em seu turno, coloque quantas peças quiser, reorganizando livremente as da mesa — dividindo uma sequência, estendendo um grupo, recuperando um curinga substituindo-o — desde que cada combinação seja válida no final de seu turno. Um jogador que não coloca nada compra uma peça.
+
+## Contagem
+
+A rodada termina assim que um jogador colocou sua última peça. Os outros contam o valor de suas peças restantes **como uma pontuação negativa**, um curinga deixado contando **30 pontos**; o vencedor marca a soma dessas penalidades como uma pontuação positiva.
+
+## Fim da partida
+
+Jogue o número de rodadas acordado, e o maior total ganha.
+
+<!--@six_nimmt-->
+Jogo de cartas para 2 a 10 jogadores, com **104 cartas** numeradas de 1 a 104. Cada carta carrega de uma a sete **cabeças de boi**: são pontos de penalidade, e o objetivo é coletar o mínimo possível.
+
+## Preparação
+
+Cada jogador recebe **10 cartas**. Quatro cartas são viradas no meio: cada uma inicia uma fila.
+
+## Desenvolvimento
+
+A cada turno, todos os jogadores escolhem uma carta em segredo e as revelam juntas. As cartas são colocadas da menor para a maior. Cada carta se une à fila cuja última carta é **a mais próxima abaixo** da sua.
+
+- Um jogador cuja carta seria a **sexta** em uma fila pega as cinco primeiras, e sua carta inicia uma nova fila.
+- Um jogador cuja carta é menor que a última carta de cada fila escolhe uma fila, a pega, e sua carta a substitui.
+
+## Contagem
+
+Após dez turnos, cada jogador conta as cabeças de boi que pegou. Geralmente: 1 cabeça por carta, **2** para múltiplos de 5, **3** para múltiplos de 10, **5** para duplas como 11 ou 22, e **7** para o 55.
+
+## Fim da partida
+
+As rodadas se encadeiam, e o menor total ganha. O CountScore elimina um jogador assim que ultrapassa **66 cabeças de boi**. A regra original termina a partida assim que um jogador totaliza 66: para segui-la à risca, defina o limite em 65 no tipo de jogo.
+
+<!--@qwirkle-->
+Jogo de peças para 2 a 4 jogadores, com **108 peças**: seis formas em seis cores, cada peça em três cópias. Você marca pontos formando linhas.
+
+## Preparação
+
+Cada jogador tira **6 peças** e as mantém escondidas. O jogador que puder colocar a linha mais longa começa.
+
+## Desenvolvimento
+
+Em seu turno, faça uma das duas coisas:
+
+- **colocar** uma ou mais peças, todas em uma mesma linha, tocando as peças já na mesa;
+- **trocar** peças com o saco, sem colocar nenhuma.
+
+Todas as peças em uma linha compartilham **seja a cor, seja a forma**, e uma linha nunca contém a mesma peça duas vezes — no máximo seis peças. Após colocar, complete sua mão até seis.
+
+## Contagem
+
+Marque **um ponto por peça** em cada linha que você criou ou estendeu neste turno, incluindo as peças já lá. Uma peça que pertence a duas linhas conta em cada uma.
+
+Completar uma linha de seis peças é um **Qwirkle**: ganha **6 pontos** a mais, ou **12 pontos** no total para a linha.
+
+## Fim da partida
+
+Quando o saco está vazio, o primeiro jogador a colocar todas as suas peças ganha **6 pontos** a mais e encerra a partida. O maior total ganha.
+
+<!--@farkle-->
+Jogo de dados para dois ou mais jogadores, com **seis dados**. O objetivo é chegar primeiro a **10000 pontos**, sabendo quando parar antes de perder tudo.
+
+## Um turno
+
+Role os seis dados, depois reserve pelo menos um dado que marca. Você pode então **parar** e guardar os pontos que juntou, ou **lançar novamente** com os dados restantes para adicionar mais.
+
+Um lançamento que não marca nada é um **Farkle**: todos os pontos do turno são perdidos. Se todos os seis dados marcaram, você pode pegá-los de novo e continuar.
+
+## Combinações
+
+Um esquema comum:
+
+- um **1**: **100 pontos**; um **5**: **50 pontos**;
+- três do mesmo: **100 pontos × seu valor facial**, e **1000 pontos** por três 1s;
+- quatro, cinco ou seis do mesmo: um múltiplo da trinca, conforme sua mesa decide;
+- uma sequência de 1 a 6: **1500 pontos**; três pares: **1500 pontos**.
+
+Apenas dados do mesmo lançamento se combinam. Muitas mesas exigem um mínimo de **500 pontos** em um turno antes que os primeiros pontos de um jogador possam ser guardados.
+
+## Fim da partida
+
+Assim que um jogador atinge **10000 pontos**, cada outro jogador joga um último turno, e o maior total ganha. O CountScore oferece a tela de fim assim que o limite é atingido: escolha "Continuar Jogando" para deixar os outros jogarem seu último turno.
+
+<!--@canasta-->
+Jogo de combinações para quatro, em duas equipes de dois, com dois baralhos de 52 cartas e quatro curingas. O objetivo é construir **canastas** — combinações de sete cartas — e chegar primeiro a **5000 pontos**.
+
+## As cartas
+
+**Curingas** e **2s** substituem qualquer carta. **3s vermelhos** não são jogados: são colocados assim que recebidos e ganham um bônus. **3s negros** são usados para bloquear o descarte.
+
+## Desenvolvimento
+
+Cada jogador recebe **11 cartas**. Em seu turno, compre duas cartas — ou toda a pilha de descarte, se puder usar sua carta superior — coloque combinações, depois descarte uma carta.
+
+Uma combinação tem pelo menos três cartas do mesmo valor, com pelo menos duas cartas naturais e no máximo três curingas. Sete cartas fazem uma **canasta**: **pura** sem curinga, **impura** com um.
+
+A primeira colocação de uma equipe deve atingir um mínimo que sobe com seu escore: **50 pontos** até 1495, **90** até 2995, **120** além disso, e 15 com escore negativo. Uma equipe só pode **sair** depois de ter pelo menos uma canasta.
+
+## Contagem
+
+- cartas colocadas: curinga **50**, Ás e 2 **20**, Rei até 8 **10**, 7 até 4 e o 3 negro **5**;
+- canasta pura: **500 pontos**; canasta impura: **300 pontos**;
+- sair: **100 pontos**;
+- cada 3 vermelho: **100 pontos**, e **800** pelos quatro.
+
+Cartas que permanecem na mão são subtraídas, e os 3s vermelhos de uma equipe que não colocou nada contam contra ela.
+
+## Fim da partida
+
+A partida termina assim que uma equipe atinge **5000 pontos**, e o maior total ganha.
+
+<!--@wizard-->
+Jogo de vazas com licitação, para 3 a 6 jogadores, com **60 cartas**: um baralho de 52 cartas mais quatro **Magos** e quatro **Bobos**. O objetivo é prever exatamente quantas vazas você ganhará.
+
+## As rodadas
+
+Na primeira rodada, cada jogador recebe **uma carta**, duas na segunda, e assim sucessivamente até esgotar o baralho: 20 rodadas com três jogadores, 15 com quatro, 12 com cinco, 10 com seis. A carta seguinte é virada e define o naipe de trunfo.
+
+## A licitação
+
+Após olhar suas cartas, cada jogador por sua vez anuncia quantas vazas espera ganhar.
+
+## Desenvolvimento
+
+Forneça o naipe solicitado se puder. Um **Mago** pode sempre ser jogado e ganha a vaza — o primeiro jogado ganha. Um **Bobo** pode sempre ser jogado e perde a vaza. Caso contrário, a vaza vai para o trunfo mais alto, ou para a carta mais alta do naipe solicitado.
+
+## Contagem
+
+- **licitação exata**: **20 pontos**, mais **10 pontos** por vaza ganha;
+- **licitação errada**: **−10 pontos** por vaza de diferença, acima ou abaixo.
+
+## Fim da partida
+
+Após a última rodada, o maior total ganha.
+
+<!--@triomino-->
+Jogo de dominós triangulares para 2 a 6 jogadores, com **56 peças**, cada canto tendo um número de 0 a 5. Você marca colocando peças, e mais ainda formando figuras.
+
+## Preparação
+
+As peças são embaralhadas face para baixo. Cada jogador tira **9** com dois jogadores, **7** com três ou quatro, **6** com mais. O jogador que tem o maior trio começa.
+
+## Desenvolvimento
+
+Em seu turno, coloque uma peça cujos **dois cantos** de um lado correspondem aos do lado que ela toca. Você então marca a **soma dos três números** da peça.
+
+Um jogador que não pode jogar compra uma peça, até três vezes: **−5 pontos** por peça comprada, e **−10 pontos** a mais se ainda não puder jogar.
+
+## Bônus
+
+- abrir a partida com um trio: **10 pontos** a mais, mais para o trio 0;
+- fechar uma **ponte**: **40 pontos**;
+- fechar um **hexágono**: **50 pontos**.
+
+Bônus diferem entre edições; siga os da sua caixa.
+
+## Fim de uma rodada
+
+A rodada termina quando um jogador colocou sua última peça: ele marca **25 pontos** mais a soma das peças que os outros ainda têm. Se o comprador está vazio e ninguém pode jogar, o jogador com o menor valor em mão marca a diferença.
+
+## Fim da partida
+
+As rodadas se encadeiam até o total acordado, frequentemente 400 pontos, e o maior total ganha. Defina esse limite no tipo de jogo.
