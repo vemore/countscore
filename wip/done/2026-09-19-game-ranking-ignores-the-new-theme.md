@@ -1,5 +1,7 @@
 # The in-game Ranking screen ignores the refreshed theme and the player colours
 
+**Status:** done (2026-09-19) — closed by feat/ranking-restyle. `RankingScreen` and `GameEndScreen` both draw `RankedPlayers` (`lib/widgets/game_ranking.dart`): podium and rows in the players' colours, the leader under a `BoardCrown`, near-threshold totals orange, eliminated players faded and struck through; the win rule is one line under the title and "Play again" stays. Tests: `test/screens/ranking_screen_test.dart`.
+
 - **Noted:** 2026-09-19 — reported by the user after the end screen (#123) landed
 - **Theme:** visual-refresh
 - **Area:** app

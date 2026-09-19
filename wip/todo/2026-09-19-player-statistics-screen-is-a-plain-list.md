@@ -19,18 +19,31 @@ and a grey per-game-type box ([capture](../assets/2026-09-19-player-statistics-s
 
 The user wants several design trials before deciding.
 
-**Fix, in two steps:**
-1. **Explore** (no code): a mock-up page in the style of the refresh with 3 or 4 directions.
-   For example a leaderboard of players across games; a player card with trends
-   (wins over time, average rank); head-to-head; per-game-type records. Each is checked
-   against the data the schema actually holds (`.llmwiki/SchemaV10.md`, stats keyed by player
-   UUID since v9). The user picks; the target images land in `wip/assets/2026-09-19-player-statistics-screen-is-a-plain-list/`.
-2. **Implement** the chosen direction, with the colour and avatar fixes above folded in.
-   Split into several entries if it outgrows one pull request.
+**Decided (2026-09-19):** from the four directions drawn
+(https://claude.ai/artifact/MWw9hSctjPCW6XwXKrvJXd, boards "Stats 1–4"), the user chose
+**1, the leaderboard**, with **2, the player card**, opened by tapping a player's name.
+Everything on both screens is scoped to the game type selected on the leaderboard. Target
+images: [leaderboard](../assets/2026-09-19-player-statistics-screen-is-a-plain-list/target-leaderboard.png),
+[player card](../assets/2026-09-19-player-statistics-screen-is-a-plain-list/target-player-card.png).
 
-**Acceptance (step 1):**
-- A mock-up page with at least 3 directions is published, and its link is recorded here.
-- The chosen direction's target images are committed under `wip/assets/2026-09-19-player-statistics-screen-is-a-plain-list/`, and this entry
-  is rewritten with the implementation fix and acceptance.
+**Fix:**
+- **Leaderboard** (replaces the `ExpansionTile` list): a row of game-type filter chips
+  ("All games" plus the types that have finished games, most played first); a teal hero for
+  the best win rate; one card per player with rank, two-letter avatar in the
+  `player_colors.dart` colour, games, wins and win rate, and a win-rate bar in the player's
+  colour. Players below 5 finished games of the filter are listed last, unranked.
+- **Player card** (new screen), for the filter chosen on the leaderboard: a strip of the other
+  players' avatars to switch player; games, wins and average final rank; the final rank over
+  the last 12 games as a line chart with wins marked in gold; the current win streak and the
+  best final total (following `isLowestScoreWins`); then average final total, best final total
+  and the opponent most often finished ahead of.
+- The avatar colour and two-letter fixes above.
+- All figures come from finished games, keyed by player UUID; no schema change.
 
-**Open question:** which direction, decided from the mock-ups.
+**Acceptance:**
+- `player_stats_screen.dart` no longer uses `ExpansionTile` or `Colors.blue`; avatars come from
+  `player_colors.dart` and `player_avatars.dart` (widget test: same colour as on the board).
+- A widget test selects a game-type chip, and the ranks and win counts change to that type.
+- A widget test taps a player: the card opens scoped to the selected type, and its average
+  rank, streak and best total match a seeded fixture (lowest-wins and highest-wins cases).
+- The two screens match the target images at 412 dp wide (layout, not exact pixels).

@@ -184,7 +184,7 @@ toolchain table in [[MobileApp]] must move together.
 | `scope` | `scripts/ci_scope_selftest.sh` → `gh api repos/{owner}/{repo}/pulls/<n>/files` (`.filename` **and** `.previous_filename`) → `scripts/ci_scope.sh` → five `name=true\|false` flags into `$GITHUB_OUTPUT` |
 | `backend` | `postgres:17-alpine` service → checkout at depth 2 → privacy page tests (`scripts/test_build_privacy_page.py`) → pandoc **3.6.4** (release archive, checksum-pinned) → `scripts/build_privacy_page.py --check --base HEAD^1` → `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` → `play_publish.py` tests (`.claude/skills/release-android/scripts/`, fake Google service) → `alembic upgrade head` → `downgrade base` → `upgrade head` → `check` (a migration round trip) → `uv export` + `pip-audit` |
 | `image` | `docker build backend` → runs as non-root, no compiler, no dev dependencies, read-only code → `docker build -f backend/Dockerfile.backup backend` → `age --version`, `pg_dump --version` (17) → `countscore-backup --once` with no recipient must exit non-zero → `docker compose config --quiet` on both compose files, failing on any warning |
-| `app` | `scripts/hooks_selftest.sh` → `osv-scanner` on `pubspec.lock` → `pub get` → `scripts/web_binaries.sh --check` (and `--fetch` on the weekly run only) → `dart run build_runner build` → `analyze` → `test` → `build web --release` |
+| `app` | `scripts/hooks_selftest.sh` → `osv-scanner` on `pubspec.lock` → `pub get` → `scripts/web_binaries.sh --check` (and `--fetch` on the weekly run only) → `scripts/test_third_party_licenses.py` → `scripts/third_party_licenses.py --check` → `dart run build_runner build` → `analyze` → `test` → `build web --release` |
 | `android` | `pub get` → `dart run build_runner build` → `build apk --debug` |
 | `sync` | `postgres:17-alpine` service → `uv sync --locked` → `alembic upgrade head` → `.venv/bin/uvicorn` on 8765 (waits on `/health`; never `uv run`, whose parent process holds the uv cache lock and makes setup-uv's post-job `uv cache prune` time out whenever `uv.lock` changed) → `pub get` → `build_runner build` → `flutter test test/sync/sync_two_devices_test.dart` |
 
@@ -197,6 +197,7 @@ wins, per path:
 | Path | Jobs |
 |---|---|
 | `privacy_policy.md`, `docs/privacy-policy.html` | `backend` (the privacy page check) |
+| `THIRD_PARTY_LICENSES.md` | `app` (the licence list check) |
 | `*.md`, `.llmwiki/`, `wip/`, `docs/`, `store_listing/`, `LICENSE` | *none* |
 | `backend/` | `backend`, `image`, `sync` |
 | `android/` | `android` |
@@ -309,9 +310,24 @@ and the `--refresh` procedure. This gate does **not** prove the PWA still works 
 new binaries: the web e2e is still not in CI (§Gaps), so a `--refresh` is followed by that
 run by hand.
 
+**`THIRD_PARTY_LICENSES.md` is generated and gated (2026-09-19).**
+`scripts/third_party_licenses.py` (stdlib Python) writes it from the direct `dependencies:`
+and `dev_dependencies:` of `pubspec.yaml`: licence family and copyright line from each
+package's `LICENSE`, repository from its own `pubspec.yaml`, both found through
+`.dart_tool/package_config.json` — so it needs `flutter pub get` first, and reads the version
+the lock resolves. The Nunito font, the `in_app_review` note and the licence texts are
+hand-written inside the script. It prints no version numbers, so a Dependabot bump fails the
+check only when a package's copyright line or licence moves. A `LICENSE` it cannot classify
+(anything but MIT, BSD-2-Clause, BSD-3-Clause) exits 3 rather than guessing. The `app` job
+runs its tests (`scripts/test_third_party_licenses.py`, fixtures under `tmp_path`) and then
+`--check`, which prints the diff and fails; the fix is `uv run --no-project
+scripts/third_party_licenses.py` and a commit. `scope` sends the file itself to `app`, ahead
+of the documentation rule; `pubspec.yaml` and `pubspec.lock` already go there.
+
 **The transitive refresh is `.github/workflows/deps.yml`**, monthly (`cron: "23 5 4 * *"`)
 plus `workflow_dispatch`: `flutter pub upgrade` → `scripts/web_binaries.sh --refresh
---fetch` → `build_runner build` → `analyze` → `test`, and when `pubspec.lock` or `web/`
+--fetch` → `scripts/third_party_licenses.py` → `build_runner build` → `analyze` → `test`, and when `pubspec.lock` or `web/`
+(or `THIRD_PARTY_LICENSES.md`)
 moved it commits to `chore/deps-YYYY-MM-DD`, pushes that branch and writes the ready-made
 `gh pr create` line into the run summary. `material_color_utilities`, `cli_util` and
 `test_api` are pinned by the Flutter SDK and only `FLUTTER_VERSION` moves them.
@@ -476,3 +492,10 @@ no CI job collects it (`wip/todo_nr/2026-09-18-compose-screenshots-tests-not-in-
   all, while the total said 128 against 207 run. A row is owed whenever a test file is added;
   the one dated total is re-read from a `flutter test` run, never summed from the table
   (`wip/done/2026-09-16-wiki-owed-by-rating-prompt.md`).
+- **`THIRD_PARTY_LICENSES.md` is generated, not written** (2026-09-19). The hand-written
+  file named a 2025 dependency set — four stale constraints, seven direct dependencies
+  missing — because nothing tied it to `pubspec.yaml`; a rule in `CLAUDE.md` naming it was
+  the alternative, and was refused at refinement for a script and a CI check. A step of
+  `app`, the one required job that already has the pub cache. No versions in the file: they
+  would turn every Dependabot week red for no compliance gain, and `pubspec.lock` has them
+  (`wip/done/2026-09-14-third-party-licenses-stale.md`).
