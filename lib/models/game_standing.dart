@@ -23,34 +23,23 @@ class GameStanding {
   /// Whether any score has been entered at all.
   bool get hasScores => totals.isNotEmpty;
 
-  /// The player in the lead — the winner, on a finished game — or null while
-  /// no score has been entered. A tie goes to the earlier seat.
-  Player? get leader {
-    if (!hasScores) return null;
-    Player? best;
-    var bestTotal = 0;
-    for (final player in players) {
-      final total = totals[player.id] ?? 0;
-      if (best == null ||
-          (isLowestScoreWins ? total < bestTotal : total > bestTotal)) {
-        best = player;
-        bestTotal = total;
-      }
-    }
-    return best;
-  }
-
   /// The one player alone on the first place — who the rankings crown — or
   /// null before the first score and on a tie for the lead: a round of all
-  /// zeros crowns nobody. [leader] still picks the earlier seat, which the
-  /// board uses to decide whether to sort by rank.
+  /// zeros crowns nobody.
   Player? get soleLeader {
-    if (!hasScores) return null;
-    final first = [
-      for (final p in players)
-        if (p.id != null && ranks[p.id] == 1) p
-    ];
+    final first = leaders;
     return first.length == 1 ? first.single : null;
+  }
+
+  /// Every player on the first place, in seat order — several on a tie for
+  /// the lead — or none before the first score.
+  List<Player> get leaders {
+    if (!hasScores) return const [];
+    final place = ranks;
+    return [
+      for (final p in players)
+        if (p.id != null && place[p.id] == 1) p
+    ];
   }
 
   /// [player]'s total, 0 when they have no score yet.

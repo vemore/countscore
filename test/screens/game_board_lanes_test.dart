@@ -158,6 +158,39 @@ void main() {
     });
   });
 
+  // wip/done/2026-09-19-board-and-home-crown-a-tie.md: a tie for the lead
+  // crowned the earlier seat.
+  testWidgets('a round of equal scores crowns nobody; every place reads #1',
+      (tester) async {
+    await openBoard(tester, 400, ['Ann', 'Bob', 'Cid'], firstRound: [0, 0, 0]);
+
+    expect(find.byKey(const Key('board_leader_crown')), findsNothing);
+    expect(find.text('#1'), findsNWidgets(3));
+    // No lane is outlined as the leader's.
+    for (final name in ['Ann', 'Bob', 'Cid']) {
+      final box = tester.widget<Container>(lane(name)).decoration!
+          as BoxDecoration;
+      expect((box.border! as Border).top.color, Colors.transparent,
+          reason: name);
+    }
+  });
+
+  testWidgets('rows: a tie for the lead crowns nobody and the ranking still '
+      'sorts', (tester) async {
+    await openBoard(tester, 400, ['Ann', 'Bob', 'Cid'], firstRound: [5, 9, 9]);
+    await tester.tap(find.byKey(const Key('board_view_toggle')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('board_leader_crown')), findsNothing);
+    double rowY(String name) => tester
+        .getTopLeft(find.byKey(Key('board_row_${playerNamed(name).id}')))
+        .dy;
+    await tester.tap(find.text('Ranking'));
+    await tester.pumpAndSettle();
+    expect(rowY('Bob'), lessThan(rowY('Cid')));
+    expect(rowY('Cid'), lessThan(rowY('Ann')));
+  });
+
   testWidgets('no crown before any score is entered', (tester) async {
     tester.view.physicalSize = const Size(400, 900);
     tester.view.devicePixelRatio = 1;
