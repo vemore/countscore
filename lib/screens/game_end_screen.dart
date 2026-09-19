@@ -15,7 +15,7 @@ import 'game_board_screen.dart';
 /// Who won the current game: the winner's name, a podium of the top three in
 /// their colours, the other players in rank order, then "Play again" and —
 /// when a server is configured — "Analysis". The app bar shares the standings
-/// as text (`ShareResultButton`).
+/// as text and as an image (`ShareResultButton`).
 ///
 /// Opened by the board when the game type's rule ends the game, when "End
 /// game" is chosen on the board or on the home list, and from a finished
@@ -35,9 +35,9 @@ class GameEndScreen extends StatelessWidget {
 
   final bool offerContinue;
 
-  /// Injected by tests only: receives the shared text instead of the system
+  /// Injected by tests only: receives the shared text and image instead of the system
   /// share sheet.
-  final ShareTextFn? share;
+  final ShareResultFn? share;
 
   /// Injected by tests only: the board "Play again" opens. The default
   /// `GameBoardScreen` reaches the `AppDatabase` singleton.
