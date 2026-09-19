@@ -57,15 +57,9 @@
 
   "loadingGameTypes": "جاري تحميل أنواع الألعاب...",
 
-  "winRule": "قاعدة الفوز",
-
   "lowestScoreWins": "أقل نتيجة تفوز",
 
   "highestScoreWins": "أعلى نتيجة تفوز",
-
-  "lowestScoreExample": "مثال: الغولف، القلوب",
-
-  "highestScoreExample": "مثال: الرمي، البريدج",
 
   "players": "اللاعبون",
 
@@ -82,8 +76,6 @@
   "clear": "مسح",
 
   "remove": "إزالة",
-
-  "createGame": "إنشاء لعبة",
 
   "game": "اللعبة",
 
@@ -275,21 +267,11 @@
 
   "artistName": "efendi.sign",
 
-  "selectPlayerDialogTitle": "اختر لاعباً",
-
   "search": "بحث",
 
-  "createNewPlayer": "إنشاء لاعب جديد",
-
-  "searchOrCreate": "بحث / إنشاء",
-  "@searchOrCreate": {
-    "description": "Search or create player input label"
-  },
   "newPlayerName": "اسم اللاعب الجديد",
 
   "noPlayersFound": "لم يتم العثور على لاعبين",
-
-  "allPlayersSelected": "تم اختيار جميع اللاعبين",
 
   "close": "إغلاق",
 
@@ -298,7 +280,7 @@
   "none": "بدون",
   "overThreshold": "فوق الحد",
   "underThreshold": "تحت الحد",
-  "firstPlayerOver": "أول لاعب فوق الحد",
+  "firstPlayerOver": "أول لاعب يبلغ الحد",
   "firstPlayerUnder": "أول لاعب تحت الحد",
   "lastPlayerOver": "آخر لاعب فوق الحد",
   "lastPlayerUnder": "آخر لاعب تحت الحد",

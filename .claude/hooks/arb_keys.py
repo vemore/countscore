@@ -59,7 +59,6 @@ SAME_AS_ENGLISH_OK = {
     "ok": {"fr", "de", "pt", "ja"},  # "OK" is the loanword in all four
     "version": {"fr", "de"},         # "Version {version}"
     "confirmation": {"fr"},          # "Confirmation"
-    "lowestScoreExample": {"fr"},    # "Ex: Golf, Hearts" -- two game names
     "color": {"es"},                 # "Color:"
     "system": {"de"},                # "System"
     "rate": {"de"},                  # "Rate"
@@ -146,15 +145,40 @@ def check_values(loaded):
     ]
 
 
+def check_unused(directory, reference):
+    """Report template keys that no .dart file under lib/ mentions.
+
+    The generated app_localizations*.dart files are skipped -- they declare every
+    key. A key whose name appears as a whole word anywhere else counts as used,
+    so a false positive is a key built dynamically, never a key read directly.
+    """
+    lib = ROOT / "lib"
+    generated = {p.resolve() for p in directory.glob("app_localizations*.dart")}
+    words = set()
+    for path in lib.rglob("*.dart"):
+        if path.resolve() in generated:
+            continue
+        words.update(re.findall(r"\b\w+\b", path.read_text(encoding="utf-8")))
+    unused = sorted(reference - words)
+    if not unused:
+        return []
+    return [f"l10n: {len(unused)} template key(s) read by no .dart file under lib/ -- {', '.join(unused)}"]
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--focus", help="file just edited; invalid JSON in it is an error")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--keys", action="store_true", help="only compare key sets")
     mode.add_argument("--values", action="store_true", help="only compare values against English")
+    mode.add_argument(
+        "--unused",
+        action="store_true",
+        help="only report template keys no .dart file under lib/ mentions (on demand, never at commit)",
+    )
     args = parser.parse_args()
-    want_keys = args.keys or not args.values
-    want_values = args.values or not args.keys
+    want_keys = args.keys or not (args.values or args.unused)
+    want_values = args.values or not (args.keys or args.unused)
 
     try:
         config = (ROOT / "l10n.yaml").read_text(encoding="utf-8")
@@ -192,6 +216,8 @@ def main():
         lines += check_keys(directory, template_name, reference, loaded)
     if want_values:
         lines += check_values(loaded)
+    if args.unused:
+        lines += check_unused(directory, reference)
 
     for line in lines:
         print(line)

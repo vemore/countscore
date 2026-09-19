@@ -96,19 +96,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get loadingGameTypes => 'Chargement des types de jeux...';
 
   @override
-  String get winRule => 'Règle de victoire';
-
-  @override
   String get lowestScoreWins => 'Plus petit score gagne';
 
   @override
   String get highestScoreWins => 'Plus grand score gagne';
-
-  @override
-  String get lowestScoreExample => 'Ex: Golf, Hearts';
-
-  @override
-  String get highestScoreExample => 'Ex: Rami, Belote';
 
   @override
   String get players => 'Joueurs';
@@ -135,9 +126,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get remove => 'Retirer';
-
-  @override
-  String get createGame => 'Créer la partie';
 
   @override
   String get game => 'Partie';
@@ -486,25 +474,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get artistName => 'efendi.sign';
 
   @override
-  String get selectPlayerDialogTitle => 'Sélectionner un joueur';
-
-  @override
   String get search => 'Rechercher';
-
-  @override
-  String get searchOrCreate => 'Rechercher / Créer';
-
-  @override
-  String get createNewPlayer => 'Créer un nouveau joueur';
 
   @override
   String get newPlayerName => 'Nom du nouveau joueur';
 
   @override
   String get noPlayersFound => 'Aucun joueur trouvé';
-
-  @override
-  String get allPlayersSelected => 'Tous les joueurs ont été sélectionnés';
 
   @override
   String get close => 'Fermer';
@@ -525,7 +501,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get underThreshold => 'En dessous du seuil';
 
   @override
-  String get firstPlayerOver => 'Premier joueur au-dessus';
+  String get firstPlayerOver => 'Premier joueur à atteindre';
 
   @override
   String get firstPlayerUnder => 'Premier joueur en dessous';

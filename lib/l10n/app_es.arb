@@ -57,15 +57,9 @@
 
   "loadingGameTypes": "Cargando tipos de juego...",
 
-  "winRule": "Regla de victoria",
-
   "lowestScoreWins": "Gana la puntuación más baja",
 
   "highestScoreWins": "Gana la puntuación más alta",
-
-  "lowestScoreExample": "Ej: Golf, Corazones",
-
-  "highestScoreExample": "Ej: Rummy, Bridge",
 
   "players": "Jugadores",
 
@@ -82,8 +76,6 @@
   "clear": "Limpiar",
 
   "remove": "Eliminar",
-
-  "createGame": "Crear juego",
 
   "game": "Juego",
 
@@ -275,21 +267,11 @@
 
   "artistName": "efendi.sign",
 
-  "selectPlayerDialogTitle": "Seleccionar un jugador",
-
   "search": "Buscar",
 
-  "createNewPlayer": "Crear nuevo jugador",
-
-  "searchOrCreate": "Buscar / Crear",
-  "@searchOrCreate": {
-    "description": "Search or create player input label"
-  },
   "newPlayerName": "Nombre del nuevo jugador",
 
   "noPlayersFound": "No se encontraron jugadores",
-
-  "allPlayersSelected": "Todos los jugadores han sido seleccionados",
 
   "close": "Cerrar",
 
@@ -298,7 +280,7 @@
   "none": "Ninguna",
   "overThreshold": "Por encima del umbral",
   "underThreshold": "Por debajo del umbral",
-  "firstPlayerOver": "Primer jugador por encima",
+  "firstPlayerOver": "Primer jugador en alcanzar",
   "firstPlayerUnder": "Primer jugador por debajo",
   "lastPlayerOver": "Último jugador por encima",
   "lastPlayerUnder": "Último jugador por debajo",

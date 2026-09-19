@@ -96,19 +96,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get loadingGameTypes => 'جاري تحميل أنواع الألعاب...';
 
   @override
-  String get winRule => 'قاعدة الفوز';
-
-  @override
   String get lowestScoreWins => 'أقل نتيجة تفوز';
 
   @override
   String get highestScoreWins => 'أعلى نتيجة تفوز';
-
-  @override
-  String get lowestScoreExample => 'مثال: الغولف، القلوب';
-
-  @override
-  String get highestScoreExample => 'مثال: الرمي، البريدج';
 
   @override
   String get players => 'اللاعبون';
@@ -135,9 +126,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get remove => 'إزالة';
-
-  @override
-  String get createGame => 'إنشاء لعبة';
 
   @override
   String get game => 'اللعبة';
@@ -485,25 +473,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get artistName => 'efendi.sign';
 
   @override
-  String get selectPlayerDialogTitle => 'اختر لاعباً';
-
-  @override
   String get search => 'بحث';
-
-  @override
-  String get searchOrCreate => 'بحث / إنشاء';
-
-  @override
-  String get createNewPlayer => 'إنشاء لاعب جديد';
 
   @override
   String get newPlayerName => 'اسم اللاعب الجديد';
 
   @override
   String get noPlayersFound => 'لم يتم العثور على لاعبين';
-
-  @override
-  String get allPlayersSelected => 'تم اختيار جميع اللاعبين';
 
   @override
   String get close => 'إغلاق';
@@ -524,7 +500,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get underThreshold => 'تحت الحد';
 
   @override
-  String get firstPlayerOver => 'أول لاعب فوق الحد';
+  String get firstPlayerOver => 'أول لاعب يبلغ الحد';
 
   @override
   String get firstPlayerUnder => 'أول لاعب تحت الحد';

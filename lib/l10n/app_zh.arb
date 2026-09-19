@@ -57,15 +57,9 @@
 
   "loadingGameTypes": "正在加载游戏类型...",
 
-  "winRule": "胜利规则",
-
   "lowestScoreWins": "最低分获胜",
 
   "highestScoreWins": "最高分获胜",
-
-  "lowestScoreExample": "例如:高尔夫、红心大战",
-
-  "highestScoreExample": "例如:拉米、桥牌",
 
   "players": "玩家",
 
@@ -82,8 +76,6 @@
   "clear": "清除",
 
   "remove": "移除",
-
-  "createGame": "创建游戏",
 
   "game": "游戏",
 
@@ -275,21 +267,11 @@
 
   "artistName": "efendi.sign",
 
-  "selectPlayerDialogTitle": "选择玩家",
-
   "search": "搜索",
 
-  "createNewPlayer": "创建新玩家",
-
-  "searchOrCreate": "搜索 / 创建",
-  "@searchOrCreate": {
-    "description": "Search or create player input label"
-  },
   "newPlayerName": "新玩家名称",
 
   "noPlayersFound": "未找到玩家",
-
-  "allPlayersSelected": "所有玩家已被选择",
 
   "close": "关闭",
 
@@ -298,7 +280,7 @@
   "none": "无",
   "overThreshold": "高于阈值",
   "underThreshold": "低于阈值",
-  "firstPlayerOver": "第一位玩家超过",
+  "firstPlayerOver": "第一位达到的玩家",
   "firstPlayerUnder": "第一位玩家低于",
   "lastPlayerOver": "最后一位玩家超过",
   "lastPlayerUnder": "最后一位玩家低于",

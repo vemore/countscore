@@ -96,19 +96,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get loadingGameTypes => 'ゲームタイプを読み込み中...';
 
   @override
-  String get winRule => '勝利ルール';
-
-  @override
   String get lowestScoreWins => '最低スコアが勝ち';
 
   @override
   String get highestScoreWins => '最高スコアが勝ち';
-
-  @override
-  String get lowestScoreExample => '例：ゴルフ、ハーツ';
-
-  @override
-  String get highestScoreExample => '例：ラミー、ブリッジ';
 
   @override
   String get players => 'プレイヤー';
@@ -135,9 +126,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get remove => '削除';
-
-  @override
-  String get createGame => 'ゲームを作成';
 
   @override
   String get game => 'ゲーム';
@@ -477,25 +465,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get artistName => 'efendi.sign';
 
   @override
-  String get selectPlayerDialogTitle => 'プレイヤーを選択';
-
-  @override
   String get search => '検索';
-
-  @override
-  String get searchOrCreate => '検索 / 作成';
-
-  @override
-  String get createNewPlayer => '新しいプレイヤーを作成';
 
   @override
   String get newPlayerName => '新しいプレイヤー名';
 
   @override
   String get noPlayersFound => 'プレイヤーが見つかりません';
-
-  @override
-  String get allPlayersSelected => 'すべてのプレイヤーが選択されています';
 
   @override
   String get close => '閉じる';
@@ -516,7 +492,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get underThreshold => 'しきい値を下回る';
 
   @override
-  String get firstPlayerOver => '最初のプレイヤーが超える';
+  String get firstPlayerOver => '最初に到達したプレイヤー';
 
   @override
   String get firstPlayerUnder => '最初のプレイヤーが下回る';

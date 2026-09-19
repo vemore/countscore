@@ -57,15 +57,9 @@
 
   "loadingGameTypes": "खेल के प्रकार लोड हो रहे हैं...",
 
-  "winRule": "जीत का नियम",
-
   "lowestScoreWins": "सबसे कम स्कोर जीतता है",
 
   "highestScoreWins": "सबसे अधिक स्कोर जीतता है",
-
-  "lowestScoreExample": "उदा: गोल्फ, हार्ट्स",
-
-  "highestScoreExample": "उदा: रम्मी, ब्रिज",
 
   "players": "खिलाड़ी",
 
@@ -82,8 +76,6 @@
   "clear": "साफ़ करें",
 
   "remove": "हटाएं",
-
-  "createGame": "खेल बनाएं",
 
   "game": "खेल",
 
@@ -275,21 +267,11 @@
 
   "artistName": "efendi.sign",
 
-  "selectPlayerDialogTitle": "एक खिलाड़ी चुनें",
-
   "search": "खोजें",
 
-  "createNewPlayer": "नया खिलाड़ी बनाएं",
-
-  "searchOrCreate": "खोजें / बनाएं",
-  "@searchOrCreate": {
-    "description": "Search or create player input label"
-  },
   "newPlayerName": "नए खिलाड़ी का नाम",
 
   "noPlayersFound": "कोई खिलाड़ी नहीं मिला",
-
-  "allPlayersSelected": "सभी खिलाड़ी चुने जा चुके हैं",
 
   "close": "बंद करें",
 
@@ -298,7 +280,7 @@
   "none": "कोई नहीं",
   "overThreshold": "सीमा से ऊपर",
   "underThreshold": "सीमा से नीचे",
-  "firstPlayerOver": "पहला खिलाड़ी ऊपर",
+  "firstPlayerOver": "पहला खिलाड़ी जो पहुँचे",
   "firstPlayerUnder": "पहला खिलाड़ी नीचे",
   "lastPlayerOver": "अंतिम खिलाड़ी ऊपर",
   "lastPlayerUnder": "अंतिम खिलाड़ी नीचे",

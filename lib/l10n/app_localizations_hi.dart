@@ -96,19 +96,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get loadingGameTypes => 'खेल के प्रकार लोड हो रहे हैं...';
 
   @override
-  String get winRule => 'जीत का नियम';
-
-  @override
   String get lowestScoreWins => 'सबसे कम स्कोर जीतता है';
 
   @override
   String get highestScoreWins => 'सबसे अधिक स्कोर जीतता है';
-
-  @override
-  String get lowestScoreExample => 'उदा: गोल्फ, हार्ट्स';
-
-  @override
-  String get highestScoreExample => 'उदा: रम्मी, ब्रिज';
 
   @override
   String get players => 'खिलाड़ी';
@@ -135,9 +126,6 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get remove => 'हटाएं';
-
-  @override
-  String get createGame => 'खेल बनाएं';
 
   @override
   String get game => 'खेल';
@@ -486,25 +474,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get artistName => 'efendi.sign';
 
   @override
-  String get selectPlayerDialogTitle => 'एक खिलाड़ी चुनें';
-
-  @override
   String get search => 'खोजें';
-
-  @override
-  String get searchOrCreate => 'खोजें / बनाएं';
-
-  @override
-  String get createNewPlayer => 'नया खिलाड़ी बनाएं';
 
   @override
   String get newPlayerName => 'नए खिलाड़ी का नाम';
 
   @override
   String get noPlayersFound => 'कोई खिलाड़ी नहीं मिला';
-
-  @override
-  String get allPlayersSelected => 'सभी खिलाड़ी चुने जा चुके हैं';
 
   @override
   String get close => 'बंद करें';
@@ -525,7 +501,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get underThreshold => 'सीमा से नीचे';
 
   @override
-  String get firstPlayerOver => 'पहला खिलाड़ी ऊपर';
+  String get firstPlayerOver => 'पहला खिलाड़ी जो पहुँचे';
 
   @override
   String get firstPlayerUnder => 'पहला खिलाड़ी नीचे';

@@ -147,11 +147,6 @@
     "description": "Loading message for game types"
   },
 
-  "winRule": "Règle de victoire",
-  "@winRule": {
-    "description": "Label for win rule selection"
-  },
-
   "lowestScoreWins": "Plus petit score gagne",
   "@lowestScoreWins": {
     "description": "Win rule option: lowest score wins"
@@ -160,16 +155,6 @@
   "highestScoreWins": "Plus grand score gagne",
   "@highestScoreWins": {
     "description": "Win rule option: highest score wins"
-  },
-
-  "lowestScoreExample": "Ex: Golf, Hearts",
-  "@lowestScoreExample": {
-    "description": "Examples of games with lowest score wins"
-  },
-
-  "highestScoreExample": "Ex: Rami, Belote",
-  "@highestScoreExample": {
-    "description": "Examples of games with highest score wins"
   },
 
   "players": "Joueurs",
@@ -216,11 +201,6 @@
   "remove": "Retirer",
   "@remove": {
     "description": "Remove button text"
-  },
-
-  "createGame": "Créer la partie",
-  "@createGame": {
-    "description": "Create game button text"
   },
 
   "game": "Partie",
@@ -797,24 +777,9 @@
     "description": "Artist name for app icon"
   },
 
-  "selectPlayerDialogTitle": "Sélectionner un joueur",
-  "@selectPlayerDialogTitle": {
-    "description": "Title for player selection dialog"
-  },
-
   "search": "Rechercher",
   "@search": {
     "description": "Search input label"
-  },
-
-  "searchOrCreate": "Rechercher / Créer",
-  "@searchOrCreate": {
-    "description": "Search or create player input label"
-  },
-
-  "createNewPlayer": "Créer un nouveau joueur",
-  "@createNewPlayer": {
-    "description": "Button text to create new player"
   },
 
   "newPlayerName": "Nom du nouveau joueur",
@@ -825,11 +790,6 @@
   "noPlayersFound": "Aucun joueur trouvé",
   "@noPlayersFound": {
     "description": "Message when search returns no players"
-  },
-
-  "allPlayersSelected": "Tous les joueurs ont été sélectionnés",
-  "@allPlayersSelected": {
-    "description": "Message when all available players are selected"
   },
 
   "close": "Fermer",
@@ -862,9 +822,9 @@
     "description": "Player dead condition: under threshold"
   },
 
-  "firstPlayerOver": "Premier joueur au-dessus",
+  "firstPlayerOver": "Premier joueur à atteindre",
   "@firstPlayerOver": {
-    "description": "Game over when first player goes over threshold"
+    "description": "Game over when the first player's total reaches the threshold (>=)"
   },
 
   "firstPlayerUnder": "Premier joueur en dessous",

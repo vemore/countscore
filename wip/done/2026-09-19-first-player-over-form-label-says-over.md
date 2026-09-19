@@ -1,5 +1,7 @@
 # The game-type form still calls a "reaches" rule "first player over"
 
+**Status:** done (2026-09-19) — closed by fix/i18n-cleanup. `firstPlayerOver` now reads « Premier joueur à atteindre » / "First player to reach", and the equivalent in the other eight locales; `lastPlayerOver` keeps its strict wording. `test/l10n/game_over_labels_test.dart` pins both.
+
 - **Noted:** 2026-09-19 — rewording `gameRulesEndFirstOver` in feat/game-rules-twelve
 - **Theme:** game-types
 - **Area:** app
