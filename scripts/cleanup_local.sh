@@ -29,6 +29,13 @@
 #     files, so a worktree in the middle of a five-minute setup reads as clean.
 #   - anything under the worktree modified in the last CLEANUP_IDLE_MINUTES (default
 #     30) minutes — an agent may simply be working there, with nothing committed yet.
+# A git worktree lock is read before both. Claude Code locks an agent's worktree with a
+# reason naming its process, `claude agent <name> (pid N start T)`: while that pid is alive
+# (and, where /proc can tell, still the process that started at T), the worktree and its
+# branch are kept. Once the process is gone the lock is stale: the worktree goes through
+# the rules above like any other and is removed with `git worktree remove -f -f`. A lock
+# that names no pid was taken by hand, and is always honoured. When a removal fails,
+# --apply prints git's error under the FAILED line.
 #
 # Usage: scripts/cleanup_local.sh            dry run: print what would go, and why
 #        scripts/cleanup_local.sh --apply    do it
@@ -40,7 +47,7 @@ apply=0
 case "${1:-}" in
     --apply) apply=1 ;;
     "") ;;
-    -h|--help) sed -n '3,35p' "$0"; exit 0 ;;
+    -h|--help) sed -n '3,42p' "$0"; exit 0 ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
 esac
 
@@ -101,11 +108,42 @@ deletable() {  # branch -> 0 if it may go; REASON says why, either way
 }
 
 act() {  # description, command...
-    local what="$1"; shift
+    local what="$1" out; shift
     if [ "$apply" = 1 ]; then
-        "$@" >/dev/null 2>&1 && echo "  removed  $what" || echo "  FAILED   $what"
+        if out=$("$@" 2>&1); then
+            echo "  removed  $what"
+        else
+            echo "  FAILED   $what"
+            printf '%s\n' "$out" | sed 's/^/           /'
+        fi
     else
         echo "  would remove  $what"
+    fi
+}
+
+proc_start() {  # pid -> its start time in clock ticks (/proc/<pid>/stat field 22), if known
+    local stat
+    stat=$(cat "/proc/$1/stat" 2>/dev/null) || return 1
+    stat=${stat##*) }   # the command name may itself hold spaces and parentheses
+    # shellcheck disable=SC2086
+    set -- $stat        # field 3 (state) is now $1, so field 22 is $20
+    [ -n "${20:-}" ] && echo "${20}"
+}
+
+LOCK="" LOCK_STATE=""
+lock_state() {  # lock reason -> LOCK_STATE live | stale | manual, LOCK says why
+    local reason="$1" pid start now
+    if [[ ! "$reason" =~ \(pid\ ([0-9]+)(\ start\ ([0-9]+))?\) ]]; then
+        LOCK_STATE=manual LOCK="locked${reason:+: $reason}"
+        return
+    fi
+    pid="${BASH_REMATCH[1]}" start="${BASH_REMATCH[3]}"
+    if ! kill -0 "$pid" 2>/dev/null && ! ps -p "$pid" >/dev/null 2>&1; then
+        LOCK_STATE=stale LOCK="stale lock, pid $pid is gone"
+    elif [ -n "$start" ] && now=$(proc_start "$pid") && [ "$now" != "$start" ]; then
+        LOCK_STATE=stale LOCK="stale lock, pid $pid is now another process"
+    else
+        LOCK_STATE=live LOCK="locked by a running session (pid $pid)"
     fi
 }
 
@@ -116,10 +154,25 @@ current=$(git rev-parse --abbrev-ref HEAD)
 kept_branch[$current]=1
 
 echo "Worktrees"
-while IFS=$'\t' read -r path ref; do
+while IFS=$'\t' read -r path ref locked; do
     [ "$path" = "$MAIN" ] && continue
+    [ "$ref" = "-" ] && ref=""
     if [ ! -d "$path" ]; then
         continue  # pruned below
+    fi
+    # The lock comes first: a running session's worktree is kept whatever else is true.
+    remove=(git worktree remove)
+    note=""
+    if [ "$locked" != "-" ]; then
+        reason="${locked#locked}"
+        lock_state "${reason# }"
+        if [ "$LOCK_STATE" != stale ]; then
+            echo "  keep     $path${ref:+ ($ref)} — $LOCK"
+            [ -n "$ref" ] && kept_branch[$ref]=1
+            continue
+        fi
+        remove=(git worktree remove -f -f)
+        note="; $LOCK"
     fi
     # Both guards run before every other rule: a worktree an agent still holds is clean
     # by `git status`, so its branch would be deleted out from under it too.
@@ -140,7 +193,7 @@ while IFS=$'\t' read -r path ref; do
     fi
     if [ -z "$ref" ]; then
         if git merge-base --is-ancestor "$(git -C "$path" rev-parse HEAD)" origin/main 2>/dev/null; then
-            act "$path (detached, on main)" git worktree remove "$path"
+            act "$path (detached, on main$note)" "${remove[@]}" "$path"
             removed_worktrees+=("$path")
         else
             echo "  keep     $path — detached on a commit not in origin/main"
@@ -148,16 +201,19 @@ while IFS=$'\t' read -r path ref; do
         continue
     fi
     if deletable "$ref"; then
-        act "$path ($ref: $REASON)" git worktree remove "$path"
+        act "$path ($ref: $REASON$note)" "${remove[@]}" "$path"
         removed_worktrees+=("$path")
     else
         echo "  keep     $path ($ref) — $REASON"
         kept_branch[$ref]=1
     fi
 done < <(git worktree list --porcelain | awk '
-    /^worktree / { if (p != "") print p "\t" b; p = substr($0, 10); b = "" }
+    # An empty field is printed as "-": read collapses consecutive tabs, shifting columns.
+    function out() { if (p != "") print p "\t" (b == "" ? "-" : b) "\t" (l == "" ? "-" : l) }
+    /^worktree / { out(); p = substr($0, 10); b = ""; l = "" }
     /^branch /   { b = substr($0, 19) }
-    END          { if (p != "") print p "\t" b }')
+    /^locked/    { l = $0 }
+    END          { out() }')
 [ "$apply" = 1 ] && git worktree prune
 
 echo "Branches"
