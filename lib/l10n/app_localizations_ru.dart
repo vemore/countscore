@@ -72,9 +72,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get save => 'Сохранить';
 
   @override
-  String get filterByGameType => 'Фильтр по типу игры';
-
-  @override
   String get allGames => 'Все игры';
 
   @override
@@ -111,17 +108,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get pleaseEnterName => 'Пожалуйста, введите имя';
 
   @override
-  String get atLeast2PlayersRequired => 'Требуется минимум 2 игрока';
-
-  @override
-  String playerNumber(int index) {
-    return 'Игрок $index';
-  }
-
-  @override
-  String get selectPlayer => 'Выберите игрока...';
-
-  @override
   String get clear => 'Очистить';
 
   @override
@@ -135,9 +121,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get editGameDialogTitle => 'Редактировать игру';
-
-  @override
-  String get gameSettings => 'Настройки игры';
 
   @override
   String get removePlayer => 'Удалить игрока';
@@ -289,19 +272,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get noPlayers => 'Нет игроков';
 
   @override
-  String playersListSummary(int count, String names) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count игроков: $names',
-      few: '$count игрока: $names',
-      one: '1 игрок: $names',
-      zero: 'Нет игроков',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get playersAppearMessage =>
       'Игроки появятся здесь, когда\nвы создадите игры';
 
@@ -365,9 +335,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get noGameTypes => 'Нет типов игр';
 
   @override
-  String get predefined => 'По умолчанию';
-
-  @override
   String get edit => 'Редактировать';
 
   @override
@@ -420,9 +387,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get winRate => 'Процент побед';
-
-  @override
-  String get overallStatistics => 'Общая статистика';
 
   @override
   String get byGameType => 'По типу игры';
@@ -640,6 +604,14 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get analysisErrorUnavailable =>
       'Сервер анализа временно недоступен. Повторите попытку позже.';
+
+  @override
+  String get analysisErrorGroupBudget =>
+      'Ваша группа исчерпала бюджет анализов на этот месяц. Он обновится в начале следующего месяца.';
+
+  @override
+  String get analysisStyleGroupDefault =>
+      'Стиль не выбран: эта общая партия будет проанализирована в стиле и на языке группы.';
 
   @override
   String analysisErrorStatus(int status) {
@@ -993,67 +965,133 @@ class AppLocalizationsRu extends AppLocalizations {
   String get gameTypeNameZapzap => 'ZapZap';
 
   @override
+  String get gameTypeNameZapzapSortKey => 'ZapZap';
+
+  @override
   String get gameTypeNameUno => 'Уно';
+
+  @override
+  String get gameTypeNameUnoSortKey => 'Уно';
 
   @override
   String get gameTypeNameScrabble => 'Скрэббл';
 
   @override
+  String get gameTypeNameScrabbleSortKey => 'Скрэббл';
+
+  @override
   String get gameTypeNameOther => 'Другое';
+
+  @override
+  String get gameTypeNameOtherSortKey => 'Другое';
 
   @override
   String get gameTypeNameSkyjo => 'Скайджо';
 
   @override
+  String get gameTypeNameSkyjoSortKey => 'Скайджо';
+
+  @override
   String get gameTypeNamePresident => 'Президент';
+
+  @override
+  String get gameTypeNamePresidentSortKey => 'Президент';
 
   @override
   String get gameTypeNameBelote => 'Белот';
 
   @override
+  String get gameTypeNameBeloteSortKey => 'Белот';
+
+  @override
   String get gameTypeNameTarot => 'Таро';
+
+  @override
+  String get gameTypeNameTarotSortKey => 'Таро';
 
   @override
   String get gameTypeNameBridge => 'Бридж';
 
   @override
+  String get gameTypeNameBridgeSortKey => 'Бридж';
+
+  @override
   String get gameTypeNameRami => 'Рамми';
+
+  @override
+  String get gameTypeNameRamiSortKey => 'Рамми';
 
   @override
   String get gameTypeNameCoinche => 'Куанш';
 
   @override
+  String get gameTypeNameCoincheSortKey => 'Куанш';
+
+  @override
   String get gameTypeNameYahtzee => 'Яцзы';
+
+  @override
+  String get gameTypeNameYahtzeeSortKey => 'Яцзы';
 
   @override
   String get gameTypeNamePhase10 => 'Фаза 10';
 
   @override
+  String get gameTypeNamePhase10SortKey => 'Фаза 10';
+
+  @override
   String get gameTypeNameFlip7 => 'Флип 7';
+
+  @override
+  String get gameTypeNameFlip7SortKey => 'Флип 7';
 
   @override
   String get gameTypeNameMilleBornes => 'Милль Борн';
 
   @override
+  String get gameTypeNameMilleBornesSortKey => 'Милль Борн';
+
+  @override
   String get gameTypeNameRummikub => 'Руммикуб';
+
+  @override
+  String get gameTypeNameRummikubSortKey => 'Руммикуб';
 
   @override
   String get gameTypeNameSixNimmt => 'Шесть берёт';
 
   @override
+  String get gameTypeNameSixNimmtSortKey => 'Шесть берёт';
+
+  @override
   String get gameTypeNameQwirkle => 'Квиркл';
+
+  @override
+  String get gameTypeNameQwirkleSortKey => 'Квиркл';
 
   @override
   String get gameTypeNameFarkle => 'Фаркл';
 
   @override
+  String get gameTypeNameFarkleSortKey => 'Фаркл';
+
+  @override
   String get gameTypeNameCanasta => 'Канаста';
+
+  @override
+  String get gameTypeNameCanastaSortKey => 'Канаста';
 
   @override
   String get gameTypeNameWizard => 'Визард';
 
   @override
+  String get gameTypeNameWizardSortKey => 'Визард';
+
+  @override
   String get gameTypeNameTriomino => 'Триомино';
+
+  @override
+  String get gameTypeNameTriominoSortKey => 'Триомино';
 
   @override
   String get groupDeviceOwner => 'Владелец';
@@ -1083,6 +1121,20 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get whoStartsAgain => 'Выбрать заново';
+
+  @override
+  String get diceRoller => 'Бросить кубики';
+
+  @override
+  String get diceCount => 'Количество кубиков';
+
+  @override
+  String get diceRollAgain => 'Бросить ещё раз';
+
+  @override
+  String diceTotal(int total) {
+    return 'Сумма: $total';
+  }
 
   @override
   String get resumeGame => 'Продолжить';

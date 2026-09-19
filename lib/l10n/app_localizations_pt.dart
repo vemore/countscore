@@ -72,9 +72,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get save => 'Salvar';
 
   @override
-  String get filterByGameType => 'Filtrar por tipo de jogo';
-
-  @override
   String get allGames => 'Todos os jogos';
 
   @override
@@ -111,18 +108,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get pleaseEnterName => 'Por favor, insira um nome';
 
   @override
-  String get atLeast2PlayersRequired =>
-      'São necessários pelo menos 2 jogadores';
-
-  @override
-  String playerNumber(int index) {
-    return 'Jogador $index';
-  }
-
-  @override
-  String get selectPlayer => 'Selecione um jogador...';
-
-  @override
   String get clear => 'Limpar';
 
   @override
@@ -136,9 +121,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get editGameDialogTitle => 'Editar partida';
-
-  @override
-  String get gameSettings => 'Configurações da partida';
 
   @override
   String get removePlayer => 'Remover jogador';
@@ -291,18 +273,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get noPlayers => 'Sem jogadores';
 
   @override
-  String playersListSummary(int count, String names) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count jogadores: $names',
-      one: '1 jogador: $names',
-      zero: 'Sem jogadores',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get playersAppearMessage =>
       'Os jogadores aparecerão aqui assim que\nvocê criar jogos';
 
@@ -364,9 +334,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get noGameTypes => 'Sem tipos de jogo';
 
   @override
-  String get predefined => 'Padrão';
-
-  @override
   String get edit => 'Editar';
 
   @override
@@ -419,9 +386,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get winRate => 'Taxa de vitória';
-
-  @override
-  String get overallStatistics => 'Estatísticas Gerais';
 
   @override
   String get byGameType => 'Por tipo de jogo';
@@ -637,6 +601,14 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get analysisErrorUnavailable =>
       'O servidor de análise está temporariamente indisponível. Tente novamente mais tarde.';
+
+  @override
+  String get analysisErrorGroupBudget =>
+      'O seu grupo esgotou o orçamento de análises deste mês. É renovado no início do próximo mês.';
+
+  @override
+  String get analysisStyleGroupDefault =>
+      'Nenhum estilo escolhido: este jogo partilhado é analisado no estilo e no idioma do grupo.';
 
   @override
   String analysisErrorStatus(int status) {
@@ -987,67 +959,133 @@ class AppLocalizationsPt extends AppLocalizations {
   String get gameTypeNameZapzap => 'ZapZap';
 
   @override
+  String get gameTypeNameZapzapSortKey => 'ZapZap';
+
+  @override
   String get gameTypeNameUno => 'Uno';
+
+  @override
+  String get gameTypeNameUnoSortKey => 'Uno';
 
   @override
   String get gameTypeNameScrabble => 'Scrabble';
 
   @override
+  String get gameTypeNameScrabbleSortKey => 'Scrabble';
+
+  @override
   String get gameTypeNameOther => 'Outro';
+
+  @override
+  String get gameTypeNameOtherSortKey => 'Outro';
 
   @override
   String get gameTypeNameSkyjo => 'Skyjo';
 
   @override
+  String get gameTypeNameSkyjoSortKey => 'Skyjo';
+
+  @override
   String get gameTypeNamePresident => 'Presidente';
+
+  @override
+  String get gameTypeNamePresidentSortKey => 'Presidente';
 
   @override
   String get gameTypeNameBelote => 'Belote';
 
   @override
+  String get gameTypeNameBeloteSortKey => 'Belote';
+
+  @override
   String get gameTypeNameTarot => 'Tarô';
+
+  @override
+  String get gameTypeNameTarotSortKey => 'Tarô';
 
   @override
   String get gameTypeNameBridge => 'Bridge';
 
   @override
+  String get gameTypeNameBridgeSortKey => 'Bridge';
+
+  @override
   String get gameTypeNameRami => 'Rummy';
+
+  @override
+  String get gameTypeNameRamiSortKey => 'Rummy';
 
   @override
   String get gameTypeNameCoinche => 'Coinche';
 
   @override
+  String get gameTypeNameCoincheSortKey => 'Coinche';
+
+  @override
   String get gameTypeNameYahtzee => 'Yahtzee';
+
+  @override
+  String get gameTypeNameYahtzeeSortKey => 'Yahtzee';
 
   @override
   String get gameTypeNamePhase10 => 'Phase 10';
 
   @override
+  String get gameTypeNamePhase10SortKey => 'Phase 10';
+
+  @override
   String get gameTypeNameFlip7 => 'Flip 7';
+
+  @override
+  String get gameTypeNameFlip7SortKey => 'Flip 7';
 
   @override
   String get gameTypeNameMilleBornes => 'Mille Bornes';
 
   @override
+  String get gameTypeNameMilleBornesSortKey => 'Mille Bornes';
+
+  @override
   String get gameTypeNameRummikub => 'Rummikub';
+
+  @override
+  String get gameTypeNameRummikubSortKey => 'Rummikub';
 
   @override
   String get gameTypeNameSixNimmt => 'Pega em 6';
 
   @override
+  String get gameTypeNameSixNimmtSortKey => 'Pega em 6';
+
+  @override
   String get gameTypeNameQwirkle => 'Qwirkle';
+
+  @override
+  String get gameTypeNameQwirkleSortKey => 'Qwirkle';
 
   @override
   String get gameTypeNameFarkle => 'Farkle';
 
   @override
+  String get gameTypeNameFarkleSortKey => 'Farkle';
+
+  @override
   String get gameTypeNameCanasta => 'Canasta';
+
+  @override
+  String get gameTypeNameCanastaSortKey => 'Canasta';
 
   @override
   String get gameTypeNameWizard => 'Wizard';
 
   @override
+  String get gameTypeNameWizardSortKey => 'Wizard';
+
+  @override
   String get gameTypeNameTriomino => 'Triomino';
+
+  @override
+  String get gameTypeNameTriominoSortKey => 'Triomino';
 
   @override
   String get groupDeviceOwner => 'Proprietário';
@@ -1077,6 +1115,20 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get whoStartsAgain => 'Sortear de novo';
+
+  @override
+  String get diceRoller => 'Lançar os dados';
+
+  @override
+  String get diceCount => 'Número de dados';
+
+  @override
+  String get diceRollAgain => 'Lançar de novo';
+
+  @override
+  String diceTotal(int total) {
+    return 'Soma: $total';
+  }
 
   @override
   String get resumeGame => 'Retomar';

@@ -1,5 +1,7 @@
 # A shared result is text only, while a picture of the podium is what gets posted
 
+**Status:** done (2026-09-19) — closed by feat/share-result-image. `ShareResultButton` draws a `ResultShareCard` (built on `RankedPlayers` from the same `GameRanking`) off-screen to a PNG and shares it next to the text; a browser that cannot share files gets the text alone. The ranking test compares the card's order to the screen's; Chromium under `_PWA_CSP` received the PNG with the activation still live ([[Web]]); no new manifest entry, Data Safety unchanged.
+
 - **Noted:** 2026-09-19 — while adding the text share (feat/share-game-result)
 - **Theme:** growth
 - **Area:** app

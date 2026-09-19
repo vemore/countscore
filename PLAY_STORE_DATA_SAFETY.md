@@ -121,6 +121,12 @@ permission to the merged release manifest (only its own non-exported `FileProvid
 receiver). Data a user chooses to pass to another app is not collected *by this app*, so
 nothing in the form below changes.
 
+The same day, the share action gained a **picture of the standings** next to the text: a PNG
+drawn on the device from the same ranking (title, summary line, podium and rows in the
+players' colours, the app's name — no more than the text carries). `share_plus` writes it to
+the app's cache directory (`cache/share_plus`) and hands it through its own `FileProvider`;
+no storage permission, no new manifest entry, no network request. The answers are unchanged.
+
 ### Report control for AI commentary (September 14, 2026)
 
 The analysis screen's **Report this commentary** action (Play AI-Generated Content policy)
@@ -134,7 +140,9 @@ nothing in the form below changes.
 
 The analysis feature (`lib/screens/game_analysis_screen.dart`, issuing the request via
 `lib/services/backend_client.dart`) posts a JSON payload to `POST /comments/game-analysis`
-on the backend the user configured. Until 2026-09-16 it covered only games of one type and
+on the backend the user configured — or, for a game shared with the device's group, the same
+payload under `analysis` to `POST /groups/me/games/{id}/comments`, with the device's group
+access token (since 2026-09-19). Until 2026-09-16 it covered only games of one type and
 was called the ZapZap analysis; the path `/comments/zapzap-analysis` still reaches the same
 endpoint. The payload contains:
 
@@ -154,13 +162,17 @@ endpoint. The payload contains:
 none of the declared categories below. They are listed because this table is the inventory
 of what leaves the device.
 
-The backend is stateless for this endpoint — it persists nothing — but it forwards the payload
+For an unshared game the backend is stateless — it persists nothing. For a shared game it
+stores the generated text, voice, language, model, token counts and cost as a `comments` row
+of the group, and adds the cost to the group's monthly usage; the payload itself is not
+stored, and the game, its rounds and its analysis were already held there by group sharing,
+which this form declares as collected. Either way it forwards the payload
 to an LLM provider (**AWS Bedrock**, **Google Gemini**, or **Mistral AI**, depending on that
 server's `LLM_PROVIDER` setting) whose retention is governed by that provider's own terms.
 
 **Why we declare rather than claim an exemption.** Google's "ephemeral processing" exemption
 allows answering "not collected" when data is used only in memory and kept no longer than
-needed to serve the request. The server software meets that bar; the LLM provider is not under
+needed to serve the request. The server software meets that bar for an unshared game; the LLM provider is not under
 anyone's control here, and at least one supported configuration (free-tier Gemini) may use
 submitted prompts for product improvement. The exemption cannot be claimed for every
 configuration the server supports, so the declaration is made on the conservative reading.
@@ -251,7 +263,8 @@ queries the manifest.
    it deleted on the server; leaving the group revokes the device. Removing the stored data
    from the server is done by its operator (the user, for a self-hosted server): deleting the
    group row cascades to everything it holds.
-5. **Analysis** — nothing to delete server-side: the analysis endpoint stores no game data.
+5. **Analysis** — for an unshared game, nothing to delete server-side: that endpoint stores no
+   game data. A shared game's analyses are kept with the group, and go with it as in 4.
 
 ---
 

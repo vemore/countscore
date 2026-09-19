@@ -41,8 +41,6 @@
 
   "save": "सहेजें",
 
-  "filterByGameType": "खेल के प्रकार से फ़िल्टर करें",
-
   "allGames": "सभी खेल",
 
   "filterGames": "गेम फ़िल्टर करें",
@@ -67,12 +65,6 @@
 
   "pleaseEnterName": "कृपया नाम दर्ज करें",
 
-  "atLeast2PlayersRequired": "कम से कम 2 खिलाड़ी आवश्यक हैं",
-
-  "playerNumber": "खिलाड़ी {index}",
-
-  "selectPlayer": "एक खिलाड़ी चुनें...",
-
   "clear": "साफ़ करें",
 
   "remove": "हटाएं",
@@ -82,8 +74,6 @@
   "editGame": "गेम संपादित करें",
 
   "editGameDialogTitle": "गेम संपादित करें",
-
-  "gameSettings": "गेम सेटिंग्स",
 
   "removePlayer": "खिलाड़ी हटाएं",
 
@@ -169,8 +159,6 @@
 
   "noPlayers": "कोई खिलाड़ी नहीं",
 
-  "playersListSummary": "{count, plural, =0{कोई खिलाड़ी नहीं} =1{1 खिलाड़ी: {names}} other{{count} खिलाड़ी: {names}}}",
-
   "playersAppearMessage": "जब आप खेल बनाएंगे\nतो खिलाड़ी यहां दिखाई देंगे",
 
   "gamesCount": "{count, plural, =0{0 खेल} =1{1 खेल} other{{count} खेल}}",
@@ -194,8 +182,6 @@
   "chooseColor": "रंग चुनें",
 
   "noGameTypes": "कोई खेल प्रकार नहीं",
-
-  "predefined": "डिफ़ॉल्ट",
 
   "edit": "संपादित करें",
 
@@ -232,8 +218,6 @@
   "wins": "जीत",
 
   "winRate": "जीत दर",
-
-  "overallStatistics": "समग्र सांख्यिकी",
 
   "byGameType": "खेल प्रकार के अनुसार",
 
@@ -332,6 +316,8 @@
   "analysisError": "विश्लेषण उत्पन्न करने में विफल",
   "analysisErrorStatus": "विश्लेषण उत्पन्न करने में विफल (HTTP {status})",
   "analysisErrorUnavailable": "विश्लेषण सर्वर अस्थायी रूप से उपलब्ध नहीं है। कृपया बाद में पुनः प्रयास करें।",
+  "analysisErrorGroupBudget": "आपके समूह ने इस महीने का विश्लेषण बजट खत्म कर दिया है। यह अगले महीने की शुरुआत में फिर से मिलेगा।",
+  "analysisStyleGroupDefault": "कोई शैली नहीं चुनी गई: इस साझा खेल का विश्लेषण समूह की शैली और भाषा में होगा।",
   "retry": "पुनः प्रयास करें",
   "analysisGeneratedAt": "{date} को उत्पन्न",
   "serverSection": "सर्वर",
@@ -470,47 +456,91 @@
 
   "gameTypeNameZapzap": "ZapZap",
 
+  "gameTypeNameZapzapSortKey": "ZapZap",
+
   "gameTypeNameUno": "उनो",
+
+  "gameTypeNameUnoSortKey": "उनो",
 
   "gameTypeNameScrabble": "स्क्रैबल",
 
+  "gameTypeNameScrabbleSortKey": "स्क्रैबल",
+
   "gameTypeNameOther": "अन्य",
+
+  "gameTypeNameOtherSortKey": "अन्य",
 
   "gameTypeNameSkyjo": "स्काईजो",
 
+  "gameTypeNameSkyjoSortKey": "स्काईजो",
+
   "gameTypeNamePresident": "प्रेसिडेंट",
+
+  "gameTypeNamePresidentSortKey": "प्रेसिडेंट",
 
   "gameTypeNameBelote": "बेलोत",
 
+  "gameTypeNameBeloteSortKey": "बेलोत",
+
   "gameTypeNameTarot": "टैरो",
+
+  "gameTypeNameTarotSortKey": "टैरो",
 
   "gameTypeNameBridge": "ब्रिज",
 
+  "gameTypeNameBridgeSortKey": "ब्रिज",
+
   "gameTypeNameRami": "रमी",
+
+  "gameTypeNameRamiSortKey": "रमी",
 
   "gameTypeNameCoinche": "कोएंश",
 
+  "gameTypeNameCoincheSortKey": "कोएंश",
+
   "gameTypeNameYahtzee": "याहत्ज़ी",
+
+  "gameTypeNameYahtzeeSortKey": "याहत्ज़ी",
 
   "gameTypeNamePhase10": "फेज़ 10",
 
+  "gameTypeNamePhase10SortKey": "फेज़ 10",
+
   "gameTypeNameFlip7": "फ्लिप 7",
+
+  "gameTypeNameFlip7SortKey": "फ्लिप 7",
 
   "gameTypeNameMilleBornes": "मिल बोर्न",
 
+  "gameTypeNameMilleBornesSortKey": "मिल बोर्न",
+
   "gameTypeNameRummikub": "रमीक्यूब",
+
+  "gameTypeNameRummikubSortKey": "रमीक्यूब",
 
   "gameTypeNameSixNimmt": "6 निम्ट",
 
+  "gameTypeNameSixNimmtSortKey": "6 निम्ट",
+
   "gameTypeNameQwirkle": "क्विर्कल",
+
+  "gameTypeNameQwirkleSortKey": "क्विर्कल",
 
   "gameTypeNameFarkle": "फार्कल",
 
+  "gameTypeNameFarkleSortKey": "फार्कल",
+
   "gameTypeNameCanasta": "कनास्ता",
+
+  "gameTypeNameCanastaSortKey": "कनास्ता",
 
   "gameTypeNameWizard": "विज़ार्ड",
 
+  "gameTypeNameWizardSortKey": "विज़ार्ड",
+
   "gameTypeNameTriomino": "ट्रायोमिनो",
+
+  "gameTypeNameTriominoSortKey": "ट्रायोमिनो",
 
   "groupDeviceOwner": "स्वामी",
 
@@ -525,6 +555,10 @@
   "groupErrorNotOwner": "यह केवल समूह का स्वामी कर सकता है",
   "whoStarts": "कौन शुरू करेगा?",
   "whoStartsAgain": "फिर से चुनें",
+  "diceRoller": "पासे फेंकें",
+  "diceCount": "पासों की संख्या",
+  "diceRollAgain": "फिर से फेंकें",
+  "diceTotal": "कुल: {total}",
   "resumeGame": "जारी रखें",
   "recentGames": "हाल की",
   "gameInProgress": "जारी",

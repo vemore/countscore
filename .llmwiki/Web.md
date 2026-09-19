@@ -139,8 +139,19 @@ either. Verified on 2026-09-19 in Chromium at 412×860, a share_plus probe serve
 `_PWA_CSP` (`backend/app/main.py:38`): with no Web Share API (desktop Linux Chromium) the
 `mailto:?subject=…&body=…` handler launched; with the API present (stubbed) `navigator.share`
 received the title and text with user activation still active; no CSP violation in either
-case. The share call must stay synchronous from the tap — the API needs the transient user
-activation — which is why `ShareResultButton` awaits nothing before it.
+case. The API needs the transient user activation, which is time-based (Chromium and Firefox
+keep it 5 s after the tap), so what runs before `navigator.share` must stay short.
+
+> **Status: Outdated** (2026-09-19) — `ShareResultButton` now draws the standings' PNG before
+> it shares (`feat/share-result-image`). Probed the same day in Chromium at 412×860 under
+> `_PWA_CSP` (a release build of `renderWidgetToPng` + `systemShareResult`): the 1200 px PNG
+> (46 KB) was drawn in about 200 ms, and `navigator.share` received the text, the title and
+> `countscore-result.png` (`image/png`) about 270 ms after the tap with the user activation
+> still active; no CSP violation (the `File` is built from bytes, no `blob:` or `data:` URL
+> is loaded). With `navigator.canShare` refusing files, share_plus threw (its download
+> fallback is off), and the text alone was shared, still with the activation. Safari's
+> activation window was not measured; if it proves shorter, pre-drawing the card when the
+> screen opens is the fallback.
 
 ### Building
 

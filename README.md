@@ -36,11 +36,13 @@ at your own server in Settings → Server if you want the connected features.
   that threshold, or when you open a game already at or past it — once: the end screen then offers
   "Continue playing", remembered on the device until the game drops back under its threshold.
 - **Who starts?**: the score table's menu draws one of the game's players at random.
+- **Roll dice**: the score table's menu rolls 1 to 6 six-sided dice and shows each die and the total.
 - **Play again**: from the end screen, the ranking or a finished game in the history, one tap starts
   the next game with the same type and the same players in the same order.
 - **Share a result**: the end screen, the ranking and the analysis share the standings as a
-  short text — game type, date, places and totals, the commentary on the analysis — through
-  the system share sheet, with a link to the app's Play listing.
+  short text — game type, date, places and totals, the commentary on the analysis — and as a
+  picture of the podium in the players' colours, through the system share sheet, with a link
+  to the app's Play listing.
 - **Global players**: a player exists once and is shared across games, so statistics follow
   them from one game to the next.
 - **Player statistics**: a leaderboard of the finished games, all of them or one game type
@@ -66,7 +68,8 @@ at your own server in Settings → Server if you want the connected features.
   default while you are in a group; games you do not share stay on the device. A lost or sold
   phone can be removed from the group's device list, which also replaces the invite code.
   Any member can set the style and language of the group's comments and see how much of its
-  monthly AI budget has been spent.
+  monthly AI budget has been spent: a shared game's analysis is written in the group's
+  language — and its style, unless you picked a voice — and counts against that budget.
 - **Bring your own backend**: the server address is a setting, empty by default. Run the
   FastAPI service in `backend/` on hardware you control and your data never touches anyone
   else's infrastructure.
@@ -379,7 +382,9 @@ CountScore backend **you configured in Settings → Server**, which forwards it 
 provider to generate the commentary. Two conditions, both yours: no server configured means
 the feature is not even offered, and with one configured nothing is sent until you tap the
 button. No analysis is ever generated automatically. The result is cached locally so it is
-generated once.
+generated once. For a game shared with your group, the request also carries the device's
+group token: the analysis is billed to the group's monthly AI budget, written in the group's
+language, and kept with the group on your server.
 
 Because the server is one you run, the data goes to infrastructure you control — and on to
 whichever LLM provider *your* server is configured to use. We operate no service on your
@@ -393,14 +398,14 @@ whether and when you ended them, and analysis — are uploaded to **your** serve
 and downloaded by the group's other devices. Each device of the group also sees the others'
 names and when they were last seen, so a lost phone can be recognised and removed. The
 group's comment style and language, if a member changes them (Settings → Group → Comments and
-usage), are stored there too. Anyone with
+usage), are stored there too, with the analyses generated for shared games. Anyone with
 the group's invite code can join, so share it only with the people you mean to. Games you do not share never leave the device.
 Leaving the group keeps your copies as local games; it does not remove them from the server,
 whose operator — you — deletes them there.
 
-**Sharing a result** is not a third way out: the app builds the text on the device and hands
-it to your phone's share sheet (the browser's, in the PWA); it sends nothing itself, and the
-text goes only where you choose to send it.
+**Sharing a result** is not a third way out: the app builds the text and the picture of the
+standings on the device and hands them to your phone's share sheet (the browser's, in the
+PWA); it sends nothing itself, and they go only where you choose to send them.
 
 The one Android permission the app declares is `INTERNET`, for these two features and
 nothing else. It is unused until you configure a server. The merged release manifest also

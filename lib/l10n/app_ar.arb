@@ -41,8 +41,6 @@
 
   "save": "حفظ",
 
-  "filterByGameType": "تصفية حسب نوع اللعبة",
-
   "allGames": "جميع الألعاب",
 
   "filterGames": "تصفية الألعاب",
@@ -67,12 +65,6 @@
 
   "pleaseEnterName": "الرجاء إدخال اسم",
 
-  "atLeast2PlayersRequired": "يلزم لاعبان على الأقل",
-
-  "playerNumber": "اللاعب {index}",
-
-  "selectPlayer": "اختر لاعباً...",
-
   "clear": "مسح",
 
   "remove": "إزالة",
@@ -82,8 +74,6 @@
   "editGame": "تعديل اللعبة",
 
   "editGameDialogTitle": "تعديل اللعبة",
-
-  "gameSettings": "إعدادات اللعبة",
 
   "removePlayer": "إزالة اللاعب",
 
@@ -169,8 +159,6 @@
 
   "noPlayers": "لا يوجد لاعبون",
 
-  "playersListSummary": "{count, plural, =0{لا يوجد لاعبون} =1{لاعب واحد: {names}} =2{لاعبان: {names}} other{{count} لاعبون: {names}}}",
-
   "playersAppearMessage": "سيظهر اللاعبون هنا بمجرد\nإنشاء الألعاب",
 
   "gamesCount": "{count, plural, =0{0 لعبة} =1{لعبة واحدة} =2{لعبتان} other{{count} لعبة}}",
@@ -194,8 +182,6 @@
   "chooseColor": "اختر لوناً",
 
   "noGameTypes": "لا توجد أنواع ألعاب",
-
-  "predefined": "افتراضي",
 
   "edit": "تعديل",
 
@@ -232,8 +218,6 @@
   "wins": "الانتصارات",
 
   "winRate": "معدل الفوز",
-
-  "overallStatistics": "الإحصائيات العامة",
 
   "byGameType": "حسب نوع اللعبة",
 
@@ -332,6 +316,8 @@
   "analysisError": "فشل إنشاء التحليل",
   "analysisErrorStatus": "فشل إنشاء التحليل (HTTP {status})",
   "analysisErrorUnavailable": "خادم التحليل غير متاح مؤقتًا. حاول مرة أخرى لاحقًا.",
+  "analysisErrorGroupBudget": "استنفدت مجموعتك ميزانية التحليلات لهذا الشهر. تتجدد في بداية الشهر القادم.",
+  "analysisStyleGroupDefault": "لم يتم اختيار أسلوب: ستُحلَّل هذه اللعبة المشتركة بأسلوب المجموعة ولغتها.",
   "retry": "إعادة المحاولة",
   "analysisGeneratedAt": "تم الإنشاء في {date}",
   "serverSection": "الخادم",
@@ -470,47 +456,91 @@
 
   "gameTypeNameZapzap": "ZapZap",
 
+  "gameTypeNameZapzapSortKey": "ZapZap",
+
   "gameTypeNameUno": "أونو",
+
+  "gameTypeNameUnoSortKey": "أونو",
 
   "gameTypeNameScrabble": "سكرابل",
 
+  "gameTypeNameScrabbleSortKey": "سكرابل",
+
   "gameTypeNameOther": "أخرى",
+
+  "gameTypeNameOtherSortKey": "أخرى",
 
   "gameTypeNameSkyjo": "سكايجو",
 
+  "gameTypeNameSkyjoSortKey": "سكايجو",
+
   "gameTypeNamePresident": "الرئيس",
+
+  "gameTypeNamePresidentSortKey": "الرئيس",
 
   "gameTypeNameBelote": "بيلوت",
 
+  "gameTypeNameBeloteSortKey": "بيلوت",
+
   "gameTypeNameTarot": "تاروت",
+
+  "gameTypeNameTarotSortKey": "تاروت",
 
   "gameTypeNameBridge": "بريدج",
 
+  "gameTypeNameBridgeSortKey": "بريدج",
+
   "gameTypeNameRami": "رامي",
+
+  "gameTypeNameRamiSortKey": "رامي",
 
   "gameTypeNameCoinche": "كوانش",
 
+  "gameTypeNameCoincheSortKey": "كوانش",
+
   "gameTypeNameYahtzee": "ياتزي",
+
+  "gameTypeNameYahtzeeSortKey": "ياتزي",
 
   "gameTypeNamePhase10": "فيز 10",
 
+  "gameTypeNamePhase10SortKey": "فيز 10",
+
   "gameTypeNameFlip7": "فليب 7",
+
+  "gameTypeNameFlip7SortKey": "فليب 7",
 
   "gameTypeNameMilleBornes": "ميل بورن",
 
+  "gameTypeNameMilleBornesSortKey": "ميل بورن",
+
   "gameTypeNameRummikub": "روميكوب",
+
+  "gameTypeNameRummikubSortKey": "روميكوب",
 
   "gameTypeNameSixNimmt": "خذ 6",
 
+  "gameTypeNameSixNimmtSortKey": "خذ 6",
+
   "gameTypeNameQwirkle": "كويركل",
+
+  "gameTypeNameQwirkleSortKey": "كويركل",
 
   "gameTypeNameFarkle": "فاركل",
 
+  "gameTypeNameFarkleSortKey": "فاركل",
+
   "gameTypeNameCanasta": "كاناستا",
+
+  "gameTypeNameCanastaSortKey": "كاناستا",
 
   "gameTypeNameWizard": "ويزارد",
 
+  "gameTypeNameWizardSortKey": "ويزارد",
+
   "gameTypeNameTriomino": "تريومينو",
+
+  "gameTypeNameTriominoSortKey": "تريومينو",
 
   "groupDeviceOwner": "المالك",
 
@@ -525,6 +555,10 @@
   "groupErrorNotOwner": "هذا الإجراء متاح لمالك المجموعة فقط",
   "whoStarts": "من يبدأ؟",
   "whoStartsAgain": "اسحب مجددًا",
+  "diceRoller": "رمي النرد",
+  "diceCount": "عدد أحجار النرد",
+  "diceRollAgain": "ارمِ مجددًا",
+  "diceTotal": "المجموع: {total}",
   "resumeGame": "استئناف",
   "recentGames": "الأخيرة",
   "gameInProgress": "جارية",

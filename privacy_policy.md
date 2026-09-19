@@ -1,10 +1,10 @@
 # Privacy Policy for CountScore
 
-**Last Updated**: September 19, 2026
+**Last Updated**: September 19, 2026 (v2.10)
 
 **Effective Date**: Applies to CountScore v1.1.0 and later
 
-**Previous versions**: v2.7 and v2.6 (September 16, 2026), v2.5 (September 14, 2026), v2.4 (September 14, 2026), v2.3 (September 13, 2026), v2.2 (September 11, 2026), v2.1 and v2.0 (September 9, 2026) and v1.0 (November 9, 2025). v1.0
+**Previous versions**: v2.9 (September 19, 2026), v2.8 (September 18, 2026), v2.7 and v2.6 (September 16, 2026), v2.5 (September 14, 2026), v2.4 (September 14, 2026), v2.3 (September 13, 2026), v2.2 (September 11, 2026), v2.1 and v2.0 (September 9, 2026) and v1.0 (November 9, 2025). v1.0
 applies to CountScore 1.0.x — the versions currently on the Play Store. See
 [Version History](#version-history).
 
@@ -73,7 +73,9 @@ until you delete it.
 
 CountScore includes an optional feature that generates a written analysis of a finished game
 — of any game type — using a large language model (LLM). You choose the voice it is written
-in from a list of nine, and it answers in the language the app is displayed in.
+in from a list of nine, and it answers in the language the app is displayed in. For a game
+shared with your group (see [Group Sharing](#group-sharing)), the group's language and, if you
+have never picked a voice, the group's comment style apply instead.
 
 **It is switched off until you supply a server.** The app is published with no backend
 address, and none is compiled into it. Until you enter one in **Settings → Server**, the
@@ -98,6 +100,10 @@ When you request an analysis, the app sends the following for that game:
 - a **history for each player**, drawn from up to 10 of their other games (their past results
   under the same name).
 
+For a game shared with your group, the same request also carries this device's group access
+token, which identifies the group so that the analysis counts against its monthly AI budget,
+and the voice is left out when you have never picked one.
+
 Round comments are free text. Whatever you type there is included, so please do not put
 anything sensitive in them.
 
@@ -110,9 +116,13 @@ recommend first names or nicknames.
    CountScore server software from the `backend/` directory. The connection is encrypted
    (HTTPS/TLS); the app accepts an unencrypted `http://` address only for a private or
    loopback address such as `192.168.1.10` or `localhost`, so that a server on your own home
-   network works without a certificate. That server software is **stateless** for this
-   feature: it does not write your game data to any database, and keeps no copy of it after
-   the request completes.
+   network works without a certificate. For a game you have not shared, that server
+   software is **stateless** for this feature: it does not write your game data to any
+   database, and keeps no copy of it after the request completes. For a **shared** game, it
+   keeps the generated analysis with the group — its text, voice, language, the model that
+   wrote it, its size and cost — and adds that cost to the group's monthly AI usage, which
+   every member can see. The game data sent with the request is not stored by this feature
+   (the shared game is already on that server, see [Group Sharing](#group-sharing)).
 2. **From there to an LLM provider**, which generates the analysis text. Which one depends on
    how *your* server is configured: **Amazon Web Services (Bedrock), Google (Gemini), or
    Mistral AI**. Your data is processed by that provider under **their** terms and retention
@@ -171,7 +181,8 @@ access token; the token authenticates each later request.
 
 If you change the group's **comment style or language** (Settings → Group → Comments and
 usage), the app sends your choice — one of three styles and a language code — to the server,
-which keeps it with the group, where every member can see and change it. The same screen reads
+which keeps it with the group, where every member can see and change it. The server uses them
+for the AI analysis of the group's shared games, described above. The same screen reads
 from the server how much of the group's monthly AI budget has been spent; the app keeps none
 of it.
 
@@ -278,7 +289,8 @@ of the app is unaffected either way.
    (screen lock, disk encryption).
 2. **Encryption in transit**: the analysis request and group sharing use HTTPS/TLS (and a
    WebSocket over TLS).
-3. **Server-side storage**: the analysis endpoint retains nothing after answering. Group
+3. **Server-side storage**: the analysis of an unshared game leaves nothing on the server
+   after answering; that of a shared game is kept with the group. Group
    sharing stores shared games on the server you configured; the device access token is
    stored there only as an argon2 hash, and on your device only in secure storage.
 4. **Minimal permissions**: see [Permissions](#permissions).
@@ -363,10 +375,10 @@ run no server that receives your data, we hold no such information.
 
 - **On your device**: until you delete it, clear app data, or uninstall.
 - **On a server we run**: nothing, because we run none that your app talks to. On the server
-  *you* configure, the analysis endpoint stores no game data; IP addresses used for rate
-  limiting live in that process's memory only and are discarded when the window elapses.
-  Shared games, their change log and the group's device list are kept there until the
-  operator deletes them.
+  *you* configure, the analysis of an unshared game stores no game data; IP addresses used
+  for rate limiting live in that process's memory only and are discarded when the window
+  elapses. Shared games, their change log, the analyses generated for them and the group's
+  device list are kept there until the operator deletes them.
 - **At the LLM provider**: governed by that provider's retention policy, which we do not
   control.
 
@@ -394,6 +406,12 @@ changes are announced through app updates on the Google Play Store.
 
 ### Version History
 
+- **v2.10** (September 19, 2026): The AI analysis of a game shared with your group now goes
+  through the group on your server: it is written in the group's language (and in the
+  group's comment style if you never picked a voice), counts against the group's monthly AI
+  budget, and the server keeps the generated text with the group. The request carries this
+  device's group access token for that. An unshared game's analysis is unchanged. No new
+  recipient and no new category of information about you.
 - **v2.9** (September 19, 2026): A member of a group can now read and change the group's
   comment style and language, and see how much of its monthly AI budget has been spent. The
   style and language are sent to your server, which already stored them with the group. No

@@ -380,3 +380,53 @@ Future<void> applyV16(SqlExecutor execute) async {
     );
   }
 }
+
+/// The columns that decide how a game type scores. Two rows that agree on all
+/// of them play the same game, whatever their icon or colour.
+const _scoringColumns = [
+  'isLowestScoreWins',
+  'playerDeadConditionType',
+  'playerDeadThreshold',
+  'gameOverConditionType',
+  'gameOverThreshold',
+];
+
+/// Schema v17, shared by both engines: soft-deletes the keyless duplicates of
+/// the built-in types that the old PWA reload bug left behind.
+///
+/// Before #153 every PWA reload reran `onCreate`, and before v15 that rerun
+/// seeded the ten original types again. [applyV15] then stripped the key from
+/// each surplus copy rather than deleting it, so a browser used in that window
+/// lists every original type twice. See
+/// `wip/done/2026-09-19-pwa-keeps-unkeyed-copies-of-builtin-types.md`.
+///
+/// A row is removed only when all of these hold:
+///
+/// - it is live, has no `builtin_key` and no `group_id` — a local user row;
+/// - a live built-in row (key not null) has the same stored name, exactly, and
+///   the same scoring fields ([_scoringColumns], NULL-safe);
+/// - it holds no ruleset of its own (`rules` NULL);
+/// - no game, live or deleted, points at it.
+///
+/// A copy with a game is the user's now and is kept, as is a user type that
+/// shares a built-in name but scores differently.
+///
+/// A soft delete (`deleted_at`, `updated_at`), not a `DELETE`: sync sees a
+/// tombstone if the row was ever linked into a group. Idempotent: a replay
+/// matches only live rows, and there are none left to match.
+Future<void> applyV17(SqlExecutor execute) async {
+  final now = DateTime.now().millisecondsSinceEpoch;
+  final sameScoring =
+      _scoringColumns.map((c) => 'b.$c IS game_types.$c').join(' AND ');
+  await execute(
+    'UPDATE game_types SET deleted_at = ?, updated_at = ? '
+    'WHERE builtin_key IS NULL AND group_id IS NULL AND deleted_at IS NULL '
+    'AND rules IS NULL '
+    'AND EXISTS (SELECT 1 FROM game_types b '
+    '            WHERE b.builtin_key IS NOT NULL AND b.deleted_at IS NULL '
+    '            AND b.id <> game_types.id AND b.name = game_types.name '
+    '            AND $sameScoring) '
+    'AND NOT EXISTS (SELECT 1 FROM games g WHERE g.gameTypeId = game_types.id)',
+    [now, now],
+  );
+}

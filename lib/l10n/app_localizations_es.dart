@@ -72,9 +72,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get save => 'Guardar';
 
   @override
-  String get filterByGameType => 'Filtrar por tipo de juego';
-
-  @override
   String get allGames => 'Todos los juegos';
 
   @override
@@ -111,17 +108,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get pleaseEnterName => 'Por favor ingresa un nombre';
 
   @override
-  String get atLeast2PlayersRequired => 'Se requieren al menos 2 jugadores';
-
-  @override
-  String playerNumber(int index) {
-    return 'Jugador $index';
-  }
-
-  @override
-  String get selectPlayer => 'Seleccionar un jugador...';
-
-  @override
   String get clear => 'Limpiar';
 
   @override
@@ -135,9 +121,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get editGameDialogTitle => 'Modificar partida';
-
-  @override
-  String get gameSettings => 'Configuración de la partida';
 
   @override
   String get removePlayer => 'Quitar jugador';
@@ -290,18 +273,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get noPlayers => 'Sin jugadores';
 
   @override
-  String playersListSummary(int count, String names) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count jugadores: $names',
-      one: '1 jugador: $names',
-      zero: 'Sin jugadores',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get playersAppearMessage =>
       'Los jugadores aparecerán aquí una vez\nque hayas creado juegos';
 
@@ -363,9 +334,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get noGameTypes => 'Sin tipos de juego';
 
   @override
-  String get predefined => 'Predeterminado';
-
-  @override
   String get edit => 'Editar';
 
   @override
@@ -418,9 +386,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get winRate => 'Tasa de victorias';
-
-  @override
-  String get overallStatistics => 'Estadísticas Generales';
 
   @override
   String get byGameType => 'Por tipo de juego';
@@ -637,6 +602,14 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get analysisErrorUnavailable =>
       'El servidor de análisis no está disponible temporalmente. Inténtelo más tarde.';
+
+  @override
+  String get analysisErrorGroupBudget =>
+      'Tu grupo ha agotado su presupuesto de análisis de este mes. Se renueva a principios del mes que viene.';
+
+  @override
+  String get analysisStyleGroupDefault =>
+      'Ningún estilo elegido: esta partida compartida se analiza con el estilo y el idioma del grupo.';
 
   @override
   String analysisErrorStatus(int status) {
@@ -988,67 +961,133 @@ class AppLocalizationsEs extends AppLocalizations {
   String get gameTypeNameZapzap => 'ZapZap';
 
   @override
+  String get gameTypeNameZapzapSortKey => 'ZapZap';
+
+  @override
   String get gameTypeNameUno => 'Uno';
+
+  @override
+  String get gameTypeNameUnoSortKey => 'Uno';
 
   @override
   String get gameTypeNameScrabble => 'Scrabble';
 
   @override
+  String get gameTypeNameScrabbleSortKey => 'Scrabble';
+
+  @override
   String get gameTypeNameOther => 'Otro';
+
+  @override
+  String get gameTypeNameOtherSortKey => 'Otro';
 
   @override
   String get gameTypeNameSkyjo => 'Skyjo';
 
   @override
+  String get gameTypeNameSkyjoSortKey => 'Skyjo';
+
+  @override
   String get gameTypeNamePresident => 'Presidente';
+
+  @override
+  String get gameTypeNamePresidentSortKey => 'Presidente';
 
   @override
   String get gameTypeNameBelote => 'Belote';
 
   @override
+  String get gameTypeNameBeloteSortKey => 'Belote';
+
+  @override
   String get gameTypeNameTarot => 'Tarot';
+
+  @override
+  String get gameTypeNameTarotSortKey => 'Tarot';
 
   @override
   String get gameTypeNameBridge => 'Bridge';
 
   @override
+  String get gameTypeNameBridgeSortKey => 'Bridge';
+
+  @override
   String get gameTypeNameRami => 'Rummy';
+
+  @override
+  String get gameTypeNameRamiSortKey => 'Rummy';
 
   @override
   String get gameTypeNameCoinche => 'Coinche';
 
   @override
+  String get gameTypeNameCoincheSortKey => 'Coinche';
+
+  @override
   String get gameTypeNameYahtzee => 'Yahtzee';
+
+  @override
+  String get gameTypeNameYahtzeeSortKey => 'Yahtzee';
 
   @override
   String get gameTypeNamePhase10 => 'Phase 10';
 
   @override
+  String get gameTypeNamePhase10SortKey => 'Phase 10';
+
+  @override
   String get gameTypeNameFlip7 => 'Flip 7';
+
+  @override
+  String get gameTypeNameFlip7SortKey => 'Flip 7';
 
   @override
   String get gameTypeNameMilleBornes => 'Mille Bornes';
 
   @override
+  String get gameTypeNameMilleBornesSortKey => 'Mille Bornes';
+
+  @override
   String get gameTypeNameRummikub => 'Rummikub';
+
+  @override
+  String get gameTypeNameRummikubSortKey => 'Rummikub';
 
   @override
   String get gameTypeNameSixNimmt => '¡Toma 6!';
 
   @override
+  String get gameTypeNameSixNimmtSortKey => '¡Toma 6!';
+
+  @override
   String get gameTypeNameQwirkle => 'Qwirkle';
+
+  @override
+  String get gameTypeNameQwirkleSortKey => 'Qwirkle';
 
   @override
   String get gameTypeNameFarkle => 'Farkle';
 
   @override
+  String get gameTypeNameFarkleSortKey => 'Farkle';
+
+  @override
   String get gameTypeNameCanasta => 'Canasta';
+
+  @override
+  String get gameTypeNameCanastaSortKey => 'Canasta';
 
   @override
   String get gameTypeNameWizard => 'Wizard';
 
   @override
+  String get gameTypeNameWizardSortKey => 'Wizard';
+
+  @override
   String get gameTypeNameTriomino => 'Triomino';
+
+  @override
+  String get gameTypeNameTriominoSortKey => 'Triomino';
 
   @override
   String get groupDeviceOwner => 'Propietario';
@@ -1079,6 +1118,20 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get whoStartsAgain => 'Sortear de nuevo';
+
+  @override
+  String get diceRoller => 'Tirar los dados';
+
+  @override
+  String get diceCount => 'Número de dados';
+
+  @override
+  String get diceRollAgain => 'Volver a tirar';
+
+  @override
+  String diceTotal(int total) {
+    return 'Suma: $total';
+  }
 
   @override
   String get resumeGame => 'Reanudar';

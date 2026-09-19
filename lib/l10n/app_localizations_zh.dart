@@ -72,9 +72,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get save => '保存';
 
   @override
-  String get filterByGameType => '按游戏类型筛选';
-
-  @override
   String get allGames => '所有游戏';
 
   @override
@@ -111,17 +108,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pleaseEnterName => '请输入名称';
 
   @override
-  String get atLeast2PlayersRequired => '至少需要2名玩家';
-
-  @override
-  String playerNumber(int index) {
-    return '玩家$index';
-  }
-
-  @override
-  String get selectPlayer => '选择玩家...';
-
-  @override
   String get clear => '清除';
 
   @override
@@ -135,9 +121,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get editGameDialogTitle => '编辑游戏';
-
-  @override
-  String get gameSettings => '游戏设置';
 
   @override
   String get removePlayer => '移除玩家';
@@ -283,18 +266,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noPlayers => '没有玩家';
 
   @override
-  String playersListSummary(int count, String names) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count位玩家: $names',
-      one: '1位玩家: $names',
-      zero: '没有玩家',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get playersAppearMessage => '创建游戏后\n玩家将显示在此处';
 
   @override
@@ -353,9 +324,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noGameTypes => '没有游戏类型';
 
   @override
-  String get predefined => '默认';
-
-  @override
   String get edit => '编辑';
 
   @override
@@ -408,9 +376,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get winRate => '胜率';
-
-  @override
-  String get overallStatistics => '总体统计';
 
   @override
   String get byGameType => '按游戏类型';
@@ -622,6 +587,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get analysisErrorUnavailable => '分析服务器暂时不可用，请稍后再试。';
+
+  @override
+  String get analysisErrorGroupBudget => '你的群组本月的分析预算已用完，将在下月初重置。';
+
+  @override
+  String get analysisStyleGroupDefault => '未选择风格：此共享对局将按群组的风格和语言进行分析。';
 
   @override
   String analysisErrorStatus(int status) {
@@ -955,67 +926,133 @@ class AppLocalizationsZh extends AppLocalizations {
   String get gameTypeNameZapzap => 'ZapZap';
 
   @override
+  String get gameTypeNameZapzapSortKey => 'ZapZap';
+
+  @override
   String get gameTypeNameUno => 'UNO';
+
+  @override
+  String get gameTypeNameUnoSortKey => 'UNO';
 
   @override
   String get gameTypeNameScrabble => 'Scrabble';
 
   @override
+  String get gameTypeNameScrabbleSortKey => 'Scrabble';
+
+  @override
   String get gameTypeNameOther => '其他';
+
+  @override
+  String get gameTypeNameOtherSortKey => 'qi2 ta1';
 
   @override
   String get gameTypeNameSkyjo => 'Skyjo';
 
   @override
+  String get gameTypeNameSkyjoSortKey => 'Skyjo';
+
+  @override
   String get gameTypeNamePresident => '总统';
+
+  @override
+  String get gameTypeNamePresidentSortKey => 'zong3 tong3';
 
   @override
   String get gameTypeNameBelote => '贝洛特';
 
   @override
+  String get gameTypeNameBeloteSortKey => 'bei4 luo4 te4';
+
+  @override
   String get gameTypeNameTarot => '塔罗牌';
+
+  @override
+  String get gameTypeNameTarotSortKey => 'ta3 luo2 pai2';
 
   @override
   String get gameTypeNameBridge => '桥牌';
 
   @override
+  String get gameTypeNameBridgeSortKey => 'qiao2 pai2';
+
+  @override
   String get gameTypeNameRami => '拉米';
+
+  @override
+  String get gameTypeNameRamiSortKey => 'la1 mi3';
 
   @override
   String get gameTypeNameCoinche => 'Coinche';
 
   @override
+  String get gameTypeNameCoincheSortKey => 'Coinche';
+
+  @override
   String get gameTypeNameYahtzee => '快艇骰子';
+
+  @override
+  String get gameTypeNameYahtzeeSortKey => 'kuai4 ting3 tou2 zi5';
 
   @override
   String get gameTypeNamePhase10 => '阶段 10';
 
   @override
+  String get gameTypeNamePhase10SortKey => 'jie1 duan4 10';
+
+  @override
   String get gameTypeNameFlip7 => '翻牌 7';
+
+  @override
+  String get gameTypeNameFlip7SortKey => 'fan1 pai2 7';
 
   @override
   String get gameTypeNameMilleBornes => 'Mille Bornes';
 
   @override
+  String get gameTypeNameMilleBornesSortKey => 'Mille Bornes';
+
+  @override
   String get gameTypeNameRummikub => '拉密';
+
+  @override
+  String get gameTypeNameRummikubSortKey => 'la1 mi4';
 
   @override
   String get gameTypeNameSixNimmt => '6 nimmt!';
 
   @override
+  String get gameTypeNameSixNimmtSortKey => '6 nimmt!';
+
+  @override
   String get gameTypeNameQwirkle => 'Qwirkle';
+
+  @override
+  String get gameTypeNameQwirkleSortKey => 'Qwirkle';
 
   @override
   String get gameTypeNameFarkle => 'Farkle';
 
   @override
+  String get gameTypeNameFarkleSortKey => 'Farkle';
+
+  @override
   String get gameTypeNameCanasta => '凯纳斯特';
+
+  @override
+  String get gameTypeNameCanastaSortKey => 'kai3 na4 si1 te4';
 
   @override
   String get gameTypeNameWizard => 'Wizard';
 
   @override
+  String get gameTypeNameWizardSortKey => 'Wizard';
+
+  @override
   String get gameTypeNameTriomino => '三角骨牌';
+
+  @override
+  String get gameTypeNameTriominoSortKey => 'san1 jiao3 gu3 pai2';
 
   @override
   String get groupDeviceOwner => '所有者';
@@ -1044,6 +1081,20 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get whoStartsAgain => '重新抽取';
+
+  @override
+  String get diceRoller => '掷骰子';
+
+  @override
+  String get diceCount => '骰子数量';
+
+  @override
+  String get diceRollAgain => '再掷一次';
+
+  @override
+  String diceTotal(int total) {
+    return '总计：$total';
+  }
 
   @override
   String get resumeGame => '继续';

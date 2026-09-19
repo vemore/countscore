@@ -29,8 +29,8 @@ Load this file first. Then read only the pages your task touches.
 |---|---|---|
 | [[MobileApp]] | `lib/` layout, providers, screens, widgets, services (the review prompt), `utils/`, the dynamic-icon constraint | 2026-09-19 |
 | [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-09-19 |
-| [[SchemaV10]] | Schema v16: the twelve tables, `rules`/`rules_slug` (21 rulesets, keyed on `builtin_key`), `builtin_key` and its live-unique index, sync bookkeeping and capture triggers, tombstones, the migration chain | 2026-09-19 |
-| [[I18n]] | 10 languages × 371 keys, French template, English fallback; built-in game-type names are localized; the key *and* value checks; long-form rules are assets, not ARB; store locales differ | 2026-09-19 |
+| [[SchemaV10]] | Schema v17: the twelve tables, `rules`/`rules_slug` (21 rulesets, keyed on `builtin_key`), `builtin_key` and its live-unique index, sync bookkeeping and capture triggers, tombstones, the migration chain, the v17 dedupe of keyless built-in copies | 2026-09-19 |
+| [[I18n]] | 10 languages × 391 keys, French template, English fallback; built-in game-type names are localized and sorted by a per-name key (pinyin in zh); the key *and* value checks; long-form rules are assets, not ARB; store locales differ | 2026-09-19 |
 | [[Web]] | PWA specifics: sqlite3.wasm, IndexedDB (not OPFS) and the flush that makes it survive a reload, committed binaries and the check that gates them, `kIsWeb` guards, the wake lock and sharing under the CSP, base href, the self-hosted CanvasKit and fallback fonts (no Google request), the GitHub Pages workflow and its CORS consequences | 2026-09-19 |
 
 ## Backend (FastAPI)

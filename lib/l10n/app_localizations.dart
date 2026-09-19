@@ -234,12 +234,6 @@ abstract class AppLocalizations {
   /// **'Enregistrer'**
   String get save;
 
-  /// Label for game type filter
-  ///
-  /// In fr, this message translates to:
-  /// **'Filtrer par type de jeu'**
-  String get filterByGameType;
-
   /// Option to show all games (no filter)
   ///
   /// In fr, this message translates to:
@@ -312,24 +306,6 @@ abstract class AppLocalizations {
   /// **'Veuillez entrer un nom'**
   String get pleaseEnterName;
 
-  /// Validation message for minimum players
-  ///
-  /// In fr, this message translates to:
-  /// **'Au moins 2 joueurs sont requis'**
-  String get atLeast2PlayersRequired;
-
-  /// Label for player number
-  ///
-  /// In fr, this message translates to:
-  /// **'Joueur {index}'**
-  String playerNumber(int index);
-
-  /// Placeholder for player selection
-  ///
-  /// In fr, this message translates to:
-  /// **'Sélectionner un joueur...'**
-  String get selectPlayer;
-
   /// Clear button text
   ///
   /// In fr, this message translates to:
@@ -359,12 +335,6 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Modifier la partie'**
   String get editGameDialogTitle;
-
-  /// Section title for game settings
-  ///
-  /// In fr, this message translates to:
-  /// **'Paramètres de la partie'**
-  String get gameSettings;
 
   /// Button to remove a player from the game
   ///
@@ -623,12 +593,6 @@ abstract class AppLocalizations {
   /// **'Aucun joueur'**
   String get noPlayers;
 
-  /// Players list summary with count and names
-  ///
-  /// In fr, this message translates to:
-  /// **'{count, plural, =0{Aucun joueur} =1{1 joueur: {names}} other{{count} joueurs: {names}}}'**
-  String playersListSummary(int count, String names);
-
   /// Message explaining when players will appear
   ///
   /// In fr, this message translates to:
@@ -700,12 +664,6 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Aucun type de jeu'**
   String get noGameTypes;
-
-  /// Label for predefined/default game types
-  ///
-  /// In fr, this message translates to:
-  /// **'Prédéfini'**
-  String get predefined;
 
   /// Edit button text
   ///
@@ -814,12 +772,6 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Taux de victoire'**
   String get winRate;
-
-  /// Title for overall statistics section
-  ///
-  /// In fr, this message translates to:
-  /// **'Statistiques globales'**
-  String get overallStatistics;
 
   /// Title for by-game-type statistics section
   ///
@@ -1216,6 +1168,18 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Le serveur d\'analyse est momentanément indisponible. Réessayez plus tard.'**
   String get analysisErrorUnavailable;
+
+  /// Analysis failure when the game is shared and the server answers 409: the group has spent its monthly LLM budget. Says when it comes back rather than showing an HTTP code
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre groupe a épuisé son budget d\'analyses pour ce mois-ci. Il se renouvelle au début du mois prochain.'**
+  String get analysisErrorGroupBudget;
+
+  /// Hint under the voice chips of a shared game's analysis when the user has never picked a voice: the server then uses the group's comment style and language (Settings → Group)
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun style choisi : cette partie partagée sera analysée dans le style et la langue du groupe.'**
+  String get analysisStyleGroupDefault;
 
   /// Analysis failure carrying the HTTP status returned by the user's own server
   ///
@@ -1763,11 +1727,23 @@ abstract class AppLocalizations {
   /// **'ZapZap'**
   String get gameTypeNameZapzap;
 
+  /// Not displayed: what gameTypeNameZapzap sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'ZapZap'**
+  String get gameTypeNameZapzapSortKey;
+
   /// Built-in game type: Uno
   ///
   /// In fr, this message translates to:
   /// **'Uno'**
   String get gameTypeNameUno;
+
+  /// Not displayed: what gameTypeNameUno sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Uno'**
+  String get gameTypeNameUnoSortKey;
 
   /// Built-in game type: Scrabble
   ///
@@ -1775,11 +1751,23 @@ abstract class AppLocalizations {
   /// **'Scrabble'**
   String get gameTypeNameScrabble;
 
+  /// Not displayed: what gameTypeNameScrabble sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Scrabble'**
+  String get gameTypeNameScrabbleSortKey;
+
   /// Built-in game type: the catch-all type, for a game with no preset
   ///
   /// In fr, this message translates to:
   /// **'Autre'**
   String get gameTypeNameOther;
+
+  /// Not displayed: what gameTypeNameOther sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Autre'**
+  String get gameTypeNameOtherSortKey;
 
   /// Built-in game type: Skyjo
   ///
@@ -1787,11 +1775,23 @@ abstract class AppLocalizations {
   /// **'Skyjo'**
   String get gameTypeNameSkyjo;
 
+  /// Not displayed: what gameTypeNameSkyjo sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Skyjo'**
+  String get gameTypeNameSkyjoSortKey;
+
   /// Built-in game type: the President card game
   ///
   /// In fr, this message translates to:
   /// **'Président'**
   String get gameTypeNamePresident;
+
+  /// Not displayed: what gameTypeNamePresident sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Président'**
+  String get gameTypeNamePresidentSortKey;
 
   /// Built-in game type: Belote
   ///
@@ -1799,11 +1799,23 @@ abstract class AppLocalizations {
   /// **'Belote'**
   String get gameTypeNameBelote;
 
+  /// Not displayed: what gameTypeNameBelote sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Belote'**
+  String get gameTypeNameBeloteSortKey;
+
   /// Built-in game type: Tarot (the trick-taking card game)
   ///
   /// In fr, this message translates to:
   /// **'Tarot'**
   String get gameTypeNameTarot;
+
+  /// Not displayed: what gameTypeNameTarot sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Tarot'**
+  String get gameTypeNameTarotSortKey;
 
   /// Built-in game type: Bridge
   ///
@@ -1811,11 +1823,23 @@ abstract class AppLocalizations {
   /// **'Bridge'**
   String get gameTypeNameBridge;
 
+  /// Not displayed: what gameTypeNameBridge sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Bridge'**
+  String get gameTypeNameBridgeSortKey;
+
   /// Built-in game type: Rummy
   ///
   /// In fr, this message translates to:
   /// **'Rami'**
   String get gameTypeNameRami;
+
+  /// Not displayed: what gameTypeNameRami sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Rami'**
+  String get gameTypeNameRamiSortKey;
 
   /// Built-in game type: Coinche (Belote with a bid)
   ///
@@ -1823,11 +1847,23 @@ abstract class AppLocalizations {
   /// **'Coinche'**
   String get gameTypeNameCoinche;
 
+  /// Not displayed: what gameTypeNameCoinche sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Coinche'**
+  String get gameTypeNameCoincheSortKey;
+
   /// Built-in game type: Yahtzee
   ///
   /// In fr, this message translates to:
   /// **'Yahtzee'**
   String get gameTypeNameYahtzee;
+
+  /// Not displayed: what gameTypeNameYahtzee sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Yahtzee'**
+  String get gameTypeNameYahtzeeSortKey;
 
   /// Built-in game type: Phase 10
   ///
@@ -1835,11 +1871,23 @@ abstract class AppLocalizations {
   /// **'Phase 10'**
   String get gameTypeNamePhase10;
 
+  /// Not displayed: what gameTypeNamePhase10 sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Phase 10'**
+  String get gameTypeNamePhase10SortKey;
+
   /// Built-in game type: Flip 7
   ///
   /// In fr, this message translates to:
   /// **'Flip 7'**
   String get gameTypeNameFlip7;
+
+  /// Not displayed: what gameTypeNameFlip7 sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Flip 7'**
+  String get gameTypeNameFlip7SortKey;
 
   /// Built-in game type: Mille Bornes
   ///
@@ -1847,11 +1895,23 @@ abstract class AppLocalizations {
   /// **'Mille Bornes'**
   String get gameTypeNameMilleBornes;
 
+  /// Not displayed: what gameTypeNameMilleBornes sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Mille Bornes'**
+  String get gameTypeNameMilleBornesSortKey;
+
   /// Built-in game type: Rummikub
   ///
   /// In fr, this message translates to:
   /// **'Rummikub'**
   String get gameTypeNameRummikub;
+
+  /// Not displayed: what gameTypeNameRummikub sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Rummikub'**
+  String get gameTypeNameRummikubSortKey;
 
   /// Built-in game type: the '6 takes' card game
   ///
@@ -1859,11 +1919,23 @@ abstract class AppLocalizations {
   /// **'6 qui prend'**
   String get gameTypeNameSixNimmt;
 
+  /// Not displayed: what gameTypeNameSixNimmt sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'6 qui prend'**
+  String get gameTypeNameSixNimmtSortKey;
+
   /// Built-in game type: Qwirkle
   ///
   /// In fr, this message translates to:
   /// **'Qwirkle'**
   String get gameTypeNameQwirkle;
+
+  /// Not displayed: what gameTypeNameQwirkle sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Qwirkle'**
+  String get gameTypeNameQwirkleSortKey;
 
   /// Built-in game type: Farkle
   ///
@@ -1871,11 +1943,23 @@ abstract class AppLocalizations {
   /// **'Farkle'**
   String get gameTypeNameFarkle;
 
+  /// Not displayed: what gameTypeNameFarkle sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Farkle'**
+  String get gameTypeNameFarkleSortKey;
+
   /// Built-in game type: Canasta
   ///
   /// In fr, this message translates to:
   /// **'Canasta'**
   String get gameTypeNameCanasta;
+
+  /// Not displayed: what gameTypeNameCanasta sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Canasta'**
+  String get gameTypeNameCanastaSortKey;
 
   /// Built-in game type: Wizard
   ///
@@ -1883,11 +1967,23 @@ abstract class AppLocalizations {
   /// **'Wizard'**
   String get gameTypeNameWizard;
 
+  /// Not displayed: what gameTypeNameWizard sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Wizard'**
+  String get gameTypeNameWizardSortKey;
+
   /// Built-in game type: Triomino
   ///
   /// In fr, this message translates to:
   /// **'Triomino'**
   String get gameTypeNameTriomino;
+
+  /// Not displayed: what gameTypeNameTriomino sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Triomino'**
+  String get gameTypeNameTriominoSortKey;
 
   /// Marks the device that owns the group in the group's device list
   ///
@@ -1936,6 +2032,30 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Tirer à nouveau'**
   String get whoStartsAgain;
+
+  /// Game board overflow-menu item and dialog title: rolls six-sided dice
+  ///
+  /// In fr, this message translates to:
+  /// **'Lancer les dés'**
+  String get diceRoller;
+
+  /// Label above the choice of how many dice (1 to 6) the dice roller rolls
+  ///
+  /// In fr, this message translates to:
+  /// **'Nombre de dés'**
+  String get diceCount;
+
+  /// Button in the dice roller that rolls the chosen dice again
+  ///
+  /// In fr, this message translates to:
+  /// **'Relancer'**
+  String get diceRollAgain;
+
+  /// Sum of the dice just rolled, under the dice in the dice roller
+  ///
+  /// In fr, this message translates to:
+  /// **'Total : {total}'**
+  String diceTotal(int total);
 
   /// Button on the home screen's Resume card: opens the most recently played game that is still open
   ///

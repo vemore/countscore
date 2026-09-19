@@ -41,8 +41,6 @@
 
   "save": "Guardar",
 
-  "filterByGameType": "Filtrar por tipo de juego",
-
   "allGames": "Todos los juegos",
 
   "filterGames": "Filtrar partidas",
@@ -67,12 +65,6 @@
 
   "pleaseEnterName": "Por favor ingresa un nombre",
 
-  "atLeast2PlayersRequired": "Se requieren al menos 2 jugadores",
-
-  "playerNumber": "Jugador {index}",
-
-  "selectPlayer": "Seleccionar un jugador...",
-
   "clear": "Limpiar",
 
   "remove": "Eliminar",
@@ -82,8 +74,6 @@
   "editGame": "Modificar partida",
 
   "editGameDialogTitle": "Modificar partida",
-
-  "gameSettings": "Configuración de la partida",
 
   "removePlayer": "Quitar jugador",
 
@@ -169,8 +159,6 @@
 
   "noPlayers": "Sin jugadores",
 
-  "playersListSummary": "{count, plural, =0{Sin jugadores} =1{1 jugador: {names}} other{{count} jugadores: {names}}}",
-
   "playersAppearMessage": "Los jugadores aparecerán aquí una vez\nque hayas creado juegos",
 
   "gamesCount": "{count, plural, =0{0 juegos} =1{1 juego} other{{count} juegos}}",
@@ -194,8 +182,6 @@
   "chooseColor": "Elegir un color",
 
   "noGameTypes": "Sin tipos de juego",
-
-  "predefined": "Predeterminado",
 
   "edit": "Editar",
 
@@ -232,8 +218,6 @@
   "wins": "Victorias",
 
   "winRate": "Tasa de victorias",
-
-  "overallStatistics": "Estadísticas Generales",
 
   "byGameType": "Por tipo de juego",
 
@@ -332,6 +316,8 @@
   "analysisError": "Error al generar el análisis",
   "analysisErrorStatus": "Error al generar el análisis (HTTP {status})",
   "analysisErrorUnavailable": "El servidor de análisis no está disponible temporalmente. Inténtelo más tarde.",
+  "analysisErrorGroupBudget": "Tu grupo ha agotado su presupuesto de análisis de este mes. Se renueva a principios del mes que viene.",
+  "analysisStyleGroupDefault": "Ningún estilo elegido: esta partida compartida se analiza con el estilo y el idioma del grupo.",
   "retry": "Reintentar",
   "analysisGeneratedAt": "Generado el {date}",
   "serverSection": "Servidor",
@@ -470,47 +456,91 @@
 
   "gameTypeNameZapzap": "ZapZap",
 
+  "gameTypeNameZapzapSortKey": "ZapZap",
+
   "gameTypeNameUno": "Uno",
+
+  "gameTypeNameUnoSortKey": "Uno",
 
   "gameTypeNameScrabble": "Scrabble",
 
+  "gameTypeNameScrabbleSortKey": "Scrabble",
+
   "gameTypeNameOther": "Otro",
+
+  "gameTypeNameOtherSortKey": "Otro",
 
   "gameTypeNameSkyjo": "Skyjo",
 
+  "gameTypeNameSkyjoSortKey": "Skyjo",
+
   "gameTypeNamePresident": "Presidente",
+
+  "gameTypeNamePresidentSortKey": "Presidente",
 
   "gameTypeNameBelote": "Belote",
 
+  "gameTypeNameBeloteSortKey": "Belote",
+
   "gameTypeNameTarot": "Tarot",
+
+  "gameTypeNameTarotSortKey": "Tarot",
 
   "gameTypeNameBridge": "Bridge",
 
+  "gameTypeNameBridgeSortKey": "Bridge",
+
   "gameTypeNameRami": "Rummy",
+
+  "gameTypeNameRamiSortKey": "Rummy",
 
   "gameTypeNameCoinche": "Coinche",
 
+  "gameTypeNameCoincheSortKey": "Coinche",
+
   "gameTypeNameYahtzee": "Yahtzee",
+
+  "gameTypeNameYahtzeeSortKey": "Yahtzee",
 
   "gameTypeNamePhase10": "Phase 10",
 
+  "gameTypeNamePhase10SortKey": "Phase 10",
+
   "gameTypeNameFlip7": "Flip 7",
+
+  "gameTypeNameFlip7SortKey": "Flip 7",
 
   "gameTypeNameMilleBornes": "Mille Bornes",
 
+  "gameTypeNameMilleBornesSortKey": "Mille Bornes",
+
   "gameTypeNameRummikub": "Rummikub",
+
+  "gameTypeNameRummikubSortKey": "Rummikub",
 
   "gameTypeNameSixNimmt": "¡Toma 6!",
 
+  "gameTypeNameSixNimmtSortKey": "¡Toma 6!",
+
   "gameTypeNameQwirkle": "Qwirkle",
+
+  "gameTypeNameQwirkleSortKey": "Qwirkle",
 
   "gameTypeNameFarkle": "Farkle",
 
+  "gameTypeNameFarkleSortKey": "Farkle",
+
   "gameTypeNameCanasta": "Canasta",
+
+  "gameTypeNameCanastaSortKey": "Canasta",
 
   "gameTypeNameWizard": "Wizard",
 
+  "gameTypeNameWizardSortKey": "Wizard",
+
   "gameTypeNameTriomino": "Triomino",
+
+  "gameTypeNameTriominoSortKey": "Triomino",
 
   "groupDeviceOwner": "Propietario",
 
@@ -525,6 +555,10 @@
   "groupErrorNotOwner": "Solo el propietario del grupo puede hacerlo",
   "whoStarts": "¿Quién empieza?",
   "whoStartsAgain": "Sortear de nuevo",
+  "diceRoller": "Tirar los dados",
+  "diceCount": "Número de dados",
+  "diceRollAgain": "Volver a tirar",
+  "diceTotal": "Suma: {total}",
   "resumeGame": "Reanudar",
   "recentGames": "Recientes",
   "gameInProgress": "En curso",

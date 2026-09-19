@@ -41,8 +41,6 @@
 
   "save": "保存",
 
-  "filterByGameType": "ゲームタイプで絞り込み",
-
   "allGames": "すべてのゲーム",
 
   "filterGames": "ゲームを絞り込む",
@@ -67,12 +65,6 @@
 
   "pleaseEnterName": "名前を入力してください",
 
-  "atLeast2PlayersRequired": "最低2人のプレイヤーが必要です",
-
-  "playerNumber": "プレイヤー{index}",
-
-  "selectPlayer": "プレイヤーを選択...",
-
   "clear": "クリア",
 
   "remove": "削除",
@@ -82,8 +74,6 @@
   "editGame": "ゲームを編集",
 
   "editGameDialogTitle": "ゲームを編集",
-
-  "gameSettings": "ゲーム設定",
 
   "removePlayer": "プレイヤーを削除",
 
@@ -169,8 +159,6 @@
 
   "noPlayers": "プレイヤーがいません",
 
-  "playersListSummary": "{count, plural, =0{プレイヤーがいません} other{{count}人のプレイヤー: {names}}}",
-
   "playersAppearMessage": "ゲームを作成すると\nプレイヤーがここに表示されます",
 
   "gamesCount": "{count, plural, =0{0ゲーム} other{{count}ゲーム}}",
@@ -194,8 +182,6 @@
   "chooseColor": "色を選択",
 
   "noGameTypes": "ゲームタイプがありません",
-
-  "predefined": "デフォルト",
 
   "edit": "編集",
 
@@ -232,8 +218,6 @@
   "wins": "勝利",
 
   "winRate": "勝率",
-
-  "overallStatistics": "全体統計",
 
   "byGameType": "ゲームタイプ別",
 
@@ -332,6 +316,8 @@
   "analysisError": "分析の生成に失敗しました",
   "analysisErrorStatus": "分析の生成に失敗しました (HTTP {status})",
   "analysisErrorUnavailable": "分析サーバーは一時的に利用できません。しばらくしてからもう一度お試しください。",
+  "analysisErrorGroupBudget": "グループの今月の分析予算を使い切りました。来月の初めにリセットされます。",
+  "analysisStyleGroupDefault": "スタイル未選択：この共有ゲームはグループのスタイルと言語で分析されます。",
   "retry": "再試行",
   "analysisGeneratedAt": "{date} に生成",
   "serverSection": "サーバー",
@@ -470,47 +456,91 @@
 
   "gameTypeNameZapzap": "ZapZap",
 
+  "gameTypeNameZapzapSortKey": "ZapZap",
+
   "gameTypeNameUno": "ウノ",
+
+  "gameTypeNameUnoSortKey": "ウノ",
 
   "gameTypeNameScrabble": "スクラブル",
 
+  "gameTypeNameScrabbleSortKey": "スクラブル",
+
   "gameTypeNameOther": "その他",
+
+  "gameTypeNameOtherSortKey": "その他",
 
   "gameTypeNameSkyjo": "スカイジョ",
 
+  "gameTypeNameSkyjoSortKey": "スカイジョ",
+
   "gameTypeNamePresident": "大富豪",
+
+  "gameTypeNamePresidentSortKey": "大富豪",
 
   "gameTypeNameBelote": "ベロット",
 
+  "gameTypeNameBeloteSortKey": "ベロット",
+
   "gameTypeNameTarot": "タロット",
+
+  "gameTypeNameTarotSortKey": "タロット",
 
   "gameTypeNameBridge": "ブリッジ",
 
+  "gameTypeNameBridgeSortKey": "ブリッジ",
+
   "gameTypeNameRami": "ラミー",
+
+  "gameTypeNameRamiSortKey": "ラミー",
 
   "gameTypeNameCoinche": "コワンシュ",
 
+  "gameTypeNameCoincheSortKey": "コワンシュ",
+
   "gameTypeNameYahtzee": "ヤッツィー",
+
+  "gameTypeNameYahtzeeSortKey": "ヤッツィー",
 
   "gameTypeNamePhase10": "フェーズ 10",
 
+  "gameTypeNamePhase10SortKey": "フェーズ 10",
+
   "gameTypeNameFlip7": "フリップ 7",
+
+  "gameTypeNameFlip7SortKey": "フリップ 7",
 
   "gameTypeNameMilleBornes": "ミルボルヌ",
 
+  "gameTypeNameMilleBornesSortKey": "ミルボルヌ",
+
   "gameTypeNameRummikub": "ラミィキューブ",
+
+  "gameTypeNameRummikubSortKey": "ラミィキューブ",
 
   "gameTypeNameSixNimmt": "ニムト",
 
+  "gameTypeNameSixNimmtSortKey": "ニムト",
+
   "gameTypeNameQwirkle": "クワークル",
+
+  "gameTypeNameQwirkleSortKey": "クワークル",
 
   "gameTypeNameFarkle": "ファークル",
 
+  "gameTypeNameFarkleSortKey": "ファークル",
+
   "gameTypeNameCanasta": "カナスタ",
+
+  "gameTypeNameCanastaSortKey": "カナスタ",
 
   "gameTypeNameWizard": "ウィザード",
 
+  "gameTypeNameWizardSortKey": "ウィザード",
+
   "gameTypeNameTriomino": "トライオミノ",
+
+  "gameTypeNameTriominoSortKey": "トライオミノ",
 
   "groupDeviceOwner": "オーナー",
 
@@ -525,6 +555,10 @@
   "groupErrorNotOwner": "この操作はグループのオーナーだけが行えます",
   "whoStarts": "誰から始める？",
   "whoStartsAgain": "もう一度引く",
+  "diceRoller": "サイコロを振る",
+  "diceCount": "サイコロの数",
+  "diceRollAgain": "もう一度振る",
+  "diceTotal": "合計：{total}",
   "resumeGame": "再開",
   "recentGames": "最近",
   "gameInProgress": "進行中",

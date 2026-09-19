@@ -90,6 +90,14 @@ on the device: each visit reads the server again. It calls nothing without a ser
 a device token (`GroupProvider.canReachGroup`). The budget is shown, never edited — see
 [[Sync]].
 
+`game_analysis_screen` sends a game shared with the device's group through
+`GroupProvider.gameAnalysis` (`POST /groups/me/games/{uuid}/comments`, device token) and any
+other game to `BackendClient.gameAnalysis` (the stateless endpoint): same payload, but the
+group's budget, language and — when no voice was ever picked, which the screen shows as no
+chip selected and the `analysisStyleGroupDefault` hint — the group's style apply. A 409 is
+the group's spent budget, shown as `analysisErrorGroupBudget`. Tests:
+`test/screens/game_analysis_group_test.dart`.
+
 `home_screen` opens on a **Resume** card (`Key('resumeHero')`) for `resumableGame(games)` —
 the open game with the latest `lastModified ?? createdAt`, which `GameRepository.update`
 stamps on every score — showing its name, type, round (`roundCountOf`), leader and players,
@@ -104,6 +112,14 @@ winner come from `GameProvider.standingOf(game)`, a `GameStanding`
 rounds that still exist: `soleLeader`, null on a tie, so a tied Resume card names no leader.
 It is read per card, as the player names were before, without touching
 the current game. The filter applies to both the card and the list.
+
+From `kHomeGridBreakpoint` (600 dp, `home_screen.dart`) the *Recent* cards form a grid:
+`homeGridColumns(width)` fits as many cards of at least `kHomeGridMinCardWidth` (360 dp) as
+the padded width holds, and never fewer than two — 3 columns at 1200 dp, 4 at 1600. Each
+grid row is an `IntrinsicHeight` row of equal-height cards, not a `GridView`, because a card
+is as tall as its content. A grid card narrower than 360 dp (two columns, 600–775 dp) is
+`compact`: its status pill moves beside the players, under the name. The Resume card keeps
+the full width, and below 600 dp the list is one column as before.
 
 `game_rules_screen` takes its `GameType` as a constructor argument rather than reading a
 provider: both callers — the board's overflow menu and the game-type list — already hold
@@ -137,7 +153,7 @@ prompt below.
 
 ### Widgets — `lib/widgets/`
 
-Twelve components shared out of the screens:
+Thirteen components shared out of the screens:
 
 - `board_lanes.dart` — the board's default layout ([below](#the-board)): `BoardData` (what
   both layouts draw from: players in seat order, rounds, a `GameStanding`, colours, the
@@ -154,10 +170,18 @@ Twelve components shared out of the screens:
 - `score_keypad_sheet.dart` — `ScoreKeypadSheet`, the bottom sheet every score is entered
   through ([below](#the-board)).
 - `share_result_button.dart` — `ShareResultButton`, the app-bar share action of the end
-  screen, the ranking and the analysis: builds the text from `GameRanking.of` with
-  `buildGameResultShareText` and hands it to `share_plus` (`SharePlus.instance.share`), a
-  failure to open becoming a `shareFailed` snackbar. Its `share` seam (`ShareTextFn`) is
-  passed through by the three screens for tests.
+  screen, the ranking and the analysis: from one `GameRanking.of` it builds the text
+  (`buildGameResultShareText`) and a `ResultShareCard`, draws the card to a PNG
+  (`renderWidgetToPng`), and hands both to `systemShareResult` — `share_plus` with the PNG as
+  an `XFile.fromData` (`kShareImageName`) and `downloadFallbackEnabled: false`; if that share
+  throws (a browser that cannot share files), the text alone is shared, as before. A card
+  that fails to draw costs only the image; a sheet that fails to open becomes a `shareFailed`
+  snackbar. Its `share` seam (`ShareResultFn`: text, subject, image) is passed through by the
+  three screens for tests; `renderImage` catches the card instead of drawing it.
+- `result_share_card.dart` — `ResultShareCard`, the shared picture: `shareResultTitle` (the
+  date), the `rankingSummary` line, `RankedPlayers` itself — so the image ranks, colours and
+  crowns as the screen does — and `appTitle`, 400 logical pixels wide on the theme's
+  `surface`. No new string: it reuses the shared text's keys.
 
 - `player_avatars.dart` — `PlayerAvatar` (an initial, or the first `letters` letters, on a
   colour, drawn in `onPlayerColor`) and `PlayerAvatarStack` (a game's players overlapping,
@@ -184,6 +208,10 @@ Twelve components shared out of the screens:
 - `who_starts_dialog.dart` — the board's overflow-menu **Who starts?**: draws one of the
   game's players at random, shows the name, and draws again on request. Nothing stored,
   nothing sent.
+- `dice_roller_dialog.dart` — the board's overflow-menu **Roll dice**, next to **Who
+  starts?** and offered whatever the players: choose 1 to 6 six-sided dice (chips), each
+  choice rolls at once, *Roll again* re-rolls; each die and the total are shown. Opens on
+  2 dice; the count is not remembered. Nothing stored, nothing sent.
 - `group_settings_section.dart` — Settings → Group: create or join a group, show its invite
   code, leave it, and show where sync stands; usable only once a server URL is set. *New
   code* is shown to the group's owner only; *Comments and usage* opens
@@ -228,7 +256,7 @@ Cross-cutting helpers, since 2026-09-16: `insets.dart`, `game_type_name.dart` �
 from a built-in game type's `builtin_key` to its localized name, which every screen showing a
 game type's name goes through ([[I18n]]) — `play_again.dart`, `app_theme.dart`,
 `player_colors.dart`, `recent_game_types.dart` (the New game screen's tile order),
-`game_result_share.dart` and `undo_snack_bar.dart` — `undoSnackBar`, the one snackbar that
+`game_result_share.dart`, `widget_image.dart` and `undo_snack_bar.dart` — `undoSnackBar`, the one snackbar that
 offers an action back: `persist: false` and `kUndoSnackBarDuration` (6 s), so the Undo
 goes away on its own instead of staying up until dismissed, Flutter's default for a
 snackbar with an action.
@@ -240,7 +268,15 @@ ranking's order (ties share a place), the commentary when sharing the analysis, 
 `shareResultFooter` naming `appTitle` with `kPlayStoreUrl` —
 `https://play.google.com/store/apps/details?id=com.vemore.countscore`, built from the
 application id, no tracking parameter. Tested in `test/utils/game_result_share_test.dart`
-(a lowest-wins and a highest-wins game, all ten locales).
+(a lowest-wins and a highest-wins game, all ten locales). It also names the shared PNG,
+`kShareImageName` (`countscore-result.png`).
+
+`widget_image.dart` — `renderWidgetToPng(context, widget)`: builds, lays out and paints a
+widget in a `PipelineOwner`/`BuildOwner` of its own under a loose `BoxConstraints` (default
+400 × 4000 logical, drawn at 3x), lending it the tapped context's themes
+(`InheritedTheme.captureAll`), localizations (`Localizations.override`) and media query,
+then `RenderRepaintBoundary.toImage` → PNG, and unmounts the tree. Nothing is shown on
+screen. In a widget test its future completes only under `tester.runAsync`.
 
 `app_theme.dart` — the one place the look is defined. `buildAppTheme(brightness)` seeds
 `ColorScheme.fromSeed` with `kBrandSeedLight` (`#0E8F88`, the icon's teal) or
@@ -369,7 +405,7 @@ filled block keeps `onPrimary` — and an eliminated player is faded and struck 
 (`playAgain`) and **Analysis** (`GameAnalysisScreen`), the latter only when
 `BackendProvider.isConfigured` — Play again then spans the row. Unlike the board's menu, a
 cached analysis alone does not bring the button back. The app bar's share action
-(`ShareResultButton`) sends the standings as text. Every path that finishes a game —
+(`ShareResultButton`) sends the standings as text and as a picture (`ResultShareCard`). Every path that finishes a game —
 rule, board menu, home menu — calls `ReviewPromptService.onGameFinished` once, on the
 transition `setGameFinished` reports.
 
@@ -379,7 +415,7 @@ transition `setGameFinished` reports.
 shows an open game with the same `RankedPlayers` as the end screen, so the two cannot rank
 differently; above it, the win rule is one line (`rankingSummary`) under the *Ranking*
 title, and **Play again** stays at the bottom. No headline: the game is not over. The app
-bar shares the standings as text, as on the end screen; the analysis screen's share adds the
+bar shares the standings as text and picture, as on the end screen; the analysis screen's share adds the
 commentary, and is offered only once there is one.
 
 #### The board
@@ -478,6 +514,14 @@ not "fix" it by hardcoding a codepoint.
 
 ## Decisions & History
 
+- **Home is a card grid on a wide screen, not master-detail (2026-09-19,
+  `feat/home-card-grid`).** At 1600 px a game card was a 1 568 px strip. A master-detail
+  home would need a detail pane to show; the cards already carry what the list needs, so
+  width buys more of them per screen. Home has its own 600 dp constant: the board has
+  none since its lanes size themselves. Two columns start at 600 dp even though a card is
+  then only 278 dp, so the compact card exists rather than a later breakpoint; a phone's
+  one-column card is never compact (`wip/done/2026-09-18-home-master-detail.md`).
+
 - **The board and the home card crown only a sole leader (2026-09-19,
   `fix/board-home-tie-crown`).** The board's crown, outlined lane and ribbon ring, the Resume
   card's leader and a finished card's winner all read `GameStanding.soleLeader`; the board's
@@ -559,6 +603,10 @@ not "fix" it by hardcoding a codepoint.
 - **Who starts? is the first of three table helpers** (2026-09-18) — the dice roller and
   the turn timer follow, one pull request each, so a bad idea is cheap to drop
   (`wip/done/2026-09-16-no-dice-timer-first-player-helpers.md`).
+- **The dice roller is d6 only** (2026-09-19) — the refinement dropped a kind selector
+  (d4 … d20) as clutter for the games CountScore scores; 1–6 dice cover Yahtzee (5) and
+  Farkle (6). A die shows its numeral rather than pips, which reads the same in every
+  locale and needs no asset (`wip/done/2026-09-18-no-dice-roller-on-the-board.md`).
 - **The game list counts rounds in one grouped query, not one per card** (2026-09-16).
   `DriftGameRepository.getAll` returns no count, and a `FutureBuilder` per card would be one
   query per row over the whole history; `RoundRepository.countByGame` is a single `GROUP BY`
@@ -585,7 +633,7 @@ not "fix" it by hardcoding a codepoint.
   (`wip/done/2026-09-16-wiki-owed-by-rating-prompt.md`).
 - **The large-screen layout starts with the score grid, not with a two-pane home** (2026-09-18,
   refinement). A score table is the content that gets better with width; a master-detail home
-  is a separate entry (`wip/todo_nr/2026-09-18-home-master-detail.md`). The grid keeps its
+  is a separate entry (`wip/done/2026-09-18-home-master-detail.md`). The grid keeps its
   `DataTable` and its two scroll views, with a minimum width and flexed player columns added
   above 600 dp, so the phone layout is the same widget tree with nothing changed
   (`wip/done/2026-09-16-no-large-screen-layout.md`).
@@ -636,6 +684,19 @@ not "fix" it by hardcoding a codepoint.
   parameter. Being user-initiated through the platform sheet, it is not an outbound data flow
   of the app and the Data Safety answers do not move ([[Documentation]]). A rendered image of
   the standings is a later change (`wip/todo_nr/2026-09-19-share-result-as-image.md`).
+  > **Status: Outdated** (2026-09-19) — the image shipped the same day (below).
+- **2026-09-19 — The shared result carries a picture of the podium** (`feat/share-result-image`,
+  `wip/done/2026-09-19-share-result-as-image.md`). In a group chat a picture stands out where
+  a text line is scrolled past. The card is a widget built on `RankedPlayers`, not a
+  screenshot of the screen: the screen scrolls and carries buttons, and a dedicated widget
+  drawn from the same `GameRanking` cannot rank differently (the ranking test pumps the card
+  the button drew and compares its order to the screen's). It is drawn in a pipeline of its
+  own (`lib/utils/widget_image.dart`) so nothing flashes on screen; the themes, localizations
+  and media query are lent from the tapped context. The image is a bonus — a card that fails
+  to draw, or a browser that cannot share files, still gets the text — and share_plus's
+  download fallback is off because a downloaded PNG would replace the text rather than join
+  it. Keep the card free of `Ink`/`ListTile`: in the off-screen pipeline a `ListTile` failed a
+  null check on the web and left CanvasKit with no picture to read (seen while probing).
 - **2026-09-19 — New game redrawn in direction A** (`feat/new-game-screen`). The form was
   the one screen between home and the end of a game the refresh had not reached, and it
   coloured players by their stored `colorValue` while the board used the display-time

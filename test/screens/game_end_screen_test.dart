@@ -110,6 +110,18 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// Taps Share and waits for [done]: the standings' PNG is drawn by the
+  /// engine, which fake time does not drive.
+  Future<void> tapShare(WidgetTester tester, bool Function() done) async {
+    await tester.runAsync(() async {
+      await tester.tap(find.byKey(const Key('share_result')));
+      for (var i = 0; i < 200 && !done(); i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+      }
+    });
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('names the winner, the podium and the rest in rank order',
       (tester) async {
     await tester.runAsync(aScoredGame);
@@ -148,15 +160,14 @@ void main() {
     String? sharedSubject;
     await tester.pumpWidget(wrap(GameEndScreen(
       boardBuilder: _board,
-      share: (text, {subject}) async {
+      share: (text, {subject, image}) async {
         shared = text;
         sharedSubject = subject;
       },
     )));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('share_result')));
-    await tester.pumpAndSettle();
+    await tapShare(tester, () => shared != null);
 
     expect(sharedSubject, l10n.shareResultSubject('Skyjo 3'));
     expect(
@@ -175,14 +186,17 @@ void main() {
   testWidgets('a share sheet that fails to open is reported, not thrown',
       (tester) async {
     await tester.runAsync(aScoredGame);
+    var called = false;
     await tester.pumpWidget(wrap(GameEndScreen(
       boardBuilder: _board,
-      share: (text, {subject}) async => throw Exception('no share sheet'),
+      share: (text, {subject, image}) async {
+        called = true;
+        throw Exception('no share sheet');
+      },
     )));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('share_result')));
-    await tester.pumpAndSettle();
+    await tapShare(tester, () => called);
 
     expect(find.text(l10n.shareFailed), findsOneWidget);
   });

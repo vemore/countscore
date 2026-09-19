@@ -40,10 +40,10 @@ so it is stated once, here, and the compliance documents are written from it.
 
 | Question | Answer, and where it is verified |
 |---|---|
-| What leaves the device | One request, `POST /comments/game-analysis`, built in `lib/screens/game_analysis_screen.dart` `_generate`: game name and date, player **names**, every round's scores and free-text **comment**, per-player history of up to 10 *other* games (`drift_repositories.dart`), and three fields that are app configuration rather than user content — the chosen `style`, the display `language`, and the game type's scoring rules. |
+| What leaves the device | One request — `POST /comments/game-analysis`, or for a game shared with the device's group `POST /groups/me/games/{uuid}/comments` with the same payload under `analysis` and the device token — built in `lib/screens/game_analysis_screen.dart` `_generate`: game name and date, player **names**, every round's scores and free-text **comment**, per-player history of up to 10 *other* games (`drift_repositories.dart`), and three fields that are app configuration rather than user content — the chosen `style`, the display `language`, and the game type's scoring rules. |
 | When | Only once the user has configured a backend in Settings → Server **and** taps Generate. There is no default URL, so an install that has never been configured makes no network request at all. Nothing is sent on launch, on a timer, or in the background; `initState` only reads the local cache. |
 | To whom | The backend whose URL the user entered — usually one they run themselves from `backend/` — and then the provider that backend's `LLM_PROVIDER` selects: AWS Bedrock, Google Gemini or Mistral (`backend/app/services/llm/factory.py`). The provider sees essentially the whole payload, rendered by `app/services/analysis/`. The recipient is the operator's choice, not ours. |
-| Kept where | Nowhere on the backend's side: the route takes no `session` and writes no row. The per-IP counter is process memory only. The device keeps its own copy in `game_analyses` until the user deletes it. At the provider, whatever that provider's retention policy says — which we do not control, and which is why the Play declaration does not claim the ephemeral-processing exemption. |
+| Kept where | For an unshared game, nowhere on the backend's side: the route takes no `session` and writes no row. For a shared game, the generated text, voice, language, model, token counts and cost as a `comments` row of the group (the payload itself is not stored; the game, its rounds and its synced analysis were on the server already). The per-IP counter is process memory only. The device keeps its own copy in `game_analyses` until the user deletes it. At the provider, whatever that provider's retention policy says — which we do not control, and which is why the Play declaration does not claim the ephemeral-processing exemption. |
 | Declared as | Personal info → Name, and App activity → Other user-generated content. Both optional, App functionality, not linked to identity, not used for tracking. `PLAY_STORE_DATA_SAFETY.md`. |
 | Permission it needs | `INTERNET`, and only that, in `android/app/src/main/AndroidManifest.xml`. That manifest also points at `res/xml/network_security_config.xml`. |
 
@@ -122,6 +122,8 @@ proof-of-concept results are in `wip/done/2026-09-13-backend-security-review.md`
   service cannot be pinned in advance.
 - **The two stateless `/comments` endpoints are unauthenticated and unbudgeted**, protected
   only by an in-memory per-IP limit that a single worker makes coherent — see [[Api]].
+  A shared game's analysis no longer uses them (2026-09-19): it goes through the group
+  endpoint, device-authenticated and budgeted. An unshared game's still does.
 - **Argon2 verification is O(N) in devices** — one verify per row on every authenticated
   HTTP request. The WebSocket handshake no longer pays it. See [[KnownLimits]].
 

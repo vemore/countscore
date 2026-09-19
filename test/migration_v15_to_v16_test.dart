@@ -194,7 +194,7 @@ void main() {
       final db = await DatabaseService.instance.openForTesting(path);
       addTearDown(db.close);
 
-      expect(await db.getVersion(), 16);
+      expect(await db.getVersion(), DatabaseService.schemaVersion);
       expectEveryRuleset(slugsByKey(await db.query('game_types')));
     });
 
@@ -207,7 +207,7 @@ void main() {
       final rows = await db.customSelect('SELECT builtin_key, rules_slug FROM game_types').get();
       expectEveryRuleset(slugsByKey(rows.map((r) => r.data).toList()));
       final version = await db.customSelect('PRAGMA user_version').getSingle();
-      expect(version.data.values.single, 16);
+      expect(version.data.values.single, DatabaseService.schemaVersion);
     });
   });
 }

@@ -6,10 +6,19 @@ contract. See .llmwiki/LlmProviders.md.
 
 from .builder import build_analysis_prompt, build_system_prompt, build_user_message
 from .languages import LANGUAGES, Language, resolve_language
-from .personas import DEFAULT_PERSONA, PERSONA_KEYS, PERSONAS, PersonaKey, resolve_persona
+from .personas import (
+    DEFAULT_PERSONA,
+    GROUP_STYLE_PERSONAS,
+    PERSONA_KEYS,
+    PERSONAS,
+    PersonaKey,
+    persona_for_group_style,
+    resolve_persona,
+)
 
 __all__ = [
     "DEFAULT_PERSONA",
+    "GROUP_STYLE_PERSONAS",
     "LANGUAGES",
     "PERSONAS",
     "PERSONA_KEYS",
@@ -18,6 +27,7 @@ __all__ = [
     "build_analysis_prompt",
     "build_system_prompt",
     "build_user_message",
+    "persona_for_group_style",
     "resolve_language",
     "resolve_persona",
 ]

@@ -10,6 +10,9 @@ import '../widgets/game_ranking.dart';
 const kPlayStoreUrl =
     'https://play.google.com/store/apps/details?id=com.vemore.countscore';
 
+/// The file name the standings' PNG (`ResultShareCard`) is shared under.
+const kShareImageName = 'countscore-result.png';
+
 /// The text a finished (or running) game is shared as, from the ranking the
 /// screen draws — so the message and the podium cannot disagree:
 ///
