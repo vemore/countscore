@@ -113,7 +113,7 @@ void main() {
     // repeats it as the first derived line.
     expect(find.text('Plus petit score gagne'), findsNWidgets(2));
     expect(
-      find.text("La partie s'arrête dès qu'un joueur dépasse 100 points"),
+      find.text("La partie s'arrête dès qu'un joueur atteint 100 points"),
       findsOneWidget,
     );
     expect(find.text("Pas d'élimination en cours de partie"), findsOneWidget);

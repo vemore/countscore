@@ -1,3 +1,4 @@
+import 'package:countscore/models/game_type.dart';
 import 'package:countscore/services/sync/sync_schema.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -67,11 +68,19 @@ void main() {
   });
 
   test('back-fills the seeded types and leaves rules empty', () async {
-    for (final name in defaultRulesSlugs.keys) {
+    // v13 knows the nine rulesets of the pre-v14 seed, by the name each was
+    // seeded with; `defaultRulesSlugs` is keyed on builtin_key since v16.
+    final seeded = <String, String>{
+      for (final entry in GameType.seededNamesBeforeV14.entries)
+        if (defaultRulesSlugs.containsKey(entry.key))
+          entry.value: defaultRulesSlugs[entry.key]!,
+    };
+    expect(seeded, hasLength(9));
+    for (final name in seeded.keys) {
       await seed(name);
     }
     await applyMigration();
-    for (final entry in defaultRulesSlugs.entries) {
+    for (final entry in seeded.entries) {
       expect(await slugOf(entry.key), entry.value,
           reason: '${entry.key} should map to ${entry.value}');
     }

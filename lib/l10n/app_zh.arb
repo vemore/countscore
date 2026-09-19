@@ -470,7 +470,7 @@
   "gameRulesNoElimination": "对局中不会淘汰玩家",
   "gameRulesEliminationOver": "超过 {threshold} 分的玩家被淘汰",
   "gameRulesEliminationUnder": "低于 {threshold} 分的玩家被淘汰",
-  "gameRulesEndFirstOver": "当有玩家超过 {threshold} 分时，对局结束",
+  "gameRulesEndFirstOver": "当有玩家达到 {threshold} 分时，对局结束",
   "gameRulesEndFirstUnder": "当有玩家低于 {threshold} 分时，对局结束",
   "gameRulesEndLastOver": "当除一名玩家外所有人都超过 {threshold} 分时，对局结束",
   "gameRulesEndLastUnder": "当除一名玩家外所有人都低于 {threshold} 分时，对局结束",

@@ -87,6 +87,31 @@ class GameType {
   IconData get icon => IconData(iconCodePoint, fontFamily: 'MaterialIcons');
   Color get cardColor => Color(cardColorValue);
 
+  /// Whether the game-over rule of this type is met by these player totals.
+  /// False when the type has no rule.
+  ///
+  /// `firstPlayerOver` means **reaches**: a total equal to the threshold ends
+  /// the game, as the box rules the thresholds come from say — Président is won
+  /// at 10, Uno at 500, Skyjo stops at 100 or more. It was strictly greater
+  /// until 2026-09-19, which asked for one more hand. The other three
+  /// conditions are unchanged. `gameRulesEndFirstOver` and the texts in
+  /// `assets/rules/` say the same.
+  bool isGameOver(Iterable<int> totals) {
+    final type = gameOverConditionType;
+    final threshold = gameOverThreshold;
+    if (type == null || threshold == null) return false;
+    switch (type) {
+      case GameOverConditionType.firstPlayerOver:
+        return totals.any((total) => total >= threshold);
+      case GameOverConditionType.firstPlayerUnder:
+        return totals.any((total) => total < threshold);
+      case GameOverConditionType.lastPlayerOver:
+        return totals.every((total) => total > threshold);
+      case GameOverConditionType.lastPlayerUnder:
+        return totals.every((total) => total < threshold);
+    }
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -293,10 +318,13 @@ class GameType {
   // Generic scoring shapes only: a winning direction and, where the game has a
   // widely known target total, one threshold. No published rulebook is
   // reproduced, and these are game *names* used descriptively.
+  // Their rulesets shipped with schema v16 (assets/rules/rules_<locale>.md),
+  // which back-fills `rules_slug` on an existing install by builtin key.
 
   static GameType coinche() => GameType(
         builtinKey: 'coinche',
         name: 'Coinche',
+        rulesSlug: 'coinche',
         iconCodePoint: Icons.shield.codePoint,
         cardColorValue: Colors.brown.toARGB32(),
         isLowestScoreWins: false,
@@ -308,6 +336,7 @@ class GameType {
   static GameType yahtzee() => GameType(
         builtinKey: 'yahtzee',
         name: 'Yahtzee',
+        rulesSlug: 'yahtzee',
         iconCodePoint: Icons.casino_outlined.codePoint,
         cardColorValue: Colors.cyan.toARGB32(),
         isLowestScoreWins: false,
@@ -317,6 +346,7 @@ class GameType {
   static GameType phase10() => GameType(
         builtinKey: 'phase10',
         name: 'Phase 10',
+        rulesSlug: 'phase10',
         iconCodePoint: Icons.extension.codePoint,
         cardColorValue: Colors.pink.toARGB32(),
         isLowestScoreWins: true,
@@ -326,6 +356,7 @@ class GameType {
   static GameType flip7() => GameType(
         builtinKey: 'flip7',
         name: 'Flip 7',
+        rulesSlug: 'flip7',
         iconCodePoint: Icons.offline_bolt.codePoint,
         cardColorValue: Colors.lightBlue.toARGB32(),
         isLowestScoreWins: false,
@@ -337,6 +368,7 @@ class GameType {
   static GameType milleBornes() => GameType(
         builtinKey: 'mille_bornes',
         name: 'Mille Bornes',
+        rulesSlug: 'mille_bornes',
         iconCodePoint: Icons.rocket_launch.codePoint,
         cardColorValue: Colors.lightGreen.toARGB32(),
         isLowestScoreWins: false,
@@ -348,6 +380,7 @@ class GameType {
   static GameType rummikub() => GameType(
         builtinKey: 'rummikub',
         name: 'Rummikub',
+        rulesSlug: 'rummikub',
         iconCodePoint: Icons.deck.codePoint,
         cardColorValue: Colors.deepOrange.toARGB32(),
         isLowestScoreWins: false,
@@ -357,6 +390,7 @@ class GameType {
   static GameType sixNimmt() => GameType(
         builtinKey: 'six_nimmt',
         name: '6 qui prend',
+        rulesSlug: 'six_nimmt',
         iconCodePoint: Icons.local_fire_department.codePoint,
         cardColorValue: const Color(0xFFB71C1C).toARGB32(),
         isLowestScoreWins: true,
@@ -368,6 +402,7 @@ class GameType {
   static GameType qwirkle() => GameType(
         builtinKey: 'qwirkle',
         name: 'Qwirkle',
+        rulesSlug: 'qwirkle',
         iconCodePoint: Icons.palette.codePoint,
         cardColorValue: Colors.purple.toARGB32(),
         isLowestScoreWins: false,
@@ -377,6 +412,7 @@ class GameType {
   static GameType farkle() => GameType(
         builtinKey: 'farkle',
         name: 'Farkle',
+        rulesSlug: 'farkle',
         iconCodePoint: Icons.stars.codePoint,
         cardColorValue: const Color(0xFFFF8F00).toARGB32(),
         isLowestScoreWins: false,
@@ -388,6 +424,7 @@ class GameType {
   static GameType canasta() => GameType(
         builtinKey: 'canasta',
         name: 'Canasta',
+        rulesSlug: 'canasta',
         iconCodePoint: Icons.favorite.codePoint,
         cardColorValue: Colors.redAccent.toARGB32(),
         isLowestScoreWins: false,
@@ -399,6 +436,7 @@ class GameType {
   static GameType wizard() => GameType(
         builtinKey: 'wizard',
         name: 'Wizard',
+        rulesSlug: 'wizard',
         iconCodePoint: Icons.emoji_objects.codePoint,
         cardColorValue: Colors.blueGrey.toARGB32(),
         isLowestScoreWins: false,
@@ -408,6 +446,7 @@ class GameType {
   static GameType triomino() => GameType(
         builtinKey: 'triomino',
         name: 'Triomino',
+        rulesSlug: 'triomino',
         iconCodePoint: Icons.change_history.codePoint,
         cardColorValue: const Color(0xFF9E9D24).toARGB32(),
         isLowestScoreWins: false,

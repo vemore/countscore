@@ -950,7 +950,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String gameRulesEndFirstOver(int threshold) {
-    return 'La partie s\'arrête dès qu\'un joueur dépasse $threshold points';
+    return 'La partie s\'arrête dès qu\'un joueur atteint $threshold points';
   }
 
   @override

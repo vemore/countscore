@@ -470,7 +470,7 @@
   "gameRulesNoElimination": "Kein Ausscheiden während des Spiels",
   "gameRulesEliminationOver": "Ein Spieler scheidet über {threshold} Punkten aus",
   "gameRulesEliminationUnder": "Ein Spieler scheidet unter {threshold} Punkten aus",
-  "gameRulesEndFirstOver": "Das Spiel endet, sobald ein Spieler über {threshold} Punkte kommt",
+  "gameRulesEndFirstOver": "Das Spiel endet, sobald ein Spieler {threshold} Punkte erreicht",
   "gameRulesEndFirstUnder": "Das Spiel endet, sobald ein Spieler unter {threshold} Punkte fällt",
   "gameRulesEndLastOver": "Das Spiel endet, wenn alle bis auf einen Spieler über {threshold} Punkten liegen",
   "gameRulesEndLastUnder": "Das Spiel endet, wenn alle bis auf einen Spieler unter {threshold} Punkten liegen",
