@@ -44,6 +44,7 @@
 | `test/screens/game_end_screen_test.dart` | The game-end screen: the winner, the podium's three places with their totals and the rest in rank order; *Play again* creates the next game with the same players and opens it; *Analysis* is absent without a server (Play again then spans the row) and present with one; and "End game" from the home card menu finishes the game and opens the screen. |
 | `test/screens/play_again_test.dart` | *Play again* (`lib/utils/play_again.dart`): the ranking offers it and opens the new game — same type, win rule and players in order, the source game left untouched; a finished game's home menu offers it, a game still in play keeps "New with same players"; and `nextGameName` counts on from the last number. The board is injected (`boardBuilder`) and the home menu read through `itemBuilder`, as in the finish-menu test. |
 | `test/screens/game_rules_screen_test.dart` | The rules page's precedence: the shipped ruleset when the user wrote none, the user's own rules winning over it, the scoring summary derived from the type rather than the text, the empty state for a type with neither, restore clearing the stored rules and not offered without a shipped ruleset, and an emptied editor meaning "no rules of mine" rather than an empty string. The ruleset is served from memory, never the asset bundle. |
+| `test/screens/settings_screen_test.dart` | Settings at 412×860 behind a 48 px bottom inset, as the PWA (a provider without export/import, since `kIsWeb` is a constant) and as Android: every section heading has its row right under it — "Screen" its keep-awake switch, and no Backup heading on the web — the last row clears the inset, and the switch saves the setting ([[Web]]). |
 | `test/screens/about_screen_test.dart` | The version comes from `PackageInfo` (mocked) rather than the ARB files, and the connected features are listed next to the local ones — one test, because a static future completed in one test's fake-async zone never delivers in the next ([[MobileApp]]). |
 | `test/utils/insets_test.dart` | `withBottomInset` under a `MediaQuery` with a bottom padding: the inset is added to the bottom edge only, nothing changes without an inset, a zero padding is compensated too (the drawer), and a `ListView` with an explicit padding really does lose Flutter's own compensation — the reason the helper exists. |
 
@@ -361,8 +362,10 @@ release APK/AAB (needs the keystore secrets).
 
 **The e2e suite does not run in CI.** `integration_test/app_test.dart` drives a real
 network call against production, so it stays a manual step — on web via chromedriver, on a
-device via the `flutter-device-test` skill. Export/import and the wakelock toggle have no
-automated coverage at all and must be checked on a device.
+device via the `flutter-device-test` skill. Export/import has no automated coverage at all
+and must be checked on a device; the wakelock toggle is covered only down to the saved
+setting (`test/screens/settings_screen_test.dart`) — whether the platform holds the lock is
+checked on a device, or in a browser through `navigator.wakeLock` ([[Web]]).
 
 **The screenshot composer's tests are local only.** `scripts/test_compose_screenshots.py`
 (output 1080×1920 opaque RGB, `--check`, caption parsing, and that every committed

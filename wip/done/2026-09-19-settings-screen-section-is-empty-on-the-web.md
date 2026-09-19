@@ -1,5 +1,7 @@
 # On the PWA, Settings ends on a "Screen" heading with nothing under it
 
+**Status:** done (2026-09-19) — closed by fix/settings-web-screen-section. Keep screen awake is offered on the web: wakelock_plus obtains a `navigator.wakeLock` sentinel under the PWA's CSP (checked in Chromium at 412×860); the Backup heading now hides with its rows, and the list clears the bottom inset. `test/screens/settings_screen_test.dart`.
+
 - **Noted:** 2026-09-19 — reported by the user ("I cannot reach the bottom of Settings"), reproduced on the local PWA
 - **Theme:** web
 - **Area:** app
