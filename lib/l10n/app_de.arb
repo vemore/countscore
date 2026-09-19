@@ -316,6 +316,8 @@
   "analysisError": "Analyse konnte nicht erstellt werden",
   "analysisErrorStatus": "Analyse konnte nicht erstellt werden (HTTP {status})",
   "analysisErrorUnavailable": "Der Analyseserver ist vorübergehend nicht verfügbar. Versuchen Sie es später erneut.",
+  "analysisErrorGroupBudget": "Ihre Gruppe hat ihr Analysebudget für diesen Monat aufgebraucht. Es erneuert sich zu Beginn des nächsten Monats.",
+  "analysisStyleGroupDefault": "Kein Stil gewählt: Dieses geteilte Spiel wird im Stil und in der Sprache der Gruppe analysiert.",
   "retry": "Erneut versuchen",
   "analysisGeneratedAt": "Erstellt am {date}",
   "serverSection": "Server",

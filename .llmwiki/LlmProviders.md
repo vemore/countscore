@@ -38,7 +38,13 @@ The system block is marked `cache_control: ephemeral`, so across a games evening
 
 ### Path 2 — game analysis, pluggable
 
-`POST /comments/game-analysis` — stateless, unauthenticated, unbudgeted.
+`POST /comments/game-analysis` — stateless, unauthenticated, unbudgeted. That is the path of
+an **unshared** game. A game shared with the device's group is analysed through
+`POST /groups/me/games/{id}/comments` with the same payload under `analysis`: the same
+prompt builder and provider, billed to the group's budget, in the group's language, and in
+the group's style (mapped to a voice by `persona_for_group_style` in `personas.py`) when the
+device never picked a voice — see [[Api]]. The app decides in `GameAnalysisScreen._generate`
+through `GroupProvider.analysesThroughGroup`.
 `/comments/zapzap-analysis` is the same handler under its former name (two stacked
 decorators, the old one `include_in_schema=False`), kept because a self-hosted backend is
 upgraded on its owner's schedule. The app posts to the new path and retries the old one on
@@ -177,7 +183,10 @@ the email from their own mail app — so this is not an outbound data flow.
 
 - Device: 6/min, 30/h, 100/day (`RL_PER_*`). Sliding window in the `rate_limits` table,
   atomic UPSERT + check, Postgres only, no Redis. `app/services/rate_limiter.py`.
-- Group: `monthly_budget_cents`, default 100¢ ≈ 830 Haiku comments/month.
+- Group: `monthly_budget_cents`, default 100¢ ≈ 830 Haiku comments/month. A shared game's
+  analysis is charged too, at `calculate_cost_cents` of the provider's tokens (Haiku rates,
+  ≥ 1¢ a call) — a few thousand tokens each way is 1–2¢, so the default budget covers some
+  fifty to a hundred analyses a month.
 - IP: 5/min, 30/h (`IP_RL_PER_*`), `app/services/ip_rate_limiter.py`, **process-local
   memory** — hence one uvicorn worker in production. Keyed on `request.client.host`, which
   `TrustedProxyMiddleware` sets from `X-Real-IP` behind the trusted proxy only (see [[Deployment]]).
@@ -267,7 +276,10 @@ the email from their own mail app — so this is not an outbound data flow.
 - **AWS credentials live in backend env vars only** and are never bundled into the APK —
   that is the whole reason ZapZap moved server-side from the Flutter prototype.
 - **To harden**: give the analysis device auth and share the `rate_limits` budget once the
-  feature goes group-scoped. Nine voices and ten languages make the endpoint a marginally
+  feature goes group-scoped.
+  > **Status: Partly done** (2026-09-19) — a *shared* game's analysis now goes through the
+  > group endpoint: device auth, per-device rate limit, the group's budget
+  > (`feat/group-comment-analysis`). An unshared game's still uses the stateless endpoint. Nine voices and ten languages make the endpoint a marginally
   more attractive free proxy, but the mandatory players/rounds shape still makes it a poor
   general-purpose one, and the per-IP limit is unchanged.
 

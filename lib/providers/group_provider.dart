@@ -323,6 +323,31 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     }
   }
 
+  /// Whether [game]'s analysis goes through the group: it is shared with the
+  /// group this device is in, and the server can be reached.
+  bool analysesThroughGroup({required String? gameGroupId, required String? gameUuid}) =>
+      canReachGroup && gameUuid != null && gameGroupId != null && gameGroupId == groupId;
+
+  /// The analysis of a game shared with this group, billed to the group's budget
+  /// and written in its language — and in its style when [payload] names no voice.
+  ///
+  /// A 404 is a game the server does not hold yet (its share not pushed): one
+  /// sync, then one retry. Any other failure is the caller's, as a
+  /// [BackendException] with its status.
+  Future<({String content, String? model})> gameAnalysis(
+    String gameUuid,
+    Map<String, dynamic> payload,
+  ) async {
+    if (!canReachGroup) throw GroupActionException(GroupActionError.unreachable);
+    try {
+      return await _client().groupGameAnalysis(_deviceToken!, gameUuid, payload);
+    } on BackendException catch (e) {
+      if (e.statusCode != 404) rethrow;
+    }
+    await syncNow();
+    return _client().groupGameAnalysis(_deviceToken!, gameUuid, payload);
+  }
+
   static GroupActionException _settingsError(Object e) => GroupActionException(switch (e) {
         BackendException(statusCode: 429) => GroupActionError.rateLimited,
         BackendException() => GroupActionError.server,

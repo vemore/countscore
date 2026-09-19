@@ -10,11 +10,15 @@ Two endpoints:
                                   app calls before groups exist.
 - ``POST /groups/me/games/{game_id}/comments``  — full version (Jalon 7) with memory,
                                   rate-limit, budget, prompt caching. Wired to authed
-                                  groups.
+                                  groups. With an ``analysis`` body it is also how the
+                                  app analyses a *shared* game: the game-analysis prompt,
+                                  billed to the group, in the group's language.
 """
 
 from __future__ import annotations
 
+import hashlib
+import json
 import logging
 import uuid
 
@@ -36,8 +40,8 @@ from app.schemas.comments import (
     MvpCommentResponse,
     MvpGamePayload,
 )
-from app.services.analysis import build_analysis_prompt
-from app.services.anthropic_client import get_anthropic_client
+from app.services.analysis import build_analysis_prompt, persona_for_group_style
+from app.services.anthropic_client import calculate_cost_cents, get_anthropic_client
 from app.services.budget import charge_budget, check_budget
 from app.services.ip_rate_limiter import check_ip_rate_limit, client_ip
 from app.services.llm import LLMRateLimitedError, get_llm_provider
@@ -275,28 +279,16 @@ async def generate_comment(
     auth: AuthContext = Depends(require_device),
     session: AsyncSession = Depends(get_session),
 ) -> CommentPayload:
+    if body.analysis is not None:
+        return await _generate_group_analysis(game_id, body.analysis, response, auth, session)
+
     settings = get_settings()
     client = get_anthropic_client()
     if not client.available:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Anthropic API not configured")
 
-    # 1. Rate-limit check (per device)
-    rl = await check_and_increment(session, auth.device.id)
-    if not rl.allowed:
-        response.headers["Retry-After"] = str(rl.retry_after_seconds)
-        raise HTTPException(
-            status.HTTP_429_TOO_MANY_REQUESTS,
-            f"rate-limited at {rl.scope} scope",
-        )
-
-    # 2. Budget check (per group)
-    budget = await check_budget(session, auth.group.id)
-    if not budget.allowed:
-        await session.rollback()
-        raise HTTPException(
-            status.HTTP_409_CONFLICT,
-            f"monthly budget exhausted ({budget.used_cents}/{budget.budget_cents}¢)",
-        )
+    # 1-2. Rate limit (per device), then budget (per group)
+    await _check_rate_and_budget(session, response, auth)
 
     # 3. Load data
     game = await _load_game_for_prompt(session, game_id, auth.group.id)
@@ -338,19 +330,132 @@ async def generate_comment(
     await session.commit()
     await session.refresh(comment)
 
+    return _comment_payload(comment)
+
+
+def _comment_payload(c: Comment) -> CommentPayload:
     return CommentPayload(
-        id=comment.id,
-        game_id=comment.game_id,
-        content=comment.content,
-        style=comment.style,  # type: ignore[arg-type]
-        language=comment.language,
-        model=comment.model,
-        scores_hash=comment.scores_hash,
-        tokens_in=comment.tokens_in,
-        tokens_out=comment.tokens_out,
-        cost_cents=comment.cost_cents,
-        created_at=comment.created_at,
+        id=c.id,
+        game_id=c.game_id,
+        content=c.content,
+        style=c.style,
+        language=c.language,
+        model=c.model,
+        scores_hash=c.scores_hash,
+        tokens_in=c.tokens_in,
+        tokens_out=c.tokens_out,
+        cost_cents=c.cost_cents,
+        created_at=c.created_at,
     )
+
+
+async def _check_rate_and_budget(
+    session: AsyncSession, response: Response, auth: AuthContext
+) -> None:
+    """Per-device rate limit (429), then the group's monthly budget (409)."""
+    rl = await check_and_increment(session, auth.device.id)
+    if not rl.allowed:
+        response.headers["Retry-After"] = str(rl.retry_after_seconds)
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            f"rate-limited at {rl.scope} scope",
+        )
+
+    budget = await check_budget(session, auth.group.id)
+    if not budget.allowed:
+        await session.rollback()
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            f"monthly budget exhausted ({budget.used_cents}/{budget.budget_cents}¢)",
+        )
+
+
+def _analysis_scores_hash(payload: GameAnalysisPayload) -> str:
+    """SHA-256 of the rounds and scores the analysis was written from."""
+    canonical = [
+        (r.number, sorted((s.player_id, s.value) for s in r.scores if s.value is not None))
+        for r in payload.rounds
+    ]
+    return hashlib.sha256(json.dumps(canonical).encode()).hexdigest()
+
+
+async def _generate_group_analysis(
+    game_id: uuid.UUID,
+    analysis: GameAnalysisPayload,
+    response: Response,
+    auth: AuthContext,
+    session: AsyncSession,
+) -> CommentPayload:
+    """The analysis of a shared game, billed to the group.
+
+    The prompt is the one ``/comments/game-analysis`` builds from the same payload — the
+    game comes from the device, which holds its local ids and the players' history — with
+    two group settings applied: the group's language always, and the voice the group's
+    style maps to when the device picked none (``style`` absent from the payload). The
+    game must be the group's (404 otherwise), so a device cannot bill a group for a game
+    it never shared. See .llmwiki/Api.md.
+    """
+    provider = get_llm_provider()
+    if not provider.available:
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            "LLM provider not configured (API credentials missing)",
+        )
+
+    await _check_rate_and_budget(session, response, auth)
+
+    game = await session.get(Game, game_id)
+    if game is None or game.group_id != auth.group.id or game.deleted_at is not None:
+        await session.rollback()
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "game not found")
+
+    if "style" not in analysis.model_fields_set:
+        analysis.style = persona_for_group_style(auth.group.comment_style)
+    analysis.language = auth.group.comment_language
+
+    system_prompt, user_message = build_analysis_prompt(analysis.model_dump(by_alias=True))
+
+    try:
+        result = await provider.generate(system_prompt, user_message)
+    except LLMRateLimitedError as e:
+        await session.rollback()
+        logger.warning("group analysis upstream LLM rate-limited: %s", e)
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            "upstream LLM rate-limited",
+            headers={"Retry-After": str(_UPSTREAM_RETRY_AFTER_SECONDS)},
+        ) from e
+    except Exception as e:
+        await session.rollback()
+        logger.exception("group analysis upstream LLM error")
+        raise HTTPException(
+            status.HTTP_502_BAD_GATEWAY,
+            f"upstream LLM error: {type(e).__name__}",
+        ) from e
+
+    # Providers report tokens, not money. The budget meters them at the Anthropic path's
+    # rates, at least one cent a call — a notional price, so that a group's usage moves
+    # whichever provider the operator runs, free tier included.
+    cost_cents = calculate_cost_cents(result.tokens_in, result.tokens_out)
+    comment = Comment(
+        group_id=auth.group.id,
+        game_id=game_id,
+        created_by_device_id=auth.device.id,
+        content=result.content,
+        style=analysis.style,
+        language=analysis.language[:8],
+        scores_hash=_analysis_scores_hash(analysis),
+        prompt_hash=hashlib.sha256(f"{system_prompt}|{user_message}".encode()).hexdigest(),
+        model=result.model[:64],
+        tokens_in=result.tokens_in,
+        tokens_out=result.tokens_out,
+        cost_cents=cost_cents,
+    )
+    session.add(comment)
+    await charge_budget(session, auth.group.id, cost_cents)
+    await session.commit()
+    await session.refresh(comment)
+    return _comment_payload(comment)
 
 
 @router.get(
@@ -374,21 +479,4 @@ async def list_comments(
         .order_by(col(Comment.created_at).desc())
         .limit(limit)
     )
-    out = []
-    for c in rows.scalars().all():
-        out.append(
-            CommentPayload(
-                id=c.id,
-                game_id=c.game_id,
-                content=c.content,
-                style=c.style,  # type: ignore[arg-type]
-                language=c.language,
-                model=c.model,
-                scores_hash=c.scores_hash,
-                tokens_in=c.tokens_in,
-                tokens_out=c.tokens_out,
-                cost_cents=c.cost_cents,
-                created_at=c.created_at,
-            )
-        )
-    return out
+    return [_comment_payload(c) for c in rows.scalars().all()]

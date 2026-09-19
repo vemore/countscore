@@ -14,15 +14,13 @@ from app.services.analysis import DEFAULT_PERSONA, resolve_persona
 CommentStyle = Literal["narrative", "humorous", "analytical"]
 
 
-class GenerateCommentRequest(BaseModel):
-    style_override: CommentStyle | None = None
-
-
 class CommentPayload(BaseModel):
     id: uuid.UUID
     game_id: uuid.UUID
     content: str
-    style: CommentStyle
+    # One of the three group styles for a comment the Anthropic path wrote, or one of
+    # the nine analysis voices (``PersonaKey``) for a shared game's analysis.
+    style: str
     language: str
     model: str
     scores_hash: str
@@ -193,6 +191,22 @@ class GameAnalysisPayload(BaseModel):
                 history[player.name] = self.history_by_player_name[raw]
         self.history_by_player_name = history
         return self
+
+
+class GenerateCommentRequest(BaseModel):
+    """Body of ``POST /groups/me/games/{game_id}/comments``.
+
+    Without ``analysis``: the original group comment — the Anthropic path, the prompt
+    built from the server's copy of the game, ``style_override`` or the group's style.
+
+    With ``analysis``: the analysis of a shared game, in the very shape
+    ``/comments/game-analysis`` takes, through the configured LLM provider — billed to the
+    group, in the group's language, and in the voice the payload names, or, when it names
+    none, the voice the group's style maps to. See .llmwiki/Api.md.
+    """
+
+    style_override: CommentStyle | None = None
+    analysis: GameAnalysisPayload | None = None
 
 
 # The published app posts to /comments/zapzap-analysis with this very shape. The alias

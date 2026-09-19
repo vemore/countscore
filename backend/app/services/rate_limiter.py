@@ -52,6 +52,13 @@ async def check_and_increment(session: AsyncSession, device_id: uuid.UUID) -> Ra
     if rl is None:  # pragma: no cover — defensive
         return RateLimitDecision(allowed=True)
 
+    # SQLite hands back naive datetimes (stored as UTC); Postgres aware ones. Same guard
+    # as budget.current_period, so the route runs under the in-memory test database.
+    for field in ("minute_window_start", "hour_window_start", "day_window_start"):
+        value = getattr(rl, field)
+        if value.tzinfo is None:
+            setattr(rl, field, value.replace(tzinfo=UTC))
+
     # Reset windows that have elapsed.
     if now - rl.minute_window_start >= timedelta(minutes=1):
         rl.minute_window_start = now

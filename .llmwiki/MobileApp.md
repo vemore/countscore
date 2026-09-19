@@ -90,6 +90,14 @@ on the device: each visit reads the server again. It calls nothing without a ser
 a device token (`GroupProvider.canReachGroup`). The budget is shown, never edited — see
 [[Sync]].
 
+`game_analysis_screen` sends a game shared with the device's group through
+`GroupProvider.gameAnalysis` (`POST /groups/me/games/{uuid}/comments`, device token) and any
+other game to `BackendClient.gameAnalysis` (the stateless endpoint): same payload, but the
+group's budget, language and — when no voice was ever picked, which the screen shows as no
+chip selected and the `analysisStyleGroupDefault` hint — the group's style apply. A 409 is
+the group's spent budget, shown as `analysisErrorGroupBudget`. Tests:
+`test/screens/game_analysis_group_test.dart`.
+
 `home_screen` opens on a **Resume** card (`Key('resumeHero')`) for `resumableGame(games)` —
 the open game with the latest `lastModified ?? createdAt`, which `GameRepository.update`
 stamps on every score — showing its name, type, round (`roundCountOf`), leader and players,

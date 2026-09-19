@@ -372,6 +372,8 @@
 
   "analysisErrorStatus": "Failed to generate analysis (HTTP {status})",
   "analysisErrorUnavailable": "The analysis server is temporarily unavailable. Try again later.",
+  "analysisErrorGroupBudget": "Your group has used up its analysis budget for this month. It renews at the start of next month.",
+  "analysisStyleGroupDefault": "No style picked: this shared game is analysed in the group's style and language.",
   "@analysisError": {
     "description": "Error message when LLM call fails"
   },

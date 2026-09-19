@@ -30,7 +30,7 @@ Load this file first. Then read only the pages your task touches.
 | [[MobileApp]] | `lib/` layout, providers, screens, widgets, services (the review prompt), `utils/`, the dynamic-icon constraint | 2026-09-19 |
 | [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-09-19 |
 | [[SchemaV10]] | Schema v17: the twelve tables, `rules`/`rules_slug` (21 rulesets, keyed on `builtin_key`), `builtin_key` and its live-unique index, sync bookkeeping and capture triggers, tombstones, the migration chain, the v17 dedupe of keyless built-in copies | 2026-09-19 |
-| [[I18n]] | 10 languages × 389 keys, French template, English fallback; built-in game-type names are localized and sorted by a per-name key (pinyin in zh); the key *and* value checks; long-form rules are assets, not ARB; store locales differ | 2026-09-19 |
+| [[I18n]] | 10 languages × 391 keys, French template, English fallback; built-in game-type names are localized and sorted by a per-name key (pinyin in zh); the key *and* value checks; long-form rules are assets, not ARB; store locales differ | 2026-09-19 |
 | [[Web]] | PWA specifics: sqlite3.wasm, IndexedDB (not OPFS) and the flush that makes it survive a reload, committed binaries and the check that gates them, `kIsWeb` guards, the wake lock and sharing under the CSP, base href, the GitHub Pages workflow and its CORS consequences | 2026-09-19 |
 
 ## Backend (FastAPI)
@@ -50,7 +50,7 @@ Load this file first. Then read only the pages your task touches.
 | [[Hooks]] | What Claude Code refuses mechanically, why each rule left CLAUDE.md, recovering from a stale branch | 2026-09-19 |
 | [[Documentation]] | Which documents a change implicates: wiki, README table, the three privacy documents, why a share sheet is not a data flow; the CLAUDE.md budget | 2026-09-19 |
 | [[ParallelDelivery]] | Protection on main, worktrees, local cleanup, why one PR per theme and serial squash merges (`wip/` format: `wip/README.md`), the refinement pass that feeds `wip/todo/` | 2026-09-18 |
-| [[Security]] | Defended surfaces (the group owner among them), and the security debt that is knowingly open | 2026-09-18 |
+| [[Security]] | Defended surfaces (the group owner among them), and the security debt that is knowingly open | 2026-09-19 |
 | [[Testing]] | Unit, Drift, migration, e2e web and device; backend pytest, release tooling; CI jobs and how `scope` picks them, `alembic check`, dependency audit, the `web/` binary gate, the privacy page check and the monthly lock refresh | 2026-09-19 |
 | [[Release]] | Play Store signing state, publishing through the Play API, target API, 2026 Play policy constraints, release cadence and pruning pass | 2026-09-18 |
 | [[StoreListing]] | The 10 store locales, the keyword per market, category and tags, the assets and the per-locale composed screenshots, Play's text limits, and the 2026-09-16 acquisition baseline | 2026-09-19 |

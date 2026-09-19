@@ -119,3 +119,21 @@ def resolve_persona(value: object) -> PersonaKey:
         if key in PERSONAS:
             return key
     return DEFAULT_PERSONA
+
+
+# The group settings offer three styles (``narrative``, ``humorous``, ``analytical``) —
+# older than the nine voices, and what ``PATCH /groups/me/settings`` still validates. A
+# shared game's analysis with no voice picked on the device is written in the voice
+# closest to the group's style.
+GROUP_STYLE_PERSONAS: dict[str, PersonaKey] = {
+    "narrative": "documentary",
+    "humorous": "professor",
+    "analytical": "coach",
+}
+
+
+def persona_for_group_style(style: object) -> PersonaKey:
+    """The voice a group's comment style stands for; the default for anything else."""
+    if isinstance(style, str):
+        return GROUP_STYLE_PERSONAS.get(style.strip().lower(), DEFAULT_PERSONA)
+    return DEFAULT_PERSONA

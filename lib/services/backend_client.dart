@@ -139,14 +139,48 @@ class BackendClient {
     );
   }
 
+  /// `POST /groups/me/games/{gameUuid}/comments`: the analysis of a game shared
+  /// with the caller's group, in the same [payload] shape as [gameAnalysis].
+  ///
+  /// The group pays for it (409 once its monthly budget is spent), its language
+  /// replaces the payload's, and its comment style picks the voice when the
+  /// payload carries no `style`. 404 when the server does not hold the game.
+  Future<({String content, String? model})> groupGameAnalysis(
+    String deviceToken,
+    String gameUuid,
+    Map<String, dynamic> payload,
+  ) async {
+    final response = await _postAnalysis(
+      '/groups/me/games/$gameUuid/comments',
+      {'analysis': payload},
+      token: deviceToken,
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw BackendException(
+        response.statusCode,
+        utf8.decode(response.bodyBytes, allowMalformed: true),
+      );
+    }
+    final body =
+        jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+    return (
+      content: body['content'] as String,
+      model: body['model'] as String?,
+    );
+  }
+
   Future<http.Response> _postAnalysis(
     String path,
-    Map<String, dynamic> payload,
-  ) {
+    Map<String, dynamic> payload, {
+    String? token,
+  }) {
     return _client
         .post(
           Uri.parse('$baseUrl$path'),
-          headers: {'Content-Type': 'application/json'},
+          headers: {
+            'Content-Type': 'application/json',
+            if (token != null) 'Authorization': 'Bearer $token',
+          },
           body: jsonEncode(payload),
         )
         .timeout(analysisTimeout);

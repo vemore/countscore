@@ -1169,6 +1169,18 @@ abstract class AppLocalizations {
   /// **'Le serveur d\'analyse est momentanément indisponible. Réessayez plus tard.'**
   String get analysisErrorUnavailable;
 
+  /// Analysis failure when the game is shared and the server answers 409: the group has spent its monthly LLM budget. Says when it comes back rather than showing an HTTP code
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre groupe a épuisé son budget d\'analyses pour ce mois-ci. Il se renouvelle au début du mois prochain.'**
+  String get analysisErrorGroupBudget;
+
+  /// Hint under the voice chips of a shared game's analysis when the user has never picked a voice: the server then uses the group's comment style and language (Settings → Group)
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun style choisi : cette partie partagée sera analysée dans le style et la langue du groupe.'**
+  String get analysisStyleGroupDefault;
+
   /// Analysis failure carrying the HTTP status returned by the user's own server
   ///
   /// In fr, this message translates to:

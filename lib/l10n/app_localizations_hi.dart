@@ -603,6 +603,14 @@ class AppLocalizationsHi extends AppLocalizations {
       'विश्लेषण सर्वर अस्थायी रूप से उपलब्ध नहीं है। कृपया बाद में पुनः प्रयास करें।';
 
   @override
+  String get analysisErrorGroupBudget =>
+      'आपके समूह ने इस महीने का विश्लेषण बजट खत्म कर दिया है। यह अगले महीने की शुरुआत में फिर से मिलेगा।';
+
+  @override
+  String get analysisStyleGroupDefault =>
+      'कोई शैली नहीं चुनी गई: इस साझा खेल का विश्लेषण समूह की शैली और भाषा में होगा।';
+
+  @override
   String analysisErrorStatus(int status) {
     return 'विश्लेषण उत्पन्न करने में विफल (HTTP $status)';
   }
