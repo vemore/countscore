@@ -167,6 +167,19 @@ and CI refuses a pull request whose committed file differs — never edit it by 
 
 ### Submission state
 
+**1.3.0 (6) is on production at 99.9 %** since 2026-09-19 (`play_publish.py publish --track
+production --rollout 0.999 --listing --graphics --commit`, the user's choice of an effectively
+full rollout; the API refuses 1.0, so the Console widens it to 100 %). The same edit published
+the listing text and, for the first time, the composed phone screenshots of all ten locales,
+retaken on the 1.3.0 build (#170) — the Play images are no longer the ones 1.1.0 uploaded.
+Device check before the build: the release APK installed clean on the Pixel, the demo database
+imported through Settings → Import, share with the podium image, export to Documents (Android
+refuses Download as a tree target), keep-screen-on. The analysis and groups were not exercised
+on the device (no server configured there); the backend and the PWA cover them in production.
+Until the Console widens it, 1.2.0 (5) stays listed as the completed production release beside it.
+
+> **Status: Outdated** (2026-09-19) — superseded by 1.3.0 above:
+
 **1.2.0 (5) is live on production at 100 %** since 2026-09-19, widened from the Console
 (*Production → Versions → Gérer le déploiement → Mettre à jour le déploiement*) after two days
 at 20 %: Android Vitals showed no crash and no ANR for the release (too few users for a
