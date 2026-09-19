@@ -40,6 +40,19 @@ class GameStanding {
     return best;
   }
 
+  /// The one player alone on the first place — who the rankings crown — or
+  /// null before the first score and on a tie for the lead: a round of all
+  /// zeros crowns nobody. [leader] still picks the earlier seat, which the
+  /// board uses to decide whether to sort by rank.
+  Player? get soleLeader {
+    if (!hasScores) return null;
+    final first = [
+      for (final p in players)
+        if (p.id != null && ranks[p.id] == 1) p
+    ];
+    return first.length == 1 ? first.single : null;
+  }
+
   /// [player]'s total, 0 when they have no score yet.
   int totalOf(Player player) => totals[player.id] ?? 0;
 

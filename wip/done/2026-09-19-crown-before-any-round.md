@@ -1,5 +1,7 @@
 # The Ranking screen crowns a leader in a game with no round played
 
+**Status:** done (2026-09-19) — closed by fix/elimination-and-crown. The rankings crown `GameStanding.soleLeader`, null before a score and on a tie for the lead; each podium step is as high as the player's place, so tied players share a step. Tested in `test/screens/ranking_screen_test.dart` (no round, a round of zeros, a tie) on both the Ranking and the end screen. The board's crown and the home card's winner still break a tie by seat: `wip/todo_nr/2026-09-19-board-and-home-crown-a-tie.md`.
+
 - **Noted:** 2026-09-19 — smoke-testing the in-game Ranking after #131, on the production PWA
 - **Theme:** visual-refresh
 - **Area:** app
