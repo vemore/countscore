@@ -8,10 +8,14 @@
 
 ### What is in `web/`
 
-`index.html` (1525 B, **stock Flutter template, zero customisation** — `$FLUTTER_BASE_HREF`,
-`flutter_bootstrap.js async`, no custom loader or service-worker code) · `manifest.json`
-(CountScore, standalone, portrait-primary, theme `#673AB7`) · `favicon.png` · `icons/`
-(4 PNGs) · the two Drift runtime binaries: **`sqlite3.wasm` (748686 B, sqlite3 3.6.0)** and
+`index.html` (the **stock Flutter template** — `$FLUTTER_BASE_HREF`, `flutter_bootstrap.js
+async`, no service-worker code — with real metadata: title and apple title "CountScore", a
+description, `<meta name="theme-color" content="#0E8F88">`) · `manifest.json` (CountScore,
+standalone, portrait-primary, `theme_color` `#0E8F88`, the light theme's brand teal
+`kBrandSeedLight`, `lib/utils/app_theme.dart:9`) · **`flutter_bootstrap.js`**, the stock
+loader template plus `fontFallbackBaseUrl` (below) · **`fallback-fonts/OFL.txt` and
+`LICENSE-Apache-2.0.txt`**, the licences of the mirrored fallback fonts · `favicon.png` ·
+`icons/` (4 PNGs) · the two Drift runtime binaries: **`sqlite3.wasm` (748686 B, sqlite3 3.6.0)** and
 **`drift_worker.js` (357220 B, the prebuilt worker from drift 2.35.0)** · and
 `sqlite3.wasm.sha256`, 279 B, the `sha256sum -c` file that records which release the wasm
 came from.
@@ -122,7 +126,7 @@ when the tab is hidden. The API needs a secure context (https, or `localhost`). 
 without `navigator.wakeLock` gets NoSleep's fallback — a looping `data:` video — which the
 PWA's `default-src 'self'` blocks as media, so there the switch is saved but holds nothing;
 the failure lands in the provider's `catch`. Verified on 2026-09-19 in Chromium at 412×860
-under `_PWA_CSP` (`backend/app/main.py:34`): the switch obtains a `WakeLockSentinel`
+under `_PWA_CSP` (`backend/app/main.py:38`): the switch obtains a `WakeLockSentinel`
 (`type: screen`), turning it off releases it, the setting is re-applied after a reload, and
 no CSP violation is logged. The lock is applied when `SettingsProvider` is first read — it
 is a lazy provider (`lib/main.dart:53`) — as on Android.
@@ -132,7 +136,7 @@ is a lazy provider (`lib/main.dart:53`) — as on Android.
 governs) and, where the API is missing or refuses, falls back to opening a `mailto:` with
 the subject and the text through url_launcher — a navigation, which the CSP does not govern
 either. Verified on 2026-09-19 in Chromium at 412×860, a share_plus probe served under
-`_PWA_CSP` (`backend/app/main.py:34`): with no Web Share API (desktop Linux Chromium) the
+`_PWA_CSP` (`backend/app/main.py:38`): with no Web Share API (desktop Linux Chromium) the
 `mailto:?subject=…&body=…` handler launched; with the API present (stubbed) `navigator.share`
 received the title and text with user activation still active; no CSP violation in either
 case. The share call must stay synchronous from the tap — the API needs the transient user
@@ -141,8 +145,12 @@ activation — which is why `ShareResultButton` awaits nothing before it.
 ### Building
 
 ```bash
-flutter build web --release --no-tree-shake-icons
+scripts/build_web.sh                  # [--base-href=/subpath/] [other flutter build web args]
 ```
+
+It runs `flutter build web --release --no-tree-shake-icons --no-web-resources-cdn` and then
+mirrors the fallback fonts (next section). A bare `flutter build web` still compiles, but
+`scripts/check_web_build.sh` refuses to publish it.
 
 `--dart-define=BACKEND_URL=<url>` is optional and seeds the runtime setting only on a
 profile that has never configured a server — see [[LlmProviders]]. CI passes no such flag.
@@ -166,12 +174,56 @@ Caddy vhost anywhere in the repo. [[Deployment]] covers only the FastAPI contain
 > by serving a `--base-href=/countscore/` build under that path — from a plain static
 > server and from uvicorn with the PWA CSP — creating a game and reloading.
 
+### Self-hosted web resources — no request to Google
+
+A stock release build makes every visitor's browser call Google: CanvasKit (`canvaskit.js`
+and its wasm) from `www.gstatic.com/flutter-canvaskit/<engine>/`, and fonts from
+`fonts.gstatic.com/s/` — the engine's default fallback **Roboto on every start** (it is
+downloaded unless a font family named `Roboto` is bundled), then a Noto font for each glyph no
+registered font has. With Nunito as the only bundled face, that is every Chinese, Japanese,
+Arabic and Devanagari string of the ten languages, most symbols, and any emoji a player types
+in a name. Since 2026-09-19 none of it leaves the serving host:
+
+- **CanvasKit** — `--no-web-resources-cdn` copies `canvaskit/` into the build and writes
+  `"useLocalCanvasKit":true` into the loader's build config.
+- **Fonts** — the engine reads `fontFallbackBaseUrl` from the loader config (default
+  `https://fonts.gstatic.com/s/`). `web/flutter_bootstrap.js` sets it to `"fallback-fonts/"`,
+  relative, so it follows the base href. `scripts/build_web.sh` reads every font path the
+  compiled engine can ask for straight out of `build/web/main.dart.js` (quoted
+  `<family>/v<n>/<file>.woff2` strings: 725 with Flutter 3.47.2 — 724 Noto files, CJK split
+  into ~100 slices per family, plus Roboto), downloads the ones not yet in
+  `$COUNTSCORE_FONT_CACHE` (default `~/.cache/countscore/fallback-fonts`; the paths are
+  versioned and immutable) from `fonts.gstatic.com` — on the build machine, never in a
+  visitor's browser — checks each is a `wOF2` file, and copies them to
+  `build/web/fallback-fonts/<same path>`. About 22 MB on the server; a visitor still downloads
+  only the few slices its text needs, lazily, exactly as it did from Google. The list comes
+  from the build itself, so an SDK upgrade that changes the table needs no edit here.
+- **Licences** — the Noto files are under the OFL 1.1 and Roboto under Apache 2.0; both texts
+  are committed in `web/fallback-fonts/` and travel with the fonts.
+- **The gate** — `scripts/check_web_build.sh` (both publishing paths, and the `app` CI job)
+  refuses a build with no `canvaskit/canvaskit.wasm`, no `useLocalCanvasKit`, a loader that
+  does not set `fontFallbackBaseUrl: "fallback-fonts/"`, or any font path of `main.dart.js`
+  missing under `fallback-fonts/`. `_PWA_CSP` allows no Google host any more, so a regression
+  on the self-hosted deployment shows as a CSP violation rather than a silent request.
+
+Verified on 2026-09-19 with a `--base-href=/countscore/` build served by uvicorn under
+`_PWA_CSP`, in Chromium at 412×860: fr-FR, zh-CN, ar and hi-IN from load to the home screen,
+then a game created with the players "王小明 🎲" and "Zoé" — every request to the serving host
+(Noto Sans SC slices, Noto Color Emoji, Noto Sans Arabic loaded from `fallback-fonts/`), no
+CSP violation, text and emoji rendered. `flutter run -d chrome` (debug) is not covered: it
+still uses the CDN defaults unless given `--no-web-resources-cdn`, and it is not published.
+
+`build/web/flutter_service_worker.js` is still generated, and the loader keeps the stock
+`serviceWorkerSettings`: this change did not touch the worker. A caching worker must not
+precache `fallback-fonts/` (22 MB); cache those on first use.
+
 ### GitHub Pages — `.github/workflows/deploy-pages.yml`
 
 A second publishing path, beside the backend's own host ([[Deployment]]): on a push to `main`
 touching `lib/`, `web/`, `assets/`, `pubspec.*`, `l10n.yaml`, the About icon, the privacy page,
-the two check scripts or the workflow itself — and on `workflow_dispatch` — it builds with
-`--release --no-tree-shake-icons --base-href=/<repo>/` and publishes to
+`scripts/build_web.sh`, the two check scripts or the workflow itself — and on `workflow_dispatch` — it builds
+with `scripts/build_web.sh --base-href=/<repo>/` (fallback fonts from the same cache as the
+`app` job) and publishes to
 `<owner>.github.io/<repo>/` through `actions/upload-pages-artifact` and `actions/deploy-pages`.
 The base href is `github.event.repository.name`, never written in the file (a
 `<owner>.github.io` repository gets `/`); a manual run from another branch builds but does not
@@ -179,8 +231,8 @@ deploy. No `BACKEND_URL`: the build is local-only until the visitor configures a
 
 Before publishing it runs what `deploy_web.sh` runs — `scripts/web_binaries.sh --check`, then
 `scripts/check_web_build.sh`, the one script both paths share (no `.md` outside
-`assets/assets/`, and `index.html`, `main.dart.js`, `sqlite3.wasm`, `drift_worker.js` present
-and non-empty). Its refusals are pinned against fixture builds by
+`assets/assets/`, `index.html`, `main.dart.js`, `sqlite3.wasm`, `drift_worker.js` present
+and non-empty, and nothing fetched from Google — above). Its refusals are pinned against fixture builds by
 `scripts/check_web_build_selftest.sh` in the `app` CI job, which also runs the check on its own
 release web build ([[Testing]]).
 
@@ -275,6 +327,9 @@ address for the Android case; on web that URL still only works from an http orig
   no setting and no identifier goes to GitHub, and the build fetches nothing the self-hosted
   one does not (CanvasKit and fallback fonts from Google's `gstatic.com`, [[Security]] — that
   pre-existing web-only flow is undisclosed, `wip/todo_nr/2026-09-19-pwa-gstatic-undisclosed.md`).
+
+  > **Status: Outdated** (2026-09-19) — neither build fetches anything from Google now: see
+  > "Self-hosted web resources" and the decision below.
   It is the distribution channel, like the Play Store download, not a call the app makes, so `README.md` Privacy, `privacy_policy.md` and
   `PLAY_STORE_DATA_SAFETY.md` (which covers the Android binary alone) are unchanged
   ([[Documentation]]).
@@ -291,3 +346,20 @@ address for the Android case; on web that URL still only works from an http orig
   extra flush on the `unload` event cannot be awaited. A `QueryInterceptor` in
   `connection_web.dart` costs one `SELECT 1` per transaction and makes every returned call
   durable. `wip/done/2026-09-19-pwa-reload-reruns-the-database-creation.md`.
+- **Self-host CanvasKit and the fallback fonts rather than disclose them (2026-09-19,
+  refinement 6).** The README said "no font is fetched at runtime" and "by default nothing
+  leaves the device", and every PWA visitor's browser was calling `gstatic.com`. Making the
+  claim true beat adding a sentence to three privacy documents. For the fonts, mirroring the
+  engine's own fallback set was chosen over bundling one fallback font in `pubspec.yaml`:
+  the ten languages need CJK (about 920 distinct ideographs in the ARB and rules files
+  alone, and any a player types), Arabic and Devanagari, plus emoji in names. A bundled font
+  covering that is several MB of TTF that the engine downloads eagerly on every start, that
+  the APK would carry for nothing (Android falls back to system fonts), and that a subset
+  would still miss for user-typed names. The mirror keeps today's rendering and lazy loading
+  unchanged, costs 22 MB on the server and a one-time download on the build machine, and
+  needs no glyph list maintained by hand. `wip/done/2026-09-19-pwa-gstatic-undisclosed.md`.
+- **The PWA shell lost its template metadata (2026-09-19).** `theme_color` `#673AB7` (the
+  deep purple of an earlier theme) became the brand teal `#0E8F88`, mirrored by a
+  `theme-color` meta; "A new Flutter project." became a description; the title is
+  "CountScore". The manifest keeps "works offline", which the planned service worker will
+  make true. `wip/done/2026-09-19-pwa-shell-still-says-flutter-template-and-offline.md`.

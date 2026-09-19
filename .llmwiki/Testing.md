@@ -86,8 +86,9 @@ Raise the group rate limit: every test creates a group. The `sync` CI job runs e
 (port 5432, a services container) on every pull request — if the recipe and the job
 disagree, the job is the one that is kept green. Adding
 `PWA_BASE_PATH=/countscore PWA_DIR=$PWD/build/web` after a
-`flutter build web --base-href /countscore/` serves the PWA on the same host, which is how the
-two-browser check of 2026-09-13 ran (Playwright, one context per device).
+`scripts/build_web.sh --base-href=/countscore/` serves the PWA on the same host under `_PWA_CSP` — how the
+two-browser check of 2026-09-13 ran (Playwright, one context per device), and the
+no-Google-request check of 2026-09-19 ([[Web]]).
 
 **On a real phone against production** (2026-09-13, Pixel 9 Pro XL, debug build): a v9
 database with 64 real games upgraded to v11 intact; create a group, the production PWA
@@ -238,7 +239,7 @@ toolchain table in [[MobileApp]] must move together.
 | `scope` | `scripts/ci_scope_selftest.sh` → `scripts/retry_sqlite3_hash_selftest.sh` → `gh api repos/{owner}/{repo}/pulls/<n>/files` (`.filename` **and** `.previous_filename`) → `scripts/ci_scope.sh` → five `name=true\|false` flags into `$GITHUB_OUTPUT` |
 | `backend` | `postgres:17-alpine` service → checkout at depth 2 → privacy page tests (`scripts/test_build_privacy_page.py`) → pandoc **3.6.4** (release archive, checksum-pinned) → `scripts/build_privacy_page.py --check --base HEAD^1` → `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` → `play_publish.py` tests (`.claude/skills/release-android/scripts/`, fake Google service) → `fonts-roboto-unhinted` → `scripts/test_compose_screenshots.py` → `compose_screenshots.py --check` → `alembic upgrade head` → `downgrade base` → `upgrade head` → `check` (a migration round trip) → `uv export` + `pip-audit` |
 | `image` | `docker build backend` → runs as non-root, no compiler, no dev dependencies, read-only code → `docker build -f backend/Dockerfile.backup backend` → `age --version`, `pg_dump --version` (17) → `countscore-backup --once` with no recipient must exit non-zero → `docker compose config --quiet` on both compose files, failing on any warning |
-| `app` | `scripts/hooks_selftest.sh` → `scripts/check_web_build_selftest.sh` → `osv-scanner` on `pubspec.lock` → `pub get` → sqlite3 native-library cache (below) → `scripts/web_binaries.sh --check` (and `--fetch` on the weekly run only) → `scripts/test_third_party_licenses.py` → `scripts/third_party_licenses.py --check` → `dart run build_runner build` → `analyze` → `test` (through `scripts/retry_sqlite3_hash.sh`) → `build web --release` → `scripts/check_web_build.sh build/web` |
+| `app` | `scripts/hooks_selftest.sh` → `scripts/check_web_build_selftest.sh` → `osv-scanner` on `pubspec.lock` → `pub get` → sqlite3 native-library cache (below) → `scripts/web_binaries.sh --check` (and `--fetch` on the weekly run only) → `scripts/test_third_party_licenses.py` → `scripts/third_party_licenses.py --check` → `dart run build_runner build` → `analyze` → `test` (through `scripts/retry_sqlite3_hash.sh`) → fallback-font cache → `scripts/build_web.sh` → `scripts/check_web_build.sh build/web` |
 | `android` | `pub get` → sqlite3 native-library cache → `dart run build_runner build` → `build apk --debug` (through `scripts/retry_sqlite3_hash.sh`) |
 | `sync` | `postgres:17-alpine` service → `uv sync --locked` → `alembic upgrade head` → `.venv/bin/uvicorn` on 8765 (waits on `/health`; never `uv run`, whose parent process holds the uv cache lock and makes setup-uv's post-job `uv cache prune` time out whenever `uv.lock` changed) → `pub get` → sqlite3 native-library cache → `build_runner build` → `flutter test test/sync/sync_two_devices_test.dart` (through `scripts/retry_sqlite3_hash.sh`) |
 

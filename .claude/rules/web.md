@@ -4,12 +4,14 @@ paths:
   - "lib/services/drift/connection/connection_web.dart"
   - "integration_test/**"
   - "scripts/deploy_web.sh"
+  - "scripts/build_web.sh"
 ---
 
 # CountScore Web (PWA) — Instructions for Claude Code
 
-`web/` holds the Flutter web scaffold: `index.html`, `manifest.json`, icons, and the two
-Drift runtime binaries. The PWA's Dart code lives in `lib/` like every other target — there
+`web/` holds the Flutter web scaffold: `index.html`, `manifest.json`, `flutter_bootstrap.js`,
+icons, the two Drift runtime binaries, and the licences of the fallback fonts
+(`fallback-fonts/`). The PWA's Dart code lives in `lib/` like every other target — there
 is no separate web source tree.
 
 These instructions used to be `web/CLAUDE.md`. They moved here because Flutter copies
@@ -57,8 +59,15 @@ These instructions used to be `web/CLAUDE.md`. They moved here because Flutter c
    remove that guard without implementing a real web path. Keep screen awake *does* work on
    the web (wakelock_plus, `navigator.wakeLock`). A guard hides a section's heading together
    with its rows, never the rows alone.
-6. **`index.html` is the stock Flutter template.** Keep it that way unless there is a
-   concrete need; every customisation is one more thing to reconcile on an SDK upgrade.
+6. **`index.html` is the stock Flutter template** apart from its metadata (title,
+   description, `theme-color`). Keep it that way unless there is a concrete need; every
+   customisation is one more thing to reconcile on an SDK upgrade.
+7. **The PWA asks nothing of Google.** Build it with `scripts/build_web.sh`, never a bare
+   `flutter build web`: it adds `--no-web-resources-cdn` (CanvasKit from the build) and
+   mirrors the engine's fallback fonts into `build/web/fallback-fonts/`, where
+   `web/flutter_bootstrap.js` (the stock loader plus `fontFallbackBaseUrl`) points the
+   engine. `scripts/check_web_build.sh` refuses a build that skipped either, and `_PWA_CSP`
+   allows no Google host. `.llmwiki/Web.md`, "Self-hosted web resources".
 
 ## Commands
 
@@ -69,8 +78,8 @@ flutter run -d chrome
 # on a profile that has never configured a server. Leave it out and configure the
 # server in Settings, like a user would.
 
-# Build
-flutter build web --release --no-tree-shake-icons
+# Build (the release flags, local CanvasKit, the fallback fonts)
+scripts/build_web.sh
 # add --base-href=/subpath/ if not served from the domain root
 
 # Deploy (see the web-deploy skill)

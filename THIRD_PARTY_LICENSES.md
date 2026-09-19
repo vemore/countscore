@@ -9,7 +9,7 @@ CountScore uses the following open-source packages. We are grateful to their aut
 
 ## Summary
 
-The 23 direct dependencies the app ships with are under: BSD-2-Clause (1), BSD-3-Clause (16), MIT (6). Every licence below is permissive; none is copyleft, and there is no licence conflict. The one bundled font, Nunito, is under the **SIL Open Font License 1.1**, which allows bundling it in any application and asks only that the licence travel with it. The one non-open-source item is the Google Play Core review binary that `in_app_review` links on Android — see its note below.
+The 23 direct dependencies the app ships with are under: BSD-2-Clause (1), BSD-3-Clause (16), MIT (6). Every licence below is permissive; none is copyleft, and there is no licence conflict. The one bundled font, Nunito, is under the **SIL Open Font License 1.1**, which allows bundling it in any application and asks only that the licence travel with it; the web version also serves its fallback fonts (Noto, OFL 1.1; Roboto, Apache 2.0) itself. The one non-open-source item is the Google Play Core review binary that `in_app_review` links on Android — see its note below.
 
 Only direct dependencies are listed; their versions, and every transitive package, are in `pubspec.lock`. The app's licence page (About → Licenses, Flutter's `showLicensePage`) shows the full text of every package compiled into it, transitive ones included.
 
@@ -144,6 +144,14 @@ Only direct dependencies are listed; their versions, and every transitive packag
 **Files:** `assets/fonts/Nunito-{Regular,SemiBold,Bold,ExtraBold}.ttf` — static instances (weights 400, 600, 700, 800) of the variable font `Nunito[wght].ttf`, cut with `fonttools varLib.instancer`  
 **Licence text:** `assets/fonts/OFL.txt`, bundled with the app and shown on its licence page  
 **Description:** the app's typeface. Bundled rather than fetched at runtime, so displaying text makes no network request
+
+### Noto and Roboto (web version only)
+**License:** SIL Open Font License, Version 1.1 (Noto); Apache License, Version 2.0 (Roboto)  
+**Copyright:** The Noto Project Authors (https://github.com/notofonts); Adobe for the Noto Sans CJK families; Google for Noto Color Emoji and Roboto — each file's name table carries its own line  
+**Source:** Google Fonts (https://fonts.google.com/noto), the files the Flutter web engine falls back to, unmodified  
+**Files:** not in the repository: `scripts/build_web.sh` copies them into `build/web/fallback-fonts/` at build time  
+**Licence text:** `web/fallback-fonts/OFL.txt` and `web/fallback-fonts/LICENSE-Apache-2.0.txt`, published next to the fonts  
+**Description:** the fonts the PWA falls back to for glyphs Nunito lacks (Chinese, Japanese, Arabic, Devanagari, emoji...). Served by whoever serves the PWA, so a browser never asks Google for them. The Android app uses the system's fonts instead
 
 ---
 

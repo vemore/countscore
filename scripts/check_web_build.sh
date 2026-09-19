@@ -11,7 +11,12 @@
 #     a public URL again (web/CLAUDE.md did, until 2026-09-13). `assets/assets/` is
 #     excluded because pubspec.yaml declares what goes there: the shipped game rules are
 #     Markdown on purpose (.llmwiki/I18n.md), and publishing them is the point;
-#   - a build missing one of the files the PWA cannot start without.
+#   - a build missing one of the files the PWA cannot start without;
+#   - a build that would make a visitor's browser call Google (built without
+#     scripts/build_web.sh): CanvasKit must come from the build (`useLocalCanvasKit`,
+#     canvaskit/canvaskit.wasm), the loader must point fontFallbackBaseUrl at
+#     fallback-fonts/, and every font path the compiled engine can request must be
+#     there. .llmwiki/Web.md, "Self-hosted web resources".
 #
 # It does not compare the committed web/ binaries with pubspec.lock: that is
 # scripts/web_binaries.sh, which needs the pub cache and runs before the build.
@@ -47,6 +52,38 @@ for f in index.html main.dart.js sqlite3.wasm drift_worker.js; do
         status=1
     fi
 done
+
+# Self-hosted web resources. Only meaningful once main.dart.js and the loader exist.
+if [ -s "$DIR/main.dart.js" ]; then
+    if [ ! -s "$DIR/canvaskit/canvaskit.wasm" ]; then
+        echo "Refusing to publish: $DIR/canvaskit/canvaskit.wasm is missing (build with scripts/build_web.sh)" >&2
+        status=1
+    fi
+    if ! grep -q '"useLocalCanvasKit":true' "$DIR/flutter_bootstrap.js" 2>/dev/null; then
+        echo "Refusing to publish: $DIR/flutter_bootstrap.js loads CanvasKit from Google's CDN (build with --no-web-resources-cdn)" >&2
+        status=1
+    fi
+    if ! grep -q 'fontFallbackBaseUrl: "fallback-fonts/"' "$DIR/flutter_bootstrap.js" 2>/dev/null; then
+        echo "Refusing to publish: $DIR/flutter_bootstrap.js does not set fontFallbackBaseUrl to fallback-fonts/ (web/flutter_bootstrap.js)" >&2
+        status=1
+    fi
+    FONTS="$(grep -oE '"[a-z0-9]+/v[0-9]+/[A-Za-z0-9_.-]+\.(woff2|ttf|otf)"' "$DIR/main.dart.js" | tr -d '"' | sort -u)"
+    if [ -z "$FONTS" ]; then
+        echo "Refusing to publish: no fallback font path found in $DIR/main.dart.js (the engine's font table changed shape)" >&2
+        status=1
+    fi
+    ABSENT=0
+    for f in $FONTS; do
+        if [ ! -s "$DIR/fallback-fonts/$f" ]; then
+            [ "$ABSENT" -lt 3 ] && echo "Refusing to publish: $DIR/fallback-fonts/$f is missing" >&2
+            ABSENT=$((ABSENT + 1))
+        fi
+    done
+    if [ "$ABSENT" -gt 0 ]; then
+        echo "Refusing to publish: $ABSENT fallback fonts missing (build with scripts/build_web.sh)" >&2
+        status=1
+    fi
+fi
 
 [ "$status" -eq 0 ] && echo "$DIR is publishable"
 exit "$status"
