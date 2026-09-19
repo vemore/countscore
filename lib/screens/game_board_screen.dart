@@ -242,6 +242,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.leaderboard),
+            tooltip: l10n.ranking,
             onPressed: () {
               Navigator.push(
                 context,
@@ -646,6 +647,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                           title: Text(player.name),
                           trailing: IconButton(
                             icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                            tooltip: l10n.removePlayer,
                             onPressed: () async {
                               final confirmRemove = await showDialog<bool>(
                                 context: dialogContext,

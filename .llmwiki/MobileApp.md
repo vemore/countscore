@@ -258,7 +258,7 @@ the system navigation bar — the app is edge-to-edge on `targetSdk` 36 and cann
 `FlutterActivity`; there is no `SystemChrome` call anywhere in `lib/`). Its eight call sites
 are the root scrollables of `about_screen.dart:31` (on the child `Padding` — a
 `SingleChildScrollView` never gets the compensation at all),
-`game_types_screen.dart:43`,
+`game_types_screen.dart:50` (plus `kFabClearance`, below),
 `home_screen.dart:91` (the drawer) and `:335`, `player_stats_screen.dart:119`, `player_card_screen.dart:110`,
 `players_screen.dart:61`, and in `ranking_screen.dart` on the *Play again* button's
 `Padding` under the list, the last thing above the navigation bar. Only the bottom edge is compensated:
@@ -267,6 +267,16 @@ are the root scrollables of `about_screen.dart:31` (on the child `Padding` — a
 there is a `bottomNavigationBar`, and `DrawerHeader` adds the status-bar height itself.
 `settings_screen.dart:117` and `game_analysis_screen.dart` need nothing — the first passes no
 padding, the second is a `SingleChildScrollView` inside the `SafeArea(top: false)` at l. 328.
+
+`insets.dart` also holds `kFabClearance` (`56 + 16 + 16`): the bottom padding a list under
+a floating action button needs so its last row, and that row's menu, scroll out from under
+the button; pass it through `withBottomInset` so the navigation bar is added on top. Used
+by `game_types_screen.dart`.
+
+Every `IconButton` in `lib/` has a `tooltip:` from `AppLocalizations` — it is what TalkBack
+and a browser screen reader announce, and what a test finds it by. One that deliberately has
+none carries a `// No tooltip …` comment saying why (the icon picker's 32 unnamed glyphs);
+`test/utils/icon_button_tooltips_test.dart` scans `lib/` for the rest.
 
 `game_type_name.dart` — `gameTypeDisplayName(l10n, type)` and `isBuiltinRename(...)`. A
 built-in type's name is read from its `builtin_key`, never from the stored `name`, which is
@@ -436,6 +446,13 @@ the reason. That warning *is* the tree-shaking constraint showing up in the anal
 not "fix" it by hardcoding a codepoint.
 
 ## Decisions & History
+
+- **The analysis actions live in an overflow menu, and only with an analysis (2026-09-19).**
+  Report, Regenerate and Delete used to be three app-bar icons, always drawn and disabled
+  with nothing to act on; with Share added (#139) the French title was cut to "Analyse de
+  la …" at 412 px. They moved into one `PopupMenuButton` that exists only once there is an
+  analysis, so the bar carries at most Share and the menu.
+  (`wip/done/2026-09-19-analysis-screen-offers-actions-on-nothing.md`)
 
 - **One elimination rule, 6 qui prend seeded 65, no crown on a tie (2026-09-19).** The board
   kept three private copies of the elimination test; they went, and the board, the ranking

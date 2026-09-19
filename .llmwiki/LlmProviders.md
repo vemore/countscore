@@ -2,7 +2,7 @@
 
 > Scope: both LLM paths — Claude for short comments, a pluggable provider for the game
 > analysis. Related: [[Api]] · [[Backend]] · [[Security]] · [[MobileApp]] · [[Deployment]]
-> Updated: 2026-09-18
+> Updated: 2026-09-19
 
 ## Facts
 
@@ -156,9 +156,12 @@ status alone (`analysisErrorStatus`) and sends the body to `debugPrint`, never t
 failure with an analysis already on screen is a snackbar, not the error state — the cached
 text is local data a failed refresh never touched.
 
-**Reporting a commentary** (Play AI-Generated Content policy, [[Release]]): the flag action
-in the analysis app bar (`Key('analysis_report')`, `reportCommentary`) is enabled whenever
-an analysis is on screen, including a cached one with no server configured. It opens a
+**Reporting a commentary** (Play AI-Generated Content policy, [[Release]]): the report
+entry of the analysis app bar's overflow menu (`Key('analysis_menu')`, then
+`Key('analysis_report')`, `reportCommentary`) is there whenever an analysis is on screen,
+including a cached one with no server configured. The menu also holds Regenerate
+(`analysis_regenerate`, disabled with no server) and Delete (`analysis_delete`); with no
+analysis the menu does not exist at all, and Share sits beside it only once there is one. It opens a
 `mailto:` to the listing contact `scribio.ai@gmail.com` (`PUBLISHING.md`) through
 `url_launcher`, prefilled with `reportCommentarySubject` and `reportCommentaryBody`: a blank
 area for the user, then a reference (local analysis id · model · generation time) and the

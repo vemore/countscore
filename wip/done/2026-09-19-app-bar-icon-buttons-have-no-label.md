@@ -1,5 +1,7 @@
 # Two app-bar icon buttons have no label, so a screen reader announces nothing
 
+**Status:** done (2026-09-19) — closed by fix/app-bar-actions-and-labels. Tooltips `playerStatistics` and `ranking` on the two icons, `removePlayer` on the board's remove-player button and `chooseIcon` on the new-type dialog's icon; the icon picker's glyphs keep none, with a written reason. `test/screens/app_bar_tooltips_test.dart` (en and fr) and the `lib/` scan `test/utils/icon_button_tooltips_test.dart`.
+
 - **Noted:** 2026-09-19 — smoke-testing the production PWA after the ship-parallel loop (Playwright accessibility snapshot)
 - **Theme:** accessibility
 - **Area:** app

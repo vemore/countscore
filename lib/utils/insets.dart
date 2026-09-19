@@ -18,3 +18,9 @@ import 'package:flutter/widgets.dart';
 /// keyboard opening, an orientation change, a text-scale change).
 EdgeInsets withBottomInset(BuildContext context, EdgeInsets base) =>
     base.copyWith(bottom: base.bottom + MediaQuery.paddingOf(context).bottom);
+
+/// Bottom padding that lets a list's last row scroll clear of a floating
+/// action button in the default `endFloat` location: the 56 dp button, its
+/// 16 dp margin from the bottom edge, and 16 dp of air above it. Pass it
+/// through [withBottomInset] so the navigation bar is added on top.
+const double kFabClearance = 56 + 16 + 16;

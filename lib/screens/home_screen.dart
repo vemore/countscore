@@ -104,6 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.bar_chart),
+            tooltip: l10n.playerStatistics,
             onPressed: () {
               Navigator.push(
                 context,

@@ -379,23 +379,55 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
               tooltip: l10n.shareAnalysis,
               share: widget.share,
             ),
-          IconButton(
-            key: const Key('analysis_report'),
-            icon: const Icon(Icons.flag_outlined),
-            tooltip: l10n.reportCommentary,
-            onPressed: hasContent && !_isLoading ? _report : null,
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            tooltip: l10n.regenerateAnalysis,
-            onPressed:
-                hasContent && canGenerate && !_isLoading ? _regenerate : null,
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_outline),
-            tooltip: l10n.deleteAnalysis,
-            onPressed: hasContent && !_isLoading ? _delete : null,
-          ),
+          // Report, Regenerate and Delete act on an analysis, so they exist
+          // only once there is one — and in an overflow menu, so that Share
+          // and the title still fit on a 400 dp phone.
+          if (hasContent)
+            PopupMenuButton<_AnalysisAction>(
+              key: const Key('analysis_menu'),
+              enabled: !_isLoading,
+              onSelected: (action) {
+                switch (action) {
+                  case _AnalysisAction.report:
+                    _report();
+                  case _AnalysisAction.regenerate:
+                    _regenerate();
+                  case _AnalysisAction.delete:
+                    _delete();
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  key: const Key('analysis_report'),
+                  value: _AnalysisAction.report,
+                  child: ListTile(
+                    leading: const Icon(Icons.flag_outlined),
+                    title: Text(l10n.reportCommentary),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                PopupMenuItem(
+                  key: const Key('analysis_regenerate'),
+                  value: _AnalysisAction.regenerate,
+                  enabled: canGenerate,
+                  child: ListTile(
+                    leading: const Icon(Icons.refresh),
+                    title: Text(l10n.regenerateAnalysis),
+                    enabled: canGenerate,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                PopupMenuItem(
+                  key: const Key('analysis_delete'),
+                  value: _AnalysisAction.delete,
+                  child: ListTile(
+                    leading: const Icon(Icons.delete_outline),
+                    title: Text(l10n.deleteAnalysis),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
       // The footer used to be drawn behind the system gesture bar. Wrapping the
@@ -577,3 +609,6 @@ class _StylePicker extends StatelessWidget {
     );
   }
 }
+
+/// The analysis actions that live in the app bar's overflow menu.
+enum _AnalysisAction { report, regenerate, delete }
