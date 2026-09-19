@@ -1,5 +1,7 @@
 # Eight ARB keys are no longer used by any screen
 
+**Status:** done (2026-09-19) — closed by fix/i18n-cleanup. The eight keys and their `@` blocks are gone from the ten ARB files and the generated localizations, and `lowestScoreExample` left `SAME_AS_ENGLISH_OK`. `arb_keys.py --unused` now reports template keys no `.dart` file under `lib/` mentions (on demand, in no hook); it found eight more, filed as wip/todo_nr/2026-09-19-eight-more-unused-arb-keys.md.
+
 - **Noted:** 2026-09-19 — while redrawing the New game screen (feat/new-game-screen)
 - **Theme:** i18n
 - **Area:** app

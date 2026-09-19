@@ -57,15 +57,9 @@
 
   "loadingGameTypes": "Загрузка типов игр...",
 
-  "winRule": "Правило победы",
-
   "lowestScoreWins": "Выигрывает меньший счёт",
 
   "highestScoreWins": "Выигрывает больший счёт",
-
-  "lowestScoreExample": "Напр: Гольф, Червы",
-
-  "highestScoreExample": "Напр: Рамми, Бридж",
 
   "players": "Игроки",
 
@@ -82,8 +76,6 @@
   "clear": "Очистить",
 
   "remove": "Удалить",
-
-  "createGame": "Создать игру",
 
   "game": "Игра",
 
@@ -275,21 +267,11 @@
 
   "artistName": "efendi.sign",
 
-  "selectPlayerDialogTitle": "Выберите игрока",
-
   "search": "Поиск",
 
-  "createNewPlayer": "Создать нового игрока",
-
-  "searchOrCreate": "Искать / Создать",
-  "@searchOrCreate": {
-    "description": "Search or create player input label"
-  },
   "newPlayerName": "Имя нового игрока",
 
   "noPlayersFound": "Игроки не найдены",
-
-  "allPlayersSelected": "Все игроки выбраны",
 
   "close": "Закрыть",
 
@@ -298,7 +280,7 @@
   "none": "Нет",
   "overThreshold": "Выше порога",
   "underThreshold": "Ниже порога",
-  "firstPlayerOver": "Первый игрок выше",
+  "firstPlayerOver": "Первый игрок достигает",
   "firstPlayerUnder": "Первый игрок ниже",
   "lastPlayerOver": "Последний игрок выше",
   "lastPlayerUnder": "Последний игрок ниже",

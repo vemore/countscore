@@ -282,12 +282,6 @@ abstract class AppLocalizations {
   /// **'Chargement des types de jeux...'**
   String get loadingGameTypes;
 
-  /// Label for win rule selection
-  ///
-  /// In fr, this message translates to:
-  /// **'Règle de victoire'**
-  String get winRule;
-
   /// Win rule option: lowest score wins
   ///
   /// In fr, this message translates to:
@@ -299,18 +293,6 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Plus grand score gagne'**
   String get highestScoreWins;
-
-  /// Examples of games with lowest score wins
-  ///
-  /// In fr, this message translates to:
-  /// **'Ex: Golf, Hearts'**
-  String get lowestScoreExample;
-
-  /// Examples of games with highest score wins
-  ///
-  /// In fr, this message translates to:
-  /// **'Ex: Rami, Belote'**
-  String get highestScoreExample;
 
   /// Label for players section
   ///
@@ -359,12 +341,6 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Retirer'**
   String get remove;
-
-  /// Create game button text
-  ///
-  /// In fr, this message translates to:
-  /// **'Créer la partie'**
-  String get createGame;
 
   /// Generic game label (fallback)
   ///
@@ -941,29 +917,11 @@ abstract class AppLocalizations {
   /// **'efendi.sign'**
   String get artistName;
 
-  /// Title for player selection dialog
-  ///
-  /// In fr, this message translates to:
-  /// **'Sélectionner un joueur'**
-  String get selectPlayerDialogTitle;
-
   /// Search input label
   ///
   /// In fr, this message translates to:
   /// **'Rechercher'**
   String get search;
-
-  /// Search or create player input label
-  ///
-  /// In fr, this message translates to:
-  /// **'Rechercher / Créer'**
-  String get searchOrCreate;
-
-  /// Button text to create new player
-  ///
-  /// In fr, this message translates to:
-  /// **'Créer un nouveau joueur'**
-  String get createNewPlayer;
 
   /// Label for new player name input
   ///
@@ -976,12 +934,6 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Aucun joueur trouvé'**
   String get noPlayersFound;
-
-  /// Message when all available players are selected
-  ///
-  /// In fr, this message translates to:
-  /// **'Tous les joueurs ont été sélectionnés'**
-  String get allPlayersSelected;
 
   /// Close button text
   ///
@@ -1019,10 +971,10 @@ abstract class AppLocalizations {
   /// **'En dessous du seuil'**
   String get underThreshold;
 
-  /// Game over when first player goes over threshold
+  /// Game over when the first player's total reaches the threshold (>=)
   ///
   /// In fr, this message translates to:
-  /// **'Premier joueur au-dessus'**
+  /// **'Premier joueur à atteindre'**
   String get firstPlayerOver;
 
   /// Game over when first player goes under threshold

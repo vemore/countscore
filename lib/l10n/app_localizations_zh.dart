@@ -96,19 +96,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get loadingGameTypes => '正在加载游戏类型...';
 
   @override
-  String get winRule => '胜利规则';
-
-  @override
   String get lowestScoreWins => '最低分获胜';
 
   @override
   String get highestScoreWins => '最高分获胜';
-
-  @override
-  String get lowestScoreExample => '例如:高尔夫、红心大战';
-
-  @override
-  String get highestScoreExample => '例如:拉米、桥牌';
 
   @override
   String get players => '玩家';
@@ -135,9 +126,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get remove => '移除';
-
-  @override
-  String get createGame => '创建游戏';
 
   @override
   String get game => '游戏';
@@ -475,25 +463,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get artistName => 'efendi.sign';
 
   @override
-  String get selectPlayerDialogTitle => '选择玩家';
-
-  @override
   String get search => '搜索';
-
-  @override
-  String get searchOrCreate => '搜索 / 创建';
-
-  @override
-  String get createNewPlayer => '创建新玩家';
 
   @override
   String get newPlayerName => '新玩家名称';
 
   @override
   String get noPlayersFound => '未找到玩家';
-
-  @override
-  String get allPlayersSelected => '所有玩家已被选择';
 
   @override
   String get close => '关闭';
@@ -514,7 +490,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get underThreshold => '低于阈值';
 
   @override
-  String get firstPlayerOver => '第一位玩家超过';
+  String get firstPlayerOver => '第一位达到的玩家';
 
   @override
   String get firstPlayerUnder => '第一位玩家低于';

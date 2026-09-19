@@ -1,5 +1,7 @@
 # The Chinese rules call trick-taking games "communication card games"
 
+**Status:** done (2026-09-19) — closed by fix/i18n-cleanup. Belote, Tarot and Bridge now open with 吃墩类纸牌游戏, like Wizard; `test/game_rules_catalog_test.dart` checks that `rules_zh.md` holds no 沟通 and that the four trick-taking sections use 吃墩类纸牌游戏.
+
 - **Noted:** 2026-09-19 — reviewing the long-tail translations in feat/game-rules-twelve
 - **Theme:** i18n
 - **Area:** app

@@ -93,6 +93,18 @@ void main() {
     expect(en['president'], contains('as soon as a total reaches 10'));
   });
 
+  test('the Chinese rules call a trick-taking game 吃墩, never 沟通', () {
+    // 沟通牌类游戏 ("communication card game") was a mistranslation of
+    // "trick-taking game"; the rest of the file already uses 墩 for a trick.
+    final zh = read('zh');
+    expect(zh, isNot(contains('沟通')));
+    final sections = GameRulesCatalog.parse(zh);
+    for (final slug in ['belote', 'tarot', 'bridge', 'wizard']) {
+      expect(sections[slug], contains('吃墩类纸牌游戏'),
+          reason: 'zh/$slug no longer introduces itself as a trick-taking game');
+    }
+  });
+
   test('the parser keys sections on their marker and drops the preamble', () {
     final sections = GameRulesCatalog.parse('''
 ignored preamble

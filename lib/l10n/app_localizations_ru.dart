@@ -96,19 +96,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get loadingGameTypes => 'Загрузка типов игр...';
 
   @override
-  String get winRule => 'Правило победы';
-
-  @override
   String get lowestScoreWins => 'Выигрывает меньший счёт';
 
   @override
   String get highestScoreWins => 'Выигрывает больший счёт';
-
-  @override
-  String get lowestScoreExample => 'Напр: Гольф, Червы';
-
-  @override
-  String get highestScoreExample => 'Напр: Рамми, Бридж';
 
   @override
   String get players => 'Игроки';
@@ -135,9 +126,6 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get remove => 'Удалить';
-
-  @override
-  String get createGame => 'Создать игру';
 
   @override
   String get game => 'Игра';
@@ -488,25 +476,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get artistName => 'efendi.sign';
 
   @override
-  String get selectPlayerDialogTitle => 'Выберите игрока';
-
-  @override
   String get search => 'Поиск';
-
-  @override
-  String get searchOrCreate => 'Искать / Создать';
-
-  @override
-  String get createNewPlayer => 'Создать нового игрока';
 
   @override
   String get newPlayerName => 'Имя нового игрока';
 
   @override
   String get noPlayersFound => 'Игроки не найдены';
-
-  @override
-  String get allPlayersSelected => 'Все игроки выбраны';
 
   @override
   String get close => 'Закрыть';
@@ -527,7 +503,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get underThreshold => 'Ниже порога';
 
   @override
-  String get firstPlayerOver => 'Первый игрок выше';
+  String get firstPlayerOver => 'Первый игрок достигает';
 
   @override
   String get firstPlayerUnder => 'Первый игрок ниже';

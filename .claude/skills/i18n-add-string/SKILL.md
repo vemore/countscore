@@ -126,6 +126,8 @@ counts in the same commit: the hook runs the `arb_keys.py` of the tree being com
 - Keep dates and times on `intl`'s `DateFormat`; it is already locale-aware.
 - Renaming a key means renaming it in all 10 files plus every call site.
 - Removing a key means removing it from all 10, plus the `@key` block in `app_fr.arb`.
+  After removing a screen or a widget, `python3 .claude/hooks/arb_keys.py --unused` lists
+  the keys nothing under `lib/` reads any more.
 
 ## Adding a whole new language
 
