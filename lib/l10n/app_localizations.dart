@@ -1715,10 +1715,10 @@ abstract class AppLocalizations {
   /// **'Un joueur est éliminé en dessous de {threshold} points'**
   String gameRulesEliminationUnder(int threshold);
 
-  /// Derived line: game over when the first player passes the threshold
+  /// Derived line: game over as soon as a player reaches the threshold (a total equal to it ends the game)
   ///
   /// In fr, this message translates to:
-  /// **'La partie s\'arrête dès qu\'un joueur dépasse {threshold} points'**
+  /// **'La partie s\'arrête dès qu\'un joueur atteint {threshold} points'**
   String gameRulesEndFirstOver(int threshold);
 
   /// Derived line: game over when the first player drops under the threshold

@@ -470,7 +470,7 @@
   "gameRulesNoElimination": "Игроки не выбывают по ходу партии",
   "gameRulesEliminationOver": "Игрок выбывает, набрав больше {threshold} очков",
   "gameRulesEliminationUnder": "Игрок выбывает, опустившись ниже {threshold} очков",
-  "gameRulesEndFirstOver": "Партия заканчивается, как только игрок набирает больше {threshold} очков",
+  "gameRulesEndFirstOver": "Партия заканчивается, как только игрок наберёт {threshold} очков",
   "gameRulesEndFirstUnder": "Партия заканчивается, как только игрок опускается ниже {threshold} очков",
   "gameRulesEndLastOver": "Партия заканчивается, когда все игроки, кроме одного, наберут больше {threshold} очков",
   "gameRulesEndLastUnder": "Партия заканчивается, когда все игроки, кроме одного, опустятся ниже {threshold} очков",

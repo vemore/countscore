@@ -952,7 +952,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String gameRulesEndFirstOver(int threshold) {
-    return 'A partida termina assim que um jogador passa de $threshold pontos';
+    return 'A partida termina assim que um jogador atinge $threshold pontos';
   }
 
   @override

@@ -923,7 +923,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String gameRulesEndFirstOver(int threshold) {
-    return '当有玩家超过 $threshold 分时，对局结束';
+    return '当有玩家达到 $threshold 分时，对局结束';
   }
 
   @override

@@ -5,13 +5,13 @@
 > Updated: 2026-09-19
 
 This page was `SchemaV9` until v10 landed on 2026-09-13; links were renamed with it.
-v11 followed the same day, v12, v13 and v14 on 2026-09-16, and v15 on 2026-09-18; all are
-described here too.
+v11 followed the same day, v12, v13 and v14 on 2026-09-16, v15 on 2026-09-18 and v16 on
+2026-09-19; all are described here too.
 
 ## Facts
 
-Schema version **15**, declared in two places that must stay in sync:
-`lib/services/drift/database.dart` (`schemaVersion => 15`) and
+Schema version **16**, declared in two places that must stay in sync:
+`lib/services/drift/database.dart` (`schemaVersion => 16`) and
 `DatabaseService.schemaVersion` in `lib/services/database_service.dart`, which both
 `openDatabase` calls use.
 
@@ -43,14 +43,19 @@ The device token is **not** in the database: it belongs in platform secure stora
 
 Both TEXT, nullable. `rules` is free Markdown the user wrote; NULL means the app shows the
 ruleset it ships for `rules_slug` instead, in the current locale. `rules_slug` names one of
-the nine rulesets in `assets/rules/` (`Autre` has none) and exists as its own column
+the 21 rulesets in `assets/rules/` — every built-in type but `Autre`, which has none — and exists as its own column
 because `name` is user-editable — a renamed type must not lose its rules.
 
 Both push as `rules` and `rules_slug`, columns the server gained in
 `0003_game_type_rules`. Bounds in `backend/app/services/delta_bounds.py`: 8 000 and 32.
 The client clips to the same lengths (`sync_store.dart`, `_gameTypeRulesMax`).
-`defaultRulesSlugs` in `sync_schema.dart` is the single map from seeded name to slug,
-shared by the seed factories and the back-fill.
+`defaultRulesSlugs` in `sync_schema.dart` maps each `builtin_key` to its slug; the seed
+factories in `lib/models/game_type.dart` carry the same slugs
+(`test/migration_v15_to_v16_test.dart` holds the two and `GameRulesCatalog.slugs` together).
+The v13 back-fill ran before `builtin_key` existed and matched the nine pre-v14 seeded
+names (`GameType.seededNamesBeforeV14`); the v16 back-fill matches the key, so the twelve
+types of v14 get their rulesets whatever name the row stores. A renamed type loses its key
+and keeps its slug, so it keeps its rules either way.
 
 ### `games.finishedAt` (since v12)
 
@@ -163,6 +168,7 @@ and scores. Deleting a game type ignores tombstoned games and clears their `game
 | **v12** | **`games.finishedAt`** (ISO-8601 TEXT, nullable): an explicit end for every game, not only the three types that carry a threshold. `applyV12` in `lib/services/sync/sync_schema.dart`, run by both engines. Additive only. |
 | **v14** | **`game_types.builtin_key`** (TEXT, nullable): the stable identity *and* the source of the displayed name of a built-in type, plus the twelve types the seed was missing. `applyV14` in `lib/services/sync/sync_schema.dart`, run by both engines. Additive; back-fills, never resurrects. |
 | **v15** | **Unique index on live built-in game types** (`builtin_key`, live rows only). `applyV15` in `lib/services/sync/sync_schema.dart`, run by both engines on upgrade and on a fresh install. Clears a surplus key rather than failing; deletes nothing. |
+| **v16** | **Rulesets for the twelve types of v14**: `rules_slug` back-filled by `builtin_key`, where it is still NULL. `applyV16` in `lib/services/sync/sync_schema.dart`, run by both engines. No column change; `UPDATE`s only, so nothing deleted comes back, a slug already set is kept and a renamed type (no key) is left alone. `test/migration_v15_to_v16_test.dart`. |
 | v10 | **Sync bookkeeping**: `group_links`, `entity_versions`, `sync_inbox`; `outbox.rejected_at` / `reject_reason`; `sync_state.device_id` / `group_name`. Additive only — `_createSyncV10Tables` is the fresh-install and the upgrade path at once. |
 
 ### The v9 migration in detail
@@ -232,6 +238,12 @@ repairs the shape before the rest of the chain runs.
   rather than per group, because one local row stands for a built-in type in every group the
   device is in. A name index was rejected: it would constrain the user's own types, which
   may legitimately share a name.
+- **`defaultRulesSlugs` is keyed on `builtin_key`, with a back-fill of its own (2026-09-19).**
+  It was keyed on the seeded name, which v14 made the wrong identity: the name is
+  user-editable and not even what is displayed. Re-keying it could not reach the twelve rows
+  v14 had already inserted without a slug, hence v16 — a data-only step, bumped like any
+  other so both engines run it exactly once. The v13 step still matches names, through
+  `seededNamesBeforeV14`, because at that point of the chain there is no key to match.
 - **Tombstone shared rows only (2026-09-13).** A delete has to reach the other devices, so
   a shared row cannot vanish; a local row has nobody to tell, and tombstoning it would grow
   every existing user's database forever for nothing.

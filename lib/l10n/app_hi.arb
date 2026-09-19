@@ -470,7 +470,7 @@
   "gameRulesNoElimination": "खेल के दौरान कोई खिलाड़ी बाहर नहीं होता",
   "gameRulesEliminationOver": "{threshold} अंक से ऊपर जाने पर खिलाड़ी बाहर हो जाता है",
   "gameRulesEliminationUnder": "{threshold} अंक से नीचे जाने पर खिलाड़ी बाहर हो जाता है",
-  "gameRulesEndFirstOver": "जैसे ही कोई खिलाड़ी {threshold} अंक पार करता है, खेल समाप्त हो जाता है",
+  "gameRulesEndFirstOver": "जैसे ही कोई खिलाड़ी {threshold} अंक तक पहुँचता है, खेल समाप्त हो जाता है",
   "gameRulesEndFirstUnder": "जैसे ही कोई खिलाड़ी {threshold} अंक से नीचे आता है, खेल समाप्त हो जाता है",
   "gameRulesEndLastOver": "जब एक को छोड़कर सभी खिलाड़ी {threshold} अंक पार कर लेते हैं, तब खेल समाप्त होता है",
   "gameRulesEndLastUnder": "जब एक को छोड़कर सभी खिलाड़ी {threshold} अंक से नीचे आ जाते हैं, तब खेल समाप्त होता है",

@@ -7,6 +7,11 @@ import 'package:flutter_test/flutter_test.dart';
 ///
 /// Shipped rules are Markdown assets rather than ARB keys (`.llmwiki/I18n.md`),
 /// so nothing regenerates when a locale falls behind. These checks fail instead.
+/// A space (plain, no-break or narrow no-break), comma, period or apostrophe
+/// between a digit and a group of exactly three digits.
+final _thousandsSeparator =
+    RegExp('(?<=[0-9])[ \u00A0\u202F,.\'](?=[0-9]{3}(?![0-9]))');
+
 void main() {
   String read(String locale) =>
       File('assets/rules/rules_$locale.md').readAsStringSync();
@@ -41,20 +46,51 @@ void main() {
       'belote': ['162', '81'],
       'tarot': ['56', '51', '41', '36'],
       'rami': ['51', '100'],
+      // The long tail, shipped with schema v16. The seeded thresholds first.
+      'coinche': ['1000', '80', '162', '160'],
+      'yahtzee': ['13', '63', '35', '50'],
+      'phase10': ['10', '15', '25'],
+      'flip7': ['200', '15', '12'],
+      'mille_bornes': ['5000', '1000', '400'],
+      'rummikub': ['106', '14', '30'],
+      'six_nimmt': ['66', '65', '104'],
+      'qwirkle': ['108', '12'],
+      'farkle': ['10000', '1000', '500'],
+      'canasta': ['5000', '500', '300'],
+      'wizard': ['60', '20'],
+      'triomino': ['56', '40', '50', '25'],
     };
     for (final locale in GameRulesCatalog.locales) {
       final sections = GameRulesCatalog.parse(read(locale));
       for (final entry in critical.entries) {
+        // Thousands separators differ per locale — 1 000, 1,000, 1.000 — and
+        // are dropped before the numbers are looked up.
         final body = sections[entry.key]!
-            .replaceAll(' ', '')
-            .replaceAll(' ', '')
-            .replaceAll(' 000', '000');
+            .replaceAll(_thousandsSeparator, '');
         for (final number in entry.value) {
           expect(RegExp('(?<![0-9])$number(?![0-9])').hasMatch(body), isTrue,
               reason: '$locale/${entry.key} lost the number $number');
         }
       }
     }
+  });
+
+  test('the catalogue covers the 21 rulesets the seed names', () {
+    expect(GameRulesCatalog.slugs, hasLength(21));
+    expect(GameRulesCatalog.slugs.toSet(), hasLength(21));
+  });
+
+  test('every locale says the game ends when a total reaches the threshold',
+      () {
+    // `firstPlayerOver` is `>=` since 2026-09-19 (GameType.isGameOver). The
+    // French and English texts are the masters: none of them may say that
+    // the game stops once a total *exceeds* its threshold.
+    final fr = GameRulesCatalog.parse(read('fr'));
+    expect(fr['uno'], contains("dès qu'un total atteint 500"));
+    expect(fr['president'], contains("qu'un total atteint 10"));
+    final en = GameRulesCatalog.parse(read('en'));
+    expect(en['uno'], contains('as soon as a total reaches\n500'));
+    expect(en['president'], contains('as soon as a total reaches 10'));
   });
 
   test('the parser keys sections on their marker and drops the preamble', () {

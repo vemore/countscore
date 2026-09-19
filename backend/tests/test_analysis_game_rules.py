@@ -65,7 +65,7 @@ def test_an_unknown_or_custom_type_gets_the_generic_block_and_invents_nothing(na
     ("over", "over_threshold", "expected_over"),
     [
         (None, None, None),
-        ("firstPlayerOver", 500, "as soon as one player's total goes above 500"),
+        ("firstPlayerOver", 500, "as soon as one player's total reaches 500"),
         ("firstPlayerUnder", 0, "as soon as one player's total falls below 0"),
         ("lastPlayerOver", 11, "once every player's total has gone above 11"),
         ("lastPlayerUnder", 3, "once every player's total has fallen below 3"),

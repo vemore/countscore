@@ -20,8 +20,8 @@ at your own server in Settings → Server if you want the connected features.
   plus custom types with a user-picked icon and colour.
 - **Flexible scoring**: lowest-wins and highest-wins, per game type.
 - **Rules for the game you are playing** — reachable from the score table and from the
-  game-type list. Nine of the pre-configured types ship a ruleset, translated into all ten
-  languages, next to a summary of how CountScore scores that type — and every type, shipped
+  game-type list. Every pre-configured type but *Other* ships a ruleset — 21 of them,
+  translated into all ten languages — next to a summary of how CountScore scores that type — and every type, shipped
   or your own, gets that summary. Any of it can be
   rewritten: your table's own rules replace the shipped text and travel with your group.
 - **Scoring grid**: one coloured lane per player — avatar, big total, place, a crown on the
@@ -32,8 +32,8 @@ at your own server in Settings → Server if you want the connected features.
   of the top three with their totals, the rest in rank order, then *Play again* and — with a
   server configured — *Analysis*. A finished game's board brings that screen back, and
   reopening a game lets you play on. Game types that define a threshold (Skyjo, Président,
-  Belote) end the game by themselves whenever a score or a round takes it past that
-  threshold, or when you open a game already past it — once: the end screen then offers
+  Belote, Uno …) end the game by themselves as soon as a score or a round brings a total to
+  that threshold, or when you open a game already at or past it — once: the end screen then offers
   "Continue playing", remembered on the device until the game drops back under its threshold.
 - **Who starts?**: the score table's menu draws one of the game's players at random.
 - **Play again**: from the end screen, the ranking or a finished game in the history, one tap starts

@@ -951,7 +951,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String gameRulesEndFirstOver(int threshold) {
-    return 'जैसे ही कोई खिलाड़ी $threshold अंक पार करता है, खेल समाप्त हो जाता है';
+    return 'जैसे ही कोई खिलाड़ी $threshold अंक तक पहुँचता है, खेल समाप्त हो जाता है';
   }
 
   @override

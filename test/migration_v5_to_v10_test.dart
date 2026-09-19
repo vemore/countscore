@@ -16,6 +16,7 @@ import 'package:countscore/models/score.dart';
 import 'package:countscore/repositories/drift/drift_repositories.dart';
 import 'package:countscore/services/database_service.dart';
 import 'package:countscore/services/drift/database.dart';
+import 'package:countscore/services/sync/sync_schema.dart';
 
 /// `_createDB` as of tag `1.0.1+3`, verbatim DDL, minus the default game types
 /// (inserted by the test so their ids are known).
@@ -176,6 +177,10 @@ void main() {
     expect(types.every((t) => t.builtinKey != null), isTrue);
     expect(types.map((t) => t.builtinKey), contains('mille_bornes'));
     expect(types.map((t) => t.builtinKey), isNot(contains('skyjo')));
+    // v13 and v16: each of the thirteen carries its shipped ruleset.
+    for (final t in types) {
+      expect(t.rulesSlug, defaultRulesSlugs[t.builtinKey], reason: '${t.builtinKey}');
+    }
     expect(games.every((g) => g.isFinished), isFalse,
         reason: 'v12 adds finishedAt as null; no existing game becomes finished');
 

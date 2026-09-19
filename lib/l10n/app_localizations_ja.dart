@@ -932,7 +932,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String gameRulesEndFirstOver(int threshold) {
-    return 'いずれかのプレイヤーが $threshold 点を超えた時点で終了します';
+    return 'いずれかのプレイヤーが $threshold 点に達した時点で終了します';
   }
 
   @override

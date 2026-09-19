@@ -82,6 +82,41 @@ void main() {
       expect(round.roundNumber, 1);
     });
 
+    group('GameType.isGameOver', () {
+      test('Président: a player on exactly 10 has won, one on 9 has not', () {
+        final president = GameType.president();
+        expect(president.isGameOver([10, 4, 2]), isTrue);
+        expect(president.isGameOver([9, 8, 2]), isFalse);
+        expect(president.isGameOver([11, 0]), isTrue);
+      });
+
+      test('Skyjo stops at 100 or more', () {
+        expect(GameType.skyjo().isGameOver([100, 40]), isTrue);
+        expect(GameType.skyjo().isGameOver([99, 40]), isFalse);
+      });
+
+      test('the other conditions keep their strict comparison', () {
+        GameType withRule(GameOverConditionType type) => GameType(
+              name: 'Seuil',
+              iconCodePoint: 0,
+              cardColorValue: 0,
+              isLowestScoreWins: false,
+              gameOverConditionType: type,
+              gameOverThreshold: 10,
+            );
+        expect(withRule(GameOverConditionType.firstPlayerUnder).isGameOver([10, 20]), isFalse);
+        expect(withRule(GameOverConditionType.firstPlayerUnder).isGameOver([9, 20]), isTrue);
+        expect(withRule(GameOverConditionType.lastPlayerOver).isGameOver([10, 20]), isFalse);
+        expect(withRule(GameOverConditionType.lastPlayerOver).isGameOver([11, 20]), isTrue);
+        expect(withRule(GameOverConditionType.lastPlayerUnder).isGameOver([10, 5]), isFalse);
+        expect(withRule(GameOverConditionType.lastPlayerUnder).isGameOver([9, 5]), isTrue);
+      });
+
+      test('a type without a rule never ends by itself', () {
+        expect(GameType.scrabble().isGameOver([1000000]), isFalse);
+      });
+    });
+
     test('GameType default game types', () {
       final zapzap = GameType.zapzap();
       expect(zapzap.name, 'ZapZap');
@@ -90,7 +125,7 @@ void main() {
 
       final uno = GameType.uno();
       expect(uno.name, 'Uno');
-      // The box rule: highest total wins, the game ends past 500.
+      // The box rule: highest total wins, the game ends on reaching 500.
       expect(uno.isLowestScoreWins, false);
       expect(uno.gameOverConditionType, GameOverConditionType.firstPlayerOver);
       expect(uno.gameOverThreshold, 500);
@@ -161,6 +196,9 @@ void main() {
       expect(type.copyWith(cardColorValue: 1).builtinKey, 'yahtzee');
       // ...and renaming gives it up, so the chosen name is what is rendered.
       expect(type.copyWith(name: 'Mon jeu', clearBuiltinKey: true).builtinKey, isNull);
+      // It keeps its shipped ruleset, though: the slug is not the name.
+      expect(type.rulesSlug, 'yahtzee');
+      expect(type.copyWith(name: 'Mon jeu', clearBuiltinKey: true).rulesSlug, 'yahtzee');
     });
 
     test('Game copyWith method', () {
