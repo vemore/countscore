@@ -14,6 +14,7 @@ import '../widgets/player_avatars.dart';
 import '../utils/game_type_name.dart';
 import '../utils/insets.dart';
 import '../utils/play_again.dart';
+import '../utils/undo_snack_bar.dart';
 import 'about_screen.dart';
 import 'create_game_screen.dart';
 import 'game_board_screen.dart';
@@ -104,6 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.bar_chart),
+            tooltip: l10n.playerStatistics,
             onPressed: () {
               Navigator.push(
                 context,
@@ -800,12 +802,10 @@ class _HomeScreenState extends State<HomeScreen> {
       // Reopening is reversible, so say what happened and offer it back.
       messenger
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(
-          content: Text(l10n.gameReopened),
-          action: SnackBarAction(
-            label: l10n.undo,
-            onPressed: () => gameProvider.setGameFinished(gameId, true),
-          ),
+        ..showSnackBar(undoSnackBar(
+          message: l10n.gameReopened,
+          undoLabel: l10n.undo,
+          onUndo: () => gameProvider.setGameFinished(gameId, true),
         ));
     } else if (value == 'new_same' || value == 'play_again') {
       await playAgain(context, game, board: _board);

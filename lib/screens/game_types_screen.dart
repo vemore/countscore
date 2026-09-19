@@ -44,7 +44,13 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
           }
 
           return ListView.builder(
-            padding: withBottomInset(context, const EdgeInsets.all(8)),
+            // The bottom edge clears the "New type" button (a 56 dp extended
+            // FAB above its 16 dp margin), so the last type's menu can be
+            // scrolled out from under it.
+            padding: withBottomInset(
+              context,
+              const EdgeInsets.fromLTRB(8, 8, 8, kFabClearance),
+            ),
             itemCount: gameTypes.length,
             itemBuilder: (context, index) {
               final gameType = gameTypes[index];
@@ -175,7 +181,9 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
                         Text(l10n.icon),
                         const SizedBox(width: 12),
                         IconButton(
+                          key: const Key('game_type_icon_button'),
                           icon: Icon(selectedIcon, size: 32),
+                          tooltip: l10n.chooseIcon,
                           onPressed: () {
                             _showIconPicker(context, (icon) {
                               setState(() {
@@ -191,22 +199,29 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
                       children: [
                         Text(l10n.color),
                         const SizedBox(width: 12),
-                        GestureDetector(
-                          onTap: () async {
-                            final color = await _showColorPicker(context, selectedColor);
-                            if (color != null) {
-                              setState(() {
-                                selectedColor = color;
-                              });
-                            }
-                          },
-                          child: Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: selectedColor,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.grey),
+                        Tooltip(
+                          message: l10n.chooseColor,
+                          child: Semantics(
+                            button: true,
+                            child: GestureDetector(
+                              key: const Key('game_type_color_button'),
+                              onTap: () async {
+                                final color = await _showColorPicker(context, selectedColor);
+                                if (color != null) {
+                                  setState(() {
+                                    selectedColor = color;
+                                  });
+                                }
+                              },
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: selectedColor,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.grey),
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -473,6 +488,9 @@ class _GameTypesScreenState extends State<GameTypesScreen> {
               ),
               itemCount: icons.length,
               itemBuilder: (context, index) {
+                // No tooltip on purpose: these 32 glyphs have no names in the
+                // ARB files, and the picker's title already says what a tap
+                // does. Naming them is a translation task of its own.
                 return IconButton(
                   icon: Icon(icons[index], size: 32),
                   onPressed: () {

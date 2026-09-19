@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
@@ -10,6 +12,7 @@ import '../utils/app_theme.dart';
 import 'player_avatars.dart';
 
 /// Up to this many players, the lanes share the width and never scroll.
+/// Beyond, they scroll only when [kBoardMinLaneWidth] does not fit the width.
 const int kBoardMaxFittingLanes = 8;
 
 /// From this many players, the lane header is the compact one: avatar,
@@ -162,10 +165,47 @@ class BoardCrown extends StatelessWidget {
 /// The board as one lane per player: a band in the player's colour running
 /// from the header (avatar, name, total, place) down to the last round. The
 /// header and the cells of a lane are one column, so they cannot drift apart.
-class BoardLanes extends StatelessWidget {
+class BoardLanes extends StatefulWidget {
   const BoardLanes({super.key, required this.data});
 
   final BoardData data;
+
+  @override
+  State<BoardLanes> createState() => _BoardLanesState();
+}
+
+/// What drags the lanes sideways: a finger, a stylus, and — unlike Flutter's
+/// default, which leaves a mouse drag alone — a mouse and a trackpad, so the
+/// PWA's lanes move under a pointer too.
+class _LanesScrollBehavior extends MaterialScrollBehavior {
+  const _LanesScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => const {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.stylus,
+        PointerDeviceKind.invertedStylus,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+      };
+
+  // The lanes draw their own scrollbar, on the web only; not a second one.
+  @override
+  Widget buildScrollbar(
+          BuildContext context, Widget child, ScrollableDetails details) =>
+      child;
+}
+
+class _BoardLanesState extends State<BoardLanes> {
+  final ScrollController _lanesController = ScrollController();
+
+  BoardData get data => widget.data;
+
+  @override
+  void dispose() {
+    _lanesController.dispose();
+    super.dispose();
+  }
 
   static const double _rowHeight = 46;
   static const double _gap = 6;
@@ -205,6 +245,30 @@ class BoardLanes extends StatelessWidget {
         ],
       );
 
+      Widget lanesView = ScrollConfiguration(
+        behavior: const _LanesScrollBehavior(),
+        child: SingleChildScrollView(
+          key: const Key('board_lanes_scroll'),
+          controller: _lanesController,
+          scrollDirection: Axis.horizontal,
+          physics: scrolls ? null : const NeverScrollableScrollPhysics(),
+          // Room for the scrollbar under the lanes.
+          padding: EdgeInsets.only(bottom: scrolls && kIsWeb ? 12 : 0),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minWidth: available),
+            child: lanes,
+          ),
+        ),
+      );
+      if (scrolls && kIsWeb) {
+        lanesView = Scrollbar(
+          key: const Key('board_lanes_scrollbar'),
+          controller: _lanesController,
+          thumbVisibility: true,
+          child: lanesView,
+        );
+      }
+
       final grid = SingleChildScrollView(
         key: const Key('board_score_grid'),
         padding: const EdgeInsets.fromLTRB(_hPadding, 8, _hPadding, 16),
@@ -216,22 +280,14 @@ class BoardLanes extends StatelessWidget {
               headerHeight: headerHeight,
               rowHeight: _rowHeight,
             ),
-            Expanded(
-              child: SingleChildScrollView(
-                key: const Key('board_lanes_scroll'),
-                scrollDirection: Axis.horizontal,
-                physics: scrolls ? null : const NeverScrollableScrollPhysics(),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minWidth: available),
-                  child: lanes,
-                ),
-              ),
-            ),
+            Expanded(child: lanesView),
           ],
         ),
       );
 
-      if (n <= kBoardMaxFittingLanes) return grid;
+      // The ribbon keeps the standing in view while lanes are off-screen;
+      // when every lane fits, their headers already show it.
+      if (!scrolls) return grid;
       return Column(
         children: [
           _RankingRibbon(data: data),
@@ -507,8 +563,8 @@ class _LaneHeader extends StatelessWidget {
   }
 }
 
-/// Beyond eight players, every player in rank order, so the standing stays
-/// readable while the lanes scroll.
+/// While the lanes scroll sideways, every player in rank order, so the
+/// standing stays readable.
 class _RankingRibbon extends StatelessWidget {
   const _RankingRibbon({required this.data});
 

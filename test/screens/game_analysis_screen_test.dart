@@ -5,6 +5,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -21,6 +23,7 @@ import 'package:countscore/providers/game_type_provider.dart';
 import 'package:countscore/repositories/game_analysis_repository.dart';
 import 'package:countscore/screens/game_analysis_screen.dart';
 import 'package:countscore/services/commentary_report.dart';
+import 'package:countscore/utils/app_theme.dart';
 
 /// In-memory stand-in: the screen is the subject here, not persistence.
 class _FakeAnalysisRepository implements GameAnalysisRepository {
@@ -61,7 +64,13 @@ class _GameProviderWithCurrentGame extends GameProvider {
       Game(id: 1, name: 'Partie 1', gameTypeId: null, isLowestScoreWins: true);
 }
 
-Widget _wrap(Widget child, {String? backendUrl, GameProvider? gameProvider}) {
+Widget _wrap(
+  Widget child, {
+  String? backendUrl,
+  GameProvider? gameProvider,
+  Locale locale = const Locale('en', ''),
+  ThemeData? theme,
+}) {
   return MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => gameProvider ?? GameProvider()),
@@ -76,7 +85,8 @@ Widget _wrap(Widget child, {String? backendUrl, GameProvider? gameProvider}) {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [Locale('en', ''), Locale('fr', '')],
-      locale: const Locale('en', ''),
+      locale: locale,
+      theme: theme,
       home: child,
     ),
   );
@@ -208,10 +218,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Le professeur a parlé.'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.refresh));
+    await tester.tap(find.byKey(const Key('analysis_menu')));
     await tester.pumpAndSettle();
-    // By position, not by label: regenerateAnalysis is also the IconButton's
-    // tooltip, so a text finder can match twice.
+    await tester.tap(find.byKey(const Key('analysis_regenerate')));
+    await tester.pumpAndSettle();
+    // By position, not by label: the dialog's confirm button may share the
+    // menu entry's wording.
     await tester.tap(find.descendant(
       of: find.byType(AlertDialog),
       matching: find.byType(TextButton),
@@ -270,9 +282,14 @@ void main() {
     ));
     await tester.pumpAndSettle();
 
+    await tester.tap(find.byKey(const Key('analysis_menu')));
+    await tester.pumpAndSettle();
     final report = find.byKey(const Key('analysis_report'));
     expect(report, findsOneWidget);
-    expect(tester.widget<IconButton>(report).tooltip, 'Report this commentary');
+    expect(
+      find.descendant(of: report, matching: find.text('Report this commentary')),
+      findsOneWidget,
+    );
 
     await tester.tap(report);
     await tester.pumpAndSettle();
@@ -295,16 +312,61 @@ void main() {
     expect(find.byType(SnackBar), findsNothing);
   });
 
-  testWidgets('with nothing to report, the control is disabled',
+  testWidgets('with no analysis, the app bar offers none of its actions',
       (tester) async {
     await tester.pumpWidget(_wrap(
       GameAnalysisScreen(repository: _FakeAnalysisRepository()),
       backendUrl: 'https://countscore.example.com',
+      gameProvider: _GameProviderWithCurrentGame(),
     ));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
-    final report = find.byKey(const Key('analysis_report'));
-    expect(tester.widget<IconButton>(report).onPressed, isNull);
+    // Report, Regenerate and Delete used to sit there disabled, acting on
+    // nothing; the generate button is the only way forward.
+    expect(find.byKey(const Key('analysis_generate')), findsOneWidget);
+    expect(find.byKey(const Key('analysis_menu')), findsNothing);
+    expect(find.byKey(const Key('share_result')), findsNothing);
+    final appBar = find.byType(AppBar);
+    for (final icon in [Icons.flag_outlined, Icons.refresh, Icons.delete_outline]) {
+      expect(find.descendant(of: appBar, matching: find.byIcon(icon)), findsNothing);
+    }
+  });
+
+  testWidgets('with an analysis, the French title fits at 400 dp',
+      (tester) async {
+    // The test font draws every glyph a full em wide, which would truncate any
+    // real title: measure with the app's own font and theme instead.
+    final nunito = FontLoader(kAppFontFamily);
+    for (final weight in ['Regular', 'SemiBold', 'Bold', 'ExtraBold']) {
+      nunito.addFont(rootBundle.load('assets/fonts/Nunito-$weight.ttf'));
+    }
+    await nunito.load();
+    tester.view.physicalSize = const Size(400, 860);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final cached = GameAnalysis(
+      gameId: 1,
+      content: 'Le professeur a parlé.',
+      modelId: 'test-model',
+      generatedAt: DateTime(2026, 9, 11, 14, 30),
+    );
+    await tester.pumpWidget(_wrap(
+      GameAnalysisScreen(repository: _FakeAnalysisRepository(cached)),
+      backendUrl: 'https://countscore.example.com',
+      gameProvider: _GameProviderWithCurrentGame(),
+      locale: const Locale('fr', ''),
+      theme: buildAppTheme(Brightness.light),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('share_result')), findsOneWidget);
+    expect(find.byKey(const Key('analysis_menu')), findsOneWidget);
+    final title = find.text('Analyse de la partie');
+    expect(title, findsOneWidget);
+    final paragraph = tester.renderObject<RenderParagraph>(
+      find.descendant(of: title, matching: find.byType(RichText)),
+    );
+    expect(paragraph.didExceedMaxLines, isFalse);
   });
 
   testWidgets('with no mail app, reporting explains where to write',
@@ -323,8 +385,11 @@ void main() {
     ));
     await tester.pumpAndSettle();
 
+    await tester.tap(find.byKey(const Key('analysis_menu')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('analysis_report')));
-    await tester.pump();
+    await tester.pump(); // the menu closes and hands over the selection
+    await tester.pump(const Duration(milliseconds: 300));
     await tester.pump();
 
     expect(find.byType(SnackBar), findsOneWidget);

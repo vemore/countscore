@@ -87,6 +87,36 @@ class GameType {
   IconData get icon => IconData(iconCodePoint, fontFamily: 'MaterialIcons');
   Color get cardColor => Color(cardColorValue);
 
+  /// Whether [total] puts a player out under this type's elimination rule.
+  /// False for a type without one.
+  ///
+  /// `over` is strict — out once a total **exceeds** the threshold — as the
+  /// ZapZap and Rami rules say. 6 qui prend, whose box rule stops at 66, is
+  /// seeded with 65 for that reason (new databases since 2026-09-19). The
+  /// board, the ranking and the end screen all read this one rule.
+  bool isEliminated(int total) {
+    final threshold = playerDeadThreshold;
+    final condition = playerDeadConditionType;
+    if (threshold == null || condition == null) return false;
+    return switch (condition) {
+      PlayerDeadConditionType.over => total > threshold,
+      PlayerDeadConditionType.under => total < threshold,
+    };
+  }
+
+  /// Whether [total] is within 20 points of the elimination threshold, and
+  /// not past it — the orange total on the board and the rankings.
+  bool isNearElimination(int total) {
+    final threshold = playerDeadThreshold;
+    final condition = playerDeadConditionType;
+    if (threshold == null || condition == null) return false;
+    if (isEliminated(total)) return false;
+    return switch (condition) {
+      PlayerDeadConditionType.over => total >= threshold - 20,
+      PlayerDeadConditionType.under => total <= threshold + 20,
+    };
+  }
+
   /// Whether the game-over rule of this type is met by these player totals.
   /// False when the type has no rule.
   ///
@@ -387,6 +417,10 @@ class GameType {
         isDefault: true,
       );
 
+  // 65, not 66: the box rule stops at 66 bull heads and `over` is strict, so a
+  // threshold of 65 puts a player out on exactly 66 (fix/elimination-and-crown,
+  // 2026-09-19). As with Uno and Président, no migration rewrites an existing
+  // row, which keeps 66: only a new database seeds this value.
   static GameType sixNimmt() => GameType(
         builtinKey: 'six_nimmt',
         name: '6 qui prend',
@@ -396,7 +430,7 @@ class GameType {
         isLowestScoreWins: true,
         isDefault: true,
         playerDeadConditionType: PlayerDeadConditionType.over,
-        playerDeadThreshold: 66,
+        playerDeadThreshold: 65,
       );
 
   static GameType qwirkle() => GameType(
