@@ -261,8 +261,8 @@ repeats by seat. Two colours clash (`playerColorsClash`) when they are equal or 
 optionally avoiding colours another part of the screen shows. `onPlayerColor(colour)` is
 the initial's colour on it — white or `black87`, whichever has the higher WCAG contrast
 (`contrastRatio`), so every palette colour gets at least 4.5:1 and a legacy yellow a dark
-initial. The home avatars, the board's lanes and rows, the keypad chips, the Players
-screen, the statistics and the New game screen's seats and "who's playing" chips use it.
+initial. The home avatars, the board's lanes and rows, the ranking and end screen, the keypad
+chips, the Players screen, the statistics and the New game screen's seats and "who's playing" chips use it.
 
 
 `insets.dart` — `withBottomInset(context, base)` adds `MediaQuery.paddingOf(context).bottom`

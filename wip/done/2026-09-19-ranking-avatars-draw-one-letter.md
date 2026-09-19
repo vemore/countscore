@@ -1,5 +1,7 @@
 # The ranking and the end screen still draw one-letter avatars
 
+**Status:** done (2026-09-19) — closed by fix/player-avatars-colours-keypad. Once fix/elimination-and-crown (#149) had merged, `game_ranking.dart` passed `letters: 2` to both the podium and the row avatars; `test/screens/ranking_screen_test.dart` finds each player's two letters.
+
 - **Noted:** 2026-09-19 — while giving the keypad, the home hero and the Players screen the board's two-letter avatars (fix/player-avatars-colours-keypad)
 - **Theme:** visual-refresh
 - **Area:** app
