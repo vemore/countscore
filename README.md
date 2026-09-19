@@ -28,13 +28,15 @@ at your own server in Settings → Server if you want the connected features.
   leader — or one row per player at the tap of a button (remembered for every game); rounds,
   live ranking and per-player statistics.
 - **An explicit end**: any game that has been played can be declared over from the board or
-  the game list, which marks it in the history and shows it as finished in both; the
-  confirmation offers an undo, and reopening it lets you play on. Game types that define a
-  threshold (Skyjo, Président, Belote) offer it by themselves whenever a score or a round
-  takes the game past it, or when you open a game already past it — once: "Continue
-  playing" is remembered on the device until the game drops back under its threshold.
+  the game list, which marks it in the history and opens an end screen: the winner, a podium
+  of the top three with their totals, the rest in rank order, then *Play again* and — with a
+  server configured — *Analysis*. A finished game's board brings that screen back, and
+  reopening a game lets you play on. Game types that define a threshold (Skyjo, Président,
+  Belote) end the game by themselves whenever a score or a round takes it past that
+  threshold, or when you open a game already past it — once: the end screen then offers
+  "Continue playing", remembered on the device until the game drops back under its threshold.
 - **Who starts?**: the score table's menu draws one of the game's players at random.
-- **Play again**: from the final ranking or a finished game in the history, one tap starts
+- **Play again**: from the end screen, the ranking or a finished game in the history, one tap starts
   the next game with the same type and the same players in the same order.
 - **Global players**: a player exists once and is shared across games, so statistics follow
   them from one game to the next.

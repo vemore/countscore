@@ -25,6 +25,7 @@ import '../widgets/board_rows.dart';
 import '../widgets/score_keypad_sheet.dart';
 import '../widgets/who_starts_dialog.dart';
 import 'game_analysis_screen.dart';
+import 'game_end_screen.dart';
 import 'game_rules_screen.dart';
 import 'ranking_screen.dart';
 
@@ -46,7 +47,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
   late final GameAnalysisRepository _analysisRepo =
       widget.analysisRepo ?? DriftGameAnalysisRepository(AppDatabase.instance);
 
-  /// Whether the game-over dialog is already standing, or was answered
+  /// Whether the end screen was already raised by the rule, or answered
   /// "Continue playing", for the crossing currently in force.
   ///
   /// It re-arms as soon as the condition is false again — a deleted round or a
@@ -227,6 +228,18 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
               onPressed: () => _toggleBoardView(context),
             );
           }),
+          // A finished game's end screen, one tap away.
+          Consumer<GameProvider>(
+            builder: (context, gameProvider, child) =>
+                (gameProvider.currentGame?.isFinished ?? false)
+                    ? IconButton(
+                        key: const Key('board_game_end'),
+                        tooltip: l10n.gameEndResults,
+                        icon: const Icon(Icons.emoji_events_outlined),
+                        onPressed: _openGameEnd,
+                      )
+                    : const SizedBox.shrink(),
+          ),
           IconButton(
             icon: const Icon(Icons.leaderboard),
             onPressed: () {
@@ -388,27 +401,23 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                   } else if (value == 'finish_game') {
                     final gameId = gameProvider.currentGame?.id;
                     if (gameId == null) return;
+                    if (!isFinished) {
+                      await _finishAndShowEnd(byRule: false);
+                      return;
+                    }
                     // Captured before the await, as everywhere else on this
                     // screen: the messenger outlives this closure's context.
                     final messenger = ScaffoldMessenger.of(context);
-                    final finished = !isFinished;
-                    final justFinished =
-                        await gameProvider.setGameFinished(gameId, finished);
-                    if (justFinished) {
-                      unawaited(ReviewPromptService.instance.onGameFinished());
-                    }
-                    // The board gave no feedback at all before; the action is
-                    // reversible, so it is offered back.
+                    await gameProvider.setGameFinished(gameId, false);
+                    // Reopening is reversible, so it is offered back.
                     messenger
                       ..hideCurrentSnackBar()
                       ..showSnackBar(SnackBar(
-                        content: Text(finished
-                            ? l10n.gameMarkedFinished
-                            : l10n.gameReopened),
+                        content: Text(l10n.gameReopened),
                         action: SnackBarAction(
                           label: l10n.undo,
                           onPressed: () =>
-                              gameProvider.setGameFinished(gameId, !finished),
+                              gameProvider.setGameFinished(gameId, true),
                         ),
                       ));
                   } else if (value == 'share_game') {
@@ -558,7 +567,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     }
   }
 
-  /// Shows the game-over dialog once per crossing of the threshold.
+  /// Opens the end screen once per crossing of the threshold.
   ///
   /// Every mutation that can change a total calls this — a score edit, a round
   /// added, a round deleted — and so does the board's first build
@@ -574,12 +583,16 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
       if (uuid != null) await GameOverDismissals.clear(uuid);
       return;
     }
-    if (_gameOverDismissed) return;
+    // A finished game has had its end screen; the app bar keeps it one tap
+    // away.
+    if (_gameOverDismissed || (gameProvider.currentGame?.isFinished ?? false)) {
+      return;
+    }
     _gameOverDismissed = true;
-    // A slight delay so the table shows the new total before the dialog covers
-    // it.
+    // A slight delay so the table shows the new total before the end screen
+    // covers it.
     Future.delayed(const Duration(milliseconds: 100), () {
-      if (mounted) unawaited(_showGameOverDialog(context));
+      if (mounted) unawaited(_finishAndShowEnd(byRule: true));
     });
   }
 
@@ -823,45 +836,45 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     );
   }
 
-  Future<void> _showGameOverDialog(BuildContext context) async {
-    final l10n = AppLocalizations.of(context)!;
-    final uuid = context.read<GameProvider>().currentGame?.uuid;
-    // true is "End game"; "Continue playing", or the back button, is anything
-    // else, and is remembered on this device for as long as the game stays
-    // past its threshold.
-    final ended = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.gameOverTitle),
-        content: Text(l10n.gameOverMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(l10n.continuePlay),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final gameProvider = context.read<GameProvider>();
-              final gameId = gameProvider.currentGame?.id;
-              Navigator.pop(dialogContext, true);
-              Navigator.pop(context); // Return to game list
-              // One trigger among several since the board and the game list can
-              // declare a game over too; all of them record the same fact.
-              final justFinished = gameId != null &&
-                  await gameProvider.setGameFinished(gameId, true);
-              // Fire and forget: the service owns every guard, and nothing here
-              // waits on Play.
-              if (justFinished) {
-                unawaited(ReviewPromptService.instance.onGameFinished());
-              }
-            },
-            child: Text(l10n.endGame),
-          ),
-        ],
+  /// Records the game as finished and opens its end screen.
+  ///
+  /// [byRule] is the game type's rule ending the game rather than the user:
+  /// the screen then offers "Continue playing", which reopens the game and is
+  /// remembered on this device for as long as the game stays past its
+  /// threshold. Every trigger records the same fact — the board, the rule and
+  /// the game list — and the review prompt hears of each game once.
+  Future<void> _finishAndShowEnd({required bool byRule}) async {
+    final gameProvider = _gameProvider;
+    final gameId = gameProvider.currentGame?.id;
+    if (gameId == null) return;
+    final justFinished = await gameProvider.setGameFinished(gameId, true);
+    // Fire and forget: the service owns every guard, and nothing here waits
+    // on Play.
+    if (justFinished) {
+      unawaited(ReviewPromptService.instance.onGameFinished());
+    }
+    if (!mounted) return;
+    await _openGameEnd(offerContinue: byRule);
+  }
+
+  /// The end screen of the current game, finished already. `true` back from
+  /// it is "Continue playing".
+  Future<void> _openGameEnd({bool offerContinue = false}) async {
+    final game = _gameProvider.currentGame;
+    final continued = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => GameEndScreen(offerContinue: offerContinue),
       ),
     );
-    if (ended != true && uuid != null) await GameOverDismissals.dismiss(uuid);
+    final gameId = game?.id;
+    if (continued == true && gameId != null) {
+      await _gameProvider.setGameFinished(gameId, false);
+      final uuid = game?.uuid;
+      if (uuid != null) await GameOverDismissals.dismiss(uuid);
+    }
+    // The end screen may have generated an analysis.
+    if (mounted) await _refreshCachedAnalysis();
   }
 
   bool _isZapZap(GameType? gameType) => gameType?.builtinKey == 'zapzap';

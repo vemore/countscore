@@ -51,7 +51,8 @@ whether the connected features exist; the third starts the review prompt's clock
 `game_analysis_screen` (the LLM analysis, with its row of voice chips — see
 [[LlmProviders]]) ·
 `players_screen` · `player_stats_screen` · `settings_screen` ·
-`about_screen` · `ranking_screen` · `game_rules_screen` · `group_settings_screen`.
+`about_screen` · `ranking_screen` · `game_end_screen` (who won, below) · `game_rules_screen` ·
+`group_settings_screen`.
 
 `group_settings_screen` is Settings → Group → *Comments and usage*, reached only from the
 Group section once the device is in a group: the group's comment style (three chips,
@@ -124,7 +125,7 @@ Eight components shared out of the screens:
   the user. `recordFirstLaunch()` is awaited in `main()` and stamps the first launch once
   (SharedPreferences `reviewPromptFirstLaunch`). `onGameFinished()` is called, unawaited,
   wherever `GameProvider.setGameFinished` reports the transition that finishes a game — the
-  board's finish menu entry and its game-over dialog (`game_board_screen.dart`) and the game list's card menu
+  board's finish menu entry and its game-over rule (`game_board_screen.dart`) and the game list's card menu
   (`home_screen.dart`). It asks only when every guard holds: at least `minGamesFinished`
   (3) games finished — `GameRepository.countFinished()`, the live games whose `finishedAt`
   is set, read when the prompt is due, so an undone finish or a reopen drops out and there
@@ -143,7 +144,7 @@ Eight components shared out of the screens:
   its tables ([[DataLayer]]).
 - `sync/` — the group-sync engine, store and stream ([[Sync]]).
 - `uuid.dart` — platform-neutral v4 UUIDs.
-- `game_over_dismissals.dart` — `GameOverDismissals`: the games whose game-over dialog was
+- `game_over_dismissals.dart` — `GameOverDismissals`: the games whose rule-raised end screen was
   answered "Continue playing", on this device only (SharedPreferences
   `gameOverDismissed.<game uuid>`; not synced, no schema). A deleted game leaves its key
   behind — one boolean, never read again.
@@ -202,13 +203,13 @@ what lets two devices in different locales hold the same type. Renaming one clea
 screen listing game types calls it, since the repository returns them unordered ([[I18n]]).
 
 `play_again.dart` — `playAgain(context, source, board:)`, the one path behind *Play again*
-(the ranking's button, and a finished game's menu entry on the home screen, where an
+(the ranking's and the game-end screen's buttons, and a finished game's menu entry on the home screen, where an
 unfinished game shows the same action as "New with same players"). It calls
 `GameProvider.playAgain` — `createGame` with the source's type, win rule and players in
 `orderIndex` order, nothing else read or written on the source — shares the new game if the
 source was shared, and opens its board with `pushAndRemoveUntil(isFirst)`, so back returns
 to the game list. The new game is named by `nextGameName`: `Skyjo 3` → `Skyjo 4`.
-`RankingScreen` and `HomeScreen` take an optional `boardBuilder`, for tests only, as the
+`RankingScreen`, `GameEndScreen` and `HomeScreen` take an optional `boardBuilder`, for tests only, as the
 board's `analysisRepo` is.
 
 ### Models — `lib/models/`
@@ -229,21 +230,38 @@ write path — it returns true only for the transition that finishes a game, whi
 gates the Play review sheet.
 
 Both screens show the state and both can change it: a status pill (in progress, or the winner) on the game
-list card, a chip beside the title on the board, and a menu entry that finishes or reopens,
-confirmed by a snackbar whose **Undo** action writes the previous state back (the repo's only
-`SnackBarAction`). The entry is offered on a game that has at least one round or is already
+list card, a chip beside the title on the board, and a menu entry that finishes or reopens.
+Finishing opens the game-end screen (below); reopening is confirmed by a snackbar whose
+**Undo** action finishes the game again (the repo's only `SnackBarAction`). The entry is
+offered on a game that has at least one round or is already
 finished — a game with no round was never played, which is why the list needs
 `GameProvider.roundCountOf`. Nothing is locked: a finished game still takes rounds and score
 edits.
 
-`_GameBoardScreenState._maybeShowGameOver` raises the game-over dialog after a score edit,
-after a round is added and after one is deleted — every mutation that can move a total past
-the game type's threshold — and once on the board's first build, for an open game already
-past it. `_gameOverDismissed` keeps it to one question per crossing and re-arms as soon as
-the condition is false again. "Continue playing" (or the back button) is also written to
-`GameOverDismissals`, keyed by `Game.uuid`, and read back when the board opens, so leaving
-the board does not re-ask; the stored answer is removed as soon as the condition is false.
-A finished game is not asked about on open.
+`_GameBoardScreenState._maybeShowGameOver` finishes the game and opens its end screen after
+a score edit, after a round is added and after one is deleted — every mutation that can move
+a total past the game type's threshold — and once on the board's first build, for an open
+game already past it. `_gameOverDismissed` keeps it to one crossing and re-arms as soon as
+the condition is false again. Raised by the rule, the screen offers **Continue playing**,
+which pops back to the board, reopens the game and is written to `GameOverDismissals`, keyed
+by `Game.uuid`, and read back when the board opens, so leaving the board does not re-ask;
+the stored answer is removed as soon as the condition is false. The back button leaves the
+game finished. A finished game is never raised again: the board's app bar carries a trophy
+(`board_game_end`) that reopens its end screen.
+
+#### The game-end screen
+
+`GameEndScreen` (`lib/screens/game_end_screen.dart`) shows the current game — the caller
+loads it and records it finished (`_finishAndShowEnd` on the board; the home card menu
+loads it before pushing). The winner's name (a tie at the top names every player on it),
+the game type · rounds · win rule, a podium of the top three in their display colours with
+their totals (first raised in the middle, ringed in `kLeaderGold`), then the others in rank
+order (`GameStanding.ranks`, ties sharing a place). Actions: **Play again**
+(`playAgain`) and **Analysis** (`GameAnalysisScreen`), the latter only when
+`BackendProvider.isConfigured` — Play again then spans the row. Unlike the board's menu, a
+cached analysis alone does not bring the button back. Every path that finishes a game —
+rule, board menu, home menu — calls `ReviewPromptService.onGameFinished` once, on the
+transition `setGameFinished` reports.
 
 #### The board
 
@@ -423,3 +441,10 @@ not "fix" it by hardcoding a codepoint.
   validation. The ZapZap key is the only per-game shortcut for now; the others wait for a
   per-type setting, which needs a schema change. The ARB keys `addRound`, `score` and
   `enterScore` went with the dialog.
+- **Finishing a game shows who won** (2026-09-19, `feat/game-end-screen`). The game-over
+  `AlertDialog` ("continue" or "finish", then straight back to the list) and the home menu's
+  "Game finished" snackbar never named the winner. Both became `GameEndScreen`, shown on
+  every path. Reaching the rule now *finishes* the game before the screen opens, and
+  "Continue playing" reopens it — rather than finishing only on an explicit button — so the
+  back button, the one gesture a user makes without reading, leaves the result recorded.
+  The review prompt still hears of each game once: `setGameFinished` reports the transition.

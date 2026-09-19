@@ -534,13 +534,39 @@ class AppLocalizationsJa extends AppLocalizations {
   String get conditionType => '条件の種類';
 
   @override
-  String get gameOverTitle => 'ゲーム終了！';
-
-  @override
-  String get gameOverMessage => 'ゲーム終了条件に達しました。ゲームを終了しますか？';
-
-  @override
   String get continuePlay => '続ける';
+
+  @override
+  String gameEndWinner(String name) {
+    return '$nameの勝ち';
+  }
+
+  @override
+  String gameEndTie(String names) {
+    return '引き分け：$names';
+  }
+
+  @override
+  String gameEndRounds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$countラウンド',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get gameEndLowestWins => '低得点の勝ち';
+
+  @override
+  String get gameEndHighestWins => '高得点の勝ち';
+
+  @override
+  String get gameEndAnalysis => '分析';
+
+  @override
+  String get gameEndResults => '結果';
 
   @override
   String get endGame => 'ゲームを終了';
@@ -553,9 +579,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get undo => '元に戻す';
-
-  @override
-  String get gameMarkedFinished => 'ゲームを終了しました';
 
   @override
   String get gameReopened => 'ゲームを再開しました';

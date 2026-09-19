@@ -1,11 +1,11 @@
 // What the board says about the end of a game: the badge on a finished one,
-// and the game-over dialog.
+// and the end screen the game type's rule opens.
 //
-// The game-over dialog fires on every path that can cross the threshold, and
+// The end screen opens on every path that can cross the threshold, and
 // asks once per crossing.
 //
 // It runs after a score edit, after a round is added or deleted, and on the
-// board's first build, behind `_gameOverDismissed`: the dialog is not raised
+// board's first build, behind `_gameOverDismissed`: the screen is not raised
 // again for a crossing the user already answered, and the flag re-arms as soon
 // as the condition is false again, so crossing a second time asks again.
 //
@@ -30,6 +30,7 @@ import 'package:countscore/providers/group_provider.dart';
 import 'package:countscore/repositories/drift/drift_repositories.dart';
 import 'package:countscore/repositories/game_analysis_repository.dart';
 import 'package:countscore/screens/game_board_screen.dart';
+import 'package:countscore/screens/game_end_screen.dart';
 import 'package:countscore/services/drift/database.dart';
 import 'package:countscore/services/game_over_dismissals.dart';
 
@@ -81,24 +82,29 @@ void main() {
   tearDown(() => db.close());
 
   /// A game of a type that is over as soon as a player passes 100, with one
-  /// round and Alice already at [aliceScore].
-  Future<void> aGamePast(int aliceScore) async {
+  /// round, Alice already at [aliceScore] and Bob at 20.
+  Future<void> aGamePast(int aliceScore, {bool lowestWins = false}) async {
     final typeId = await gameTypes.createGameType(GameType(
       name: 'Seuil',
       iconCodePoint: Icons.casino.codePoint,
       cardColorValue: Colors.blue.toARGB32(),
-      isLowestScoreWins: false,
+      isLowestScoreWins: lowestWins,
       gameOverConditionType: GameOverConditionType.firstPlayerOver,
       gameOverThreshold: 100,
     ));
-    final gameId =
-        await games.createGame('Partie', typeId, false, ['Alice', 'Bob'], null);
+    final gameId = await games.createGame(
+        'Partie', typeId, lowestWins, ['Alice', 'Bob'], null);
     await games.loadGame(gameId);
     await games.addRound();
     await games.updateScore(
       games.currentPlayers.first.id!,
       games.currentRounds.single.id!,
       aliceScore,
+    );
+    await games.updateScore(
+      games.currentPlayers.last.id!,
+      games.currentRounds.single.id!,
+      20,
     );
   }
 
@@ -126,8 +132,8 @@ void main() {
     );
   }
 
-  /// Pumps past the 100 ms the board waits before raising the dialog.
-  Future<void> settleTheDialog(WidgetTester tester) async {
+  /// Pumps past the 100 ms the board waits before raising the end screen.
+  Future<void> settleTheEndScreen(WidgetTester tester) async {
     await tester.pump(const Duration(milliseconds: 200));
     await tester.pumpAndSettle();
   }
@@ -141,7 +147,7 @@ void main() {
       await tester.tap(find.byKey(const Key('keypad_primary')));
       await tester.pumpAndSettle();
     }
-    await settleTheDialog(tester);
+    await settleTheEndScreen(tester);
   }
 
   Future<void> continuePlaying(WidgetTester tester) async {
@@ -149,11 +155,11 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  /// Opens the board and answers the dialog its first build raises.
+  /// Opens the board and answers the end screen its first build raises.
   Future<void> openAndContinue(WidgetTester tester) async {
     await tester.pumpWidget(wrap());
-    await settleTheDialog(tester);
-    expect(find.text(l10n.gameOverTitle), findsOneWidget);
+    await settleTheEndScreen(tester);
+    expect(find.byType(GameEndScreen), findsOneWidget);
     await continuePlaying(tester);
   }
 
@@ -161,7 +167,7 @@ void main() {
   Future<void> leaveAndComeBack(WidgetTester tester) async {
     await tester.pumpWidget(const SizedBox());
     await tester.pumpWidget(wrap());
-    await settleTheDialog(tester);
+    await settleTheEndScreen(tester);
   }
 
   Future<bool> storedDismissal() async {
@@ -173,12 +179,86 @@ void main() {
   testWidgets('opening a board past its threshold asks once', (tester) async {
     await aGamePast(150);
     await tester.pumpWidget(wrap());
-    await settleTheDialog(tester);
-    expect(find.text(l10n.gameOverTitle), findsOneWidget);
+    await settleTheEndScreen(tester);
+    expect(find.byType(GameEndScreen), findsOneWidget);
 
     await continuePlaying(tester);
     await addARound(tester);
-    expect(find.text(l10n.gameOverTitle), findsNothing);
+    expect(find.byType(GameEndScreen), findsNothing);
+  });
+
+  group('the rule ends the game on its end screen', () {
+    final headline = find.byKey(const Key('game_end_headline'));
+
+    testWidgets('naming the highest total on a highest-wins type',
+        (tester) async {
+      await aGamePast(150);
+      await tester.pumpWidget(wrap());
+      await settleTheEndScreen(tester);
+
+      expect(find.byType(GameEndScreen), findsOneWidget);
+      expect(tester.widget<Text>(headline).data, l10n.gameEndWinner('Alice'));
+      expect(games.currentGame!.isFinished, isTrue,
+          reason: 'the end screen records the game as finished');
+    });
+
+    testWidgets('naming the lowest total on a lowest-wins type',
+        (tester) async {
+      await aGamePast(150, lowestWins: true);
+      await tester.pumpWidget(wrap());
+      await settleTheEndScreen(tester);
+
+      expect(find.byType(GameEndScreen), findsOneWidget);
+      expect(tester.widget<Text>(headline).data, l10n.gameEndWinner('Bob'));
+    });
+
+    testWidgets('"Continue playing" returns to the board, the game open',
+        (tester) async {
+      await aGamePast(150);
+      await tester.pumpWidget(wrap());
+      await settleTheEndScreen(tester);
+
+      await continuePlaying(tester);
+      expect(find.byType(GameEndScreen), findsNothing);
+      expect(find.byKey(const Key('board_add_round')), findsOneWidget);
+      expect(games.currentGame!.isFinished, isFalse);
+      expect(find.byKey(const Key('board_finished_badge')), findsNothing);
+    });
+
+    testWidgets('its back button leaves the game finished', (tester) async {
+      await aGamePast(150);
+      await tester.pumpWidget(wrap());
+      await settleTheEndScreen(tester);
+
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.byType(GameEndScreen), findsNothing);
+      expect(games.currentGame!.isFinished, isTrue);
+    });
+  });
+
+  testWidgets('a finished game reaches its end screen from the app bar',
+      (tester) async {
+    await aGamePast(10);
+    await games.setGameFinished(games.currentGame!.id!, true);
+    await tester.pumpWidget(wrap());
+    await settleTheEndScreen(tester);
+    expect(find.byType(GameEndScreen), findsNothing,
+        reason: 'a finished game is not announced again');
+
+    await tester.tap(find.byKey(const Key('board_game_end')));
+    await tester.pumpAndSettle();
+    expect(find.byType(GameEndScreen), findsOneWidget);
+    expect(find.byKey(const Key('game_end_continue')), findsNothing,
+        reason: 'only the rule ending the game offers to keep playing');
+  });
+
+  testWidgets('an open game has no end-screen entry in the app bar',
+      (tester) async {
+    await aGamePast(10);
+    await tester.pumpWidget(wrap());
+    await settleTheEndScreen(tester);
+    expect(find.byKey(const Key('board_game_end')), findsNothing);
   });
 
   testWidgets('opening a finished game past its threshold raises nothing',
@@ -186,16 +266,16 @@ void main() {
     await aGamePast(150);
     await games.setGameFinished(games.currentGame!.id!, true);
     await tester.pumpWidget(wrap());
-    await settleTheDialog(tester);
-    expect(find.text(l10n.gameOverTitle), findsNothing);
+    await settleTheEndScreen(tester);
+    expect(find.byType(GameEndScreen), findsNothing);
   });
 
   testWidgets('a crossing on a score edit is noticed by the next round',
       (tester) async {
     await aGamePast(10);
     await tester.pumpWidget(wrap());
-    await settleTheDialog(tester);
-    expect(find.text(l10n.gameOverTitle), findsNothing);
+    await settleTheEndScreen(tester);
+    expect(find.byType(GameEndScreen), findsNothing);
 
     // Crossed outside the board — another device, a sync.
     await games.updateScore(
@@ -204,7 +284,7 @@ void main() {
       150,
     );
     await addARound(tester);
-    expect(find.text(l10n.gameOverTitle), findsOneWidget);
+    expect(find.byType(GameEndScreen), findsOneWidget);
   });
 
   testWidgets('"Continue playing" survives leaving the board', (tester) async {
@@ -213,11 +293,11 @@ void main() {
     expect(await storedDismissal(), isTrue);
 
     await leaveAndComeBack(tester);
-    expect(find.text(l10n.gameOverTitle), findsNothing,
+    expect(find.byType(GameEndScreen), findsNothing,
         reason: 'the first build must not ask a question already answered');
 
     await addARound(tester);
-    expect(find.text(l10n.gameOverTitle), findsNothing,
+    expect(find.byType(GameEndScreen), findsNothing,
         reason: 'the answer is stored on the device, not in the board State');
   });
 
@@ -234,7 +314,7 @@ void main() {
       10,
     );
     await addARound(tester);
-    expect(find.text(l10n.gameOverTitle), findsNothing);
+    expect(find.byType(GameEndScreen), findsNothing);
     expect(await storedDismissal(), isFalse);
 
     // And crossing it a second time is a new event, asked once — even after
@@ -245,20 +325,20 @@ void main() {
       150,
     );
     await leaveAndComeBack(tester);
-    expect(find.text(l10n.gameOverTitle), findsOneWidget);
+    expect(find.byType(GameEndScreen), findsOneWidget);
     await continuePlaying(tester);
     await addARound(tester);
-    expect(find.text(l10n.gameOverTitle), findsNothing);
+    expect(find.byType(GameEndScreen), findsNothing);
   });
 
   testWidgets('a game that never crosses its threshold is left alone',
       (tester) async {
     await aGamePast(10);
     await tester.pumpWidget(wrap());
-    await settleTheDialog(tester);
+    await settleTheEndScreen(tester);
 
     await addARound(tester);
-    expect(find.text(l10n.gameOverTitle), findsNothing);
+    expect(find.byType(GameEndScreen), findsNothing);
   });
 
   // The game list has shown a finished game as finished since v12; the board
@@ -269,7 +349,7 @@ void main() {
     testWidgets('is absent while the game is open', (tester) async {
       await aGamePast(10);
       await tester.pumpWidget(wrap());
-      await settleTheDialog(tester);
+      await settleTheEndScreen(tester);
 
       expect(badge, findsNothing);
     });
@@ -277,7 +357,7 @@ void main() {
     testWidgets('appears as soon as the game is finished', (tester) async {
       await aGamePast(10);
       await tester.pumpWidget(wrap());
-      await settleTheDialog(tester);
+      await settleTheEndScreen(tester);
 
       await games.setGameFinished(games.currentGame!.id!, true);
       await tester.pumpAndSettle();

@@ -1055,23 +1055,53 @@ abstract class AppLocalizations {
   /// **'Type de condition'**
   String get conditionType;
 
-  /// Title for game over dialog
-  ///
-  /// In fr, this message translates to:
-  /// **'Fin de partie !'**
-  String get gameOverTitle;
-
-  /// Message in game over dialog
-  ///
-  /// In fr, this message translates to:
-  /// **'La condition de fin de partie est atteinte. Terminer la partie maintenant ?'**
-  String get gameOverMessage;
-
-  /// Button to continue playing despite game over
+  /// Action on the game-end screen, when the rule ended the game: back to the board with the game still open
   ///
   /// In fr, this message translates to:
   /// **'Continuer à jouer'**
   String get continuePlay;
+
+  /// Headline of the game-end screen: who won
+  ///
+  /// In fr, this message translates to:
+  /// **'{name} gagne'**
+  String gameEndWinner(String name);
+
+  /// Headline of the game-end screen when several players share first place
+  ///
+  /// In fr, this message translates to:
+  /// **'Égalité : {names}'**
+  String gameEndTie(String names);
+
+  /// Number of rounds played, in the game-end screen's summary line (e.g. 'ZapZap · 6 tours · le score le plus bas gagne')
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, one{{count} tour} other{{count} tours}}'**
+  String gameEndRounds(int count);
+
+  /// Win rule in the game-end screen's summary line, lower-case as it follows a separator
+  ///
+  /// In fr, this message translates to:
+  /// **'le score le plus bas gagne'**
+  String get gameEndLowestWins;
+
+  /// Win rule in the game-end screen's summary line, lower-case as it follows a separator
+  ///
+  /// In fr, this message translates to:
+  /// **'le score le plus haut gagne'**
+  String get gameEndHighestWins;
+
+  /// Button on the game-end screen that opens the game analysis
+  ///
+  /// In fr, this message translates to:
+  /// **'Analyse'**
+  String get gameEndAnalysis;
+
+  /// Tooltip of the board's app-bar button that reopens the game-end screen of a finished game
+  ///
+  /// In fr, this message translates to:
+  /// **'Résultats'**
+  String get gameEndResults;
 
   /// Button to end the game
   ///
@@ -1096,12 +1126,6 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Annuler'**
   String get undo;
-
-  /// Snackbar confirming a game was just marked finished
-  ///
-  /// In fr, this message translates to:
-  /// **'Partie terminée'**
-  String get gameMarkedFinished;
 
   /// Snackbar confirming a finished game was just reopened
   ///

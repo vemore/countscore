@@ -542,13 +542,40 @@ class AppLocalizationsDe extends AppLocalizations {
   String get conditionType => 'Bedingungstyp';
 
   @override
-  String get gameOverTitle => 'Spiel beendet!';
-
-  @override
-  String get gameOverMessage => 'Spielende-Bedingung erreicht. Jetzt beenden?';
-
-  @override
   String get continuePlay => 'Weiterspielen';
+
+  @override
+  String gameEndWinner(String name) {
+    return '$name gewinnt';
+  }
+
+  @override
+  String gameEndTie(String names) {
+    return 'Unentschieden: $names';
+  }
+
+  @override
+  String gameEndRounds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Runden',
+      one: '$count Runde',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get gameEndLowestWins => 'niedrigste Punktzahl gewinnt';
+
+  @override
+  String get gameEndHighestWins => 'höchste Punktzahl gewinnt';
+
+  @override
+  String get gameEndAnalysis => 'Analyse';
+
+  @override
+  String get gameEndResults => 'Ergebnis';
 
   @override
   String get endGame => 'Spiel beenden';
@@ -561,9 +588,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get undo => 'Rückgängig';
-
-  @override
-  String get gameMarkedFinished => 'Partie beendet';
 
   @override
   String get gameReopened => 'Partie wieder geöffnet';

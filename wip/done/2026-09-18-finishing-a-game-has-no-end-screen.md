@@ -1,5 +1,7 @@
 # Finishing a game shows a dialog or a snackbar, never who won
 
+**Status:** done (2026-09-19) — closed by `feat/game-end-screen`. `lib/screens/game_end_screen.dart` replaces the game-over dialog (the rule finishes the game and opens it, "Continue playing" reopens it) and the home snackbar, and a finished game's board reopens it from a trophy in the app bar; tests in `test/screens/game_end_screen_test.dart` and `test/screens/game_board_end_of_game_test.dart`.
+
 - **Noted:** 2026-09-18 — visual refresh, split into one pull request per screen
 - **Theme:** visual-refresh
 - **Area:** app

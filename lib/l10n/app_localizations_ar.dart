@@ -542,14 +542,44 @@ class AppLocalizationsAr extends AppLocalizations {
   String get conditionType => 'نوع الشرط';
 
   @override
-  String get gameOverTitle => 'انتهت اللعبة!';
-
-  @override
-  String get gameOverMessage =>
-      'تم بلوغ شرط انتهاء اللعبة. هل تريد إنهاء اللعبة الآن؟';
-
-  @override
   String get continuePlay => 'متابعة اللعب';
+
+  @override
+  String gameEndWinner(String name) {
+    return 'الفائز: $name';
+  }
+
+  @override
+  String gameEndTie(String names) {
+    return 'تعادل: $names';
+  }
+
+  @override
+  String gameEndRounds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count جولة',
+      many: '$count جولة',
+      few: '$count جولات',
+      two: 'جولتان',
+      one: 'جولة واحدة',
+      zero: 'لا جولات',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get gameEndLowestWins => 'أقل نتيجة تفوز';
+
+  @override
+  String get gameEndHighestWins => 'أعلى نتيجة تفوز';
+
+  @override
+  String get gameEndAnalysis => 'تحليل';
+
+  @override
+  String get gameEndResults => 'النتائج';
 
   @override
   String get endGame => 'إنهاء اللعبة';
@@ -562,9 +592,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get undo => 'تراجع';
-
-  @override
-  String get gameMarkedFinished => 'انتهت المباراة';
 
   @override
   String get gameReopened => 'أُعيد فتح المباراة';

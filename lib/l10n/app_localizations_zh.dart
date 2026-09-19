@@ -532,13 +532,39 @@ class AppLocalizationsZh extends AppLocalizations {
   String get conditionType => '条件类型';
 
   @override
-  String get gameOverTitle => '游戏结束！';
-
-  @override
-  String get gameOverMessage => '已达到游戏结束条件。现在结束游戏吗？';
-
-  @override
   String get continuePlay => '继续游戏';
+
+  @override
+  String gameEndWinner(String name) {
+    return '$name 获胜';
+  }
+
+  @override
+  String gameEndTie(String names) {
+    return '平局：$names';
+  }
+
+  @override
+  String gameEndRounds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 轮',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get gameEndLowestWins => '最低分获胜';
+
+  @override
+  String get gameEndHighestWins => '最高分获胜';
+
+  @override
+  String get gameEndAnalysis => '分析';
+
+  @override
+  String get gameEndResults => '结果';
 
   @override
   String get endGame => '结束游戏';
@@ -551,9 +577,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get undo => '撤销';
-
-  @override
-  String get gameMarkedFinished => '游戏已结束';
 
   @override
   String get gameReopened => '游戏已重新开启';
