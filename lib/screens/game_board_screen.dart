@@ -15,6 +15,7 @@ import '../providers/game_type_provider.dart';
 import '../providers/settings_provider.dart';
 import '../utils/game_type_name.dart';
 import '../utils/player_colors.dart';
+import '../utils/undo_snack_bar.dart';
 import '../repositories/drift/drift_repositories.dart';
 import '../repositories/game_analysis_repository.dart';
 import '../services/drift/database.dart';
@@ -412,13 +413,11 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                     // Reopening is reversible, so it is offered back.
                     messenger
                       ..hideCurrentSnackBar()
-                      ..showSnackBar(SnackBar(
-                        content: Text(l10n.gameReopened),
-                        action: SnackBarAction(
-                          label: l10n.undo,
-                          onPressed: () =>
-                              gameProvider.setGameFinished(gameId, true),
-                        ),
+                      ..showSnackBar(undoSnackBar(
+                        message: l10n.gameReopened,
+                        undoLabel: l10n.undo,
+                        onUndo: () =>
+                            gameProvider.setGameFinished(gameId, true),
                       ));
                   } else if (value == 'share_game') {
                     await _shareGame(gameProvider, group);

@@ -33,3 +33,5 @@ only when the lanes actually overflow.
   offset, and the 10th lane becomes visible.
 - On the PWA, a mouse drag and a touch swipe both reveal lane 10.
 - At 1400 px with 10 players there is no ribbon and no horizontal scroll.
+
+**Status:** done (2026-09-19) — closed by fix/board-scroll-and-undo-snackbar. The lanes' scroll view takes touch, stylus, mouse and trackpad drags (`_LanesScrollBehavior`) and shows a scrollbar on the web; the ribbon is drawn only when the lanes overflow. A touch swipe already moved the lanes in a local release build under CDP touch emulation — only the mouse drag was broken there. Checked on a local release build at 412 px: a mouse drag and a touch swipe both reveal lane 10; at 1400 px, no ribbon and no scroll.

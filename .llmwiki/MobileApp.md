@@ -214,8 +214,11 @@ Twelve components shared out of the screens:
 Cross-cutting helpers, since 2026-09-16: `insets.dart`, `game_type_name.dart` — the switch
 from a built-in game type's `builtin_key` to its localized name, which every screen showing a
 game type's name goes through ([[I18n]]) — `play_again.dart`, `app_theme.dart`,
-`player_colors.dart`, `recent_game_types.dart` (the New game screen's tile order) and
-`game_result_share.dart`.
+`player_colors.dart`, `recent_game_types.dart` (the New game screen's tile order),
+`game_result_share.dart` and `undo_snack_bar.dart` — `undoSnackBar`, the one snackbar that
+offers an action back: `persist: false` and `kUndoSnackBarDuration` (6 s), so the Undo
+goes away on its own instead of staying up until dismissed, Flutter's default for a
+snackbar with an action.
 
 `game_result_share.dart` — `buildGameResultShareText`, a pure function from a `GameRanking`
 to the shared text: "Game of {date}" (`DateFormat.yMMMd` in the l10n locale, the game's
@@ -303,7 +306,8 @@ gates the Play review sheet.
 Both screens show the state and both can change it: a status pill (in progress, or the winner) on the game
 list card, a chip beside the title on the board, and a menu entry that finishes or reopens.
 Finishing opens the game-end screen (below); reopening is confirmed by a snackbar whose
-**Undo** action finishes the game again (the repo's only `SnackBarAction`). The entry is
+**Undo** action finishes the game again (the repo's only `SnackBarAction`, built by
+`undoSnackBar`; it expires after 6 s). The entry is
 offered on a game that has at least one round or is already
 finished — a game with no round was never played, which is why the list needs
 `GameProvider.roundCountOf`. Nothing is locked: a finished game still takes rounds and score
@@ -362,8 +366,12 @@ through; a zero sits on an amber pill, whatever the game type.
 
 Widths come from a `LayoutBuilder`, not from a breakpoint: up to 8 players
 (`kBoardMaxFittingLanes`) the lanes share the width and never scroll; beyond, a lane keeps
-`kBoardMinLaneWidth` (56) and the lanes scroll sideways under the pinned round column, with a
-ranking ribbon of every player on top. No lane grows past `kBoardMaxLaneWidth` (180) — on a
+`kBoardMinLaneWidth` (56) and, when that no longer fits, the lanes scroll sideways under the
+pinned round column, with a ranking ribbon of every player on top. The ribbon follows the
+overflow, not the player count: at 1400 px ten lanes fit, and there is neither ribbon nor
+scroll. The sideways scroll takes a finger, a stylus, a mouse drag and a trackpad pan
+(`_LanesScrollBehavior`; Flutter's default leaves a mouse drag alone), and on the web it has
+an always-visible scrollbar under the lanes. No lane grows past `kBoardMaxLaneWidth` (180) — on a
 wide screen the lanes are centred. From 6 players (`kBoardCompactHeaderFrom`) the header is
 compact: avatar, vertical name, total.
 
@@ -574,3 +582,11 @@ not "fix" it by hardcoding a codepoint.
   random stored colour, since the palette decides at display time. A type picked outside
   the six tiles takes the first tile rather than the last, so that the default ZapZap sits
   first before any game has been played.
+- **2026-09-19 — The lanes scroll under a mouse, the ribbon follows the overflow, Undo
+  expires** (`fix/board-scroll-and-undo-snackbar`). On the PWA a mouse drag never moved the
+  ten-player board, because Flutter's default scroll behaviour drags only with touch and
+  stylus; the lanes now accept a mouse and a trackpad too, with a visible scrollbar on the
+  web. A touch swipe already worked in a local build with touch emulation on. The ribbon was
+  keyed on `n > 8`, so a wide window drew it over lanes that all fit. The reopen snackbar's
+  Undo stayed up indefinitely (Flutter's `persist` default for a snackbar with an action);
+  it now expires after 6 s. It is not hidden on navigation: the 6 s bound was judged enough.
