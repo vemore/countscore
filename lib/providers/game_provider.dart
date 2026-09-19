@@ -249,26 +249,6 @@ class GameProvider with ChangeNotifier {
     return total;
   }
 
-  List<Map<String, dynamic>> getRanking() {
-    final ranking = <Map<String, dynamic>>[];
-
-    for (final player in _currentPlayers) {
-      ranking.add({
-        'player': player,
-        'total': getPlayerTotal(player.id!),
-      });
-    }
-
-    if (_currentGame != null) {
-      ranking.sort((a, b) {
-        final comparison = (a['total'] as int).compareTo(b['total'] as int);
-        return _currentGame!.isLowestScoreWins ? comparison : -comparison;
-      });
-    }
-
-    return ranking;
-  }
-
   String? _remotelyDeletedGameName;
 
   /// The name of the open game another device deleted, returned once: the board

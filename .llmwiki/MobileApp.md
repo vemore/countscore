@@ -52,7 +52,7 @@ whether the connected features exist; the third starts the review prompt's clock
 [[LlmProviders]]) ·
 `players_screen` · `player_stats_screen` (the leaderboard) and `player_card_screen`, below ·
 `settings_screen` ·
-`about_screen` · `ranking_screen` · `game_end_screen` (who won, below) · `game_rules_screen` ·
+`about_screen` · `ranking_screen` (where an open game stands, below) · `game_end_screen` (who won, below) · `game_rules_screen` ·
 `group_settings_screen`.
 
 **Player statistics.** `player_stats_screen` is a leaderboard: a row of game-type chips
@@ -114,13 +114,18 @@ prompt below.
 
 ### Widgets — `lib/widgets/`
 
-Eight components shared out of the screens:
+Nine components shared out of the screens:
 
 - `board_lanes.dart` — the board's default layout ([below](#the-board)): `BoardData` (what
   both layouts draw from: players in seat order, rounds, a `GameStanding`, colours, the
   elimination tests, the tap callbacks), `BoardLanes`, and the pieces the rows share —
   `BoardScoreText` (a zero on an amber pill, `·` for no score), `BoardCrown`, `boardTint`.
 - `board_rows.dart` — `BoardRows`, the one-row-per-player layout.
+- `game_ranking.dart` — the one ranking both `RankingScreen` and `GameEndScreen` draw
+  ([below](#the-game-end-screen)): `GameRanking.of` (the current game best first, its ranks,
+  colours, leader, winners and elimination tests), `RankedPlayers` (podium and rows),
+  `rankingSummary` (type · rounds · win rule), and `isEliminatedBy` /
+  `isNearEliminationBy`, the type's elimination rule on a total.
 - `score_keypad_sheet.dart` — `ScoreKeypadSheet`, the bottom sheet every score is entered
   through ([below](#the-board)).
 
@@ -276,14 +281,24 @@ game finished. A finished game is never raised again: the board's app bar carrie
 `GameEndScreen` (`lib/screens/game_end_screen.dart`) shows the current game — the caller
 loads it and records it finished (`_finishAndShowEnd` on the board; the home card menu
 loads it before pushing). The winner's name (a tie at the top names every player on it),
-the game type · rounds · win rule, a podium of the top three in their display colours with
-their totals (first raised in the middle, ringed in `kLeaderGold`), then the others in rank
-order (`GameStanding.ranks`, ties sharing a place). Actions: **Play again**
+the game type · rounds · win rule, then `RankedPlayers` (`lib/widgets/game_ranking.dart`):
+a podium of the top three in their display colours with their totals (first raised in the
+middle, ringed in `kLeaderGold`, the leader under a `BoardCrown`), then the others in rank
+order (`GameStanding.ranks`, ties sharing a place). As on the board, a total within 20
+points of the type's elimination threshold is orange — except on the first step, whose
+filled block keeps `onPrimary` — and an eliminated player is faded and struck through. Actions: **Play again**
 (`playAgain`) and **Analysis** (`GameAnalysisScreen`), the latter only when
 `BackendProvider.isConfigured` — Play again then spans the row. Unlike the board's menu, a
 cached analysis alone does not bring the button back. Every path that finishes a game —
 rule, board menu, home menu — calls `ReviewPromptService.onGameFinished` once, on the
 transition `setGameFinished` reports.
+
+#### The ranking screen
+
+`RankingScreen` (`lib/screens/ranking_screen.dart`), from the board's leaderboard button,
+shows an open game with the same `RankedPlayers` as the end screen, so the two cannot rank
+differently; above it, the win rule is one line (`rankingSummary`) under the *Ranking*
+title, and **Play again** stays at the bottom. No headline: the game is not over.
 
 #### The board
 
@@ -470,6 +485,12 @@ not "fix" it by hardcoding a codepoint.
   "Continue playing" reopens it — rather than finishing only on an explicit button — so the
   back button, the one gesture a user makes without reading, leaves the result recorded.
   The review prompt still hears of each game once: `setGameFinished` reports the transition.
+- **One ranking widget for the in-game and the end-of-game screens** (2026-09-19). After the
+  end screen was restyled (#123), the in-game ranking still drew a teal banner, numbered
+  badges and an amber trophy, with no player colour: a game had two rankings in two styles,
+  depending on whether it was finished. Both now build from `GameRanking` / `RankedPlayers`;
+  the banner became a single line under the title
+  (`wip/done/2026-09-19-game-ranking-ignores-the-new-theme.md`).
 - **The player statistics became a leaderboard and a player card** (2026-09-19,
   `feat/player-stats-leaderboard`). The screen was one collapsed `ExpansionTile` per player
   with "N games" as the only visible figure, avatars in the stored colour or `Colors.blue`
