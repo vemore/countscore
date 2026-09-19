@@ -556,7 +556,7 @@ Após dez turnos, cada jogador conta as cabeças de boi que pegou. Geralmente: 1
 
 ## Fim da partida
 
-As rodadas se encadeiam, e o menor total ganha. O CountScore elimina um jogador assim que ultrapassa **66 cabeças de boi**. A regra original termina a partida assim que um jogador totaliza 66: para segui-la à risca, defina o limite em 65 no tipo de jogo.
+As rodadas se encadeiam, e o menor total ganha. Como a regra original, o CountScore elimina um jogador assim que ele chega a **66 cabeças de boi**: o limite do tipo de jogo é 65, e um total acima dele é eliminado.
 
 <!--@qwirkle-->
 Jogo de peças para 2 a 4 jogadores, com **108 peças**: seis formas em seis cores, cada peça em três cópias. Você marca pontos formando linhas.

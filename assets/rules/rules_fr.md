@@ -708,9 +708,9 @@ doubles comme 11 ou 22, et **7** pour le 55.
 
 ## Fin de la partie
 
-On enchaîne les manches, et le plus petit total gagne. CountScore élimine un joueur dès
-qu'il dépasse **66 têtes de bœuf**. La règle d'origine arrête la partie dès qu'un joueur
-en totalise 66 : pour la suivre à la lettre, fixez le seuil à 65 dans le type de jeu.
+On enchaîne les manches, et le plus petit total gagne. Comme la règle d'origine, CountScore
+élimine un joueur dès qu'il atteint **66 têtes de bœuf** : le seuil du type de jeu est 65,
+et un total qui le dépasse est éliminé.
 
 <!--@qwirkle-->
 Jeu de tuiles de 2 à 4 joueurs, avec **108 tuiles** : six formes en six couleurs, chaque
