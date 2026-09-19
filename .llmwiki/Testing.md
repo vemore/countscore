@@ -121,7 +121,11 @@ who's-playing step taps the search field before typing each name.
 
 **Go back through `_back`, not a bare `pageBack`.** A route still sliding in or out keeps its
 back button in the tree, and `pageBack` refuses two; `_back` waits for exactly one, then for
-the popped route to leave the tree.
+the popped route to leave the tree. It finds and taps the `BackButton` by type: `pageBack` and
+`find.byTooltip('Back')` both match the *English* tooltip, so they fail on a device whose
+language is not English (a French Pixel says "Retour"), while the web run, in an English
+browser, passes. For the same reason the board's menu is found inside the last `AppBar`: the
+home route underneath keeps its cards' `more_vert` icons in the tree.
 
 **Web run** — `chromedriver` major version must match the installed Chrome (`google-chrome --version`;
 the matching build is `https://storage.googleapis.com/chrome-for-testing-public/<version>/linux64/chromedriver-linux64.zip`):

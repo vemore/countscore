@@ -169,8 +169,12 @@ void main() {
       // more_vert menu, so opening the menu before the board is up would hit
       // the wrong (home) menu, which has no "Analyze" item.
       await _waitFor(tester, find.byKey(const Key('board_add_round')));
-      await _waitFor(tester, find.byIcon(Icons.more_vert));
-      await tester.tap(find.byIcon(Icons.more_vert));
+      // The board's own menu: the last AppBar is the top route's, and the home
+      // route underneath keeps its cards' more_vert icons in the tree.
+      final boardMenu = find.descendant(
+          of: find.byType(AppBar).last, matching: find.byIcon(Icons.more_vert));
+      await _waitFor(tester, boardMenu);
+      await tester.tap(boardMenu);
       final hasAnalyse = await _pumpUntil(
         tester,
         () => find.byIcon(Icons.auto_awesome).evaluate().isNotEmpty,
@@ -233,19 +237,21 @@ Future<void> _analyse(WidgetTester tester) async {
   }
 }
 
-/// Back one screen, once the screen is ready for it. A route still sliding in
+/// Back one screen, once the screen is ready for it. Found by type, not by the
+/// "Back" tooltip, which is localized (a French phone says "Retour"). A route still sliding in
 /// or out keeps its back button in the tree, and [WidgetTester.pageBack]
 /// refuses two ("One back button expected"): wait for exactly one before, and
 /// for that one to leave the tree (the popped route is gone) after.
 Future<void> _back(WidgetTester tester) async {
-  final back = find.byTooltip('Back');
+  final back = find.byType(BackButton);
   await _pumpUntil(
     tester,
     () => back.evaluate().length == 1,
     timeout: const Duration(seconds: 10),
   );
   final popped = back.evaluate().single;
-  await tester.pageBack();
+  // Not tester.pageBack(): it too finds the button by its English tooltip.
+  await tester.tap(back);
   await _pumpUntil(
     tester,
     () => !popped.mounted,
