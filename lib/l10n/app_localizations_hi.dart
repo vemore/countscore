@@ -1359,4 +1359,75 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get shareFailed => 'साझा करना नहीं खुल सका';
+
+  @override
+  String get newGameNameLabel => 'नाम';
+
+  @override
+  String get newGameGameLabel => 'खेल';
+
+  @override
+  String newGameAllGames(int count) {
+    return 'सभी खेल ($count)';
+  }
+
+  @override
+  String get newGamePlayersLabel => 'खिलाड़ी · बैठने का क्रम';
+
+  @override
+  String get newGameDragToReorder => 'क्रम बदलने के लिए खींचें';
+
+  @override
+  String get newGameDealer => 'बाँटता है';
+
+  @override
+  String get newGameAddPlayer => 'खिलाड़ी जोड़ें';
+
+  @override
+  String newGameStart(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'शुरू करें · $count खिलाड़ी',
+      one: 'शुरू करें · 1 खिलाड़ी',
+      zero: 'शुरू करें',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get whoIsPlayingTitle => 'कौन खेल रहा है?';
+
+  @override
+  String get whoIsPlayingSearchHint => 'नाम, या नया खिलाड़ी';
+
+  @override
+  String get whoIsPlayingFrequent => 'अक्सर आपके साथ खेलते हैं';
+
+  @override
+  String whoIsPlayingSameAs(String gameName) {
+    return '“$gameName” वाले ही खिलाड़ी';
+  }
+
+  @override
+  String whoIsPlayingCreate(String name) {
+    return '“$name” बनाएँ';
+  }
+
+  @override
+  String whoIsPlayingConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count खिलाड़ी जोड़ें',
+      one: '1 खिलाड़ी जोड़ें',
+      zero: 'हो गया',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String defaultGameName(int number) {
+    return 'खेल $number';
+  }
 }

@@ -42,6 +42,8 @@
 | `test/screens/game_board_lanes_test.dart` | The board as lanes and as rows: the crown on the lowest total for a lowest-wins game and on the highest otherwise, none before a score; at 400 dp eight players fit without a sideways scroll, ten scroll with the round column staying put and a ranking ribbon on top; with 4, 8 and 10 players each lane header's left edge and width equal its cells'; at 1000 dp the lanes are capped and centred; the app-bar toggle shows one row per player in seat order (rank order on request), and a new `SettingsProvider` over the same SharedPreferences opens in rows; places are shared on a tie. The view size is set on `tester.view`, at a device pixel ratio of 1. |
 | `test/services/commentary_report_test.dart` | The AI-commentary report `mailto:`: addressed to the listing contact with an encoded subject and body, an ampersand in the body unable to start a new parameter, truncation that counts code points so an emoji is never split, and the reference line skipping what is unknown. |
 | `test/screens/game_end_screen_test.dart` | The game-end screen: the winner, the podium's three places with their totals and the rest in rank order; *Play again* creates the next game with the same players and opens it; *Analysis* is absent without a server (Play again then spans the row) and present with one; and "End game" from the home card menu finishes the game and opens the screen. |
+| `test/screens/create_game_screen_test.dart` | The New game screen at 412 dp: six game-type tiles three a row, the last game's type first; the name after the last game's; the rule line; the seats under it in the last game's order, the first one dealing; a full-width *Start · N players* at the bottom. A player's avatar colour here equals his colour on the real board, also when two players own the same colour; a seat dragged by its handle changes the created game's `orderIndex`; the "who's playing" sheet creates a player and seats him after the ones checked; "All games" puts a type that was not on a tile onto one; "Other" offers the win rule; the first game is named in the app's language (`en`, `fr`, `ja`). The board is injected (`boardBuilder`). |
+| `test/utils/recent_game_types_test.dart` | The tiles' order (types of the latest games first, the rest by display name, the selected type always on a tile) and `PlayerRepository.getGameCountsByName` — live games only. |
 | `test/screens/play_again_test.dart` | *Play again* (`lib/utils/play_again.dart`): the ranking offers it and opens the new game — same type, win rule and players in order, the source game left untouched; a finished game's home menu offers it, a game still in play keeps "New with same players"; and `nextGameName` counts on from the last number. The board is injected (`boardBuilder`) and the home menu read through `itemBuilder`, as in the finish-menu test. |
 | `test/screens/game_rules_screen_test.dart` | The rules page's precedence: the shipped ruleset when the user wrote none, the user's own rules winning over it, the scoring summary derived from the type rather than the text, the empty state for a type with neither, restore clearing the stored rules and not offered without a shipped ruleset, and an emptied editor meaning "no rules of mine" rather than an empty string. The ruleset is served from memory, never the asset bundle. |
 | `test/screens/settings_screen_test.dart` | Settings at 412×860 behind a 48 px bottom inset, as the PWA (a provider without export/import, since `kIsWeb` is a constant) and as Android: every section heading has its row right under it — "Screen" its keep-awake switch, and no Backup heading on the web — the last row clears the inset, and the switch saves the setting ([[Web]]). |
@@ -93,8 +95,9 @@ lowest-wins) → generate a ZapZap analysis over a real network call → prove t
 `game_analyses` cache was used. The analysis half lives in `_analyse`, skipped whole when no
 backend is configured, so the teardown always runs.
 
-Finders are locale-proof across all 10 languages: `Key`s (`player_picker_search`,
-`player_picker_create`, `create_game_submit`, `board_add_round`, the keypad's
+Finders are locale-proof across all 10 languages: `Key`s (`create_add_player`,
+`player_picker_search`, `player_picker_create`, `player_chip_<name>`,
+`player_picker_confirm`, `create_game_submit`, `board_add_round`, the keypad's
 `keypad_digit_<d>` and `keypad_primary`, `analysis_generate`), icons,
 and the untranslated literal `ZapZap`.
 
@@ -125,7 +128,7 @@ It is also skipped, on both targets, when **no** `--dart-define=BACKEND_URL` was
 backend URL is a runtime setting with no default, so the Analyze menu entry is legitimately
 absent and `_analyse` is not entered. The teardown still runs.
 
-**Device run** — a clean database is required so the defaults are ZapZap and "Partie 1":
+**Device run** — a clean database is required so the defaults are ZapZap and the localized first-game name ("Partie 1", "Game 1"):
 
 ```bash
 adb shell pm clear com.vemore.countscore

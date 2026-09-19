@@ -2302,6 +2302,96 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Le partage n\'a pas pu s\'ouvrir'**
   String get shareFailed;
+
+  /// Overline above the game name field on the New game screen (shown in capitals)
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom'**
+  String get newGameNameLabel;
+
+  /// Overline above the game-type tiles on the New game screen (shown in capitals)
+  ///
+  /// In fr, this message translates to:
+  /// **'Jeu'**
+  String get newGameGameLabel;
+
+  /// Link that opens the full list of game types; count is how many exist
+  ///
+  /// In fr, this message translates to:
+  /// **'Tous les jeux ({count})'**
+  String newGameAllGames(int count);
+
+  /// Overline above the players on the New game screen: their order is the seat order (shown in capitals)
+  ///
+  /// In fr, this message translates to:
+  /// **'Joueurs · ordre de jeu'**
+  String get newGamePlayersLabel;
+
+  /// Hint next to the players overline: drag a row by its handle to change the seat order
+  ///
+  /// In fr, this message translates to:
+  /// **'glisser pour réordonner'**
+  String get newGameDragToReorder;
+
+  /// Small badge on the first seat: this player deals (plays first)
+  ///
+  /// In fr, this message translates to:
+  /// **'donne'**
+  String get newGameDealer;
+
+  /// Dashed row under the players that opens the "who's playing" sheet
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter un joueur'**
+  String get newGameAddPlayer;
+
+  /// Primary button that creates the game and opens its board
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Commencer} =1{Commencer · 1 joueur} other{Commencer · {count} joueurs}}'**
+  String newGameStart(int count);
+
+  /// Title of the sheet where players are picked for a new game
+  ///
+  /// In fr, this message translates to:
+  /// **'Qui joue ?'**
+  String get whoIsPlayingTitle;
+
+  /// Hint of the search field that filters known players, or names a new one
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom, ou nouveau joueur'**
+  String get whoIsPlayingSearchHint;
+
+  /// Overline above the known players, most frequent first (shown in capitals)
+  ///
+  /// In fr, this message translates to:
+  /// **'Joue souvent avec vous'**
+  String get whoIsPlayingFrequent;
+
+  /// Action that picks the players of the last game, in the same order
+  ///
+  /// In fr, this message translates to:
+  /// **'Mêmes joueurs que « {gameName} »'**
+  String whoIsPlayingSameAs(String gameName);
+
+  /// Action that creates a new player with the name typed in the search field
+  ///
+  /// In fr, this message translates to:
+  /// **'Créer « {name} »'**
+  String whoIsPlayingCreate(String name);
+
+  /// Button that closes the sheet and seats the chosen players; count is how many are chosen
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Valider} =1{Ajouter 1 joueur} other{Ajouter {count} joueurs}}'**
+  String whoIsPlayingConfirm(int count);
+
+  /// Name the New game screen suggests for the very first game; later games count on from the previous game's name
+  ///
+  /// In fr, this message translates to:
+  /// **'Partie {number}'**
+  String defaultGameName(int number);
 }
 
 class _AppLocalizationsDelegate

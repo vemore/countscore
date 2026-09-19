@@ -602,5 +602,35 @@
 
   "shareResultFooter": "سُجّلت النقاط باستخدام {appName}: {url}",
 
-  "shareFailed": "تعذّر فتح المشاركة"
+  "shareFailed": "تعذّر فتح المشاركة",
+
+  "newGameNameLabel": "الاسم",
+
+  "newGameGameLabel": "اللعبة",
+
+  "newGameAllGames": "كل الألعاب ({count})",
+
+  "newGamePlayersLabel": "اللاعبون · ترتيب الجلوس",
+
+  "newGameDragToReorder": "اسحب لإعادة الترتيب",
+
+  "newGameDealer": "يوزّع",
+
+  "newGameAddPlayer": "إضافة لاعب",
+
+  "newGameStart": "{count, plural, =0{ابدأ} =1{ابدأ · لاعب واحد} =2{ابدأ · لاعبان} few{ابدأ · {count} لاعبين} many{ابدأ · {count} لاعبًا} other{ابدأ · {count} لاعب}}",
+
+  "whoIsPlayingTitle": "من يلعب؟",
+
+  "whoIsPlayingSearchHint": "اسم، أو لاعب جديد",
+
+  "whoIsPlayingFrequent": "يلعب معك كثيرًا",
+
+  "whoIsPlayingSameAs": "نفس لاعبي «{gameName}»",
+
+  "whoIsPlayingCreate": "إنشاء «{name}»",
+
+  "whoIsPlayingConfirm": "{count, plural, =0{تم} =1{إضافة لاعب واحد} =2{إضافة لاعبَين} few{إضافة {count} لاعبين} many{إضافة {count} لاعبًا} other{إضافة {count} لاعب}}",
+
+  "defaultGameName": "لعبة {number}"
 }

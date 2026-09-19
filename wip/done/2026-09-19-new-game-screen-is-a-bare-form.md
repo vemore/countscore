@@ -1,5 +1,7 @@
 # The New game screen is a bare form that the refreshed theme does not reach
 
+**Status:** done (2026-09-19) — closed by feat/new-game-screen. The screen is redrawn in direction A: six game-type tiles (most recent first) and *All games (N)*, a light title field, seat-ordered rows coloured through `assignPlayerColors` and reorderable by their handle, the "who's playing" sheet with *Same players as*, and *Start · N players*; `test/screens/create_game_screen_test.dart` checks the 412 dp layout, the colour against the real board and the seat order after a drag.
+
 - **Noted:** 2026-09-19 — reported by the user after the theme (#118), board (#119) and end screen (#123) landed
 - **Theme:** visual-refresh
 - **Area:** app

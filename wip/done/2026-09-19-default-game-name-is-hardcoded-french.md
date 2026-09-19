@@ -1,5 +1,7 @@
 # The default game name is hardcoded in French
 
+**Status:** done (2026-09-19) — closed by feat/new-game-screen. The first game is named from the ICU message `defaultGameName(1)` in all ten languages ("Game 1", "ゲーム1"); later games still count on from the last name with `nextGameName`. `test/screens/create_game_screen_test.dart` checks `en`, `fr` and `ja`, and the e2e golden path reads the localized name instead of the literal.
+
 - **Noted:** 2026-09-19 — full test pass of the production PWA (fresh Chromium profiles, Playwright, fr-FR at 412 × 860)
 - **Theme:** i18n
 - **Area:** app

@@ -1363,4 +1363,75 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get shareFailed => 'No se pudo abrir el menú para compartir';
+
+  @override
+  String get newGameNameLabel => 'Nombre';
+
+  @override
+  String get newGameGameLabel => 'Juego';
+
+  @override
+  String newGameAllGames(int count) {
+    return 'Todos los juegos ($count)';
+  }
+
+  @override
+  String get newGamePlayersLabel => 'Jugadores · orden de juego';
+
+  @override
+  String get newGameDragToReorder => 'arrastra para reordenar';
+
+  @override
+  String get newGameDealer => 'reparte';
+
+  @override
+  String get newGameAddPlayer => 'Añadir un jugador';
+
+  @override
+  String newGameStart(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Empezar · $count jugadores',
+      one: 'Empezar · 1 jugador',
+      zero: 'Empezar',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get whoIsPlayingTitle => '¿Quién juega?';
+
+  @override
+  String get whoIsPlayingSearchHint => 'Nombre, o jugador nuevo';
+
+  @override
+  String get whoIsPlayingFrequent => 'Juega a menudo contigo';
+
+  @override
+  String whoIsPlayingSameAs(String gameName) {
+    return 'Los mismos jugadores que «$gameName»';
+  }
+
+  @override
+  String whoIsPlayingCreate(String name) {
+    return 'Crear «$name»';
+  }
+
+  @override
+  String whoIsPlayingConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Añadir $count jugadores',
+      one: 'Añadir 1 jugador',
+      zero: 'Listo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String defaultGameName(int number) {
+    return 'Partida $number';
+  }
 }
