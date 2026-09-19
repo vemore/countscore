@@ -90,15 +90,17 @@ asserts compiled out — so run a debug APK on a device before calling a UI chan
 ### End-to-end — `integration_test/app_test.dart`
 
 One golden-path `testWidgets`, shared by web and device: create a ZapZap game → 2 global
-players (Alice, Bob) → 3 rounds of scores → check totals → check stats (Alice wins,
-lowest-wins) → generate a ZapZap analysis over a real network call → prove the
+players (Alice, Bob) → 3 rounds of scores → check totals → end the game from the board's
+menu (the leaderboard counts finished games only) → check the leaderboard and Alice's player
+card (1 game, 1 win: lowest wins) → generate a ZapZap analysis over a real network call → prove the
 `game_analyses` cache was used. The analysis half lives in `_analyse`, skipped whole when no
 backend is configured, so the teardown always runs.
 
 Finders are locale-proof across all 10 languages: `Key`s (`create_add_player`,
 `player_picker_search`, `player_picker_create`, `player_chip_<name>`,
 `player_picker_confirm`, `create_game_submit`, `board_add_round`, the keypad's
-`keypad_digit_<d>` and `keypad_primary`, `analysis_generate`), icons,
+`keypad_digit_<d>` and `keypad_primary`, `game_end_headline`, `board_finished_badge`,
+`stats_row_<uuid>`, `card_games`, `card_wins`, `analysis_generate`), icons,
 and the untranslated literal `ZapZap`.
 
 **`pumpAndSettle` cannot be used while the analysis screen is loading.** Its
@@ -109,6 +111,16 @@ tests hand-pump instead — see `_pumpFailure` in `test/screens/game_analysis_sc
 **`pumpAndSettle` is not sufficient on web.** The Drift web worker resolves asynchronously
 without scheduling a frame, so the suite uses hand-rolled waiters `_waitFor`, `_waitEnabled`
 and `_pumpUntil` (which also waits for the keypad's round to reach the database). Do not "simplify" them back to `pumpAndSettle`.
+
+**Tap a text field before each `enterText` on web.** `enterText` only opens a text-input
+connection when the focused editable *changes*; on web, tapping a button outside the field
+unfocuses it (`TextField`'s default `onTapOutside`) and closes the connection, so a second
+`enterText` on the same field sends its text nowhere and the field stays empty. The
+who's-playing step taps the search field before typing each name.
+
+**Go back through `_back`, not a bare `pageBack`.** A route still sliding in or out keeps its
+back button in the tree, and `pageBack` refuses two; `_back` waits for exactly one, then for
+the popped route to leave the tree.
 
 **Web run** — `chromedriver` major version must match the installed Chrome (`google-chrome --version`;
 the matching build is `https://storage.googleapis.com/chrome-for-testing-public/<version>/linux64/chromedriver-linux64.zip`):
