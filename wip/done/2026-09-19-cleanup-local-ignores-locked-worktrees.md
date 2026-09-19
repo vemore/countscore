@@ -1,5 +1,7 @@
 # `cleanup_local.sh` promises to remove a locked worktree, then fails without saying why
 
+**Status:** done (2026-09-19) — closed by fix/cleanup-locked-worktrees. `scripts/cleanup_local.sh` reads the porcelain `locked` line: a Claude Code lock whose pid is alive (and, where `/proc` says, started at the recorded time) is kept with the pid named, a lock with no pid is kept as a manual lock, a stale one is listed as such and removed with `git worktree remove -f -f`; a failed removal prints git's error. `scripts/hooks_selftest.sh` covers live, dead, recycled and manual locks and the failure message.
+
 - **Noted:** 2026-09-19 — cleaning up before the `ship-parallel` loop on the two visual-refresh entries
 - **Theme:** hooks
 - **Area:** tooling

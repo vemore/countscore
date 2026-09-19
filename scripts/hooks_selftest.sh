@@ -521,6 +521,7 @@ case "$1 $2" in
                 case "$head" in
                     feat/merged|feat/merged-extra|feat/wt-merged|feat/wt-dirty) echo "cafe 7" ;;
                     feat/wt-setup|feat/wt-recent) echo "cafe 7" ;;
+                    feat/wt-live|feat/wt-dead|feat/wt-reused|feat/wt-manual) echo "cafe 7" ;;
                 esac ;;
             *) [ "$head" = feat/open ] && echo "#8 OPEN" ;;
         esac ;;
@@ -559,6 +560,63 @@ git -C "$SANDBOX/wt-recent" commit -q --allow-empty -m wt
 report "cleanup: worktree in setup (marker)"                   kept    "$([ -d "$SANDBOX/wt-setup" ] && echo kept || echo removed)"
 report "cleanup: the branch of a worktree in setup"            kept    "$(has_branch feat/wt-setup)"
 report "cleanup: recently modified worktree"                   kept    "$([ -d "$SANDBOX/wt-recent" ] && echo kept || echo removed)"
+
+# Third run: worktree locks, as Claude Code writes them -- `claude agent <name> (pid N
+# start T)`, T being field 22 of /proc/<pid>/stat. Every branch here is merged, so only
+# the lock decides.
+sleep 600 &
+live_pid=$!
+sh -c 'exit 0' &
+dead_pid=$!
+wait "$dead_pid"
+live_start=$(cut -d' ' -f22 "/proc/$live_pid/stat" 2>/dev/null)
+clock() {  # name, lock reason -- a clean worktree on a merged branch, locked
+    git -C "$CWORK" worktree add -q "$SANDBOX/$1" -b "feat/$1" origin/main 2>/dev/null
+    git -C "$SANDBOX/$1" commit -q --allow-empty -m wt
+    git -C "$CWORK" worktree lock --reason "$2" "$SANDBOX/$1"
+}
+clock wt-live   "claude agent wt-live (pid $live_pid${live_start:+ start $live_start})"
+clock wt-dead   "claude agent wt-dead (pid $dead_pid start 1)"
+clock wt-manual "kept on purpose"
+# A live pid that started at another time was recycled: the session that locked it is gone.
+[ -n "$live_start" ] && clock wt-reused "claude agent wt-reused (pid $live_pid start 1)"
+dry=$(cd "$CWORK" && PATH="$CSTUB:$PATH" CLEANUP_WORK="$CWORK" CLEANUP_IDLE_MINUTES=0 \
+    "$ROOT/scripts/cleanup_local.sh" 2>&1)
+line() { printf '%s\n' "$dry" | grep -F "$SANDBOX/$1 " | head -1; }
+case "$(line wt-live)" in
+    *"keep "*"locked by a running session (pid $live_pid)"*) got=kept-named ;; *) got="$(line wt-live)" ;; esac
+report "cleanup dry run: locked by a live session, pid named"   kept-named "$got"
+case "$(line wt-dead)" in
+    *"would remove"*"stale lock, pid $dead_pid is gone"*) got=stale ;; *) got="$(line wt-dead)" ;; esac
+report "cleanup dry run: locked by a dead pid, said stale"      stale "$got"
+case "$(line wt-manual)" in
+    *"keep "*"locked: kept on purpose"*) got=kept ;; *) got="$(line wt-manual)" ;; esac
+report "cleanup dry run: a lock naming no pid"                   kept "$got"
+(cd "$CWORK" && PATH="$CSTUB:$PATH" CLEANUP_WORK="$CWORK" CLEANUP_IDLE_MINUTES=0 \
+    "$ROOT/scripts/cleanup_local.sh" --apply >/dev/null 2>&1)
+kill "$live_pid" 2>/dev/null
+wait "$live_pid" 2>/dev/null
+report "cleanup: worktree locked by a live session"             kept    "$([ -d "$SANDBOX/wt-live" ] && echo kept || echo removed)"
+report "cleanup: the branch of that worktree"                   kept    "$(has_branch feat/wt-live)"
+report "cleanup: worktree with a stale lock"                    removed "$([ -d "$SANDBOX/wt-dead" ] && echo kept || echo removed)"
+report "cleanup: the branch of that worktree"                   removed "$(has_branch feat/wt-dead)"
+report "cleanup: worktree locked by hand"                       kept    "$([ -d "$SANDBOX/wt-manual" ] && echo kept || echo removed)"
+if [ -n "$live_start" ]; then
+    report "cleanup: lock whose pid was recycled"               removed "$([ -d "$SANDBOX/wt-reused" ] && echo kept || echo removed)"
+fi
+
+# A removal git refuses is reported with git's own error, not a bare FAILED: a worktree
+# the script cannot delete (its parent directory read-only) stands in for any such refusal.
+git -C "$CWORK" worktree add -q "$SANDBOX/ro/wt-fail" -b feat/wt-fail origin/main 2>/dev/null
+chmod a-w "$SANDBOX/ro"
+out=$(cd "$CWORK" && PATH="$CSTUB:$PATH" CLEANUP_WORK="$CWORK" CLEANUP_IDLE_MINUTES=0 \
+    "$ROOT/scripts/cleanup_local.sh" --apply 2>&1)
+chmod u+w "$SANDBOX/ro"
+if [ "$(id -u)" != 0 ]; then
+    case "$out" in
+        *"FAILED   $SANDBOX/ro/wt-fail"*$'\n'"           "*[a-z]*) got=explained ;; *) got="$out" ;; esac
+    report "cleanup --apply: a failed removal prints git's error" explained "$got"
+fi
 
 echo "== worktree secrets =========================================="
 # scripts/worktree_setup.sh links the main checkout's untracked secrets into a worktree only

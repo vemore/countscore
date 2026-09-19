@@ -3,7 +3,7 @@
 > Scope: how several changes are built at once and reach production — worktrees, one pull
 > request per theme, serial squash merges, deploy after each merge, and `wip/` work tracking.
 > Procedure: the `ship-parallel` skill. Related: [[Hooks]] · [[Deployment]] · [[Release]]
-> Updated: 2026-09-18
+> Updated: 2026-09-19
 
 ## Facts
 
@@ -50,22 +50,29 @@ when it is detached on a commit in `origin/main`. Everything else is printed as 
 the reason. `session-start.sh` points at it whenever a worktree or a `[gone]` branch exists.
 Exercised offline by `scripts/hooks_selftest.sh` through a stubbed `gh`.
 
-Two guards run **before** every other rule in the worktree loop
-(`scripts/cleanup_local.sh:124-135`), and each keeps the worktree's **branch** as well as the
-worktree — without that the branch loop deletes the branch out from under a live worktree:
+Three guards run **before** every other rule in the worktree loop, lock first, and each keeps
+the worktree's **branch** as well as the worktree — without that the branch loop deletes the
+branch out from under a live worktree:
 
 | Guard | Evidence | Printed as |
 |---|---|---|
+| Locked by a running session | `git worktree list --porcelain` has `locked claude agent <name> (pid N start T)` — Claude Code's lock — and pid N is alive and, where `/proc/N/stat` field 22 is readable, still started at T | `keep … — locked by a running session (pid N)` |
+| Locked by hand | a `locked` line naming no pid | `keep … — locked: <reason>` |
 | Setup in progress | `<worktree>/.countscore-setup-in-progress` exists | `keep … — setup in progress (.countscore-setup-in-progress)` |
 | An agent may be working | `find <worktree> -newermt "-$CLEANUP_IDLE_MINUTES minutes" -print -quit` finds anything | `keep … — modified in the last N minutes (an agent may be working)` |
 
-`CLEANUP_IDLE_MINUTES` defaults to `30`; `0` disables the second guard only — the marker is
-always honoured. The self-test runs its first `--apply` with `CLEANUP_IDLE_MINUTES=0`, because
-its sandbox worktrees are created seconds earlier and would otherwise all be kept.
+`CLEANUP_IDLE_MINUTES` defaults to `30`; `0` disables the modification-time guard only — a
+live lock and the marker are always honoured. A lock whose pid is gone (or recycled: a
+different start time) is **stale**: the worktree then goes through the usual rules, is listed
+as `would remove … ; stale lock, pid N is gone`, and `--apply` removes it with
+`git worktree remove -f -f`. Whenever a removal fails, `--apply` prints git's error, indented,
+under the `FAILED` line. The self-test runs its first `--apply` with `CLEANUP_IDLE_MINUTES=0`,
+because its sandbox worktrees are created seconds earlier and would otherwise all be kept.
 
-Neither guard makes `--apply` safe to run while agents work: a worktree idle for more than the
-window, with a branch that carries no commit yet, still looks abandoned. They cover the two
-windows that cost work in practice — the five-minute setup, and an agent between commits.
+None of the guards makes `--apply` safe to run while agents work: an unlocked worktree idle
+for more than the window, with a branch that carries no commit yet, still looks abandoned.
+They cover the windows that cost work in practice — a live agent session, the five-minute
+setup, and an agent between commits.
 
 ### Work tracking, and what a merge deploys
 
