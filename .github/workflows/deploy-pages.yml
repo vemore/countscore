@@ -1,0 +1,146 @@
+name: Pages
+
+# Publishes the PWA on GitHub Pages, at <owner>.github.io/<repo>/, next to the privacy policy
+# page Google Play links to. The build carries no backend URL: a visitor gets the local-only
+# app (scores, statistics) until they enter a server of their own in Settings → Server, and
+# that server must list the Pages origin in its CORS_ORIGINS (README.md, "Publishing the PWA").
+#
+# The Pages site is ONE artifact for the whole repository. Once the Pages source is "GitHub
+# Actions", nothing is served from main:/docs any more, so the privacy page
+# (docs/privacy-policy.html, rendered from privacy_policy.md) is published by this workflow
+# too, at the same path as before — and a change to it triggers a run below.
+#
+# Not a pull-request check and not a required one: pull requests already build the PWA in
+# ci.yml's `app` job. The `paths:` filter is therefore safe here, unlike in ci.yml.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lib/**"
+      - "web/**"
+      - "assets/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - "l10n.yaml"
+      # The About screen's icon is an app asset declared in pubspec.yaml.
+      - "store_listing/assets/icon_512.png"
+      - "docs/privacy-policy.html"
+      - "scripts/check_web_build.sh"
+      - "scripts/web_binaries.sh"
+      - ".github/workflows/deploy-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deployment at a time, and never cancel one halfway: the last push wins, in order.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  FLUTTER_VERSION: "3.47.2"
+
+jobs:
+  build:
+    name: Build the PWA for Pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: flutter pub get
+        run: flutter pub get
+
+      # Same gate as ci.yml's `app` job: a stale web/drift_worker.js or web/sqlite3.wasm
+      # would publish a PWA whose database cannot open.
+      - name: Web binaries match pubspec.lock
+        run: scripts/web_binaries.sh --check
+
+      # *.g.dart is gitignored: the build does not compile without it.
+      - name: Code generation (drift)
+        run: dart run build_runner build
+
+      # The site is served under /<repo>/ — read from the event, never written here, so
+      # a fork or a rename publishes at its own path. A <owner>.github.io repository is
+      # served from the domain root instead.
+      - name: Base href
+        id: base
+        env:
+          REPO: ${{ github.event.repository.name }}
+        run: |
+          set -euo pipefail
+          case "$REPO" in
+            *.github.io) href=/ ;;
+            *) href="/$REPO/" ;;
+          esac
+          echo "href=$href" | tee -a "$GITHUB_OUTPUT"
+
+      # --no-tree-shake-icons is mandatory on every target (game-type icons come from
+      # database codepoints). No --dart-define=BACKEND_URL, ever: the backend is a user
+      # setting with no default, and a published build must not carry one.
+      - name: Build web (release)
+        run: >-
+          flutter build web --release --no-tree-shake-icons
+          --base-href="${{ steps.base.outputs.href }}"
+
+      # The checks scripts/deploy_web.sh runs: no Markdown, nothing missing.
+      - name: Check the build is publishable
+        run: scripts/check_web_build.sh build/web
+
+      # The PWA plus the privacy page, which must keep its URL (PLAY_STORE_DATA_SAFETY.md).
+      # Only the rendered page: docs/README.md is not for publishing.
+      - name: Assemble the site
+        run: |
+          set -euo pipefail
+          site="$RUNNER_TEMP/site"
+          cp -R build/web "$site"
+          if [ -e "$site/privacy-policy.html" ]; then
+            echo "::error::build/web already has a privacy-policy.html; refusing to shadow the published policy"
+            exit 1
+          fi
+          cp docs/privacy-policy.html "$site/privacy-policy.html"
+          scripts/check_web_build.sh "$site"
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: ${{ runner.temp }}/site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    # A manual run from another branch builds, but only main is published.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # A job-level permissions block replaces the workflow's: these are the two that
+    # actions/deploy-pages needs, and nothing else.
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v5
+
+      # The privacy policy is the URL the Play Console holds: a deployment that lost it
+      # is a store-policy problem, not a cosmetic one. The URL comes from the deployment.
+      - name: Smoke test
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          set -euo pipefail
+          for path in "" privacy-policy.html sqlite3.wasm drift_worker.js main.dart.js; do
+            curl -fsS -o /dev/null --retry 6 --retry-delay 10 --retry-all-errors \
+              -w "%{http_code} ${PAGE_URL}${path}\n" "${PAGE_URL}${path}"
+          done

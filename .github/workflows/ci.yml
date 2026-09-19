@@ -326,6 +326,12 @@ jobs:
       - name: Claude Code hooks self-test
         run: scripts/hooks_selftest.sh
 
+      # The check both publishing paths run on build/web (deploy_web.sh, deploy-pages.yml)
+      # refuses a stray Markdown file or a missing runtime file; its refusals are pinned
+      # against fixture builds here, and the release web build below goes through it.
+      - name: Web build check self-test
+        run: scripts/check_web_build_selftest.sh
+
       # The pub twin of the backend's pip-audit: every package pubspec.lock resolves,
       # direct and transitive, against OSV (GitHub advisories included). Any advisory
       # fails the job; `dart pub audit` does not exist. The binary is pinned by version
@@ -407,6 +413,9 @@ jobs:
       # no default, and this job only proves the build compiles.
       - name: Build web (release)
         run: flutter build web --release --no-tree-shake-icons
+
+      - name: The web build is publishable
+        run: scripts/check_web_build.sh build/web
 
   # The only test that drives the Flutter client against the real server contract:
   # FastAPI on a real Postgres (LISTEN/NOTIFY, JSONB), migrated by Alembic, two
