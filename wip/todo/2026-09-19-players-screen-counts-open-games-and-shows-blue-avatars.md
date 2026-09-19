@@ -12,6 +12,11 @@ The leaderboard and the player card now count only finished games with a score
 (`getFinishedGameResults`, `lib/models/player_stats.dart`), so the same player can show
 "12 games, 5 wins" under Players and "9 games, 4 wins" under Statistics.
 
+Absorbed from [[2026-09-19-player-stats-count-open-games-as-wins]] (2026-09-19, refinement): #137 fixed the
+Statistics half. `getStatsByName` (`drift_repositories.dart:712-797`) also takes the lowest
+total as the winner whatever the game's elimination rule, and runs one `SELECT` per game
+(N + 1, :755-764). Once the Players screen stops using it, delete it rather than fix it.
+
 The same screen draws each avatar in the stored `colorValue` with `Colors.blue` as the
 fallback (`players_screen.dart:92` and `:183`) and an `Icons.person` glyph, not the
 `player_colors.dart` colour and the two-letter `PlayerAvatar` the board, the game list
@@ -27,5 +32,6 @@ picker.
 **Acceptance:**
 - A player with one open and one finished game shows "1 game" on the Players screen, as on
   the leaderboard.
+- `getStatsByName` has no caller left (deleted), so no stats query runs one statement per game.
 - `players_screen.dart` no longer uses `Colors.blue`; a widget test finds the same avatar
   colour as on the leaderboard.

@@ -16,10 +16,19 @@ The game-over condition had the same mismatch and became `>=` on 2026-09-19
 (`wip/done/2026-09-18-game-over-threshold-is-strictly-over.md`); elimination was left
 alone because ZapZap and Rami need the strict reading.
 
-**Fix:** either seed 6 qui prend with 65 (new databases only, like the Uno/Président seed
-change) and drop the sentence from the ten rules texts, or give the elimination rule an
-inclusive variant. The first is one line and no schema change.
+**Fix:** first remove the board's own copies of the rule — the local `isPlayerEliminated` and
+`isNearThreshold` in `build` and `_isPlayerEliminatedByTotal`
+(`game_board_screen.dart:450-476`, `:536-545`) — so the board calls `isEliminatedBy` /
+`isNearEliminationBy` (`lib/widgets/game_ranking.dart:102-121`, moved to `lib/utils/` or onto
+`GameType` if that reads better); absorbed from
+[[2026-09-19-board-elimination-rule-duplicated]]. Then seed 6 qui prend with 65 (new
+databases only, like the Uno/Président seed change) and drop the "set it to 65" sentence
+from the ten rules texts.
+
+**Decided (2026-09-19, refinement):** seed 65. No inclusive elimination variant, no schema change.
 
 **Acceptance:**
 - A fresh database eliminates a 6 qui prend player on exactly 66, and not on 65.
+- `game_board_screen.dart` no longer compares a total with `playerDeadThreshold` itself; the
+  existing board and end-of-game tests stay green.
 - The `six_nimmt` section of the ten `assets/rules/rules_<locale>.md` files matches.

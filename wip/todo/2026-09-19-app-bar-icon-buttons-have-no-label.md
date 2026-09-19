@@ -13,6 +13,9 @@ Neither `IconButton` has a `tooltip`, so TalkBack and browser screen readers rea
 automated tests have to click them by position. The neighbouring icons ("Filter games",
 "Show menu", "Share the result") all have one.
 
+The same two buttons were also listed in
+[[2026-09-19-pwa-shell-still-says-flutter-template-and-offline]], which now leaves them here (2026-09-19, refinement).
+
 **Fix:** give both a `tooltip` from `AppLocalizations` (the existing keys `playerStatistics`
 and `ranking` fit), and look for other `IconButton`s without one while there.
 

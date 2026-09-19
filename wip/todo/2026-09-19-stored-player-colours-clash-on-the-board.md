@@ -12,10 +12,14 @@ as the same colour ([capture](../assets/2026-09-19-stored-player-colours-clash-o
 with a white "La" that can barely be read ([capture](../assets/2026-09-19-stored-player-colours-clash-on-the-board/yellow-avatar.png)). Exact
 equality is the only clash detected.
 
-**Fix:** when colours are assigned at creation, draw from `kPlayerPalette`, not from
-arbitrary Material colours. At display time, treat colours closer than a hue threshold as a
-clash too, and pick the avatar text colour from the disc's luminance. Overlaps
-[[2026-09-19-new-game-screen-is-a-bare-form]], which should reuse this rule.
+**Changed (2026-09-19, refinement):** the creation half is done — #138 (e53442f) replaced the
+player dialog, and `player_picker_sheet.dart:131` adds new players with no colour, so they
+take `kPlayerPalette`. Players stored before it keep their Material colours, and
+`player_colors.dart:45-49` still treats only exact equality as a clash; `onPlayerColor`
+(:88-91) uses `estimateBrightnessForColor`, with no contrast check.
+
+**Fix:** at display time, treat colours closer than a hue threshold as a
+clash too, and pick the avatar text colour from the disc's luminance.
 
 **Acceptance:**
 - A unit test: `green` and `lightGreen` in one game resolve to two distinct palette colours.

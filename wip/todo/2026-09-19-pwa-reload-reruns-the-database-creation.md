@@ -35,16 +35,18 @@ unique index turned that silent duplication into this failure.
 Supersedes [[2026-09-18-pwa-uncaught-error-at-startup]] (the same bare `Error`, whose entry
 believed the data survived a reload).
 
-**Fix:** reproduce in a web e2e test (load, write, reload, assert `user_version` = 15 and
+**Fix:** reproduce in a web e2e test (load, write, reload, assert `user_version` = 16 and
 the rows). Then fix the persistence, for example by awaiting drift's flush before the page
 can unload, choosing another `WasmStorageImplementation`, or updating drift and
 sqlite3.dart. Also make `onCreate` seeding idempotent (`INSERT … WHERE NOT EXISTS
-(builtin_key)`, as `applyV14` already does), and replace the `.first` in the create screen
-with an empty state. Check what the reload-time `POST /sync/push` observed during the pass
+(builtin_key)`, as `applyV14` already does), and give the create screen an empty state (#138 replaced the `.first`
+crash with a guard at `create_game_screen.dart:82`, but it now shows `loadingGameTypes`
+forever, :273-274). Check what the reload-time `POST /sync/push` observed during the pass
 actually sends.
 
 **Acceptance:**
-- A web e2e test: after a reload, `PRAGMA user_version` is 15 and no uncaught error is logged.
+- A web e2e test: after a reload, `PRAGMA user_version` is 16 (the current `schemaVersion`) and no uncaught error is logged.
 - The same test: after a reload the "Types de jeux" list still holds the built-in types, and
   a game deleted before the reload stays deleted.
-- A widget test: the New game screen with no game types shows an empty state, not an exception.
+- A widget test: the New game screen with no game types shows an empty state, neither an
+  exception nor an endless "Loading game types…".

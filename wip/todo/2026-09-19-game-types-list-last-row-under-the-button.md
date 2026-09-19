@@ -13,8 +13,8 @@ scrolling). The "Nouveau type de jeu" dialog is the pre-refresh style: plain out
 an icon and a colour button with no label.
 
 **Fix:** bottom padding of the FAB's height plus the inset (`withBottomInset`,
-`lib/utils/insets.dart`) on the list. Restyle the dialog as part of the refresh, and label
-its icon and colour buttons.
+`lib/utils/insets.dart`) on the list. Label the dialog's icon and colour buttons. The dialog's
+restyle is out of scope (2026-09-19, refinement): no target design exists, and it is not a bug.
 
 **Acceptance:**
 - A widget test: scrolled to the end, the last type's menu button is hit-testable and not
