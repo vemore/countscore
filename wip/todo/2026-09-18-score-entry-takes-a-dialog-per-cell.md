@@ -12,12 +12,13 @@ interactive page is https://claude.ai/artifact/D3ycxcgzPxHezRrSrmuxiw (private).
 
 **Target:** [entry, 4 players](../assets/2026-09-18-app-looks-like-a-default-material-template/entry-4-players.png), [entry, 8 players](../assets/2026-09-18-app-looks-like-a-default-material-template/entry-8-players.png), and their `dark-` versions.
 
-"Add round" inserts an empty row (`game_board_screen.dart:536`). Each cell then opens an
-`AlertDialog` with a signed `TextField` (`game_board_screen.dart:888-980`) and the system
+"Add round" inserts an empty row (`game_board_screen.dart:518`). Each cell then opens an
+`AlertDialog` with a signed `TextField` (`game_board_screen.dart:922-990`) and the system
 keyboard, followed by "Save". That is four gestures per score, so 16 per round at 4 players,
 and a round abandoned halfway leaves empty cells.
 
-Lands after [[2026-09-18-board-hides-who-owns-each-column-and-who-leads]]: same screen.
+Lands after [[2026-09-18-board-hides-who-owns-each-column-and-who-leads]] (merged in #119): same
+screen. The cells are now drawn by `lib/widgets/board_lanes.dart` and `board_rows.dart`.
 
 **Fix:** a **keypad bottom sheet** (a new widget in `lib/widgets/`).
 - **"Round N" opens it** on the first player in seat order, skipping eliminated players. It

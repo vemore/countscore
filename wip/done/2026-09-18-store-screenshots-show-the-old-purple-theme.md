@@ -1,5 +1,7 @@
 # The store screenshots still show the deep-purple theme, under a deep-purple caption band
 
+**Status:** dropped (2026-09-19) — merged into [[2026-09-18-store-screenshots-show-french-ui-everywhere]]: the same device session and the same re-composition.
+
 - **Noted:** 2026-09-18 — while moving the app to the teal theme (`feat/theme-refresh`)
 - **Theme:** store-listing
 - **Area:** android
