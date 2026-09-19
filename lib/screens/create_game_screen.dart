@@ -37,6 +37,10 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
   int? _selectedGameTypeId;
   bool _isLowestScoreWins = true;
 
+  /// Whether [_loadData] has finished, successfully or not: until then an
+  /// empty type list means "still loading", afterwards it means "none".
+  bool _loaded = false;
+
   /// The players, in seat order.
   final List<PlayerSelection> _seated = [];
 
@@ -51,7 +55,9 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _loadData().whenComplete(() {
+      if (mounted) setState(() => _loaded = true);
+    });
   }
 
   Future<void> _loadData() async {
@@ -271,7 +277,10 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
             ),
             const SizedBox(height: 4),
             if (gameTypes.isEmpty)
-              Text(l10n.loadingGameTypes)
+              Text(
+                _loaded ? l10n.noGameTypes : l10n.loadingGameTypes,
+                key: const Key('game_type_empty'),
+              )
             else
               GameTypeTileGrid(
                 types: tiles,

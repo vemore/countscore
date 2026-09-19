@@ -129,6 +129,14 @@ stored name. Nothing in the app is known to produce such a row, but a `CREATE UN
 that fails inside `onUpgrade` would leave the database unopenable, so the step does not
 assume it.
 
+> **Status: Outdated** (2026-09-19) — "nothing in the app is known to produce such a row"
+> was wrong on the web: a PWA reload reran Drift `onCreate` on a full database (the schema
+> version never reached IndexedDB, [[Web]] § Persistence), and before this index every rerun
+> seeded the built-in types again — the likely origin of the duplicates. Since v15 the rerun
+> failed on this index instead. Drift `onCreate` now seeds with `INSERT … WHERE NOT EXISTS
+> (builtin_key)` (`_insertDefaultGameTypes`, `lib/services/drift/database.dart`), so a rerun
+> adds nothing and completes; a tombstoned built-in is not resurrected, a hard-deleted one is.
+
 The sync pull honours it: `_applyGameType` (`lib/services/sync/sync_store.dart`) drops an
 incoming `builtin_key` from the update of a linked row when another live local row already
 holds that key — a row linked by name before its remote became a built-in. Tests:
