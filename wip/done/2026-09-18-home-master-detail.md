@@ -1,5 +1,7 @@
 # The home screen is a single column of game cards at any width
 
+**Status:** done (2026-09-19) — closed by feat/home-card-grid. From `kHomeGridBreakpoint` (600 dp, `lib/screens/home_screen.dart`) the Recent cards form a grid of `homeGridColumns(width)` columns (at least two; 3 at 1200 dp, 4 at 1600), rows of equal-height cards under a full-width Resume card; a grid card under 360 dp moves its status pill under the name. `test/screens/home_screen_grid_test.dart` pins 400 and 1200 dp, and no overflow from 320 to 1600 dp; the 1600 px PWA screenshot is on the pull request.
+
 - **Noted:** 2026-09-18 — split out of `2026-09-16-no-large-screen-layout.md` when its board half shipped (feat/board-wide-layout)
 - **Theme:** large-screen
 - **Area:** app
