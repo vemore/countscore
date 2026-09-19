@@ -41,8 +41,6 @@
 
   "save": "Save",
 
-  "filterByGameType": "Filter by game type",
-
   "allGames": "All games",
 
   "filterGames": "Filter games",
@@ -67,12 +65,6 @@
 
   "pleaseEnterName": "Please enter a name",
 
-  "atLeast2PlayersRequired": "At least 2 players are required",
-
-  "playerNumber": "Player {index}",
-
-  "selectPlayer": "Select a player...",
-
   "clear": "Clear",
 
   "remove": "Remove",
@@ -82,8 +74,6 @@
   "editGame": "Edit game",
 
   "editGameDialogTitle": "Edit game",
-
-  "gameSettings": "Game settings",
 
   "removePlayer": "Remove player",
 
@@ -169,8 +159,6 @@
 
   "noPlayers": "No players",
 
-  "playersListSummary": "{count, plural, =0{No players} =1{1 player: {names}} other{{count} players: {names}}}",
-
   "playersAppearMessage": "Players will appear here once\nyou have created games",
 
   "gamesCount": "{count, plural, =0{0 games} =1{1 game} other{{count} games}}",
@@ -194,8 +182,6 @@
   "chooseColor": "Choose a color",
 
   "noGameTypes": "No game types",
-
-  "predefined": "Default",
 
   "edit": "Edit",
 
@@ -232,8 +218,6 @@
   "wins": "Wins",
 
   "winRate": "Win rate",
-
-  "overallStatistics": "Overall Statistics",
 
   "byGameType": "By game type",
 
@@ -543,47 +527,91 @@
 
   "gameTypeNameZapzap": "ZapZap",
 
+  "gameTypeNameZapzapSortKey": "ZapZap",
+
   "gameTypeNameUno": "Uno",
+
+  "gameTypeNameUnoSortKey": "Uno",
 
   "gameTypeNameScrabble": "Scrabble",
 
+  "gameTypeNameScrabbleSortKey": "Scrabble",
+
   "gameTypeNameOther": "Other",
+
+  "gameTypeNameOtherSortKey": "Other",
 
   "gameTypeNameSkyjo": "Skyjo",
 
+  "gameTypeNameSkyjoSortKey": "Skyjo",
+
   "gameTypeNamePresident": "President",
+
+  "gameTypeNamePresidentSortKey": "President",
 
   "gameTypeNameBelote": "Belote",
 
+  "gameTypeNameBeloteSortKey": "Belote",
+
   "gameTypeNameTarot": "Tarot",
+
+  "gameTypeNameTarotSortKey": "Tarot",
 
   "gameTypeNameBridge": "Bridge",
 
+  "gameTypeNameBridgeSortKey": "Bridge",
+
   "gameTypeNameRami": "Rummy",
+
+  "gameTypeNameRamiSortKey": "Rummy",
 
   "gameTypeNameCoinche": "Coinche",
 
+  "gameTypeNameCoincheSortKey": "Coinche",
+
   "gameTypeNameYahtzee": "Yahtzee",
+
+  "gameTypeNameYahtzeeSortKey": "Yahtzee",
 
   "gameTypeNamePhase10": "Phase 10",
 
+  "gameTypeNamePhase10SortKey": "Phase 10",
+
   "gameTypeNameFlip7": "Flip 7",
+
+  "gameTypeNameFlip7SortKey": "Flip 7",
 
   "gameTypeNameMilleBornes": "Mille Bornes",
 
+  "gameTypeNameMilleBornesSortKey": "Mille Bornes",
+
   "gameTypeNameRummikub": "Rummikub",
+
+  "gameTypeNameRummikubSortKey": "Rummikub",
 
   "gameTypeNameSixNimmt": "Take 6",
 
+  "gameTypeNameSixNimmtSortKey": "Take 6",
+
   "gameTypeNameQwirkle": "Qwirkle",
+
+  "gameTypeNameQwirkleSortKey": "Qwirkle",
 
   "gameTypeNameFarkle": "Farkle",
 
+  "gameTypeNameFarkleSortKey": "Farkle",
+
   "gameTypeNameCanasta": "Canasta",
+
+  "gameTypeNameCanastaSortKey": "Canasta",
 
   "gameTypeNameWizard": "Wizard",
 
+  "gameTypeNameWizardSortKey": "Wizard",
+
   "gameTypeNameTriomino": "Triomino",
+
+  "gameTypeNameTriominoSortKey": "Triomino",
 
   "groupDeviceOwner": "Owner",
 
