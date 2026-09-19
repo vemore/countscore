@@ -1,5 +1,7 @@
 # The screenshot composer's tests run nowhere but on a laptop
 
+**Status:** dropped (2026-09-19) — merged into [[2026-09-18-store-screenshots-show-french-ui-everywhere]] by chore/refine-2026-09-19.
+
 - **Noted:** 2026-09-18 — while writing `scripts/compose_screenshots.py` (`feat/composed-screenshots`)
 - **Theme:** test-tooling
 - **Area:** tooling

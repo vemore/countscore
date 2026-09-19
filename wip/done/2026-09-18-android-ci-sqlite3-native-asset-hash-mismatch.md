@@ -1,5 +1,7 @@
 # The Android CI job fails on flaky downloads that have nothing to do with the change
 
+**Status:** dropped (2026-09-19) — not seen again: none of the last 40 `ci.yml` runs (back to feat/board-growth, after #96) has a red Android job; 38 are green and the 2 red ones failed in the App job's `flutter test`. Reopen with the run id if it comes back.
+
 - **Noted:** 2026-09-18 — the first two CI runs of feat/play-again-and-type-order (#96)
 - **Theme:** ci-scope
 - **Area:** tooling

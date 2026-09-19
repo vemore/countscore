@@ -43,6 +43,15 @@ the user asks for it. Remove the Outdated block from `.llmwiki/StoreListing.md`.
 would show the old dialog, and the retake of 04 would have no podium to show. This replaces the
 refinement 4 decision above.
 
+**Absorbed (2026-09-19, refinement 6):** [[2026-09-18-compose-screenshots-tests-not-in-ci]].
+`scripts/test_compose_screenshots.py` runs in no CI job: the `backend` job runs pytest on
+`.claude/skills/release-android/scripts/` only, with no Pillow, and `scripts/ci_scope.sh:45`
+sends `store_listing/*` to no job. The pull request that rewrites the composer adds
+`uv run --no-project --with pytest --with pillow pytest -v scripts/test_compose_screenshots.py`
+next to the `play_publish.py tests` step, makes `store_listing/*/screenshots/*` and
+`scripts/compose_screenshots.py` select `backend`, and removes the "local only" gap from
+`.llmwiki/Testing.md` (:367-370).
+
 **Acceptance:**
 - No two raw captures of one locale show the same screen.
 - The composed `ja-JP` set shows the Japanese UI under the Japanese caption.
@@ -50,3 +59,4 @@ refinement 4 decision above.
 - `compose_screenshots.py` has no deep-purple colour; its gradient derives from `#0E8F88`.
 - Every `store_listing/<locale>/screenshots/phone/` image shows the teal theme, the keypad sheet and the end screen.
 - `.llmwiki/StoreListing.md` no longer carries the Outdated block about the caption colour.
+- A pull request that commits a 1080×2400 PNG under `store_listing/fr-FR/screenshots/phone/` goes red in CI.

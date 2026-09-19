@@ -36,5 +36,5 @@ GitHub's hosting logs count as a new data flow ([[Documentation]]).
 - The Pages URL loads, creates a game, and keeps it across a reload.
 - With a backend listing the Pages origin in `CORS_ORIGINS`, analysis and sync work from it.
 
-**Open question:** is the Pages URL allowed in committed docs (CLAUDE.md forbids committing a
-real deployment host), or does the README only describe `<owner>.github.io/<repo>/`?
+**Decided (2026-09-19, refinement 6):** no real Pages URL in committed files. `README.md` and the
+wiki describe `<owner>.github.io/<repo>/` only, as for any deployment host (`CLAUDE.md`).
