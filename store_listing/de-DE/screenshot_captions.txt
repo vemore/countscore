@@ -5,7 +5,7 @@
 01_main_screen: Alle eure Partien auf einen Blick
 02_player_management: Eure Mitspieler, Abend für Abend
 03_game_types: Eure Lieblingsspiele, bereit zum Zählen
-04_game_history: Jede beendete Partie wiederfinden
+04_podium: Das Siegertreppchen nach der letzten Runde
 05_game_board: Die Summen rechnen sich von selbst
 06_customization: Euer Spiel fehlt? Legt es an
 07_score_entry: Punkte Runde für Runde eintragen

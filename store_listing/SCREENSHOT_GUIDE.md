@@ -214,7 +214,7 @@ After capturing all screenshots:
 01_main_screen.png          # Active game with scores
 02_player_management.png    # Player list or add player
 03_game_types.png           # Game type selection
-04_game_history.png         # Past games list
+04_podium.png               # End of game: podium and final totals
 05_game_board.png           # Full game board view
 06_customization.png        # Settings or customization
 07_score_entry.png          # Score input interface
@@ -345,7 +345,7 @@ store_listing/assets/screenshots/phone/
 ├── 01_main_screen.png
 ├── 02_player_management.png
 ├── 03_game_types.png
-├── 04_game_history.png
+├── 04_podium.png
 ├── 05_game_board.png (optional)
 ├── 06_customization.png (optional)
 ├── 07_score_entry.png (optional)

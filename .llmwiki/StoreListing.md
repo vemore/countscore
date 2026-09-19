@@ -21,19 +21,34 @@ file silently reverts at the next release.
 `flutter_launcher_icons` generates the Android densities from), the 1024×500
 `feature_graphic.png` (Template 1 of `store_listing/FEATURE_GRAPHIC_TEMPLATES.md`: icon, name,
 tagline and the scoring grid in a phone frame, drawn with Pillow), and eight raw phone
-captures under `assets/screenshots/phone/`, the shared set, taken with the app in French.
-`scripts/capture_screenshots.sh <locale>` switches CountScore alone to a store locale's
-language (`adb shell cmd locale set-app-locales com.vemore.countscore --locales <locale>`,
-Android 13+; `--reset` puts it back on the phone's language) and writes that locale's own set
-to `store_listing/<locale>/raw/`. Requirements: `store_listing/ASSET_REQUIREMENTS.md`.
+captures under `assets/screenshots/phone/`, the old shared set — French, purple, pre-refresh,
+with a `04_game_history` no caption file names any more — which no locale uses since each has
+its own `raw/` set. `scripts/capture_screenshots.sh <locale>` switches CountScore alone to a
+store locale's language (`adb shell cmd locale set-app-locales com.vemore.countscore --locales
+<locale>`, Android 13+; `--reset` puts it back on the phone's language) and writes that
+locale's own set to `store_listing/<locale>/raw/`. Per-app language works on the Pixel with no
+`android:localeConfig` in the manifest (checked 2026-09-19 on `ja-JP`): the phone stays
+French. Requirements: `store_listing/ASSET_REQUIREMENTS.md`.
+
+**The demo data.** Store images show no real person's data. `test/demo_db_test.dart` writes a
+fictional database — `DEMO_DB_OUT=/tmp/countscore_demo.db flutter test
+test/demo_db_test.dart` — built as an Android install builds its own file (sqflite chain, then
+the Drift repositories): six invented first names (Emma, Léo, Sofia, Noah, Maya, Hugo), ten
+games under city names across ZapZap, Tarot, Skyjo, Belote, Yahtzee and a custom *Kubb* type,
+one in progress (*Annecy*, round 6, Emma leading), every player with the five finished games
+the statistics ranking needs. It goes on the phone through **Settings → Import** (push it to
+`/sdcard/Download/`, pick it). Game and player names stay the same in every locale.
 
 ### Screenshots: raw captures in, one composed set per locale out
 
-The raw captures are 1080×2400 RGBA — ratio 2.22 and an alpha channel, both refused by Play —
-so they are **input only**. `scripts/compose_screenshots.py` (Pillow, PEP 723, `uv run
+The raw captures are 1080×2400 (the shared set) or 1008×2244 (the Pixel 9 Pro XL at its
+default resolution, every `raw/` set) RGBA — ratio 2.22 and an alpha channel, both refused by
+Play — so they are **input only**. `scripts/compose_screenshots.py` (Pillow, PEP 723, `uv run
 --script`) takes a locale's `raw/` set when it has one, else the shared set — whole, never
 file by file, so one carousel never mixes two UI languages — crops the status and navigation
-bars (`CROP_TOP = 110`, `CROP_BOTTOM = 132`), scales the screen under a caption band on a
+bars (`SYSTEM_BARS`, measured per capture size: 110/132 px at 1080×2400, 110/108 px at
+1008×2244 — the navigation bar is 48 dp, so it follows the density; any other size is
+refused rather than cropped by guess), scales the screen under a caption band on a
 gradient from the app's teal (`BRAND = #0E8F88`, `kBrandSeedLight` in
 `lib/utils/app_theme.dart`, which a test compares) to 70 % of it, and writes **1080×1920 opaque
 RGB** PNGs to `store_listing/<locale>/screenshots/phone/`, under the capture's own file name.
@@ -56,14 +71,20 @@ reports one — which is how a stray capture committed there turns CI red ([[Tes
 - A line breaks after a clause (`,` `?` `:` `—` and their Arabic and CJK forms) when one
   fits, else at the most even split. `ja-JP` and `zh-CN` have no spaces to wrap on, so their
   captions force the break with `|`.
-- **All ten locales are composed** (2026-09-18) and `--check` exits 0. The French captions
-  were validated by the user — with #3 changed to name no game, see the decision below — and
-  the nine others are translated from them. **Not yet on Play**: that is `play_publish.py
-  listing --graphics --commit`, on the user's go. The screens themselves are still French in
-  every locale, and still the old purple theme: no locale has a `raw/` set yet, so all ten
-  compose from the shared captures, and the committed images predate the teal band. The
-  retake, one device session per locale, is
-  `wip/todo/2026-09-18-store-screenshots-show-french-ui-everywhere.md`.
+- **All ten locales are retaken and composed** (2026-09-19) and `--check` exits 0: each
+  locale's own UI, the teal theme, on the demo data, eight distinct screens — home, players,
+  New game with the seat order, the end-of-game **podium** (`04_podium`, which replaced a
+  `04_game_history` that was the home screen again), the board in progress with its leader,
+  the custom type being edited, the keypad sheet open, the statistics leaderboard. The French
+  captions were validated by the user — with #3 changed to name no game, see the decision
+  below — and the nine others are translated from them; the `04_podium` caption was written
+  with the retake. **Not yet on Play**: that is `play_publish.py listing --graphics
+  --commit`, on the user's go.
+- The retake was driven over `adb` (`uiautomator dump` to find each control by the demo's
+  player and game names, which no locale translates), one session for the ten locales, with
+  the status-bar demo mode on (`sysui_demo_allowed`, `am broadcast -a
+  com.android.systemui.demo`) — the bar is cropped anyway. A profile APK (`flutter build apk
+  --profile`) has no debug banner and needs no release keystore.
 
 ### Promo video
 

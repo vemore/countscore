@@ -222,11 +222,10 @@ Or manually capture each:
 - [ ] Colors: Game cards show different colors
 - [ ] File: `03_game_types.png` ✅ / ⬜
 
-**Screenshot 4: Game History** (Recommended)
-- [ ] Screen: Past games list
-- [ ] Content: 2-3 completed games
-- [ ] Dates: Realistic dates shown
-- [ ] File: `04_game_history.png` ✅ / ⬜
+**Screenshot 4: Podium** (Recommended)
+- [ ] Screen: a finished game's end screen
+- [ ] Content: the podium and the final totals
+- [ ] File: `04_podium.png` ✅ / ⬜
 
 **Screenshot 5: Game Board** (Optional)
 - [ ] Screen: Full game board view

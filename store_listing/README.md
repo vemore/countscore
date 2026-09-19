@@ -43,10 +43,10 @@ Adding a language to `lib/l10n/` does not create the listing for it, and vice ve
 
 ## Screenshots
 
-The raw captures are 1080×2400 RGBA, which Play refuses. Each locale's own set is in
-`<locale>/raw/`, taken with the app in that language by `scripts/capture_screenshots.sh
-<locale>`; a locale without one falls back to the shared French set in
-`assets/screenshots/phone/`. `scripts/compose_screenshots.py` turns them into
+The raw captures are 1008×2244 RGBA, which Play refuses. Each locale's own set is in
+`<locale>/raw/`, taken with the app in that language, on the fictional demo database
+(`test/demo_db_test.dart`), by `scripts/capture_screenshots.sh <locale>`; a locale without one
+falls back to the old shared French set in `assets/screenshots/phone/`. `scripts/compose_screenshots.py` turns them into
 1080×1920 opaque RGB, the locale's caption in a band above the screen, into
 `<locale>/screenshots/phone/` — the directory `play_publish.py --graphics` reads first:
 
@@ -111,9 +111,8 @@ Committed and published since 2026-09-15: the icon, the feature graphic and eigh
 screenshots. Specifications are in `ASSET_REQUIREMENTS.md`; `scripts/capture_screenshots.sh
 <locale>` pulls fresh captures of one locale over ADB into `<locale>/raw/`.
 
-Known gap: the eight screenshots are raw 1080×2400 RGBA captures, which is wider than the
-16:9 Play asks for and carries an alpha channel it does not allow, with no caption and no
-localization — `wip/todo_nr/2026-09-16-screenshots-are-raw-captures.md`. There is no tablet
+The eight phone screenshots are composed per locale, from that locale's own captures (see
+Screenshots above; `.llmwiki/StoreListing.md`). There is no tablet
 set, because no screen has a large-screen layout yet
 (`wip/todo_nr/2026-09-16-no-large-screen-layout.md`).
 
