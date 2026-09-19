@@ -5,7 +5,7 @@
 01_main_screen: Toutes vos parties, d'un coup d'œil
 02_player_management: Vos joueurs, d'une soirée à l'autre
 03_game_types: Vos jeux préférés, prêts à compter
-04_game_history: Retrouvez chaque partie terminée
+04_podium: Le podium, dès la dernière manche
 05_game_board: Les totaux se calculent tout seuls
 06_customization: Votre jeu n'y est pas ? Créez-le
 07_score_entry: Saisissez les points manche après manche

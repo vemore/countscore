@@ -203,3 +203,23 @@ def test_the_committed_raw_sets_match_their_captions() -> None:
     for locale in cs.listing_locales(REPO):
         stems = [p.stem for p in cs.raw_captures(REPO, locale)]
         cs.read_captions(REPO / "store_listing" / locale / cs.CAPTIONS_FILE, stems)
+
+
+def test_a_pixel_9_pro_xl_capture_loses_its_bars_and_nothing_else() -> None:
+    # 1008x2244: grey status bar rows 0-109, app rows 110-2135 (a red line on each edge
+    # row), grey navigation bar from 2136. The composed screen must show both red lines
+    # and no grey.
+    raw = Image.new("RGB", (1008, 2244), (128, 128, 128))
+    raw.paste((255, 255, 255), (0, 110, 1008, 2136))
+    raw.paste((255, 0, 0), (0, 110, 1008, 111))
+    raw.paste((255, 0, 0), (0, 2135, 1008, 2136))
+    top, bottom = cs.system_bars(raw.size)
+    screen = raw.crop((0, top, raw.width, raw.height - bottom))
+    assert screen.getpixel((500, 0)) == (255, 0, 0)
+    assert screen.getpixel((500, screen.height - 1)) == (255, 0, 0)
+    assert cs.compose(raw, "Toutes vos parties", Path(font()), "fr-FR").size == (cs.WIDTH, cs.HEIGHT)
+
+
+def test_an_unmeasured_capture_size_is_refused() -> None:
+    with pytest.raises(cs.ComposeError, match="1344x2992"):
+        cs.system_bars((1344, 2992))

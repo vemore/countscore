@@ -52,11 +52,29 @@ LOCALE_RAW_DIR = "raw"  # store_listing/<locale>/raw/, the locale's own captures
 CAPTIONS_FILE = "screenshot_captions.txt"
 OUT_DIR = Path("screenshots") / "phone"
 
-# Raw captures are 1080x2400 from the Pixel: the status bar (clock, notification icons) and
-# the gesture/navigation bar carry nothing about the app, and the notification icons date the
-# picture. Measured on the 2026-09 captures.
-CROP_TOP = 110
-CROP_BOTTOM = 132
+# The status bar (clock, notification icons) and the gesture/navigation bar carry nothing
+# about the app, and the notification icons date the picture: both are cropped. Pixels of
+# (top, bottom) per capture size, measured on real captures — the navigation bar is 48 dp, so
+# its height follows the phone's density. 1080x2400: the 2026-09 shared set; 1008x2244: the
+# Pixel 9 Pro XL at its default resolution, the per-locale sets of 2026-09-19 (status-bar
+# icons end at row 90, the app bar's first ink is row 189, the navigation bar starts at 2136).
+# Any other size is refused rather than cropped by guess.
+SYSTEM_BARS = {
+    (1080, 2400): (110, 132),
+    (1008, 2244): (110, 108),
+}
+
+
+def system_bars(size: tuple[int, int]) -> tuple[int, int]:
+    """The (top, bottom) crop of a raw capture of this size; ComposeError if unmeasured."""
+    try:
+        return SYSTEM_BARS[size]
+    except KeyError:
+        known = ", ".join(f"{w}x{h}" for w, h in SYSTEM_BARS)
+        raise ComposeError(
+            f"raw capture is {size[0]}x{size[1]}; the system bars are measured for {known} "
+            "only (SYSTEM_BARS in scripts/compose_screenshots.py)"
+        ) from None
 
 
 def _shade(rgb: tuple[int, int, int], factor: float) -> tuple[int, int, int]:
@@ -300,7 +318,8 @@ def compose(raw: Image.Image, caption: str, font_path: Path, locale: str) -> Ima
     # The screen: crop the system bars, scale to the space left, round the corners.
     screen = raw.convert("RGB")
     w, h = screen.size
-    screen = screen.crop((0, CROP_TOP, w, h - CROP_BOTTOM))
+    crop_top, crop_bottom = system_bars((w, h))
+    screen = screen.crop((0, crop_top, w, h - crop_bottom))
     avail_h = HEIGHT - BAND_HEIGHT - BOTTOM_MARGIN
     scale = min(avail_h / screen.height, (WIDTH - 2 * SIDE_MARGIN) / screen.width)
     size = (round(screen.width * scale), round(screen.height * scale))

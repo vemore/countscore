@@ -5,7 +5,7 @@
 01_main_screen: Todas tus partidas de un vistazo
 02_player_management: Tus jugadores, de una noche de juegos a otra
 03_game_types: Tus juegos favoritos, listos para puntuar
-04_game_history: Recupera cada partida terminada
+04_podium: El podio, al terminar la última ronda
 05_game_board: Los totales se calculan solos
 06_customization: ¿Tu juego no está? Créalo
 07_score_entry: Anota los puntos ronda a ronda

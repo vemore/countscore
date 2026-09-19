@@ -6,7 +6,7 @@
 01_main_screen: すべての対戦を|ひと目で
 02_player_management: プレイヤーの記録は|次の集まりにも
 03_game_types: お気に入りのゲームを|すぐに記録
-04_game_history: 終わったゲームを|いつでも振り返り
+04_podium: 最終ラウンドの後は|表彰台で発表
 05_game_board: 合計は自動で計算
 06_customization: ないゲームは|自分で作成
 07_score_entry: ラウンドごとに|点数を入力
