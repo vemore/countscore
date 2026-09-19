@@ -166,6 +166,11 @@ Used to build and test the app; not shipped in it.
 **Copyright:** Copyright (c) 2019, Alexandre Roux Tekartik  
 **Repository:** https://github.com/tekartik/sqflite/tree/master/sqflite_common_ffi
 
+### sqlite3
+**License:** MIT  
+**Copyright:** Copyright (c) 2020 Simon Binder  
+**Repository:** https://github.com/simolus3/sqlite3.dart/tree/main/sqlite3
+
 ### flutter_lints
 **License:** BSD-3-Clause  
 **Copyright:** Copyright 2013 The Flutter Authors. All rights reserved.  

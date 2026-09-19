@@ -1,5 +1,7 @@
 # Every reload of the PWA reruns the database creation: game types vanish and deletions come back
 
+**Status:** done (2026-09-19) — closed by fix/pwa-reload-persistence. Cause confirmed in drift 2.35.0's `_WasmDelegate`: it flushes to IndexedDB only after a statement run outside a transaction, so the `user_version` drift sets after `onCreate` and every `COMMIT` stayed in memory (a fresh profile's IndexedDB page 1 read `user_version` 0 after the first load). `PersistenceFlushInterceptor` now runs a `SELECT 1` outside any transaction after the first open and after each outermost transaction; `onCreate` seeds with `WHERE NOT EXISTS (builtin_key)`, so a browser already stuck at 0 recovers on its first load; the New game screen shows `noGameTypes` once loading has finished. The reload-time `POST /sync/push` was the same bug: `markSent` is a transaction, so the outbox's `sent_at` never reached IndexedDB and a joined device re-pushed those rows on each load, which the server answers `duplicate`.
+
 - **Noted:** 2026-09-19 — full test pass of the production PWA (fresh Chromium profiles, Playwright, fr-FR at 412 × 860)
 - **Theme:** web
 - **Area:** web
