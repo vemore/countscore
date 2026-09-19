@@ -1,5 +1,7 @@
 # The shared raw screenshot set is stale and no longer matches the captions
 
+**Status:** dropped (2026-09-19) — merged into [[2026-09-19-store-screenshots-show-white-avatar-initials]] by chore/refine-2026-09-19-b.
+
 - **Noted:** 2026-09-19 — while retaking the store screenshots (`feat/store-screenshots-retake`)
 - **Theme:** store-listing
 - **Area:** docs

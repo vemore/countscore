@@ -18,4 +18,13 @@ through the group endpoint (budgeted, the group style as fallback when no voice 
 group language), or show group comments on the board of a shared game, or drop the comment
 settings from the screen and keep only what is used.
 
-**Open question:** should the analysis of a shared game be billed to the group's budget?
+**Decided (2026-09-19, refinement 6):** through the group endpoint. The analysis of a shared
+game calls `POST /groups/me/games/{game_id}/comments`: billed to the group's budget, the group's
+style as the fallback when no voice is picked, the group's language. An unshared game keeps
+`/comments/game-analysis`.
+
+**Acceptance:**
+- Analysing a shared game raises the group's usage on Settings → Group → Comments and usage.
+- With no voice picked, a shared game's analysis uses the group's style and language (client test with a stubbed backend).
+- An unshared game's analysis still calls `/comments/game-analysis` and counts nothing.
+- A group over its budget gets a clear message, not a raw error.

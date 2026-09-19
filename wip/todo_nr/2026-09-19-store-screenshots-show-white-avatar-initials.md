@@ -16,6 +16,22 @@ partly one-letter avatars, so the Play listing no longer matches the app.
 (`release-android`, store listing section). Best folded into the next retake, together with
 [[2026-09-19-shared-raw-screenshot-set-is-stale]].
 
+## Absorbed (2026-09-19, refinement 6)
+
+From `2026-09-19-shared-raw-screenshot-set-is-stale`: `store_listing/assets/screenshots/phone/`
+still holds the eight pre-refresh French captures (purple theme, no demo data, a
+`04_game_history.png`). Nothing reads them except as the fallback for a locale with no `raw/`
+set, and that fallback would compose a new locale from French purple captures whose stems
+(`04_game_history`) do not match its captions (`04_podium`). `release-android` SKILL.md
+(§ per-locale artwork) and `store_listing/ASSET_REQUIREMENTS.md` still describe that directory
+as the screenshots. **Fix, same pull request:** delete the shared set and make
+`compose_screenshots.py` require a locale `raw/` set (all ten have one); update its tests, the
+skill, `ASSET_REQUIREMENTS.md` and `.llmwiki/StoreListing.md`.
+
+Best done right before the next Play release.
+
 **Acceptance:**
 - Every `store_listing/<locale>/raw/` capture shows the two-letter avatars with the
   contrast-picked initial colour of the current build.
+- No committed raw capture shows the old purple theme.
+- A locale with captions and no `raw/` set is refused by the composer with a clear message.
