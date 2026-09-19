@@ -1,5 +1,7 @@
 # A PWA that lived through the reload bug lists every original game type twice
 
+**Status:** done (2026-09-19) — closed by fix/v17-dedupe-builtin-types. `applyV17` (`lib/services/sync/sync_schema.dart`), schema v17, run by the sqflite chain and by Drift's `onUpgrade`, soft-deletes a live, keyless, group-less type with no `rules` of its own when a live built-in row has the same stored name and scoring fields and no game, live or deleted, points at it. Tests: `test/migration_v16_to_v17_test.dart` (native and web paths).
+
 - **Noted:** 2026-09-19 — smoke-testing #153 (`fix/pwa-reload-persistence`) on the production PWA, in a browser profile used since 2026-09-13
 - **Theme:** web
 - **Area:** web
