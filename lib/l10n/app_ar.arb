@@ -567,5 +567,19 @@
   "groupSettingsSaved": "تم حفظ إعدادات المجموعة",
   "groupUsageTitle": "استهلاك النموذج اللغوي هذا الشهر",
   "groupUsageAmount": "أُنفق {used} من {budget}",
-  "groupUsageResets": "يُعاد التعيين في {date}"
+  "groupUsageResets": "يُعاد التعيين في {date}",
+  "newGameNameLabel": "الاسم",
+  "newGameGameLabel": "اللعبة",
+  "newGameAllGames": "كل الألعاب ({count})",
+  "newGamePlayersLabel": "اللاعبون · ترتيب الجلوس",
+  "newGameDragToReorder": "اسحب لإعادة الترتيب",
+  "newGameDealer": "يوزّع",
+  "newGameAddPlayer": "إضافة لاعب",
+  "newGameStart": "{count, plural, =0{ابدأ} =1{ابدأ · لاعب واحد} =2{ابدأ · لاعبان} few{ابدأ · {count} لاعبين} many{ابدأ · {count} لاعبًا} other{ابدأ · {count} لاعب}}",
+  "whoIsPlayingTitle": "من يلعب؟",
+  "whoIsPlayingSearchHint": "اسم، أو لاعب جديد",
+  "whoIsPlayingFrequent": "يلعب معك كثيرًا",
+  "whoIsPlayingSameAs": "نفس لاعبي «{gameName}»",
+  "whoIsPlayingCreate": "إنشاء «{name}»",
+  "whoIsPlayingConfirm": "{count, plural, =0{تم} =1{إضافة لاعب واحد} =2{إضافة لاعبَين} few{إضافة {count} لاعبين} many{إضافة {count} لاعبًا} other{إضافة {count} لاعب}}"
 }

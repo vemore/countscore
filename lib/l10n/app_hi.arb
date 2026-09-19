@@ -567,5 +567,19 @@
   "groupSettingsSaved": "समूह की सेटिंग सहेजी गईं",
   "groupUsageTitle": "इस महीने LLM का उपयोग",
   "groupUsageAmount": "{budget} में से {used} खर्च",
-  "groupUsageResets": "{date} को रीसेट होगा"
+  "groupUsageResets": "{date} को रीसेट होगा",
+  "newGameNameLabel": "नाम",
+  "newGameGameLabel": "खेल",
+  "newGameAllGames": "सभी खेल ({count})",
+  "newGamePlayersLabel": "खिलाड़ी · बैठने का क्रम",
+  "newGameDragToReorder": "क्रम बदलने के लिए खींचें",
+  "newGameDealer": "बाँटता है",
+  "newGameAddPlayer": "खिलाड़ी जोड़ें",
+  "newGameStart": "{count, plural, =0{शुरू करें} =1{शुरू करें · 1 खिलाड़ी} other{शुरू करें · {count} खिलाड़ी}}",
+  "whoIsPlayingTitle": "कौन खेल रहा है?",
+  "whoIsPlayingSearchHint": "नाम, या नया खिलाड़ी",
+  "whoIsPlayingFrequent": "अक्सर आपके साथ खेलते हैं",
+  "whoIsPlayingSameAs": "“{gameName}” वाले ही खिलाड़ी",
+  "whoIsPlayingCreate": "“{name}” बनाएँ",
+  "whoIsPlayingConfirm": "{count, plural, =0{हो गया} =1{1 खिलाड़ी जोड़ें} other{{count} खिलाड़ी जोड़ें}}"
 }

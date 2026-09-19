@@ -1,29 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../l10n/app_localizations.dart';
 import '../models/game_type.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
-import '../utils/game_type_name.dart';
 import '../providers/group_provider.dart';
-import '../utils/insets.dart';
-import '../widgets/player_picker_dialog.dart';
+import '../utils/game_type_name.dart';
+import '../utils/play_again.dart';
+import '../utils/player_colors.dart';
+import '../utils/recent_game_types.dart';
+import '../widgets/game_type_tile_grid.dart';
+import '../widgets/player_picker_sheet.dart';
+import '../widgets/seat_order_list.dart';
 import 'game_board_screen.dart';
 
-export '../widgets/player_picker_dialog.dart' show PlayerSelection;
+export '../widgets/player_picker_sheet.dart' show PlayerSelection;
 
+/// New game: a name, a game type picked from tiles (most recently played
+/// first), and the players in seat order — the order the board, the keypad
+/// and the rows all follow — then "Start".
 class CreateGameScreen extends StatefulWidget {
-  const CreateGameScreen({super.key});
+  const CreateGameScreen({super.key, this.boardBuilder});
+
+  /// Opens the created game; the real `GameBoardScreen` when null. Tests pass
+  /// their own, since the real board reaches the database singleton.
+  final WidgetBuilder? boardBuilder;
 
   @override
   State<CreateGameScreen> createState() => _CreateGameScreenState();
-}
-
-class _SelectedPlayer {
-  final String name;
-  final int? colorValue;
-
-  _SelectedPlayer(this.name, this.colorValue);
 }
 
 class _CreateGameScreenState extends State<CreateGameScreen> {
@@ -31,9 +36,15 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
   final _gameNameController = TextEditingController();
   int? _selectedGameTypeId;
   bool _isLowestScoreWins = true;
-  final List<_SelectedPlayer> _selectedPlayers = [];
-  List<String> _availablePlayerNames = [];
-  Map<String, int?> _playerColors = {};
+
+  /// The players, in seat order.
+  final List<PlayerSelection> _seated = [];
+
+  /// Known players, most frequent first, and their own colour values.
+  List<String> _knownPlayers = [];
+  Map<String, int?> _colorValues = {};
+  LastGamePlayers? _lastGame;
+
   // On by default while this device is in a group — the user's design choice.
   bool _shareWithGroup = true;
 
@@ -49,90 +60,95 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
 
     final names = await gameProvider.getAllPlayerNames();
     final colors = await gameProvider.getPlayerColors();
+    final counts = await gameProvider.getPlayerGameCounts();
     await gameProvider.loadGames();
     final games = gameProvider.games;
     await gameTypeProvider.loadGameTypes();
-
     final gameTypes = gameTypeProvider.gameTypes;
 
-    // Déterminer le type de jeu par défaut
-    GameType defaultGameType;
+    LastGamePlayers? lastGame;
     if (games.isNotEmpty) {
-      // Utiliser le type de jeu de la dernière partie créée
-      defaultGameType = gameTypes.firstWhere(
-        (type) => type.id == games.first.gameTypeId,
-        orElse: () => gameTypes.firstWhere(
+      final players = await gameProvider.getPlayersOfGame(games.first.id!);
+      lastGame = LastGamePlayers(games.first.name, [
+        for (final p in players) PlayerSelection(p.name, p.colorValue),
+      ]);
+    }
+
+    // The type of the last game created, else ZapZap.
+    GameType zapzapOrFirst() => gameTypes.firstWhere(
           (type) => type.builtinKey == 'zapzap',
           orElse: () => gameTypes.first,
-        ),
-      );
-    } else {
-      // Si aucune partie n'existe, utiliser ZapZap par défaut
-      defaultGameType = gameTypes.firstWhere(
-        (type) => type.builtinKey == 'zapzap',
-        orElse: () => gameTypes.first,
-      );
-    }
+        );
+    final GameType? defaultGameType = gameTypes.isEmpty
+        ? null
+        : games.isNotEmpty
+            ? gameTypes.firstWhere(
+                (type) => type.id == games.first.gameTypeId,
+                orElse: zapzapOrFirst,
+              )
+            : zapzapOrFirst();
 
-    // Générer le nom de partie par défaut
-    String defaultGameName = 'Partie 1';
-    if (games.isNotEmpty) {
-      defaultGameName = _incrementGameName(games.first.name);
-    }
+    final defaultGameName =
+        games.isEmpty ? 'Partie 1' : nextGameName(games.first.name);
 
+    names.sort((a, b) {
+      final byCount = (counts[b] ?? 0).compareTo(counts[a] ?? 0);
+      return byCount != 0 ? byCount : collateNames(a, b);
+    });
+
+    if (!mounted) return;
     setState(() {
-      _availablePlayerNames = names;
-      _playerColors = colors;
-      _selectedGameTypeId = defaultGameType.id;
-      _isLowestScoreWins = defaultGameType.isLowestScoreWins;
+      _knownPlayers = names;
+      _colorValues = colors;
+      _lastGame = lastGame;
+      _selectedGameTypeId = defaultGameType?.id;
+      _isLowestScoreWins = defaultGameType?.isLowestScoreWins ?? true;
       _gameNameController.text = defaultGameName;
     });
   }
 
-  String _incrementGameName(String lastName) {
-    // Extraire les chiffres de fin avec RegExp
-    final regex = RegExp(r'(\d+)$');
-    final match = regex.firstMatch(lastName);
-
-    if (match != null) {
-      // Il y a des chiffres à la fin
-      final number = int.parse(match.group(1)!);
-      final prefix = lastName.substring(0, match.start);
-      return '$prefix${number + 1}';
-    } else {
-      // Pas de chiffres à la fin, ajouter " 1"
-      return '$lastName 1';
-    }
+  void _selectType(GameType type) {
+    setState(() {
+      _selectedGameTypeId = type.id;
+      _isLowestScoreWins = type.isLowestScoreWins;
+    });
   }
 
-  Future<void> _addPlayer() async {
-    final result = await showDialog<PlayerSelection>(
-      context: context,
-      builder: (context) => PlayerPickerDialog(
-        availablePlayers: _availablePlayerNames,
-        selectedPlayers: _selectedPlayers.map((p) => p.name).toList(),
-      ),
+  Future<void> _showAllTypes(List<GameType> types) async {
+    final picked = await showAllGameTypesSheet(context,
+        types: types, selectedId: _selectedGameTypeId);
+    if (picked != null && mounted) _selectType(picked);
+  }
+
+  Future<void> _pickPlayers() async {
+    final result = await showPlayerPickerSheet(
+      context,
+      knownPlayers: _knownPlayers,
+      colorValues: _colorValues,
+      seated: List.of(_seated),
+      lastGame: _lastGame,
     );
-
-    if (result != null && mounted) {
-      // Si c'est un nouveau joueur, l'ajouter à la liste
-      if (!_availablePlayerNames.contains(result.name)) {
-        _availablePlayerNames.add(result.name);
-        _availablePlayerNames.sort();
+    if (result == null || !mounted) return;
+    setState(() {
+      _seated
+        ..clear()
+        ..addAll(result);
+      for (final p in result) {
+        if (!_knownPlayers.contains(p.name)) _knownPlayers.insert(0, p.name);
+        _colorValues.putIfAbsent(p.name, () => p.colorValue);
       }
+    });
+  }
 
-      setState(() {
-        // Mettre à jour ou ajouter la couleur du joueur
-        _playerColors[result.name] = result.colorValue;
-        _selectedPlayers.add(_SelectedPlayer(result.name, result.colorValue));
-      });
-    }
+  void _reorder(int oldIndex, int newIndex) {
+    setState(() {
+      final player = _seated.removeAt(oldIndex);
+      _seated.insert(newIndex, player);
+    });
   }
 
   void _removePlayer(int index) {
-    setState(() {
-      _selectedPlayers.removeAt(index);
-    });
+    setState(() => _seated.removeAt(index));
   }
 
   @override
@@ -145,13 +161,10 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final gameProvider = context.read<GameProvider>();
-    final playerNames = _selectedPlayers.map((p) => p.name).toList();
-
-    // Créer un map des couleurs des joueurs
-    final playerColorsMap = <String, int?>{};
-    for (final player in _selectedPlayers) {
-      playerColorsMap[player.name] = player.colorValue;
-    }
+    final playerNames = _seated.map((p) => p.name).toList();
+    final playerColorsMap = <String, int?>{
+      for (final player in _seated) player.name: player.colorValue,
+    };
 
     final group = context.read<GroupProvider>();
     final l10n = AppLocalizations.of(context)!;
@@ -181,32 +194,54 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const GameBoardScreen(),
+          builder: widget.boardBuilder ?? (context) => const GameBoardScreen(),
         ),
       );
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final gameTypes = context.watch<GameTypeProvider>().gameTypes;
+    final games = context.watch<GameProvider>().games;
+    final recentFirst = gameTypesRecentFirst(l10n, gameTypes, games);
+    final tiles = gameTypeTiles(recentFirst, _selectedGameTypeId);
+    final selectedType = gameTypes
+        .where((t) => t.id == _selectedGameTypeId)
+        .firstOrNull;
+    final colours =
+        assignPlayerColors([for (final p in _seated) p.colorValue]);
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.newGame),
-      ),
+      appBar: AppBar(title: Text(l10n.newGame)),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: withBottomInset(context, const EdgeInsets.all(16)),
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
           children: [
-            // Nom de la partie
+            _Overline(l10n.newGameNameLabel),
             TextFormField(
+              key: const Key('create_game_name'),
               controller: _gameNameController,
+              style: theme.textTheme.headlineMedium
+                  ?.copyWith(fontWeight: FontWeight.w800),
               decoration: InputDecoration(
-                labelText: l10n.gameName,
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.style),
+                isDense: true,
+                contentPadding: const EdgeInsets.only(top: 4, bottom: 10),
+                border: UnderlineInputBorder(
+                  borderSide:
+                      BorderSide(color: scheme.primary.withValues(alpha: 0.25), width: 2),
+                ),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide:
+                      BorderSide(color: scheme.primary.withValues(alpha: 0.25), width: 2),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: scheme.primary, width: 2),
+                ),
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -215,192 +250,245 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                 return null;
               },
             ),
-
             const SizedBox(height: 24),
-
-            // Type de jeu
-            Consumer<GameTypeProvider>(
-              builder: (context, gameTypeProvider, child) {
-                final gameTypes = gameTypeProvider.gameTypes;
-
-                if (gameTypes.isEmpty) {
-                  return Text(l10n.loadingGameTypes);
-                }
-
-                return DropdownMenu<int>(
-                  initialSelection: _selectedGameTypeId,
-                  enableSearch: false,
-                  requestFocusOnTap: false,
-                  expandedInsets: EdgeInsets.zero,
-                  menuHeight: 400,
-                  label: Text(l10n.gameType),
-                  inputDecorationTheme: const InputDecorationTheme(
-                    border: OutlineInputBorder(),
-                  ),
-                  dropdownMenuEntries: sortGameTypesByDisplayName(l10n, gameTypes)
-                      .where((t) => t.id != null)
-                      .map((GameType type) {
-                    return DropdownMenuEntry<int>(
-                      value: type.id!,
-                      label: gameTypeDisplayName(l10n, type),
-                      leadingIcon: Icon(type.icon, size: 20, color: type.cardColor),
-                    );
-                  }).toList(),
-                  onSelected: (int? newValue) {
-                    if (newValue != null) {
-                      final selectedType = gameTypes.firstWhere((t) => t.id == newValue);
-                      setState(() {
-                        _selectedGameTypeId = newValue;
-                        _isLowestScoreWins = selectedType.isLowestScoreWins;
-                      });
-                    }
-                  },
-                );
-              },
-            ),
-
-            const SizedBox(height: 24),
-
-            // Règle de victoire (affichée seulement si "Autre" est sélectionné)
-            Consumer<GameTypeProvider>(
-              builder: (context, gameTypeProvider, child) {
-                final selectedType = gameTypeProvider.gameTypes
-                    .firstWhere((t) => t.id == _selectedGameTypeId,
-                        orElse: () => gameTypeProvider.gameTypes.first);
-
-                if (selectedType.builtinKey != 'other') {
-                  return const SizedBox.shrink();
-                }
-
-                return Column(
-                  children: [
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.winRule,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: 8),
-                            RadioGroup<bool>(
-                              groupValue: _isLowestScoreWins,
-                              onChanged: (value) {
-                                setState(() {
-                                  _isLowestScoreWins = value!;
-                                });
-                              },
-                              child: Column(
-                                children: [
-                                  RadioListTile<bool>(
-                                    title: Text(l10n.lowestScoreWins),
-                                    subtitle: Text(l10n.lowestScoreExample),
-                                    value: true,
-                                  ),
-                                  RadioListTile<bool>(
-                                    title: Text(l10n.highestScoreWins),
-                                    subtitle: Text(l10n.highestScoreExample),
-                                    value: false,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+            Row(
+              children: [
+                Expanded(child: _Overline(l10n.newGameGameLabel)),
+                if (gameTypes.isNotEmpty)
+                  TextButton(
+                    key: const Key('game_type_all'),
+                    onPressed: () => _showAllTypes(gameTypes),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      textStyle: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.w700),
                     ),
-                    const SizedBox(height: 24),
-                  ],
-                );
-              },
+                    child: Text(l10n.newGameAllGames(gameTypes.length)),
+                  ),
+              ],
             ),
-
-            // Joueurs
-            Text(
-              l10n.players,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-
-            const SizedBox(height: 12),
-
-            // Bouton d'ajout de joueur
-            OutlinedButton.icon(
-              key: const Key('create_add_player'),
-              onPressed: _addPlayer,
-              icon: const Icon(Icons.add),
-              label: Text(l10n.add),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.all(16),
+            const SizedBox(height: 4),
+            if (gameTypes.isEmpty)
+              Text(l10n.loadingGameTypes)
+            else
+              GameTypeTileGrid(
+                types: tiles,
+                selectedId: _selectedGameTypeId,
+                onSelected: _selectType,
+              ),
+            const SizedBox(height: 10),
+            if (selectedType != null) _ruleLine(context, selectedType),
+            const SizedBox(height: 24),
+            // One line when both fit, the hint under the label otherwise.
+            SizedBox(
+              width: double.infinity,
+              child: Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 8,
+                children: [
+                  _Overline(l10n.newGamePlayersLabel),
+                  if (_seated.length >= 2)
+                    Text(
+                      l10n.newGameDragToReorder,
+                      style: theme.textTheme.bodySmall
+                          ?.copyWith(color: scheme.onSurfaceVariant),
+                    ),
+                ],
               ),
             ),
-
-            const SizedBox(height: 12),
-
-            // Liste des joueurs sélectionnés
-            if (_selectedPlayers.isNotEmpty)
-              ...List.generate(_selectedPlayers.length, (index) {
-                final player = _selectedPlayers[index];
-                final playerColor = player.colorValue != null
-                    ? Color(player.colorValue!)
-                    : Colors.blue;
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Card(
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: playerColor,
-                        child: Text(
-                          player.name[0].toUpperCase(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      title: Text(player.name),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed: () => _removePlayer(index),
-                        tooltip: l10n.remove,
-                      ),
-                    ),
-                  ),
-                );
-              }),
-
+            const SizedBox(height: 10),
+            SeatOrderList(
+              players: _seated,
+              colours: colours,
+              onReorder: _reorder,
+              onRemove: _removePlayer,
+            ),
+            _AddPlayerRow(
+              key: const Key('create_add_player'),
+              label: l10n.newGameAddPlayer,
+              onTap: _pickPlayers,
+            ),
             Consumer<GroupProvider>(
               builder: (context, group, child) {
                 if (!group.isJoined) return const SizedBox.shrink();
-                return SwitchListTile(
-                  key: const Key('create_share_with_group'),
-                  contentPadding: EdgeInsets.zero,
-                  secondary: const Icon(Icons.cloud_upload_outlined),
-                  title: Text(l10n.shareWithGroup),
-                  subtitle: Text(l10n.shareWithGroupSubtitle(group.groupName ?? '')),
-                  value: _shareWithGroup,
-                  onChanged: (value) => setState(() => _shareWithGroup = value),
+                return Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: SwitchListTile(
+                    key: const Key('create_share_with_group'),
+                    contentPadding: EdgeInsets.zero,
+                    secondary: const Icon(Icons.cloud_upload_outlined),
+                    title: Text(l10n.shareWithGroup),
+                    subtitle:
+                        Text(l10n.shareWithGroupSubtitle(group.groupName ?? '')),
+                    value: _shareWithGroup,
+                    onChanged: (value) => setState(() => _shareWithGroup = value),
+                  ),
                 );
               },
-            ),
-
-            const SizedBox(height: 24),
-
-            // Bouton de création
-            FilledButton.icon(
-              key: const Key('create_game_submit'),
-              onPressed: _selectedPlayers.length >= 2 ? _createGame : null,
-              icon: const Icon(Icons.check),
-              label: Text(l10n.createGame),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.all(16),
-              ),
             ),
           ],
         ),
       ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+          child: SizedBox(
+            height: 56,
+            child: FilledButton.icon(
+              key: const Key('create_game_submit'),
+              onPressed: _seated.length >= 2 ? _createGame : null,
+              icon: const Icon(Icons.play_arrow_rounded, size: 28),
+              label: Text(l10n.newGameStart(_seated.length),
+                  style: const TextStyle(fontSize: 18)),
+              style: FilledButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20)),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
+
+  /// The selected type's win rule and end condition, as one line — or, for
+  /// "Other", the choice of win rule.
+  Widget _ruleLine(BuildContext context, GameType type) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    if (type.builtinKey == 'other') {
+      return SegmentedButton<bool>(
+        key: const Key('create_win_rule'),
+        showSelectedIcon: false,
+        segments: [
+          ButtonSegment(value: true, label: Text(l10n.lowestScoreWins)),
+          ButtonSegment(value: false, label: Text(l10n.highestScoreWins)),
+        ],
+        selected: {_isLowestScoreWins},
+        onSelectionChanged: (value) =>
+            setState(() => _isLowestScoreWins = value.first),
+      );
+    }
+    final rule = type.isLowestScoreWins
+        ? l10n.lowestScoreWins
+        : l10n.highestScoreWins;
+    final end = _gameOver(l10n, type);
+    return Text(
+      end == null ? rule : '$rule · $end',
+      key: const Key('create_rule_line'),
+      style: theme.textTheme.bodyMedium
+          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+    );
+  }
+
+  String? _gameOver(AppLocalizations l10n, GameType type) {
+    final threshold = type.gameOverThreshold;
+    final condition = type.gameOverConditionType;
+    if (threshold == null || condition == null) return null;
+    return switch (condition) {
+      GameOverConditionType.firstPlayerOver => l10n.gameRulesEndFirstOver(threshold),
+      GameOverConditionType.firstPlayerUnder => l10n.gameRulesEndFirstUnder(threshold),
+      GameOverConditionType.lastPlayerOver => l10n.gameRulesEndLastOver(threshold),
+      GameOverConditionType.lastPlayerUnder => l10n.gameRulesEndLastUnder(threshold),
+    };
+  }
+}
+
+/// A small capitalised section label.
+class _Overline extends StatelessWidget {
+  const _Overline(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Text(
+      text.toUpperCase(),
+      style: theme.textTheme.labelMedium?.copyWith(
+        letterSpacing: 1.4,
+        fontWeight: FontWeight.w800,
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
+    );
+  }
+}
+
+/// The dashed "Add a player" row under the seats.
+class _AddPlayerRow extends StatelessWidget {
+  const _AddPlayerRow({super.key, required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(16);
+    return CustomPaint(
+      foregroundPainter: _DashedBorderPainter(
+          colour: scheme.primary.withValues(alpha: 0.45), radius: 16),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: radius,
+        child: InkWell(
+          borderRadius: radius,
+          onTap: onTap,
+          child: SizedBox(
+            height: 56,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.add, color: scheme.primary),
+                const SizedBox(width: 10),
+                Flexible(
+                  child: Text(
+                    label,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: scheme.primary,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DashedBorderPainter extends CustomPainter {
+  _DashedBorderPainter({required this.colour, required this.radius});
+
+  final Color colour;
+  final double radius;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = colour
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    final path = Path()
+      ..addRRect(RRect.fromRectAndRadius(
+          (Offset.zero & size).deflate(0.75), Radius.circular(radius)));
+    const dash = 6.0, gap = 5.0;
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        canvas.drawPath(
+            metric.extractPath(distance, distance + dash), paint);
+        distance += dash + gap;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DashedBorderPainter old) =>
+      old.colour != colour || old.radius != radius;
 }

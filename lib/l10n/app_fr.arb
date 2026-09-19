@@ -1984,5 +1984,91 @@
         "example": "1 oct. 2026"
       }
     }
+  },
+  "newGameNameLabel": "Nom",
+  "@newGameNameLabel": {
+    "description": "Overline above the game name field on the New game screen (shown in capitals)"
+  },
+  "newGameGameLabel": "Jeu",
+  "@newGameGameLabel": {
+    "description": "Overline above the game-type tiles on the New game screen (shown in capitals)"
+  },
+  "newGameAllGames": "Tous les jeux ({count})",
+  "@newGameAllGames": {
+    "description": "Link that opens the full list of game types; count is how many exist",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "22"
+      }
+    }
+  },
+  "newGamePlayersLabel": "Joueurs · ordre de jeu",
+  "@newGamePlayersLabel": {
+    "description": "Overline above the players on the New game screen: their order is the seat order (shown in capitals)"
+  },
+  "newGameDragToReorder": "glisser pour réordonner",
+  "@newGameDragToReorder": {
+    "description": "Hint next to the players overline: drag a row by its handle to change the seat order"
+  },
+  "newGameDealer": "donne",
+  "@newGameDealer": {
+    "description": "Small badge on the first seat: this player deals (plays first)"
+  },
+  "newGameAddPlayer": "Ajouter un joueur",
+  "@newGameAddPlayer": {
+    "description": "Dashed row under the players that opens the \"who's playing\" sheet"
+  },
+  "newGameStart": "{count, plural, =0{Commencer} =1{Commencer · 1 joueur} other{Commencer · {count} joueurs}}",
+  "@newGameStart": {
+    "description": "Primary button that creates the game and opens its board",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "whoIsPlayingTitle": "Qui joue ?",
+  "@whoIsPlayingTitle": {
+    "description": "Title of the sheet where players are picked for a new game"
+  },
+  "whoIsPlayingSearchHint": "Nom, ou nouveau joueur",
+  "@whoIsPlayingSearchHint": {
+    "description": "Hint of the search field that filters known players, or names a new one"
+  },
+  "whoIsPlayingFrequent": "Joue souvent avec vous",
+  "@whoIsPlayingFrequent": {
+    "description": "Overline above the known players, most frequent first (shown in capitals)"
+  },
+  "whoIsPlayingSameAs": "Mêmes joueurs que « {gameName} »",
+  "@whoIsPlayingSameAs": {
+    "description": "Action that picks the players of the last game, in the same order",
+    "placeholders": {
+      "gameName": {
+        "type": "String",
+        "example": "Partie 7"
+      }
+    }
+  },
+  "whoIsPlayingCreate": "Créer « {name} »",
+  "@whoIsPlayingCreate": {
+    "description": "Action that creates a new player with the name typed in the search field",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Sophie"
+      }
+    }
+  },
+  "whoIsPlayingConfirm": "{count, plural, =0{Valider} =1{Ajouter 1 joueur} other{Ajouter {count} joueurs}}",
+  "@whoIsPlayingConfirm": {
+    "description": "Button that closes the sheet and seats the chosen players; count is how many are chosen",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "4"
+      }
+    }
   }
 }

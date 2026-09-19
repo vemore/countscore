@@ -11,6 +11,11 @@ abstract class PlayerRepository {
   /// has the known bug of merging different humans with the same name.
   Future<List<String>> getAllNames();
   Future<Map<String, int?>> getColorsByName();
+
+  /// How many live games each local player sits in, keyed by name — the order
+  /// the "who's playing" sheet offers known players in, most frequent first.
+  /// A player in no game is absent rather than zero.
+  Future<Map<String, int>> getGameCountsByName();
   Future<int> renameByName(String oldName, String newName);
   Future<int> deleteByName(String name);
   Future<void> updateColorByName(String name, int colorValue);

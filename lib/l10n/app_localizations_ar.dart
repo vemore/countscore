@@ -1209,4 +1209,76 @@ class AppLocalizationsAr extends AppLocalizations {
   String groupUsageResets(String date) {
     return 'يُعاد التعيين في $date';
   }
+
+  @override
+  String get newGameNameLabel => 'الاسم';
+
+  @override
+  String get newGameGameLabel => 'اللعبة';
+
+  @override
+  String newGameAllGames(int count) {
+    return 'كل الألعاب ($count)';
+  }
+
+  @override
+  String get newGamePlayersLabel => 'اللاعبون · ترتيب الجلوس';
+
+  @override
+  String get newGameDragToReorder => 'اسحب لإعادة الترتيب';
+
+  @override
+  String get newGameDealer => 'يوزّع';
+
+  @override
+  String get newGameAddPlayer => 'إضافة لاعب';
+
+  @override
+  String newGameStart(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ابدأ · $count لاعب',
+      many: 'ابدأ · $count لاعبًا',
+      few: 'ابدأ · $count لاعبين',
+      two: 'ابدأ · لاعبان',
+      one: 'ابدأ · لاعب واحد',
+      zero: 'ابدأ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get whoIsPlayingTitle => 'من يلعب؟';
+
+  @override
+  String get whoIsPlayingSearchHint => 'اسم، أو لاعب جديد';
+
+  @override
+  String get whoIsPlayingFrequent => 'يلعب معك كثيرًا';
+
+  @override
+  String whoIsPlayingSameAs(String gameName) {
+    return 'نفس لاعبي «$gameName»';
+  }
+
+  @override
+  String whoIsPlayingCreate(String name) {
+    return 'إنشاء «$name»';
+  }
+
+  @override
+  String whoIsPlayingConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'إضافة $count لاعب',
+      many: 'إضافة $count لاعبًا',
+      few: 'إضافة $count لاعبين',
+      two: 'إضافة لاعبَين',
+      one: 'إضافة لاعب واحد',
+      zero: 'تم',
+    );
+    return '$_temp0';
+  }
 }

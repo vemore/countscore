@@ -564,6 +564,23 @@ class DriftPlayerRepository implements PlayerRepository {
   }
 
   @override
+  Future<Map<String, int>> getGameCountsByName() async {
+    final rows = await _db
+        .customSelect(
+          'SELECT p.name AS name, COUNT(DISTINCT gp.gameId) AS c '
+          'FROM players p '
+          'JOIN game_players gp ON gp.player_id = p.id AND gp.deleted_at IS NULL '
+          'JOIN games g ON g.id = gp.gameId AND g.deleted_at IS NULL '
+          'WHERE p.group_id IS NULL AND p.deleted_at IS NULL '
+          'GROUP BY p.id',
+        )
+        .get();
+    return {
+      for (final r in rows) r.data['name'] as String: r.data['c'] as int,
+    };
+  }
+
+  @override
   Future<int> renameByName(String oldName, String newName) async {
     final now = _nowMs();
     final globals = await _db

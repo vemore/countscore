@@ -567,5 +567,19 @@
   "groupSettingsSaved": "群组设置已保存",
   "groupUsageTitle": "本月 LLM 用量",
   "groupUsageAmount": "已用 {used}，预算 {budget}",
-  "groupUsageResets": "{date} 重置"
+  "groupUsageResets": "{date} 重置",
+  "newGameNameLabel": "名称",
+  "newGameGameLabel": "游戏",
+  "newGameAllGames": "全部游戏（{count}）",
+  "newGamePlayersLabel": "玩家 · 座位顺序",
+  "newGameDragToReorder": "拖动以调整顺序",
+  "newGameDealer": "发牌",
+  "newGameAddPlayer": "添加玩家",
+  "newGameStart": "{count, plural, =0{开始} other{开始 · {count} 名玩家}}",
+  "whoIsPlayingTitle": "谁来玩？",
+  "whoIsPlayingSearchHint": "姓名，或新玩家",
+  "whoIsPlayingFrequent": "常和你一起玩",
+  "whoIsPlayingSameAs": "与“{gameName}”相同的玩家",
+  "whoIsPlayingCreate": "创建“{name}”",
+  "whoIsPlayingConfirm": "{count, plural, =0{完成} other{添加 {count} 名玩家}}"
 }

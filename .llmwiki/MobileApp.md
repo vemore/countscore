@@ -83,6 +83,21 @@ derived from its fields, then the user's rules if any, else the ruleset shipped 
 `rulesSlug` (`lib/services/game_rules_catalog.dart`), else an empty state. See [[I18n]] for
 why those rulesets are assets and not ARB keys.
 
+`create_game_screen` — **New game**, direction A of the refresh
+(`wip/assets/2026-09-19-new-game-screen-is-a-bare-form/target.png`): the name as a light
+title field, prefilled with `nextGameName` of the last game ("Partie 1" before any); the
+game types as six tiles (`game_type_tile_grid.dart`), the types of the latest games first
+and the rest by display name (`gameTypesRecentFirst` in `lib/utils/recent_game_types.dart`),
+the selected type always on a tile (`gameTypeTiles`), *All games (N)* for the full list;
+under them one line with the type's win rule and end condition, or for *Other* a segmented
+choice of win rule; the players in **seat order** (`seat_order_list.dart`), coloured by
+`assignPlayerColors` over the seats — the rule the board applies to the stored players, so a
+player shows one colour here and on the board — with *Add a player* opening the "who's
+playing" sheet (`player_picker_sheet.dart`); and a full-width *Start · N players* in the
+`bottomNavigationBar`, enabled from two players. The seat order written is the list's order
+(`orderIndex`). `boardBuilder` replaces the board in tests. The *Share with the group*
+switch stays, under the players, while the device is in a group.
+
 `about_screen` reads the displayed version from `package_info_plus`
 (`PackageInfo.fromPlatform()`, held in a `static final` future) — i.e. from `pubspec.yaml`
 `version:` at build time; the ARB key `version` is only the `"Version {version}"` frame.
@@ -92,7 +107,7 @@ prompt below.
 
 ### Widgets — `lib/widgets/`
 
-Eight components shared out of the screens:
+Ten components shared out of the screens:
 
 - `board_lanes.dart` — the board's default layout ([below](#the-board)): `BoardData` (what
   both layouts draw from: players in seat order, rounds, a `GameStanding`, colours, the
@@ -105,9 +120,20 @@ Eight components shared out of the screens:
 - `player_avatars.dart` — `PlayerAvatar` (an initial on a colour, drawn in
   `onPlayerColor`) and `PlayerAvatarStack` (a game's players overlapping, in seat order and
   in their `playerColorsById` colours, "+N" past `maxShown`).
-- `player_picker_dialog.dart` — `create_game_screen`'s player picker: searches the known
-  players or creates one, giving a new player a colour no one else in the list uses, and
-  returns a `PlayerSelection` (name and colour).
+- `game_type_tile_grid.dart` — the New game screen's game types (below): `GameTypeTileGrid`,
+  three colour-and-icon tiles a row, the selected one tinted in its colour, outlined in the
+  primary and ticked; `showAllGameTypesSheet`, the full list by display name.
+- `seat_order_list.dart` — `SeatOrderList`, the New game screen's players, one row per seat:
+  seat number, two-letter `PlayerAvatar`, name, a *deals* badge on seat 1, and a handle
+  (`ReorderableDragStartListener`) that drags the row to another seat; a row swiped to the
+  start leaves the game.
+- `player_picker_sheet.dart` — "Who's playing?" (`showPlayerPickerSheet`), which replaced
+  the `player_picker_dialog.dart` of the old form: a search field that also creates a player
+  (Enter, or *Create "name"*), the known players as chips most frequent first
+  (`PlayerRepository.getGameCountsByName`), and *Same players as "last game"*. It resolves to
+  the new seat list of `PlayerSelection`s (name, colour value): seats already taken keep
+  their order, players checked here follow in the order checked. A new player is stored with
+  no colour value — the display-time palette colours him.
 - `who_starts_dialog.dart` — the board's overflow-menu **Who starts?**: draws one of the
   game's players at random, shows the name, and draws again on request. Nothing stored,
   nothing sent.
@@ -153,8 +179,8 @@ Eight components shared out of the screens:
 
 Cross-cutting helpers, since 2026-09-16: `insets.dart`, `game_type_name.dart` — the switch
 from a built-in game type's `builtin_key` to its localized name, which every screen showing a
-game type's name goes through ([[I18n]]) — `play_again.dart`, `app_theme.dart` and
-`player_colors.dart`.
+game type's name goes through ([[I18n]]) — `play_again.dart`, `app_theme.dart`,
+`player_colors.dart` and `recent_game_types.dart` (the New game screen's tile order).
 
 `app_theme.dart` — the one place the look is defined. `buildAppTheme(brightness)` seeds
 `ColorScheme.fromSeed` with `kBrandSeedLight` (`#0E8F88`, the icon's teal) or
@@ -174,7 +200,8 @@ in seat order, a player's own `colorValue` wins unless an earlier seat already s
 everyone else takes the first colour of `kPlayerPalette` (ten mid-tone colours) no one in
 the game shows; past ten the palette repeats by seat. `assignPlayerColors(colorValues)` is
 the same rule over bare colour values, and `onPlayerColor(colour)` the initial's colour on
-it. The home avatars and the board's lanes and rows use it.
+it. The home avatars, the board's lanes and rows, and the New game screen's seats and
+"who's playing" chips use it.
 
 
 `insets.dart` — `withBottomInset(context, base)` adds `MediaQuery.paddingOf(context).bottom`
@@ -183,10 +210,10 @@ on its main axis **only when its `padding` argument is null**, so every root scr
 passes an explicit padding loses that compensation and cannot scroll its last row clear of
 the system navigation bar — the app is edge-to-edge on `targetSdk` 36 and cannot opt out
 (`android/app/src/main/kotlin/com/example/countscore/MainActivity.kt` is a bare
-`FlutterActivity`; there is no `SystemChrome` call anywhere in `lib/`). Its eight call sites
+`FlutterActivity`; there is no `SystemChrome` call anywhere in `lib/`). Its seven call sites
 are the root scrollables of `about_screen.dart:31` (on the child `Padding` — a
 `SingleChildScrollView` never gets the compensation at all),
-`create_game_screen.dart:200`, `game_types_screen.dart:43`,
+`game_types_screen.dart:43`,
 `home_screen.dart:91` (the drawer) and `:335`, `player_stats_screen.dart:83`,
 `players_screen.dart:61`, and in `ranking_screen.dart` on the *Play again* button's
 `Padding` under the list, the last thing above the navigation bar. Only the bottom edge is compensated:
@@ -448,3 +475,13 @@ not "fix" it by hardcoding a codepoint.
   "Continue playing" reopens it — rather than finishing only on an explicit button — so the
   back button, the one gesture a user makes without reading, leaves the result recorded.
   The review prompt still hears of each game once: `setGameFinished` reports the transition.
+- **2026-09-19 — New game redrawn in direction A** (`feat/new-game-screen`). The form was
+  the one screen between home and the end of a game the refresh had not reached, and it
+  coloured players by their stored `colorValue` while the board used the display-time
+  palette, so a player could change colour between the two. It now colours seats through
+  `assignPlayerColors`, and makes the seat order — which the lanes, the rows and the keypad
+  follow — visible and draggable. The player dialog became a sheet that seats several
+  players at once and offers the last game's players; a created player is no longer given a
+  random stored colour, since the palette decides at display time. A type picked outside
+  the six tiles takes the first tile rather than the last, so that the default ZapZap sits
+  first before any game has been played.

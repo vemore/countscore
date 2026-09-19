@@ -1205,4 +1205,74 @@ class AppLocalizationsRu extends AppLocalizations {
   String groupUsageResets(String date) {
     return 'Обнулится $date';
   }
+
+  @override
+  String get newGameNameLabel => 'Название';
+
+  @override
+  String get newGameGameLabel => 'Игра';
+
+  @override
+  String newGameAllGames(int count) {
+    return 'Все игры ($count)';
+  }
+
+  @override
+  String get newGamePlayersLabel => 'Игроки · порядок хода';
+
+  @override
+  String get newGameDragToReorder => 'перетащите, чтобы изменить порядок';
+
+  @override
+  String get newGameDealer => 'сдаёт';
+
+  @override
+  String get newGameAddPlayer => 'Добавить игрока';
+
+  @override
+  String newGameStart(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Начать · $count игрока',
+      many: 'Начать · $count игроков',
+      few: 'Начать · $count игрока',
+      one: 'Начать · $count игрок',
+      zero: 'Начать',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get whoIsPlayingTitle => 'Кто играет?';
+
+  @override
+  String get whoIsPlayingSearchHint => 'Имя или новый игрок';
+
+  @override
+  String get whoIsPlayingFrequent => 'Часто играет с вами';
+
+  @override
+  String whoIsPlayingSameAs(String gameName) {
+    return 'Те же игроки, что в «$gameName»';
+  }
+
+  @override
+  String whoIsPlayingCreate(String name) {
+    return 'Создать «$name»';
+  }
+
+  @override
+  String whoIsPlayingConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Добавить $count игрока',
+      many: 'Добавить $count игроков',
+      few: 'Добавить $count игроков',
+      one: 'Добавить $count игрока',
+      zero: 'Готово',
+    );
+    return '$_temp0';
+  }
 }

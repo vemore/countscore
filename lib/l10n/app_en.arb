@@ -640,5 +640,19 @@
   "groupSettingsSaved": "Group settings saved",
   "groupUsageTitle": "LLM usage this month",
   "groupUsageAmount": "{used} spent of {budget}",
-  "groupUsageResets": "Resets on {date}"
+  "groupUsageResets": "Resets on {date}",
+  "newGameNameLabel": "Name",
+  "newGameGameLabel": "Game",
+  "newGameAllGames": "All games ({count})",
+  "newGamePlayersLabel": "Players · seat order",
+  "newGameDragToReorder": "drag to reorder",
+  "newGameDealer": "deals",
+  "newGameAddPlayer": "Add a player",
+  "newGameStart": "{count, plural, =0{Start} =1{Start · 1 player} other{Start · {count} players}}",
+  "whoIsPlayingTitle": "Who's playing?",
+  "whoIsPlayingSearchHint": "Name, or a new player",
+  "whoIsPlayingFrequent": "Often plays with you",
+  "whoIsPlayingSameAs": "Same players as “{gameName}”",
+  "whoIsPlayingCreate": "Create “{name}”",
+  "whoIsPlayingConfirm": "{count, plural, =0{Done} =1{Add 1 player} other{Add {count} players}}"
 }

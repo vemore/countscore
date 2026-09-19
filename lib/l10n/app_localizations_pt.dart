@@ -1197,4 +1197,70 @@ class AppLocalizationsPt extends AppLocalizations {
   String groupUsageResets(String date) {
     return 'Reinicia em $date';
   }
+
+  @override
+  String get newGameNameLabel => 'Nome';
+
+  @override
+  String get newGameGameLabel => 'Jogo';
+
+  @override
+  String newGameAllGames(int count) {
+    return 'Todos os jogos ($count)';
+  }
+
+  @override
+  String get newGamePlayersLabel => 'Jogadores · ordem de jogo';
+
+  @override
+  String get newGameDragToReorder => 'arraste para reordenar';
+
+  @override
+  String get newGameDealer => 'dá as cartas';
+
+  @override
+  String get newGameAddPlayer => 'Adicionar um jogador';
+
+  @override
+  String newGameStart(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Começar · $count jogadores',
+      one: 'Começar · 1 jogador',
+      zero: 'Começar',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get whoIsPlayingTitle => 'Quem joga?';
+
+  @override
+  String get whoIsPlayingSearchHint => 'Nome, ou novo jogador';
+
+  @override
+  String get whoIsPlayingFrequent => 'Joga muitas vezes com você';
+
+  @override
+  String whoIsPlayingSameAs(String gameName) {
+    return 'Os mesmos jogadores de “$gameName”';
+  }
+
+  @override
+  String whoIsPlayingCreate(String name) {
+    return 'Criar “$name”';
+  }
+
+  @override
+  String whoIsPlayingConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Adicionar $count jogadores',
+      one: 'Adicionar 1 jogador',
+      zero: 'Concluir',
+    );
+    return '$_temp0';
+  }
 }

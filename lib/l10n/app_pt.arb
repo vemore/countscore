@@ -567,5 +567,19 @@
   "groupSettingsSaved": "Configurações do grupo salvas",
   "groupUsageTitle": "Consumo do LLM este mês",
   "groupUsageAmount": "{used} gastos de {budget}",
-  "groupUsageResets": "Reinicia em {date}"
+  "groupUsageResets": "Reinicia em {date}",
+  "newGameNameLabel": "Nome",
+  "newGameGameLabel": "Jogo",
+  "newGameAllGames": "Todos os jogos ({count})",
+  "newGamePlayersLabel": "Jogadores · ordem de jogo",
+  "newGameDragToReorder": "arraste para reordenar",
+  "newGameDealer": "dá as cartas",
+  "newGameAddPlayer": "Adicionar um jogador",
+  "newGameStart": "{count, plural, =0{Começar} =1{Começar · 1 jogador} other{Começar · {count} jogadores}}",
+  "whoIsPlayingTitle": "Quem joga?",
+  "whoIsPlayingSearchHint": "Nome, ou novo jogador",
+  "whoIsPlayingFrequent": "Joga muitas vezes com você",
+  "whoIsPlayingSameAs": "Os mesmos jogadores de “{gameName}”",
+  "whoIsPlayingCreate": "Criar “{name}”",
+  "whoIsPlayingConfirm": "{count, plural, =0{Concluir} =1{Adicionar 1 jogador} other{Adicionar {count} jogadores}}"
 }

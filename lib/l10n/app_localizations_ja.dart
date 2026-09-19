@@ -1173,4 +1173,68 @@ class AppLocalizationsJa extends AppLocalizations {
   String groupUsageResets(String date) {
     return '$date にリセット';
   }
+
+  @override
+  String get newGameNameLabel => '名前';
+
+  @override
+  String get newGameGameLabel => 'ゲーム';
+
+  @override
+  String newGameAllGames(int count) {
+    return 'すべてのゲーム（$count）';
+  }
+
+  @override
+  String get newGamePlayersLabel => 'プレイヤー · 席順';
+
+  @override
+  String get newGameDragToReorder => 'ドラッグで並べ替え';
+
+  @override
+  String get newGameDealer => '親';
+
+  @override
+  String get newGameAddPlayer => 'プレイヤーを追加';
+
+  @override
+  String newGameStart(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '開始 · $count人',
+      zero: '開始',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get whoIsPlayingTitle => '誰が遊ぶ？';
+
+  @override
+  String get whoIsPlayingSearchHint => '名前、または新しいプレイヤー';
+
+  @override
+  String get whoIsPlayingFrequent => 'よく一緒に遊ぶ人';
+
+  @override
+  String whoIsPlayingSameAs(String gameName) {
+    return '「$gameName」と同じプレイヤー';
+  }
+
+  @override
+  String whoIsPlayingCreate(String name) {
+    return '「$name」を作成';
+  }
+
+  @override
+  String whoIsPlayingConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count人を追加',
+      zero: '完了',
+    );
+    return '$_temp0';
+  }
 }
