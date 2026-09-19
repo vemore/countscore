@@ -1125,6 +1125,20 @@ class AppLocalizationsAr extends AppLocalizations {
   String get whoStartsAgain => 'اسحب مجددًا';
 
   @override
+  String get diceRoller => 'رمي النرد';
+
+  @override
+  String get diceCount => 'عدد أحجار النرد';
+
+  @override
+  String get diceRollAgain => 'ارمِ مجددًا';
+
+  @override
+  String diceTotal(int total) {
+    return 'المجموع: $total';
+  }
+
+  @override
   String get resumeGame => 'استئناف';
 
   @override

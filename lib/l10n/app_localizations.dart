@@ -2033,6 +2033,30 @@ abstract class AppLocalizations {
   /// **'Tirer à nouveau'**
   String get whoStartsAgain;
 
+  /// Game board overflow-menu item and dialog title: rolls six-sided dice
+  ///
+  /// In fr, this message translates to:
+  /// **'Lancer les dés'**
+  String get diceRoller;
+
+  /// Label above the choice of how many dice (1 to 6) the dice roller rolls
+  ///
+  /// In fr, this message translates to:
+  /// **'Nombre de dés'**
+  String get diceCount;
+
+  /// Button in the dice roller that rolls the chosen dice again
+  ///
+  /// In fr, this message translates to:
+  /// **'Relancer'**
+  String get diceRollAgain;
+
+  /// Sum of the dice just rolled, under the dice in the dice roller
+  ///
+  /// In fr, this message translates to:
+  /// **'Total : {total}'**
+  String diceTotal(int total);
+
   /// Button on the home screen's Resume card: opens the most recently played game that is still open
   ///
   /// In fr, this message translates to:

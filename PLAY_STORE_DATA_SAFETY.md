@@ -121,6 +121,12 @@ permission to the merged release manifest (only its own non-exported `FileProvid
 receiver). Data a user chooses to pass to another app is not collected *by this app*, so
 nothing in the form below changes.
 
+The same day, the share action gained a **picture of the standings** next to the text: a PNG
+drawn on the device from the same ranking (title, summary line, podium and rows in the
+players' colours, the app's name — no more than the text carries). `share_plus` writes it to
+the app's cache directory (`cache/share_plus`) and hands it through its own `FileProvider`;
+no storage permission, no new manifest entry, no network request. The answers are unchanged.
+
 ### Report control for AI commentary (September 14, 2026)
 
 The analysis screen's **Report this commentary** action (Play AI-Generated Content policy)

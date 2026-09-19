@@ -33,9 +33,9 @@ class GameAnalysisScreen extends StatefulWidget {
     this.share,
   });
 
-  /// Injection seam for tests: receives the shared text instead of the
+  /// Injection seam for tests: receives the shared text and image instead of the
   /// system share sheet.
-  final ShareTextFn? share;
+  final ShareResultFn? share;
 
   final GameAnalysisRepository? repository;
 

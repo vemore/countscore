@@ -1846,6 +1846,28 @@
   "@whoStartsAgain": {
     "description": "Button in the Who starts? dialog that draws another player at random"
   },
+  "diceRoller": "Lancer les dés",
+  "@diceRoller": {
+    "description": "Game board overflow-menu item and dialog title: rolls six-sided dice"
+  },
+  "diceCount": "Nombre de dés",
+  "@diceCount": {
+    "description": "Label above the choice of how many dice (1 to 6) the dice roller rolls"
+  },
+  "diceRollAgain": "Relancer",
+  "@diceRollAgain": {
+    "description": "Button in the dice roller that rolls the chosen dice again"
+  },
+  "diceTotal": "Total : {total}",
+  "@diceTotal": {
+    "description": "Sum of the dice just rolled, under the dice in the dice roller",
+    "placeholders": {
+      "total": {
+        "type": "int",
+        "example": "7"
+      }
+    }
+  },
   "resumeGame": "Reprendre",
   "@resumeGame": {
     "description": "Button on the home screen's Resume card: opens the most recently played game that is still open"

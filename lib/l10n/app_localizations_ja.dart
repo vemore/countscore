@@ -1095,6 +1095,20 @@ class AppLocalizationsJa extends AppLocalizations {
   String get whoStartsAgain => 'もう一度引く';
 
   @override
+  String get diceRoller => 'サイコロを振る';
+
+  @override
+  String get diceCount => 'サイコロの数';
+
+  @override
+  String get diceRollAgain => 'もう一度振る';
+
+  @override
+  String diceTotal(int total) {
+    return '合計：$total';
+  }
+
+  @override
   String get resumeGame => '再開';
 
   @override

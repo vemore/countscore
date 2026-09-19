@@ -159,13 +159,20 @@ void main() {
     await tester.pumpWidget(_wrap(
       GameAnalysisScreen(
         repository: _FakeAnalysisRepository(cached),
-        share: (text, {subject}) async => shared = text,
+        share: (text, {subject, image}) async => shared = text,
       ),
       gameProvider: _GameProviderWithCurrentGame(),
     ));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('share_result')));
+    // The standings' PNG is drawn by the engine, which fake time does not
+    // drive.
+    await tester.runAsync(() async {
+      await tester.tap(find.byKey(const Key('share_result')));
+      for (var i = 0; i < 200 && shared == null; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+      }
+    });
     await tester.pumpAndSettle();
 
     expect(shared, contains('Le professeur a parlé.'));
@@ -176,7 +183,7 @@ void main() {
       GameAnalysisScreen(
         key: UniqueKey(),
         repository: _FakeAnalysisRepository(),
-        share: (text, {subject}) async => shared = text,
+        share: (text, {subject, image}) async => shared = text,
       ),
       gameProvider: _GameProviderWithCurrentGame(),
     ));
