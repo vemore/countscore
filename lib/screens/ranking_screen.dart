@@ -2,12 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/game_provider.dart';
+import '../providers/game_type_provider.dart';
 import '../utils/insets.dart';
 import '../utils/play_again.dart';
+import '../widgets/game_ranking.dart';
+import '../widgets/share_result_button.dart';
 import 'game_board_screen.dart';
 
+/// Where an open game stands, from the board's leaderboard button: the win
+/// rule on one line, then the same podium and ranked rows as the end screen
+/// (`RankedPlayers`) — player colours, the leader's crown, totals near the
+/// elimination threshold in orange, eliminated players struck out — and
+/// "Play again". The app bar shares the standings as text
+/// (`ShareResultButton`).
 class RankingScreen extends StatelessWidget {
-  const RankingScreen({super.key, this.boardBuilder});
+  const RankingScreen({super.key, this.boardBuilder, this.share});
+
+  /// Injected by tests only: receives the shared text instead of the system
+  /// share sheet.
+  final ShareTextFn? share;
 
   /// Injected by tests only: the board "Play again" opens. The default
   /// `GameBoardScreen` reaches the `AppDatabase` singleton.
@@ -16,126 +29,52 @@ class RankingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final canShare = context.select<GameProvider, bool>(
+        (g) => g.currentGame != null && g.currentPlayers.isNotEmpty);
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.ranking),
+        actions: [if (canShare) ShareResultButton(share: share)],
       ),
-      body: Consumer<GameProvider>(
-        builder: (context, gameProvider, child) {
+      body: Builder(
+        builder: (context) {
+          final gameProvider = context.watch<GameProvider>();
           final game = gameProvider.currentGame;
           if (game == null) {
-            return Center(
-              child: Text(l10n.noCurrentGame),
-            );
+            return Center(child: Text(l10n.noCurrentGame));
+          }
+          if (gameProvider.currentPlayers.isEmpty) {
+            return Center(child: Text(l10n.noScoresRecorded));
           }
 
-          final ranking = gameProvider.getRanking();
-
-          if (ranking.isEmpty) {
-            return Center(
-              child: Text(l10n.noScoresRecorded),
-            );
-          }
+          final typeId = game.gameTypeId;
+          final gameType = typeId == null
+              ? null
+              : context.watch<GameTypeProvider>().getGameTypeById(typeId);
+          final ranking = GameRanking.of(gameProvider, gameType);
+          final theme = Theme.of(context);
 
           return Column(
             children: [
-              // Règle de victoire
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                color: Theme.of(context).colorScheme.primaryContainer,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      game.isLowestScoreWins
-                          ? Icons.arrow_downward
-                          : Icons.arrow_upward,
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      game.isLowestScoreWins
-                          ? l10n.lowestScoreWins
-                          : l10n.highestScoreWins,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Liste des joueurs classés
               Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(8),
-                  itemCount: ranking.length,
-                  itemBuilder: (context, index) {
-                    final entry = ranking[index];
-                    final player = entry['player'];
-                    final total = entry['total'] as int;
-                    final position = index + 1;
-
-                    // Icône pour le podium
-                    Widget? leadingIcon;
-                    Color? cardColor;
-
-                    if (position == 1) {
-                      leadingIcon = const Icon(
-                        Icons.emoji_events,
-                        color: Colors.amber,
-                        size: 40,
-                      );
-                      cardColor = Colors.amber.withValues(alpha: 0.1);
-                    } else {
-                      leadingIcon = CircleAvatar(
-                        child: Text('$position'),
-                      );
-                    }
-
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                        vertical: 4,
-                        horizontal: 8,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  children: [
+                    Text(
+                      rankingSummary(
+                        l10n,
+                        gameType: gameType,
+                        rounds: gameProvider.currentRounds.length,
+                        isLowestScoreWins: game.isLowestScoreWins,
                       ),
-                      color: cardColor,
-                      child: ListTile(
-                        leading: leadingIcon,
-                        title: Text(
-                          player.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                        trailing: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .primaryContainer,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            total.toString(),
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onPrimaryContainer,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
+                      key: const Key('ranking_summary'),
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant),
+                    ),
+                    const SizedBox(height: 24),
+                    RankedPlayers(ranking: ranking),
+                  ],
                 ),
               ),
 

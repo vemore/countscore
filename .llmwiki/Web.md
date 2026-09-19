@@ -2,7 +2,7 @@
 
 > Scope: everything specific to the PWA build.
 > Related: [[DataLayer]] · [[MobileApp]] · [[Testing]] · [[LlmProviders]] · [[KnownLimits]]
-> Updated: 2026-09-16
+> Updated: 2026-09-19
 
 ## Facts
 
@@ -78,12 +78,41 @@ one appearing on the other's open board within seconds.
 
 ### Feature guards
 
-`kIsWeb` appears in only two files, plus the conditional export in `connection.dart`:
+`kIsWeb` guards one feature in Settings, plus the review prompt and the conditional export
+in `connection.dart`:
 
-- `lib/providers/settings_provider.dart:13,35,45,59` — export/import throw
-  `UnsupportedError`; wakelock is a silent no-op.
-- `lib/screens/settings_screen.dart:73,86,89,211` — hides the wakelock and export/import
-  UI blocks entirely.
+- `lib/providers/settings_provider.dart` — `supportsDbExportImport => !kIsWeb`, and
+  export/import throw `UnsupportedError` on the web: they need `dart:io`.
+- `lib/screens/settings_screen.dart` — reads `supportsDbExportImport` (not `kIsWeb`, so a
+  widget test can play the web build) and drops the Backup heading **with** its rows.
+  Every section heading there is a `_SectionTitle` followed by at least one row; the list
+  pads its bottom with `withBottomInset` plus 16, so the last row clears the gesture
+  bar (`test/screens/settings_screen_test.dart`).
+- `lib/services/review_prompt.dart` — no Play review sheet in a browser.
+
+**Keep screen awake works in the PWA.** wakelock_plus 1.8.0's web plugin injects
+`assets/packages/wakelock_plus/assets/no_sleep.js` as a same-origin `<script>` (allowed by
+`script-src 'self'`) and calls `navigator.wakeLock.request('screen')`, which no CSP
+directive governs; it re-requests the lock on `visibilitychange`, since a browser drops it
+when the tab is hidden. The API needs a secure context (https, or `localhost`). A browser
+without `navigator.wakeLock` gets NoSleep's fallback — a looping `data:` video — which the
+PWA's `default-src 'self'` blocks as media, so there the switch is saved but holds nothing;
+the failure lands in the provider's `catch`. Verified on 2026-09-19 in Chromium at 412×860
+under `_PWA_CSP` (`backend/app/main.py:34`): the switch obtains a `WakeLockSentinel`
+(`type: screen`), turning it off releases it, the setting is re-applied after a reload, and
+no CSP violation is logged. The lock is applied when `SettingsProvider` is first read — it
+is a lazy provider (`lib/main.dart:53`) — as on Android.
+
+**Sharing a result works in the PWA.** share_plus 13.3.0's web plugin calls
+`navigator.canShare` / `navigator.share` (the Web Share API, which no CSP directive
+governs) and, where the API is missing or refuses, falls back to opening a `mailto:` with
+the subject and the text through url_launcher — a navigation, which the CSP does not govern
+either. Verified on 2026-09-19 in Chromium at 412×860, a share_plus probe served under
+`_PWA_CSP` (`backend/app/main.py:34`): with no Web Share API (desktop Linux Chromium) the
+`mailto:?subject=…&body=…` handler launched; with the API present (stubbed) `navigator.share`
+received the title and text with user activation still active; no CSP violation in either
+case. The share call must stay synchronous from the tap — the API needs the transient user
+activation — which is why `ShareResultButton` awaits nothing before it.
 
 ### Building
 
@@ -113,6 +142,35 @@ Caddy vhost anywhere in the repo. [[Deployment]] covers only the FastAPI contain
 > by serving a `--base-href=/countscore/` build under that path — from a plain static
 > server and from uvicorn with the PWA CSP — creating a game and reloading.
 
+### GitHub Pages — `.github/workflows/deploy-pages.yml`
+
+A second publishing path, beside the backend's own host ([[Deployment]]): on a push to `main`
+touching `lib/`, `web/`, `assets/`, `pubspec.*`, `l10n.yaml`, the About icon, the privacy page,
+the two check scripts or the workflow itself — and on `workflow_dispatch` — it builds with
+`--release --no-tree-shake-icons --base-href=/<repo>/` and publishes to
+`<owner>.github.io/<repo>/` through `actions/upload-pages-artifact` and `actions/deploy-pages`.
+The base href is `github.event.repository.name`, never written in the file (a
+`<owner>.github.io` repository gets `/`); a manual run from another branch builds but does not
+deploy. No `BACKEND_URL`: the build is local-only until the visitor configures a server.
+
+Before publishing it runs what `deploy_web.sh` runs — `scripts/web_binaries.sh --check`, then
+`scripts/check_web_build.sh`, the one script both paths share (no `.md` outside
+`assets/assets/`, and `index.html`, `main.dart.js`, `sqlite3.wasm`, `drift_worker.js` present
+and non-empty). Its refusals are pinned against fixture builds by
+`scripts/check_web_build_selftest.sh` in the `app` CI job, which also runs the check on its own
+release web build ([[Testing]]).
+
+**The site also carries the privacy policy.** A Pages site is one artifact per repository:
+once the source is "GitHub Actions", `main:/docs` is no longer served, so the workflow copies
+`docs/privacy-policy.html` to the site root — the URL the Play Console holds
+([[Release]]) — refuses a build that already has a file by that name, and ends with a smoke
+test of the page URL, the policy and the runtime files. `docs/README.md` is not published.
+
+What differs from the same-origin deployment: no headers of ours (no `_PWA_CSP`, no
+`Cache-Control: no-cache` — Pages caches about 10 minutes), no COEP either (as in production,
+so Drift picks the same storage), and storage belongs to the Pages origin. The hash URL
+strategy means a reload never asks Pages for a path it does not have.
+
 ### CORS and mixed content
 
 The backend a user configures must whitelist the origin serving the PWA in its
@@ -120,6 +178,11 @@ The backend a user configures must whitelist the origin serving the PWA in its
 served from `localhost` against a backend that does not list it cannot reach
 `/comments/zapzap-analysis`; the e2e run skips that step for the same reason and it is
 validated by `curl` and on a device instead — see [[Testing]].
+
+A Pages build is in that position with every backend: its origin is
+`https://<owner>.github.io` (scheme and host, no path — that is what `CORS_ORIGINS` compares),
+and the operator must list it. The WebSocket is not subject to CORS, and the backend does not
+check its `Origin`, so the sync *stream* would connect where the HTTP calls fail.
 
 A second browser rule applies only on web: an `https://` page cannot call an `http://`
 backend, whatever the app allows. `BackendProvider.check` accepts `http://` on a private
@@ -169,11 +232,31 @@ address for the Android case; on web that URL still only works from an http orig
   every `build/web/`. A path-scoped rule loads when the same files are touched, and lives
   outside the tree Flutter copies. `scripts/deploy_web.sh` refuses any `.md` in the build
   so the class of leak cannot return through that path.
-- **The Server section of Settings is *not* `kIsWeb`-guarded**, unlike wakelock and
-  export/import. The PWA needs a configured backend exactly as the Android app does, and a
+- **The Server section of Settings is *not* `kIsWeb`-guarded**, unlike export/import. The PWA needs a configured backend exactly as the Android app does, and a
   browser user has no other way to supply one.
 - **Export/import is hidden rather than reimplemented on web.** It needs `dart:io`. Doing
   it properly means a `FileExporter` abstraction with a JSON serialisation path for the
   browser; that was scoped out of v1 rather than shipped half-working.
 - **`index.html` was left stock.** Every customisation is one more thing to reconcile on a
   Flutter upgrade, and none was needed to ship.
+- **The PWA is also published on GitHub Pages (2026-09-19).** The repository is public and
+  the build fully static, and a Pages build with no server fits "no default backend URL": it
+  gives the app to anyone without a self-hosted backend. The checks were moved out of
+  `deploy_web.sh` into `scripts/check_web_build.sh` so the two paths run the same code rather
+  than two copies. No real Pages URL is written in the repository (refinement 6): the wiki and
+  `README.md` say `<owner>.github.io/<repo>/`, as for any deployment host.
+- **GitHub's hosting logs are not a new outbound data flow (2026-09-19).** Loading the PWA from
+  Pages sends GitHub the request for the app's own static files — the address and user agent
+  any web host sees, as it already does for the privacy page and the repository. No game data,
+  no setting and no identifier goes to GitHub, and the build fetches nothing the self-hosted
+  one does not (CanvasKit and fallback fonts from Google's `gstatic.com`, [[Security]] — that
+  pre-existing web-only flow is undisclosed, `wip/todo_nr/2026-09-19-pwa-gstatic-undisclosed.md`).
+  It is the distribution channel, like the Play Store download, not a call the app makes, so `README.md` Privacy, `privacy_policy.md` and
+  `PLAY_STORE_DATA_SAFETY.md` (which covers the Android binary alone) are unchanged
+  ([[Documentation]]).
+- **Keep screen awake came back to the PWA (2026-09-19).** It had been hidden behind
+  `kIsWeb` on the assumption that wakelock_plus did nothing in a browser, while its heading
+  stayed drawn — so Settings ended on a bare "Screen" heading and read as a page cut short.
+  The plugin has a real web path that the CSP allows, and a phone on a games table is
+  exactly where the screen should stay on, so the guard went rather than the heading.
+  `wip/done/2026-09-19-settings-screen-section-is-empty-on-the-web.md`.

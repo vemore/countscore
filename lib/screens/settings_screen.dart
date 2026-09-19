@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +6,7 @@ import '../providers/backend_provider.dart';
 import '../providers/group_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/theme_provider.dart';
+import '../utils/insets.dart';
 import '../widgets/group_settings_section.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -110,26 +110,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final settings = context.watch<SettingsProvider>();
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.settingsTitle),
       ),
       body: ListView(
+        // The last row clears the gesture bar, with room to spare.
+        padding: withBottomInset(context, const EdgeInsets.only(bottom: 16)),
         children: [
           // Section Thème
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text(
-              l10n.appearance,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                // From the scheme, not a hardcoded colour: the old violet was a
-                // low-contrast blue-violet on the dark theme's black.
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ),
+          _SectionTitle(l10n.appearance),
           Consumer<ThemeProvider>(
             builder: (context, themeProvider, child) {
               return RadioGroup<ThemeMode>(
@@ -159,19 +150,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Divider(),
 
           // Section Serveur — pas de garde kIsWeb : la PWA en a besoin aussi.
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text(
-              l10n.serverSection,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                // From the scheme, not a hardcoded colour: the old violet was a
-                // low-contrast blue-violet on the dark theme's black.
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ),
+          _SectionTitle(l10n.serverSection),
           Consumer<BackendProvider>(
             builder: (context, backend, child) {
               return Padding(
@@ -244,64 +223,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Divider(),
 
           // Section Groupe — sous le serveur, dont elle dépend.
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text(
-              l10n.groupSection,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ),
+          _SectionTitle(l10n.groupSection),
           const GroupSettingsSection(),
           const Divider(),
 
-          // Section Écran
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text(
-              l10n.screen,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                // From the scheme, not a hardcoded colour: the old violet was a
-                // low-contrast blue-violet on the dark theme's black.
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
+          // Section Écran — on the web too: wakelock_plus holds a
+          // navigator.wakeLock sentinel in the PWA.
+          _SectionTitle(l10n.screen),
+          SwitchListTile(
+            key: const Key('keep_screen_awake'),
+            title: Text(l10n.keepScreenAwake),
+            subtitle: Text(l10n.keepScreenAwakeDescription),
+            value: settings.keepScreenAwake,
+            onChanged: (_) => settings.toggleKeepScreenAwake(),
           ),
-          if (!kIsWeb)
-            Consumer<SettingsProvider>(
-              builder: (context, settingsProvider, child) {
-                return SwitchListTile(
-                  title: Text(l10n.keepScreenAwake),
-                  subtitle: Text(l10n.keepScreenAwakeDescription),
-                  value: settingsProvider.keepScreenAwake,
-                  onChanged: (value) {
-                    settingsProvider.toggleKeepScreenAwake();
-                  },
-                );
-              },
-            ),
-          if (!kIsWeb) const Divider(),
 
-          // Section Sauvegarde (mobile/desktop only)
-          if (!kIsWeb) ...[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text(
-              l10n.backup,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                // From the scheme, not a hardcoded colour: the old violet was a
-                // low-contrast blue-violet on the dark theme's black.
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ),
+          // Section Sauvegarde — heading and rows together, or neither: it
+          // needs dart:io, so the PWA has none of it.
+          if (settings.supportsDbExportImport) ...[
+          const Divider(),
+          _SectionTitle(l10n.backup),
           Consumer<SettingsProvider>(
             builder: (context, settingsProvider, child) {
               return Column(
@@ -412,8 +353,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
               );
             },
           ),
-          ], // end if (!kIsWeb)
+          ], // end if (settings.supportsDbExportImport)
         ],
+      ),
+    );
+  }
+}
+
+/// A section heading. Every one is followed by at least one row: a section whose
+/// rows a platform lacks drops its heading with them.
+class _SectionTitle extends StatelessWidget {
+  final String text;
+
+  const _SectionTitle(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          // From the scheme, not a hardcoded colour: the old violet was a
+          // low-contrast blue-violet on the dark theme's black.
+          color: Theme.of(context).colorScheme.primary,
+        ),
       ),
     );
   }

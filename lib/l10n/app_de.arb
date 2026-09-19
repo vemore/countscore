@@ -567,5 +567,70 @@
   "groupSettingsSaved": "Gruppeneinstellungen gespeichert",
   "groupUsageTitle": "LLM-Verbrauch diesen Monat",
   "groupUsageAmount": "{used} von {budget} verbraucht",
-  "groupUsageResets": "Wird am {date} zurückgesetzt"
+  "groupUsageResets": "Wird am {date} zurückgesetzt",
+  "statsBestWinRate": "Beste Siegquote",
+  "statsWinsOutOfGames": "{wins, plural, =0{Kein Sieg in {games}} one{{wins} Sieg in {games}} other{{wins} Siege in {games}}}",
+  "statsColumnPlayer": "Spieler",
+  "statsColumnGames": "Partien",
+  "statsUnranked": "{count, plural, one{{count} Partie · noch nicht gewertet} other{{count} Partien · noch nicht gewertet}}",
+  "statsLeaderboardFooter": "{count, plural, one{Gewertet ab {count} beendeten Partie. Tippe auf einen Spieler, um seine Karte zu sehen.} other{Gewertet ab {count} beendeten Partien. Tippe auf einen Spieler, um seine Karte zu sehen.}}",
+  "statsGamesLabel": "{count, plural, one{Partie} other{Partien}}",
+  "statsWinsLabel": "{count, plural, one{Sieg} other{Siege}}",
+  "statsAverageRank": "Ø Platz",
+  "statsRankChartTitle": "{count, plural, one{Platz, letzte Partie} other{Platz, letzte {count} Partien}}",
+  "statsTrendImproving": "im Aufwind",
+  "statsTrendDeclining": "rückläufig",
+  "statsTrendSteady": "konstant",
+  "statsRankOrdinal": "{rank}.",
+  "statsWinStreak": "{count, plural, =0{Keine Siegesserie} one{Serie: {count} Sieg} other{Serie: {count} Siege}}",
+  "statsRecord": "Rekord: {total}",
+  "statsOnGameType": "Bei {gameType}",
+  "statsAverageTotal": "Durchschnittliches Endergebnis",
+  "statsBestTotal": "Bestes Endergebnis",
+  "statsMostBeaten": "Am häufigsten geschlagen",
+  "statsOpenPlayerCard": "Spielerkarte öffnen",
+
+  "shareResult": "Ergebnis teilen",
+
+  "shareAnalysis": "Analyse teilen",
+
+  "shareResultSubject": "Ergebnis: {gameName}",
+
+  "shareResultTitle": "Partie vom {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} Punkt} other{{points} Punkte}}",
+
+  "shareResultFooter": "Punkte gezählt mit {appName}: {url}",
+
+  "shareFailed": "Teilen konnte nicht geöffnet werden",
+
+  "newGameNameLabel": "Name",
+
+  "newGameGameLabel": "Spiel",
+
+  "newGameAllGames": "Alle Spiele ({count})",
+
+  "newGamePlayersLabel": "Spieler · Sitzordnung",
+
+  "newGameDragToReorder": "zum Umordnen ziehen",
+
+  "newGameDealer": "gibt",
+
+  "newGameAddPlayer": "Spieler hinzufügen",
+
+  "newGameStart": "{count, plural, =0{Starten} =1{Starten · 1 Spieler} other{Starten · {count} Spieler}}",
+
+  "whoIsPlayingTitle": "Wer spielt mit?",
+
+  "whoIsPlayingSearchHint": "Name oder neuer Spieler",
+
+  "whoIsPlayingFrequent": "Spielt oft mit dir",
+
+  "whoIsPlayingSameAs": "Dieselben Spieler wie „{gameName}“",
+
+  "whoIsPlayingCreate": "„{name}“ anlegen",
+
+  "whoIsPlayingConfirm": "{count, plural, =0{Fertig} =1{1 Spieler hinzufügen} other{{count} Spieler hinzufügen}}",
+
+  "defaultGameName": "Spiel {number}"
 }

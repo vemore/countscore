@@ -109,6 +109,18 @@ month's AI spending from `GET /groups/me/usage`. These are app settings chosen f
 lists, not information about the user, and the server already stored them with the group; the
 recipient is the same self-hosted server. The answers below are unchanged.
 
+### Sharing a game result (September 19, 2026)
+
+The end-of-game screen, the in-game ranking and the analysis screen have a **share** action
+(`lib/widgets/share_result_button.dart`, `share_plus`). It builds a short text on the device —
+game type, date, standings, the commentary on the analysis screen, and the app's name with its
+plain Play listing URL — and hands it to the **system share sheet** (on the web, the Web Share
+API or a `mailto:` fallback). The app makes no network request for it, receives nothing back,
+and sends nothing until the user picks a target app and sends from there. `share_plus` adds no
+permission to the merged release manifest (only its own non-exported `FileProvider` and
+receiver). Data a user chooses to pass to another app is not collected *by this app*, so
+nothing in the form below changes.
+
 ### Report control for AI commentary (September 14, 2026)
 
 The analysis screen's **Report this commentary** action (Play AI-Generated Content policy)
@@ -255,8 +267,9 @@ sharing and the AI-commentary report control.
 Publishing the older v1.0 text alongside a "Yes" declaration is exactly the mismatch
 reviewers look for, so the two must be regenerated together — see `docs/README.md`.
 
-**One manual step remains**: GitHub Pages has to be switched on for the repository —
-*Settings → Pages → Source: Deploy from a branch → `main` / `docs`*. Confirm the URL loads
+GitHub Pages serves it: since 2026-09-19 through `.github/workflows/deploy-pages.yml` (Pages
+source *GitHub Actions*), which publishes the page at the same URL next to the PWA and
+fetches it after every deployment; before, from `main` / `docs`. Confirm the URL loads
 publicly, in a private window, before pasting it into the Console.
 
 **CRITICAL**: the URL must be publicly accessible (no login), permanent, and HTTPS.

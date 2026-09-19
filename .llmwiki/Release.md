@@ -167,18 +167,22 @@ and CI refuses a pull request whose committed file differs — never edit it by 
 
 ### Submission state
 
-**1.2.0 (5) is live on production at a 20 % staged rollout** since 2026-09-17, published with
+**1.2.0 (5) is live on production at 100 %** since 2026-09-19, widened from the Console
+(*Production → Versions → Gérer le déploiement → Mettre à jour le déploiement*) after two days
+at 20 %: Android Vitals showed no crash and no ANR for the release (too few users for a
+rate), and there were no reviews. `play_publish.py status` now lists it as the only, completed,
+production release. It was published on 2026-09-17 with
 `play_publish.py publish --track production --rollout 0.2 --listing --commit` — the first
 release to go straight to production through the API, with no internal hop. The same edit
 published the corrected ten-locale listing text (#84); `--graphics` was deliberately left out,
 because the eight phone screenshots are still the wrong ratio
 (`scripts/compose_screenshots.py` has composed a compliant set per locale since 2026-09-18,
 not yet published — [[StoreListing]]), so the images on Play are the ones
-1.1.0 uploaded. 1.1.0 (4) stays listed as the completed production release beside it until the
-rollout is widened. Internal is still on 1.1.0 (4); beta and closed testing on 1.0.1 (3).
+1.1.0 uploaded. Internal is still on 1.1.0 (4); beta and closed testing on 1.0.1 (3).
+`1.2.0+5` is tagged.
 
-Left: watch Crashes & ANRs for 48 h, then widen the rollout from the Console — the API has no
-"widen" step, and `--rollout` must stay strictly between 0 and 1.
+The Console keeps one recommended action on the release, "affichage de bord à bord": it does
+not apply (`wip/done/2026-09-16-edge-to-edge-insets.md`).
 
 > **Status: Outdated** (2026-09-15) — this paragraph read "Nothing blocks a 1.1.0 submission in
 > the repository any more. What is left is on the Console and the GitHub account, not in the

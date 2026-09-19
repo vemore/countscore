@@ -1209,4 +1209,274 @@ class AppLocalizationsAr extends AppLocalizations {
   String groupUsageResets(String date) {
     return 'يُعاد التعيين في $date';
   }
+
+  @override
+  String get statsBestWinRate => 'أفضل نسبة فوز';
+
+  @override
+  String statsWinsOutOfGames(int wins, int games) {
+    String _temp0 = intl.Intl.pluralLogic(
+      wins,
+      locale: localeName,
+      other: '$wins انتصار من $games',
+      many: '$wins انتصارًا من $games',
+      few: '$wins انتصارات من $games',
+      two: 'فوزان من $games',
+      one: 'فوز واحد من $games',
+      zero: 'لا فوز من $games',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsColumnPlayer => 'اللاعب';
+
+  @override
+  String get statsColumnGames => 'المباريات';
+
+  @override
+  String statsUnranked(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count مباراة · غير مصنّف بعد',
+      many: '$count مباراة · غير مصنّف بعد',
+      few: '$count مباريات · غير مصنّف بعد',
+      two: 'مباراتان · غير مصنّف بعد',
+      one: 'مباراة واحدة · غير مصنّف بعد',
+      zero: 'لا مباريات · غير مصنّف بعد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsLeaderboardFooter(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'التصنيف ابتداءً من $count مباراة منتهية. المس لاعبًا لعرض بطاقته.',
+      many: 'التصنيف ابتداءً من $count مباراة منتهية. المس لاعبًا لعرض بطاقته.',
+      few: 'التصنيف ابتداءً من $count مباريات منتهية. المس لاعبًا لعرض بطاقته.',
+      two: 'التصنيف ابتداءً من مباراتين منتهيتين. المس لاعبًا لعرض بطاقته.',
+      one: 'التصنيف ابتداءً من مباراة منتهية واحدة. المس لاعبًا لعرض بطاقته.',
+      zero: 'التصنيف ابتداءً من $count مباراة منتهية. المس لاعبًا لعرض بطاقته.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsGamesLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'مباراة',
+      many: 'مباراة',
+      few: 'مباريات',
+      two: 'مباراتان',
+      one: 'مباراة',
+      zero: 'مباراة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsWinsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'انتصار',
+      many: 'انتصارًا',
+      few: 'انتصارات',
+      two: 'فوزان',
+      one: 'فوز',
+      zero: 'فوز',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsAverageRank => 'متوسط المركز';
+
+  @override
+  String statsRankChartTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'المركز، آخر $count مباراة',
+      many: 'المركز، آخر $count مباراة',
+      few: 'المركز، آخر $count مباريات',
+      two: 'المركز، آخر مباراتين',
+      one: 'المركز، آخر مباراة',
+      zero: 'المركز',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsTrendImproving => 'في تحسّن';
+
+  @override
+  String get statsTrendDeclining => 'في تراجع';
+
+  @override
+  String get statsTrendSteady => 'ثابت';
+
+  @override
+  String statsRankOrdinal(String rank) {
+    return 'المركز $rank';
+  }
+
+  @override
+  String statsWinStreak(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'سلسلة: $count انتصار',
+      many: 'سلسلة: $count انتصارًا',
+      few: 'سلسلة: $count انتصارات',
+      two: 'سلسلة: فوزان',
+      one: 'سلسلة: فوز واحد',
+      zero: 'لا سلسلة انتصارات',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsRecord(int total) {
+    return 'الرقم القياسي: $total';
+  }
+
+  @override
+  String statsOnGameType(String gameType) {
+    return 'في $gameType';
+  }
+
+  @override
+  String get statsAverageTotal => 'متوسط المجموع النهائي';
+
+  @override
+  String get statsBestTotal => 'أفضل مجموع نهائي';
+
+  @override
+  String get statsMostBeaten => 'الخصم الأكثر هزيمة';
+
+  @override
+  String get statsOpenPlayerCard => 'عرض بطاقة اللاعب';
+
+  @override
+  String get shareResult => 'مشاركة النتيجة';
+
+  @override
+  String get shareAnalysis => 'مشاركة التحليل';
+
+  @override
+  String shareResultSubject(String gameName) {
+    return 'النتيجة: $gameName';
+  }
+
+  @override
+  String shareResultTitle(String date) {
+    return 'مباراة $date';
+  }
+
+  @override
+  String shareResultStanding(int rank, String name, int points) {
+    String _temp0 = intl.Intl.pluralLogic(
+      points,
+      locale: localeName,
+      other: '$points نقطة',
+      many: '$points نقطة',
+      few: '$points نقاط',
+      two: 'نقطتان',
+      one: 'نقطة واحدة',
+      zero: '$points نقطة',
+    );
+    return '$rank. $name — $_temp0';
+  }
+
+  @override
+  String shareResultFooter(String appName, String url) {
+    return 'سُجّلت النقاط باستخدام $appName: $url';
+  }
+
+  @override
+  String get shareFailed => 'تعذّر فتح المشاركة';
+
+  @override
+  String get newGameNameLabel => 'الاسم';
+
+  @override
+  String get newGameGameLabel => 'اللعبة';
+
+  @override
+  String newGameAllGames(int count) {
+    return 'كل الألعاب ($count)';
+  }
+
+  @override
+  String get newGamePlayersLabel => 'اللاعبون · ترتيب الجلوس';
+
+  @override
+  String get newGameDragToReorder => 'اسحب لإعادة الترتيب';
+
+  @override
+  String get newGameDealer => 'يوزّع';
+
+  @override
+  String get newGameAddPlayer => 'إضافة لاعب';
+
+  @override
+  String newGameStart(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ابدأ · $count لاعب',
+      many: 'ابدأ · $count لاعبًا',
+      few: 'ابدأ · $count لاعبين',
+      two: 'ابدأ · لاعبان',
+      one: 'ابدأ · لاعب واحد',
+      zero: 'ابدأ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get whoIsPlayingTitle => 'من يلعب؟';
+
+  @override
+  String get whoIsPlayingSearchHint => 'اسم، أو لاعب جديد';
+
+  @override
+  String get whoIsPlayingFrequent => 'يلعب معك كثيرًا';
+
+  @override
+  String whoIsPlayingSameAs(String gameName) {
+    return 'نفس لاعبي «$gameName»';
+  }
+
+  @override
+  String whoIsPlayingCreate(String name) {
+    return 'إنشاء «$name»';
+  }
+
+  @override
+  String whoIsPlayingConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'إضافة $count لاعب',
+      many: 'إضافة $count لاعبًا',
+      few: 'إضافة $count لاعبين',
+      two: 'إضافة لاعبَين',
+      one: 'إضافة لاعب واحد',
+      zero: 'تم',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String defaultGameName(int number) {
+    return 'لعبة $number';
+  }
 }

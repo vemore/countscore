@@ -1205,4 +1205,261 @@ class AppLocalizationsRu extends AppLocalizations {
   String groupUsageResets(String date) {
     return 'Обнулится $date';
   }
+
+  @override
+  String get statsBestWinRate => 'Лучший процент побед';
+
+  @override
+  String statsWinsOutOfGames(int wins, int games) {
+    String _temp0 = intl.Intl.pluralLogic(
+      wins,
+      locale: localeName,
+      other: '$wins победы из $games',
+      many: '$wins побед из $games',
+      few: '$wins победы из $games',
+      one: '$wins победа из $games',
+      zero: 'Ни одной победы из $games',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsColumnPlayer => 'Игрок';
+
+  @override
+  String get statsColumnGames => 'Партии';
+
+  @override
+  String statsUnranked(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count партии · пока вне рейтинга',
+      many: '$count партий · пока вне рейтинга',
+      few: '$count партии · пока вне рейтинга',
+      one: '$count партия · пока вне рейтинга',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsLeaderboardFooter(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'В рейтинге с $count завершённых партий. Нажмите на игрока, чтобы открыть его карточку.',
+      many:
+          'В рейтинге с $count завершённых партий. Нажмите на игрока, чтобы открыть его карточку.',
+      few:
+          'В рейтинге с $count завершённых партий. Нажмите на игрока, чтобы открыть его карточку.',
+      one:
+          'В рейтинге с $count завершённой партии. Нажмите на игрока, чтобы открыть его карточку.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsGamesLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'партии',
+      many: 'партий',
+      few: 'партии',
+      one: 'партия',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsWinsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'победы',
+      many: 'побед',
+      few: 'победы',
+      one: 'победа',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsAverageRank => 'среднее место';
+
+  @override
+  String statsRankChartTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Место, последние $count партии',
+      many: 'Место, последние $count партий',
+      few: 'Место, последние $count партии',
+      one: 'Место, последняя $count партия',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsTrendImproving => 'растёт';
+
+  @override
+  String get statsTrendDeclining => 'снижается';
+
+  @override
+  String get statsTrendSteady => 'стабильно';
+
+  @override
+  String statsRankOrdinal(String rank) {
+    return '$rank-е';
+  }
+
+  @override
+  String statsWinStreak(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Серия: $count победы',
+      many: 'Серия: $count побед',
+      few: 'Серия: $count победы',
+      one: 'Серия: $count победа',
+      zero: 'Серии побед нет',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsRecord(int total) {
+    return 'Рекорд: $total';
+  }
+
+  @override
+  String statsOnGameType(String gameType) {
+    return 'В игре $gameType';
+  }
+
+  @override
+  String get statsAverageTotal => 'Средний итоговый счёт';
+
+  @override
+  String get statsBestTotal => 'Лучший итоговый счёт';
+
+  @override
+  String get statsMostBeaten => 'Чаще всего обыгран';
+
+  @override
+  String get statsOpenPlayerCard => 'открыть карточку игрока';
+
+  @override
+  String get shareResult => 'Поделиться результатом';
+
+  @override
+  String get shareAnalysis => 'Поделиться анализом';
+
+  @override
+  String shareResultSubject(String gameName) {
+    return 'Результат: $gameName';
+  }
+
+  @override
+  String shareResultTitle(String date) {
+    return 'Партия от $date';
+  }
+
+  @override
+  String shareResultStanding(int rank, String name, int points) {
+    String _temp0 = intl.Intl.pluralLogic(
+      points,
+      locale: localeName,
+      other: '$points очка',
+      many: '$points очков',
+      few: '$points очка',
+      one: '$points очко',
+    );
+    return '$rank. $name — $_temp0';
+  }
+
+  @override
+  String shareResultFooter(String appName, String url) {
+    return 'Счёт вёлся в $appName: $url';
+  }
+
+  @override
+  String get shareFailed => 'Не удалось открыть меню «Поделиться»';
+
+  @override
+  String get newGameNameLabel => 'Название';
+
+  @override
+  String get newGameGameLabel => 'Игра';
+
+  @override
+  String newGameAllGames(int count) {
+    return 'Все игры ($count)';
+  }
+
+  @override
+  String get newGamePlayersLabel => 'Игроки · порядок хода';
+
+  @override
+  String get newGameDragToReorder => 'перетащите, чтобы изменить порядок';
+
+  @override
+  String get newGameDealer => 'сдаёт';
+
+  @override
+  String get newGameAddPlayer => 'Добавить игрока';
+
+  @override
+  String newGameStart(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Начать · $count игрока',
+      many: 'Начать · $count игроков',
+      few: 'Начать · $count игрока',
+      one: 'Начать · $count игрок',
+      zero: 'Начать',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get whoIsPlayingTitle => 'Кто играет?';
+
+  @override
+  String get whoIsPlayingSearchHint => 'Имя или новый игрок';
+
+  @override
+  String get whoIsPlayingFrequent => 'Часто играет с вами';
+
+  @override
+  String whoIsPlayingSameAs(String gameName) {
+    return 'Те же игроки, что в «$gameName»';
+  }
+
+  @override
+  String whoIsPlayingCreate(String name) {
+    return 'Создать «$name»';
+  }
+
+  @override
+  String whoIsPlayingConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Добавить $count игрока',
+      many: 'Добавить $count игроков',
+      few: 'Добавить $count игроков',
+      one: 'Добавить $count игрока',
+      zero: 'Готово',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String defaultGameName(int number) {
+    return 'Игра $number';
+  }
 }

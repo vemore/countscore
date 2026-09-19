@@ -4,7 +4,7 @@
 > assets behind it. The Console walkthrough is `PUBLISHING.md`; the publishing mechanism is
 > [[Release]] and the `release-android` skill.
 > Related: [[Release]] · [[I18n]] · [[Documentation]] · [[KnownLimits]]
-> Updated: 2026-09-18
+> Updated: 2026-09-19
 
 ## Facts
 
@@ -21,23 +21,26 @@ file silently reverts at the next release.
 `flutter_launcher_icons` generates the Android densities from), the 1024×500
 `feature_graphic.png` (Template 1 of `store_listing/FEATURE_GRAPHIC_TEMPLATES.md`: icon, name,
 tagline and the scoring grid in a phone frame, drawn with Pillow), and eight raw phone
-captures under `assets/screenshots/phone/`, pulled over ADB by
-`scripts/capture_screenshots.sh`. Requirements: `store_listing/ASSET_REQUIREMENTS.md`.
+captures under `assets/screenshots/phone/`, the shared set, taken with the app in French.
+`scripts/capture_screenshots.sh <locale>` switches CountScore alone to a store locale's
+language (`adb shell cmd locale set-app-locales com.vemore.countscore --locales <locale>`,
+Android 13+; `--reset` puts it back on the phone's language) and writes that locale's own set
+to `store_listing/<locale>/raw/`. Requirements: `store_listing/ASSET_REQUIREMENTS.md`.
 
 ### Screenshots: raw captures in, one composed set per locale out
 
 The raw captures are 1080×2400 RGBA — ratio 2.22 and an alpha channel, both refused by Play —
 so they are **input only**. `scripts/compose_screenshots.py` (Pillow, PEP 723, `uv run
---script`) crops the status and navigation bars (`CROP_TOP = 110`, `CROP_BOTTOM = 132`),
-scales the screen under a caption band on a Deep Purple gradient (the app's seed colour), and
-writes **1080×1920 opaque RGB** PNGs to `store_listing/<locale>/screenshots/phone/`, under the
-capture's own file name. That is the directory `play_publish.py graphics_files()` reads
-first, so `listing --graphics` publishes the composed set with no change to the publisher.
-
-> **Status: Outdated** (2026-09-18) — the app's seed colour is teal (`#0E8F88`,
-> `lib/utils/app_theme.dart`) since the theme refresh; the caption band is still Deep Purple
-> and the raw captures still show the old theme. Re-capture and re-colour:
-> `wip/todo_nr/2026-09-18-store-screenshots-show-the-old-purple-theme.md`.
+--script`) takes a locale's `raw/` set when it has one, else the shared set — whole, never
+file by file, so one carousel never mixes two UI languages — crops the status and navigation
+bars (`CROP_TOP = 110`, `CROP_BOTTOM = 132`), scales the screen under a caption band on a
+gradient from the app's teal (`BRAND = #0E8F88`, `kBrandSeedLight` in
+`lib/utils/app_theme.dart`, which a test compares) to 70 % of it, and writes **1080×1920 opaque
+RGB** PNGs to `store_listing/<locale>/screenshots/phone/`, under the capture's own file name.
+That is the directory `play_publish.py graphics_files()` reads first, so `listing --graphics`
+publishes the composed set with no change to the publisher. The directory holds exactly the
+composed set: compose deletes a PNG there with no raw capture of that name, and `--check`
+reports one — which is how a stray capture committed there turns CI red ([[Testing]]).
 
 - The captions are `store_listing/<locale>/screenshot_captions.txt`, one `<capture stem>:
   <caption>` line per capture; the script refuses a missing or an unknown stem, and a caption
@@ -56,8 +59,21 @@ first, so `listing --graphics` publishes the composed set with no change to the 
 - **All ten locales are composed** (2026-09-18) and `--check` exits 0. The French captions
   were validated by the user — with #3 changed to name no game, see the decision below — and
   the nine others are translated from them. **Not yet on Play**: that is `play_publish.py
-  listing --graphics --commit`, on the user's go. The screens themselves stay French in every
-  locale: the captures are shared, only the caption is localized.
+  listing --graphics --commit`, on the user's go. The screens themselves are still French in
+  every locale, and still the old purple theme: no locale has a `raw/` set yet, so all ten
+  compose from the shared captures, and the committed images predate the teal band. The
+  retake, one device session per locale, is
+  `wip/todo/2026-09-18-store-screenshots-show-french-ui-everywhere.md`.
+
+### Promo video
+
+`store_listing/<locale>/video.txt` holds the Listing `video` field, a YouTube URL, which
+`play_publish.py listing` sends when the file exists (absent: the field is not sent, and Play
+keeps what it has). All ten locales point at the same **unlisted** video,
+`https://www.youtube.com/watch?v=WnYxasc4dV0` (24 s, English narration and UI, embedding
+allowed), rendered by the `/brag` plugin into the ignored `brag-output/`: the teal board
+lanes, the keypad with its "0 ZapZap" key, the end-screen podium and the analysis voices,
+rebuilt in HTML from the widgets rather than captured.
 
 ### Published locales (10, since 2026-09-16)
 
@@ -196,13 +212,22 @@ store:
 
 ## Decisions & History
 
+- **One English promo video for every locale (2026-09-19).** The user's call: a video in a
+  language the visitor may not read still shows the app working, which ten empty slots do
+  not. Unlisted, because the listing is its only audience. A localized cut replaces the URL in
+  the locale's `video.txt` alone.
 - **Screenshots are composed, per locale, from one set of raw captures (2026-09-18).** Play
   refuses the raw Pixel captures (2.22 ratio, alpha), and a carousel of bare UI says nothing
   at thumbnail size, where the decision to tap is made. 1080×1920 was decided at the
   2026-09-18 refinement: exactly 16:9, the widest ratio Play accepts for a phone. The captions
   are per locale because the listing is — ten markets, ten languages — while the captures stay
   shared: re-capturing the UI in ten languages costs a device session per locale for a screen
-  the caption already explains. Claude drafts the French captions from the listing copy, the
+  the caption already explains.
+
+  > **Status: Outdated** (2026-09-19) — reversed at refinement 4: a `ja-JP` visitor reading a
+  > Japanese caption above « Liste des joueurs » sees an app that is not in their language,
+  > though it is. The captures are per locale now (`store_listing/<locale>/raw/`), the shared
+  > set only a fallback until a locale is retaken. Claude drafts the French captions from the listing copy, the
   user validates them, the other locales are translated from them.
 - **No game brand names in the store images (2026-09-18).** The draft caption for the game
   types screen named three third-party games; the user replaced it with « Vos jeux préférés,

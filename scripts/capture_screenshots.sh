@@ -1,273 +1,148 @@
 #!/bin/bash
 
-# CountScore - Screenshot Capture Helper Script
+# CountScore - raw store screenshots of one store locale, over ADB.
 #
-# This script automates screenshot capture via ADB for Play Store listing.
+# Switches CountScore alone to the locale's language (per-app language, Android 13+:
+# `cmd locale set-app-locales`; the phone's own language is not touched), restarts it,
+# then walks you through the eight screens and pulls each capture into
+# store_listing/<locale>/raw/. scripts/compose_screenshots.py composes that set, not the
+# shared store_listing/assets/screenshots/phone/, for the locale.
 #
-# Prerequisites:
-# - Android device connected via USB (or emulator running)
-# - ADB installed and in PATH
-# - USB debugging enabled on device
-# - CountScore app installed and populated with test data
+# Prerequisites: adb in PATH, one device (or ANDROID_SERIAL naming one), CountScore
+# installed with the demo data (players and game names can stay the same in every locale).
 #
-# Usage:
-#   chmod +x scripts/capture_screenshots.sh
-#   ./scripts/capture_screenshots.sh
+# Usage: scripts/capture_screenshots.sh <store locale>    e.g. ja-JP, ar, fr-FR
+#        scripts/capture_screenshots.sh --reset           CountScore back to the phone's language
+#
+# Then: uv run --script scripts/compose_screenshots.py --locale <store locale>
 
-set -e  # Exit on error
+set -euo pipefail
 
-echo "========================================="
-echo "CountScore Screenshot Capture Tool"
-echo "========================================="
-echo ""
+PACKAGE="com.vemore.countscore"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LISTING="$ROOT/store_listing"
 
-# Configuration
-SCREENSHOT_DIR="store_listing/assets/screenshots/phone"
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-TEMP_DIR="/tmp/countscore_screenshots_$TIMESTAMP"
-
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-# Check if ADB is installed
-if ! command -v adb &> /dev/null; then
-    echo -e "${RED}❌ ERROR: ADB not found${NC}"
-    echo "Please install Android SDK Platform Tools"
-    echo "https://developer.android.com/tools/releases/platform-tools"
-    exit 1
-fi
-
-# Check if device is connected
-echo "Checking for connected devices..."
-DEVICE_COUNT=$(adb devices | grep -v "List" | grep "device" | wc -l)
-
-if [ "$DEVICE_COUNT" -eq 0 ]; then
-    echo -e "${RED}❌ ERROR: No Android device connected${NC}"
-    echo ""
-    echo "Please:"
-    echo "1. Connect your Android device via USB, OR"
-    echo "2. Start an Android emulator"
-    echo "3. Enable USB debugging on your device"
-    echo "4. Run 'adb devices' to verify connection"
-    exit 1
-fi
-
-if [ "$DEVICE_COUNT" -gt 1 ]; then
-    echo -e "${YELLOW}⚠️  WARNING: Multiple devices connected${NC}"
-    echo "Connected devices:"
-    adb devices | grep "device$"
-    echo ""
-    echo "This script will use the first device."
-    echo "To specify a device, use: adb -s DEVICE_ID"
-    echo ""
-    read -p "Continue? (y/n): " confirm
-    echo ""
-    if [[ ! $confirm =~ ^[Yy]$ ]]; then
-        exit 1
-    fi
-fi
-
-DEVICE_MODEL=$(adb shell getprop ro.product.model | tr -d '\r')
-echo -e "${GREEN}✓ Connected to: $DEVICE_MODEL${NC}"
-echo ""
-
-# Create directories
-mkdir -p "$SCREENSHOT_DIR"
-mkdir -p "$TEMP_DIR"
-
-# Screenshot list
-declare -a SCREENSHOTS=(
-    "01_main_screen|Main Score Tracking Screen|Show active game with 3-4 players and scores"
-    "02_player_management|Player Management|Show player list or add player dialog"
-    "03_game_types|Game Type Selection|Show game types (ZapZap, Uno, Scrabble, custom)"
-    "04_game_history|Game History|Show past games list with dates and results"
-    "05_game_board|Game Board View (Optional)|Full game board during play"
-    "06_customization|Customization (Optional)|Settings or game type customization"
-    "07_score_entry|Score Entry (Optional)|Score input interface"
-    "08_statistics|Statistics (Optional)|Player stats or analytics"
+# stem|what the screen must show. The stems are the caption keys of
+# store_listing/<locale>/screenshot_captions.txt: a renamed stem needs its caption renamed
+# in all ten files, or the composer refuses the set.
+SCREENSHOTS=(
+    "01_main_screen|Home: the list of games, three or four of them under way or finished"
+    "02_player_management|Players: the player list, with the demo players"
+    "03_game_types|New game: the game tiles, the seat order and who's playing"
+    "04_podium|End of game: the podium and the final totals of a finished game"
+    "05_game_board|Board: a game in progress, several rounds, the leader visible"
+    "06_customization|A custom game type being created or edited"
+    "07_score_entry|Score entry: the keypad sheet open over the board"
+    "08_statistics|Statistics: a player's games, wins and rates"
 )
 
-echo "========================================="
-echo "Screenshot Capture Instructions"
-echo "========================================="
-echo ""
-echo "You will be prompted to capture ${#SCREENSHOTS[@]} screenshots."
-echo "For each screenshot:"
-echo "  1. Navigate to the specified screen in CountScore"
-echo "  2. Ensure the screen looks good (clean UI, realistic data)"
-echo "  3. Press ENTER to capture"
-echo "  4. Review the captured screenshot"
-echo "  5. Choose to keep or retake"
-echo ""
-echo -e "${YELLOW}TIP: Keep CountScore app open and ready!${NC}"
-echo ""
-read -p "Press ENTER to start capturing screenshots..."
-echo ""
-
-# Capture function
-capture_screenshot() {
-    local filename=$1
-    local title=$2
-    local description=$3
-    local temp_file="$TEMP_DIR/${filename}.png"
-    local final_file="$SCREENSHOT_DIR/${filename}.png"
-
-    while true; do
-        echo "========================================="
-        echo -e "${BLUE}📸 Screenshot: $title${NC}"
-        echo "========================================="
-        echo ""
-        echo "Description: $description"
-        echo ""
-        echo "Steps:"
-        echo "  1. Navigate to this screen in CountScore"
-        echo "  2. Check that UI looks clean and professional"
-        echo "  3. Press ENTER when ready to capture"
-        echo ""
-        read -p "Ready? Press ENTER to capture (or 's' to skip): " -r
-        echo ""
-
-        if [[ $REPLY =~ ^[Ss]$ ]]; then
-            echo -e "${YELLOW}⏭️  Skipped $filename${NC}"
-            echo ""
-            return
-        fi
-
-        # Capture screenshot
-        echo "Capturing..."
-        adb exec-out screencap -p > "$temp_file"
-
-        if [ $? -eq 0 ] && [ -f "$temp_file" ]; then
-            FILE_SIZE=$(ls -lh "$temp_file" | awk '{print $5}')
-            echo -e "${GREEN}✓ Captured successfully ($FILE_SIZE)${NC}"
-            echo "Temporary file: $temp_file"
-            echo ""
-
-            # Show file info
-            if command -v file &> /dev/null; then
-                file "$temp_file" | grep -o "[0-9]* x [0-9]*" || echo "Image format: PNG"
-            fi
-
-            echo ""
-            echo "Options:"
-            echo "  [k] Keep this screenshot"
-            echo "  [r] Retake screenshot"
-            echo "  [v] View screenshot (if viewer available)"
-            echo "  [s] Skip this screenshot"
-            echo ""
-            read -p "Choose option [k/r/v/s]: " choice
-            echo ""
-
-            case $choice in
-                [Kk])
-                    mv "$temp_file" "$final_file"
-                    echo -e "${GREEN}✅ Saved as: $final_file${NC}"
-                    echo ""
-                    return
-                    ;;
-                [Rr])
-                    echo "Retaking screenshot..."
-                    echo ""
-                    continue
-                    ;;
-                [Vv])
-                    if command -v xdg-open &> /dev/null; then
-                        xdg-open "$temp_file" &
-                        echo "Opening screenshot viewer..."
-                        echo ""
-                        continue
-                    else
-                        echo "No image viewer found. Continuing..."
-                        continue
-                    fi
-                    ;;
-                [Ss])
-                    rm -f "$temp_file"
-                    echo -e "${YELLOW}⏭️  Skipped $filename${NC}"
-                    echo ""
-                    return
-                    ;;
-                *)
-                    echo "Invalid option. Retaking screenshot..."
-                    echo ""
-                    continue
-                    ;;
-            esac
-        else
-            echo -e "${RED}❌ ERROR: Failed to capture screenshot${NC}"
-            echo "Retrying..."
-            echo ""
-            continue
-        fi
-    done
+usage() {
+    echo "usage: $0 <store locale>   (e.g. ja-JP, ar, fr-FR)" >&2
+    echo "       $0 --reset          (CountScore back to the phone's language)" >&2
+    exit 2
 }
 
-# Capture all screenshots
-CAPTURED_COUNT=0
-for screenshot in "${SCREENSHOTS[@]}"; do
-    IFS='|' read -r filename title description <<< "$screenshot"
-    capture_screenshot "$filename" "$title" "$description"
-    if [ -f "$SCREENSHOT_DIR/${filename}.png" ]; then
-        CAPTURED_COUNT=$((CAPTURED_COUNT + 1))
-    fi
+die() {
+    echo "error: $*" >&2
+    exit 1
+}
+
+command -v adb > /dev/null || die "adb not found (Android SDK Platform Tools)"
+
+[ $# -eq 1 ] || usage
+
+# More than one device and no ANDROID_SERIAL: adb itself refuses every command, so say
+# why once, here, rather than on the first capture.
+devices=$(adb devices | awk 'NR > 1 && $2 == "device" { print $1 }')
+count=$(printf '%s' "$devices" | grep -c . || true)
+[ "$count" -gt 0 ] || die "no device in 'adb devices' (USB debugging, or adb connect <address>)"
+if [ "$count" -gt 1 ] && [ -z "${ANDROID_SERIAL:-}" ]; then
+    die "several devices; pick one with ANDROID_SERIAL=<serial>: $(echo "$devices" | tr '\n' ' ')"
+fi
+
+if [ "$1" = "--reset" ]; then
+    adb shell cmd locale set-app-locales "$PACKAGE" --locales ""
+    echo "CountScore follows the phone's language again."
+    exit 0
+fi
+
+locale="$1"
+case "$locale" in
+    -*) usage ;;
+esac
+[ -f "$LISTING/$locale/title.txt" ] ||
+    die "$locale is not a store locale (a directory of store_listing/ with a title.txt)"
+
+sdk=$(adb shell getprop ro.build.version.sdk | tr -d '\r')
+[ "$sdk" -ge 33 ] || die "per-app language needs Android 13 (API 33); the device is API $sdk"
+adb shell pm path "$PACKAGE" > /dev/null || die "$PACKAGE is not installed on the device"
+
+# The store locale is a BCP 47 tag already (ja-JP, zh-CN, ar): Android resolves it to the
+# app's closest translation (app_ja.arb, app_zh.arb, app_ar.arb).
+adb shell cmd locale set-app-locales "$PACKAGE" --locales "$locale"
+current=$(adb shell cmd locale get-app-locales "$PACKAGE" | tr -d '\r')
+echo "CountScore language: $current"
+adb shell am force-stop "$PACKAGE"
+adb shell monkey -p "$PACKAGE" -c android.intent.category.LAUNCHER 1 > /dev/null
+
+out="$LISTING/$locale/raw"
+mkdir -p "$out"
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+echo
+echo "Capturing $locale into ${out#"$ROOT"/}. Check the UI is in that language before the first one."
+echo
+
+kept=0
+for entry in "${SCREENSHOTS[@]}"; do
+    stem="${entry%%|*}"
+    what="${entry#*|}"
+    while true; do
+        echo "== $stem: $what"
+        read -r -p "ENTER to capture, s to skip: " reply
+        if [[ $reply =~ ^[Ss]$ ]]; then
+            echo "skipped $stem"
+            break
+        fi
+        if ! adb exec-out screencap -p > "$tmp/$stem.png" || [ ! -s "$tmp/$stem.png" ]; then
+            echo "capture failed, again"
+            continue
+        fi
+        if command -v file > /dev/null; then
+            file -b "$tmp/$stem.png"
+        fi
+        choice=v
+        while [[ $choice =~ ^[Vv]$ ]]; do
+            read -r -p "k keep, r retake, v view: " choice
+            if [[ $choice =~ ^[Vv]$ ]]; then
+                if command -v xdg-open > /dev/null; then
+                    xdg-open "$tmp/$stem.png" > /dev/null 2>&1 &
+                else
+                    echo "no xdg-open; the file is $tmp/$stem.png"
+                fi
+            fi
+        done
+        if [[ $choice =~ ^[Kk]$ ]]; then
+            mv "$tmp/$stem.png" "$out/$stem.png"
+            kept=$((kept + 1))
+            echo "saved ${out#"$ROOT"/}/$stem.png"
+            break
+        fi
+    done
 done
 
-# Cleanup temp directory
-rm -rf "$TEMP_DIR"
-
-# Summary
-echo ""
-echo "========================================="
-echo "Capture Complete!"
-echo "========================================="
-echo ""
-echo -e "${GREEN}✓ Captured: $CAPTURED_COUNT / ${#SCREENSHOTS[@]} screenshots${NC}"
-echo ""
-
-if [ "$CAPTURED_COUNT" -lt 2 ]; then
-    echo -e "${RED}⚠️  WARNING: Google Play Store requires minimum 2 screenshots${NC}"
-    echo "You have captured: $CAPTURED_COUNT"
-    echo "Please capture at least 2 screenshots."
-    echo ""
-fi
-
-if [ "$CAPTURED_COUNT" -ge 2 ] && [ "$CAPTURED_COUNT" -lt 4 ]; then
-    echo -e "${YELLOW}💡 TIP: 4-8 screenshots recommended for best results${NC}"
-    echo "Current count: $CAPTURED_COUNT"
-    echo ""
-fi
-
-# List captured screenshots
-if [ "$CAPTURED_COUNT" -gt 0 ]; then
-    echo "Captured screenshots:"
-    ls -lh "$SCREENSHOT_DIR"/*.png 2>/dev/null || echo "No screenshots found"
-    echo ""
-fi
-
-# Next steps
-echo "========================================="
-echo "Next Steps"
-echo "========================================="
-echo ""
-echo "1. Review screenshots:"
-echo "   cd $SCREENSHOT_DIR && ls -lh"
-echo ""
-echo "2. Optional: Enhance screenshots"
-echo "   - Add device frames"
-echo "   - Add text overlays"
-echo "   - See: store_listing/SCREENSHOT_GUIDE.md"
-echo ""
-echo "3. Verify requirements:"
-echo "   - Minimum 2 screenshots: $([ $CAPTURED_COUNT -ge 2 ] && echo '✓' || echo '✗')"
-echo "   - Recommended 4-8: $([ $CAPTURED_COUNT -ge 4 ] && echo '✓' || echo '○')"
-echo "   - File size < 8MB each: (check manually)"
-echo "   - Format PNG or JPEG: ✓"
-echo ""
-echo "4. Upload to Play Console"
-echo "   Store presence > Main store listing > Phone screenshots"
-echo ""
-echo -e "${GREEN}Happy publishing! 🚀${NC}"
+echo
+echo "$kept of ${#SCREENSHOTS[@]} captures kept in ${out#"$ROOT"/}."
+# A capture from an earlier session under a stem no longer listed would be composed too.
+for f in "$out"/*.png; do
+    [ -e "$f" ] || continue
+    name=$(basename "$f" .png)
+    known=0
+    for entry in "${SCREENSHOTS[@]}"; do
+        [ "${entry%%|*}" = "$name" ] && known=1
+    done
+    [ "$known" -eq 1 ] || echo "warning: ${f#"$ROOT"/} is not in this script's list; delete it or caption it"
+done
+echo "Next: uv run --script scripts/compose_screenshots.py --locale $locale"
+echo "Back to the phone's language: scripts/capture_screenshots.sh --reset"
