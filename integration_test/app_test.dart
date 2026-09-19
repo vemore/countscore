@@ -64,7 +64,7 @@ void main() {
 
       // === Step 3: create the game → GameBoardScreen.
       await tester.tap(find.byKey(const Key('create_game_submit')));
-      await _waitFor(tester, find.byType(DataTable));
+      await _waitFor(tester, find.byKey(const Key('board_add_round')));
 
       // === Step 4: enter 3 rounds of scores through the keypad sheet: one
       // player after the other in seat order, "Next" then "Validate round".
@@ -112,7 +112,7 @@ void main() {
       // Wait for the board to actually open — the home game card ALSO has a
       // more_vert menu, so opening the menu before the board is up would hit
       // the wrong (home) menu, which has no "Analyze" item.
-      await _waitFor(tester, find.byType(DataTable));
+      await _waitFor(tester, find.byKey(const Key('board_add_round')));
       await _waitFor(tester, find.byIcon(Icons.more_vert));
       await tester.tap(find.byIcon(Icons.more_vert));
       final hasAnalyse = await _pumpUntil(

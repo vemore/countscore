@@ -106,7 +106,8 @@ tests hand-pump instead — see `_pumpFailure` in `test/screens/game_analysis_sc
 without scheduling a frame, so the suite uses hand-rolled waiters `_waitFor`, `_waitEnabled`
 and `_pumpUntil` (which also waits for the keypad's round to reach the database). Do not "simplify" them back to `pumpAndSettle`.
 
-**Web run** — `chromedriver` major version must match the installed Chrome:
+**Web run** — `chromedriver` major version must match the installed Chrome (`google-chrome --version`;
+the matching build is `https://storage.googleapis.com/chrome-for-testing-public/<version>/linux64/chromedriver-linux64.zip`):
 
 ```bash
 chromedriver --port=4444 &
