@@ -34,6 +34,7 @@
 | `test/screens/game_board_end_of_game_test.dart` | The board's end of game: the finished chip appears and disappears with `finishedAt` while **Round N** stays enabled, and the game type's rule finishes the game and opens the end screen — naming the winner on a highest-wins and on a lowest-wins type — after a round is validated on the keypad, keeps quiet for a crossing already answered "Continue playing" (which returns to the board with the game reopened; back leaves it finished), re-arms once the game is back under its threshold, is raised once on the board's first build for an open game past its threshold and not for a finished one, and remembers "Continue playing" across leaving the board (SharedPreferences, cleared when the game goes back under); a finished game's app bar reopens its end screen, without "Continue playing". `GameBoardScreen.analysisRepo` is injected for the same reason `GameProvider`'s repositories are — the default reaches the singleton. |
 | `test/providers/game_provider_sync_test.dart` | A current game deleted by sync is reported once (`takeRemotelyDeletedGameName`), which the board uses to close itself. |
 | `test/drift/web_upgrade_test.dart` | A v9 database (v10 to v16 stripped, `user_version` 9) reopened through Drift gets the sync tables, columns, triggers, `games.finishedAt` the back-filled `game_types.builtin_key`, every built-in type's `rules_slug` and the v15 unique index from `onUpgrade` — the PWA's upgrade path, and the only engine that runs it. |
+| `test/drift/persistence_flush_test.dart` | The PWA reload fix, off the browser: `PersistenceFlushInterceptor` issues its `SELECT 1` outside any transaction once after the first open and after each outermost transaction — committed, rolled back (the error still surfaces), nested (once, after the outer one) or a batch — seen through a recording interceptor over `NativeDatabase.memory()`. And `onCreate` rerun on a full file whose `user_version` was reset to 0 completes: no duplicate built-in type, a tombstoned one not resurrected, the games kept, version back to 16. |
 | `test/game_rules_catalog_test.dart` | The shipped rulesets in `assets/rules/`: every locale carries the same 21 slugs, the French and English masters say a game ends when a total *reaches* its threshold, and each keeps the numbers the app actually scores on — a translation that drops a threshold contradicts the type it documents. |
 | `test/models_test.dart` | Model serialisation. It pins the built-in game types **by index**: the first ten are what a pre-v14 install already holds, so a new type is appended, never inserted. |
 | `test/providers/theme_provider_test.dart` | `ThemeMode` decode fallbacks and the SharedPreferences round-trip. |
@@ -47,7 +48,7 @@
 | `test/services/commentary_report_test.dart` | The AI-commentary report `mailto:`: addressed to the listing contact with an encoded subject and body, an ampersand in the body unable to start a new parameter, truncation that counts code points so an emoji is never split, and the reference line skipping what is unknown. |
 | `test/screens/game_end_screen_test.dart` | The game-end screen: the winner, the podium's three places with their totals and the rest in rank order; *Play again* creates the next game with the same players and opens it; *Analysis* is absent without a server (Play again then spans the row) and present with one; and "End game" from the home card menu finishes the game and opens the screen. |
 | `test/screens/ranking_screen_test.dart` | The in-game ranking against the end screen: board colours, the sole leader crowned, the same order on both; no crown with no round played, after a round of all zeros, or on a tie, where the tied players stand on the same step and share a place number. |
-| `test/screens/create_game_screen_test.dart` | The New game screen at 412 dp: six game-type tiles three a row, the last game's type first; the name after the last game's; the rule line; the seats under it in the last game's order, the first one dealing; a full-width *Start · N players* at the bottom. A player's avatar colour here equals his colour on the real board, also when two players own the same colour; a seat dragged by its handle changes the created game's `orderIndex`; the "who's playing" sheet creates a player and seats him after the ones checked; "All games" puts a type that was not on a tile onto one; "Other" offers the win rule; the first game is named in the app's language (`en`, `fr`, `ja`). The board is injected (`boardBuilder`). |
+| `test/screens/create_game_screen_test.dart` | The New game screen at 412 dp: six game-type tiles three a row, the last game's type first; the name after the last game's; the rule line; the seats under it in the last game's order, the first one dealing; a full-width *Start · N players* at the bottom. A player's avatar colour here equals his colour on the real board, also when two players own the same colour; a seat dragged by its handle changes the created game's `orderIndex`; the "who's playing" sheet creates a player and seats him after the ones checked; "All games" puts a type that was not on a tile onto one; "Other" offers the win rule; the first game is named in the app's language (`en`, `fr`, `ja`); with no game type at all it shows "No game types" (`game_type_empty`), not an endless "Loading game types…". The board is injected (`boardBuilder`). |
 | `test/utils/recent_game_types_test.dart` | The tiles' order (types of the latest games first, the rest by display name, the selected type always on a tile) and `PlayerRepository.getGameCountsByName` — live games only. |
 | `test/screens/play_again_test.dart` | *Play again* (`lib/utils/play_again.dart`): the ranking offers it and opens the new game — same type, win rule and players in order, the source game left untouched; a finished game's home menu offers it, a game still in play keeps "New with same players"; and `nextGameName` counts on from the last number. The board is injected (`boardBuilder`) and the home menu read through `itemBuilder`, as in the finish-menu test. |
 | `test/screens/game_rules_screen_test.dart` | The rules page's precedence: the shipped ruleset when the user wrote none, the user's own rules winning over it, the scoring summary derived from the type rather than the text, the empty state for a type with neither, restore clearing the stored rules and not offered without a shipped ruleset, and an emptied editor meaning "no rules of mine" rather than an empty string. The ruleset is served from memory, never the asset bundle. |
@@ -164,6 +165,31 @@ flutter test integration_test/app_test.dart -d <device_id> \
 This one exercises the real network call, with no CORS in the way. For broader on-device
 work, use the `flutter-device-test` skill.
 
+### Web reload — `integration_test/reload_persistence_test.dart`
+
+Web only (skipped elsewhere), no backend. A page cannot reload itself inside an integration
+test, so the test reads what a reload would: `integration_test/support/persisted_db_web.dart`
+opens the IndexedDB database `countscore` through a fresh `IndexedDbFileSystem` and a second
+`sqlite3.wasm`, read-only — what drift's worker has not flushed is invisible to it, as to the
+next page load. Straight after the app opens the database it asserts the stored
+`user_version` is the current `schemaVersion` and the built-in types are all there; after
+creating two games and deleting one (a transaction), that the deletion is stored. Without
+`PersistenceFlushInterceptor` it fails on both (version 0; the deleted game still stored) —
+checked on 2026-09-19. `sqlite3` is a dev dependency for this, at the version drift already
+locks.
+
+```bash
+chromedriver --port=4444 &
+flutter drive --driver=test_driver/integration_test.dart \
+  --target=integration_test/reload_persistence_test.dart \
+  -d web-server --browser-name=chrome --headless
+```
+
+A real reload was checked by hand, in Chromium through Playwright on a release build: the
+IndexedDB page 1 holds `user_version` 16 after the first load and after each reload, with no
+uncaught error; a browser left at version 0 by the previous build recovers on its first load
+of the fixed one.
+
 ### Backend — `pytest`
 
 `tests/test_groups.py` (create, join, revoke, rotate) · `test_sync_contract.py` (batch
@@ -209,12 +235,12 @@ toolchain table in [[MobileApp]] must move together.
 
 | Job | Steps |
 |---|---|
-| `scope` | `scripts/ci_scope_selftest.sh` → `gh api repos/{owner}/{repo}/pulls/<n>/files` (`.filename` **and** `.previous_filename`) → `scripts/ci_scope.sh` → five `name=true\|false` flags into `$GITHUB_OUTPUT` |
+| `scope` | `scripts/ci_scope_selftest.sh` → `scripts/retry_sqlite3_hash_selftest.sh` → `gh api repos/{owner}/{repo}/pulls/<n>/files` (`.filename` **and** `.previous_filename`) → `scripts/ci_scope.sh` → five `name=true\|false` flags into `$GITHUB_OUTPUT` |
 | `backend` | `postgres:17-alpine` service → checkout at depth 2 → privacy page tests (`scripts/test_build_privacy_page.py`) → pandoc **3.6.4** (release archive, checksum-pinned) → `scripts/build_privacy_page.py --check --base HEAD^1` → `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` → `play_publish.py` tests (`.claude/skills/release-android/scripts/`, fake Google service) → `fonts-roboto-unhinted` → `scripts/test_compose_screenshots.py` → `compose_screenshots.py --check` → `alembic upgrade head` → `downgrade base` → `upgrade head` → `check` (a migration round trip) → `uv export` + `pip-audit` |
 | `image` | `docker build backend` → runs as non-root, no compiler, no dev dependencies, read-only code → `docker build -f backend/Dockerfile.backup backend` → `age --version`, `pg_dump --version` (17) → `countscore-backup --once` with no recipient must exit non-zero → `docker compose config --quiet` on both compose files, failing on any warning |
-| `app` | `scripts/hooks_selftest.sh` → `scripts/check_web_build_selftest.sh` → `osv-scanner` on `pubspec.lock` → `pub get` → `scripts/web_binaries.sh --check` (and `--fetch` on the weekly run only) → `scripts/test_third_party_licenses.py` → `scripts/third_party_licenses.py --check` → `dart run build_runner build` → `analyze` → `test` → `build web --release` → `scripts/check_web_build.sh build/web` |
-| `android` | `pub get` → `dart run build_runner build` → `build apk --debug` |
-| `sync` | `postgres:17-alpine` service → `uv sync --locked` → `alembic upgrade head` → `.venv/bin/uvicorn` on 8765 (waits on `/health`; never `uv run`, whose parent process holds the uv cache lock and makes setup-uv's post-job `uv cache prune` time out whenever `uv.lock` changed) → `pub get` → `build_runner build` → `flutter test test/sync/sync_two_devices_test.dart` |
+| `app` | `scripts/hooks_selftest.sh` → `scripts/check_web_build_selftest.sh` → `osv-scanner` on `pubspec.lock` → `pub get` → sqlite3 native-library cache (below) → `scripts/web_binaries.sh --check` (and `--fetch` on the weekly run only) → `scripts/test_third_party_licenses.py` → `scripts/third_party_licenses.py --check` → `dart run build_runner build` → `analyze` → `test` (through `scripts/retry_sqlite3_hash.sh`) → `build web --release` → `scripts/check_web_build.sh build/web` |
+| `android` | `pub get` → sqlite3 native-library cache → `dart run build_runner build` → `build apk --debug` (through `scripts/retry_sqlite3_hash.sh`) |
+| `sync` | `postgres:17-alpine` service → `uv sync --locked` → `alembic upgrade head` → `.venv/bin/uvicorn` on 8765 (waits on `/health`; never `uv run`, whose parent process holds the uv cache lock and makes setup-uv's post-job `uv cache prune` time out whenever `uv.lock` changed) → `pub get` → sqlite3 native-library cache → `build_runner build` → `flutter test test/sync/sync_two_devices_test.dart` (through `scripts/retry_sqlite3_hash.sh`) |
 
 **What `scope` decides, and what it must never do.** `scripts/ci_scope.sh` is a pure
 function — changed paths on stdin, five flags on stdout, no `gh` and no network — so it is
@@ -231,12 +257,16 @@ wins, per path:
 | `backend/` | `backend`, `image`, `sync` |
 | `android/` | `android` |
 | `web/` | `app` |
-| `lib/`, `test/`, `integration_test/`, `test_driver/`, `pubspec.yaml`, `pubspec.lock`, `l10n.yaml`, `analysis_options.yaml` | `app`, `android`, `sync` |
+| `pubspec.yaml`, `pubspec.lock` | `app`, `android`, `sync` |
+| `lib/`, `test/`, `integration_test/`, `test_driver/`, `l10n.yaml`, `analysis_options.yaml` | `app`, `sync` |
 | **anything else** — `.github/`, `.claude/` outside its `.md` files, `scripts/`, `ios/`, a root config, an unclassified path | **all five** |
 
 A `case` glob's `*` crosses `/`, so `*.md` is `**/*.md`: `backend/README.md` and a skill's
-`SKILL.md` are documentation, and nothing outside that line is. `android` sits in the Dart
-rule on purpose — that job is the fresh-clone build proof. The catch-all is the whole safety
+`SKILL.md` are documentation, and nothing outside that line is. `android` is in the
+dependency rule — a package can bring a Gradle plugin, Kotlin or a build hook — but not in
+the Dart rule (2026-09-19, below): on a pull request a Dart-only change does not build the
+APK, and on `main` and the weekly run every flag is forced true, which
+`ci_scope_selftest.sh` asserts. The catch-all is the whole safety
 argument: being wrong costs a slow run, never an untested merge.
 
 **A job-level `if:`, never a workflow-level `paths:`.** A workflow skipped by path filtering
@@ -274,6 +304,24 @@ so it reads like a Gradle fault when it is not.
 `[dependency-groups]`, which pip does not read, so a pip-based job would silently skip the
 integration test. `--locked` additionally fails if `uv.lock` has drifted from
 `pyproject.toml`.
+
+**The sqlite3 native libraries are cached, and a bad download is retried once.**
+`package:sqlite3` 3.x's build hook, run by `flutter test` and `flutter build apk` (not by
+`build_runner`), downloads a precompiled `libsqlite3` from the package's GitHub release into
+`.dart_tool/hooks_runner/shared/sqlite3/build/download-<first 8 hex of its SHA-256>/`, and
+reuses a file already there only when its hash matches
+(`lib/src/hook/compile/description.dart` in the pub cache). It hashes the response body
+without looking at the HTTP status, so a GitHub error page fails as `Bad state: Hash of
+downloaded file <name> is <digest>, expected <hash>` — runs 35335702639 (`android`) and
+35429735515 (`sync`) both got digest `2514114…f003` for two different files. `app`, `sync` and
+`android` each read the `sqlite3` version from `pubspec.lock` and restore those `download-*`
+directories with `actions/cache@v6`, key `sqlite3-native-<job>-<os>-<version>`: per job,
+because each downloads different files (Linux x64 for the tests, three Android ABIs for the
+APK) and a cache entry is immutable once saved. The hook still hashes every restored file.
+The step that runs the hook goes through `scripts/retry_sqlite3_hash.sh`, which runs the
+command once more **only** when it failed with that message — the first run after a
+`sqlite3` bump misses every cache — and returns the second attempt's status as final, so a
+job that fails twice fails. `scripts/retry_sqlite3_hash_selftest.sh` pins both, in `scope`.
 
 The `android` job caps the Gradle heap by appending to `$HOME/.gradle/gradle.properties`,
 which outranks the project's `android/gradle.properties` and its `-Xmx8G` request; the
@@ -407,7 +455,8 @@ release APK/AAB (needs the keystore secrets).
 
 **The e2e suite does not run in CI.** `integration_test/app_test.dart` drives a real
 network call against production, so it stays a manual step — on web via chromedriver, on a
-device via the `flutter-device-test` skill. Export/import has no automated coverage at all
+device via the `flutter-device-test` skill. The web reload test beside it is manual too: no
+CI job runs chromedriver. Export/import has no automated coverage at all
 and must be checked on a device; the wakelock toggle is covered only down to the saved
 setting (`test/screens/settings_screen_test.dart`) — whether the platform holds the lock is
 checked on a device, or in a browser through `navigator.wakeLock` ([[Web]]).
@@ -464,6 +513,8 @@ checked on a device, or in a browser through `navigator.wakeLock` ([[Web]]).
   > Success when it skips, so the same narrowing is possible without hanging a required
   > check; see the `scope` decision below. The `android` job still builds on every Dart
   > change, so the "nobody built it" hole stays shut.
+  > **Status: Outdated** (2026-09-19) — it no longer does on a pull request; see the
+  > `android` decision below. Every push to `main` and the weekly run still build it.
 - **A `scope` job, not `paths:` filters** (2026-09-16). Every pull request ran all five jobs:
   ~4 min 30 and ~13 runner-minutes to start a Postgres and build an APK for a change to
   `wip/`. Replaying the last 20 merged pull requests through `scripts/ci_scope.sh`, 8 would
@@ -474,8 +525,29 @@ checked on a device, or in a browser through `navigator.wakeLock` ([[Web]]).
   a `lib/`-only pull request gets ~20 s *slower* and still pays the 4 min 17 `android` job.
   Dropping `android` from the Dart rule is the only lever that would change that, and it is
   deliberately not pulled here (`wip/todo_nr/2026-09-16-android-job-on-every-dart-change.md`).
+  > **Status: Outdated** (2026-09-19) — the lever is pulled; see the next decision.
   Rejected alternative: classify inside each job and exit early — that boots five runners
   instead of one, and reports a green job that did nothing.
+- **`android` leaves the Dart rule** (2026-09-19). The job is the critical path (4 min 17,
+  against 3 min 30 for `app`), and its stated purpose — the injected `gradlew` and wrapper
+  jar, the pinned SDK packages, the release manifest's `INTERNET` — does not depend on
+  `lib/`. The evidence: every `ci.yml` run from the first (2026-09-09) to 2026-09-19, 416 of
+  them, searched through `gh run list` and each failed or rerun attempt's jobs
+  (`actions/runs/<id>/attempts/1/jobs`). Two had `android` red and `app` green, both on
+  feat/play-again-and-type-order and both network flakes that passed on rerun: 35335702639
+  (the sqlite3 hash mismatch above) and 35336544456 (Maven Central answering 403). None
+  was an AOT compile failure the analyzer and the tests had missed. So a pull request
+  touching only `lib/`, `test/`, `integration_test/`, `test_driver/`, `l10n.yaml` or
+  `analysis_options.yaml` no longer builds the APK; `pubspec.*` still does, and so do every
+  push to `main` and the weekly run, which force all five flags — the "nobody built it"
+  hole of 2026-09-09 stays shut at merge time, one push later than before. If a Dart-only
+  change ever breaks the APK build, it goes red on `main` and the rule goes back.
+- **Cache the sqlite3 downloads rather than retry blindly** (2026-09-19). The hash mismatch
+  recurred in a second job after the first entry was dropped as a one-off. A cache makes the
+  download rare instead of making it succeed on a second try; the retry exists only for the
+  first run after a version bump, is limited to the hook's message and to one attempt, and
+  never touches the hash check — a tampered library would still fail twice, and the job with
+  it.
 - **The two-device sync test runs in CI, as its own job** (2026-09-14). Not folded into
   `app`: it needs Python, a Postgres and a running server, and a failure there should read
   as a sync regression rather than a Flutter one. A `services:` container, not

@@ -97,10 +97,12 @@ with the game's overflow menu; there is no card when every game is finished. The
 follow under *Recent*, each a white outlined card: a tile in the game type's colour (the
 colour lives in the tile only, never tinting the card), the name, "type · date"
 (`DateFormat.MMMd`, `yMMMd` for another year), the player avatars, and a status pill — *In
-progress*, or the winner with a trophy (*Finished* when nobody scored). Leader and winner
-come from `GameProvider.standingOf(game)`, a `GameStanding` (`lib/models/game_standing.dart`)
-of the players in seat order and their totals over the rounds that still exist, a tie going
-to the earlier seat. It is read per card, as the player names were before, without touching
+progress*, or the winner with a trophy — *Finished* under a flag when nobody scored or on a
+tie for the lead, whose tooltip then names every tied player (`gameEndTie`). Leader and
+winner come from `GameProvider.standingOf(game)`, a `GameStanding`
+(`lib/models/game_standing.dart`) of the players in seat order and their totals over the
+rounds that still exist: `soleLeader`, null on a tie, so a tied Resume card names no leader.
+It is read per card, as the player names were before, without touching
 the current game. The filter applies to both the card and the list.
 
 `game_rules_screen` takes its `GameType` as a constructor argument rather than reading a
@@ -387,9 +389,11 @@ tinted with the player's display colour (`playerColorsById`) runs from the heade
 two-letter `PlayerAvatar`, the name, the total, the place (`boardRank`) — down to the last
 round. A lane's header and cells are one `Column`, so they cannot drift apart; the round
 numbers are a column of their own, pinned on the left, and tapping one opens the round's
-comment. The leader (`GameStanding.leader`, following the game's `isLowestScoreWins`; none
-before the first score) has its lane outlined in its colour and a crown in `kLeaderGold`.
-Places are shared on a tie (`GameStanding.ranks`). A total within 20 points of the type's
+comment. The sole leader (`GameStanding.soleLeader`, following the game's
+`isLowestScoreWins`; none before the first score, none on a tie for the lead) has its lane
+outlined in its colour and a crown in `kLeaderGold`. Places are shared on a tie
+(`GameStanding.ranks`); the rank sort, the places and the ribbon's order key on
+`GameStanding.hasScores`, so a tied round still reads `#1` for every player. A total within 20 points of the type's
 `playerDeadThreshold` turns orange; an eliminated player's lane is dimmed and the name struck
 through; a zero sits on an amber pill, whatever the game type.
 
@@ -474,6 +478,14 @@ not "fix" it by hardcoding a codepoint.
 
 ## Decisions & History
 
+- **The board and the home card crown only a sole leader (2026-09-19,
+  `fix/board-home-tie-crown`).** The board's crown, outlined lane and ribbon ring, the Resume
+  card's leader and a finished card's winner all read `GameStanding.soleLeader`; the board's
+  rank sort and places key on `hasScores` instead of a leader existing. `GameStanding.leader`,
+  which broke a tie by seat, had no reader left and went; `GameStanding.leaders` lists the
+  players on first place for the home pill's tie tooltip. No new string: the pill reuses
+  `gameFinished` and `gameEndTie`. (`wip/done/2026-09-19-board-and-home-crown-a-tie.md`)
+
 - **The analysis actions live in an overflow menu, and only with an analysis (2026-09-19).**
   Report, Regenerate and Delete used to be three app-bar icons, always drawn and disabled
   with nothing to act on; with Share added (#139) the French title was cut to "Analyse de
@@ -488,9 +500,9 @@ not "fix" it by hardcoding a codepoint.
   is seeded with 65 rather than given an inclusive variant (no schema change); an existing
   row keeps 66, as with the Uno / Président seed change. The rankings crowned the earlier
   seat on a tie, so a round of all zeros crowned seat 1: they now crown
-  `GameStanding.soleLeader`, null on a tie. `GameStanding.leader` still breaks a tie by seat,
-  because the board uses it to decide whether to sort by rank; the board's own crown and the
-  home card's winner still follow it (`wip/todo_nr/2026-09-19-board-and-home-crown-a-tie.md`).
+  `GameStanding.soleLeader`, null on a tie. `GameStanding.leader` still broke a tie by seat,
+  because the board used it to decide whether to sort by rank; the board's own crown and the
+  home card's winner still followed it.
   (`wip/done/2026-09-19-player-elimination-threshold-is-strictly-over.md`,
   `wip/done/2026-09-19-crown-before-any-round.md`)
 

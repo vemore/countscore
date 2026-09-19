@@ -52,8 +52,8 @@ class BoardData {
   /// A player's score in a round, null when none was entered.
   final int? Function(int playerId, int roundId) scoreOf;
 
-  /// Totals, the leader and the places. Its leader is null while no score has
-  /// been entered.
+  /// Totals, the leader and the places. No one leads — and no place shows —
+  /// while no score has been entered.
   final GameStanding standing;
 
   /// Each player's display colour, keyed by player id (`playerColorsById`).
@@ -69,7 +69,14 @@ class BoardData {
   final void Function(Player player, Round round) onCellTap;
 
   late final Map<int, int> ranks = standing.ranks;
-  late final Player? leader = standing.leader;
+  /// The one player alone in the lead, whom the board crowns and outlines;
+  /// null before the first score and on a tie for the lead
+  /// (`GameStanding.soleLeader`).
+  late final Player? leader = standing.soleLeader;
+
+  /// Whether any score has been entered: the board sorts by rank and shows
+  /// places only then, a tie for the lead included.
+  bool get hasScores => standing.hasScores;
 
   Color colorOf(Player p) => colors[p.id] ?? Colors.grey;
   int totalOf(Player p) => standing.totalOf(p);
@@ -546,7 +553,7 @@ class _LaneHeader extends StatelessWidget {
                     color: totalColour)),
           ),
         ),
-        if (data.leader != null)
+        if (data.hasScores)
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
@@ -573,7 +580,7 @@ class _RankingRibbon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final players = data.leader == null ? data.players : data.byRank;
+    final players = data.hasScores ? data.byRank : data.players;
     return SizedBox(
       height: 52,
       child: ListView.separated(

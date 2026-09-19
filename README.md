@@ -91,7 +91,7 @@ at your own server in Settings → Server if you want the connected features.
 | State management | `provider` ^6.1.2 |
 | Database | `drift` ^2.35.0 + `drift_flutter` ^0.3.1 over SQLite |
 | — on Android | native SQLite via FFI |
-| — on web | `sqlite3.wasm` persisted through OPFS |
+| — on web | `sqlite3.wasm` persisted in IndexedDB |
 | Legacy migrator | `sqflite` ^2.4.3 — bootstraps an existing database to schema v11, then Drift takes over |
 | UI | `flex_color_picker` ^4.0.0, `flutter_markdown_plus` |
 | Group sync | `web_socket_channel` ^3.0.3 (change signal), `flutter_secure_storage` ^11.1.1 (device token), `crypto` ^3.0.7 (name-based uuids) |
@@ -300,7 +300,9 @@ CI — it calls the production endpoint. See `.llmwiki/Testing.md`.
   checked by [`scripts/check_web_build.sh`](scripts/check_web_build.sh) — the check both
   publishing paths run.
 - **Android** — debug APK from a clean checkout, as a fresh-clone build proof, plus an
-  assertion that the release manifest still declares `INTERNET`.
+  assertion that the release manifest still declares `INTERNET`. On a pull request it runs
+  when `android/`, `pubspec.*` or the CI tooling changes, not for Dart alone; on `main` and
+  the weekly run it always runs.
 - **Sync** — the backend on a real Postgres, then the two-device group sync test against it.
 
 [`.github/dependabot.yml`](.github/dependabot.yml) opens weekly, grouped update pull requests
