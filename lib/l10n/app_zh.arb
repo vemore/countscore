@@ -121,7 +121,7 @@
 
   "keypadTotalAfter": "录入后总分：{total}",
 
-  "keypadNext": "下一位：{player}",
+  "keypadNext": "下一位\n{player}",
 
   "keypadValidateRound": "确认本轮",
 

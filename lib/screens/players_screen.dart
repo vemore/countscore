@@ -2,9 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import '../l10n/app_localizations.dart';
+import '../models/player_stats.dart';
 import '../providers/game_provider.dart';
 import '../utils/insets.dart';
+import '../utils/player_colors.dart';
+import '../widgets/player_avatars.dart';
 
+/// Every known player: their games and wins, their colour, and rename, recolour
+/// and delete.
+///
+/// The counts are the leaderboard's (`buildLeaderboard` over
+/// `GameProvider.getFinishedGameResults`): finished games with a score only,
+/// so a player shows the same numbers here and under Statistics. The colours
+/// are the leaderboard's too ([playerColorsByUuid]); a player with no finished
+/// game takes the next colour nobody on the screen shows.
 class PlayersScreen extends StatefulWidget {
   const PlayersScreen({super.key});
 
@@ -12,8 +23,24 @@ class PlayersScreen extends StatefulWidget {
   State<PlayersScreen> createState() => _PlayersScreenState();
 }
 
+/// One row of the Players screen.
+class _PlayerRow {
+  const _PlayerRow({
+    required this.name,
+    required this.colour,
+    required this.games,
+    required this.wins,
+  });
+
+  final String name;
+  final Color colour;
+  final int games;
+  final int wins;
+}
+
 class _PlayersScreenState extends State<PlayersScreen> {
-  List<String> _playerNames = [];
+  List<_PlayerRow> _players = [];
+  bool _loading = true;
 
   @override
   void initState() {
@@ -22,10 +49,54 @@ class _PlayersScreenState extends State<PlayersScreen> {
   }
 
   Future<void> _loadPlayers() async {
-    final names = await context.read<GameProvider>().getAllPlayerNames();
+    final gameProvider = context.read<GameProvider>();
+    final names = await gameProvider.getAllPlayerNames();
+    final results = await gameProvider.getFinishedGameResults();
+    final stored = await gameProvider.getPlayerColors();
+    if (!mounted) return;
+
+    final entries = {
+      for (final e in buildLeaderboard(results, kAllGameTypes))
+        e.name.toLowerCase(): e,
+    };
+    final byUuid = playerColorsByUuid(results);
+    final colours = <String, Color>{
+      for (final e in entries.entries)
+        if (byUuid[e.value.playerUuid] != null)
+          e.key: byUuid[e.value.playerUuid]!,
+    };
+    final rest = [
+      for (final n in names)
+        if (!colours.containsKey(n.toLowerCase())) n,
+    ];
+    final restColours = assignPlayerColors(
+      [for (final n in rest) stored[n]],
+      alreadyShown: byUuid.values,
+    );
+    for (var i = 0; i < rest.length; i++) {
+      colours[rest[i].toLowerCase()] = restColours[i];
+    }
+
     setState(() {
-      _playerNames = names;
+      _players = [
+        for (final n in names)
+          _PlayerRow(
+            name: n,
+            colour: colours[n.toLowerCase()]!,
+            games: entries[n.toLowerCase()]?.games ?? 0,
+            wins: entries[n.toLowerCase()]?.wins ?? 0,
+          ),
+      ];
+      _loading = false;
     });
+  }
+
+  Future<void> _changeColour(BuildContext context, _PlayerRow player) async {
+    final gameProvider = context.read<GameProvider>();
+    final newColor = await _showColorPicker(context, player.colour);
+    if (newColor == null || !mounted) return;
+    await gameProvider.updatePlayerColor(player.name, newColor.toARGB32());
+    await _loadPlayers();
   }
 
   @override
@@ -33,7 +104,9 @@ class _PlayersScreenState extends State<PlayersScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.playersListTitle)),
-      body: _playerNames.isEmpty
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _players.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -59,128 +132,66 @@ class _PlayersScreenState extends State<PlayersScreen> {
             )
           : ListView.builder(
               padding: withBottomInset(context, const EdgeInsets.all(8)),
-              itemCount: _playerNames.length,
+              itemCount: _players.length,
               itemBuilder: (context, index) {
-                final playerName = _playerNames[index];
-                return FutureBuilder<Map<String, dynamic>>(
-                  future: context.read<GameProvider>().getPlayerStats(
-                    playerName,
+                final player = _players[index];
+                return Card(
+                  key: Key('players_row_${player.name}'),
+                  margin: const EdgeInsets.symmetric(
+                    vertical: 4,
+                    horizontal: 8,
                   ),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return Card(
-                        margin: const EdgeInsets.symmetric(
-                          vertical: 4,
-                          horizontal: 8,
+                  child: ListTile(
+                    leading: Tooltip(
+                      message: l10n.changeColor,
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => _changeColour(context, player),
+                        child: PlayerAvatar(
+                          key: Key('players_avatar_${player.name}'),
+                          name: player.name,
+                          color: player.colour,
+                          size: 40,
+                          letters: 2,
                         ),
-                        child: ListTile(
-                          leading: const CircleAvatar(
-                            child: Icon(Icons.person),
-                          ),
-                          title: Text(playerName),
+                      ),
+                    ),
+                    title: Text(
+                      player.name,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      '${l10n.gamesCount(player.games)}\n'
+                      '${l10n.winsCount(player.wins)}',
+                      key: Key('players_counts_${player.name}'),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.palette, color: player.colour),
+                          onPressed: () => _changeColour(context, player),
+                          tooltip: l10n.changeColor,
                         ),
-                      );
-                    }
-
-                    final stats = snapshot.data!;
-                    final gamesPlayed = stats['gamesPlayed'] as int;
-                    final wins = stats['wins'] as int;
-
-                    return FutureBuilder<Color>(
-                      future: _getPlayerColor(playerName),
-                      builder: (context, colorSnapshot) {
-                        final playerColor = colorSnapshot.data ?? Colors.blue;
-
-                        return Card(
-                          margin: const EdgeInsets.symmetric(
-                            vertical: 4,
-                            horizontal: 8,
-                          ),
-                          child: ListTile(
-                            leading: GestureDetector(
-                              onTap: () async {
-                                final newColor = await _showColorPicker(
-                                  context,
-                                  playerColor,
-                                );
-                                if (newColor != null && context.mounted) {
-                                  await context
-                                      .read<GameProvider>()
-                                      .updatePlayerColor(
-                                        playerName,
-                                        newColor.toARGB32(),
-                                      );
-                                  setState(() {});
-                                }
-                              },
-                              child: CircleAvatar(
-                                backgroundColor: playerColor,
-                                child: const Icon(
-                                  Icons.person,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            title: Text(
-                              playerName,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            subtitle: Text(
-                              '${l10n.gamesCount(gamesPlayed)}\n${l10n.winsCount(wins)}',
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: Icon(Icons.palette, color: playerColor),
-                                  onPressed: () async {
-                                    final newColor = await _showColorPicker(
-                                      context,
-                                      playerColor,
-                                    );
-                                    if (newColor != null && context.mounted) {
-                                      await context
-                                          .read<GameProvider>()
-                                          .updatePlayerColor(
-                                            playerName,
-                                            newColor.toARGB32(),
-                                          );
-                                      setState(() {});
-                                    }
-                                  },
-                                  tooltip: l10n.changeColor,
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.edit),
-                                  onPressed: () =>
-                                      _showRenameDialog(context, playerName),
-                                  tooltip: l10n.rename,
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete),
-                                  onPressed: () =>
-                                      _showDeleteDialog(context, playerName),
-                                  tooltip: l10n.delete,
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () =>
+                              _showRenameDialog(context, player.name),
+                          tooltip: l10n.rename,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () =>
+                              _showDeleteDialog(context, player.name),
+                          tooltip: l10n.delete,
+                        ),
+                      ],
+                    ),
+                  ),
                 );
               },
             ),
     );
-  }
-
-  Future<Color> _getPlayerColor(String playerName) async {
-    final colorValue =
-        await context.read<GameProvider>().getPlayerColorValue(playerName);
-    return colorValue != null ? Color(colorValue) : Colors.blue;
   }
 
   Future<Color?> _showColorPicker(
@@ -288,8 +299,10 @@ class _PlayersScreenState extends State<PlayersScreen> {
     final gameProvider = context.read<GameProvider>();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-    final stats = await gameProvider.getPlayerStats(playerName);
-    final gamesPlayed = stats['gamesPlayed'] as int;
+    // Every game the delete touches, open ones included — not the finished
+    // games the row counts.
+    final gamesPlayed =
+        (await gameProvider.getPlayerGameCounts())[playerName] ?? 0;
 
     if (!context.mounted) return;
 

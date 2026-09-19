@@ -15,6 +15,8 @@ import 'package:countscore/repositories/drift/drift_repositories.dart';
 import 'package:countscore/screens/home_screen.dart';
 import 'package:countscore/services/drift/database.dart';
 import 'package:countscore/utils/app_theme.dart';
+import 'package:countscore/utils/player_colors.dart';
+import 'package:countscore/widgets/player_avatars.dart';
 
 void main() {
   late AppDatabase db;
@@ -104,6 +106,37 @@ void main() {
     // The other open game is listed below, with its state.
     expect(find.text('Old evening'), findsOneWidget);
     expect(find.byKey(const Key('statusInProgress')), findsOneWidget);
+  });
+
+  testWidgets('the Resume card draws the players as the board does: two '
+      'letters, the board colours, each disc ringed apart from the card',
+      (tester) async {
+    await tester.runAsync(() async {
+      await playedGame('Tarot',
+          {'Lionel': 10, 'Laurent': 20, 'Thibaut': 30, 'Vincent': 40});
+    });
+
+    await pumpHome(tester);
+    await tester.runAsync(() => Future<void>.delayed(
+        const Duration(milliseconds: 50)));
+    await tester.pumpAndSettle();
+
+    final stack = find.byKey(const Key('resumeHeroAvatars'));
+    for (final initials in ['Li', 'La', 'Th', 'Vi']) {
+      expect(find.descendant(of: stack, matching: find.text(initials)),
+          findsOneWidget, reason: initials);
+    }
+    final board = playerColorsById(games.currentPlayers);
+    final avatars = tester
+        .widgetList<PlayerAvatar>(
+            find.descendant(of: stack, matching: find.byType(PlayerAvatar)))
+        .toList();
+    expect(avatars.map((a) => a.color),
+        [for (final p in games.currentPlayers) board[p.id]]);
+    // The ring is the hero's text colour, not its teal: a cyan or teal
+    // player's disc stays visible on it.
+    final scheme = buildAppTheme(Brightness.light).colorScheme;
+    expect(avatars.map((a) => a.borderColor).toSet(), {scheme.onPrimary});
   });
 
   testWidgets('a lowest-score game is led by the lowest total',

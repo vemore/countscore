@@ -121,7 +121,7 @@
 
   "keypadTotalAfter": "total depois: {total}",
 
-  "keypadNext": "Próximo: {player}",
+  "keypadNext": "Próximo\n{player}",
 
   "keypadValidateRound": "Validar rodada",
 

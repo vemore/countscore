@@ -133,18 +133,24 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
           child: Row(
             children: [
               Expanded(
-                child: Text(l10n.statsColumnPlayer.toUpperCase(),
-                    style: headerStyle),
+                child: _HeaderLabel(l10n.statsColumnPlayer,
+                    key: const Key('stats_header_player'),
+                    style: headerStyle,
+                    alignment: AlignmentDirectional.centerStart),
               ),
               SizedBox(
                 width: _gamesColumnWidth,
-                child: Text(l10n.statsColumnGames.toUpperCase(),
-                    textAlign: TextAlign.center, style: headerStyle),
+                child: _HeaderLabel(l10n.statsColumnGames,
+                    key: const Key('stats_header_games'),
+                    style: headerStyle,
+                    alignment: AlignmentDirectional.center),
               ),
               SizedBox(
                 width: _winsColumnWidth,
-                child: Text(l10n.wins.toUpperCase(),
-                    textAlign: TextAlign.end, style: headerStyle),
+                child: _HeaderLabel(l10n.wins,
+                    key: const Key('stats_header_wins'),
+                    style: headerStyle,
+                    alignment: AlignmentDirectional.centerEnd),
               ),
             ],
           ),
@@ -206,6 +212,26 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
 
 const double _gamesColumnWidth = 64;
 const double _winsColumnWidth = 96;
+
+/// A leaderboard column header, upper-cased on one line: a label wider than
+/// its column ("PARTIDAS", sized for "GAMES") shrinks to fit rather than
+/// breaking inside the word.
+class _HeaderLabel extends StatelessWidget {
+  const _HeaderLabel(this.label,
+      {super.key, required this.style, required this.alignment});
+
+  final String label;
+  final TextStyle? style;
+  final AlignmentDirectional alignment;
+
+  @override
+  Widget build(BuildContext context) => FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: alignment,
+        child: Text(label.toUpperCase(),
+            maxLines: 1, softWrap: false, style: style),
+      );
+}
 
 /// A win rate as the locale writes a percentage ("41 %", "41%").
 String formatWinRate(BuildContext context, double rate) =>

@@ -1,5 +1,7 @@
 # Spanish and Portuguese labels wrap mid-word on the statistics and keypad screens
 
+**Status:** done (2026-09-19) — closed by fix/player-avatars-colours-keypad. The leaderboard's column headers scale down to one line; `keypadNext` puts the name on its own line with no colon in all ten languages, and the tall key's label (`FitWordsText`) never breaks inside a word. Tests over the ten locales in `test/widgets/score_keypad_sheet_test.dart` and `test/screens/player_stats_screen_test.dart`.
+
 - **Noted:** 2026-09-19 — while retaking the store screenshots (`feat/store-screenshots-retake`)
 - **Theme:** i18n
 - **Area:** app

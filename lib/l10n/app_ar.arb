@@ -121,7 +121,7 @@
 
   "keypadTotalAfter": "المجموع بعدها: {total}",
 
-  "keypadNext": "التالي: {player}",
+  "keypadNext": "التالي\n{player}",
 
   "keypadValidateRound": "تأكيد الجولة",
 

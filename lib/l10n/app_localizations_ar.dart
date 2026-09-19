@@ -211,7 +211,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String keypadNext(String player) {
-    return 'التالي: $player';
+    return 'التالي\n$player';
   }
 
   @override

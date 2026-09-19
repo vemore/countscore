@@ -302,8 +302,8 @@ void main() {
       await pullGameFromOther(m, aliceName: 'ALICE');
 
       expect(await players.getAllNames(), ['Alice', 'Bob']);
-      final stats = await DriftPlayerStatsRepository(db).getStatsByName('Alice');
-      expect(stats['gamesPlayed'], 2, reason: 'one human, both games');
+      expect((await players.getGameCountsByName())['Alice'], 2,
+          reason: 'one human, both games');
     });
 
     test('a linked type gaining a key another local row holds keeps its own', () async {

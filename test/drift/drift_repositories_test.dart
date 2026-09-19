@@ -232,10 +232,14 @@ void main() {
 
   // ── PlayerStats ───────────────────────────────────────────────────────────
   group('PlayerStatsRepository', () {
-    test('wins and gamesPlayed correct across two games', () async {
+    test('finished results place the players of each game', () async {
       // G1: Alice(10) beats Bob(5)
       final g1 = await gameRepo.create(
-        Game(name: 'G1', isLowestScoreWins: false),
+        Game(
+          name: 'G1',
+          isLowestScoreWins: false,
+          finishedAt: DateTime(2026, 9, 1),
+        ),
       );
       final a1 = await playerRepo.create(
         Player(gameId: g1, name: 'Alice', orderIndex: 0),
@@ -249,7 +253,11 @@ void main() {
 
       // G2: Charlie(8) beats Alice(3)
       final g2 = await gameRepo.create(
-        Game(name: 'G2', isLowestScoreWins: false),
+        Game(
+          name: 'G2',
+          isLowestScoreWins: false,
+          finishedAt: DateTime(2026, 9, 2),
+        ),
       );
       final a2 = await playerRepo.create(
         Player(gameId: g2, name: 'Alice', orderIndex: 0),
@@ -261,9 +269,10 @@ void main() {
       await scoreRepo.upsert(Score(playerId: a2, roundId: r2, value: 3));
       await scoreRepo.upsert(Score(playerId: c2, roundId: r2, value: 8));
 
-      final stats = await statsRepo.getStatsByName('Alice');
-      expect(stats['gamesPlayed'], 2);
-      expect(stats['wins'], 1);
+      final results = await statsRepo.getFinishedGameResults();
+      final alice = results.first.participants.first.playerUuid;
+      expect(results.where((r) => r.participant(alice) != null), hasLength(2));
+      expect(results.where((r) => r.wonBy(alice)), hasLength(1));
     });
 
     test('finished results: finished and scored games only, live rounds only, '
@@ -316,12 +325,6 @@ void main() {
           .data['uuid'] as String;
       expect(game.participants[1].playerUuid, bobUuid);
       expect(game.wonBy(bobUuid), isTrue);
-    });
-
-    test('unknown player returns zeros', () async {
-      final stats = await statsRepo.getStatsByName('Nobody');
-      expect(stats['gamesPlayed'], 0);
-      expect(stats['wins'], 0);
     });
   });
 
@@ -429,11 +432,11 @@ void main() {
     });
 
     test('a tombstoned game counts in no statistic', () async {
-      expect((await statsRepo.getStatsByName('Alice'))['gamesPlayed'], 1);
+      expect((await playerRepo.getGameCountsByName())['Alice'], 1);
 
       await gameRepo.delete(gameId);
 
-      expect((await statsRepo.getStatsByName('Alice'))['gamesPlayed'], 0);
+      expect((await playerRepo.getGameCountsByName())['Alice'], isNull);
       expect(
         await analysisRepo.getRecentPlayerHistory('Alice'),
         isEmpty,

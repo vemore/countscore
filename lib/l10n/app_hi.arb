@@ -121,7 +121,7 @@
 
   "keypadTotalAfter": "इसके बाद कुल: {total}",
 
-  "keypadNext": "अगला: {player}",
+  "keypadNext": "अगला\n{player}",
 
   "keypadValidateRound": "राउंड पक्का करें",
 

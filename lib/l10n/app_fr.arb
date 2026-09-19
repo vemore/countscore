@@ -359,9 +359,9 @@
     }
   },
 
-  "keypadNext": "Suivant {player}",
+  "keypadNext": "Suivant\n{player}",
   "@keypadNext": {
-    "description": "Score keypad key that moves to the next player of the round, named",
+    "description": "Score keypad key that moves to the next player of the round, named. The name goes on its own line, after the line break: the key is narrow, and a label left to wrap by itself can break inside a word or before punctuation",
     "placeholders": {
       "player": {
         "type": "String",
