@@ -45,6 +45,6 @@ Pull the database with `run-as` from a debuggable build, install the release APK
 the file and restore it through Settings → Import. Scriptable, and needs no Console step.
 
 **Acceptance:**
-- `release-android` §5 no longer says to install over the store version, and gives the pull → clean install → import steps; the checklist line (`SKILL.md:304`, "over the store version") says the same.
+- `release-android` §5 no longer says to install over the store version, and gives the pull → clean install → import steps; the checklist line (`SKILL.md:308`, "over the store version") says the same.
 - A script, or one command block, does the pull and the push.
 - The steps have been run once end to end on the Pixel, and the pull request records the result.

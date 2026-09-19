@@ -5,7 +5,7 @@
 - **Area:** app
 - **Blocks release:** no
 
-`lib/screens/game_board_screen.dart:577-578` ends a `firstPlayerOver` game when a total is
+`lib/screens/game_board_screen.dart:558` ends a `firstPlayerOver` game when a total is
 strictly **greater** than the threshold (`total > gameOverThreshold`), and the rules page
 says so (`gameRulesEndFirstOver`: « dès qu'un joueur dépasse {threshold} points »). The
 rules the thresholds come from say **reaches**: Uno is won at 500, Président at 10, Skyjo

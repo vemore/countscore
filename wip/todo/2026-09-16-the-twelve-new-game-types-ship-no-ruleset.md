@@ -21,7 +21,7 @@ and `builtin_key` by seeded name plus `isDefault`, so the same row gets both, an
 type keeps its rules (slug survives) while giving up its localized name (key cleared).
 
 **Fix:** write the twelve rulesets the way #77 wrote the nine — researched and written for
-this app, never copied from a published rulebook — add their slugs to `defaultRulesSlugs`
+this app, never copied from a published rulebook — add their slugs to `defaultRulesSlugs` (`lib/services/sync/sync_schema.dart:176-186`)
 and to the twelve factories in `lib/models/game_type.dart`, and let
 `test/game_rules_catalog_test.dart` hold the ten locales in step. Consider keying
 `defaultRulesSlugs` on `builtin_key` rather than on the seeded name while doing it: the key
