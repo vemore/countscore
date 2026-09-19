@@ -1,0 +1,358 @@
+import 'package:flutter/material.dart';
+
+import '../l10n/app_localizations.dart';
+import '../models/game_standing.dart';
+import '../models/game_type.dart';
+import '../models/player.dart';
+import '../providers/game_provider.dart';
+import '../utils/app_theme.dart';
+import '../utils/game_type_name.dart';
+import '../utils/player_colors.dart';
+import 'board_lanes.dart';
+import 'player_avatars.dart';
+
+/// The current game's players best first, as both rankings draw them: the
+/// in-game `RankingScreen` and the `GameEndScreen`.
+///
+/// Built from [GameProvider] and the game's type, so the two screens cannot
+/// disagree on a place, a colour or who is out.
+class GameRanking {
+  GameRanking._({
+    required this.standing,
+    required this.ranked,
+    required this.colours,
+    required this.isEliminated,
+    required this.isNearThreshold,
+  });
+
+  /// The current game of [games], whose type is [gameType] (null for a game
+  /// without one). The caller checks that a game is current.
+  factory GameRanking.of(GameProvider games, GameType? gameType) {
+    final game = games.currentGame!;
+    final players = games.currentPlayers;
+    final rounds = games.currentRounds;
+    final hasScores = players.any(
+        (p) => rounds.any((r) => games.getScore(p.id!, r.id!) != null));
+    final standing = GameStanding(
+      players: players,
+      totals: hasScores
+          ? {for (final p in players) p.id!: games.getPlayerTotal(p.id!)}
+          : const {},
+      isLowestScoreWins: game.isLowestScoreWins,
+    );
+    final ranks = standing.ranks;
+    // Best first; a tie keeps the seat order, the rule `GameStanding.leader`
+    // applies. `List.sort` is not stable, so the seat is the tie-breaker.
+    final seat = {for (var i = 0; i < players.length; i++) players[i].id: i};
+    final ranked = [...players]..sort((a, b) {
+        final byRank = (ranks[a.id] ?? 0).compareTo(ranks[b.id] ?? 0);
+        return byRank != 0 ? byRank : seat[a.id]!.compareTo(seat[b.id]!);
+      });
+    return GameRanking._(
+      standing: standing,
+      ranked: ranked,
+      colours: playerColorsById(players),
+      isEliminated: (total) => isEliminatedBy(gameType, total),
+      isNearThreshold: (total) => isNearEliminationBy(gameType, total),
+    );
+  }
+
+  final GameStanding standing;
+
+  /// The players best first; a tie keeps seat order.
+  final List<Player> ranked;
+
+  /// Each player's display colour, keyed by player id (`playerColorsById`).
+  final Map<int, Color> colours;
+
+  /// Whether a total puts a player out of the game.
+  final bool Function(int total) isEliminated;
+
+  /// Whether a total is within 20 points of the elimination threshold.
+  final bool Function(int total) isNearThreshold;
+
+  late final Map<int, int> ranks = standing.ranks;
+
+  bool get hasScores => standing.hasScores;
+
+  /// The player in the lead, crowned; null before the first score.
+  Player? get leader => standing.leader;
+
+  /// Every player on the first place — more than one on a tie. Empty before
+  /// the first score.
+  List<Player> get winners =>
+      hasScores ? [for (final p in ranked) if (ranks[p.id] == 1) p] : const [];
+
+  int totalOf(Player p) => standing.totalOf(p);
+  Color colourOf(Player p) => colours[p.id] ?? kPlayerPalette.first;
+}
+
+/// Whether [total] puts a player out under [gameType]'s elimination rule.
+/// False for a type without one.
+bool isEliminatedBy(GameType? gameType, int total) {
+  final threshold = gameType?.playerDeadThreshold;
+  final condition = gameType?.playerDeadConditionType;
+  if (threshold == null || condition == null) return false;
+  return switch (condition) {
+    PlayerDeadConditionType.over => total > threshold,
+    PlayerDeadConditionType.under => total < threshold,
+  };
+}
+
+/// Whether [total] is within 20 points of [gameType]'s elimination threshold,
+/// and not past it — the board's orange total.
+bool isNearEliminationBy(GameType? gameType, int total) {
+  final threshold = gameType?.playerDeadThreshold;
+  final condition = gameType?.playerDeadConditionType;
+  if (threshold == null || condition == null) return false;
+  if (isEliminatedBy(gameType, total)) return false;
+  return switch (condition) {
+    PlayerDeadConditionType.over => total >= threshold - 20,
+    PlayerDeadConditionType.under => total <= threshold + 20,
+  };
+}
+
+/// The one line under a ranking's title: game type · rounds · win rule.
+String rankingSummary(
+  AppLocalizations l10n, {
+  required GameType? gameType,
+  required int rounds,
+  required bool isLowestScoreWins,
+}) =>
+    [
+      if (gameType != null) gameTypeDisplayName(l10n, gameType),
+      l10n.gameEndRounds(rounds),
+      isLowestScoreWins ? l10n.gameEndLowestWins : l10n.gameEndHighestWins,
+    ].join(' · ');
+
+/// A podium of the top three in their colours, the leader crowned, then the
+/// others in rank order. Not scrollable itself: the screen puts it in a list.
+class RankedPlayers extends StatelessWidget {
+  const RankedPlayers({super.key, required this.ranking});
+
+  final GameRanking ranking;
+
+  @override
+  Widget build(BuildContext context) {
+    final podium = ranking.ranked.take(3).toList();
+    final others = ranking.ranked.skip(3).toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (podium.isNotEmpty) _Podium(players: podium, ranking: ranking),
+        const SizedBox(height: 16),
+        for (final player in others)
+          _RankRow(
+            key: Key('ranking_row_${player.id}'),
+            player: player,
+            ranking: ranking,
+          ),
+      ],
+    );
+  }
+}
+
+/// A total's colour: orange near the elimination threshold, [fallback]
+/// otherwise.
+Color _totalColour(BuildContext context, GameRanking ranking, int total,
+        Color fallback) =>
+    ranking.isNearThreshold(total) ? boardWarningColor(context) : fallback;
+
+/// An eliminated player is drawn as on the board: faded, name struck out.
+Widget _outIf(bool eliminated, Widget child) =>
+    eliminated ? Opacity(opacity: 0.5, child: child) : child;
+
+/// The top three, second on the left, first raised in the middle, third on
+/// the right — each over a block that holds their total.
+class _Podium extends StatelessWidget {
+  const _Podium({required this.players, required this.ranking});
+
+  /// Best first, one to three players.
+  final List<Player> players;
+  final GameRanking ranking;
+
+  static const _heights = [112.0, 80.0, 60.0];
+
+  @override
+  Widget build(BuildContext context) {
+    // Display order: 2nd, 1st, 3rd, whichever of them exist.
+    final order = [
+      if (players.length > 1) 1,
+      0,
+      if (players.length > 2) 2,
+    ];
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        for (final place in order)
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: _Step(
+                key: Key('ranking_podium_$place'),
+                player: players[place],
+                ranking: ranking,
+                height: _heights[place],
+                first: place == 0,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _Step extends StatelessWidget {
+  const _Step({
+    super.key,
+    required this.player,
+    required this.ranking,
+    required this.height,
+    required this.first,
+  });
+
+  final Player player;
+  final GameRanking ranking;
+  final double height;
+  final bool first;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final total = ranking.totalOf(player);
+    final eliminated = ranking.isEliminated(total);
+    final crowned = ranking.leader?.id == player.id;
+    final avatar = PlayerAvatar(
+      name: player.name,
+      color: ranking.colourOf(player),
+      size: first ? 50 : 38,
+    );
+    return _outIf(
+      eliminated,
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (crowned) const BoardCrown(size: 26),
+          if (first)
+            Container(
+              padding: const EdgeInsets.all(3),
+              decoration: const BoxDecoration(
+                color: kLeaderGold,
+                shape: BoxShape.circle,
+              ),
+              child: avatar,
+            )
+          else
+            avatar,
+          const SizedBox(height: 6),
+          Text(
+            player.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              decoration: eliminated ? TextDecoration.lineThrough : null,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            height: height,
+            width: double.infinity,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: first
+                  ? scheme.primary
+                  : scheme.primary.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: Text(
+                  '$total',
+                  style: TextStyle(
+                    fontSize: first ? 32 : 24,
+                    fontWeight: FontWeight.w800,
+                    // The first block is filled with the primary colour: its
+                    // total stays readable rather than orange.
+                    color: first
+                        ? scheme.onPrimary
+                        : _totalColour(context, ranking, total, scheme.onSurface),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A player past the podium: place, avatar, name, total.
+class _RankRow extends StatelessWidget {
+  const _RankRow({super.key, required this.player, required this.ranking});
+
+  final Player player;
+  final GameRanking ranking;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final total = ranking.totalOf(player);
+    final eliminated = ranking.isEliminated(total);
+    return _outIf(
+      eliminated,
+      Card(
+        margin: const EdgeInsets.only(bottom: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: scheme.outlineVariant),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 24,
+                child: Text(
+                  '${ranking.ranks[player.id] ?? 0}',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              PlayerAvatar(
+                  name: player.name, color: ranking.colourOf(player), size: 34),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  player.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    decoration: eliminated ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+              ),
+              Text(
+                '$total',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: _totalColour(
+                      context, ranking, total, scheme.onSurface),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
