@@ -78,12 +78,30 @@ one appearing on the other's open board within seconds.
 
 ### Feature guards
 
-`kIsWeb` appears in only two files, plus the conditional export in `connection.dart`:
+`kIsWeb` guards one feature in Settings, plus the review prompt and the conditional export
+in `connection.dart`:
 
-- `lib/providers/settings_provider.dart:13,35,45,59` — export/import throw
-  `UnsupportedError`; wakelock is a silent no-op.
-- `lib/screens/settings_screen.dart:73,86,89,211` — hides the wakelock and export/import
-  UI blocks entirely.
+- `lib/providers/settings_provider.dart` — `supportsDbExportImport => !kIsWeb`, and
+  export/import throw `UnsupportedError` on the web: they need `dart:io`.
+- `lib/screens/settings_screen.dart` — reads `supportsDbExportImport` (not `kIsWeb`, so a
+  widget test can play the web build) and drops the Backup heading **with** its rows.
+  Every section heading there is a `_SectionTitle` followed by at least one row; the list
+  pads its bottom with `withBottomInset` plus 16, so the last row clears the gesture
+  bar (`test/screens/settings_screen_test.dart`).
+- `lib/services/review_prompt.dart` — no Play review sheet in a browser.
+
+**Keep screen awake works in the PWA.** wakelock_plus 1.8.0's web plugin injects
+`assets/packages/wakelock_plus/assets/no_sleep.js` as a same-origin `<script>` (allowed by
+`script-src 'self'`) and calls `navigator.wakeLock.request('screen')`, which no CSP
+directive governs; it re-requests the lock on `visibilitychange`, since a browser drops it
+when the tab is hidden. The API needs a secure context (https, or `localhost`). A browser
+without `navigator.wakeLock` gets NoSleep's fallback — a looping `data:` video — which the
+PWA's `default-src 'self'` blocks as media, so there the switch is saved but holds nothing;
+the failure lands in the provider's `catch`. Verified on 2026-09-19 in Chromium at 412×860
+under `_PWA_CSP` (`backend/app/main.py:34`): the switch obtains a `WakeLockSentinel`
+(`type: screen`), turning it off releases it, the setting is re-applied after a reload, and
+no CSP violation is logged. The lock is applied when `SettingsProvider` is first read — it
+is a lazy provider (`lib/main.dart:53`) — as on Android.
 
 ### Building
 
@@ -203,8 +221,7 @@ address for the Android case; on web that URL still only works from an http orig
   every `build/web/`. A path-scoped rule loads when the same files are touched, and lives
   outside the tree Flutter copies. `scripts/deploy_web.sh` refuses any `.md` in the build
   so the class of leak cannot return through that path.
-- **The Server section of Settings is *not* `kIsWeb`-guarded**, unlike wakelock and
-  export/import. The PWA needs a configured backend exactly as the Android app does, and a
+- **The Server section of Settings is *not* `kIsWeb`-guarded**, unlike export/import. The PWA needs a configured backend exactly as the Android app does, and a
   browser user has no other way to supply one.
 - **Export/import is hidden rather than reimplemented on web.** It needs `dart:io`. Doing
   it properly means a `FileExporter` abstraction with a JSON serialisation path for the
@@ -226,3 +243,9 @@ address for the Android case; on web that URL still only works from an http orig
   It is the distribution channel, like the Play Store download, not a call the app makes, so `README.md` Privacy, `privacy_policy.md` and
   `PLAY_STORE_DATA_SAFETY.md` (which covers the Android binary alone) are unchanged
   ([[Documentation]]).
+- **Keep screen awake came back to the PWA (2026-09-19).** It had been hidden behind
+  `kIsWeb` on the assumption that wakelock_plus did nothing in a browser, while its heading
+  stayed drawn — so Settings ended on a bare "Screen" heading and read as a page cut short.
+  The plugin has a real web path that the CSP allows, and a phone on a games table is
+  exactly where the screen should stay on, so the guard went rather than the heading.
+  `wip/done/2026-09-19-settings-screen-section-is-empty-on-the-web.md`.
