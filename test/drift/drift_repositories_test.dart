@@ -266,6 +266,58 @@ void main() {
       expect(stats['wins'], 1);
     });
 
+    test('finished results: finished and scored games only, live rounds only, '
+        'keyed by the global player uuid', () async {
+      final finished = await gameRepo.create(Game(
+        name: 'F',
+        isLowestScoreWins: true,
+        finishedAt: DateTime(2026, 9, 1),
+      ));
+      final a = await playerRepo.create(
+        Player(gameId: finished, name: 'Alice', orderIndex: 0),
+      );
+      final b = await playerRepo.create(
+        Player(gameId: finished, name: 'Bob', orderIndex: 1, colorValue: 7),
+      );
+      final r1 = await roundRepo.create(Round(gameId: finished, roundNumber: 1));
+      final r2 = await roundRepo.create(Round(gameId: finished, roundNumber: 2));
+      await scoreRepo.upsert(Score(playerId: a, roundId: r1, value: 10));
+      await scoreRepo.upsert(Score(playerId: b, roundId: r1, value: 4));
+      await scoreRepo.upsert(Score(playerId: a, roundId: r2, value: 1));
+      await scoreRepo.upsert(Score(playerId: b, roundId: r2, value: 100));
+      await roundRepo.delete(r2);
+
+      // Open: not counted.
+      final open = await gameRepo.create(Game(name: 'O', isLowestScoreWins: true));
+      final ao = await playerRepo.create(
+        Player(gameId: open, name: 'Alice', orderIndex: 0),
+      );
+      final ro = await roundRepo.create(Round(gameId: open, roundNumber: 1));
+      await scoreRepo.upsert(Score(playerId: ao, roundId: ro, value: 3));
+      // Finished without a score: not counted.
+      final blank = await gameRepo.create(Game(
+        name: 'B',
+        isLowestScoreWins: true,
+        finishedAt: DateTime(2026, 9, 2),
+      ));
+      await playerRepo.create(Player(gameId: blank, name: 'Alice', orderIndex: 0));
+
+      final results = await statsRepo.getFinishedGameResults();
+      expect(results.map((r) => r.gameId), [finished]);
+      final game = results.single;
+      expect(game.isLowestScoreWins, isTrue);
+      expect(game.participants.map((p) => p.name), ['Alice', 'Bob']);
+      expect(game.participants.map((p) => p.total), [10, 4]);
+      expect(game.participants[1].colorValue, 7);
+
+      final bobUuid = (await db
+              .customSelect("SELECT uuid FROM players WHERE name = 'Bob'")
+              .getSingle())
+          .data['uuid'] as String;
+      expect(game.participants[1].playerUuid, bobUuid);
+      expect(game.wonBy(bobUuid), isTrue);
+    });
+
     test('unknown player returns zeros', () async {
       final stats = await statsRepo.getStatsByName('Nobody');
       expect(stats['gamesPlayed'], 0);

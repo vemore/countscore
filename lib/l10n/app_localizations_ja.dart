@@ -1173,4 +1173,124 @@ class AppLocalizationsJa extends AppLocalizations {
   String groupUsageResets(String date) {
     return '$date にリセット';
   }
+
+  @override
+  String get statsBestWinRate => '最高勝率';
+
+  @override
+  String statsWinsOutOfGames(int wins, int games) {
+    String _temp0 = intl.Intl.pluralLogic(
+      wins,
+      locale: localeName,
+      other: '$games戦$wins勝',
+      zero: '$games戦 勝利なし',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsColumnPlayer => 'プレイヤー';
+
+  @override
+  String get statsColumnGames => '試合';
+
+  @override
+  String statsUnranked(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count試合 · ランク外',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsLeaderboardFooter(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '終了した試合が$count試合以上でランク入り。プレイヤーをタップするとカードを表示します。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsGamesLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '試合',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsWinsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '勝',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsAverageRank => '平均順位';
+
+  @override
+  String statsRankChartTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '順位、直近$count試合',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsTrendImproving => '上昇中';
+
+  @override
+  String get statsTrendDeclining => '下降中';
+
+  @override
+  String get statsTrendSteady => '安定';
+
+  @override
+  String statsRankOrdinal(String rank) {
+    return '$rank位';
+  }
+
+  @override
+  String statsWinStreak(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count連勝中',
+      zero: '連勝なし',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsRecord(int total) {
+    return '記録: $total';
+  }
+
+  @override
+  String statsOnGameType(String gameType) {
+    return '$gameTypeでの成績';
+  }
+
+  @override
+  String get statsAverageTotal => '平均最終スコア';
+
+  @override
+  String get statsBestTotal => '最高最終スコア';
+
+  @override
+  String get statsMostBeaten => '最も多く勝った相手';
+
+  @override
+  String get statsOpenPlayerCard => 'プレイヤーカードを開く';
 }
