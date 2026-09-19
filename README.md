@@ -300,7 +300,9 @@ CI — it calls the production endpoint. See `.llmwiki/Testing.md`.
   checked by [`scripts/check_web_build.sh`](scripts/check_web_build.sh) — the check both
   publishing paths run.
 - **Android** — debug APK from a clean checkout, as a fresh-clone build proof, plus an
-  assertion that the release manifest still declares `INTERNET`.
+  assertion that the release manifest still declares `INTERNET`. On a pull request it runs
+  when `android/`, `pubspec.*` or the CI tooling changes, not for Dart alone; on `main` and
+  the weekly run it always runs.
 - **Sync** — the backend on a real Postgres, then the two-device group sync test against it.
 
 [`.github/dependabot.yml`](.github/dependabot.yml) opens weekly, grouped update pull requests

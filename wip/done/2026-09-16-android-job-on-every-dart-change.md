@@ -1,5 +1,7 @@
 # The `android` CI job runs on every Dart change, and it is the slowest job by far
 
+**Status:** done (2026-09-19) — closed by ci/android-scope-and-sqlite-cache. The run-history search (all 416 `ci.yml` runs, 2026-09-09 to 2026-09-19, first attempts of every failed or rerun run) found two runs with `android` red and `app` green, 35335702639 and 35336544456, both network flakes (the sqlite3 hash mismatch, a Maven Central 403) and neither a Dart-caused failure; `scripts/ci_scope.sh` now sends `lib/`, `test/` and the other Dart paths to `app` and `sync` only, `pubspec.*` still to `android`, and main and the weekly run still force every job (asserted by `scripts/ci_scope_selftest.sh`). `.llmwiki/Testing.md` records the decision.
+
 - **Noted:** 2026-09-16 — adding the `scope` job to `.github/workflows/ci.yml`
 - **Theme:** ci-scope
 - **Area:** tooling
