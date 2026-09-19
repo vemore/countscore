@@ -560,7 +560,7 @@ Después de diez turnos, cada jugador cuenta las cabezas de buey recogidas. En g
 
 ## Fin de la partida
 
-Se encadenan las rondas, y el puntaje más bajo gana. CountScore elimina un jugador en cuanto **supera 66 cabezas de buey**. La regla original detiene la partida en cuanto un jugador totaliza 66: para seguirla al pie de la letra, fija el umbral en 65 en el tipo de juego.
+Se encadenan las rondas, y el puntaje más bajo gana. Como la regla original, CountScore elimina a un jugador en cuanto **llega a 66 cabezas de buey**: el umbral del tipo de juego es 65, y un total que lo supera queda eliminado.
 
 <!--@qwirkle-->
 Juego de fichas de 2 a 4 jugadores, con **108 fichas**: seis formas en seis colores, cada ficha en tres ejemplares. Se marcan puntos formando líneas.

@@ -141,8 +141,9 @@ Twelve components shared out of the screens:
   ([below](#the-game-end-screen)): `GameRanking.of` (the current game best first, its ranks,
   colours, leader, winners and elimination tests; `GameRanking.fromStanding` builds the same
   from a `GameStanding`, for a test or a caller without a provider), `RankedPlayers` (podium and rows),
-  `rankingSummary` (type · rounds · win rule), and `isEliminatedBy` /
-  `isNearEliminationBy`, the type's elimination rule on a total.
+  `rankingSummary` (type · rounds · win rule). The elimination rule on a total is
+  `GameType.isEliminated` / `isNearElimination` (`lib/models/game_type.dart`), which the board
+  reads too.
 - `score_keypad_sheet.dart` — `ScoreKeypadSheet`, the bottom sheet every score is entered
   through ([below](#the-board)).
 - `share_result_button.dart` — `ShareResultButton`, the app-bar share action of the end
@@ -327,8 +328,10 @@ loads it and records it finished (`_finishAndShowEnd` on the board; the home car
 loads it before pushing). The winner's name (a tie at the top names every player on it),
 the game type · rounds · win rule, then `RankedPlayers` (`lib/widgets/game_ranking.dart`):
 a podium of the top three in their display colours with their totals (first raised in the
-middle, ringed in `kLeaderGold`, the leader under a `BoardCrown`), then the others in rank
-order (`GameStanding.ranks`, ties sharing a place). As on the board, a total within 20
+middle; each step as high as the player's place, so a tie shares a step), the sole leader
+(`GameStanding.soleLeader`) ringed in `kLeaderGold` under a `BoardCrown` — nobody is crowned
+before the first score or on a tie for the lead — then the others in rank order
+(`GameStanding.ranks`, ties sharing a place). As on the board, a total within 20
 points of the type's elimination threshold is orange — except on the first step, whose
 filled block keeps `onPrimary` — and an eliminated player is faded and struck through. Actions: **Play again**
 (`playAgain`) and **Analysis** (`GameAnalysisScreen`), the latter only when
@@ -433,6 +436,19 @@ the reason. That warning *is* the tree-shaking constraint showing up in the anal
 not "fix" it by hardcoding a codepoint.
 
 ## Decisions & History
+
+- **One elimination rule, 6 qui prend seeded 65, no crown on a tie (2026-09-19).** The board
+  kept three private copies of the elimination test; they went, and the board, the ranking
+  and the end screen all call `GameType.isEliminated` / `isNearElimination`. `over` stays
+  strict — ZapZap and Rami say *exceeds* 100 — so 6 qui prend, whose box rule stops at 66,
+  is seeded with 65 rather than given an inclusive variant (no schema change); an existing
+  row keeps 66, as with the Uno / Président seed change. The rankings crowned the earlier
+  seat on a tie, so a round of all zeros crowned seat 1: they now crown
+  `GameStanding.soleLeader`, null on a tie. `GameStanding.leader` still breaks a tie by seat,
+  because the board uses it to decide whether to sort by rank; the board's own crown and the
+  home card's winner still follow it (`wip/todo_nr/2026-09-19-board-and-home-crown-a-tie.md`).
+  (`wip/done/2026-09-19-player-elimination-threshold-is-strictly-over.md`,
+  `wip/done/2026-09-19-crown-before-any-round.md`)
 
 - **`firstPlayerOver` means "reaches" (2026-09-19).** The game-over test moved from the
   board into `GameType.isGameOver` and `firstPlayerOver` became `>=`: the box rules its

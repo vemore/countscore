@@ -62,8 +62,9 @@ class GameRanking {
       standing: standing,
       ranked: ranked,
       colours: playerColorsById(players),
-      isEliminated: (total) => isEliminatedBy(gameType, total),
-      isNearThreshold: (total) => isNearEliminationBy(gameType, total),
+      isEliminated: (total) => gameType?.isEliminated(total) ?? false,
+      isNearThreshold: (total) =>
+          gameType?.isNearElimination(total) ?? false,
     );
   }
 
@@ -85,8 +86,9 @@ class GameRanking {
 
   bool get hasScores => standing.hasScores;
 
-  /// The player in the lead, crowned; null before the first score.
-  Player? get leader => standing.leader;
+  /// The player in the lead, crowned; null before the first score and on a
+  /// tie for the lead, where the tied players share the first place instead.
+  Player? get leader => standing.soleLeader;
 
   /// Every player on the first place — more than one on a tie. Empty before
   /// the first score.
@@ -95,31 +97,6 @@ class GameRanking {
 
   int totalOf(Player p) => standing.totalOf(p);
   Color colourOf(Player p) => colours[p.id] ?? kPlayerPalette.first;
-}
-
-/// Whether [total] puts a player out under [gameType]'s elimination rule.
-/// False for a type without one.
-bool isEliminatedBy(GameType? gameType, int total) {
-  final threshold = gameType?.playerDeadThreshold;
-  final condition = gameType?.playerDeadConditionType;
-  if (threshold == null || condition == null) return false;
-  return switch (condition) {
-    PlayerDeadConditionType.over => total > threshold,
-    PlayerDeadConditionType.under => total < threshold,
-  };
-}
-
-/// Whether [total] is within 20 points of [gameType]'s elimination threshold,
-/// and not past it — the board's orange total.
-bool isNearEliminationBy(GameType? gameType, int total) {
-  final threshold = gameType?.playerDeadThreshold;
-  final condition = gameType?.playerDeadConditionType;
-  if (threshold == null || condition == null) return false;
-  if (isEliminatedBy(gameType, total)) return false;
-  return switch (condition) {
-    PlayerDeadConditionType.over => total >= threshold - 20,
-    PlayerDeadConditionType.under => total <= threshold + 20,
-  };
 }
 
 /// The one line under a ranking's title: game type · rounds · win rule.
@@ -173,7 +150,8 @@ Widget _outIf(bool eliminated, Widget child) =>
     eliminated ? Opacity(opacity: 0.5, child: child) : child;
 
 /// The top three, second on the left, first raised in the middle, third on
-/// the right — each over a block that holds their total.
+/// the right — each over a block that holds their total, as high as their
+/// place: a tie shares a step.
 class _Podium extends StatelessWidget {
   const _Podium({required this.players, required this.ranking});
 
@@ -182,6 +160,11 @@ class _Podium extends StatelessWidget {
   final GameRanking ranking;
 
   static const _heights = [112.0, 80.0, 60.0];
+
+  /// The step [player] stands on: their place, not their position, so that
+  /// players on the same total stand on the same step (1, 1, 3).
+  int _step(Player player, int position) =>
+      ((ranking.ranks[player.id] ?? position + 1) - 1).clamp(0, 2);
 
   @override
   Widget build(BuildContext context) {
@@ -202,8 +185,8 @@ class _Podium extends StatelessWidget {
                 key: Key('ranking_podium_$place'),
                 player: players[place],
                 ranking: ranking,
-                height: _heights[place],
-                first: place == 0,
+                height: _heights[_step(players[place], place)],
+                first: _step(players[place], place) == 0,
               ),
             ),
           ),
@@ -244,7 +227,7 @@ class _Step extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (crowned) const BoardCrown(size: 26),
-          if (first)
+          if (crowned)
             Container(
               padding: const EdgeInsets.all(3),
               decoration: const BoxDecoration(
@@ -267,6 +250,7 @@ class _Step extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Container(
+            key: Key('ranking_step_${player.id}'),
             height: height,
             width: double.infinity,
             alignment: Alignment.center,
