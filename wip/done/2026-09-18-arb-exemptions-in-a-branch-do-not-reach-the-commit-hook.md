@@ -4,6 +4,7 @@
 - **Theme:** hooks
 - **Area:** tooling
 - **Blocks release:** no
+- **Status:** done (2026-09-19) — closed by fix/arb-hook-branch-exemptions. `guard-bash.sh` runs `$ROOT/.claude/hooks/arb_keys.py` when the committed tree has one, falling back to its own; two `hooks_selftest.sh` cases prove the tree's checker is the one that runs. It blocked the merge of `main` into `feat/score-keypad` (#124).
 
 `.claude/hooks/guard-bash.sh:17` sets `HOOKS` to the directory of the hook that runs, which
 is the **main checkout's** `.claude/hooks/`, and runs `$HOOKS/arb_keys.py --values` against
