@@ -1,5 +1,7 @@
 # Player colours picked at random on creation can be near-twins or unreadable on the board
 
+**Status:** done (2026-09-19) — closed by fix/player-avatars-colours-keypad. Two colours clash when closer than 12 in CIEDE2000 (`playerColorsClash`; a hue threshold alone would have made palette colours clash with each other), and `onPlayerColor` picks white or `black87` by WCAG contrast. One reading of the first acceptance line: of `green` and `lightGreen`, the first seat keeps its own Material green and the second takes a palette colour — the two are distinct, but not both palette colours, since a stored colour is still honoured when it clashes with nothing. Tests: `test/utils/player_colors_test.dart`.
+
 - **Noted:** 2026-09-19 — full test pass of the production PWA (fresh Chromium profiles, Playwright, fr-FR at 412 × 860)
 - **Theme:** visual-refresh
 - **Area:** app

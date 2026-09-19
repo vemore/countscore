@@ -50,7 +50,11 @@ whether the connected features exist; the third starts the review prompt's clock
 `game_types_screen` · `create_game_screen` ·
 `game_analysis_screen` (the LLM analysis, with its row of voice chips — see
 [[LlmProviders]]) ·
-`players_screen` · `player_stats_screen` (the leaderboard) and `player_card_screen`, below ·
+`players_screen` (every known player: games and wins as the leaderboard counts them —
+`buildLeaderboard` over the finished results — a two-letter `PlayerAvatar` in the
+leaderboard's colour that opens the colour picker, rename and delete; the delete
+confirmation alone counts every game, open ones too, from `getPlayerGameCounts`) ·
+`player_stats_screen` (the leaderboard) and `player_card_screen`, below ·
 `settings_screen` ·
 `about_screen` · `ranking_screen` (where an open game stands, below) · `game_end_screen` (who won, below) · `game_rules_screen` ·
 `group_settings_screen`.
@@ -59,7 +63,8 @@ whether the connected features exist; the third starts the review prompt's clock
 (`Key('stats_chip_all')`, then `stats_chip_<key>` for each type with a finished game, most
 played first), a teal hero for the best win rate with the leader's avatar in a
 `kLeaderGold` ring, then one card per player — place, two-letter `PlayerAvatar`, games,
-wins · win rate and a bar of the rate in the player's colour. A player with fewer than
+wins · win rate and a bar of the rate in the player's colour; a column header wider than its
+column ("PARTIDAS") shrinks to fit on one line. A player with fewer than
 `kMinGamesToRank` (5) finished games of the filter is listed last with no place. Tapping a
 player opens `player_card_screen` on the same filter: a strip of the leaderboard's avatars
 to switch player; games, wins and average place; the place over the last `kRankChartGames`
@@ -152,9 +157,14 @@ Twelve components shared out of the screens:
   failure to open becoming a `shareFailed` snackbar. Its `share` seam (`ShareTextFn`) is
   passed through by the three screens for tests.
 
-- `player_avatars.dart` — `PlayerAvatar` (an initial on a colour, drawn in
-  `onPlayerColor`) and `PlayerAvatarStack` (a game's players overlapping, in seat order and
-  in their `playerColorsById` colours, "+N" past `maxShown`).
+- `player_avatars.dart` — `PlayerAvatar` (an initial, or the first `letters` letters, on a
+  colour, drawn in `onPlayerColor`) and `PlayerAvatarStack` (a game's players overlapping,
+  two letters each as on the board, in seat order and in their `playerColorsById` colours,
+  "+N" past `maxShown`). The home Resume hero rings its stack in its text colour, so a teal
+  or cyan player does not vanish into the teal card.
+- `fit_words_text.dart` — `FitWordsText`, a label for a narrow fixed-size box that never
+  breaks inside a word: it shrinks its font until every word fits, and past its minimum
+  scales each whole line down. The keypad's tall key uses it.
 - `game_type_tile_grid.dart` — the New game screen's game types (below): `GameTypeTileGrid`,
   three colour-and-icon tiles a row, the selected one tinted in its colour, outlined in the
   primary and ticked; `showAllGameTypesSheet`, the full list by display name.
@@ -244,12 +254,18 @@ cover, falls back to the system font. `registerFontLicenses()` (called from `mai
 
 `player_colors.dart` — every player colour on screen is assigned **at display time**, never
 written back. `playerColorsById(playersInSeatOrder)` returns a colour per player id:
-in seat order, a player's own `colorValue` wins unless an earlier seat already shows it;
-everyone else takes the first colour of `kPlayerPalette` (ten mid-tone colours) no one in
-the game shows; past ten the palette repeats by seat. `assignPlayerColors(colorValues)` is
-the same rule over bare colour values, and `onPlayerColor(colour)` the initial's colour on
-it. The home avatars, the board's lanes and rows, and the New game screen's seats and
-"who's playing" chips use it.
+in seat order, a player's own `colorValue` wins unless an earlier seat already shows it
+**or one that clashes with it**; everyone else takes the first colour of `kPlayerPalette`
+(ten mid-tone colours) that clashes with nothing the game shows; past ten the palette
+repeats by seat. Two colours clash (`playerColorsClash`) when they are equal or closer than
+`kPlayerColorClashDistance` (12) in CIEDE2000 (`colorDistance`): Material `green` and
+`lightGreen` are 10.5 apart, the two closest palette colours 15.0.
+`assignPlayerColors(colorValues, alreadyShown:)` is the same rule over bare colour values,
+optionally avoiding colours another part of the screen shows. `onPlayerColor(colour)` is
+the initial's colour on it — white or `black87`, whichever has the higher WCAG contrast
+(`contrastRatio`), so every palette colour gets at least 4.5:1 and a legacy yellow a dark
+initial. The home avatars, the board's lanes and rows, the ranking and end screen, the keypad
+chips, the Players screen, the statistics and the New game screen's seats and "who's playing" chips use it.
 
 
 `insets.dart` — `withBottomInset(context, base)` adds `MediaQuery.paddingOf(context).bottom`
@@ -263,7 +279,7 @@ are the root scrollables of `about_screen.dart:31` (on the child `Padding` — a
 `SingleChildScrollView` never gets the compensation at all),
 `game_types_screen.dart:50` (plus `kFabClearance`, below),
 `home_screen.dart:91` (the drawer) and `:335`, `player_stats_screen.dart:119`, `player_card_screen.dart:110`,
-`players_screen.dart:61`, and in `ranking_screen.dart` on the *Play again* button's
+`players_screen.dart:134`, and in `ranking_screen.dart` on the *Play again* button's
 `Padding` under the list, the last thing above the navigation bar. Only the bottom edge is compensated:
 `Scaffold` drops the top padding for a body under an `AppBar`
 (`scaffold.dart`, `removeTopPadding: widget.appBar != null`) and keeps the bottom one unless
@@ -398,9 +414,12 @@ the provider as nullable, so a test that does not provide one gets lanes.
 `lib/widgets/score_keypad_sheet.dart`); there is no text field and no system keyboard.
 The board's button reads "Round N" (`boardRoundButton`, N from `GameProvider.nextRoundNumber`)
 and opens the sheet on the first player in seat order, skipping the eliminated ones: chips of
-the players (the current one outlined in its colour, the scores already typed under the
-names), the large number, the total after it, and a 0-9 pad with ± and ⌫. "Next <name>"
-moves on; on the last player the key reads "Validate round", and only then is the round
+the players (two-letter avatars as on the board, the current one outlined in its colour,
+the scores already typed under the names), the large number, the total after it, and a 0-9
+pad with ± and ⌫ — laid out left to right in every locale, Arabic included, as a phone
+keypad is, while its labels keep the locale's direction. "Next", then the name on a line of
+its own (`keypadNext` carries the line break in all ten languages), moves on; the tall key's
+label is a `FitWordsText`, so no language breaks it inside a word; on the last player the key reads "Validate round", and only then is the round
 written, in one go (`GameProvider.addRoundWithScores`, one notification) — closing the sheet
 drops it, so an abandoned round leaves no empty row. An untouched player scores 0. For
 ZapZap (`builtinKey == 'zapzap'`) the bottom-left key is "0 ZapZap", a zero that moves on;
@@ -615,6 +634,22 @@ not "fix" it by hardcoding a codepoint.
   random stored colour, since the palette decides at display time. A type picked outside
   the six tiles takes the first tile rather than the last, so that the default ZapZap sits
   first before any game has been played.
+- **One avatar and colour system everywhere (2026-09-19).** The keypad chips, the home
+  Resume hero and the Players screen drew one letter, or a stored colour with a blue
+  default, while the board drew two letters in `player_colors.dart`'s colours; they now all
+  go through `PlayerAvatar` and the display-time colours. Stored colours from before the
+  palette (random Material colours) are kept, but a near-twin of an earlier seat's colour
+  now counts as a clash — CIEDE2000 rather than a hue threshold, because hue alone puts
+  the palette's own cyan and slate, or vermilion and amber, closer than Material green and
+  lightGreen. Choosing the initial's colour by WCAG contrast turned most palette discs'
+  initials dark: white on the mid-tone palette measured 2.2–3.7:1. The Players screen's
+  counts moved to the leaderboard's finished-games rule, and `getStatsByName` — which
+  counted open games, made every player of an unscored game a winner, took the best
+  total whatever the game's elimination rule and ran one query per game — was deleted rather than fixed.
+  (`wip/done/2026-09-19-keypad-and-home-avatars-disagree-with-the-board.md`,
+  `wip/done/2026-09-19-players-screen-counts-open-games-and-shows-blue-avatars.md`,
+  `wip/done/2026-09-19-stored-player-colours-clash-on-the-board.md`,
+  `wip/done/2026-09-19-es-pt-labels-wrap-mid-word.md`)
 - **2026-09-19 — The lanes scroll under a mouse, the ribbon follows the overflow, Undo
   expires** (`fix/board-scroll-and-undo-snackbar`). On the PWA a mouse drag never moved the
   ten-player board, because Flutter's default scroll behaviour drags only with touch and

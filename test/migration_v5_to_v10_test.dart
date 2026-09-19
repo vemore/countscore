@@ -197,10 +197,8 @@ void main() {
         .getByPlayerAndRound(mardiPlayers.first.id!, rounds.single.id!);
     expect(aliceScore?.value, 12);
 
-    // Alice and alice are one human now; lowest score wins, so she won Mardi only.
-    final stats = await DriftPlayerStatsRepository(db).getStatsByName('Alice');
-    expect(stats['gamesPlayed'], 2);
-    expect(stats['wins'], 1);
+    // Alice and alice are one human now, in both games.
+    expect((await players.getGameCountsByName())['Alice'], 2);
 
     // Nothing upgraded belongs to a group, and the app can write to the file.
     final shared = await db
@@ -212,7 +210,7 @@ void main() {
     final p = await players.create(Player(gameId: newGame, name: 'Bob', orderIndex: 0));
     final r = await DriftRoundRepository(db).create(Round(gameId: newGame, roundNumber: 1));
     await DriftScoreRepository(db).create(Score(playerId: p, roundId: r, value: 3));
-    expect((await DriftPlayerStatsRepository(db).getStatsByName('Bob'))['gamesPlayed'], 2);
+    expect((await players.getGameCountsByName())['Bob'], 2);
 
     // The v12 column is writable on a file that came all the way from v5.
     final at = DateTime(2026, 9, 16, 21);

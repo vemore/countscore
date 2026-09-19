@@ -58,8 +58,8 @@ class PlayerAvatar extends StatelessWidget {
 }
 
 /// A game's players as a row of overlapping avatars, in seat order and in
-/// their display colours ([playerColorsById]). Past [maxShown] the rest are
-/// summed up as "+N".
+/// their display colours ([playerColorsById]), with the two letters the board
+/// shows ("Li", "La"). Past [maxShown] the rest are summed up as "+N".
 class PlayerAvatarStack extends StatelessWidget {
   const PlayerAvatarStack({
     super.key,
@@ -67,6 +67,7 @@ class PlayerAvatarStack extends StatelessWidget {
     this.size = 28,
     this.maxShown = 5,
     this.borderColor,
+    this.letters = 2,
   });
 
   /// One game's players, in seat order.
@@ -74,6 +75,9 @@ class PlayerAvatarStack extends StatelessWidget {
   final double size;
   final int maxShown;
   final Color? borderColor;
+
+  /// How many letters of each name to show ([PlayerAvatar.letters]).
+  final int letters;
 
   @override
   Widget build(BuildContext context) {
@@ -102,6 +106,7 @@ class PlayerAvatarStack extends StatelessWidget {
                       kPlayerPalette[i % kPlayerPalette.length],
                   size: size,
                   borderColor: ring,
+                  letters: letters,
                 ),
               ),
             if (hidden > 0)

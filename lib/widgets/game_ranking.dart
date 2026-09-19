@@ -220,6 +220,7 @@ class _Step extends StatelessWidget {
       name: player.name,
       color: ranking.colourOf(player),
       size: first ? 50 : 38,
+      letters: 2,
     );
     return _outIf(
       eliminated,
@@ -322,7 +323,10 @@ class _RankRow extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               PlayerAvatar(
-                  name: player.name, color: ranking.colourOf(player), size: 34),
+                  name: player.name,
+                  color: ranking.colourOf(player),
+                  size: 34,
+                  letters: 2),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(

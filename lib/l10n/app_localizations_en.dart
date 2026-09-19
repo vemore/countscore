@@ -211,7 +211,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String keypadNext(String player) {
-    return 'Next $player';
+    return 'Next\n$player';
   }
 
   @override

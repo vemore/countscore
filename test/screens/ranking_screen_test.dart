@@ -151,12 +151,15 @@ void main() {
     await tester.pumpWidget(wrap(const RankingScreen(boardBuilder: _board)));
     await tester.pumpAndSettle();
 
-    // Every player in the colour the board gives them.
+    // Every player in the colour the board gives them, and with the board's
+    // two letters, podium and rows alike.
     final colours = playerColorsById(games.currentPlayers);
     for (final player in games.currentPlayers) {
       final avatar = tester.widget<PlayerAvatar>(find.byWidgetPredicate(
           (w) => w is PlayerAvatar && w.name == player.name));
       expect(avatar.color, colours[player.id], reason: player.name);
+      expect(find.text(player.name.substring(0, 2)), findsOneWidget,
+          reason: player.name);
     }
     expect(
       tester

@@ -196,8 +196,9 @@ void main() {
     for (final device in [a, b]) {
       expect(await device.players.getAllNames(), hasLength(1), reason: device.label);
       expect(await device.games.getAll(), hasLength(2), reason: device.label);
-      final stats = await DriftPlayerStatsRepository(device.db).getStatsByName('Chloé');
-      expect(stats['gamesPlayed'], 2, reason: device.label);
+      // One player, whichever spelling ("Chloé" or "chloé") the merge kept.
+      expect((await device.players.getGameCountsByName()).values, [2],
+          reason: device.label);
     }
   });
 

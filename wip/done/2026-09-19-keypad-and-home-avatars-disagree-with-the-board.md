@@ -1,5 +1,7 @@
 # The keypad and the home hero show one-letter avatars, and the keypad's Save label wraps
 
+**Status:** done (2026-09-19) — closed by fix/player-avatars-colours-keypad. The keypad chips always draw two letters, `PlayerAvatarStack` (the home hero and game list) defaults to two, and the hero rings its avatars in its text colour so a cyan disc no longer vanishes into the teal card; the tall key's label is a `FitWordsText` that shrinks rather than breaking a word; the digit grid is laid out in `Directionality(ltr)`. Tests: `test/widgets/score_keypad_sheet_test.dart`, `test/screens/home_screen_resume_test.dart`.
+
 - **Noted:** 2026-09-19 — full test pass of the production PWA (fresh Chromium profiles, Playwright, fr-FR at 412 × 860)
 - **Theme:** visual-refresh
 - **Area:** app

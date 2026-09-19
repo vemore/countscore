@@ -121,7 +121,7 @@
 
   "keypadTotalAfter": "итого после: {total}",
 
-  "keypadNext": "Далее: {player}",
+  "keypadNext": "Далее\n{player}",
 
   "keypadValidateRound": "Подтвердить раунд",
 

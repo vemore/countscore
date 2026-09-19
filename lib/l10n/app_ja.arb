@@ -121,7 +121,7 @@
 
   "keypadTotalAfter": "入力後の合計: {total}",
 
-  "keypadNext": "次へ: {player}",
+  "keypadNext": "次へ\n{player}",
 
   "keypadValidateRound": "ラウンドを確定",
 

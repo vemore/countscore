@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../models/player.dart';
 import '../utils/app_theme.dart';
+import 'fit_words_text.dart';
 import 'player_avatars.dart';
 
 /// Past this many players the caption also says where in the round the entry
@@ -392,7 +393,7 @@ class _Chips extends StatelessWidget {
                       name: p.name,
                       color: colour,
                       size: 36,
-                      letters: count > 4 ? 2 : 1,
+                      letters: 2,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -435,7 +436,8 @@ class _Chips extends StatelessWidget {
 }
 
 /// 1-9 in three rows, then the bottom row; ⌫ and the primary action on the
-/// right.
+/// right — left to right in every locale, Arabic included, as on a phone or a
+/// calculator keypad. The labels keep the locale's own direction.
 class _Pad extends StatelessWidget {
   const _Pad({
     required this.isZapZap,
@@ -463,6 +465,7 @@ class _Pad extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final dark = Theme.of(context).brightness == Brightness.dark;
+    final textDirection = Directionality.of(context);
     final digitBg = dark ? const Color(0xFF1F2B2A) : const Color(0xFFEDF4F3);
     final toolBg = dark ? const Color(0xFF26403D) : const Color(0xFFDDE9E7);
 
@@ -532,7 +535,7 @@ class _Pad extends StatelessWidget {
         fit: BoxFit.scaleDown,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: Text(l10n.keypadZeroZapZap),
+          child: Text(l10n.keypadZeroZapZap, textDirection: textDirection),
         ),
       ),
       background: dark ? kLeaderGold.withValues(alpha: 0.2) : const Color(0xFFFFF0C2),
@@ -541,43 +544,46 @@ class _Pad extends StatelessWidget {
     );
     const hole = SizedBox(height: _keyHeight);
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // For ZapZap: "0 ZapZap", ±, 0. Otherwise the 0 itself sits
-        // bottom-left, beside ±.
-        column([digit(1), digit(4), digit(7), isZapZap ? zapZap : zero]),
-        const SizedBox(width: _gap),
-        column([digit(2), digit(5), digit(8), sign]),
-        const SizedBox(width: _gap),
-        column([digit(3), digit(6), digit(9), isZapZap ? zero : hole]),
-        const SizedBox(width: _gap),
-        column([
-          key(
-            'keypad_backspace',
-            child: const Icon(Icons.backspace_outlined, size: 26),
-            background: toolBg,
-            tooltip: l10n.keypadBackspace,
-            onTap: onBackspace,
-          ),
-          key(
-            'keypad_primary',
-            height: _keyHeight * 2 + _gap,
-            background: scheme.primary,
-            foreground: scheme.onPrimary,
-            onTap: onPrimary,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: Text(
-                primaryLabel,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // For ZapZap: "0 ZapZap", ±, 0. Otherwise the 0 itself sits
+          // bottom-left, beside ±.
+          column([digit(1), digit(4), digit(7), isZapZap ? zapZap : zero]),
+          const SizedBox(width: _gap),
+          column([digit(2), digit(5), digit(8), sign]),
+          const SizedBox(width: _gap),
+          column([digit(3), digit(6), digit(9), isZapZap ? zero : hole]),
+          const SizedBox(width: _gap),
+          column([
+            key(
+              'keypad_backspace',
+              child: const Icon(Icons.backspace_outlined, size: 26),
+              background: toolBg,
+              tooltip: l10n.keypadBackspace,
+              onTap: onBackspace,
+            ),
+            key(
+              'keypad_primary',
+              height: _keyHeight * 2 + _gap,
+              background: scheme.primary,
+              foreground: scheme.onPrimary,
+              onTap: onPrimary,
+              child: Padding(
+                padding: const EdgeInsets.all(6),
+                child: FitWordsText(
+                  primaryLabel,
+                  key: const Key('keypad_primary_label'),
+                  textDirection: textDirection,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                ),
               ),
             ),
-          ),
-        ]),
-      ],
+          ]),
+        ],
+      ),
     );
   }
 }
