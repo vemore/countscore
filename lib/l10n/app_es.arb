@@ -581,5 +581,6 @@
   "whoIsPlayingFrequent": "Juega a menudo contigo",
   "whoIsPlayingSameAs": "Los mismos jugadores que «{gameName}»",
   "whoIsPlayingCreate": "Crear «{name}»",
-  "whoIsPlayingConfirm": "{count, plural, =0{Listo} =1{Añadir 1 jugador} other{Añadir {count} jugadores}}"
+  "whoIsPlayingConfirm": "{count, plural, =0{Listo} =1{Añadir 1 jugador} other{Añadir {count} jugadores}}",
+  "defaultGameName": "Partida {number}"
 }

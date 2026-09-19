@@ -87,7 +87,7 @@ void main() {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        supportedLocales: const [Locale('en'), Locale('fr')],
+        supportedLocales: const [Locale('en'), Locale('fr'), Locale('ja')],
         locale: locale,
         home: CreateGameScreen(
           boardBuilder: realBoard
@@ -296,6 +296,23 @@ void main() {
 
     expect(find.byKey(Key('game_type_tile_${other.id}')), findsOneWidget);
     expect(tiles, findsNWidgets(6));
+  });
+
+  testWidgets('the first game is named in the app language', (tester) async {
+    await open(tester);
+    expect(find.text('Game 1'), findsOneWidget);
+    expect(find.text('Partie 1'), findsNothing);
+  });
+
+  testWidgets('the first game is named in French in French', (tester) async {
+    await open(tester, locale: const Locale('fr'));
+    expect(find.text('Partie 1'), findsOneWidget);
+  });
+
+  testWidgets('the first game is named in Japanese in Japanese',
+      (tester) async {
+    await open(tester, locale: const Locale('ja'));
+    expect(find.text('ゲーム1'), findsOneWidget);
   });
 
   testWidgets('"Other" offers the choice of win rule', (tester) async {

@@ -654,5 +654,6 @@
   "whoIsPlayingFrequent": "Often plays with you",
   "whoIsPlayingSameAs": "Same players as “{gameName}”",
   "whoIsPlayingCreate": "Create “{name}”",
-  "whoIsPlayingConfirm": "{count, plural, =0{Done} =1{Add 1 player} other{Add {count} players}}"
+  "whoIsPlayingConfirm": "{count, plural, =0{Done} =1{Add 1 player} other{Add {count} players}}",
+  "defaultGameName": "Game {number}"
 }

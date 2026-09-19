@@ -2218,6 +2218,12 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'{count, plural, =0{Valider} =1{Ajouter 1 joueur} other{Ajouter {count} joueurs}}'**
   String whoIsPlayingConfirm(int count);
+
+  /// Name the New game screen suggests for the very first game; later games count on from the previous game's name
+  ///
+  /// In fr, this message translates to:
+  /// **'Partie {number}'**
+  String defaultGameName(int number);
 }
 
 class _AppLocalizationsDelegate

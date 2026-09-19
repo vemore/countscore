@@ -581,5 +581,6 @@
   "whoIsPlayingFrequent": "Часто играет с вами",
   "whoIsPlayingSameAs": "Те же игроки, что в «{gameName}»",
   "whoIsPlayingCreate": "Создать «{name}»",
-  "whoIsPlayingConfirm": "{count, plural, =0{Готово} one{Добавить {count} игрока} few{Добавить {count} игроков} many{Добавить {count} игроков} other{Добавить {count} игрока}}"
+  "whoIsPlayingConfirm": "{count, plural, =0{Готово} one{Добавить {count} игрока} few{Добавить {count} игроков} many{Добавить {count} игроков} other{Добавить {count} игрока}}",
+  "defaultGameName": "Игра {number}"
 }

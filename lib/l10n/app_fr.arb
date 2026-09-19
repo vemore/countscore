@@ -2070,5 +2070,15 @@
         "example": "4"
       }
     }
+  },
+  "defaultGameName": "Partie {number}",
+  "@defaultGameName": {
+    "description": "Name the New game screen suggests for the very first game; later games count on from the previous game's name",
+    "placeholders": {
+      "number": {
+        "type": "int",
+        "example": "1"
+      }
+    }
   }
 }

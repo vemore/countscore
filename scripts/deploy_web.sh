@@ -87,25 +87,9 @@ echo "==> Building the PWA for $PWA_BASE_PATH/"
 flutter build web --release --no-tree-shake-icons --base-href="$PWA_BASE_PATH/"
 
 echo "==> Checking build/web"
-# Everything under web/ is published. A stray note or instructions file must
-# not reach a public URL again (web/CLAUDE.md did, until 2026-09-13).
-#
-# `assets/` is excluded because pubspec.yaml declares what goes in there: the
-# shipped game rules are Markdown on purpose (.llmwiki/I18n.md), and publishing
-# them is the point. Everything a stray note can reach — build/web/ itself, and
-# anything copied from web/ — is still scanned.
-LEAKS="$(find build/web -iname '*.md' -not -path 'build/web/assets/assets/*')"
-if [[ -n "$LEAKS" ]]; then
-    echo "Refusing to publish: markdown files in build/web:" >&2
-    echo "$LEAKS" >&2
-    exit 1
-fi
-for f in index.html main.dart.js sqlite3.wasm drift_worker.js; do
-    if [[ ! -s "build/web/$f" ]]; then
-        echo "Refusing to publish: build/web/$f is missing or empty" >&2
-        exit 1
-    fi
-done
+# No Markdown in the build, and the files the PWA cannot start without. The same
+# script gates the GitHub Pages workflow (.github/workflows/deploy-pages.yml).
+scripts/check_web_build.sh build/web
 
 if [[ "$MODE" == "--dry-run" ]]; then
     echo "==> Dry run: nothing is sent; these are the remote commands"

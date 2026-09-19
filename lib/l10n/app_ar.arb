@@ -581,5 +581,6 @@
   "whoIsPlayingFrequent": "يلعب معك كثيرًا",
   "whoIsPlayingSameAs": "نفس لاعبي «{gameName}»",
   "whoIsPlayingCreate": "إنشاء «{name}»",
-  "whoIsPlayingConfirm": "{count, plural, =0{تم} =1{إضافة لاعب واحد} =2{إضافة لاعبَين} few{إضافة {count} لاعبين} many{إضافة {count} لاعبًا} other{إضافة {count} لاعب}}"
+  "whoIsPlayingConfirm": "{count, plural, =0{تم} =1{إضافة لاعب واحد} =2{إضافة لاعبَين} few{إضافة {count} لاعبين} many{إضافة {count} لاعبًا} other{إضافة {count} لاعب}}",
+  "defaultGameName": "لعبة {number}"
 }

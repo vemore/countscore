@@ -1275,4 +1275,9 @@ class AppLocalizationsRu extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String defaultGameName(int number) {
+    return 'Игра $number';
+  }
 }

@@ -88,15 +88,17 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
               )
             : zapzapOrFirst();
 
-    final defaultGameName =
-        games.isEmpty ? 'Partie 1' : nextGameName(games.first.name);
-
     names.sort((a, b) {
       final byCount = (counts[b] ?? 0).compareTo(counts[a] ?? 0);
       return byCount != 0 ? byCount : collateNames(a, b);
     });
 
     if (!mounted) return;
+    // The first game is named in the app's language; later ones count on from
+    // the last game's name, whatever language it is in.
+    final defaultGameName = games.isEmpty
+        ? AppLocalizations.of(context)!.defaultGameName(1)
+        : nextGameName(games.first.name);
     setState(() {
       _knownPlayers = names;
       _colorValues = colors;

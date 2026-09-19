@@ -581,5 +581,6 @@
   "whoIsPlayingFrequent": "常和你一起玩",
   "whoIsPlayingSameAs": "与“{gameName}”相同的玩家",
   "whoIsPlayingCreate": "创建“{name}”",
-  "whoIsPlayingConfirm": "{count, plural, =0{完成} other{添加 {count} 名玩家}}"
+  "whoIsPlayingConfirm": "{count, plural, =0{完成} other{添加 {count} 名玩家}}",
+  "defaultGameName": "游戏 {number}"
 }

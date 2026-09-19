@@ -126,7 +126,7 @@ void main() {
       (1, 'Bob', '20'),
       (2, 'Alice', '30'),
     ]) {
-      final step = find.byKey(Key('game_end_podium_$place'));
+      final step = find.byKey(Key('ranking_podium_$place'));
       expect(find.descendant(of: step, matching: find.text(name)),
           findsOneWidget);
       expect(find.descendant(of: step, matching: find.text(total)),

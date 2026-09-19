@@ -581,5 +581,6 @@
   "whoIsPlayingFrequent": "अक्सर आपके साथ खेलते हैं",
   "whoIsPlayingSameAs": "“{gameName}” वाले ही खिलाड़ी",
   "whoIsPlayingCreate": "“{name}” बनाएँ",
-  "whoIsPlayingConfirm": "{count, plural, =0{हो गया} =1{1 खिलाड़ी जोड़ें} other{{count} खिलाड़ी जोड़ें}}"
+  "whoIsPlayingConfirm": "{count, plural, =0{हो गया} =1{1 खिलाड़ी जोड़ें} other{{count} खिलाड़ी जोड़ें}}",
+  "defaultGameName": "खेल {number}"
 }

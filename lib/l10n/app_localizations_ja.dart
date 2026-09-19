@@ -1237,4 +1237,9 @@ class AppLocalizationsJa extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String defaultGameName(int number) {
+    return 'ゲーム$number';
+  }
 }

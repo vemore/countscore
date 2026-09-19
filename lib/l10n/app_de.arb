@@ -581,5 +581,6 @@
   "whoIsPlayingFrequent": "Spielt oft mit dir",
   "whoIsPlayingSameAs": "Dieselben Spieler wie „{gameName}“",
   "whoIsPlayingCreate": "„{name}“ anlegen",
-  "whoIsPlayingConfirm": "{count, plural, =0{Fertig} =1{1 Spieler hinzufügen} other{{count} Spieler hinzufügen}}"
+  "whoIsPlayingConfirm": "{count, plural, =0{Fertig} =1{1 Spieler hinzufügen} other{{count} Spieler hinzufügen}}",
+  "defaultGameName": "Spiel {number}"
 }

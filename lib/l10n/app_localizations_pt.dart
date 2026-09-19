@@ -1263,4 +1263,9 @@ class AppLocalizationsPt extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String defaultGameName(int number) {
+    return 'Partida $number';
+  }
 }
