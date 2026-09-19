@@ -958,7 +958,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String gameRulesEndFirstOver(int threshold) {
-    return 'Партия заканчивается, как только игрок набирает больше $threshold очков';
+    return 'Партия заканчивается, как только игрок наберёт $threshold очков';
   }
 
   @override

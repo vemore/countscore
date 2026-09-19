@@ -31,7 +31,7 @@ class AppDatabase extends _$AppDatabase {
   static final AppDatabase instance = AppDatabase();
 
   @override
-  int get schemaVersion => 15;
+  int get schemaVersion => 16;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -72,6 +72,9 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 15) {
             await applyV15(customStatement);
+          }
+          if (from < 16) {
+            await applyV16(customStatement);
           }
         },
       );

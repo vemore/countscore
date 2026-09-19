@@ -1,5 +1,7 @@
 # The twelve new game types ship no ruleset
 
+**Status:** done (2026-09-19) — closed by feat/game-rules-twelve. The twelve rulesets ship in `assets/rules/rules_<locale>.md` in all ten locales (French and English written, the eight others translated then reviewed); `defaultRulesSlugs` is keyed on `builtin_key`, the twelve factories carry their slug, and schema v16 (`applyV16`) back-fills `rules_slug` on existing rows by key. `test/migration_v15_to_v16_test.dart` and `test/game_rules_catalog_test.dart` (21 slugs) cover it.
+
 - **Noted:** 2026-09-16 — merging `feat/game-types-long-tail` (#75) onto the rules page (#77)
 - **Theme:** game-types
 - **Area:** app

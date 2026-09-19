@@ -1,5 +1,7 @@
 # A "first player over" threshold ends the game one step later than the rules say
 
+**Status:** done (2026-09-19) — closed by feat/game-rules-twelve. `firstPlayerOver` is `>=` (`GameType.isGameOver`, which the board now calls); `gameRulesEndFirstOver` says "reaches" in ten languages and the Uno and Président texts no longer say "passes". Existing Skyjo and Belote games now end one step earlier. Tested in `test/models_test.dart` (Président on 10 is over, on 9 is not) and `test/screens/game_board_end_of_game_test.dart`.
+
 - **Noted:** 2026-09-18 — while seeding Uno (500) and Président (10) in feat/game-rules-seeds
 - **Theme:** game-types
 - **Area:** app

@@ -31,6 +31,9 @@ class GameRulesCatalog {
   static const slugs = <String>[
     'zapzap', 'uno', 'scrabble', 'skyjo', 'president', 'belote', 'tarot',
     'bridge', 'rami',
+    // The long tail, shipped with schema v16.
+    'coinche', 'yahtzee', 'phase10', 'flip7', 'mille_bornes', 'rummikub',
+    'six_nimmt', 'qwirkle', 'farkle', 'canasta', 'wizard', 'triomino',
   ];
 
   /// The locale the app falls back to, matching `main.dart`'s

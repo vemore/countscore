@@ -3,7 +3,7 @@
 // database. Drift's onUpgrade must then bring it to the current schema itself.
 //
 // Simulated on a native file: build the current schema, strip everything v10,
-// v11, v12, v13, v14 and v15 added, stamp user_version 9, and reopen through Drift.
+// v11, v12, v13, v14, v15 and v16 added, stamp user_version 9, and reopen through Drift.
 
 import 'dart:io';
 
@@ -46,6 +46,9 @@ void main() {
     await raw.execute('ALTER TABLE games DROP COLUMN finishedAt');
     await raw.execute('DROP INDEX $gameTypesBuiltinKeyIndex');
     await raw.execute('ALTER TABLE game_types DROP COLUMN builtin_key');
+    for (final column in ['rules', 'rules_slug']) {
+      await raw.execute('ALTER TABLE game_types DROP COLUMN $column');
+    }
     // A v9 browser holds the ten types the seed wrote then, and no more.
     await raw.delete('game_types',
         where: 'name NOT IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -76,6 +79,15 @@ void main() {
       types.map((r) => r.data['builtin_key']).toSet(),
       containsAll(const ['other', 'yahtzee', 'six_nimmt', 'triomino']),
     );
+    // v13 and v16: every built-in type but Autre has its shipped ruleset —
+    // the nine old ones by seeded name, the twelve new ones by key.
+    final slugs = await db
+        .customSelect('SELECT builtin_key, rules_slug FROM game_types')
+        .get();
+    for (final r in slugs) {
+      expect(r.data['rules_slug'], defaultRulesSlugs[r.data['builtin_key']],
+          reason: '${r.data['builtin_key']} has the wrong ruleset');
+    }
     // v15: one live row per built-in key.
     final index = await db
         .customSelect("SELECT 1 FROM sqlite_master WHERE type = 'index' AND name = ?",

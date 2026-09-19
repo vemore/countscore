@@ -552,19 +552,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
 
     final players = gameProvider.currentPlayers;
     final playerTotals = players.map((p) => gameProvider.getPlayerTotal(p.id!)).toList();
-
-    switch (gameType!.gameOverConditionType!) {
-      case GameOverConditionType.firstPlayerOver:
-        return playerTotals.any((total) => total > gameType.gameOverThreshold!);
-      case GameOverConditionType.firstPlayerUnder:
-        return playerTotals.any((total) => total < gameType.gameOverThreshold!);
-      case GameOverConditionType.lastPlayerOver:
-        // All players over threshold
-        return playerTotals.every((total) => total > gameType.gameOverThreshold!);
-      case GameOverConditionType.lastPlayerUnder:
-        // All players under threshold
-        return playerTotals.every((total) => total < gameType.gameOverThreshold!);
-    }
+    return gameType!.isGameOver(playerTotals);
   }
 
   /// Opens the end screen once per crossing of the threshold.

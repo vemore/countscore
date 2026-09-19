@@ -1558,9 +1558,9 @@
       }
     }
   },
-  "gameRulesEndFirstOver": "La partie s'arrête dès qu'un joueur dépasse {threshold} points",
+  "gameRulesEndFirstOver": "La partie s'arrête dès qu'un joueur atteint {threshold} points",
   "@gameRulesEndFirstOver": {
-    "description": "Derived line: game over when the first player passes the threshold",
+    "description": "Derived line: game over as soon as a player reaches the threshold (a total equal to it ends the game)",
     "placeholders": {
       "threshold": {
         "type": "int",

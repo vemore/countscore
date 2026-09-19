@@ -165,7 +165,7 @@ _PLAYER_DEAD = {
 }
 
 _GAME_OVER = {
-    "firstPlayerOver": "The game ends as soon as one player's total goes above {threshold}.",
+    "firstPlayerOver": "The game ends as soon as one player's total reaches {threshold}.",
     "firstPlayerUnder": "The game ends as soon as one player's total falls below {threshold}.",
     "lastPlayerOver": "The game ends once every player's total has gone above {threshold}.",
     "lastPlayerUnder": "The game ends once every player's total has fallen below {threshold}.",

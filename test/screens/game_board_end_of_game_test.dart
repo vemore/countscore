@@ -81,7 +81,7 @@ void main() {
 
   tearDown(() => db.close());
 
-  /// A game of a type that is over as soon as a player passes 100, with one
+  /// A game of a type that is over as soon as a player reaches 100, with one
   /// round, Alice already at [aliceScore] and Bob at 20.
   Future<void> aGamePast(int aliceScore, {bool lowestWins = false}) async {
     final typeId = await gameTypes.createGameType(GameType(
@@ -328,6 +328,22 @@ void main() {
     expect(find.byType(GameEndScreen), findsOneWidget);
     await continuePlaying(tester);
     await addARound(tester);
+    expect(find.byType(GameEndScreen), findsNothing);
+  });
+
+  // `firstPlayerOver` means "reaches" since 2026-09-19: a total equal to the
+  // threshold ends the game, as the box rules say.
+  testWidgets('a total exactly on the threshold ends the game', (tester) async {
+    await aGamePast(100);
+    await tester.pumpWidget(wrap());
+    await settleTheEndScreen(tester);
+    expect(find.byType(GameEndScreen), findsOneWidget);
+  });
+
+  testWidgets('one point short of the threshold does not', (tester) async {
+    await aGamePast(99);
+    await tester.pumpWidget(wrap());
+    await settleTheEndScreen(tester);
     expect(find.byType(GameEndScreen), findsNothing);
   });
 

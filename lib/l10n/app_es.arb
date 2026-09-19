@@ -470,7 +470,7 @@
   "gameRulesNoElimination": "Sin eliminación durante la partida",
   "gameRulesEliminationOver": "Un jugador queda eliminado al superar los {threshold} puntos",
   "gameRulesEliminationUnder": "Un jugador queda eliminado por debajo de {threshold} puntos",
-  "gameRulesEndFirstOver": "La partida termina en cuanto un jugador supera los {threshold} puntos",
+  "gameRulesEndFirstOver": "La partida termina en cuanto un jugador alcanza los {threshold} puntos",
   "gameRulesEndFirstUnder": "La partida termina en cuanto un jugador baja de {threshold} puntos",
   "gameRulesEndLastOver": "La partida termina cuando todos los jugadores menos uno superan los {threshold} puntos",
   "gameRulesEndLastUnder": "La partida termina cuando todos los jugadores menos uno bajan de {threshold} puntos",

@@ -470,7 +470,7 @@
   "gameRulesNoElimination": "対局中の脱落はありません",
   "gameRulesEliminationOver": "{threshold} 点を超えたプレイヤーは脱落します",
   "gameRulesEliminationUnder": "{threshold} 点を下回ったプレイヤーは脱落します",
-  "gameRulesEndFirstOver": "いずれかのプレイヤーが {threshold} 点を超えた時点で終了します",
+  "gameRulesEndFirstOver": "いずれかのプレイヤーが {threshold} 点に達した時点で終了します",
   "gameRulesEndFirstUnder": "いずれかのプレイヤーが {threshold} 点を下回った時点で終了します",
   "gameRulesEndLastOver": "1人を除く全プレイヤーが {threshold} 点を超えた時点で終了します",
   "gameRulesEndLastUnder": "1人を除く全プレイヤーが {threshold} 点を下回った時点で終了します",

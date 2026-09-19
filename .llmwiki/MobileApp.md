@@ -311,7 +311,7 @@ edits.
 
 `_GameBoardScreenState._maybeShowGameOver` finishes the game and opens its end screen after
 a score edit, after a round is added and after one is deleted — every mutation that can move
-a total past the game type's threshold — and once on the board's first build, for an open
+a total onto or past the game type's threshold — and once on the board's first build, for an open
 game already past it. `_gameOverDismissed` keeps it to one crossing and re-arms as soon as
 the condition is false again. Raised by the rule, the screen offers **Continue playing**,
 which pops back to the board, reopens the game and is written to `GameOverDismissals`, keyed
@@ -433,6 +433,15 @@ the reason. That warning *is* the tree-shaking constraint showing up in the anal
 not "fix" it by hardcoding a codepoint.
 
 ## Decisions & History
+
+- **`firstPlayerOver` means "reaches" (2026-09-19).** The game-over test moved from the
+  board into `GameType.isGameOver` and `firstPlayerOver` became `>=`: the box rules its
+  thresholds come from say *reaches* — Président is won at 10, Uno at 500, Skyjo stops at
+  100 or more — and Président scores in steps of 1 and 2, so a player on exactly 10 was
+  asked for another hand. Existing Skyjo and Belote games (and any custom type with the
+  rule) now end one step earlier; the three other conditions are unchanged, and seeding
+  499 / 9 / 99 instead was rejected as reading oddly on the rules page.
+  (`wip/done/2026-09-18-game-over-threshold-is-strictly-over.md`)
 
 - **Repositories are injected into `GameProvider` rather than constructed inside it.** That
   is what lets `test/drift/drift_repositories_test.dart` run the full lifecycle against an

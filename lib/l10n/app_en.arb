@@ -543,7 +543,7 @@
   "gameRulesNoElimination": "No elimination during play",
   "gameRulesEliminationOver": "A player is eliminated above {threshold} points",
   "gameRulesEliminationUnder": "A player is eliminated below {threshold} points",
-  "gameRulesEndFirstOver": "The game ends as soon as a player goes above {threshold} points",
+  "gameRulesEndFirstOver": "The game ends as soon as a player reaches {threshold} points",
   "gameRulesEndFirstUnder": "The game ends as soon as a player drops below {threshold} points",
   "gameRulesEndLastOver": "The game ends when every player but one is above {threshold} points",
   "gameRulesEndLastUnder": "The game ends when every player but one is below {threshold} points",
