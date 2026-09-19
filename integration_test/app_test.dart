@@ -33,8 +33,8 @@ void main() {
 
       // The first game's name, in the device's language ("Partie 1", "Game 1").
       final gameName = AppLocalizations.of(
-              tester.element(find.byType(FloatingActionButton)))!
-          .defaultGameName(1);
+        tester.element(find.byType(FloatingActionButton)),
+      )!.defaultGameName(1);
 
       // Pre-clean so the run is idempotent even on a persisted DB (device).
       await _cleanup(gp, gameName);
@@ -55,9 +55,16 @@ void main() {
       // sheet's button seats them.
       await tester.tap(find.byKey(const Key('create_add_player')));
       await _waitFor(tester, find.byKey(const Key('player_picker_search')));
+      final search = find.byKey(const Key('player_picker_search'));
       for (final name in const ['Alice', 'Bob']) {
-        await tester.enterText(
-            find.byKey(const Key('player_picker_search')), name);
+        // Tap the field first, as a user would: on web, tapping "create" for
+        // the previous name unfocused it (TextField's default onTapOutside),
+        // which closed its text-input connection. enterText only reopens one
+        // when the focused editable *changes*, so on the same field it would
+        // send the text to no connection and the field would stay empty.
+        await tester.tap(search);
+        await tester.pump();
+        await tester.enterText(search, name);
         // The "create" action appears once the search field's onChanged
         // setState lands — wait for it, or the tap misses.
         await _waitEnabled(tester, const Key('player_picker_create'));
@@ -67,9 +74,10 @@ void main() {
       await tester.tap(find.byKey(const Key('player_picker_confirm')));
       // The sheet must be gone before the seats are read.
       await _pumpUntil(
-          tester,
-          () => find.byKey(const Key('who_is_playing_sheet')).evaluate().isEmpty,
-          timeout: const Duration(seconds: 10));
+        tester,
+        () => find.byKey(const Key('who_is_playing_sheet')).evaluate().isEmpty,
+        timeout: const Duration(seconds: 10),
+      );
       await _waitFor(tester, find.text('Bob'));
 
       // === Step 3: create the game → GameBoardScreen.
@@ -92,27 +100,65 @@ void main() {
           await tester.pumpAndSettle();
         }
         // The round is written on "Validate round", through the Drift worker.
-        await _pumpUntil(tester,
-            () => sheet.evaluate().isEmpty && gp.currentRounds.length == before + 1,
-            timeout: const Duration(seconds: 15));
+        await _pumpUntil(
+          tester,
+          () =>
+              sheet.evaluate().isEmpty && gp.currentRounds.length == before + 1,
+          timeout: const Duration(seconds: 15),
+        );
       }
 
       // === Step 5: totals (15 / 17) shown under the column headers.
       expect(find.text('15'), findsWidgets);
       expect(find.text('17'), findsWidgets);
 
-      // === Step 6: player stats — Alice (15) beats Bob (17) at ZapZap (low wins).
-      await tester.pageBack();
-      await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.bar_chart));
-      await _waitFor(tester, find.text('Alice'));
-      expect(find.text('Bob'), findsWidgets);
-      await tester.tap(find.text('Alice'));
-      await _waitFor(tester, find.text('100.0%')); // Alice won her only game.
-      await tester.pageBack();
-      await tester.pumpAndSettle();
+      // === Step 6: end the game from the board's menu → the end screen. The
+      // leaderboard (#137) counts finished games only.
+      await tester.tap(find.byIcon(Icons.more_vert));
+      await _waitFor(tester, find.byIcon(Icons.flag_outlined));
+      await tester.tap(find.byIcon(Icons.flag_outlined));
+      await _pumpUntil(
+        tester,
+        () => gp.currentGame?.isFinished ?? false,
+        timeout: const Duration(seconds: 15),
+      );
+      await _waitFor(tester, find.byKey(const Key('game_end_headline')));
+      await _back(tester); // end screen → board
+      await _waitFor(tester, find.byKey(const Key('board_finished_badge')));
+      await _back(tester); // board → home
 
-      // === Step 7: ZapZap analysis (network → the configured backend).
+      // === Step 7: leaderboard — Alice (15) beats Bob (17) at ZapZap (low
+      // wins). One game is below kMinGamesToRank, so nobody is ranked and there
+      // is no leader card yet; both rows are listed, and Alice's card shows
+      // 1 game, 1 win.
+      await tester.tap(find.byIcon(Icons.bar_chart));
+      // The home card names the winner too: wait for the leaderboard's rows.
+      final rows = find.byWidgetPredicate(
+        (w) =>
+            w.key is ValueKey<String> &&
+            (w.key! as ValueKey<String>).value.startsWith('stats_row_'),
+      );
+      await _waitFor(tester, rows);
+      expect(rows, findsNWidgets(2));
+      for (final name in const ['Alice', 'Bob']) {
+        expect(
+          find.descendant(of: rows, matching: find.text(name)),
+          findsOneWidget,
+        );
+      }
+      await tester.tap(find.descendant(of: rows, matching: find.text('Alice')));
+      await _waitFor(tester, find.byKey(const Key('card_wins')));
+      for (final tile in const ['card_games', 'card_wins']) {
+        expect(
+          find.descendant(of: find.byKey(Key(tile)), matching: find.text('1')),
+          findsOneWidget,
+          reason: '$tile: Alice played one game and won it',
+        );
+      }
+      await _back(tester); // card → leaderboard
+      await _back(tester); // leaderboard → home
+
+      // === Step 8: ZapZap analysis (network → the configured backend).
       // The backend URL is a runtime setting with no default, so this step only
       // runs when the build was given --dart-define=BACKEND_URL=<url>, which
       // seeds it. Without one the "Analyze" item is correctly absent and the
@@ -148,7 +194,7 @@ void main() {
   );
 }
 
-/// Step 7's second half: generate an analysis and prove it is cached. Split out
+/// Step 8's second half: generate an analysis and prove it is cached. Split out
 /// so the step can be skipped without skipping the teardown.
 Future<void> _analyse(WidgetTester tester) async {
   await tester.tap(find.byIcon(Icons.auto_awesome));
@@ -178,14 +224,34 @@ Future<void> _analyse(WidgetTester tester) async {
 
     // Cache proof: re-open the screen → _loadCached() repaints the result
     // from the game_analyses table, with no "Generate" button.
-    await tester.pageBack();
-    await tester.pumpAndSettle();
+    await _back(tester);
     await tester.tap(find.byIcon(Icons.more_vert));
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.auto_awesome));
     await _waitFor(tester, find.byType(MarkdownBody));
     expect(find.byKey(const Key('analysis_generate')), findsNothing);
   }
+}
+
+/// Back one screen, once the screen is ready for it. A route still sliding in
+/// or out keeps its back button in the tree, and [WidgetTester.pageBack]
+/// refuses two ("One back button expected"): wait for exactly one before, and
+/// for that one to leave the tree (the popped route is gone) after.
+Future<void> _back(WidgetTester tester) async {
+  final back = find.byTooltip('Back');
+  await _pumpUntil(
+    tester,
+    () => back.evaluate().length == 1,
+    timeout: const Duration(seconds: 10),
+  );
+  final popped = back.evaluate().single;
+  await tester.pageBack();
+  await _pumpUntil(
+    tester,
+    () => !popped.mounted,
+    timeout: const Duration(seconds: 10),
+  );
+  await tester.pumpAndSettle();
 }
 
 /// Pumps in 250ms ticks until [condition] holds or [timeout] elapses.
