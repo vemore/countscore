@@ -3,6 +3,7 @@
 // (wip/done/2026-09-18-board-hides-who-owns-each-column-and-who-leads.md).
 
 import 'package:drift/native.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -204,6 +205,56 @@ void main() {
     final roundAfter = tester.getRect(find.byKey(const Key('board_round_1')));
     expect(roundAfter, roundBefore);
     expect(roundAfter.left, greaterThanOrEqualTo(0));
+  });
+
+  // wip/done/2026-09-19-board-does-not-scroll-past-eight-players.md: on the
+  // PWA nothing moved the lanes, and Flutter drags a scroll view with a mouse
+  // only when told to.
+  for (final kind in [
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.trackpad,
+  ]) {
+    testWidgets('at 400 dp, a ${kind.name} drag brings the 10th lane into view',
+        (tester) async {
+      final names = [for (var i = 1; i <= 10; i++) 'P$i'];
+      await openBoard(tester, 400, names);
+      expect(tester.getRect(lane('P10')).left, greaterThan(400));
+
+      // Start on a cell, where the lanes' InkWells sit.
+      final start = tester.getCenter(find.byKey(Key(
+          'board_cell_${playerNamed('P3').id}_${games.currentRounds.first.id}')));
+      if (kind == PointerDeviceKind.trackpad) {
+        // A trackpad pans rather than drags.
+        final gesture = await tester.createGesture(kind: kind);
+        await gesture.panZoomStart(start);
+        for (var i = 1; i <= 10; i++) {
+          await gesture.panZoomUpdate(start, pan: Offset(-60.0 * i, 0));
+          await tester.pump(const Duration(milliseconds: 16));
+        }
+        await gesture.panZoomEnd();
+      } else {
+        await tester.dragFrom(start, const Offset(-600, 0), kind: kind);
+      }
+      await tester.pumpAndSettle();
+
+      expect(lanesScroll(tester).pixels, greaterThan(0));
+      final last = tester.getRect(lane('P10'));
+      expect(last.left, lessThan(400));
+      expect(last.right, lessThanOrEqualTo(400));
+    });
+  }
+
+  testWidgets(
+      'at 1400 dp, 10 players fit: no ribbon and no horizontal scroll',
+      (tester) async {
+    final names = [for (var i = 1; i <= 10; i++) 'P$i'];
+    await openBoard(tester, 1400, names);
+
+    expect(tester.takeException(), isNull);
+    expect(lanesScroll(tester).maxScrollExtent, 0);
+    expect(find.byKey(const Key('board_ranking_ribbon')), findsNothing);
+    expect(tester.getRect(lane('P10')).right, lessThanOrEqualTo(1400));
   });
 
   for (final count in [4, 8, 10]) {
