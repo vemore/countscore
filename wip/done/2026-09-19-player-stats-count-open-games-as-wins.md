@@ -1,5 +1,7 @@
 # Player statistics count open and empty games, and call whoever leads right now a winner
 
+**Status:** dropped (2026-09-19) — merged into [[2026-09-19-players-screen-counts-open-games-and-shows-blue-avatars]]. #137 (5579bab) moved Statistics to `getFinishedGameResults`; what is left — `getStatsByName` on the Players screen, its win rule and its N + 1 query — is the survivor's problem.
+
 - **Noted:** 2026-09-19 — full test pass of the production PWA (fresh Chromium profiles, Playwright, fr-FR at 412 × 860)
 - **Theme:** visual-refresh
 - **Area:** app

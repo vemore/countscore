@@ -24,4 +24,7 @@ bundle a fallback font, then drop `www.gstatic.com` and `fonts.gstatic.com` from
 **Acceptance:**
 - A PWA session, from load to a game created, makes no request to a Google host — or the
   policy and `README.md` name those requests for the web version.
-- `README.md:74` is true on every platform it covers.
+- `README.md:81` ("no font is fetched at runtime") is true on every platform it covers.
+
+**Open question:** disclose the Google CDN requests for the web version, or self-host CanvasKit
+and the fonts? (Asked at the 2026-09-19 refinement; left for later.)

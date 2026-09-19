@@ -1,5 +1,7 @@
 # The board still carries its own copy of the elimination rule
 
+**Status:** dropped (2026-09-19) — merged into [[2026-09-19-player-elimination-threshold-is-strictly-over]]: same rule, same file; the dedupe is that pull request's first step, so the threshold is changed in one place.
+
 - **Noted:** 2026-09-19 — while moving the in-game ranking onto the end screen's widget (feat/ranking-restyle)
 - **Theme:** visual-refresh
 - **Area:** app

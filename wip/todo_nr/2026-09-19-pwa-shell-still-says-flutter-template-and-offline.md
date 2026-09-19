@@ -13,18 +13,17 @@ Seen on the production PWA (`/app/`):
   web builds no longer ship an offline-caching worker by default.
 - `web/index.html:21` has `<meta name="description" content="A new Flutter project.">`, and
   `:32` has `<title>countscore</title>` in lower case.
-- Also: an icon button with no semantic label on home (statistics) and on the board
-  (results), so a screen reader announces a bare "button".
+- The two unlabelled icon buttons noted here moved to
+  [[2026-09-19-app-bar-icon-buttons-have-no-label]] (2026-09-19, refinement).
 
 **Fix:** teal `theme_color` and a matching `<meta name="theme-color">`, a real description,
 and the title "CountScore". Either drop "works offline" from the manifest, or decide to ship
-an offline shell (a separate decision, as it changes how updates reach users). Add tooltips
-to the two icon buttons.
+an offline shell (a separate decision, as it changes how updates reach users).
 
 **Acceptance:**
 - `web/manifest.json` has no `#673AB7` and no "offline" claim unless a worker ships;
   `web/index.html` has no "A new Flutter project".
-- Every `IconButton` on home and the board has a `tooltip` (a widget test finds none
-  without a semantic label).
 
-**Open question:** ship an offline service worker, or drop the claim?
+**Open question:** ship an offline service worker, or drop the claim? (Asked again at the
+2026-09-19 refinement; left for later. Decide together with
+[[2026-09-19-pwa-gstatic-undisclosed]]: an offline shell needs CanvasKit self-hosted.)

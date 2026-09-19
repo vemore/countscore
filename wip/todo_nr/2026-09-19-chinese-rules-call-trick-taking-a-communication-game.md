@@ -11,8 +11,9 @@
 file already uses 墩 for a trick. The Wizard ruleset added on 2026-09-19 uses 吃墩类纸牌游戏.
 The first nine rulesets of the other locales were not reviewed as a whole either.
 
-**Fix:** replace 沟通牌类游戏 with 吃墩类纸牌游戏 in the three sections, and have a reviewer
-read the first nine rulesets of `ar`, `hi`, `ja`, `ru` and `zh` against `rules_en.md`.
+**Fix:** replace 沟通牌类游戏 with 吃墩类纸牌游戏 in the three sections (`rules_zh.md:175,208,246`).
+The native-speaker review of `ar`, `hi`, `ja`, `ru` and `zh` it used to ask for is left out
+(2026-09-19, refinement): it depends on an outside reviewer and has no end, so it does not fit a pull request.
 
 **Acceptance:**
 - `grep 沟通 assets/rules/rules_zh.md` finds nothing.
