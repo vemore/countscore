@@ -1,0 +1,10 @@
+CountScore 1.3.0
+
+• A new teal look, with one lane per player on the board and a crown on the leader.
+• Enter a whole round on a keypad, then see the podium on the new end screen.
+• Share a result as text and a picture of the podium.
+• Who starts?, a dice roller and "Play again" on the board.
+• A leaderboard by game and a card for each player.
+• Rules for twelve more games.
+
+Online features stay off until you enter your server.

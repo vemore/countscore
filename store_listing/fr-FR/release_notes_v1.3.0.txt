@@ -1,0 +1,10 @@
+CountScore 1.3.0
+
+• Nouveau look turquoise : une colonne par joueur, une couronne pour le leader.
+• Saisissez un tour entier au pavé numérique, puis voyez le podium en fin de partie.
+• Partagez un résultat en texte et en image du podium.
+• Qui commence ?, un lancer de dés et « Rejouer » sur la partie.
+• Un classement par jeu et une fiche par joueur.
+• Les règles de douze jeux de plus.
+
+Les fonctions en ligne restent inactives sans serveur.
