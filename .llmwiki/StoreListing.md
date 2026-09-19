@@ -80,13 +80,18 @@ reports one — which is how a stray capture committed there turns CI red ([[Tes
   the custom type being edited, the keypad sheet open, the statistics leaderboard. The French
   captions were validated by the user — with #3 changed to name no game, see the decision
   below — and the nine others are translated from them; the `04_podium` caption was written
-  with the retake. **Not yet on Play**: that is `play_publish.py listing --graphics
-  --commit`, on the user's go.
+  with the retake. **Retaken again for 1.3.0** (2026-09-19, second pass) on a profile build of
+  `main` at 038a76a: the avatars are two letters with the contrast-picked initial (#152), the
+  home card, keypad and podium as 1.3.0 draws them. Published with the 1.3.0 release
+  (`play_publish.py listing --graphics`).
 - The retake was driven over `adb` (`uiautomator dump` to find each control by the demo's
   player and game names, which no locale translates), one session for the ten locales, with
   the status-bar demo mode on (`sysui_demo_allowed`, `am broadcast -a
   com.android.systemui.demo`) — the bar is cropped anyway. A profile APK (`flutter build apk
-  --profile`) has no debug banner and needs no release keystore.
+  --profile`) has no debug banner and needs no release keystore — but it is signed with the
+  debug key, so the Play-installed app must be **uninstalled** first (its data goes: ask), and
+  reinstalled from Play afterwards. The demo database goes in through Settings → Import.
+  In `ar` the screens mirror but the **keypad does not**: tap its keys at their LTR positions.
 
 ### Promo video
 
