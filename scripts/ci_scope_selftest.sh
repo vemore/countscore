@@ -75,10 +75,12 @@ scope "the pub lock alone"    "app android sync"    pubspec.lock
 scope "the analysis options" "app android sync"    analysis_options.yaml
 scope "the privacy policy"   "backend"             privacy_policy.md
 scope "the privacy page"     "backend"             docs/privacy-policy.html
+scope "the licence list"     "app"                 THIRD_PARTY_LICENSES.md
 
 echo "== everything ================================================"
 all="backend image app android sync"
 scope "the workflow itself"    "$all"  .github/workflows/ci.yml
+scope "the Pages workflow"     "$all"  .github/workflows/deploy-pages.yml
 scope "dependabot"             "$all"  .github/dependabot.yml
 scope "the OSV ignore list"     "$all"  .github/osv-scanner.toml
 scope "a Claude Code hook"     "$all"  .claude/hooks/guard-bash.sh
@@ -153,6 +155,14 @@ if grep -q 'Dockerfile.backup' "$WORKFLOW"; then
 else
     fail=$((fail + 1))
     echo "  FAIL  ci.yml no longer builds backend/Dockerfile.backup"
+fi
+
+# THIRD_PARTY_LICENSES.md goes to `app` for this step alone.
+if grep -q 'third_party_licenses.py --check' "$WORKFLOW"; then
+    pass=$((pass + 1))
+else
+    fail=$((fail + 1))
+    echo "  FAIL  ci.yml no longer checks THIRD_PARTY_LICENSES.md against pubspec.yaml"
 fi
 
 # privacy_policy.md and its page go to `backend` for this step alone.

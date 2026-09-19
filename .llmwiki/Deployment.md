@@ -2,7 +2,7 @@
 
 > Scope: production topology and environment. For the procedure, use the `backend-deploy` skill.
 > Related: [[Backend]] · [[Security]] · [[Web]] · [[LlmProviders]]
-> Updated: 2026-09-18
+> Updated: 2026-09-19
 
 ## Facts
 
@@ -213,8 +213,9 @@ On the NAS the build lives in `$NAS_DEPLOY_DIR/pwa/current`, bind-mounted **read
 `scripts/deploy_web.sh` has no config of its own: `NAS_SSH` and `NAS_DEPLOY_DIR` come from
 `backend/scripts/deploy.env`, and **`PWA_BASE_PATH` is read over ssh from the NAS `.env`**,
 the value the container mounts at, so the build's `--base-href` cannot disagree with it.
-It refuses a build containing any `.md` file or lacking `sqlite3.wasm` / `drift_worker.js`,
-streams a tarball into `pwa/current.new`, and renames it into place, keeping one
+It refuses a build containing any `.md` file or lacking `index.html`, `main.dart.js`,
+`sqlite3.wasm` or `drift_worker.js` (`scripts/check_web_build.sh`, shared with the Pages
+workflow), streams a tarball into `pwa/current.new`, and renames it into place, keeping one
 `pwa/current.prev`. No container restart: the folder is read per request.
 
 ```bash
@@ -222,6 +223,15 @@ scripts/deploy_web.sh --dry-run    # build + checks, prints the remote commands
 scripts/deploy_web.sh
 scripts/deploy_web.sh --rollback   # swap pwa/current.prev back
 ```
+
+### The PWA on GitHub Pages — `.github/workflows/deploy-pages.yml`
+
+A second, independent copy of the PWA at `<owner>.github.io/<repo>/`, published by GitHub
+Actions after a merge to `main` that touches the app, or on a manual run; it also carries the
+privacy policy page, which Pages served from `main:/docs` before. Nothing on the NAS is
+involved, and no backend URL is built in. It is **cross-origin** to every backend: an operator
+whose users run it lists `https://<owner>.github.io` in `CORS_ORIGINS` and serves over
+`https://`. Details: [[Web]].
 
 ### Environment variables
 

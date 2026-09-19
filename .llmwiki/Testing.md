@@ -44,6 +44,7 @@
 | `test/screens/game_end_screen_test.dart` | The game-end screen: the winner, the podium's three places with their totals and the rest in rank order; *Play again* creates the next game with the same players and opens it; *Analysis* is absent without a server (Play again then spans the row) and present with one; and "End game" from the home card menu finishes the game and opens the screen. |
 | `test/screens/play_again_test.dart` | *Play again* (`lib/utils/play_again.dart`): the ranking offers it and opens the new game — same type, win rule and players in order, the source game left untouched; a finished game's home menu offers it, a game still in play keeps "New with same players"; and `nextGameName` counts on from the last number. The board is injected (`boardBuilder`) and the home menu read through `itemBuilder`, as in the finish-menu test. |
 | `test/screens/game_rules_screen_test.dart` | The rules page's precedence: the shipped ruleset when the user wrote none, the user's own rules winning over it, the scoring summary derived from the type rather than the text, the empty state for a type with neither, restore clearing the stored rules and not offered without a shipped ruleset, and an emptied editor meaning "no rules of mine" rather than an empty string. The ruleset is served from memory, never the asset bundle. |
+| `test/screens/settings_screen_test.dart` | Settings at 412×860 behind a 48 px bottom inset, as the PWA (a provider without export/import, since `kIsWeb` is a constant) and as Android: every section heading has its row right under it — "Screen" its keep-awake switch, and no Backup heading on the web — the last row clears the inset, and the switch saves the setting ([[Web]]). |
 | `test/screens/about_screen_test.dart` | The version comes from `PackageInfo` (mocked) rather than the ARB files, and the connected features are listed next to the local ones — one test, because a static future completed in one test's fake-async zone never delivers in the next ([[MobileApp]]). |
 | `test/utils/insets_test.dart` | `withBottomInset` under a `MediaQuery` with a bottom padding: the inset is added to the bottom edge only, nothing changes without an inset, a zero padding is compensated too (the drawer), and a `ListView` with an explicit padding really does lose Flutter's own compensation — the reason the helper exists. |
 
@@ -184,7 +185,7 @@ toolchain table in [[MobileApp]] must move together.
 | `scope` | `scripts/ci_scope_selftest.sh` → `gh api repos/{owner}/{repo}/pulls/<n>/files` (`.filename` **and** `.previous_filename`) → `scripts/ci_scope.sh` → five `name=true\|false` flags into `$GITHUB_OUTPUT` |
 | `backend` | `postgres:17-alpine` service → checkout at depth 2 → privacy page tests (`scripts/test_build_privacy_page.py`) → pandoc **3.6.4** (release archive, checksum-pinned) → `scripts/build_privacy_page.py --check --base HEAD^1` → `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` → `play_publish.py` tests (`.claude/skills/release-android/scripts/`, fake Google service) → `alembic upgrade head` → `downgrade base` → `upgrade head` → `check` (a migration round trip) → `uv export` + `pip-audit` |
 | `image` | `docker build backend` → runs as non-root, no compiler, no dev dependencies, read-only code → `docker build -f backend/Dockerfile.backup backend` → `age --version`, `pg_dump --version` (17) → `countscore-backup --once` with no recipient must exit non-zero → `docker compose config --quiet` on both compose files, failing on any warning |
-| `app` | `scripts/hooks_selftest.sh` → `osv-scanner` on `pubspec.lock` → `pub get` → `scripts/web_binaries.sh --check` (and `--fetch` on the weekly run only) → `dart run build_runner build` → `analyze` → `test` → `build web --release` |
+| `app` | `scripts/hooks_selftest.sh` → `scripts/check_web_build_selftest.sh` → `osv-scanner` on `pubspec.lock` → `pub get` → `scripts/web_binaries.sh --check` (and `--fetch` on the weekly run only) → `scripts/test_third_party_licenses.py` → `scripts/third_party_licenses.py --check` → `dart run build_runner build` → `analyze` → `test` → `build web --release` → `scripts/check_web_build.sh build/web` |
 | `android` | `pub get` → `dart run build_runner build` → `build apk --debug` |
 | `sync` | `postgres:17-alpine` service → `uv sync --locked` → `alembic upgrade head` → `.venv/bin/uvicorn` on 8765 (waits on `/health`; never `uv run`, whose parent process holds the uv cache lock and makes setup-uv's post-job `uv cache prune` time out whenever `uv.lock` changed) → `pub get` → `build_runner build` → `flutter test test/sync/sync_two_devices_test.dart` |
 
@@ -197,6 +198,7 @@ wins, per path:
 | Path | Jobs |
 |---|---|
 | `privacy_policy.md`, `docs/privacy-policy.html` | `backend` (the privacy page check) |
+| `THIRD_PARTY_LICENSES.md` | `app` (the licence list check) |
 | `*.md`, `.llmwiki/`, `wip/`, `docs/`, `store_listing/`, `LICENSE` | *none* |
 | `backend/` | `backend`, `image`, `sync` |
 | `android/` | `android` |
@@ -309,9 +311,24 @@ and the `--refresh` procedure. This gate does **not** prove the PWA still works 
 new binaries: the web e2e is still not in CI (§Gaps), so a `--refresh` is followed by that
 run by hand.
 
+**`THIRD_PARTY_LICENSES.md` is generated and gated (2026-09-19).**
+`scripts/third_party_licenses.py` (stdlib Python) writes it from the direct `dependencies:`
+and `dev_dependencies:` of `pubspec.yaml`: licence family and copyright line from each
+package's `LICENSE`, repository from its own `pubspec.yaml`, both found through
+`.dart_tool/package_config.json` — so it needs `flutter pub get` first, and reads the version
+the lock resolves. The Nunito font, the `in_app_review` note and the licence texts are
+hand-written inside the script. It prints no version numbers, so a Dependabot bump fails the
+check only when a package's copyright line or licence moves. A `LICENSE` it cannot classify
+(anything but MIT, BSD-2-Clause, BSD-3-Clause) exits 3 rather than guessing. The `app` job
+runs its tests (`scripts/test_third_party_licenses.py`, fixtures under `tmp_path`) and then
+`--check`, which prints the diff and fails; the fix is `uv run --no-project
+scripts/third_party_licenses.py` and a commit. `scope` sends the file itself to `app`, ahead
+of the documentation rule; `pubspec.yaml` and `pubspec.lock` already go there.
+
 **The transitive refresh is `.github/workflows/deps.yml`**, monthly (`cron: "23 5 4 * *"`)
 plus `workflow_dispatch`: `flutter pub upgrade` → `scripts/web_binaries.sh --refresh
---fetch` → `build_runner build` → `analyze` → `test`, and when `pubspec.lock` or `web/`
+--fetch` → `scripts/third_party_licenses.py` → `build_runner build` → `analyze` → `test`, and when `pubspec.lock` or `web/`
+(or `THIRD_PARTY_LICENSES.md`)
 moved it commits to `chore/deps-YYYY-MM-DD`, pushes that branch and writes the ready-made
 `gh pr create` line into the run summary. `material_color_utilities`, `cli_util` and
 `test_api` are pinned by the Flutter SDK and only `FLUTTER_VERSION` moves them.
@@ -362,8 +379,10 @@ release APK/AAB (needs the keystore secrets).
 
 **The e2e suite does not run in CI.** `integration_test/app_test.dart` drives a real
 network call against production, so it stays a manual step — on web via chromedriver, on a
-device via the `flutter-device-test` skill. Export/import and the wakelock toggle have no
-automated coverage at all and must be checked on a device.
+device via the `flutter-device-test` skill. Export/import has no automated coverage at all
+and must be checked on a device; the wakelock toggle is covered only down to the saved
+setting (`test/screens/settings_screen_test.dart`) — whether the platform holds the lock is
+checked on a device, or in a browser through `navigator.wakeLock` ([[Web]]).
 
 **The screenshot composer's tests are local only.** `scripts/test_compose_screenshots.py`
 (output 1080×1920 opaque RGB, `--check`, caption parsing, and that every committed
@@ -474,3 +493,10 @@ no CI job collects it (`wip/todo_nr/2026-09-18-compose-screenshots-tests-not-in-
   all, while the total said 128 against 207 run. A row is owed whenever a test file is added;
   the one dated total is re-read from a `flutter test` run, never summed from the table
   (`wip/done/2026-09-16-wiki-owed-by-rating-prompt.md`).
+- **`THIRD_PARTY_LICENSES.md` is generated, not written** (2026-09-19). The hand-written
+  file named a 2025 dependency set — four stale constraints, seven direct dependencies
+  missing — because nothing tied it to `pubspec.yaml`; a rule in `CLAUDE.md` naming it was
+  the alternative, and was refused at refinement for a script and a CI check. A step of
+  `app`, the one required job that already has the pub cache. No versions in the file: they
+  would turn every Dependabot week red for no compliance gain, and `pubspec.lock` has them
+  (`wip/done/2026-09-14-third-party-licenses-stale.md`).

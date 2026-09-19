@@ -52,9 +52,11 @@ These instructions used to be `web/CLAUDE.md`. They moved here because Flutter c
    on launch with a green build, look there first. The URIs are relative, so they follow
    `--base-href`.
 4. **`--no-tree-shake-icons` applies to web too.** Game-type icons come from the database.
-5. **Guard platform features with `kIsWeb`.** Export/import and wakelock are unavailable —
-   see `settings_provider.dart` and `settings_screen.dart`. Do not remove those guards
-   without implementing a real web path.
+5. **Guard platform features with `kIsWeb`.** Export/import is unavailable — see
+   `settings_provider.dart` (`supportsDbExportImport`) and `settings_screen.dart`. Do not
+   remove that guard without implementing a real web path. Keep screen awake *does* work on
+   the web (wakelock_plus, `navigator.wakeLock`). A guard hides a section's heading together
+   with its rows, never the rows alone.
 6. **`index.html` is the stock Flutter template.** Keep it that way unless there is a
    concrete need; every customisation is one more thing to reconcile on an SDK upgrade.
 

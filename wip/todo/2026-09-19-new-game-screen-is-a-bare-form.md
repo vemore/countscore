@@ -34,7 +34,17 @@ images in `wip/assets/2026-09-19-new-game-screen-is-a-bare-form/`):
 - `create_game_screen.dart` draws player colours through `player_colors.dart`, and a widget
   test shows the same colour for a player here and on the board.
 - A widget test reorders two players and the created game's seat order follows.
-- Target images are committed under `wip/assets/2026-09-19-new-game-screen-is-a-bare-form/` and linked here before the
-  implementation starts.
+- The screen matches the target images at 412 dp wide (layout, not exact pixels).
 
-**Open question:** approve the mock-up (target images) before implementing.
+**Decided (2026-09-19):** the user approved direction A as drawn. Target images:
+[the screen](../assets/2026-09-19-new-game-screen-is-a-bare-form/target.png) and
+[the "who's playing" sheet](../assets/2026-09-19-new-game-screen-is-a-bare-form/target-add-players.png)
+(canvas: https://claude.ai/artifact/MWw9hSctjPCW6XwXKrvJXd, boards "New game").
+- Six game tiles, most recently used types first, the selected one outlined and ticked;
+  "All games (N)" opens the full list. The win rule and end condition show as one line
+  under the grid.
+- Seat-ordered player rows (seat number, two-letter avatar, name, drag handle); the first
+  seat is labelled as the dealer; a dashed "Add a player" row opens the sheet.
+- The sheet: a search field that also creates a new player, known players as chips
+  (most frequent co-players first) and "Same players as <last game>".
+- A full-width primary "Start · N players" button at the bottom.

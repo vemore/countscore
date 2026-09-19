@@ -60,6 +60,12 @@ jobs:
       - name: Refresh the committed web/ binaries
         run: scripts/web_binaries.sh --refresh --fetch
 
+      # A direct dependency's new version can change its LICENSE's copyright line, and
+      # ci.yml fails when THIRD_PARTY_LICENSES.md differs from the generator's output.
+      # Stdlib Python, so the runner's python3 is enough.
+      - name: Regenerate THIRD_PARTY_LICENSES.md
+        run: python3 scripts/third_party_licenses.py
+
       # *.g.dart is gitignored, so this must precede analyze, test and any build.
       - name: Code generation (drift)
         run: dart run build_runner build
@@ -75,7 +81,7 @@ jobs:
           set -euo pipefail
           summary() { printf '%s\n' "$1" >> "$GITHUB_STEP_SUMMARY"; }
 
-          if git diff --quiet -- pubspec.lock web/; then
+          if git diff --quiet -- pubspec.lock web/ THIRD_PARTY_LICENSES.md; then
             summary "## Dependencies"
             summary ""
             summary "\`flutter pub upgrade\` moved nothing: \`pubspec.lock\` and the"
@@ -93,7 +99,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$branch"
-          git add pubspec.lock web/
+          git add pubspec.lock web/ THIRD_PARTY_LICENSES.md
           git commit -m "chore: refresh pubspec.lock and the committed web/ binaries" \
                      -m "flutter pub upgrade, then scripts/web_binaries.sh --refresh --fetch. analyze and test green on the result."
           git push -u origin "$branch"
