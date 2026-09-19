@@ -1,6 +1,6 @@
 # The e2e golden path waits for a DataTable the board no longer has
 
-**Status:** done (2026-09-19) — closed by test/e2e-golden-path-keypad. Both waits now use `find.byKey(const Key('board_add_round'))`; nothing else in the test was stale. The web run (`flutter drive … -d web-server --headless`, chromedriver 153, no `BACKEND_URL` so step 7's analysis skips) passed end to end. The device run on the Pixel is done by the orchestrator before merge.
+**Status:** done (2026-09-19) — closed by test/e2e-golden-path-keypad. Both waits now use `find.byKey(const Key('board_add_round'))`; nothing else in the test was stale. The web run (`flutter drive … -d web-server --headless`, chromedriver 153, no `BACKEND_URL` so step 7's analysis skips) passed end to end. The device run on the Pixel was not done: the user chose to merge on the web run alone (2026-09-19); it is owed at the next device session (`release-android` §5 or the screenshot retake).
 
 - **Noted:** 2026-09-19 — while moving score entry to the keypad (`feat/score-keypad`)
 - **Theme:** testing
