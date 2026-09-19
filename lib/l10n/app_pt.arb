@@ -588,5 +588,19 @@
   "statsAverageTotal": "Total final médio",
   "statsBestTotal": "Melhor total final",
   "statsMostBeaten": "Adversário mais derrotado",
-  "statsOpenPlayerCard": "ver a ficha"
+  "statsOpenPlayerCard": "ver a ficha",
+
+  "shareResult": "Partilhar o resultado",
+
+  "shareAnalysis": "Partilhar a análise",
+
+  "shareResultSubject": "Resultado: {gameName}",
+
+  "shareResultTitle": "Partida de {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} ponto} other{{points} pontos}}",
+
+  "shareResultFooter": "Pontuações registadas com {appName}: {url}",
+
+  "shareFailed": "Não foi possível abrir a partilha"
 }

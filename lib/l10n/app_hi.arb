@@ -588,5 +588,19 @@
   "statsAverageTotal": "औसत अंतिम योग",
   "statsBestTotal": "सबसे अच्छा अंतिम योग",
   "statsMostBeaten": "सबसे ज़्यादा हराया गया प्रतिद्वंद्वी",
-  "statsOpenPlayerCard": "खिलाड़ी कार्ड खोलें"
+  "statsOpenPlayerCard": "खिलाड़ी कार्ड खोलें",
+
+  "shareResult": "परिणाम साझा करें",
+
+  "shareAnalysis": "विश्लेषण साझा करें",
+
+  "shareResultSubject": "परिणाम: {gameName}",
+
+  "shareResultTitle": "{date} का खेल",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} अंक} other{{points} अंक}}",
+
+  "shareResultFooter": "{appName} से स्कोर रखे गए: {url}",
+
+  "shareFailed": "साझा करना नहीं खुल सका"
 }

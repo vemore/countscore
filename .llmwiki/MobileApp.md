@@ -114,7 +114,7 @@ prompt below.
 
 ### Widgets — `lib/widgets/`
 
-Nine components shared out of the screens:
+Ten components shared out of the screens:
 
 - `board_lanes.dart` — the board's default layout ([below](#the-board)): `BoardData` (what
   both layouts draw from: players in seat order, rounds, a `GameStanding`, colours, the
@@ -123,11 +123,17 @@ Nine components shared out of the screens:
 - `board_rows.dart` — `BoardRows`, the one-row-per-player layout.
 - `game_ranking.dart` — the one ranking both `RankingScreen` and `GameEndScreen` draw
   ([below](#the-game-end-screen)): `GameRanking.of` (the current game best first, its ranks,
-  colours, leader, winners and elimination tests), `RankedPlayers` (podium and rows),
+  colours, leader, winners and elimination tests; `GameRanking.fromStanding` builds the same
+  from a `GameStanding`, for a test or a caller without a provider), `RankedPlayers` (podium and rows),
   `rankingSummary` (type · rounds · win rule), and `isEliminatedBy` /
   `isNearEliminationBy`, the type's elimination rule on a total.
 - `score_keypad_sheet.dart` — `ScoreKeypadSheet`, the bottom sheet every score is entered
   through ([below](#the-board)).
+- `share_result_button.dart` — `ShareResultButton`, the app-bar share action of the end
+  screen, the ranking and the analysis: builds the text from `GameRanking.of` with
+  `buildGameResultShareText` and hands it to `share_plus` (`SharePlus.instance.share`), a
+  failure to open becoming a `shareFailed` snackbar. Its `share` seam (`ShareTextFn`) is
+  passed through by the three screens for tests.
 
 - `player_avatars.dart` — `PlayerAvatar` (an initial on a colour, drawn in
   `onPlayerColor`) and `PlayerAvatarStack` (a game's players overlapping, in seat order and
@@ -180,8 +186,17 @@ Nine components shared out of the screens:
 
 Cross-cutting helpers, since 2026-09-16: `insets.dart`, `game_type_name.dart` — the switch
 from a built-in game type's `builtin_key` to its localized name, which every screen showing a
-game type's name goes through ([[I18n]]) — `play_again.dart`, `app_theme.dart` and
-`player_colors.dart`.
+game type's name goes through ([[I18n]]) — `play_again.dart`, `app_theme.dart`,
+`player_colors.dart` and `game_result_share.dart`.
+
+`game_result_share.dart` — `buildGameResultShareText`, a pure function from a `GameRanking`
+to the shared text: "Game of {date}" (`DateFormat.yMMMd` in the l10n locale, the game's
+`createdAt`), the `rankingSummary` line, one `shareResultStanding` line per player in the
+ranking's order (ties share a place), the commentary when sharing the analysis, then
+`shareResultFooter` naming `appTitle` with `kPlayStoreUrl` —
+`https://play.google.com/store/apps/details?id=com.vemore.countscore`, built from the
+application id, no tracking parameter. Tested in `test/utils/game_result_share_test.dart`
+(a lowest-wins and a highest-wins game, all ten locales).
 
 `app_theme.dart` — the one place the look is defined. `buildAppTheme(brightness)` seeds
 `ColorScheme.fromSeed` with `kBrandSeedLight` (`#0E8F88`, the icon's teal) or
@@ -289,7 +304,8 @@ points of the type's elimination threshold is orange — except on the first ste
 filled block keeps `onPrimary` — and an eliminated player is faded and struck through. Actions: **Play again**
 (`playAgain`) and **Analysis** (`GameAnalysisScreen`), the latter only when
 `BackendProvider.isConfigured` — Play again then spans the row. Unlike the board's menu, a
-cached analysis alone does not bring the button back. Every path that finishes a game —
+cached analysis alone does not bring the button back. The app bar's share action
+(`ShareResultButton`) sends the standings as text. Every path that finishes a game —
 rule, board menu, home menu — calls `ReviewPromptService.onGameFinished` once, on the
 transition `setGameFinished` reports.
 
@@ -298,7 +314,9 @@ transition `setGameFinished` reports.
 `RankingScreen` (`lib/screens/ranking_screen.dart`), from the board's leaderboard button,
 shows an open game with the same `RankedPlayers` as the end screen, so the two cannot rank
 differently; above it, the win rule is one line (`rankingSummary`) under the *Ranking*
-title, and **Play again** stays at the bottom. No headline: the game is not over.
+title, and **Play again** stays at the bottom. No headline: the game is not over. The app
+bar shares the standings as text, as on the end screen; the analysis screen's share adds the
+commentary, and is offered only once there is one.
 
 #### The board
 
@@ -500,3 +518,11 @@ not "fix" it by hardcoding a codepoint.
   finished game with no score is left out rather than made a win for everyone. The rank
   chart is a `CustomPainter` because one chart does not justify a dependency and its licence
   entry. The five-game threshold keeps one lucky evening from topping the board.
+- **Sharing a result is text, and goes through the system share sheet (2026-09-19).** A
+  finished game could not leave the phone, so the players around the table had nothing to
+  pass on and the app nothing to advertise it (`wip/done/2026-09-16-no-way-to-share-a-game-result.md`).
+  The text is built from the same `GameRanking` as the screen, so the message cannot rank
+  differently from the podium; it names the app with its plain Play URL and no tracking
+  parameter. Being user-initiated through the platform sheet, it is not an outbound data flow
+  of the app and the Data Safety answers do not move ([[Documentation]]). A rendered image of
+  the standings is a later change (`wip/todo_nr/2026-09-19-share-result-as-image.md`).

@@ -588,5 +588,19 @@
   "statsAverageTotal": "平均最终总分",
   "statsBestTotal": "最佳最终总分",
   "statsMostBeaten": "最常击败的对手",
-  "statsOpenPlayerCard": "打开玩家卡片"
+  "statsOpenPlayerCard": "打开玩家卡片",
+
+  "shareResult": "分享结果",
+
+  "shareAnalysis": "分享分析",
+
+  "shareResultSubject": "结果：{gameName}",
+
+  "shareResultTitle": "{date} 的对局",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, other{{points} 分}}",
+
+  "shareResultFooter": "用 {appName} 记分：{url}",
+
+  "shareFailed": "无法打开分享"
 }

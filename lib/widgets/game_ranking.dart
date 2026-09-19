@@ -33,13 +33,23 @@ class GameRanking {
     final rounds = games.currentRounds;
     final hasScores = players.any(
         (p) => rounds.any((r) => games.getScore(p.id!, r.id!) != null));
-    final standing = GameStanding(
-      players: players,
-      totals: hasScores
-          ? {for (final p in players) p.id!: games.getPlayerTotal(p.id!)}
-          : const {},
-      isLowestScoreWins: game.isLowestScoreWins,
+    return GameRanking.fromStanding(
+      GameStanding(
+        players: players,
+        totals: hasScores
+            ? {for (final p in players) p.id!: games.getPlayerTotal(p.id!)}
+            : const {},
+        isLowestScoreWins: game.isLowestScoreWins,
+      ),
+      gameType,
     );
+  }
+
+  /// The ranking of [standing] under [gameType]'s elimination rule — what
+  /// [GameRanking.of] builds from the current game, open to a caller (a test,
+  /// the shared text) that holds a standing without a [GameProvider].
+  factory GameRanking.fromStanding(GameStanding standing, GameType? gameType) {
+    final players = standing.players;
     final ranks = standing.ranks;
     // Best first; a tie keeps the seat order, the rule `GameStanding.leader`
     // applies. `List.sort` is not stable, so the seat is the tie-breaker.

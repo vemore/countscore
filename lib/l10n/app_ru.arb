@@ -588,5 +588,19 @@
   "statsAverageTotal": "Средний итоговый счёт",
   "statsBestTotal": "Лучший итоговый счёт",
   "statsMostBeaten": "Чаще всего обыгран",
-  "statsOpenPlayerCard": "открыть карточку игрока"
+  "statsOpenPlayerCard": "открыть карточку игрока",
+
+  "shareResult": "Поделиться результатом",
+
+  "shareAnalysis": "Поделиться анализом",
+
+  "shareResultSubject": "Результат: {gameName}",
+
+  "shareResultTitle": "Партия от {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} очко} few{{points} очка} many{{points} очков} other{{points} очка}}",
+
+  "shareResultFooter": "Счёт вёлся в {appName}: {url}",
+
+  "shareFailed": "Не удалось открыть меню «Поделиться»"
 }

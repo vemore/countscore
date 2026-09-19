@@ -588,5 +588,19 @@
   "statsAverageTotal": "متوسط المجموع النهائي",
   "statsBestTotal": "أفضل مجموع نهائي",
   "statsMostBeaten": "الخصم الأكثر هزيمة",
-  "statsOpenPlayerCard": "عرض بطاقة اللاعب"
+  "statsOpenPlayerCard": "عرض بطاقة اللاعب",
+
+  "shareResult": "مشاركة النتيجة",
+
+  "shareAnalysis": "مشاركة التحليل",
+
+  "shareResultSubject": "النتيجة: {gameName}",
+
+  "shareResultTitle": "مباراة {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, zero{{points} نقطة} one{نقطة واحدة} two{نقطتان} few{{points} نقاط} many{{points} نقطة} other{{points} نقطة}}",
+
+  "shareResultFooter": "سُجّلت النقاط باستخدام {appName}: {url}",
+
+  "shareFailed": "تعذّر فتح المشاركة"
 }

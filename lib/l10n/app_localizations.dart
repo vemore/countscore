@@ -2260,6 +2260,48 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'voir la fiche'**
   String get statsOpenPlayerCard;
+
+  /// Tooltip of the share button on the game-end and ranking screens: opens the system share sheet with the standings as text
+  ///
+  /// In fr, this message translates to:
+  /// **'Partager le résultat'**
+  String get shareResult;
+
+  /// Tooltip of the share button on the game analysis screen: shares the standings and the commentary as text
+  ///
+  /// In fr, this message translates to:
+  /// **'Partager l\'analyse'**
+  String get shareAnalysis;
+
+  /// Subject of the shared result (used by e-mail apps and the web e-mail fallback)
+  ///
+  /// In fr, this message translates to:
+  /// **'Résultat : {gameName}'**
+  String shareResultSubject(String gameName);
+
+  /// First line of the shared result text: when the game was played
+  ///
+  /// In fr, this message translates to:
+  /// **'Partie du {date}'**
+  String shareResultTitle(String date);
+
+  /// One line of the standings in the shared result text: place, player name, total
+  ///
+  /// In fr, this message translates to:
+  /// **'{rank}. {name} : {points, plural, one{{points} point} other{{points} points}}'**
+  String shareResultStanding(int rank, String name, int points);
+
+  /// Last line of the shared result text: names the app and links to its Play Store listing (no tracking parameter)
+  ///
+  /// In fr, this message translates to:
+  /// **'Scores comptés avec {appName} : {url}'**
+  String shareResultFooter(String appName, String url);
+
+  /// Snackbar when the system share sheet (or the web fallback) could not be opened
+  ///
+  /// In fr, this message translates to:
+  /// **'Le partage n\'a pas pu s\'ouvrir'**
+  String get shareFailed;
 }
 
 class _AppLocalizationsDelegate

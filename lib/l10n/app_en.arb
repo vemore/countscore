@@ -661,5 +661,19 @@
   "statsAverageTotal": "Average final total",
   "statsBestTotal": "Best final total",
   "statsMostBeaten": "Most beaten opponent",
-  "statsOpenPlayerCard": "open the player card"
+  "statsOpenPlayerCard": "open the player card",
+
+  "shareResult": "Share the result",
+
+  "shareAnalysis": "Share the analysis",
+
+  "shareResultSubject": "Result: {gameName}",
+
+  "shareResultTitle": "Game of {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} point} other{{points} points}}",
+
+  "shareResultFooter": "Scores kept with {appName}: {url}",
+
+  "shareFailed": "Sharing could not be opened"
 }

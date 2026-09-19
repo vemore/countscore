@@ -588,5 +588,19 @@
   "statsAverageTotal": "Durchschnittliches Endergebnis",
   "statsBestTotal": "Bestes Endergebnis",
   "statsMostBeaten": "Am häufigsten geschlagen",
-  "statsOpenPlayerCard": "Spielerkarte öffnen"
+  "statsOpenPlayerCard": "Spielerkarte öffnen",
+
+  "shareResult": "Ergebnis teilen",
+
+  "shareAnalysis": "Analyse teilen",
+
+  "shareResultSubject": "Ergebnis: {gameName}",
+
+  "shareResultTitle": "Partie vom {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} Punkt} other{{points} Punkte}}",
+
+  "shareResultFooter": "Punkte gezählt mit {appName}: {url}",
+
+  "shareFailed": "Teilen konnte nicht geöffnet werden"
 }

@@ -1293,4 +1293,38 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get statsOpenPlayerCard => 'プレイヤーカードを開く';
+
+  @override
+  String get shareResult => '結果を共有';
+
+  @override
+  String get shareAnalysis => '分析を共有';
+
+  @override
+  String shareResultSubject(String gameName) {
+    return '結果：$gameName';
+  }
+
+  @override
+  String shareResultTitle(String date) {
+    return '$dateのゲーム';
+  }
+
+  @override
+  String shareResultStanding(int rank, String name, int points) {
+    String _temp0 = intl.Intl.pluralLogic(
+      points,
+      locale: localeName,
+      other: '$points点',
+    );
+    return '$rank. $name — $_temp0';
+  }
+
+  @override
+  String shareResultFooter(String appName, String url) {
+    return '$appNameでスコアを記録：$url';
+  }
+
+  @override
+  String get shareFailed => '共有を開けませんでした';
 }

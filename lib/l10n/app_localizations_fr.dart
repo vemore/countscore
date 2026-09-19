@@ -1328,4 +1328,39 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get statsOpenPlayerCard => 'voir la fiche';
+
+  @override
+  String get shareResult => 'Partager le résultat';
+
+  @override
+  String get shareAnalysis => 'Partager l\'analyse';
+
+  @override
+  String shareResultSubject(String gameName) {
+    return 'Résultat : $gameName';
+  }
+
+  @override
+  String shareResultTitle(String date) {
+    return 'Partie du $date';
+  }
+
+  @override
+  String shareResultStanding(int rank, String name, int points) {
+    String _temp0 = intl.Intl.pluralLogic(
+      points,
+      locale: localeName,
+      other: '$points points',
+      one: '$points point',
+    );
+    return '$rank. $name : $_temp0';
+  }
+
+  @override
+  String shareResultFooter(String appName, String url) {
+    return 'Scores comptés avec $appName : $url';
+  }
+
+  @override
+  String get shareFailed => 'Le partage n\'a pas pu s\'ouvrir';
 }

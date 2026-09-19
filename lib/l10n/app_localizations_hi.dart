@@ -1324,4 +1324,39 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get statsOpenPlayerCard => 'खिलाड़ी कार्ड खोलें';
+
+  @override
+  String get shareResult => 'परिणाम साझा करें';
+
+  @override
+  String get shareAnalysis => 'विश्लेषण साझा करें';
+
+  @override
+  String shareResultSubject(String gameName) {
+    return 'परिणाम: $gameName';
+  }
+
+  @override
+  String shareResultTitle(String date) {
+    return '$date का खेल';
+  }
+
+  @override
+  String shareResultStanding(int rank, String name, int points) {
+    String _temp0 = intl.Intl.pluralLogic(
+      points,
+      locale: localeName,
+      other: '$points अंक',
+      one: '$points अंक',
+    );
+    return '$rank. $name — $_temp0';
+  }
+
+  @override
+  String shareResultFooter(String appName, String url) {
+    return '$appName से स्कोर रखे गए: $url';
+  }
+
+  @override
+  String get shareFailed => 'साझा करना नहीं खुल सका';
 }

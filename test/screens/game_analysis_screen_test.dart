@@ -137,6 +137,43 @@ void main() {
     expect(find.byKey(const Key('analysis_no_server')), findsNothing);
   });
 
+  testWidgets('a shown analysis is shared with the app line, none is not',
+      (tester) async {
+    final cached = GameAnalysis(
+      gameId: 1,
+      content: 'Le professeur a parlé.',
+      modelId: 'test-model',
+      generatedAt: DateTime(2026, 9, 11, 14, 30),
+    );
+    String? shared;
+    await tester.pumpWidget(_wrap(
+      GameAnalysisScreen(
+        repository: _FakeAnalysisRepository(cached),
+        share: (text, {subject}) async => shared = text,
+      ),
+      gameProvider: _GameProviderWithCurrentGame(),
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('share_result')));
+    await tester.pumpAndSettle();
+
+    expect(shared, contains('Le professeur a parlé.'));
+    expect(shared,
+        contains('https://play.google.com/store/apps/details?id=com.vemore.countscore'));
+
+    await tester.pumpWidget(_wrap(
+      GameAnalysisScreen(
+        key: UniqueKey(),
+        repository: _FakeAnalysisRepository(),
+        share: (text, {subject}) async => shared = text,
+      ),
+      gameProvider: _GameProviderWithCurrentGame(),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('share_result')), findsNothing);
+  });
+
   testWidgets('configuring a server brings the generate button back',
       (tester) async {
     await tester.pumpWidget(_wrap(

@@ -109,6 +109,18 @@ month's AI spending from `GET /groups/me/usage`. These are app settings chosen f
 lists, not information about the user, and the server already stored them with the group; the
 recipient is the same self-hosted server. The answers below are unchanged.
 
+### Sharing a game result (September 19, 2026)
+
+The end-of-game screen, the in-game ranking and the analysis screen have a **share** action
+(`lib/widgets/share_result_button.dart`, `share_plus`). It builds a short text on the device —
+game type, date, standings, the commentary on the analysis screen, and the app's name with its
+plain Play listing URL — and hands it to the **system share sheet** (on the web, the Web Share
+API or a `mailto:` fallback). The app makes no network request for it, receives nothing back,
+and sends nothing until the user picks a target app and sends from there. `share_plus` adds no
+permission to the merged release manifest (only its own non-exported `FileProvider` and
+receiver). Data a user chooses to pass to another app is not collected *by this app*, so
+nothing in the form below changes.
+
 ### Report control for AI commentary (September 14, 2026)
 
 The analysis screen's **Report this commentary** action (Play AI-Generated Content policy)

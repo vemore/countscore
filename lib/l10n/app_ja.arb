@@ -588,5 +588,19 @@
   "statsAverageTotal": "平均最終スコア",
   "statsBestTotal": "最高最終スコア",
   "statsMostBeaten": "最も多く勝った相手",
-  "statsOpenPlayerCard": "プレイヤーカードを開く"
+  "statsOpenPlayerCard": "プレイヤーカードを開く",
+
+  "shareResult": "結果を共有",
+
+  "shareAnalysis": "分析を共有",
+
+  "shareResultSubject": "結果：{gameName}",
+
+  "shareResultTitle": "{date}のゲーム",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, other{{points}点}}",
+
+  "shareResultFooter": "{appName}でスコアを記録：{url}",
+
+  "shareFailed": "共有を開けませんでした"
 }
