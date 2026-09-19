@@ -39,6 +39,30 @@ Game? resumableGame(List<Game> games) {
   return best;
 }
 
+/// From this width (in dp) the home screen lays its game cards out in a
+/// grid; below it, one column. The Resume card keeps the full width either
+/// way. Home's own breakpoint: the board has none since its lanes size
+/// themselves (`wip/done/2026-09-18-home-master-detail.md`).
+const double kHomeGridBreakpoint = 600;
+
+/// The width a grid column aims for: as many columns as fit cards at least
+/// this wide, and never fewer than two above [kHomeGridBreakpoint].
+const double kHomeGridMinCardWidth = 360;
+
+/// The gap between two cards, across and down.
+const double _kCardGap = 12;
+
+/// How many columns of game cards a home screen [width] dp wide shows: one
+/// below [kHomeGridBreakpoint], then as many cards of at least
+/// [kHomeGridMinCardWidth] as fit the padded width, and never fewer than two.
+int homeGridColumns(double width) {
+  if (width < kHomeGridBreakpoint) return 1;
+  final content = width - 32; // the list's 16 dp side padding
+  final fit =
+      ((content + _kCardGap) / (kHomeGridMinCardWidth + _kCardGap)).floor();
+  return fit < 2 ? 2 : fit;
+}
+
 /// A rounded status label on a game card.
 class _Pill extends StatelessWidget {
   const _Pill({super.key, required this.background, required this.child, this.tooltip});
@@ -388,37 +412,72 @@ class _HomeScreenState extends State<HomeScreen> {
             if (!identical(game, resume)) game,
         ];
 
-        return ListView(
-          // The bottom 88 keeps the last card clear of the extended FAB.
-          padding: withBottomInset(
-              context, const EdgeInsets.fromLTRB(16, 8, 16, 88)),
-          children: [
-            if (resume != null)
-              _buildResumeHero(context, resume,
-                  gameTypeProvider.getGameTypeById(resume.gameTypeId),
-                  gameProvider),
-            if (rest.isNotEmpty) ...[
-              Padding(
-                padding: EdgeInsetsDirectional.only(
-                    start: 4, top: resume != null ? 24 : 8, bottom: 12),
-                child: Text(
-                  l10n.recentGames.toUpperCase(),
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        letterSpacing: 1.2,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
-              ),
-              for (final game in rest)
+        return LayoutBuilder(builder: (context, constraints) {
+          final columns = homeGridColumns(constraints.maxWidth);
+          // Between the breakpoint and two full cards, a grid card is
+          // narrower than a phone's: its status pill moves under the name.
+          final cardWidth =
+              (constraints.maxWidth - 32 - (columns - 1) * _kCardGap) /
+                  columns;
+          final compact = columns > 1 && cardWidth < kHomeGridMinCardWidth;
+          Widget card(Game game) => _buildGameCard(context, game,
+              gameTypeProvider.getGameTypeById(game.gameTypeId), gameProvider,
+              compact: compact);
+          return ListView(
+            // The bottom 88 keeps the last card clear of the extended FAB.
+            padding: withBottomInset(
+                context, const EdgeInsets.fromLTRB(16, 8, 16, 88)),
+            children: [
+              if (resume != null)
+                _buildResumeHero(context, resume,
+                    gameTypeProvider.getGameTypeById(resume.gameTypeId),
+                    gameProvider),
+              if (rest.isNotEmpty) ...[
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildGameCard(context, game,
-                      gameTypeProvider.getGameTypeById(game.gameTypeId),
-                      gameProvider),
+                  padding: EdgeInsetsDirectional.only(
+                      start: 4, top: resume != null ? 24 : 8, bottom: 12),
+                  child: Text(
+                    l10n.recentGames.toUpperCase(),
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          letterSpacing: 1.2,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                  ),
                 ),
+                if (columns == 1)
+                  for (final game in rest)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: _kCardGap),
+                      child: card(game),
+                    )
+                else
+                  // Rows of equal-height cards rather than a GridView: a
+                  // card is as tall as its content, which a fixed aspect
+                  // ratio would clip or pad.
+                  for (var i = 0; i < rest.length; i += columns)
+                    Padding(
+                      key: Key('homeGridRow${i ~/ columns}'),
+                      padding: const EdgeInsets.only(bottom: _kCardGap),
+                      child: IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            for (var c = 0; c < columns; c++) ...[
+                              if (c > 0) const SizedBox(width: _kCardGap),
+                              Expanded(
+                                child: i + c < rest.length
+                                    ? card(rest[i + c])
+                                    : const SizedBox.shrink(),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+              ],
             ],
-          ],
-        );
+          );
+        });
       },
     );
   }
@@ -573,7 +632,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildGameCard(BuildContext context, Game game, GameType? gameType, GameProvider gameProvider) {
+  /// A game card. [compact] puts the status pill beside the players rather
+  /// than beside the name, for a grid card narrower than
+  /// [kHomeGridMinCardWidth].
+  Widget _buildGameCard(BuildContext context, Game game, GameType? gameType,
+      GameProvider gameProvider,
+      {bool compact = false}) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
@@ -642,20 +706,36 @@ class _HomeScreenState extends State<HomeScreen> {
                               ?.copyWith(color: scheme.onSurfaceVariant),
                         ),
                         const SizedBox(height: 8),
-                        if (standing != null && standing.players.isEmpty)
-                          Text(l10n.noPlayers,
-                              style: theme.textTheme.bodySmall)
-                        else
-                          PlayerAvatarStack(
-                              players: standing?.players ?? const []),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            if (standing != null && standing.players.isEmpty)
+                              Text(l10n.noPlayers,
+                                  style: theme.textTheme.bodySmall)
+                            else
+                              PlayerAvatarStack(
+                                  players: standing?.players ?? const []),
+                            if (compact)
+                              _buildStatusPill(context, game, standing),
+                          ],
+                        ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: _buildStatusPill(context, game, standing),
-                  ),
+                  if (!compact) ...[
+                    const SizedBox(width: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      // Bounds the pill, whose winner name is Flexible; at
+                      // most 140 dp wide, so the bound never bites.
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 160),
+                        child: _buildStatusPill(context, game, standing),
+                      ),
+                    ),
+                  ],
                   _buildGameMenu(context, game, gameProvider),
                 ],
               );
@@ -702,13 +782,15 @@ class _HomeScreenState extends State<HomeScreen> {
           Icon(winner == null ? Icons.flag_outlined : Icons.emoji_events_outlined,
               size: 16, color: muted),
           const SizedBox(width: 4),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 96),
-            child: Text(
-              winner?.name ?? l10n.gameFinished,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: style?.copyWith(color: muted),
+          Flexible(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 96),
+              child: Text(
+                winner?.name ?? l10n.gameFinished,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: style?.copyWith(color: muted),
+              ),
             ),
           ),
         ],
