@@ -138,8 +138,15 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// "Round N", then "Next" / "Validate round" on the keypad with nothing
+  /// typed: a round of zeros, written in one go.
   Future<void> addARound(WidgetTester tester) async {
     await tester.tap(find.byKey(const Key('board_add_round')));
+    await tester.pumpAndSettle();
+    while (find.byKey(const Key('keypad_sheet')).evaluate().isNotEmpty) {
+      await tester.tap(find.byKey(const Key('keypad_primary')));
+      await tester.pumpAndSettle();
+    }
     await settleTheEndScreen(tester);
   }
 

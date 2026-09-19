@@ -186,13 +186,46 @@ class AppLocalizationsPt extends AppLocalizations {
   String get round => 'Rodada';
 
   @override
-  String get addRound => 'Adicionar rodada';
+  String boardRoundButton(int round) {
+    return 'Rodada $round';
+  }
 
   @override
-  String get score => 'Pontuação';
+  String keypadCaption(String player, int round) {
+    return '$player · rodada $round';
+  }
 
   @override
-  String get enterScore => 'Inserir pontuação';
+  String keypadCaptionWithPosition(
+    String player,
+    int round,
+    int position,
+    int count,
+  ) {
+    return '$player · rodada $round · $position/$count';
+  }
+
+  @override
+  String keypadTotalAfter(int total) {
+    return 'total depois: $total';
+  }
+
+  @override
+  String keypadNext(String player) {
+    return 'Próximo: $player';
+  }
+
+  @override
+  String get keypadValidateRound => 'Validar rodada';
+
+  @override
+  String get keypadZeroZapZap => '0 ZapZap';
+
+  @override
+  String get keypadToggleSign => 'Trocar sinal';
+
+  @override
+  String get keypadBackspace => 'Apagar um dígito';
 
   @override
   String get appearance => 'Aparência';

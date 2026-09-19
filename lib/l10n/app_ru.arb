@@ -113,11 +113,23 @@
 
   "round": "Раунд",
 
-  "addRound": "Добавить раунд",
+  "boardRoundButton": "Раунд {round}",
 
-  "score": "Счёт",
+  "keypadCaption": "{player} · раунд {round}",
 
-  "enterScore": "Введите счёт",
+  "keypadCaptionWithPosition": "{player} · раунд {round} · {position}/{count}",
+
+  "keypadTotalAfter": "итого после: {total}",
+
+  "keypadNext": "Далее: {player}",
+
+  "keypadValidateRound": "Подтвердить раунд",
+
+  "keypadZeroZapZap": "0 ZapZap",
+
+  "keypadToggleSign": "Сменить знак",
+
+  "keypadBackspace": "Стереть цифру",
 
   "appearance": "Внешний вид",
 

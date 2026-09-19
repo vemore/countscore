@@ -113,11 +113,23 @@
 
   "round": "轮次",
 
-  "addRound": "添加轮次",
+  "boardRoundButton": "第 {round} 轮",
 
-  "score": "分数",
+  "keypadCaption": "{player} · 第 {round} 轮",
 
-  "enterScore": "输入分数",
+  "keypadCaptionWithPosition": "{player} · 第 {round} 轮 · {position}/{count}",
+
+  "keypadTotalAfter": "录入后总分：{total}",
+
+  "keypadNext": "下一位：{player}",
+
+  "keypadValidateRound": "确认本轮",
+
+  "keypadZeroZapZap": "0 ZapZap",
+
+  "keypadToggleSign": "切换正负号",
+
+  "keypadBackspace": "删除一位数字",
 
   "appearance": "外观",
 

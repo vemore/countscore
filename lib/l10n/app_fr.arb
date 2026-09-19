@@ -299,19 +299,95 @@
     "description": "Label for round"
   },
 
-  "addRound": "Ajouter un tour",
-  "@addRound": {
-    "description": "Button text to add a round"
+  "boardRoundButton": "Tour {round}",
+  "@boardRoundButton": {
+    "description": "Board button that opens the score keypad on the next round; round is its number",
+    "placeholders": {
+      "round": {
+        "type": "int",
+        "example": "7"
+      }
+    }
   },
 
-  "score": "Score",
-  "@score": {
-    "description": "Label for score"
+  "keypadCaption": "{player} · tour {round}",
+  "@keypadCaption": {
+    "description": "Score keypad: whose score is typed, and in which round",
+    "placeholders": {
+      "player": {
+        "type": "String",
+        "example": "Vincent"
+      },
+      "round": {
+        "type": "int",
+        "example": "7"
+      }
+    }
   },
 
-  "enterScore": "Entrez le score",
-  "@enterScore": {
-    "description": "Placeholder for score input"
+  "keypadCaptionWithPosition": "{player} · tour {round} · {position}/{count}",
+  "@keypadCaptionWithPosition": {
+    "description": "Score keypad, from five players: whose score is typed, the round, and the player's place in the round (4/8)",
+    "placeholders": {
+      "player": {
+        "type": "String",
+        "example": "Vincent"
+      },
+      "round": {
+        "type": "int",
+        "example": "7"
+      },
+      "position": {
+        "type": "int",
+        "example": "4"
+      },
+      "count": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+
+  "keypadTotalAfter": "total après : {total}",
+  "@keypadTotalAfter": {
+    "description": "Score keypad: the player's total once the typed score is added",
+    "placeholders": {
+      "total": {
+        "type": "int",
+        "example": "62"
+      }
+    }
+  },
+
+  "keypadNext": "Suivant {player}",
+  "@keypadNext": {
+    "description": "Score keypad key that moves to the next player of the round, named",
+    "placeholders": {
+      "player": {
+        "type": "String",
+        "example": "Nadia"
+      }
+    }
+  },
+
+  "keypadValidateRound": "Valider le tour",
+  "@keypadValidateRound": {
+    "description": "Score keypad key, on the round's last player: writes the whole round"
+  },
+
+  "keypadZeroZapZap": "0 ZapZap",
+  "@keypadZeroZapZap": {
+    "description": "Score keypad shortcut key, ZapZap games only: a zero for the player who called ZapZap"
+  },
+
+  "keypadToggleSign": "Changer le signe",
+  "@keypadToggleSign": {
+    "description": "Tooltip of the score keypad's ± key"
+  },
+
+  "keypadBackspace": "Effacer un chiffre",
+  "@keypadBackspace": {
+    "description": "Tooltip of the score keypad's backspace key"
   },
 
   "appearance": "Apparence",

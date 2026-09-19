@@ -113,11 +113,23 @@
 
   "round": "الجولة",
 
-  "addRound": "إضافة جولة",
+  "boardRoundButton": "الجولة {round}",
 
-  "score": "النتيجة",
+  "keypadCaption": "{player} · الجولة {round}",
 
-  "enterScore": "أدخل النتيجة",
+  "keypadCaptionWithPosition": "{player} · الجولة {round} · {position}/{count}",
+
+  "keypadTotalAfter": "المجموع بعدها: {total}",
+
+  "keypadNext": "التالي: {player}",
+
+  "keypadValidateRound": "تأكيد الجولة",
+
+  "keypadZeroZapZap": "0 ZapZap",
+
+  "keypadToggleSign": "تغيير الإشارة",
+
+  "keypadBackspace": "حذف رقم",
 
   "appearance": "المظهر",
 

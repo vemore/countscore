@@ -185,13 +185,46 @@ class AppLocalizationsRu extends AppLocalizations {
   String get round => 'Раунд';
 
   @override
-  String get addRound => 'Добавить раунд';
+  String boardRoundButton(int round) {
+    return 'Раунд $round';
+  }
 
   @override
-  String get score => 'Счёт';
+  String keypadCaption(String player, int round) {
+    return '$player · раунд $round';
+  }
 
   @override
-  String get enterScore => 'Введите счёт';
+  String keypadCaptionWithPosition(
+    String player,
+    int round,
+    int position,
+    int count,
+  ) {
+    return '$player · раунд $round · $position/$count';
+  }
+
+  @override
+  String keypadTotalAfter(int total) {
+    return 'итого после: $total';
+  }
+
+  @override
+  String keypadNext(String player) {
+    return 'Далее: $player';
+  }
+
+  @override
+  String get keypadValidateRound => 'Подтвердить раунд';
+
+  @override
+  String get keypadZeroZapZap => '0 ZapZap';
+
+  @override
+  String get keypadToggleSign => 'Сменить знак';
+
+  @override
+  String get keypadBackspace => 'Стереть цифру';
 
   @override
   String get appearance => 'Внешний вид';

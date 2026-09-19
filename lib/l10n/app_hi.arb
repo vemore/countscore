@@ -113,11 +113,23 @@
 
   "round": "राउंड",
 
-  "addRound": "राउंड जोड़ें",
+  "boardRoundButton": "राउंड {round}",
 
-  "score": "स्कोर",
+  "keypadCaption": "{player} · राउंड {round}",
 
-  "enterScore": "स्कोर दर्ज करें",
+  "keypadCaptionWithPosition": "{player} · राउंड {round} · {position}/{count}",
+
+  "keypadTotalAfter": "इसके बाद कुल: {total}",
+
+  "keypadNext": "अगला: {player}",
+
+  "keypadValidateRound": "राउंड पक्का करें",
+
+  "keypadZeroZapZap": "0 ZapZap",
+
+  "keypadToggleSign": "चिह्न बदलें",
+
+  "keypadBackspace": "एक अंक मिटाएँ",
 
   "appearance": "रूप-रंग",
 

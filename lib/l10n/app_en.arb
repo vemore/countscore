@@ -113,11 +113,23 @@
 
   "round": "Round",
 
-  "addRound": "Add round",
+  "boardRoundButton": "Round {round}",
 
-  "score": "Score",
+  "keypadCaption": "{player} · round {round}",
 
-  "enterScore": "Enter score",
+  "keypadCaptionWithPosition": "{player} · round {round} · {position}/{count}",
+
+  "keypadTotalAfter": "total after: {total}",
+
+  "keypadNext": "Next {player}",
+
+  "keypadValidateRound": "Validate round",
+
+  "keypadZeroZapZap": "0 ZapZap",
+
+  "keypadToggleSign": "Change sign",
+
+  "keypadBackspace": "Delete a digit",
 
   "appearance": "Appearance",
 

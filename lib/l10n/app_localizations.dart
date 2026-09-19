@@ -450,23 +450,64 @@ abstract class AppLocalizations {
   /// **'Tour'**
   String get round;
 
-  /// Button text to add a round
+  /// Board button that opens the score keypad on the next round; round is its number
   ///
   /// In fr, this message translates to:
-  /// **'Ajouter un tour'**
-  String get addRound;
+  /// **'Tour {round}'**
+  String boardRoundButton(int round);
 
-  /// Label for score
+  /// Score keypad: whose score is typed, and in which round
   ///
   /// In fr, this message translates to:
-  /// **'Score'**
-  String get score;
+  /// **'{player} · tour {round}'**
+  String keypadCaption(String player, int round);
 
-  /// Placeholder for score input
+  /// Score keypad, from five players: whose score is typed, the round, and the player's place in the round (4/8)
   ///
   /// In fr, this message translates to:
-  /// **'Entrez le score'**
-  String get enterScore;
+  /// **'{player} · tour {round} · {position}/{count}'**
+  String keypadCaptionWithPosition(
+    String player,
+    int round,
+    int position,
+    int count,
+  );
+
+  /// Score keypad: the player's total once the typed score is added
+  ///
+  /// In fr, this message translates to:
+  /// **'total après : {total}'**
+  String keypadTotalAfter(int total);
+
+  /// Score keypad key that moves to the next player of the round, named
+  ///
+  /// In fr, this message translates to:
+  /// **'Suivant {player}'**
+  String keypadNext(String player);
+
+  /// Score keypad key, on the round's last player: writes the whole round
+  ///
+  /// In fr, this message translates to:
+  /// **'Valider le tour'**
+  String get keypadValidateRound;
+
+  /// Score keypad shortcut key, ZapZap games only: a zero for the player who called ZapZap
+  ///
+  /// In fr, this message translates to:
+  /// **'0 ZapZap'**
+  String get keypadZeroZapZap;
+
+  /// Tooltip of the score keypad's ± key
+  ///
+  /// In fr, this message translates to:
+  /// **'Changer le signe'**
+  String get keypadToggleSign;
+
+  /// Tooltip of the score keypad's backspace key
+  ///
+  /// In fr, this message translates to:
+  /// **'Effacer un chiffre'**
+  String get keypadBackspace;
 
   /// Settings section for appearance
   ///

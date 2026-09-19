@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/game_standing.dart';
 import '../models/game_type.dart';
+import '../models/player.dart';
 import '../models/round.dart';
 import '../providers/backend_provider.dart';
 import '../providers/group_provider.dart';
@@ -21,6 +22,7 @@ import '../services/game_over_dismissals.dart';
 import '../services/review_prompt.dart';
 import '../widgets/board_lanes.dart';
 import '../widgets/board_rows.dart';
+import '../widgets/score_keypad_sheet.dart';
 import '../widgets/who_starts_dialog.dart';
 import 'game_analysis_screen.dart';
 import 'game_end_screen.dart';
@@ -495,15 +497,8 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
             isNearThreshold: isNearThreshold,
             onRoundTap: (round) =>
                 _showCommentDialog(context, gameProvider, round),
-            onCellTap: (player, round) => _showScoreDialog(
-              context,
-              gameProvider,
-              gameType,
-              player,
-              round.roundNumber,
-              round.id!,
-              gameProvider.getScore(player.id!, round.id!) ?? 0,
-            ),
+            onCellTap: (player, round) =>
+                _editScore(gameProvider, gameType, player, round),
           );
 
           return Column(
@@ -523,16 +518,10 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                     width: double.infinity,
                     child: FilledButton.icon(
                       key: const Key('board_add_round'),
-                      onPressed: () async {
-                        await gameProvider.addRound();
-                        // A new round does not move a total, but it is the
-                        // moment a game already past its threshold — crossed on
-                        // another device, or in an earlier session — gets
-                        // noticed.
-                        await _maybeShowGameOver(gameProvider, gameType);
-                      },
+                      onPressed: () => _enterRound(gameProvider, gameType),
                       icon: const Icon(Icons.add),
-                      label: Text(l10n.addRound),
+                      label: Text(
+                          l10n.boardRoundButton(gameProvider.nextRoundNumber)),
                     ),
                   ),
                 ),
@@ -888,99 +877,87 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     if (mounted) await _refreshCachedAnalysis();
   }
 
-  void _showScoreDialog(
-    BuildContext context,
-    GameProvider gameProvider,
-    dynamic gameType,
-    dynamic player,
-    int roundNumber,
-    int roundId,
-    int currentScore,
-  ) {
-    final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController(
-      text: currentScore == 0 ? '' : currentScore.toString(),
+  bool _isZapZap(GameType? gameType) => gameType?.builtinKey == 'zapzap';
+
+  /// "Round N": the keypad on every player still in the game, in seat order.
+  /// The round is written only on "Validate round" — closing the sheet leaves
+  /// nothing behind.
+  Future<void> _enterRound(
+      GameProvider gameProvider, GameType? gameType) async {
+    final players = gameProvider.currentPlayers;
+    final before = {
+      for (final p in players) p.id!: gameProvider.getPlayerTotal(p.id!)
+    };
+    final inPlay = gameType == null
+        ? players
+        : [
+            for (final p in players)
+              if (!_isPlayerEliminatedByTotal(before[p.id]!, gameType)) p
+          ];
+    final scores = await ScoreKeypadSheet.round(
+      context,
+      players: inPlay.isEmpty ? players : inPlay,
+      colors: playerColorsById(players),
+      totalsBefore: before,
+      roundNumber: gameProvider.nextRoundNumber,
+      isZapZap: _isZapZap(gameType),
     );
+    if (scores == null || !mounted) return;
+    await gameProvider.addRoundWithScores(scores);
+    _noteEliminations(gameProvider, gameType, before);
+    // Also the moment a game already past its threshold — crossed on another
+    // device, or in an earlier session — gets noticed.
+    await _maybeShowGameOver(gameProvider, gameType);
+  }
 
-    void handleScoreUpdate(int newScore) async {
-      final oldTotal = gameProvider.getPlayerTotal(player.id!);
+  /// A tapped cell: the same keypad, on that one score, with "Save".
+  Future<void> _editScore(GameProvider gameProvider, GameType? gameType,
+      Player player, Round round) async {
+    final players = gameProvider.currentPlayers;
+    final roundScores = {
+      for (final p in players) p.id!: gameProvider.getScore(p.id!, round.id!)
+    };
+    final before = {
+      for (final p in players) p.id!: gameProvider.getPlayerTotal(p.id!)
+    };
+    final result = await ScoreKeypadSheet.single(
+      context,
+      players: players,
+      colors: playerColorsById(players),
+      totalsBefore: {
+        for (final p in players) p.id!: before[p.id]! - (roundScores[p.id] ?? 0)
+      },
+      roundNumber: round.roundNumber,
+      isZapZap: _isZapZap(gameType),
+      roundScores: roundScores,
+      playerId: player.id!,
+    );
+    final value = result?[player.id];
+    if (value == null || !mounted) return;
+    await gameProvider.updateScore(player.id!, round.id!, value);
+    _noteEliminations(gameProvider, gameType, before);
+    await _maybeShowGameOver(gameProvider, gameType);
+  }
 
-      await gameProvider.updateScore(
-        player.id!,
-        roundId,
-        newScore,
-      );
-
-      // Check if player just got eliminated
-      if (gameType?.playerDeadConditionType != null && gameType?.playerDeadThreshold != null) {
-        final newTotal = gameProvider.getPlayerTotal(player.id!);
-        final wasEliminated = _isPlayerEliminatedByTotal(oldTotal, gameType!);
-        final isNowEliminated = _isPlayerEliminatedByTotal(newTotal, gameType);
-
-        if (!wasEliminated && isNowEliminated && !_eliminatedPlayers.contains(player.id!)) {
-          setState(() {
-            _eliminatedPlayers.add(player.id!);
-          });
-          SystemSound.play(SystemSoundType.alert);
-        } else if (wasEliminated && !isNowEliminated && _eliminatedPlayers.contains(player.id!)) {
-          setState(() {
-            _eliminatedPlayers.remove(player.id!);
-          });
+  /// Plays the alert once for each player a write just put out of the game,
+  /// and forgets a player a correction brought back.
+  void _noteEliminations(
+      GameProvider gameProvider, GameType? gameType, Map<int, int> before) {
+    if (gameType == null || !mounted) return;
+    var someoneOut = false;
+    setState(() {
+      for (final e in before.entries) {
+        final was = _isPlayerEliminatedByTotal(e.value, gameType);
+        final now = _isPlayerEliminatedByTotal(
+            gameProvider.getPlayerTotal(e.key), gameType);
+        if (!was && now && _eliminatedPlayers.add(e.key)) {
+          someoneOut = true;
+        } else if (was && !now) {
+          _eliminatedPlayers.remove(e.key);
         }
       }
-
-      // Check if game over condition is met
-      await _maybeShowGameOver(gameProvider, gameType);
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('${player.name} - ${l10n.round} $roundNumber'),
-        content: TextField(
-          controller: controller,
-          keyboardType: const TextInputType.numberWithOptions(
-            signed: true,
-            decimal: false,
-          ),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^-?\d*')),
-          ],
-          decoration: InputDecoration(
-            labelText: l10n.score,
-            border: const OutlineInputBorder(),
-            hintText: l10n.enterScore,
-          ),
-          autofocus: true,
-          onSubmitted: (value) {
-            if (value.isNotEmpty) {
-              final score = int.tryParse(value) ?? 0;
-              handleScoreUpdate(score);
-              Navigator.pop(context);
-            }
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () {
-              final value = controller.text.trim();
-              if (value.isNotEmpty) {
-                final score = int.tryParse(value) ?? 0;
-                handleScoreUpdate(score);
-              } else {
-                handleScoreUpdate(0);
-              }
-              Navigator.pop(context);
-            },
-            child: Text(l10n.save),
-          ),
-        ],
-      ),
-    );
+    });
+    if (someoneOut) SystemSound.play(SystemSoundType.alert);
   }
 
   void _showCommentDialog(
