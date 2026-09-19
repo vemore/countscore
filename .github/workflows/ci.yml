@@ -366,6 +366,21 @@ jobs:
       - name: Web binaries match pubspec.lock
         run: scripts/web_binaries.sh --check
 
+      # THIRD_PARTY_LICENSES.md is generated from pubspec.yaml's direct dependencies and
+      # each one's LICENSE in the pub cache `pub get` just populated; the hand-written
+      # file had drifted a year behind pubspec.yaml. Stdlib Python: uv only runs it.
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.13"
+          enable-cache: false
+
+      - name: Third-party licences tests
+        run: uv run --no-project --with pytest pytest -v scripts/test_third_party_licenses.py
+
+      - name: THIRD_PARTY_LICENSES.md matches pubspec.yaml
+        run: uv run --no-project scripts/third_party_licenses.py --check
+
       # Scheduled only: proves the committed wasm still matches the bytes GitHub
       # serves, which is what catches a re-cut upstream release. `|| [ $? -eq 3 ]`
       # swallows an environment failure (no network, GitHub down) while a real

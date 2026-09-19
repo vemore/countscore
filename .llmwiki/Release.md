@@ -2,7 +2,7 @@
 
 > Scope: the Play Store configuration state. For the procedure, use the `release-android` skill.
 > Related: [[MobileApp]] · [[StoreListing]] · [[Testing]] · [[KnownLimits]] · [[Documentation]]
-> Updated: 2026-09-18
+> Updated: 2026-09-19
 
 ## Facts
 
@@ -148,7 +148,10 @@ copy must stay true to what ships — never "our server", never a denial of sync
 compliance documents; `scripts/build_privacy_page.py` renders the policy to
 `docs/privacy-policy.html`, which GitHub Pages serves as the URL the Play Console holds.
 CI refuses a pull request whose page is stale against the policy, or whose policy changed
-without its `**Last Updated**` line changing ([[Testing]]).
+without its `**Last Updated**` line changing ([[Testing]]). `THIRD_PARTY_LICENSES.md` is
+generated from `pubspec.yaml`'s direct dependencies by `scripts/third_party_licenses.py`,
+and CI refuses a pull request whose committed file differs — never edit it by hand
+([[Testing]]).
 
 ### Play policy constraints (checked 2026-09-13)
 

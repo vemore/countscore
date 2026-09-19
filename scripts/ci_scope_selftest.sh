@@ -75,6 +75,7 @@ scope "the pub lock alone"    "app android sync"    pubspec.lock
 scope "the analysis options" "app android sync"    analysis_options.yaml
 scope "the privacy policy"   "backend"             privacy_policy.md
 scope "the privacy page"     "backend"             docs/privacy-policy.html
+scope "the licence list"     "app"                 THIRD_PARTY_LICENSES.md
 
 echo "== everything ================================================"
 all="backend image app android sync"
@@ -153,6 +154,14 @@ if grep -q 'Dockerfile.backup' "$WORKFLOW"; then
 else
     fail=$((fail + 1))
     echo "  FAIL  ci.yml no longer builds backend/Dockerfile.backup"
+fi
+
+# THIRD_PARTY_LICENSES.md goes to `app` for this step alone.
+if grep -q 'third_party_licenses.py --check' "$WORKFLOW"; then
+    pass=$((pass + 1))
+else
+    fail=$((fail + 1))
+    echo "  FAIL  ci.yml no longer checks THIRD_PARTY_LICENSES.md against pubspec.yaml"
 fi
 
 # privacy_policy.md and its page go to `backend` for this step alone.
