@@ -11,13 +11,18 @@
     uv run --script scripts/compose_screenshots.py --locale fr-FR  # one locale
     uv run --script scripts/compose_screenshots.py --check         # verify, write nothing
 
-Input: the raw `adb` captures in store_listing/assets/screenshots/phone/ (written by
-scripts/capture_screenshots.sh) and, per locale, store_listing/<locale>/screenshot_captions.txt:
+Input, per locale: the raw `adb` captures in store_listing/<locale>/raw/, taken with the app in
+that locale's language (scripts/capture_screenshots.sh <locale>) — or, for a locale with no
+raw/ directory yet, the shared set in store_listing/assets/screenshots/phone/. A locale's raw/
+set replaces the shared one whole, never file by file: one carousel never mixes two UI
+languages. And store_listing/<locale>/screenshot_captions.txt:
 one `<capture stem>: <caption>` line per capture, `#` for a comment, `|` to force the line
 break (for the scripts written without spaces, where the automatic wrap may split a word).
 
 Output: store_listing/<locale>/screenshots/phone/<capture name>.png, 1080x1920 opaque RGB —
-the caption in a band above the screen, the status and navigation bars cropped off. That
+the caption in a band above the screen, the status and navigation bars cropped off, on a
+gradient of the app's teal (BRAND). The directory holds exactly the composed set: a PNG there
+with no raw capture of that name is removed on compose and reported by --check. That
 directory is exactly where play_publish.py looks first for a locale's screenshots, so
 `play_publish.py listing --graphics` picks the composed set up with no change.
 
@@ -42,7 +47,8 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont, features
 
 WIDTH, HEIGHT = 1080, 1920
 LISTING_ROOT = "store_listing"
-RAW_DIR = Path("assets") / "screenshots" / "phone"
+RAW_DIR = Path("assets") / "screenshots" / "phone"  # the shared set, the fallback
+LOCALE_RAW_DIR = "raw"  # store_listing/<locale>/raw/, the locale's own captures
 CAPTIONS_FILE = "screenshot_captions.txt"
 OUT_DIR = Path("screenshots") / "phone"
 
@@ -52,8 +58,17 @@ OUT_DIR = Path("screenshots") / "phone"
 CROP_TOP = 110
 CROP_BOTTOM = 132
 
-BACKGROUND = (0x67, 0x3A, 0xB7)  # Deep Purple 500 — the app's seed colour (lib/main.dart)
-BACKGROUND_BOTTOM = (0x45, 0x27, 0xA0)  # Deep Purple 800, for a quiet vertical gradient
+
+def _shade(rgb: tuple[int, int, int], factor: float) -> tuple[int, int, int]:
+    """`rgb` darkened towards black: 1.0 keeps it, 0.0 is black."""
+    return (round(rgb[0] * factor), round(rgb[1] * factor), round(rgb[2] * factor))
+
+
+# The app's seed colour, kBrandSeedLight in lib/utils/app_theme.dart (a test compares them).
+BRAND = (0x0E, 0x8F, 0x88)
+BACKGROUND = BRAND  # top of a quiet vertical gradient
+BACKGROUND_BOTTOM = _shade(BRAND, 0.7)
+SHADOW = _shade(BRAND, 0.2)  # under the screen
 TEXT = (0xFF, 0xFF, 0xFF)
 BAND_HEIGHT = 340  # the caption band, top of the canvas
 SIDE_MARGIN = 72  # caption text
@@ -113,10 +128,20 @@ def listing_locales(root: Path) -> list[str]:
     )
 
 
-def raw_captures(root: Path) -> list[Path]:
-    shots = sorted((root / LISTING_ROOT / RAW_DIR).glob("*.png"), key=lambda p: p.name)
+def raw_dir(root: Path, locale: str | None = None) -> Path:
+    """The locale's own raw/ set when it has one, else the shared set."""
+    if locale:
+        own = root / LISTING_ROOT / locale / LOCALE_RAW_DIR
+        if any(own.glob("*.png")):
+            return own
+    return root / LISTING_ROOT / RAW_DIR
+
+
+def raw_captures(root: Path, locale: str | None = None) -> list[Path]:
+    directory = raw_dir(root, locale)
+    shots = sorted(directory.glob("*.png"), key=lambda p: p.name)
     if not shots:
-        raise ComposeError(f"no raw capture in {root / LISTING_ROOT / RAW_DIR}")
+        raise ComposeError(f"no raw capture in {directory}")
     return shots
 
 
@@ -293,7 +318,7 @@ def compose(raw: Image.Image, caption: str, font_path: Path, locale: str) -> Ima
         (x, top + 12, x + size[0], top + size[1] + 12), SCREEN_RADIUS, fill=110
     )
     shadow = shadow.filter(ImageFilter.GaussianBlur(24))
-    canvas = Image.composite(Image.new("RGB", (WIDTH, HEIGHT), (0x1A, 0x10, 0x33)), canvas, shadow)
+    canvas = Image.composite(Image.new("RGB", (WIDTH, HEIGHT), SHADOW), canvas, shadow)
     canvas.paste(screen, (x, top), mask)
     return canvas
 
@@ -314,7 +339,7 @@ def check_image(path: Path) -> str | None:
 def compose_locale(
     root: Path, locale: str, font: str | None, out: object = sys.stdout
 ) -> list[Path]:
-    shots = raw_captures(root)
+    shots = raw_captures(root, locale)
     captions = read_captions(root / LISTING_ROOT / locale / CAPTIONS_FILE, [s.stem for s in shots])
     font_path = find_font(locale, font)
     out_dir = root / LISTING_ROOT / locale / OUT_DIR
@@ -326,8 +351,16 @@ def compose_locale(
         target = out_dir / shot.name
         image.save(target, "PNG", optimize=True)
         written.append(target)
+    for stale in sorted(set(out_dir.glob("*.png")) - set(written)):
+        stale.unlink()  # a capture renamed or dropped since the last compose
+        print(
+            f"{locale}: removed {stale.relative_to(root)} (no raw capture)",
+            file=out,  # type: ignore[arg-type]
+        )
+    source = raw_dir(root, locale).relative_to(root)
     print(
-        f"{locale}: {len(written)} screenshots -> {out_dir.relative_to(root)} ({font_path.name})",
+        f"{locale}: {len(written)} screenshots from {source} -> {out_dir.relative_to(root)} "
+        f"({font_path.name})",
         file=out,
     )  # type: ignore[arg-type]
     return written
@@ -335,9 +368,14 @@ def compose_locale(
 
 def check(root: Path, locales: list[str]) -> list[str]:
     problems = []
-    names = [s.name for s in raw_captures(root)]
     for locale in locales:
+        names = [s.name for s in raw_captures(root, locale)]
         out_dir = root / LISTING_ROOT / locale / OUT_DIR
+        for extra in sorted(p for p in out_dir.glob("*.png") if p.name not in names):
+            problems.append(
+                f"{locale}: {extra.relative_to(root)} matches no raw capture in "
+                f"{raw_dir(root, locale).relative_to(root)} — not composed by this script"
+            )
         for name in names:
             path = out_dir / name
             if not path.is_file():

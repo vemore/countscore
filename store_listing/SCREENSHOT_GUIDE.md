@@ -492,11 +492,10 @@ Study successful apps in Tools category:
 A helper script has been created to automate screenshot capture:
 
 ```bash
-# Make script executable
-chmod +x scripts/capture_screenshots.sh
-
-# Run the script
-./scripts/capture_screenshots.sh
+# One store locale at a time: CountScore switches to its language, captures go to
+# store_listing/<locale>/raw/
+./scripts/capture_screenshots.sh ja-JP
+./scripts/capture_screenshots.sh --reset   # CountScore back to the phone's language
 
 # Follow prompts to capture each screenshot
 # Screenshots will be numbered and saved automatically
