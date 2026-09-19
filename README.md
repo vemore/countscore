@@ -169,8 +169,10 @@ references and the build fails without the flag. It costs roughly 200 KB. See
 
 **The PWA is built by `scripts/build_web.sh`**, which adds `--no-web-resources-cdn` and copies
 the engine's fallback fonts (Noto, Roboto) into the build, so a browser loading the PWA asks
-nothing of Google: CanvasKit and every font come from whoever serves the app. Extra arguments
-(`--base-href=/subpath/`) are passed to `flutter build web`.
+nothing of Google: CanvasKit and every font come from whoever serves the app. It also arms the
+PWA's service worker (`web/service_worker.js`): after one online visit the app opens and works
+with no network, and after a deploy an open app offers a reload onto the new version. Extra
+arguments (`--base-href=/subpath/`) are passed to `flutter build web`.
 
 ### Publishing the PWA
 

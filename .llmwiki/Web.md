@@ -13,7 +13,9 @@ async`, no service-worker code — with real metadata: title and apple title "Co
 description, `<meta name="theme-color" content="#0E8F88">`) · `manifest.json` (CountScore,
 standalone, portrait-primary, `theme_color` `#0E8F88`, the light theme's brand teal
 `kBrandSeedLight`, `lib/utils/app_theme.dart:9`) · **`flutter_bootstrap.js`**, the stock
-loader template plus `fontFallbackBaseUrl` (below) · **`fallback-fonts/OFL.txt` and
+loader template plus `fontFallbackBaseUrl` (below), without its `serviceWorkerSettings`, and
+with the registration of ours · **`service_worker.js`**, CountScore's service worker ("Offline
+and updates", below) · **`fallback-fonts/OFL.txt` and
 `LICENSE-Apache-2.0.txt`**, the licences of the mirrored fallback fonts · `favicon.png` ·
 `icons/` (4 PNGs) · the two Drift runtime binaries: **`sqlite3.wasm` (748686 B, sqlite3 3.6.0)** and
 **`drift_worker.js` (357220 B, the prebuilt worker from drift 2.35.0)** · and
@@ -228,6 +230,94 @@ still uses the CDN defaults unless given `--no-web-resources-cdn`, and it is not
 `serviceWorkerSettings`: this change did not touch the worker. A caching worker must not
 precache `fallback-fonts/` (22 MB); cache those on first use.
 
+> **Status: Outdated** (2026-09-19) — the PWA has its own worker now, and Flutter's is gone
+> from the build and from the loader: see "Offline and updates".
+
+### Offline and updates — `web/service_worker.js`
+
+Flutter 3.47.2 ships no caching worker: its `flutter_service_worker.js` is a stub that
+unregisters itself on activation, so before 2026-09-19 a reload with the network off failed
+with `ERR_INTERNET_DISCONNECTED` while `manifest.json` said "works offline". CountScore has a
+hand-written worker instead, and **exactly one**: a scope holds one registration, so the
+stock loader registering Flutter's stub would replace ours. `web/flutter_bootstrap.js` passes
+no `serviceWorkerSettings`, and `scripts/build_web.sh` deletes the stub from the build.
+
+**Registration** — `web/flutter_bootstrap.js`, after `_flutter.loader.load`, on the `load`
+event: `navigator.serviceWorker.register("service_worker.js", {updateViaCache: "none"})`.
+Relative, so it resolves against the base href, and the default scope is the script's
+directory: **`PWA_BASE_PATH` + `/`** on the backend's host, `/<repo>/` on Pages. No
+`Service-Worker-Allowed` header is needed. The registration runs only when the line
+`const countscoreServiceWorker = … // @service-worker` is `true`, which `build_web.sh` sets:
+`flutter run -d chrome` and a bare `flutter build web` register nothing.
+
+**What the build injects** — `build_web.sh`, last step, replaces three marked constants in
+`build/web/service_worker.js`: `BUILD_ID`, the first 16 hex digits of a SHA-256 over every
+other file's digest (the loader included, so any change makes a new id); `PRECACHE`, path →
+SHA-256 of the shell (41 files, 10233 KB with Flutter 3.47.2: `index.html`, `main.dart.js`,
+`flutter_bootstrap.js`, `flutter.js`, `sqlite3.wasm`, `drift_worker.js`, `manifest.json`,
+`version.json`, icons, favicon and everything under `assets/` — Nunito, MaterialIcons,
+`AssetManifest`, `FontManifest`, `NOTICES`, the rules, the shaders); and `ON_DEMAND`, the
+`.js`/`.wasm` of every CanvasKit variant. Left out: `canvaskit/` (below), `fallback-fonts/`,
+the `*.symbols`, `.last_build_id` and `sqlite3.wasm.sha256`.
+
+**Caches** — `countscore-build-<BUILD_ID>` holds the shell and the CanvasKit variant the
+browser uses; `countscore-fonts` holds the fallback fonts, shared by every build (their paths
+are versioned, so a cached file is never stale).
+
+- *Install* fetches each `PRECACHE` file with `cache: "no-cache"` (Pages sends `max-age=600`),
+  hashes it and caches it only if the digest is the build's own — a mismatch means the server
+  already holds another build, and the install fails so the browser retries with that
+  build's worker. A file the previous build's cache holds with the same digest is copied, not
+  downloaded, and a CanvasKit variant the previous build had cached is fetched too.
+- *First visit*: the page loaded CanvasKit (one variant among several: `chromium/` in
+  Chromium) and some fonts before the worker controlled it. Once it does (`clients.claim()`),
+  the loader posts `performance.getEntriesByType("resource")` as a `cache-loaded` message and
+  the worker caches the CanvasKit files (digest-checked) and fonts it names.
+- *Fetch*: only `GET`s inside the scope. A navigation to the scope's root gets the cached
+  `index.html` **with the headers it was served with**, `_PWA_CSP` included; a `PRECACHE` or
+  `ON_DEMAND` path is cache-first; a font is cached when first fetched. Everything else — the
+  API, a backend on another host, `privacy-policy.html` next to a Pages build — is not
+  touched. A CanvasKit file missing from the cache whose network copy has another build's
+  digest is refused (`Response.error()`) and the worker looks for its successor, which the
+  loader then applies at once (the app never started).
+
+**The update path** — a deploy replaces the build, so the next navigation (or the
+`visibilitychange` check the loader adds, for an installed PWA left open) finds a
+byte-different `service_worker.js` — the backend serves it `Cache-Control: no-cache`, and
+`updateViaCache: "none"` bypasses the HTTP cache anyway. The new worker installs its whole
+build beside the old one and **waits**; the open page keeps running on the old cache.
+Then the loader, through `window.countscorePwa`:
+
+1. if the app is on screen (`PwaUpdateListener` has set `onUpdateReady`,
+   `lib/widgets/pwa_update_listener.dart`), shows the snackbar "A new version of CountScore is
+   ready" — *Reload* (ARB `pwaUpdateReady`, `pwaUpdateReload`), which stays until acted on;
+2. if not (the waiting worker is found while the page starts), applies it at once.
+
+Applying posts `skip-waiting`; the new worker activates, deletes every other
+`countscore-build-*` cache and claims the pages, and on `controllerchange` every page that had
+a controller reloads — onto the new build, entirely from its cache. Closing every tab applies
+it too, as for any worker. A page is therefore served by one build from start to finish.
+
+Verified on 2026-09-19 with Playwright (Chromium 412×860) against uvicorn serving a
+`--base-href=/countscore/` build under `_PWA_CSP`, the build folder swapped by rename as
+`deploy_web.sh` does: after one online visit the registration's scope was
+`http://localhost:8765/countscore/`, the build cache held 43 entries (41 + the `chromium/`
+CanvasKit pair); offline, a reload opened the home screen and a game with two new players was
+created and its board shown, with no failed request and no console error; in `zh-CN` the four
+Noto Sans SC slices the home screen uses were cached and rendered offline. With build B
+deployed under an open build-A page, `registration.update()` installed B beside A, the
+snackbar appeared, *Reload* reloaded once, and every precached file the page received before
+was A's digest and after was B's (`main.dart.js` differs between them), all from the worker;
+A's cache was gone. `scripts/check_web_build.sh` refuses a build whose worker is unarmed,
+that still carries Flutter's worker or `serviceWorkerSettings`, or whose files differ from the
+worker's digests (`scripts/check_web_build_selftest.sh` pins each case).
+
+What is not covered: a fallback font never fetched online is missing offline (the glyphs show
+as boxes until the network returns); `countscore-fonts` is never pruned — an SDK upgrade
+that re-versions the fonts leaves the old files in it
+(`wip/todo_nr/2026-09-19-pwa-fonts-cache-never-pruned.md`); and no CI job runs the worker in a
+browser (`wip/todo_nr/2026-09-19-pwa-service-worker-has-no-ci-browser-test.md`).
+
 ### GitHub Pages — `.github/workflows/deploy-pages.yml`
 
 A second publishing path, beside the backend's own host ([[Deployment]]): on a push to `main`
@@ -369,6 +459,19 @@ address for the Android case; on web that URL still only works from an http orig
   would still miss for user-typed names. The mirror keeps today's rendering and lazy loading
   unchanged, costs 22 MB on the server and a one-time download on the build machine, and
   needs no glyph list maintained by hand. `wip/done/2026-09-19-pwa-gstatic-undisclosed.md`.
+- **A hand-written service worker, not Flutter's (2026-09-19, refinement 7).** Flutter's
+  offline-first worker is deprecated and now a self-unregistering stub, and the manifest
+  promised "works offline" while nothing cached anything; the refinement chose to make the
+  claim true. Workbox or another generator would be a build dependency outside the Flutter
+  toolchain for ~200 lines of worker. The cache is named after a build id computed by
+  `build_web.sh` (not Flutter's random `serviceWorkerVersion`, which changes on every build and
+  would prompt users for identical code), and every cached file is digest-checked, so neither
+  a deploy mid-install nor an HTTP cache can put two builds in one cache. The update waits for
+  the user rather than `skipWaiting()` on install: a page already running must not start
+  loading another build's files, and the prompt costs one tap. The fallback fonts stay out of
+  the precache (22 MB for the few slices one language needs), and only the CanvasKit variant
+  a browser really loads is cached (5.4 MB of the 12.7 MB the two usual variants weigh).
+  `wip/done/2026-09-19-pwa-has-no-offline-service-worker.md`.
 - **The PWA shell lost its template metadata (2026-09-19).** `theme_color` `#673AB7` (the
   deep purple of an earlier theme) became the brand teal `#0E8F88`, mirrored by a
   `theme-color` meta; "A new Flutter project." became a description; the title is

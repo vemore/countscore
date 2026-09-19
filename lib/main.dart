@@ -14,6 +14,7 @@ import 'screens/home_screen.dart';
 import 'services/review_prompt.dart';
 import 'services/sync/sync_engine.dart';
 import 'utils/app_theme.dart';
+import 'widgets/pwa_update_listener.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -68,7 +69,12 @@ class MyApp extends StatelessWidget {
         builder: (context, themeProvider, child) {
           return MaterialApp(
             scaffoldMessengerKey: scaffoldMessengerKey,
-            builder: (context, child) => _SyncEventListener(child: child!),
+            builder: (context, child) => _SyncEventListener(
+              child: PwaUpdateListener(
+                messengerKey: scaffoldMessengerKey,
+                child: child!,
+              ),
+            ),
             title: 'CountScore',
             debugShowCheckedModeBanner: false,
             localizationsDelegates: const [

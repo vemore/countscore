@@ -1,5 +1,7 @@
 # The PWA has no offline service worker, so it does not open without a network
 
+**Status:** done (2026-09-19) — closed by feat/pwa-offline-service-worker. A hand-written `web/service_worker.js` precaches the shell into a cache named after a build id `scripts/build_web.sh` injects with every file's digest, caches CanvasKit and the fallback fonts when used, and waits for the app's *Reload* snackbar after a deploy; Flutter's worker is out of the loader and the build. Verified with Playwright (offline start and game creation; A→B update, one reload, no file of two builds).
+
 - **Noted:** 2026-09-19 — refinement 6, deciding [[2026-09-19-pwa-shell-still-says-flutter-template-and-offline]]
 - **Theme:** web
 - **Area:** web

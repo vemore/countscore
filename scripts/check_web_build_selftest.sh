@@ -32,10 +32,20 @@ fixture() {  # name -> a minimal publishable build under $TMP/name
     printf 'x=A.ef().g()+"roboto/v32/KFOm.woff2";y="notosanssc/v37/k3kC.12.woff2"' > "$d/main.dart.js"
     printf '_flutter.buildConfig = {"useLocalCanvasKit":true};\n_flutter.loader.load({\n  config: {\n    fontFallbackBaseUrl: "fallback-fonts/",\n  },\n});\n' \
         > "$d/flutter_bootstrap.js"
+    printf 'const countscoreServiceWorker = true; // @service-worker\n' >> "$d/flutter_bootstrap.js"
     mkdir -p "$d/canvaskit" "$d/fallback-fonts/roboto/v32" "$d/fallback-fonts/notosanssc/v37"
     printf 'x' > "$d/canvaskit/canvaskit.wasm"
     printf 'wOF2' > "$d/fallback-fonts/roboto/v32/KFOm.woff2"
     printf 'wOF2' > "$d/fallback-fonts/notosanssc/v37/k3kC.12.woff2"
+    # The armed service worker: a build id and the digest of each file it precaches.
+    {
+        echo 'const BUILD_ID = "0123456789abcdef"; // @build-id'
+        echo 'const PRECACHE = {'
+        for f in index.html main.dart.js sqlite3.wasm; do
+            printf ' "%s": "%s",\n' "$f" "$(sha256sum "$d/$f" | cut -d' ' -f1)"
+        done
+        echo '}; // @precache'
+    } > "$d/service_worker.js"
     echo "$d"
 }
 
@@ -110,6 +120,35 @@ expect "no fallback-fonts/ at all (a plain flutter build web)" 1 "$d"
 d=$(fixture no_font_table)
 printf 'x' > "$d/main.dart.js"
 expect "main.dart.js names no font path (the engine's table moved)" 1 "$d"
+
+# The service worker: exactly one, armed, and matching the files it will serve.
+d=$(fixture no_worker)
+rm "$d/service_worker.js"
+expect "no service_worker.js" 1 "$d"
+
+d=$(fixture unbuilt_worker)
+sed -i "s|^const BUILD_ID = .*|const BUILD_ID = 'unbuilt'; // @build-id|" "$d/service_worker.js"
+expect "the worker as committed in web/, with no build id" 1 "$d"
+
+d=$(fixture loader_not_armed)
+sed -i 's/countscoreServiceWorker = true/countscoreServiceWorker = false/' "$d/flutter_bootstrap.js"
+expect "a loader that does not register the worker" 1 "$d"
+
+d=$(fixture flutter_worker)
+printf 'x' > "$d/flutter_service_worker.js"
+expect "Flutter's own flutter_service_worker.js in the build" 1 "$d"
+
+d=$(fixture flutter_worker_settings)
+printf '  serviceWorkerSettings: {}\n' >> "$d/flutter_bootstrap.js"
+expect "a loader that still passes serviceWorkerSettings" 1 "$d"
+
+d=$(fixture changed_after_build)
+printf 'y' > "$d/sqlite3.wasm"
+expect "a precached file changed after the build" 1 "$d"
+
+d=$(fixture no_shell_digest)
+sed -i '/"main.dart.js"/d' "$d/service_worker.js"
+expect "a worker that does not precache main.dart.js" 1 "$d"
 
 "$CHECK" a b > /dev/null 2>&1
 if [ $? -eq 2 ]; then pass=$((pass + 1)); else fail=$((fail + 1)); echo "  FAIL  two arguments is not a usage error"; fi

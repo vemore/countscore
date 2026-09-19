@@ -1412,4 +1412,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String defaultGameName(int number) {
     return '游戏 $number';
   }
+
+  @override
+  String get pwaUpdateReady => 'CountScore 新版本已就绪';
+
+  @override
+  String get pwaUpdateReload => '重新加载';
 }

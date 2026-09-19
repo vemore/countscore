@@ -153,7 +153,7 @@ prompt below.
 
 ### Widgets — `lib/widgets/`
 
-Thirteen components shared out of the screens:
+Sixteen components shared out of the screens:
 
 - `board_lanes.dart` — the board's default layout ([below](#the-board)): `BoardData` (what
   both layouts draw from: players in seat order, rounds, a `GameStanding`, colours, the
@@ -218,6 +218,10 @@ Thirteen components shared out of the screens:
   `group_settings_screen`.
 - `group_devices_sheet.dart` — Settings → Group → Devices: the group's devices, this one and
   the owner marked; the owner alone gets revoke and *Make owner* on the others ([[Sync]]).
+- `pwa_update_listener.dart` — `PwaUpdateListener`, wrapped around every screen by
+  `MaterialApp.builder` in `main.dart`: on the web, once the service worker has a deploy's
+  build waiting, a snackbar that stays until acted on (`pwaUpdateReady`, action
+  `pwaUpdateReload`) and applies it. Does nothing off the web ([[Web]], "Offline and updates").
 
 ### Services — `lib/services/`
 
@@ -245,6 +249,9 @@ Thirteen components shared out of the screens:
   its tables ([[DataLayer]]).
 - `sync/` — the group-sync engine, store and stream ([[Sync]]).
 - `uuid.dart` — platform-neutral v4 UUIDs.
+- `pwa_update.dart` — `listenForPwaUpdate` / `applyPwaUpdate`: `dart:js_interop` over the
+  `window.countscorePwa` object `web/flutter_bootstrap.js` defines (`pwa_update_web.dart`),
+  and a no-op stub on native (`pwa_update_stub.dart`) ([[Web]]).
 - `game_over_dismissals.dart` — `GameOverDismissals`: the games whose rule-raised end screen was
   answered "Continue playing", on this device only (SharedPreferences
   `gameOverDismissed.<game uuid>`; not synced, no schema). A deleted game leaves its key

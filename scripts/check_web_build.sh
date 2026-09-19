@@ -16,7 +16,10 @@
 #     scripts/build_web.sh): CanvasKit must come from the build (`useLocalCanvasKit`,
 #     canvaskit/canvaskit.wasm), the loader must point fontFallbackBaseUrl at
 #     fallback-fonts/, and every font path the compiled engine can request must be
-#     there. .llmwiki/Web.md, "Self-hosted web resources".
+#     there. .llmwiki/Web.md, "Self-hosted web resources";
+#   - a build whose service worker is not armed (no build id, not registered by the loader),
+#     that still carries Flutter's own worker, or whose files differ from the digests the
+#     worker will check them against. .llmwiki/Web.md, "Offline and updates".
 #
 # It does not compare the committed web/ binaries with pubspec.lock: that is
 # scripts/web_binaries.sh, which needs the pub cache and runs before the build.
@@ -82,6 +85,35 @@ if [ -s "$DIR/main.dart.js" ]; then
     if [ "$ABSENT" -gt 0 ]; then
         echo "Refusing to publish: $ABSENT fallback fonts missing (build with scripts/build_web.sh)" >&2
         status=1
+    fi
+fi
+
+# The service worker (web/service_worker.js), armed by scripts/build_web.sh. Exactly one:
+# Flutter's own flutter_service_worker.js would replace it (one registration per scope).
+# Only meaningful once the loader exists.
+if [ -s "$DIR/flutter_bootstrap.js" ]; then
+    if [ -e "$DIR/flutter_service_worker.js" ] || grep -qE '^[[:space:]]*serviceWorkerSettings[[:space:]]*:' "$DIR/flutter_bootstrap.js"; then
+        echo "Refusing to publish: Flutter's own service worker is in the build (build with scripts/build_web.sh)" >&2
+        status=1
+    fi
+    if ! grep -q '^const countscoreServiceWorker = true; // @service-worker$' "$DIR/flutter_bootstrap.js"; then
+        echo "Refusing to publish: $DIR/flutter_bootstrap.js does not register the service worker (build with scripts/build_web.sh)" >&2
+        status=1
+    fi
+    SW="$DIR/service_worker.js"
+    if ! grep -qE '^const BUILD_ID = "[0-9a-f]{16}"; // @build-id$' "$SW" 2>/dev/null; then
+        echo "Refusing to publish: $SW is missing or carries no build id (build with scripts/build_web.sh)" >&2
+        status=1
+    else
+        # Every file the worker precaches or verifies, with the digest it will check.
+        DIGESTS="$(sed -n 's/^ "\([^"]*\)": "\([0-9a-f]\{64\}\)",\{0,1\}$/\2  \1/p' "$SW")"
+        if ! grep -q '  main\.dart\.js$' <<< "$DIGESTS" || ! grep -q '  index\.html$' <<< "$DIGESTS"; then
+            echo "Refusing to publish: $SW does not precache index.html and main.dart.js" >&2
+            status=1
+        elif ! (cd "$DIR" && sha256sum --check --quiet --strict <<< "$DIGESTS" > /dev/null 2>&1); then
+            echo "Refusing to publish: a file of $DIR differs from the digest in service_worker.js (changed after the build)" >&2
+            status=1
+        fi
     fi
 fi
 

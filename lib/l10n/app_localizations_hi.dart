@@ -1459,4 +1459,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String defaultGameName(int number) {
     return 'खेल $number';
   }
+
+  @override
+  String get pwaUpdateReady => 'CountScore का नया संस्करण तैयार है';
+
+  @override
+  String get pwaUpdateReload => 'फिर से लोड करें';
 }

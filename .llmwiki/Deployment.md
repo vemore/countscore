@@ -216,7 +216,10 @@ the value the container mounts at, so the build's `--base-href` cannot disagree 
 It refuses a build containing any `.md` file or lacking `index.html`, `main.dart.js`,
 `sqlite3.wasm` or `drift_worker.js` (`scripts/check_web_build.sh`, shared with the Pages
 workflow), streams a tarball into `pwa/current.new`, and renames it into place, keeping one
-`pwa/current.prev`. No container restart: the folder is read per request.
+`pwa/current.prev`. No container restart: the folder is read per request. Browsers that
+visited before keep running the previous build from their service-worker cache until they
+take the reload the app offers ([[Web]], "Offline and updates"); a rollback is a new build id
+for them like any deploy.
 
 ```bash
 scripts/deploy_web.sh --dry-run    # build + checks, prints the remote commands

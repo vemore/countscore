@@ -5,12 +5,13 @@ paths:
   - "integration_test/**"
   - "scripts/deploy_web.sh"
   - "scripts/build_web.sh"
+  - "scripts/check_web_build.sh"
 ---
 
 # CountScore Web (PWA) — Instructions for Claude Code
 
 `web/` holds the Flutter web scaffold: `index.html`, `manifest.json`, `flutter_bootstrap.js`,
-icons, the two Drift runtime binaries, and the licences of the fallback fonts
+`service_worker.js`, icons, the two Drift runtime binaries, and the licences of the fallback fonts
 (`fallback-fonts/`). The PWA's Dart code lives in `lib/` like every other target — there
 is no separate web source tree.
 
@@ -68,6 +69,13 @@ These instructions used to be `web/CLAUDE.md`. They moved here because Flutter c
    `web/flutter_bootstrap.js` (the stock loader plus `fontFallbackBaseUrl`) points the
    engine. `scripts/check_web_build.sh` refuses a build that skipped either, and `_PWA_CSP`
    allows no Google host. `.llmwiki/Web.md`, "Self-hosted web resources".
+8. **One service worker, ours: `web/service_worker.js`.** `web/flutter_bootstrap.js` registers
+   it and passes the loader no `serviceWorkerSettings` — Flutter's stub would replace it (one
+   registration per scope) and unregister itself. `scripts/build_web.sh` injects the build id
+   and the digests into its three `// @…` constants and turns on the loader's
+   `// @service-worker` line; keep those markers intact, and never precache `fallback-fonts/`.
+   A file added to the build is precached automatically (everything outside `canvaskit/`,
+   `fallback-fonts/` and the `*.symbols`). `.llmwiki/Web.md`, "Offline and updates".
 
 ## Commands
 

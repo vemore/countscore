@@ -1490,4 +1490,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String defaultGameName(int number) {
     return 'Игра $number';
   }
+
+  @override
+  String get pwaUpdateReady => 'Новая версия CountScore готова';
+
+  @override
+  String get pwaUpdateReload => 'Перезагрузить';
 }
