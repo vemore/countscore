@@ -265,7 +265,8 @@ Or manually capture each:
 
 - [ ] **Organization**
   - [ ] Files numbered (01, 02, 03, etc.)
-  - [ ] Saved in: `store_listing/assets/screenshots/phone/`
+  - [ ] Saved in: `store_listing/<locale>/raw/` (`scripts/capture_screenshots.sh <locale>`), then
+    composed into `store_listing/<locale>/screenshots/phone/` by `scripts/compose_screenshots.py`
   - [ ] First 2-3 screenshots are strongest
 
 ### Screenshot Enhancement (Optional)
@@ -390,7 +391,7 @@ Or manually capture each:
 
 - [ ] **Upload phone screenshots**
   - [ ] Clicked "Phone screenshots" section
-  - [ ] Uploaded all screenshots from `screenshots/phone/`
+  - [ ] Uploaded all screenshots from `<locale>/screenshots/phone/` (the composed set)
   - [ ] Reordered (most important first)
   - [ ] Preview looks correct
   - [ ] Saved

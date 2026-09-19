@@ -84,6 +84,10 @@ def write_listing_locale(root: Path, locale: str, *, notes_for: str | None = Non
     (d / "full_description.txt").write_text("A long description\n", encoding="utf-8")
     if notes_for:
         (d / f"release_notes_v{notes_for}.txt").write_text(f"Notes {locale}\n", encoding="utf-8")
+    phone = d / "screenshots" / "phone"  # the composed set; there is no shared fallback
+    phone.mkdir(parents=True, exist_ok=True)
+    for name in ("02_b.png", "01_a.png"):
+        (phone / name).write_bytes(b"png")
     return d
 
 
@@ -92,11 +96,8 @@ def repo(tmp_path: Path) -> Path:
     (tmp_path / "pubspec.yaml").write_text("name: countscore\nversion: 1.1.0+4\n", encoding="utf-8")
     for locale in pp.NOTES_LOCALES:
         write_listing_locale(tmp_path, locale, notes_for="1.1.0")
-    phone = tmp_path / "store_listing" / "assets" / "screenshots" / "phone"
-    phone.mkdir(parents=True)
+    (tmp_path / "store_listing" / "assets").mkdir()
     (tmp_path / "store_listing" / "assets" / "feature_graphic.png").write_bytes(b"png")
-    for name in ("02_b.png", "01_a.png"):
-        (phone / name).write_bytes(b"png")
     return tmp_path
 
 
@@ -224,34 +225,38 @@ def test_screenshots_in_name_order(repo: Path) -> None:
     assert [p.name for p in shots] == ["01_a.png", "02_b.png"]
 
 
-def test_graphics_fall_back_to_assets(repo: Path) -> None:
-    feature, shots = pp.graphics_files(repo, "fr-FR")
+def test_the_feature_graphic_falls_back_to_assets(repo: Path) -> None:
+    feature, _ = pp.graphics_files(repo, "fr-FR")
     assert feature == repo / "store_listing" / "assets" / "feature_graphic.png"
-    assert [p.parent.parent.parent.name for p in shots] == ["assets", "assets"]
 
 
-def test_per_locale_graphics_win_over_assets(repo: Path) -> None:
-    phone = repo / "store_listing" / "fr-FR" / "screenshots" / "phone"
-    phone.mkdir(parents=True)
-    (phone / "01_fr.png").write_bytes(b"png")
+def test_screenshots_have_no_shared_fallback(repo: Path) -> None:
+    """A locale with no composed set is refused, never given raw or shared captures."""
+    shared = repo / "store_listing" / "assets" / "screenshots" / "phone"
+    shared.mkdir(parents=True)
+    (shared / "01_raw.png").write_bytes(b"png")
+    for shot in (repo / "store_listing" / "fr-FR" / "screenshots" / "phone").glob("*.png"):
+        shot.unlink()
+    with pytest.raises(pp.PublishError, match="compose_screenshots.py --locale fr-FR"):
+        pp.graphics_files(repo, "fr-FR")
+
+
+def test_a_locale_feature_graphic_wins_over_assets(repo: Path) -> None:
     (repo / "store_listing" / "fr-FR" / "feature_graphic.png").write_bytes(b"png")
     feature, shots = pp.graphics_files(repo, "fr-FR")
     assert feature == repo / "store_listing" / "fr-FR" / "feature_graphic.png"
-    assert [p.name for p in shots] == ["01_fr.png"]
-    # en-US is untouched: the fallback stays the nominal path.
-    assert [p.name for p in pp.graphics_files(repo, "en-US")[1]] == ["01_a.png", "02_b.png"]
+    assert [p.parent.parent.parent.name for p in shots] == ["fr-FR", "fr-FR"]
 
 
 def test_a_jpeg_is_not_a_screenshot(repo: Path) -> None:
     phone = repo / "store_listing" / "fr-FR" / "screenshots" / "phone"
-    phone.mkdir(parents=True)
-    (phone / "01_fr.jpg").write_bytes(b"jpeg")  # the glob is *.png only
+    (phone / "00_fr.jpg").write_bytes(b"jpeg")  # the glob is *.png only
     _, shots = pp.graphics_files(repo, "fr-FR")
     assert [p.name for p in shots] == ["01_a.png", "02_b.png"]
 
 
 def test_more_than_eight_screenshots_refused(repo: Path) -> None:
-    phone = repo / "store_listing" / "assets" / "screenshots" / "phone"
+    phone = repo / "store_listing" / "en-US" / "screenshots" / "phone"
     for i in range(9):
         (phone / f"1{i}.png").write_bytes(b"png")
     with pytest.raises(pp.PublishError, match="phone screenshots; Play allows 8"):

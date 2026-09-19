@@ -20,10 +20,10 @@ file silently reverts at the next release.
 `store_listing/assets/` has the 512×512 icon `icon_512.png` (also the source
 `flutter_launcher_icons` generates the Android densities from), the 1024×500
 `feature_graphic.png` (Template 1 of `store_listing/FEATURE_GRAPHIC_TEMPLATES.md`: icon, name,
-tagline and the scoring grid in a phone frame, drawn with Pillow), and eight raw phone
-captures under `assets/screenshots/phone/`, the old shared set — French, purple, pre-refresh,
-with a `04_game_history` no caption file names any more — which no locale uses since each has
-its own `raw/` set. `scripts/capture_screenshots.sh <locale>` switches CountScore alone to a
+tagline and the scoring grid in a phone frame, drawn with Pillow) — every locale's, unless
+`<locale>/feature_graphic.png` exists. It holds **no screenshots**: the old shared raw set
+(`assets/screenshots/phone/`, French, purple, pre-refresh) was deleted on 2026-09-19, and each
+locale has its own `raw/` set. `scripts/capture_screenshots.sh <locale>` switches CountScore alone to a
 store locale's language (`adb shell cmd locale set-app-locales com.vemore.countscore --locales
 <locale>`, Android 13+; `--reset` puts it back on the phone's language) and writes that
 locale's own set to `store_listing/<locale>/raw/`. Per-app language works on the Pixel with no
@@ -41,19 +41,21 @@ the statistics ranking needs. It goes on the phone through **Settings → Import
 
 ### Screenshots: raw captures in, one composed set per locale out
 
-The raw captures are 1080×2400 (the shared set) or 1008×2244 (the Pixel 9 Pro XL at its
-default resolution, every `raw/` set) RGBA — ratio 2.22 and an alpha channel, both refused by
+The raw captures are 1008×2244 (the Pixel 9 Pro XL at its default resolution, every `raw/`
+set) RGBA — ratio 2.22 and an alpha channel, both refused by
 Play — so they are **input only**. `scripts/compose_screenshots.py` (Pillow, PEP 723, `uv run
---script`) takes a locale's `raw/` set when it has one, else the shared set — whole, never
-file by file, so one carousel never mixes two UI languages — crops the status and navigation
-bars (`SYSTEM_BARS`, measured per capture size: 110/132 px at 1080×2400, 110/108 px at
-1008×2244 — the navigation bar is 48 dp, so it follows the density; any other size is
+--script`) takes a locale's own `raw/` set and nothing else — no shared fallback, so one carousel
+never shows another locale's UI language; a captioned locale without `raw/` is refused
+(`ComposeError`, exit 2), in compose and in `--check` — crops the status and navigation
+bars (`SYSTEM_BARS`, measured per capture size: 110/132 px at 1080×2400 — the deleted shared
+set's size, kept for a 1080p phone — 110/108 px at 1008×2244 — the navigation bar is 48 dp, so it follows the density; any other size is
 refused rather than cropped by guess), scales the screen under a caption band on a
 gradient from the app's teal (`BRAND = #0E8F88`, `kBrandSeedLight` in
 `lib/utils/app_theme.dart`, which a test compares) to 70 % of it, and writes **1080×1920 opaque
 RGB** PNGs to `store_listing/<locale>/screenshots/phone/`, under the capture's own file name.
-That is the directory `play_publish.py graphics_files()` reads first, so `listing --graphics`
-publishes the composed set with no change to the publisher. The directory holds exactly the
+That is the only directory `play_publish.py graphics_files()` takes a locale's screenshots
+from — it refuses a locale without it rather than upload anything else — so `listing
+--graphics` publishes the composed set with no change to the publisher. The directory holds exactly the
 composed set: compose deletes a PNG there with no raw capture of that name, and `--check`
 reports one — which is how a stray capture committed there turns CI red ([[Testing]]).
 
@@ -247,8 +249,10 @@ store:
 
   > **Status: Outdated** (2026-09-19) — reversed at refinement 4: a `ja-JP` visitor reading a
   > Japanese caption above « Liste des joueurs » sees an app that is not in their language,
-  > though it is. The captures are per locale now (`store_listing/<locale>/raw/`), the shared
-  > set only a fallback until a locale is retaken. Claude drafts the French captions from the listing copy, the
+  > though it is. The captures are per locale now (`store_listing/<locale>/raw/`); the shared
+  > set, left as a fallback until every locale was retaken, was deleted at refinement 6
+  > (2026-09-19) — its stems no longer matched the captions, so the fallback would have
+  > composed a new locale from French purple captures under the wrong names. Claude drafts the French captions from the listing copy, the
   user validates them, the other locales are translated from them.
 - **No game brand names in the store images (2026-09-18).** The draft caption for the game
   types screen named three third-party games; the user replaced it with « Vos jeux préférés,

@@ -79,7 +79,7 @@ scope "the privacy page"     "backend"             docs/privacy-policy.html
 scope "the licence list"     "app"                 THIRD_PARTY_LICENSES.md
 scope "a composed screenshot" "backend"            store_listing/fr-FR/screenshots/phone/01_main_screen.png
 scope "a locale raw capture" "backend"             store_listing/ja-JP/raw/04_podium.png
-scope "the shared raw set"   "backend"             store_listing/assets/screenshots/phone/01_main_screen.png
+scope "an LTR raw capture"   "backend"             store_listing/en-US/raw/01_main_screen.png
 scope "screenshot captions"  "backend"             store_listing/ar/screenshot_captions.txt
 scope "the composer"         "backend"             scripts/compose_screenshots.py
 scope "the composer's tests" "backend"             scripts/test_compose_screenshots.py

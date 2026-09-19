@@ -17,12 +17,12 @@ store_listing/
 │   ├── short_description.txt       # 80 characters max
 │   ├── full_description.txt        # 4000 characters max
 │   ├── screenshot_captions.txt     # one caption per raw capture, `<stem>: <caption>`
+│   ├── raw/                        # the locale's raw captures, 01_… to 08_… — input only
 │   ├── screenshots/phone/          # the composed set, 1080×1920 RGB (generated, committed)
 │   └── release_notes_v<x.y.z>.txt  # 500 characters max — en-US and fr-FR only
 ├── assets/
 │   ├── icon_512.png                # 512×512, also the source of the Android launcher icons
-│   ├── feature_graphic.png         # 1024×500, opaque
-│   └── screenshots/phone/          # 8 raw captures, 01_… to 08_… — input only, not Play-valid
+│   └── feature_graphic.png         # 1024×500, opaque — every locale's, unless it has its own
 ├── ASSET_REQUIREMENTS.md           # image specifications
 ├── ASSET_CREATION_CHECKLIST.md · COLOR_THEME_GUIDE.md
 ├── FEATURE_GRAPHIC_TEMPLATES.md · ICON_DESIGN_GUIDE.md · SCREENSHOT_GUIDE.md
@@ -45,10 +45,11 @@ Adding a language to `lib/l10n/` does not create the listing for it, and vice ve
 
 The raw captures are 1008×2244 RGBA, which Play refuses. Each locale's own set is in
 `<locale>/raw/`, taken with the app in that language, on the fictional demo database
-(`test/demo_db_test.dart`), by `scripts/capture_screenshots.sh <locale>`; a locale without one
-falls back to the old shared French set in `assets/screenshots/phone/`. `scripts/compose_screenshots.py` turns them into
-1080×1920 opaque RGB, the locale's caption in a band above the screen, into
-`<locale>/screenshots/phone/` — the directory `play_publish.py --graphics` reads first:
+(`test/demo_db_test.dart`), by `scripts/capture_screenshots.sh <locale>`. There is no shared set to fall back on: the
+composer refuses a captioned locale with no `raw/`. `scripts/compose_screenshots.py` turns
+them into 1080×1920 opaque RGB, the locale's caption in a band above the screen, into
+`<locale>/screenshots/phone/` — the only directory `play_publish.py --graphics` takes a
+locale's screenshots from; it refuses a locale without one:
 
 ```bash
 uv run --script scripts/compose_screenshots.py --locale fr-FR   # one locale; no flag: every captioned one
