@@ -18,4 +18,24 @@ which is synced.
 
 **Decided (2026-09-18, refinement 4):** a shortcut is either a value or an operation (such as ×2).
 
-**Open question:** which built-in games get which shortcut? Check the hypotheses above against the rules in `assets/rules/` and propose the list.
+**Decided (2026-09-19, refinement 5):** checked against `assets/rules/rules_fr.md`:
+
+| Type | Key | Kind | Why |
+|---|---|---|---|
+| ZapZap | "0 ZapZap" | value 0 | the key [[2026-09-18-score-entry-takes-a-dialog-per-cell]] already ships |
+| Skyjo | "×2" | operation | the player who closed the round is doubled when not strictly lowest (positive scores only) |
+| Belote | "162" | value | the defending side takes 162 when the taker is *dedans* |
+| Scrabble | "+50" | operation | seven letters in one move |
+| Rami | "100" | value | the flat penalty for a player who laid nothing down |
+
+No shortcut for Uno (the 0 for the player who went out is a plain 0), Président (2 and 1),
+Tarot or Bridge. Skyjo's −2 is a card value, not a round score. Yahtzee and the other types
+without rules in `assets/rules/` are decided once their rules land (`feat/game-rules-seeds`).
+
+Waits for [[2026-09-18-score-entry-takes-a-dialog-per-cell]]: the keypad has to exist first.
+
+**Acceptance:**
+- Widget test: in a Skyjo game, typing 12 then "×2" enters 24; in a Belote game, "162" enters 162.
+- Widget test: a Tarot game's keypad shows a plain "0" and no shortcut key.
+- A custom type's shortcut set in `game_types_screen.dart` survives a restart and reaches another device through sync.
+- The migration test for the new column passes (`db-migration`).

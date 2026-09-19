@@ -13,11 +13,12 @@ interactive page is https://claude.ai/artifact/D3ycxcgzPxHezRrSrmuxiw (private).
 **Target:** [end of game](../assets/2026-09-18-app-looks-like-a-default-material-template/end-of-game.png), [dark](../assets/2026-09-18-app-looks-like-a-default-material-template/dark-end-of-game.png).
 
 A game-over condition opens an `AlertDialog` offering "continue" or "finish"
-(`game_board_screen.dart:596-606` and `850`). Finishing from the home menu shows a snackbar
-(`home_screen.dart:545`). Neither one names the winner.
+(`_maybeShowGameOver` and `_showGameOverDialog`, `game_board_screen.dart:578` and `837`). Finishing from the home menu shows a snackbar
+(`home_screen.dart:776-793`). Neither one names the winner.
 
-Lands after [[2026-09-18-board-hides-who-owns-each-column-and-who-leads]]: same screen, same
-ranking logic.
+Lands after [[2026-09-18-board-hides-who-owns-each-column-and-who-leads]] (merged in #119): same
+screen, same ranking logic (`GameStanding`). Built in parallel with
+[[2026-09-18-score-entry-takes-a-dialog-per-cell]]: same screen, expect a merge conflict.
 
 **Fix:** a **game-end screen** (`lib/screens/`), shown **always**:
 - it replaces the game-over dialog when the rule ends the game (a "Continue playing" action

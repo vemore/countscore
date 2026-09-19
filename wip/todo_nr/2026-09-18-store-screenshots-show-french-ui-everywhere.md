@@ -30,7 +30,23 @@ retaken, in every locale, in one device session.
 [[2026-09-18-board-hides-who-owns-each-column-and-who-leads]] have landed (not the end screen
 or keypad).
 
+**Absorbed (2026-09-19, refinement 5):** [[2026-09-18-store-screenshots-show-the-old-purple-theme]].
+The raw captures still show the violet app, and `scripts/compose_screenshots.py:55` draws the
+caption band on `BACKGROUND = (0x67, 0x3A, 0xB7)  # Deep Purple 500`, described as "the app's seed
+colour". Move that gradient to the teal (`#0E8F88`, `lib/utils/app_theme.dart`), then re-compose
+the ten locales, and publish with `play_publish.py listing --graphics` (`release-android`) once
+the user asks for it. Remove the Outdated block from `.llmwiki/StoreListing.md`.
+
+**Decided (2026-09-19, refinement 5):** the retake waits until
+[[2026-09-18-score-entry-takes-a-dialog-per-cell]] and
+[[2026-09-18-finishing-a-game-has-no-end-screen]] have landed too. Otherwise `07_score_entry`
+would show the old dialog, and the retake of 04 would have no podium to show. This replaces the
+refinement 4 decision above.
+
 **Acceptance:**
 - No two raw captures of one locale show the same screen.
 - The composed `ja-JP` set shows the Japanese UI under the Japanese caption.
 - `compose_screenshots.py --check` still exits 0 on all ten locales.
+- `compose_screenshots.py` has no deep-purple colour; its gradient derives from `#0E8F88`.
+- Every `store_listing/<locale>/screenshots/phone/` image shows the teal theme, the keypad sheet and the end screen.
+- `.llmwiki/StoreListing.md` no longer carries the Outdated block about the caption colour.
