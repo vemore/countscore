@@ -21,9 +21,10 @@ and the title "CountScore". Either drop "works offline" from the manifest, or de
 an offline shell (a separate decision, as it changes how updates reach users).
 
 **Acceptance:**
-- `web/manifest.json` has no `#673AB7` and no "offline" claim unless a worker ships;
-  `web/index.html` has no "A new Flutter project".
+- `web/manifest.json` has no `#673AB7`; `web/index.html` has no "A new Flutter project",
+  a teal `theme-color` meta and the title "CountScore".
 
-**Open question:** ship an offline service worker, or drop the claim? (Asked again at the
-2026-09-19 refinement; left for later. Decide together with
-[[2026-09-19-pwa-gstatic-undisclosed]]: an offline shell needs CanvasKit self-hosted.)
+**Decided (2026-09-19, refinement 6):** ship an offline service worker, in its own entry
+[[2026-09-19-pwa-has-no-offline-service-worker]]. This entry keeps the metadata only (teal
+`theme_color` and `<meta name="theme-color">`, a real description, the title "CountScore"); the
+manifest's "works offline" stays, since the worker will make it true.

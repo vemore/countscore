@@ -22,9 +22,11 @@ or stop it: build with `--no-web-resources-cdn` (CanvasKit served from the build
 bundle a fallback font, then drop `www.gstatic.com` and `fonts.gstatic.com` from `_PWA_CSP`.
 
 **Acceptance:**
-- A PWA session, from load to a game created, makes no request to a Google host — or the
-  policy and `README.md` name those requests for the web version.
+- A PWA session, from load to a game created, makes no request to a Google host.
+- `_PWA_CSP` names no `gstatic.com` host.
 - `README.md:81` ("no font is fetched at runtime") is true on every platform it covers.
 
-**Open question:** disclose the Google CDN requests for the web version, or self-host CanvasKit
-and the fonts? (Asked at the 2026-09-19 refinement; left for later.)
+**Decided (2026-09-19, refinement 6):** self-host. Build with `--no-web-resources-cdn`
+(in `web-deploy` and the CI web build), bundle a fallback font, and drop `www.gstatic.com` and
+`fonts.gstatic.com` from `_PWA_CSP` and [[Security]]. No privacy document changes, since the
+claim becomes true. Lands before [[2026-09-19-pwa-has-no-offline-service-worker]].
