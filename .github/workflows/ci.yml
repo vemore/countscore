@@ -58,6 +58,11 @@ jobs:
       - name: Scope classifier self-test
         run: scripts/ci_scope_selftest.sh
 
+      # The sqlite3 download retry must never turn a real failure green. Here
+      # because it needs nothing installed and this job runs on every change.
+      - name: sqlite3 download retry self-test
+        run: scripts/retry_sqlite3_hash_selftest.sh
+
       # On main, on the weekly run and on a manual run every flag is true: main
       # keeps a complete verification record. On a pull request the flags come
       # from the files it changes.
@@ -376,6 +381,29 @@ jobs:
       - name: flutter pub get
         run: flutter pub get
 
+      # package:sqlite3's build hook (run by `flutter test` and `flutter build apk`)
+      # downloads a precompiled libsqlite3 from the package's GitHub release into
+      # .dart_tool/hooks_runner/shared/sqlite3/build/download-<hash prefix>/, and
+      # reuses a file already there only if its SHA-256 matches. A GitHub error page
+      # hashed as a library failed runs 35335702639 and 35429735515 with "Hash of
+      # downloaded file"; caching the downloads per job and per sqlite3 version means
+      # only the first run after a bump fetches anything. The hash check still runs on
+      # every restored file. Same two steps in `sync` and `android`; the step that runs
+      # the hook goes through scripts/retry_sqlite3_hash.sh, which retries once on that
+      # message alone. Pinned by scripts/retry_sqlite3_hash_selftest.sh.
+      - name: sqlite3 version in pubspec.lock
+        id: sqlite3
+        run: |
+          v=$(awk '/^  sqlite3:$/ {on=1} on && /^    version:/ {gsub(/"/, "", $2); print $2; exit}' pubspec.lock)
+          [ -n "$v" ] || { echo "::error file=pubspec.lock::no sqlite3 version found"; exit 1; }
+          echo "version=$v" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Cache the sqlite3 native libraries
+        uses: actions/cache@v6
+        with:
+          path: .dart_tool/hooks_runner/shared/sqlite3/build/download-*
+          key: sqlite3-native-${{ github.job }}-${{ runner.os }}-${{ steps.sqlite3.outputs.version }}
+
       # web/drift_worker.js and web/sqlite3.wasm are committed and must follow the
       # versions pubspec.lock resolves; nothing compared them, so Dependabot #43
       # merged green with the previous worker. It sits here because it needs the
@@ -417,7 +445,7 @@ jobs:
         run: flutter analyze
 
       - name: flutter test
-        run: flutter test
+        run: scripts/retry_sqlite3_hash.sh flutter test
 
       # --no-tree-shake-icons is mandatory on every build target: game-type icons
       # are built from database codepoints, which the tree-shaker cannot see.
@@ -508,6 +536,20 @@ jobs:
       - name: flutter pub get
         run: flutter pub get
 
+      # See the `app` job: the sqlite3 native libraries, per job and per version.
+      - name: sqlite3 version in pubspec.lock
+        id: sqlite3
+        run: |
+          v=$(awk '/^  sqlite3:$/ {on=1} on && /^    version:/ {gsub(/"/, "", $2); print $2; exit}' pubspec.lock)
+          [ -n "$v" ] || { echo "::error file=pubspec.lock::no sqlite3 version found"; exit 1; }
+          echo "version=$v" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Cache the sqlite3 native libraries
+        uses: actions/cache@v6
+        with:
+          path: .dart_tool/hooks_runner/shared/sqlite3/build/download-*
+          key: sqlite3-native-${{ github.job }}-${{ runner.os }}-${{ steps.sqlite3.outputs.version }}
+
       - name: Code generation (drift)
         run: dart run build_runner build
 
@@ -517,7 +559,7 @@ jobs:
         env:
           SYNC_BACKEND_URL: http://127.0.0.1:8765
           SYNC_TEST_REQUIRED: "true"
-        run: flutter test test/sync/sync_two_devices_test.dart
+        run: scripts/retry_sqlite3_hash.sh flutter test test/sync/sync_two_devices_test.dart
 
       - name: Backend log
         if: failure()
@@ -579,6 +621,21 @@ jobs:
       - name: flutter pub get
         run: flutter pub get
 
+      # See the `app` job: the sqlite3 native libraries, per job and per version —
+      # here the three Android ABIs, which the other two jobs never download.
+      - name: sqlite3 version in pubspec.lock
+        id: sqlite3
+        run: |
+          v=$(awk '/^  sqlite3:$/ {on=1} on && /^    version:/ {gsub(/"/, "", $2); print $2; exit}' pubspec.lock)
+          [ -n "$v" ] || { echo "::error file=pubspec.lock::no sqlite3 version found"; exit 1; }
+          echo "version=$v" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Cache the sqlite3 native libraries
+        uses: actions/cache@v6
+        with:
+          path: .dart_tool/hooks_runner/shared/sqlite3/build/download-*
+          key: sqlite3-native-${{ github.job }}-${{ runner.os }}-${{ steps.sqlite3.outputs.version }}
+
       - name: Code generation (drift)
         run: dart run build_runner build
 
@@ -587,7 +644,7 @@ jobs:
       # android/settings.gradle.kts requires flutter.sdk in local.properties, and
       # only `flutter build` writes that file.
       - name: Build debug APK
-        run: flutter build apk --debug --no-tree-shake-icons
+        run: scripts/retry_sqlite3_hash.sh flutter build apk --debug --no-tree-shake-icons
 
       # This job builds debug, and the debug manifest declares INTERNET for hot
       # reload — so no build here can catch a release manifest that does not. The

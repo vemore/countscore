@@ -72,14 +72,19 @@ while IFS= read -r path; do
         # drift_worker.js. Only `flutter build web` consumes it.
         web/*) app=true ;;
 
-        # Dart, its dependencies, its analysis and l10n configuration -- `app` also
-        # runs the osv-scanner audit of pubspec.lock, so a lock-only change (a
-        # Dependabot week, deps.yml's refresh) is audited before it merges. `android`
-        # is in this list on purpose: that job is the fresh-clone build proof,
-        # and an AOT-only failure is exactly what it exists to catch. `app` also
-        # covers scripts/hooks_selftest.sh, which reads l10n.yaml and lib/l10n/*.arb.
-        lib/*|test/*|integration_test/*|test_driver/*|pubspec.yaml|pubspec.lock|l10n.yaml|analysis_options.yaml)
-            app=true; android=true; sync=true ;;
+        # The dependencies. A package can bring a Gradle plugin, Kotlin or a build
+        # hook with it, which only the APK build exercises, so `android` runs.
+        # `app` also runs the osv-scanner audit of pubspec.lock, so a lock-only
+        # change (a Dependabot week, deps.yml's refresh) is audited before it merges.
+        pubspec.yaml|pubspec.lock) app=true; android=true; sync=true ;;
+
+        # Dart, its analysis and l10n configuration. Not `android` (2026-09-19): its
+        # 416 runs to date had no red APK build on a change `app` passed that was
+        # not a network flake, and pushes to main and the weekly run still build
+        # the APK -- the workflow forces every flag there. `app` also covers
+        # scripts/hooks_selftest.sh, which reads l10n.yaml and lib/l10n/*.arb.
+        lib/*|test/*|integration_test/*|test_driver/*|l10n.yaml|analysis_options.yaml)
+            app=true; sync=true ;;
 
         # Everything else: .github/, .claude/ outside its .md files (the hooks the
         # `app` job self-tests, the release tooling the `backend` job tests),
