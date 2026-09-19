@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:provider/provider.dart';
 
+import 'package:countscore/l10n/app_localizations.dart';
 import 'package:countscore/main.dart' as app;
 import 'package:countscore/providers/game_provider.dart';
 
@@ -30,37 +31,46 @@ void main() {
         listen: false,
       );
 
+      // The first game's name, in the device's language ("Partie 1", "Game 1").
+      final gameName = AppLocalizations.of(
+              tester.element(find.byType(FloatingActionButton)))!
+          .defaultGameName(1);
+
       // Pre-clean so the run is idempotent even on a persisted DB (device).
-      await _cleanup(gp);
+      await _cleanup(gp, gameName);
       await tester.pumpAndSettle();
 
       // === Step 0: home is up, DB initialized (default game types seeded).
       expect(find.byType(FloatingActionButton), findsOneWidget);
 
-      // === Step 1: new game. On a clean DB the form defaults to ZapZap and a
-      // game name "Partie 1"; wait for the name field — it's the last thing the
-      // async _loadData() sets, so it confirms the type is selected too.
+      // === Step 1: new game. On a clean DB the form defaults to ZapZap and
+      // the localized first-game name; wait for the name field — it's the last
+      // thing the async _loadData() sets, so it confirms the type is selected too.
       await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
-      await _waitFor(tester, find.text('Partie 1'));
+      await _waitFor(tester, find.text(gameName));
 
-      // === Step 2: add two global players Alice, Bob.
+      // === Step 2: add two global players Alice, Bob, through the "who's
+      // playing" sheet: each typed name is created and checked, then the
+      // sheet's button seats them.
+      await tester.tap(find.byKey(const Key('create_add_player')));
+      await _waitFor(tester, find.byKey(const Key('player_picker_search')));
       for (final name in const ['Alice', 'Bob']) {
-        await tester.tap(find.byKey(const Key('create_add_player')));
-        await _waitFor(tester, find.byKey(const Key('player_picker_search')));
         await tester.enterText(
             find.byKey(const Key('player_picker_search')), name);
-        // The "create" button is always in the tree but disabled until the
-        // search field's onChanged setState lands — wait until it's ENABLED,
-        // otherwise the tap is a silent no-op and the player isn't created.
+        // The "create" action appears once the search field's onChanged
+        // setState lands — wait for it, or the tap misses.
         await _waitEnabled(tester, const Key('player_picker_create'));
         await tester.tap(find.byKey(const Key('player_picker_create')));
-        // Card appears in CreateGameScreen; dialog must fully close before the
-        // next iteration opens a new one.
-        await _waitFor(tester, find.text(name));
-        await _pumpUntil(tester, () => find.byType(Dialog).evaluate().isEmpty,
-            timeout: const Duration(seconds: 10));
+        await _waitFor(tester, find.byKey(Key('player_chip_$name')));
       }
+      await tester.tap(find.byKey(const Key('player_picker_confirm')));
+      // The sheet must be gone before the seats are read.
+      await _pumpUntil(
+          tester,
+          () => find.byKey(const Key('who_is_playing_sheet')).evaluate().isEmpty,
+          timeout: const Duration(seconds: 10));
+      await _waitFor(tester, find.text('Bob'));
 
       // === Step 3: create the game → GameBoardScreen.
       await tester.tap(find.byKey(const Key('create_game_submit')));
@@ -107,8 +117,8 @@ void main() {
       // runs when the build was given --dart-define=BACKEND_URL=<url>, which
       // seeds it. Without one the "Analyze" item is correctly absent and the
       // step skips rather than failing.
-      await _waitFor(tester, find.text('Partie 1'));
-      await tester.tap(find.text('Partie 1'));
+      await _waitFor(tester, find.text(gameName));
+      await tester.tap(find.text(gameName));
       // Wait for the board to actually open — the home game card ALSO has a
       // more_vert menu, so opening the menu before the board is up would hit
       // the wrong (home) menu, which has no "Analyze" item.
@@ -132,7 +142,7 @@ void main() {
       }
 
       // === Teardown: remove what this run created (idempotent next time).
-      await _cleanup(gp);
+      await _cleanup(gp, gameName);
     },
     timeout: const Timeout(Duration(minutes: 5)),
   );
@@ -222,10 +232,10 @@ Future<void> _waitEnabled(
 }
 
 /// Deletes the test game and players if present. Safe to call when absent.
-Future<void> _cleanup(GameProvider gp) async {
+Future<void> _cleanup(GameProvider gp, String gameName) async {
   try {
     await gp.loadGames();
-    for (final g in gp.games.where((g) => g.name == 'Partie 1').toList()) {
+    for (final g in gp.games.where((g) => g.name == gameName).toList()) {
       await gp.deleteGame(g.id!);
     }
     await gp.deletePlayerByName('Alice');

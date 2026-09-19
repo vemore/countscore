@@ -1282,4 +1282,107 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get statsOpenPlayerCard => '打开玩家卡片';
+
+  @override
+  String get shareResult => '分享结果';
+
+  @override
+  String get shareAnalysis => '分享分析';
+
+  @override
+  String shareResultSubject(String gameName) {
+    return '结果：$gameName';
+  }
+
+  @override
+  String shareResultTitle(String date) {
+    return '$date 的对局';
+  }
+
+  @override
+  String shareResultStanding(int rank, String name, int points) {
+    String _temp0 = intl.Intl.pluralLogic(
+      points,
+      locale: localeName,
+      other: '$points 分',
+    );
+    return '$rank. $name — $_temp0';
+  }
+
+  @override
+  String shareResultFooter(String appName, String url) {
+    return '用 $appName 记分：$url';
+  }
+
+  @override
+  String get shareFailed => '无法打开分享';
+
+  @override
+  String get newGameNameLabel => '名称';
+
+  @override
+  String get newGameGameLabel => '游戏';
+
+  @override
+  String newGameAllGames(int count) {
+    return '全部游戏（$count）';
+  }
+
+  @override
+  String get newGamePlayersLabel => '玩家 · 座位顺序';
+
+  @override
+  String get newGameDragToReorder => '拖动以调整顺序';
+
+  @override
+  String get newGameDealer => '发牌';
+
+  @override
+  String get newGameAddPlayer => '添加玩家';
+
+  @override
+  String newGameStart(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '开始 · $count 名玩家',
+      zero: '开始',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get whoIsPlayingTitle => '谁来玩？';
+
+  @override
+  String get whoIsPlayingSearchHint => '姓名，或新玩家';
+
+  @override
+  String get whoIsPlayingFrequent => '常和你一起玩';
+
+  @override
+  String whoIsPlayingSameAs(String gameName) {
+    return '与“$gameName”相同的玩家';
+  }
+
+  @override
+  String whoIsPlayingCreate(String name) {
+    return '创建“$name”';
+  }
+
+  @override
+  String whoIsPlayingConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '添加 $count 名玩家',
+      zero: '完成',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String defaultGameName(int number) {
+    return '游戏 $number';
+  }
 }

@@ -103,6 +103,17 @@ under `_PWA_CSP` (`backend/app/main.py:34`): the switch obtains a `WakeLockSenti
 no CSP violation is logged. The lock is applied when `SettingsProvider` is first read — it
 is a lazy provider (`lib/main.dart:53`) — as on Android.
 
+**Sharing a result works in the PWA.** share_plus 13.3.0's web plugin calls
+`navigator.canShare` / `navigator.share` (the Web Share API, which no CSP directive
+governs) and, where the API is missing or refuses, falls back to opening a `mailto:` with
+the subject and the text through url_launcher — a navigation, which the CSP does not govern
+either. Verified on 2026-09-19 in Chromium at 412×860, a share_plus probe served under
+`_PWA_CSP` (`backend/app/main.py:34`): with no Web Share API (desktop Linux Chromium) the
+`mailto:?subject=…&body=…` handler launched; with the API present (stubbed) `navigator.share`
+received the title and text with user activation still active; no CSP violation in either
+case. The share call must stay synchronous from the tap — the API needs the transient user
+activation — which is why `ShareResultButton` awaits nothing before it.
+
 ### Building
 
 ```bash

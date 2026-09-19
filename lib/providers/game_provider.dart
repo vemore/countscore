@@ -398,6 +398,12 @@ class GameProvider with ChangeNotifier {
     return await _playerRepo.getColorsByName();
   }
 
+  /// How many games each known player has played, by name (see
+  /// `PlayerRepository.getGameCountsByName`).
+  Future<Map<String, int>> getPlayerGameCounts() {
+    return _playerRepo.getGameCountsByName();
+  }
+
   Future<int?> getPlayerColorValue(String name) async {
     final colors = await _playerRepo.getColorsByName();
     return colors[name];

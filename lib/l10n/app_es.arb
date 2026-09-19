@@ -588,5 +588,49 @@
   "statsAverageTotal": "Total final medio",
   "statsBestTotal": "Mejor total final",
   "statsMostBeaten": "Rival más derrotado",
-  "statsOpenPlayerCard": "ver la ficha"
+  "statsOpenPlayerCard": "ver la ficha",
+
+  "shareResult": "Compartir el resultado",
+
+  "shareAnalysis": "Compartir el análisis",
+
+  "shareResultSubject": "Resultado: {gameName}",
+
+  "shareResultTitle": "Partida del {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} punto} other{{points} puntos}}",
+
+  "shareResultFooter": "Puntuaciones llevadas con {appName}: {url}",
+
+  "shareFailed": "No se pudo abrir el menú para compartir",
+
+  "newGameNameLabel": "Nombre",
+
+  "newGameGameLabel": "Juego",
+
+  "newGameAllGames": "Todos los juegos ({count})",
+
+  "newGamePlayersLabel": "Jugadores · orden de juego",
+
+  "newGameDragToReorder": "arrastra para reordenar",
+
+  "newGameDealer": "reparte",
+
+  "newGameAddPlayer": "Añadir un jugador",
+
+  "newGameStart": "{count, plural, =0{Empezar} =1{Empezar · 1 jugador} other{Empezar · {count} jugadores}}",
+
+  "whoIsPlayingTitle": "¿Quién juega?",
+
+  "whoIsPlayingSearchHint": "Nombre, o jugador nuevo",
+
+  "whoIsPlayingFrequent": "Juega a menudo contigo",
+
+  "whoIsPlayingSameAs": "Los mismos jugadores que «{gameName}»",
+
+  "whoIsPlayingCreate": "Crear «{name}»",
+
+  "whoIsPlayingConfirm": "{count, plural, =0{Listo} =1{Añadir 1 jugador} other{Añadir {count} jugadores}}",
+
+  "defaultGameName": "Partida {number}"
 }

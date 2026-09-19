@@ -65,6 +65,7 @@ SAME_AS_ENGLISH_OK = {
     "rate": {"de"},                  # "Rate"
     "serverSection": {"de"},         # "Server"
     "backup": {"pt"},                # "Backup"
+    "newGameNameLabel": {"de"},      # "Name" -- the German word is the same
 }
 
 _EXEMPT_PREFIXES = {k[:-1]: v for k, v in SAME_AS_ENGLISH_OK.items() if k.endswith("*")}

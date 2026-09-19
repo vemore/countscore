@@ -588,5 +588,49 @@
   "statsAverageTotal": "Средний итоговый счёт",
   "statsBestTotal": "Лучший итоговый счёт",
   "statsMostBeaten": "Чаще всего обыгран",
-  "statsOpenPlayerCard": "открыть карточку игрока"
+  "statsOpenPlayerCard": "открыть карточку игрока",
+
+  "shareResult": "Поделиться результатом",
+
+  "shareAnalysis": "Поделиться анализом",
+
+  "shareResultSubject": "Результат: {gameName}",
+
+  "shareResultTitle": "Партия от {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} очко} few{{points} очка} many{{points} очков} other{{points} очка}}",
+
+  "shareResultFooter": "Счёт вёлся в {appName}: {url}",
+
+  "shareFailed": "Не удалось открыть меню «Поделиться»",
+
+  "newGameNameLabel": "Название",
+
+  "newGameGameLabel": "Игра",
+
+  "newGameAllGames": "Все игры ({count})",
+
+  "newGamePlayersLabel": "Игроки · порядок хода",
+
+  "newGameDragToReorder": "перетащите, чтобы изменить порядок",
+
+  "newGameDealer": "сдаёт",
+
+  "newGameAddPlayer": "Добавить игрока",
+
+  "newGameStart": "{count, plural, =0{Начать} one{Начать · {count} игрок} few{Начать · {count} игрока} many{Начать · {count} игроков} other{Начать · {count} игрока}}",
+
+  "whoIsPlayingTitle": "Кто играет?",
+
+  "whoIsPlayingSearchHint": "Имя или новый игрок",
+
+  "whoIsPlayingFrequent": "Часто играет с вами",
+
+  "whoIsPlayingSameAs": "Те же игроки, что в «{gameName}»",
+
+  "whoIsPlayingCreate": "Создать «{name}»",
+
+  "whoIsPlayingConfirm": "{count, plural, =0{Готово} one{Добавить {count} игрока} few{Добавить {count} игроков} many{Добавить {count} игроков} other{Добавить {count} игрока}}",
+
+  "defaultGameName": "Игра {number}"
 }

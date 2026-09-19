@@ -1325,4 +1325,110 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get statsOpenPlayerCard => 'Spielerkarte öffnen';
+
+  @override
+  String get shareResult => 'Ergebnis teilen';
+
+  @override
+  String get shareAnalysis => 'Analyse teilen';
+
+  @override
+  String shareResultSubject(String gameName) {
+    return 'Ergebnis: $gameName';
+  }
+
+  @override
+  String shareResultTitle(String date) {
+    return 'Partie vom $date';
+  }
+
+  @override
+  String shareResultStanding(int rank, String name, int points) {
+    String _temp0 = intl.Intl.pluralLogic(
+      points,
+      locale: localeName,
+      other: '$points Punkte',
+      one: '$points Punkt',
+    );
+    return '$rank. $name — $_temp0';
+  }
+
+  @override
+  String shareResultFooter(String appName, String url) {
+    return 'Punkte gezählt mit $appName: $url';
+  }
+
+  @override
+  String get shareFailed => 'Teilen konnte nicht geöffnet werden';
+
+  @override
+  String get newGameNameLabel => 'Name';
+
+  @override
+  String get newGameGameLabel => 'Spiel';
+
+  @override
+  String newGameAllGames(int count) {
+    return 'Alle Spiele ($count)';
+  }
+
+  @override
+  String get newGamePlayersLabel => 'Spieler · Sitzordnung';
+
+  @override
+  String get newGameDragToReorder => 'zum Umordnen ziehen';
+
+  @override
+  String get newGameDealer => 'gibt';
+
+  @override
+  String get newGameAddPlayer => 'Spieler hinzufügen';
+
+  @override
+  String newGameStart(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Starten · $count Spieler',
+      one: 'Starten · 1 Spieler',
+      zero: 'Starten',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get whoIsPlayingTitle => 'Wer spielt mit?';
+
+  @override
+  String get whoIsPlayingSearchHint => 'Name oder neuer Spieler';
+
+  @override
+  String get whoIsPlayingFrequent => 'Spielt oft mit dir';
+
+  @override
+  String whoIsPlayingSameAs(String gameName) {
+    return 'Dieselben Spieler wie „$gameName“';
+  }
+
+  @override
+  String whoIsPlayingCreate(String name) {
+    return '„$name“ anlegen';
+  }
+
+  @override
+  String whoIsPlayingConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Spieler hinzufügen',
+      one: '1 Spieler hinzufügen',
+      zero: 'Fertig',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String defaultGameName(int number) {
+    return 'Spiel $number';
+  }
 }

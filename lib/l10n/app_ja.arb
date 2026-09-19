@@ -588,5 +588,49 @@
   "statsAverageTotal": "平均最終スコア",
   "statsBestTotal": "最高最終スコア",
   "statsMostBeaten": "最も多く勝った相手",
-  "statsOpenPlayerCard": "プレイヤーカードを開く"
+  "statsOpenPlayerCard": "プレイヤーカードを開く",
+
+  "shareResult": "結果を共有",
+
+  "shareAnalysis": "分析を共有",
+
+  "shareResultSubject": "結果：{gameName}",
+
+  "shareResultTitle": "{date}のゲーム",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, other{{points}点}}",
+
+  "shareResultFooter": "{appName}でスコアを記録：{url}",
+
+  "shareFailed": "共有を開けませんでした",
+
+  "newGameNameLabel": "名前",
+
+  "newGameGameLabel": "ゲーム",
+
+  "newGameAllGames": "すべてのゲーム（{count}）",
+
+  "newGamePlayersLabel": "プレイヤー · 席順",
+
+  "newGameDragToReorder": "ドラッグで並べ替え",
+
+  "newGameDealer": "親",
+
+  "newGameAddPlayer": "プレイヤーを追加",
+
+  "newGameStart": "{count, plural, =0{開始} other{開始 · {count}人}}",
+
+  "whoIsPlayingTitle": "誰が遊ぶ？",
+
+  "whoIsPlayingSearchHint": "名前、または新しいプレイヤー",
+
+  "whoIsPlayingFrequent": "よく一緒に遊ぶ人",
+
+  "whoIsPlayingSameAs": "「{gameName}」と同じプレイヤー",
+
+  "whoIsPlayingCreate": "「{name}」を作成",
+
+  "whoIsPlayingConfirm": "{count, plural, =0{完了} other{{count}人を追加}}",
+
+  "defaultGameName": "ゲーム{number}"
 }

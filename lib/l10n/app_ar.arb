@@ -588,5 +588,49 @@
   "statsAverageTotal": "متوسط المجموع النهائي",
   "statsBestTotal": "أفضل مجموع نهائي",
   "statsMostBeaten": "الخصم الأكثر هزيمة",
-  "statsOpenPlayerCard": "عرض بطاقة اللاعب"
+  "statsOpenPlayerCard": "عرض بطاقة اللاعب",
+
+  "shareResult": "مشاركة النتيجة",
+
+  "shareAnalysis": "مشاركة التحليل",
+
+  "shareResultSubject": "النتيجة: {gameName}",
+
+  "shareResultTitle": "مباراة {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, zero{{points} نقطة} one{نقطة واحدة} two{نقطتان} few{{points} نقاط} many{{points} نقطة} other{{points} نقطة}}",
+
+  "shareResultFooter": "سُجّلت النقاط باستخدام {appName}: {url}",
+
+  "shareFailed": "تعذّر فتح المشاركة",
+
+  "newGameNameLabel": "الاسم",
+
+  "newGameGameLabel": "اللعبة",
+
+  "newGameAllGames": "كل الألعاب ({count})",
+
+  "newGamePlayersLabel": "اللاعبون · ترتيب الجلوس",
+
+  "newGameDragToReorder": "اسحب لإعادة الترتيب",
+
+  "newGameDealer": "يوزّع",
+
+  "newGameAddPlayer": "إضافة لاعب",
+
+  "newGameStart": "{count, plural, =0{ابدأ} =1{ابدأ · لاعب واحد} =2{ابدأ · لاعبان} few{ابدأ · {count} لاعبين} many{ابدأ · {count} لاعبًا} other{ابدأ · {count} لاعب}}",
+
+  "whoIsPlayingTitle": "من يلعب؟",
+
+  "whoIsPlayingSearchHint": "اسم، أو لاعب جديد",
+
+  "whoIsPlayingFrequent": "يلعب معك كثيرًا",
+
+  "whoIsPlayingSameAs": "نفس لاعبي «{gameName}»",
+
+  "whoIsPlayingCreate": "إنشاء «{name}»",
+
+  "whoIsPlayingConfirm": "{count, plural, =0{تم} =1{إضافة لاعب واحد} =2{إضافة لاعبَين} few{إضافة {count} لاعبين} many{إضافة {count} لاعبًا} other{إضافة {count} لاعب}}",
+
+  "defaultGameName": "لعبة {number}"
 }
