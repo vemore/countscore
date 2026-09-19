@@ -3,7 +3,7 @@
 > Scope: the Claude Code hooks that enforce project rules mechanically, and the reasoning
 > that used to live in `CLAUDE.md`.
 > Related: [[Web]] · [[I18n]] · [[Testing]] · [[Backend]] · [[KnownLimits]] · [[ParallelDelivery]] · [[Documentation]]
-> Updated: 2026-09-18
+> Updated: 2026-09-19
 
 ## Facts
 
@@ -73,7 +73,7 @@ first step of the `app` job in `.github/workflows/ci.yml`.
 | Committing on `main`, on a detached HEAD, or on a stale branch | `%(upstream:track)` = `[gone]`, then `git cherry origin/main HEAD`, in the repository the command runs in |
 | Committing a root `TODO.md` or `DONE.md` next to `wip/`, or editing `wip/done/ARCHIVE-*.md` | committed path list; the file exists in the tree / the archive exists in `HEAD`; only in a tree that has `wip/done/` |
 | Committing with red gates, or with a gate's tool not installed | `flutter analyze` if app paths are involved; `ruff check`/`ruff format --check`/`mypy` if `backend/` is. No `flutter`, no `.dart_tool` or no `backend/.venv` tools is a refusal naming the setup command, never a skipped gate |
-| Committing divergent ARB files, an ARB value still in English, or a stale `app_localizations*.dart` | `arb_keys.py --keys` (key sets against the template from `l10n.yaml`), then `arb_keys.py --values` (values against `app_en.arb`, minus the `SAME_AS_ENGLISH_OK` allow-list in that file), then `flutter gen-l10n` |
+| Committing divergent ARB files, an ARB value still in English, or a stale `app_localizations*.dart` | `arb_keys.py --keys` (key sets against the template from `l10n.yaml`), then `arb_keys.py --values` (values against `app_en.arb`, minus the `SAME_AS_ENGLISH_OK` allow-list in that file), then `flutter gen-l10n`. `arb_keys.py` is the committed tree's own copy when it has one, so an exemption a branch adds counts in that branch's commits; the hook's copy otherwise |
 | Ending a turn with commits that no pull request covers, whose pull request was closed unmerged, or whose checks are failing | `gh pr list --head <branch> --state all`, then `gh pr checks` |
 | `gh pr create --base <anything but main>` | the parsed `--base` argument; unlocked per repository by `countscore.allowStackedPr` — setting it is the user's decision, never an agent's |
 | `gh pr merge` with `--admin`, or without `--squash`, or with `--merge`/`--rebase` | parsed flags, bundled short flags included |
