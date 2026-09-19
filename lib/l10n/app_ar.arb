@@ -316,6 +316,8 @@
   "analysisError": "فشل إنشاء التحليل",
   "analysisErrorStatus": "فشل إنشاء التحليل (HTTP {status})",
   "analysisErrorUnavailable": "خادم التحليل غير متاح مؤقتًا. حاول مرة أخرى لاحقًا.",
+  "analysisErrorGroupBudget": "استنفدت مجموعتك ميزانية التحليلات لهذا الشهر. تتجدد في بداية الشهر القادم.",
+  "analysisStyleGroupDefault": "لم يتم اختيار أسلوب: ستُحلَّل هذه اللعبة المشتركة بأسلوب المجموعة ولغتها.",
   "retry": "إعادة المحاولة",
   "analysisGeneratedAt": "تم الإنشاء في {date}",
   "serverSection": "الخادم",

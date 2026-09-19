@@ -72,7 +72,7 @@ checks gets **429** before any hashing.
 | POST | `/comments/mvp` | **none** | Stateless. Anthropic path. IP rate limited. |
 | POST | `/comments/game-analysis` | **none** | Stateless. Any game type, nine voices, ten languages. Pluggable provider. IP rate limited (429). 503 if the provider is unavailable **or rate-limited or overloaded upstream** — an OpenAI-compatible 429 or 5xx, a Bedrock throttling, quota, `ServiceUnavailableException` or `ModelNotReadyException` (the latter with `Retry-After: 60` and the detail `upstream LLM rate-limited`, `app/routes/comments.py`), 422 on a wrong shape or a count out of bounds (`GameAnalysisPayload`: 1–12 players, ≤ 200 rounds, ≤ 10 history entries per player, thresholds within ±1 000 000; long text is clipped, player names filtered, and an unknown `style`, `language` or condition enum is corrected — never refused), 502 on any other upstream error. |
 | POST | `/comments/zapzap-analysis` | **none** | The same handler under its former name, `include_in_schema=False`, sharing one IP-rate-limit bucket. Kept for a published app talking to a backend its owner has not upgraded. |
-| POST | `/groups/me/games/{game_id}/comments` | device | Group-scoped, budgeted. |
+| POST | `/groups/me/games/{game_id}/comments` | device | Group-scoped, budgeted: per-device rate limit (429), then the group's budget (**409** `monthly budget exhausted (…)`), then the game must be the group's and live (404). Two bodies (`GenerateCommentRequest`). **Without `analysis`**: the original comment — Anthropic path, prompt from the server's copy of the game, `style_override` (one of the three group styles) or the group's style; 503 when no Anthropic key. **With `analysis`** (since 2026-09-19): the analysis of a *shared* game — the very `GameAnalysisPayload` of `/comments/game-analysis`, through the pluggable provider, with the group's `comment_language` in place of the payload's and, when the payload has no `style`, the voice the group's style maps to (`persona_for_group_style`: narrative → documentary, humorous → professor, analytical → coach). Charged at `calculate_cost_cents` of the provider's tokens, ≥ 1¢ a call; stored as a `comments` row. 503 (+ `Retry-After: 60` when rate-limited upstream) and 502 as on `/comments/game-analysis`; nothing is charged on a failure. `backend/app/routes/comments.py` `_generate_group_analysis`, `tests/test_group_analysis.py`. 201 either way, `CommentPayload` (`style` is a group style or a voice key). |
 | GET | `/groups/me/games/{game_id}/comments` | device | `limit` 1–100 (default 10), 422 outside. |
 
 Both stateless endpoints pass through `_enforce_ip_rate_limit`.
@@ -103,6 +103,19 @@ even with `EXPOSE_DOCS` off, so turning them on cannot break a deploy that start
 `tests/test_pwa.py`.
 
 ## Decisions & History
+
+- **A shared game's analysis is the group's (2026-09-19).** The group's comment style and
+  language, editable in Settings → Group → Comments and usage, shaped nothing the app showed:
+  only the group comment endpoint read them, and the app never called it, so usage stayed at
+  zero whatever a member did. Refinement 6 decided the analysis of a shared game goes through
+  that endpoint (`feat/group-comment-analysis`). The endpoint kept its path and gained an
+  optional `analysis` body rather than a new route, so the old body still works; the
+  analysis prompt stays the one `/comments/game-analysis` builds from the device's payload,
+  because the device holds what the server's copy lacks (the players' history, the round
+  comments as typed). The three group styles predate the nine voices, so they map to a voice
+  instead of widening `PATCH /groups/me/settings`. The provider reports tokens, not money, so
+  the charge uses the Anthropic path's rates as a notional price — a free-tier Gemini call
+  costs the operator nothing, but the budget still meters use.
 
 - **Usage reads apply the monthly roll-over (2026-09-19).** A new group's `budget_resets_at`
   was its creation time, and only `check_budget` rolled it to the next month start, when a

@@ -603,6 +603,14 @@ class AppLocalizationsFr extends AppLocalizations {
       'Le serveur d\'analyse est momentanément indisponible. Réessayez plus tard.';
 
   @override
+  String get analysisErrorGroupBudget =>
+      'Votre groupe a épuisé son budget d\'analyses pour ce mois-ci. Il se renouvelle au début du mois prochain.';
+
+  @override
+  String get analysisStyleGroupDefault =>
+      'Aucun style choisi : cette partie partagée sera analysée dans le style et la langue du groupe.';
+
+  @override
   String analysisErrorStatus(int status) {
     return 'Échec de la génération de l\'analyse (HTTP $status)';
   }

@@ -606,6 +606,14 @@ class AppLocalizationsRu extends AppLocalizations {
       'Сервер анализа временно недоступен. Повторите попытку позже.';
 
   @override
+  String get analysisErrorGroupBudget =>
+      'Ваша группа исчерпала бюджет анализов на этот месяц. Он обновится в начале следующего месяца.';
+
+  @override
+  String get analysisStyleGroupDefault =>
+      'Стиль не выбран: эта общая партия будет проанализирована в стиле и на языке группы.';
+
+  @override
   String analysisErrorStatus(int status) {
     return 'Не удалось создать анализ (HTTP $status)';
   }

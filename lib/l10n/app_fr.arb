@@ -979,6 +979,14 @@
   "@analysisErrorUnavailable": {
     "description": "Analysis failure when the server answers 503: its LLM provider is unavailable or out of quota. Temporary, so it tells the user to retry later rather than showing an HTTP code"
   },
+  "analysisErrorGroupBudget": "Votre groupe a épuisé son budget d'analyses pour ce mois-ci. Il se renouvelle au début du mois prochain.",
+  "@analysisErrorGroupBudget": {
+    "description": "Analysis failure when the game is shared and the server answers 409: the group has spent its monthly LLM budget. Says when it comes back rather than showing an HTTP code"
+  },
+  "analysisStyleGroupDefault": "Aucun style choisi : cette partie partagée sera analysée dans le style et la langue du groupe.",
+  "@analysisStyleGroupDefault": {
+    "description": "Hint under the voice chips of a shared game's analysis when the user has never picked a voice: the server then uses the group's comment style and language (Settings → Group)"
+  },
   "analysisErrorStatus": "Échec de la génération de l'analyse (HTTP {status})",
 
   "@analysisErrorStatus": {

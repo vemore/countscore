@@ -603,6 +603,14 @@ class AppLocalizationsPt extends AppLocalizations {
       'O servidor de análise está temporariamente indisponível. Tente novamente mais tarde.';
 
   @override
+  String get analysisErrorGroupBudget =>
+      'O seu grupo esgotou o orçamento de análises deste mês. É renovado no início do próximo mês.';
+
+  @override
+  String get analysisStyleGroupDefault =>
+      'Nenhum estilo escolhido: este jogo partilhado é analisado no estilo e no idioma do grupo.';
+
+  @override
   String analysisErrorStatus(int status) {
     return 'Falha ao gerar a análise (HTTP $status)';
   }

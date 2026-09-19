@@ -316,6 +316,8 @@
   "analysisError": "Falha ao gerar a análise",
   "analysisErrorStatus": "Falha ao gerar a análise (HTTP {status})",
   "analysisErrorUnavailable": "O servidor de análise está temporariamente indisponível. Tente novamente mais tarde.",
+  "analysisErrorGroupBudget": "O seu grupo esgotou o orçamento de análises deste mês. É renovado no início do próximo mês.",
+  "analysisStyleGroupDefault": "Nenhum estilo escolhido: este jogo partilhado é analisado no estilo e no idioma do grupo.",
   "retry": "Tentar novamente",
   "analysisGeneratedAt": "Gerado em {date}",
   "serverSection": "Servidor",

@@ -1,5 +1,7 @@
 # The group's comment style and language shape nothing the app shows
 
+**Status:** done (2026-09-19) — closed by feat/group-comment-analysis. A shared game's analysis now posts its payload under `analysis` to `POST /groups/me/games/{id}/comments` (device token): billed to the group's budget, in the group's language, and in the voice the group's style maps to when no voice was ever picked; a 409 shows `analysisErrorGroupBudget`. An unshared game keeps `/comments/game-analysis`.
+
 - **Noted:** 2026-09-19 — while building Settings → Group → Comments and usage (feat/group-settings-screen)
 - **Theme:** groups-v2
 - **Area:** app

@@ -14,6 +14,7 @@ import '../models/game_analysis.dart';
 import '../providers/backend_provider.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
+import '../providers/group_provider.dart';
 import '../repositories/drift/drift_repositories.dart';
 import '../repositories/game_analysis_repository.dart';
 import '../services/backend_client.dart';
@@ -68,6 +69,11 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
   int? _analysisId;
   AnalysisStyle _style = AnalysisStyle.fallback;
 
+  /// Whether the user has ever picked a voice. A shared game's analysis with
+  /// none picked is written in the group's style: the payload then carries no
+  /// `style`, and the chips show none selected.
+  bool _stylePicked = false;
+
   @override
   void initState() {
     super.initState();
@@ -79,15 +85,43 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
   /// rule [ThemeMode] follows in `theme_provider.dart`.
   Future<void> _loadStyle() async {
     final prefs = await SharedPreferences.getInstance();
-    final style = AnalysisStyle.fromId(prefs.getString(stylePreferenceKey));
+    final stored = prefs.getString(stylePreferenceKey);
     if (!mounted) return;
-    setState(() => _style = style);
+    setState(() {
+      _style = AnalysisStyle.fromId(stored);
+      _stylePicked = stored != null;
+    });
   }
 
   Future<void> _selectStyle(AnalysisStyle style) async {
-    setState(() => _style = style);
+    setState(() {
+      _style = style;
+      _stylePicked = true;
+    });
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(stylePreferenceKey, style.id);
+  }
+
+  /// The group provider, when the tree has one — the app always does; a test
+  /// of this screen alone may not.
+  GroupProvider? _groupProvider({bool listen = false}) {
+    try {
+      return Provider.of<GroupProvider>(context, listen: listen);
+    } on ProviderNotFoundException {
+      return null;
+    }
+  }
+
+  /// Whether the current game's analysis goes through its group: shared with
+  /// the group this device is in, with the server reachable.
+  bool _throughGroup({bool listen = false}) {
+    final game = context.read<GameProvider>().currentGame;
+    if (game == null || !game.isShared) return false;
+    return _groupProvider(listen: listen)?.analysesThroughGroup(
+          gameGroupId: game.groupId,
+          gameUuid: game.uuid,
+        ) ??
+        false;
   }
 
   /// Loads a previously saved analysis if one exists. Generation is never
@@ -111,6 +145,7 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
     final gameProvider = context.read<GameProvider>();
     final gameTypeProvider = context.read<GameTypeProvider>();
     final baseUrl = context.read<BackendProvider>().baseUrl;
+    final group = _throughGroup() ? _groupProvider() : null;
     // Read before the first await: the payload is built after several of them.
     final languageCode = Localizations.localeOf(context).languageCode;
     final game = gameProvider.currentGame;
@@ -147,9 +182,12 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
           'created_at': game.createdAt.toIso8601String(),
         },
         'game_type': gameType?.name,
-        'style': _style.id,
-        // The analysis answers in the language the app is displayed in. A
-        // backend older than this drops both fields and uses its own defaults.
+        // A shared game with no voice ever picked leaves `style` out: the
+        // server then writes in the group's style.
+        if (group == null || _stylePicked) 'style': _style.id,
+        // The analysis answers in the language the app is displayed in — or,
+        // for a shared game, the group's, which the server puts in its place.
+        // A backend older than this drops both fields and uses its defaults.
         'language': languageCode,
         // Any game type can be analysed now, including one the user created,
         // so what the app actually enforced travels with the game rather than
@@ -184,8 +222,21 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
         'history_by_player_name': historyByName,
       };
 
-      final result = await BackendClient(baseUrl, httpClient: widget.httpClient)
-          .gameAnalysis(payload);
+      final stateless = BackendClient(baseUrl, httpClient: widget.httpClient);
+      ({String content, String? model}) result;
+      if (group != null) {
+        // Billed to the group. A game its server still does not hold after a
+        // sync (a share it refused) is not the group's to pay for: it gets
+        // the analysis every unshared game gets.
+        try {
+          result = await group.gameAnalysis(game.uuid!, payload);
+        } on BackendException catch (e) {
+          if (e.statusCode != 404) rethrow;
+          result = await stateless.gameAnalysis(payload);
+        }
+      } else {
+        result = await stateless.gameAnalysis(payload);
+      }
       final text = result.content;
       final modelId = result.model;
       final now = DateTime.now();
@@ -219,11 +270,13 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
       final l10n = AppLocalizations.of(context)!;
       // 503 is temporary by contract — no LLM credentials, or the provider's
       // quota is exhausted — so it gets words a user can act on: try later.
-      _reportFailure(
-        e.statusCode == 503
-            ? l10n.analysisErrorUnavailable
-            : l10n.analysisErrorStatus(e.statusCode),
-      );
+      // 409 comes only from a shared game's analysis: the group's monthly
+      // budget is spent, which a status code would not tell anyone.
+      _reportFailure(switch (e.statusCode) {
+        503 => l10n.analysisErrorUnavailable,
+        409 => l10n.analysisErrorGroupBudget,
+        _ => l10n.analysisErrorStatus(e.statusCode),
+      });
     } catch (e) {
       if (!mounted) return;
       debugPrint('game analysis failed: $e');
@@ -282,6 +335,13 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
     messenger.showSnackBar(SnackBar(content: Text(noMailApp)));
   }
 
+  /// True when the group's style will apply: a shared game, no voice picked.
+  bool _groupDefault({bool listen = false}) =>
+      !_stylePicked && _throughGroup(listen: listen);
+
+  AnalysisStyle? _pickerSelection({bool listen = false}) =>
+      _groupDefault(listen: listen) ? null : _style;
+
   Future<void> _regenerate() async {
     final l10n = AppLocalizations.of(context)!;
     // Picking another voice is the usual reason to regenerate, so the chips
@@ -298,7 +358,8 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
               Text(l10n.confirmRegenerateAnalysis),
               const SizedBox(height: 16),
               _StylePicker(
-                selected: _style,
+                selected: _pickerSelection(),
+                groupDefault: _groupDefault(),
                 onSelected: (style) async {
                   await _selectStyle(style);
                   setDialogState(() {});
@@ -531,7 +592,11 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _StylePicker(selected: _style, onSelected: _selectStyle),
+              _StylePicker(
+                selected: _pickerSelection(listen: true),
+                groupDefault: _groupDefault(listen: true),
+                onSelected: _selectStyle,
+              ),
               const SizedBox(height: 24),
               FilledButton.icon(
                 key: const Key('analysis_generate'),
@@ -578,9 +643,17 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
 /// Labels are translated, [AnalysisStyle.id] is not: the id is what the backend
 /// and the stored preference speak.
 class _StylePicker extends StatelessWidget {
-  const _StylePicker({required this.selected, required this.onSelected});
+  const _StylePicker({
+    required this.selected,
+    required this.onSelected,
+    this.groupDefault = false,
+  });
 
-  final AnalysisStyle selected;
+  /// Null when no voice applies from the device: the group's style does.
+  final AnalysisStyle? selected;
+
+  /// Shows the hint that the group's style and language apply.
+  final bool groupDefault;
   final ValueChanged<AnalysisStyle> onSelected;
 
   @override
@@ -605,6 +678,14 @@ class _StylePicker extends StatelessWidget {
               ),
           ],
         ),
+        if (groupDefault) ...[
+          const SizedBox(height: 8),
+          Text(
+            l10n.analysisStyleGroupDefault,
+            key: const Key('analysis_style_group_default'),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
       ],
     );
   }

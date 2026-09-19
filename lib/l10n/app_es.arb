@@ -316,6 +316,8 @@
   "analysisError": "Error al generar el análisis",
   "analysisErrorStatus": "Error al generar el análisis (HTTP {status})",
   "analysisErrorUnavailable": "El servidor de análisis no está disponible temporalmente. Inténtelo más tarde.",
+  "analysisErrorGroupBudget": "Tu grupo ha agotado su presupuesto de análisis de este mes. Se renueva a principios del mes que viene.",
+  "analysisStyleGroupDefault": "Ningún estilo elegido: esta partida compartida se analiza con el estilo y el idioma del grupo.",
   "retry": "Reintentar",
   "analysisGeneratedAt": "Generado el {date}",
   "serverSection": "Servidor",

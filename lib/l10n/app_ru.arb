@@ -316,6 +316,8 @@
   "analysisError": "Не удалось создать анализ",
   "analysisErrorStatus": "Не удалось создать анализ (HTTP {status})",
   "analysisErrorUnavailable": "Сервер анализа временно недоступен. Повторите попытку позже.",
+  "analysisErrorGroupBudget": "Ваша группа исчерпала бюджет анализов на этот месяц. Он обновится в начале следующего месяца.",
+  "analysisStyleGroupDefault": "Стиль не выбран: эта общая партия будет проанализирована в стиле и на языке группы.",
   "retry": "Повторить",
   "analysisGeneratedAt": "Создано {date}",
   "serverSection": "Сервер",

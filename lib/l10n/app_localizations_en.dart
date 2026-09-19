@@ -601,6 +601,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'The analysis server is temporarily unavailable. Try again later.';
 
   @override
+  String get analysisErrorGroupBudget =>
+      'Your group has used up its analysis budget for this month. It renews at the start of next month.';
+
+  @override
+  String get analysisStyleGroupDefault =>
+      'No style picked: this shared game is analysed in the group\'s style and language.';
+
+  @override
   String analysisErrorStatus(int status) {
     return 'Failed to generate analysis (HTTP $status)';
   }

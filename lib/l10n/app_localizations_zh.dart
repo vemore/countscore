@@ -589,6 +589,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get analysisErrorUnavailable => '分析服务器暂时不可用，请稍后再试。';
 
   @override
+  String get analysisErrorGroupBudget => '你的群组本月的分析预算已用完，将在下月初重置。';
+
+  @override
+  String get analysisStyleGroupDefault => '未选择风格：此共享对局将按群组的风格和语言进行分析。';
+
+  @override
   String analysisErrorStatus(int status) {
     return '生成分析失败 (HTTP $status)';
   }

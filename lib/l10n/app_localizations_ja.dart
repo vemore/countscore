@@ -593,6 +593,13 @@ class AppLocalizationsJa extends AppLocalizations {
       '分析サーバーは一時的に利用できません。しばらくしてからもう一度お試しください。';
 
   @override
+  String get analysisErrorGroupBudget => 'グループの今月の分析予算を使い切りました。来月の初めにリセットされます。';
+
+  @override
+  String get analysisStyleGroupDefault =>
+      'スタイル未選択：この共有ゲームはグループのスタイルと言語で分析されます。';
+
+  @override
   String analysisErrorStatus(int status) {
     return '分析の生成に失敗しました (HTTP $status)';
   }

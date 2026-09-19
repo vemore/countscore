@@ -16,8 +16,9 @@
   > **Status: Outdated** (2026-09-13) — written; see [[Sync]]. What it knowingly leaves out
   > is listed under **Group sync** below.
 - **Group sync — deliberate limits of v1** (2026-09-13):
-  - *One group per device*, no group comments in the app
-    (`wip/todo_nr/2026-09-19-group-comment-settings-shape-nothing-the-app-shows.md`).
+  - *One group per device*. Group comments reach the app as the analysis of a shared game
+    since 2026-09-19 (`wip/done/2026-09-19-group-comment-settings-shape-nothing-the-app-shows.md`);
+    the board shows no group comment of its own.
     The device list and revoking another device shipped on 2026-09-14 (Settings → Group →
     Devices); the comment style, language and usage on 2026-09-19 (Settings → Group →
     Comments and usage), without a budget control.

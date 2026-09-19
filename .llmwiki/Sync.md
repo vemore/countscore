@@ -131,8 +131,13 @@ next push to the group or the next idle heartbeat, whichever comes first — see
 the month's spending from `GET /groups/me/usage`. `BackendClient.updateGroupSettings` has no
 budget parameter, so the app never sends `monthly_budget_cents`, owner or not: the budget is
 the owner's on the server (403 otherwise) and the app offers no control for it. These
-settings shape only the group-scoped comments (`POST /groups/me/games/{id}/comments`), which
-the app does not call yet; the analysis screen keeps its own per-analysis voice.
+settings shape the analysis of a **shared** game, which goes through the group-scoped
+`POST /groups/me/games/{id}/comments` (since 2026-09-19, [[Api]]): billed to the group, so it
+moves the usage on that screen, written in the group's language, and in the group's style
+when the device has never picked a voice. `GroupProvider.gameAnalysis` answers a 404 (the
+share not pushed yet) with one sync and one retry; `GameAnalysisScreen` falls back on the
+stateless endpoint if the server still does not hold the game. An unshared game, or one
+shared with a group this device has left, keeps the stateless `/comments/game-analysis`.
 
 **Sharing is per game.** On by default for a new game while in a group (switch on the
 create screen), or later from the board menu; never undone. `SyncStore.shareGame` sets

@@ -605,6 +605,14 @@ class AppLocalizationsAr extends AppLocalizations {
       'خادم التحليل غير متاح مؤقتًا. حاول مرة أخرى لاحقًا.';
 
   @override
+  String get analysisErrorGroupBudget =>
+      'استنفدت مجموعتك ميزانية التحليلات لهذا الشهر. تتجدد في بداية الشهر القادم.';
+
+  @override
+  String get analysisStyleGroupDefault =>
+      'لم يتم اختيار أسلوب: ستُحلَّل هذه اللعبة المشتركة بأسلوب المجموعة ولغتها.';
+
+  @override
   String analysisErrorStatus(int status) {
     return 'فشل إنشاء التحليل (HTTP $status)';
   }

@@ -602,6 +602,14 @@ class AppLocalizationsDe extends AppLocalizations {
       'Der Analyseserver ist vorübergehend nicht verfügbar. Versuchen Sie es später erneut.';
 
   @override
+  String get analysisErrorGroupBudget =>
+      'Ihre Gruppe hat ihr Analysebudget für diesen Monat aufgebraucht. Es erneuert sich zu Beginn des nächsten Monats.';
+
+  @override
+  String get analysisStyleGroupDefault =>
+      'Kein Stil gewählt: Dieses geteilte Spiel wird im Stil und in der Sprache der Gruppe analysiert.';
+
+  @override
   String analysisErrorStatus(int status) {
     return 'Analyse konnte nicht erstellt werden (HTTP $status)';
   }
