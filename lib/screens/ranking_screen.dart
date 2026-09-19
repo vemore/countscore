@@ -13,14 +13,14 @@ import 'game_board_screen.dart';
 /// rule on one line, then the same podium and ranked rows as the end screen
 /// (`RankedPlayers`) — player colours, the leader's crown, totals near the
 /// elimination threshold in orange, eliminated players struck out — and
-/// "Play again". The app bar shares the standings as text
+/// "Play again". The app bar shares the standings as text and image
 /// (`ShareResultButton`).
 class RankingScreen extends StatelessWidget {
   const RankingScreen({super.key, this.boardBuilder, this.share});
 
-  /// Injected by tests only: receives the shared text instead of the system
+  /// Injected by tests only: receives the shared text and image instead of the system
   /// share sheet.
-  final ShareTextFn? share;
+  final ShareResultFn? share;
 
   /// Injected by tests only: the board "Play again" opens. The default
   /// `GameBoardScreen` reaches the `AppDatabase` singleton.

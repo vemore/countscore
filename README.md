@@ -39,8 +39,9 @@ at your own server in Settings → Server if you want the connected features.
 - **Play again**: from the end screen, the ranking or a finished game in the history, one tap starts
   the next game with the same type and the same players in the same order.
 - **Share a result**: the end screen, the ranking and the analysis share the standings as a
-  short text — game type, date, places and totals, the commentary on the analysis — through
-  the system share sheet, with a link to the app's Play listing.
+  short text — game type, date, places and totals, the commentary on the analysis — and as a
+  picture of the podium in the players' colours, through the system share sheet, with a link
+  to the app's Play listing.
 - **Global players**: a player exists once and is shared across games, so statistics follow
   them from one game to the next.
 - **Player statistics**: a leaderboard of the finished games, all of them or one game type
@@ -393,9 +394,9 @@ the group's invite code can join, so share it only with the people you mean to. 
 Leaving the group keeps your copies as local games; it does not remove them from the server,
 whose operator — you — deletes them there.
 
-**Sharing a result** is not a third way out: the app builds the text on the device and hands
-it to your phone's share sheet (the browser's, in the PWA); it sends nothing itself, and the
-text goes only where you choose to send it.
+**Sharing a result** is not a third way out: the app builds the text and the picture of the
+standings on the device and hands them to your phone's share sheet (the browser's, in the
+PWA); it sends nothing itself, and they go only where you choose to send them.
 
 The one Android permission the app declares is `INTERNET`, for these two features and
 nothing else. It is unused until you configure a server. The merged release manifest also

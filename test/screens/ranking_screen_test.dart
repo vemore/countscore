@@ -7,6 +7,8 @@
 // Writes run on a real in-memory database, so they go through `runAsync`, as
 // in `game_end_screen_test.dart`.
 
+import 'dart:typed_data';
+
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -27,6 +29,8 @@ import 'package:countscore/services/drift/database.dart';
 import 'package:countscore/utils/player_colors.dart';
 import 'package:countscore/widgets/board_lanes.dart';
 import 'package:countscore/widgets/player_avatars.dart';
+import 'package:countscore/widgets/result_share_card.dart';
+import 'package:countscore/widgets/share_result_button.dart';
 
 Widget _board(BuildContext context) => const Scaffold(body: Text('board'));
 
@@ -187,16 +191,31 @@ void main() {
       (tester) async {
     await tester.runAsync(() => anOpenGame(lowestWins: false));
     String? shared;
+    Uint8List? sharedImage;
     await tester.pumpWidget(wrap(RankingScreen(
       boardBuilder: _board,
-      share: (text, {subject}) async => shared = text,
+      share: (text, {subject, image}) async {
+        shared = text;
+        sharedImage = image;
+      },
     )));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('share_result')));
+    // The PNG is drawn by the engine, which fake time does not drive.
+    await tester.runAsync(() async {
+      await tester.tap(find.byKey(const Key('share_result')));
+      for (var i = 0; i < 200 && shared == null; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+      }
+    });
     await tester.pumpAndSettle();
 
     expect(rankedNames(tester), ['Eve', 'Chloé', 'Alice', 'Bob', 'Dora']);
+    // A PNG, the card's 400 logical pixels drawn at 3x.
+    expect(sharedImage, isNotNull);
+    expect(sharedImage!.sublist(0, 8), [137, 80, 78, 71, 13, 10, 26, 10]);
+    final width = ByteData.sublistView(sharedImage!, 16, 20).getUint32(0);
+    expect(width, ResultShareCard.width * 3);
     expect(
       shared,
       contains('1. Eve — 50 points\n'
@@ -206,6 +225,49 @@ void main() {
           '5. Dora — 10 points'),
     );
     expect(shared, contains('Soirée · ${l10n.gameEndRounds(1)}'));
+  });
+
+  testWidgets('the shared image ranks the players as the screen does',
+      (tester) async {
+    // Bob and Chloé tie for second: the seat breaks it, on both.
+    await tester.runAsync(() => anOpenGame(lowestWins: false, scores: {
+          'Alice': 30,
+          'Bob': 40,
+          'Chloé': 40,
+          'Dora': 10,
+          'Eve': 50,
+        }));
+    await tester.pumpWidget(wrap(const RankingScreen(boardBuilder: _board)));
+    await tester.pumpAndSettle();
+    final onScreen = rankedNames(tester);
+    expect(onScreen, ['Eve', 'Bob', 'Chloé', 'Alice', 'Dora']);
+
+    // The card the share action draws into the PNG, caught before drawing.
+    Widget? card;
+    await tester.pumpWidget(wrap(Scaffold(
+      appBar: AppBar(actions: [
+        ShareResultButton(
+          share: (text, {subject, image}) async {},
+          renderImage: (context, widget) async {
+            card = widget;
+            return Uint8List(0);
+          },
+        ),
+      ]),
+    )));
+    await tester.tap(find.byKey(const Key('share_result')));
+    await tester.pumpAndSettle();
+    expect(card, isA<ResultShareCard>());
+
+    await tester.pumpWidget(wrap(Scaffold(
+      body: SingleChildScrollView(child: Center(child: card)),
+    )));
+    await tester.pumpAndSettle();
+    expect(rankedNames(tester), onScreen);
+    expect(find.byType(BoardCrown), findsOneWidget);
+    expect(find.text(l10n.appTitle), findsOneWidget);
+    expect(find.textContaining('Soirée · ${l10n.gameEndRounds(1)}'),
+        findsOneWidget);
   });
 
   testWidgets('near the threshold in orange, eliminated players struck out',
