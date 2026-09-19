@@ -80,6 +80,7 @@ scope "the licence list"     "app"                 THIRD_PARTY_LICENSES.md
 echo "== everything ================================================"
 all="backend image app android sync"
 scope "the workflow itself"    "$all"  .github/workflows/ci.yml
+scope "the Pages workflow"     "$all"  .github/workflows/deploy-pages.yml
 scope "dependabot"             "$all"  .github/dependabot.yml
 scope "the OSV ignore list"     "$all"  .github/osv-scanner.toml
 scope "a Claude Code hook"     "$all"  .claude/hooks/guard-bash.sh
