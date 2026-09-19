@@ -1,5 +1,7 @@
 # The sqlite3 native-asset hash mismatch is back, now in the Sync job
 
+**Status:** done (2026-09-19) — closed by ci/android-scope-and-sqlite-cache. `app`, `sync` and `android` cache `.dart_tool/hooks_runner/shared/sqlite3/build/download-*` with `actions/cache@v6`, keyed per job on the `sqlite3` version in `pubspec.lock`, and run the hook's step through `scripts/retry_sqlite3_hash.sh`, which retries once only on "Hash of downloaded file" and keeps the second status; `scripts/retry_sqlite3_hash_selftest.sh` pins both. The hash check is untouched.
+
 - **Noted:** 2026-09-19 — first CI run of test/e2e-golden-path-keypad (#129)
 - **Theme:** ci-scope
 - **Area:** tooling

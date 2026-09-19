@@ -51,8 +51,8 @@ class GameRanking {
   factory GameRanking.fromStanding(GameStanding standing, GameType? gameType) {
     final players = standing.players;
     final ranks = standing.ranks;
-    // Best first; a tie keeps the seat order, the rule `GameStanding.leader`
-    // applies. `List.sort` is not stable, so the seat is the tie-breaker.
+    // Best first; a tie keeps the seat order, as the board's `byRank` does.
+    // `List.sort` is not stable, so the seat is the tie-breaker.
     final seat = {for (var i = 0; i < players.length; i++) players[i].id: i};
     final ranked = [...players]..sort((a, b) {
         final byRank = (ranks[a.id] ?? 0).compareTo(ranks[b.id] ?? 0);

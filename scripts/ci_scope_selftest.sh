@@ -65,14 +65,15 @@ scope "the Gradle project"   "android"             android/app/build.gradle.kts
 scope "the manifest"         "android"             android/app/src/main/AndroidManifest.xml
 scope "the web shell"        "app"                 web/index.html
 scope "the drift worker"     "app"                 web/drift_worker.js
-scope "Dart"                 "app android sync"    lib/services/drift/database.dart
-scope "an ARB file"          "app android sync"    lib/l10n/app_fr.arb
-scope "the l10n config"      "app android sync"    l10n.yaml
-scope "a Dart test"          "app android sync"    test/drift/drift_repositories_test.dart
-scope "the e2e suite"        "app android sync"    integration_test/app_test.dart
+scope "Dart"                 "app sync"            lib/services/drift/database.dart
+scope "an ARB file"          "app sync"            lib/l10n/app_fr.arb
+scope "the l10n config"      "app sync"            l10n.yaml
+scope "a Dart test"          "app sync"            test/drift/drift_repositories_test.dart
+scope "the e2e suite"        "app sync"            integration_test/app_test.dart
+scope "the device driver"    "app sync"            test_driver/integration_test.dart
 scope "a Flutter dependency" "app android sync"    pubspec.yaml pubspec.lock
 scope "the pub lock alone"    "app android sync"    pubspec.lock
-scope "the analysis options" "app android sync"    analysis_options.yaml
+scope "the analysis options" "app sync"            analysis_options.yaml
 scope "the privacy policy"   "backend"             privacy_policy.md
 scope "the privacy page"     "backend"             docs/privacy-policy.html
 scope "the licence list"     "app"                 THIRD_PARTY_LICENSES.md
@@ -102,8 +103,9 @@ scope "an unknown root config" "$all"  renovate.json
 
 echo "== mixed ====================================================="
 scope "documentation plus the server"   "backend image sync"  README.md backend/app/main.py
-scope "the server and Dart"             "$all"                backend/app/main.py lib/main.dart
-scope "a rename out of lib/ into docs"  "app android sync"    lib/old.dart docs/old.md
+scope "the server and Dart"             "backend image app sync"  backend/app/main.py lib/main.dart
+scope "a rename out of lib/ into docs"  "app sync"            lib/old.dart docs/old.md
+scope "Dart plus a dependency"          "app android sync"    lib/main.dart pubspec.yaml
 scope "documentation plus the workflow" "$all"                README.md .github/workflows/ci.yml
 scope "the Android manifest and Dart"   "app android sync"    android/app/src/main/AndroidManifest.xml \
                                                               lib/main.dart
@@ -112,6 +114,17 @@ echo "== the contract with ci.yml =================================="
 flat=$("$SCOPE" < /dev/null | tr '\n' ' ')
 report "five flags, in workflow order, all false" \
     "backend=false image=false app=false android=false sync=false" "${flat% }"
+
+# Dart no longer builds the APK on a pull request (2026-09-19) because main and
+# the weekly run still do: the flags step forces all five on any event that is
+# not a pull request. Losing that line would leave Dart with no APK build at all.
+if grep -q '"$EVENT" != pull_request' "$WORKFLOW" \
+    && grep -q "all='backend=true.*image=true.*app=true.*android=true.*sync=true" "$WORKFLOW"; then
+    pass=$((pass + 1))
+else
+    fail=$((fail + 1))
+    echo "  FAIL  ci.yml no longer runs every job on main and on the weekly run"
+fi
 
 # A renamed flag, or an `if:` hand-edited back to the weaker `== 'true'`, would
 # leave the classifier correct and the workflow deaf to it. Nothing else notices.
