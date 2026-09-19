@@ -255,8 +255,9 @@ sharing and the AI-commentary report control.
 Publishing the older v1.0 text alongside a "Yes" declaration is exactly the mismatch
 reviewers look for, so the two must be regenerated together — see `docs/README.md`.
 
-**One manual step remains**: GitHub Pages has to be switched on for the repository —
-*Settings → Pages → Source: Deploy from a branch → `main` / `docs`*. Confirm the URL loads
+GitHub Pages serves it: since 2026-09-19 through `.github/workflows/deploy-pages.yml` (Pages
+source *GitHub Actions*), which publishes the page at the same URL next to the PWA and
+fetches it after every deployment; before, from `main` / `docs`. Confirm the URL loads
 publicly, in a private window, before pasting it into the Console.
 
 **CRITICAL**: the URL must be publicly accessible (no login), permanent, and HTTPS.
