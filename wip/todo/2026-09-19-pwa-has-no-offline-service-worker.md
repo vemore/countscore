@@ -23,3 +23,6 @@ Check the worker against `_PWA_CSP` (`worker-src`), the `PWA_BASE_PATH` scope, a
 - After one online visit, the PWA opens and creates a game with the network off (web e2e or a Playwright check attached to the pull request).
 - After a deploy, an open PWA picks up the new build within one reload after the prompt, and never mixes files from two builds.
 - `_PWA_CSP` still has no wildcard, and the worker's scope is the `PWA_BASE_PATH`.
+
+**Promoted (2026-09-19, refinement 7):** promoted together with
+[[2026-09-19-pwa-gstatic-undisclosed]]; `ship-parallel` starts it only once that one is merged.
