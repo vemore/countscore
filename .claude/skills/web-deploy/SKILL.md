@@ -26,7 +26,8 @@ Facts: `.llmwiki/Deployment.md` (topology, decisions), `.llmwiki/Api.md` (route 
 | `PWA_BASE_PATH` | NAS `$NAS_DEPLOY_DIR/.env` — **its only home** | The container mounts the PWA there; `deploy_web.sh` reads it over ssh for `--base-href` |
 | `pwa/current` | `$NAS_DEPLOY_DIR/pwa/` on the NAS | The live build. `pwa/` is bind-mounted read-only at `/srv/pwa` |
 | `_mount_pwa` / `_PWA_CSP` | `backend/app/main.py` | Static mount + the CSP and `Cache-Control: no-cache` for those paths |
-| `scripts/build_web.sh` | repo | The build: release flags, `--no-web-resources-cdn`, the fallback fonts mirrored into `build/web/fallback-fonts/` |
+| `scripts/build_web.sh` | repo | The build: release flags, `--no-web-resources-cdn`, the fallback fonts mirrored into `build/web/fallback-fonts/`, the service worker armed with the build id and digests |
+| `service_worker.js` | the build | Offline cache named after the build; a deploy is a new worker that waits for the app's *Reload* |
 | `scripts/deploy_web.sh` | repo | Build (through `build_web.sh`), check, upload to `pwa/current.new`, rename swap, keep `pwa/current.prev` |
 
 ## 1. One-time setup
@@ -76,12 +77,22 @@ source backend/scripts/deploy.env
 BASE=/countscore   # the PWA_BASE_PATH you set
 curl -sI "$PUBLIC_URL$BASE/" | grep -i -e '^HTTP' -e content-security-policy   # 200 + wasm-unsafe-eval
 curl -sI "$PUBLIC_URL$BASE/sqlite3.wasm" | grep -i content-type               # application/wasm
+curl -s  "$PUBLIC_URL$BASE/service_worker.js" | grep '@build-id'             # this build's id
+grep '@build-id' build/web/service_worker.js                                   # the same id
 curl -s  "$PUBLIC_URL/health"                                                 # API unaffected
 ```
 
+**How an open PWA takes the new release.** Nothing to do on the server: a user's next
+navigation (or the app returning to the foreground) finds the new `service_worker.js`, which
+downloads the whole new build beside the old one; the app then shows "A new version of
+CountScore is ready — Reload", and one tap reloads every open tab onto it. A page is never
+served by two builds. `.llmwiki/Web.md`, "Offline and updates".
+
 Then open `$PUBLIC_URL$BASE/` in a browser: home screen renders, no CSP or wasm error in the
 console, no request to a host other than `$PUBLIC_URL`'s (DevTools, Network), and a game
-created before a reload is still there after it.
+created before a reload is still there after it. In a browser that had the previous release
+open, the *Reload* snackbar appears; after it, DevTools → Application → Cache storage holds
+one `countscore-build-<id>` with the new id (and `countscore-fonts`).
 
 Symptoms and causes:
 
@@ -97,8 +108,14 @@ Symptoms and causes:
 - **Tofu (empty boxes) for Chinese, Arabic, emoji...** — `fallback-fonts/` missing from the
   deployed folder, or a build made without `scripts/build_web.sh`. `check_web_build.sh`
   refuses both; a hand-copied build has no such net.
-- **An old version keeps loading** — Flutter's service worker; a second reload picks up the
-  new release. Responses carry `Cache-Control: no-cache`, so HTTP caching is not the cause.
+- **An old version keeps loading** — by design until the user takes the *Reload* the app
+  offers: the service worker serves the build it installed. Closing every tab of the PWA
+  applies the waiting release too. If no prompt ever comes, the new worker failed to install:
+  DevTools → Application → Service workers shows it, and its console says which file did not
+  match the build's digest (a folder changed after the build, or a hand-copied upload).
+  Responses carry `Cache-Control: no-cache`, so HTTP caching is not the cause.
+- **Offline, the app does not open** — it was never opened online since the service worker
+  shipped, or the browser evicted its storage. One online visit fixes it.
 
 ## 5. Rollback
 
@@ -120,5 +137,6 @@ PWA folder, but an image older than the PWA mount stops serving it.
 - [ ] Web e2e run if either web binary changed
 - [ ] User confirmed before the real deploy, unless deploying under `ship-parallel`, which `CLAUDE.md` already authorises
 - [ ] `$BASE/` answers 200 with the PWA CSP, `sqlite3.wasm` as `application/wasm`, `/health` still ok
+- [ ] `$BASE/service_worker.js` carries the build id of `build/web/service_worker.js`
 - [ ] Data survives a reload on the deployed URL
 - [ ] No host, path or URL of the real deployment added to a tracked file

@@ -185,7 +185,7 @@ def create_app() -> FastAPI:
         elif _is_pwa(request.url.path):
             response.headers["Content-Security-Policy"] = _PWA_CSP
             # Revalidate every file (ETag/Last-Modified make that a 304): a heuristically
-            # cached index.html or flutter_service_worker.js would pin users to an old
+            # cached index.html or service_worker.js would pin users to an old
             # release after a deploy.
             response.headers["Cache-Control"] = "no-cache"
         else:

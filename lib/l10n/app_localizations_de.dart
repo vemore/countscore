@@ -1460,4 +1460,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String defaultGameName(int number) {
     return 'Spiel $number';
   }
+
+  @override
+  String get pwaUpdateReady => 'Eine neue Version von CountScore ist bereit';
+
+  @override
+  String get pwaUpdateReload => 'Neu laden';
 }

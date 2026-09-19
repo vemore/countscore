@@ -2379,5 +2379,15 @@
         "example": "1"
       }
     }
+  },
+
+  "pwaUpdateReady": "Une nouvelle version de CountScore est prête",
+  "@pwaUpdateReady": {
+    "description": "PWA only: snackbar shown when a newer build of the web app has been downloaded and waits for a reload"
+  },
+
+  "pwaUpdateReload": "Recharger",
+  "@pwaUpdateReload": {
+    "description": "PWA only: action of the new-version snackbar; reloads the page onto the new build"
   }
 }

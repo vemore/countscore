@@ -1425,4 +1425,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String defaultGameName(int number) {
     return 'ゲーム$number';
   }
+
+  @override
+  String get pwaUpdateReady => 'CountScore の新しいバージョンの準備ができました';
+
+  @override
+  String get pwaUpdateReload => '再読み込み';
 }

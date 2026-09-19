@@ -73,6 +73,28 @@ async def test_index_is_served_with_the_pwa_csp(pwa_client):
     assert r.headers["X-Content-Type-Options"] == "nosniff"
 
 
+async def test_pwa_csp_has_no_wildcard_and_allows_the_service_worker(pwa_client):
+    """web/service_worker.js is same-origin: worker-src 'self' is all it needs."""
+    csp = (await pwa_client.get(f"{BASE}/")).headers["Content-Security-Policy"]
+
+    assert "*" not in csp
+    assert "worker-src 'self' blob:;" in csp
+
+
+async def test_service_worker_is_revalidated_and_scoped_to_the_base_path(pwa_client, build_dir):
+    """The browser compares the worker byte for byte on each navigation to find a new
+    build: it must not come from a heuristic HTTP cache. Served from the base path, its
+    default scope is PWA_BASE_PATH + "/" with no Service-Worker-Allowed header."""
+    (build_dir / "service_worker.js").write_text('const BUILD_ID = "0123456789abcdef";')
+
+    r = await pwa_client.get(f"{BASE}/service_worker.js")
+
+    assert r.status_code == 200
+    assert r.headers["content-type"].startswith("text/javascript")
+    assert r.headers["Cache-Control"] == "no-cache"
+    assert "Service-Worker-Allowed" not in r.headers
+
+
 async def test_base_path_without_slash_redirects(pwa_client):
     r = await pwa_client.get(BASE)
 

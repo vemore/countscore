@@ -1507,4 +1507,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String defaultGameName(int number) {
     return 'لعبة $number';
   }
+
+  @override
+  String get pwaUpdateReady => 'إصدار جديد من CountScore جاهز';
+
+  @override
+  String get pwaUpdateReload => 'إعادة التحميل';
 }

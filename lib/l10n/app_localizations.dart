@@ -2464,6 +2464,18 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Partie {number}'**
   String defaultGameName(int number);
+
+  /// PWA only: snackbar shown when a newer build of the web app has been downloaded and waits for a reload
+  ///
+  /// In fr, this message translates to:
+  /// **'Une nouvelle version de CountScore est prête'**
+  String get pwaUpdateReady;
+
+  /// PWA only: action of the new-version snackbar; reloads the page onto the new build
+  ///
+  /// In fr, this message translates to:
+  /// **'Recharger'**
+  String get pwaUpdateReload;
 }
 
 class _AppLocalizationsDelegate
