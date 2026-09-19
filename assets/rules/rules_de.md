@@ -725,10 +725,9 @@ Doppelzahlen wie 11 oder 22, und **7** für die 55.
 
 ## Spielende
 
-Die Runden folgen aufeinander, und der niedrigste Gesamtstand gewinnt. CountScore
-eliminiert einen Spieler, sobald er **66 Hornochsen überschreitet**. Die Originalregel
-beendet das Spiel, sobald ein Spieler 66 hat: um sie genau zu befolgen, stellen Sie die
-Schwelle auf 65 im Spieltyp.
+Die Runden folgen aufeinander, und der niedrigste Gesamtstand gewinnt. Wie die Originalregel
+eliminiert CountScore einen Spieler, sobald er **66 Hornochsen erreicht**: Die Schwelle im
+Spieltyp ist 65, und wer sie überschreitet, ist raus.
 
 <!--@qwirkle-->
 Ein Steine-Spiel für 2 bis 4 Spieler mit **108 Steinen**: sechs Formen in sechs Farben,

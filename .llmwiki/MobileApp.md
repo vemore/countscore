@@ -141,8 +141,9 @@ Twelve components shared out of the screens:
   ([below](#the-game-end-screen)): `GameRanking.of` (the current game best first, its ranks,
   colours, leader, winners and elimination tests; `GameRanking.fromStanding` builds the same
   from a `GameStanding`, for a test or a caller without a provider), `RankedPlayers` (podium and rows),
-  `rankingSummary` (type · rounds · win rule), and `isEliminatedBy` /
-  `isNearEliminationBy`, the type's elimination rule on a total.
+  `rankingSummary` (type · rounds · win rule). The elimination rule on a total is
+  `GameType.isEliminated` / `isNearElimination` (`lib/models/game_type.dart`), which the board
+  reads too.
 - `score_keypad_sheet.dart` — `ScoreKeypadSheet`, the bottom sheet every score is entered
   through ([below](#the-board)).
 - `share_result_button.dart` — `ShareResultButton`, the app-bar share action of the end
@@ -260,7 +261,7 @@ the system navigation bar — the app is edge-to-edge on `targetSdk` 36 and cann
 `FlutterActivity`; there is no `SystemChrome` call anywhere in `lib/`). Its eight call sites
 are the root scrollables of `about_screen.dart:31` (on the child `Padding` — a
 `SingleChildScrollView` never gets the compensation at all),
-`game_types_screen.dart:43`,
+`game_types_screen.dart:50` (plus `kFabClearance`, below),
 `home_screen.dart:91` (the drawer) and `:335`, `player_stats_screen.dart:119`, `player_card_screen.dart:110`,
 `players_screen.dart:61`, and in `ranking_screen.dart` on the *Play again* button's
 `Padding` under the list, the last thing above the navigation bar. Only the bottom edge is compensated:
@@ -269,6 +270,16 @@ are the root scrollables of `about_screen.dart:31` (on the child `Padding` — a
 there is a `bottomNavigationBar`, and `DrawerHeader` adds the status-bar height itself.
 `settings_screen.dart:117` and `game_analysis_screen.dart` need nothing — the first passes no
 padding, the second is a `SingleChildScrollView` inside the `SafeArea(top: false)` at l. 328.
+
+`insets.dart` also holds `kFabClearance` (`56 + 16 + 16`): the bottom padding a list under
+a floating action button needs so its last row, and that row's menu, scroll out from under
+the button; pass it through `withBottomInset` so the navigation bar is added on top. Used
+by `game_types_screen.dart`.
+
+Every `IconButton` in `lib/` has a `tooltip:` from `AppLocalizations` — it is what TalkBack
+and a browser screen reader announce, and what a test finds it by. One that deliberately has
+none carries a `// No tooltip …` comment saying why (the icon picker's 32 unnamed glyphs);
+`test/utils/icon_button_tooltips_test.dart` scans `lib/` for the rest.
 
 `game_type_name.dart` — `gameTypeDisplayName(l10n, type)` and `isBuiltinRename(...)`. A
 built-in type's name is read from its `builtin_key`, never from the stored `name`, which is
@@ -331,8 +342,10 @@ loads it and records it finished (`_finishAndShowEnd` on the board; the home car
 loads it before pushing). The winner's name (a tie at the top names every player on it),
 the game type · rounds · win rule, then `RankedPlayers` (`lib/widgets/game_ranking.dart`):
 a podium of the top three in their display colours with their totals (first raised in the
-middle, ringed in `kLeaderGold`, the leader under a `BoardCrown`), then the others in rank
-order (`GameStanding.ranks`, ties sharing a place). As on the board, a total within 20
+middle; each step as high as the player's place, so a tie shares a step), the sole leader
+(`GameStanding.soleLeader`) ringed in `kLeaderGold` under a `BoardCrown` — nobody is crowned
+before the first score or on a tie for the lead — then the others in rank order
+(`GameStanding.ranks`, ties sharing a place). As on the board, a total within 20
 points of the type's elimination threshold is orange — except on the first step, whose
 filled block keeps `onPrimary` — and an eliminated player is faded and struck through. Actions: **Play again**
 (`playAgain`) and **Analysis** (`GameAnalysisScreen`), the latter only when
@@ -441,6 +454,26 @@ the reason. That warning *is* the tree-shaking constraint showing up in the anal
 not "fix" it by hardcoding a codepoint.
 
 ## Decisions & History
+
+- **The analysis actions live in an overflow menu, and only with an analysis (2026-09-19).**
+  Report, Regenerate and Delete used to be three app-bar icons, always drawn and disabled
+  with nothing to act on; with Share added (#139) the French title was cut to "Analyse de
+  la …" at 412 px. They moved into one `PopupMenuButton` that exists only once there is an
+  analysis, so the bar carries at most Share and the menu.
+  (`wip/done/2026-09-19-analysis-screen-offers-actions-on-nothing.md`)
+
+- **One elimination rule, 6 qui prend seeded 65, no crown on a tie (2026-09-19).** The board
+  kept three private copies of the elimination test; they went, and the board, the ranking
+  and the end screen all call `GameType.isEliminated` / `isNearElimination`. `over` stays
+  strict — ZapZap and Rami say *exceeds* 100 — so 6 qui prend, whose box rule stops at 66,
+  is seeded with 65 rather than given an inclusive variant (no schema change); an existing
+  row keeps 66, as with the Uno / Président seed change. The rankings crowned the earlier
+  seat on a tie, so a round of all zeros crowned seat 1: they now crown
+  `GameStanding.soleLeader`, null on a tie. `GameStanding.leader` still breaks a tie by seat,
+  because the board uses it to decide whether to sort by rank; the board's own crown and the
+  home card's winner still follow it (`wip/todo_nr/2026-09-19-board-and-home-crown-a-tie.md`).
+  (`wip/done/2026-09-19-player-elimination-threshold-is-strictly-over.md`,
+  `wip/done/2026-09-19-crown-before-any-round.md`)
 
 - **`firstPlayerOver` means "reaches" (2026-09-19).** The game-over test moved from the
   board into `GameType.isGameOver` and `firstPlayerOver` became `>=`: the box rules its

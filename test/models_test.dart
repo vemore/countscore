@@ -117,6 +117,51 @@ void main() {
       });
     });
 
+    group('GameType.isEliminated', () {
+      test('ZapZap and Rami: out once a total exceeds 100, not on it', () {
+        for (final type in [GameType.zapzap(), GameType.rami()]) {
+          expect(type.isEliminated(100), isFalse, reason: type.name);
+          expect(type.isEliminated(101), isTrue, reason: type.name);
+        }
+      });
+
+      test('6 qui prend: out on exactly 66, as its rule says, not on 65', () {
+        final sixNimmt = GameType.sixNimmt();
+        expect(sixNimmt.playerDeadThreshold, 65);
+        expect(sixNimmt.isEliminated(65), isFalse);
+        expect(sixNimmt.isEliminated(66), isTrue);
+      });
+
+      test('under: out below the threshold; near within 20 points', () {
+        final type = GameType(
+          name: 'Seuil',
+          iconCodePoint: 0,
+          cardColorValue: 0,
+          isLowestScoreWins: false,
+          playerDeadConditionType: PlayerDeadConditionType.under,
+          playerDeadThreshold: 0,
+        );
+        expect(type.isEliminated(0), isFalse);
+        expect(type.isEliminated(-1), isTrue);
+        expect(type.isNearElimination(20), isTrue);
+        expect(type.isNearElimination(21), isFalse);
+        expect(type.isNearElimination(-1), isFalse);
+      });
+
+      test('near: within 20 points of an over threshold, not past it', () {
+        final zapzap = GameType.zapzap();
+        expect(zapzap.isNearElimination(79), isFalse);
+        expect(zapzap.isNearElimination(80), isTrue);
+        expect(zapzap.isNearElimination(100), isTrue);
+        expect(zapzap.isNearElimination(101), isFalse);
+      });
+
+      test('a type without a rule puts nobody out', () {
+        expect(GameType.scrabble().isEliminated(1000000), isFalse);
+        expect(GameType.scrabble().isNearElimination(1000000), isFalse);
+      });
+    });
+
     test('GameType default game types', () {
       final zapzap = GameType.zapzap();
       expect(zapzap.name, 'ZapZap');

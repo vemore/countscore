@@ -81,9 +81,11 @@ void main() {
   }
 
   /// An open game of five of a type that puts a player out over 100, one
-  /// round scored, loaded as current. Chloé is seated with her own colour.
+  /// round scored — none with [playRound] false — loaded as current. Chloé is
+  /// seated with her own colour.
   Future<void> anOpenGame({
     required bool lowestWins,
+    bool playRound = true,
     Map<String, int> scores = const {
       'Alice': 30,
       'Bob': 20,
@@ -108,6 +110,7 @@ void main() {
       {'Chloé': 0xFF00FF00},
     );
     await games.loadGame(id);
+    if (!playRound) return;
     await games.addRound();
     final round = games.currentRounds.single.id!;
     for (final p in games.currentPlayers) {
@@ -250,4 +253,76 @@ void main() {
       expect(rankedNames(tester), ranking);
     });
   }
+
+  group('no crown without a sole leader', () {
+    Future<void> expectNoCrownOnEitherScreen(WidgetTester tester) async {
+      await tester.pumpWidget(wrap(const RankingScreen(boardBuilder: _board)));
+      await tester.pumpAndSettle();
+      expect(find.byType(BoardCrown), findsNothing, reason: 'ranking');
+
+      await tester.pumpWidget(wrap(const GameEndScreen(boardBuilder: _board)));
+      await tester.pumpAndSettle();
+      expect(find.byType(BoardCrown), findsNothing, reason: 'end screen');
+    }
+
+    testWidgets('a game with no round played', (tester) async {
+      await tester.runAsync(
+          () => anOpenGame(lowestWins: true, playRound: false));
+      await expectNoCrownOnEitherScreen(tester);
+    });
+
+    testWidgets('one round of all zeros', (tester) async {
+      await tester.runAsync(() => anOpenGame(lowestWins: true, scores: {
+            'Alice': 0,
+            'Bob': 0,
+            'Chloé': 0,
+            'Dora': 0,
+            'Eve': 0,
+          }));
+      await expectNoCrownOnEitherScreen(tester);
+    });
+  });
+
+  testWidgets('a tie shares a place: no crown, the same step, the same number',
+      (tester) async {
+    // Alice and Dora tie for the lead, Bob and Chloé for fourth.
+    await tester.runAsync(() => anOpenGame(lowestWins: true, scores: {
+          'Alice': 10,
+          'Bob': 40,
+          'Chloé': 40,
+          'Dora': 10,
+          'Eve': 30,
+        }));
+
+    for (final screen in const [
+      RankingScreen(boardBuilder: _board),
+      GameEndScreen(boardBuilder: _board),
+    ]) {
+      await tester.pumpWidget(wrap(screen));
+      await tester.pumpAndSettle();
+      final reason = screen.runtimeType.toString();
+
+      expect(find.byType(BoardCrown), findsNothing, reason: reason);
+      // Seat order within the tie, then Eve alone on the third step.
+      expect(rankedNames(tester), ['Alice', 'Dora', 'Eve', 'Bob', 'Chloé'],
+          reason: reason);
+
+      int idOf(String name) =>
+          games.currentPlayers.firstWhere((p) => p.name == name).id!;
+      double stepOf(String name) =>
+          tester.getSize(find.byKey(Key('ranking_step_${idOf(name)}'))).height;
+      expect(stepOf('Alice'), stepOf('Dora'), reason: reason);
+      expect(stepOf('Eve'), lessThan(stepOf('Alice')), reason: reason);
+
+      // The rows past the podium share place 4.
+      for (final name in ['Bob', 'Chloé']) {
+        expect(
+            find.descendant(
+                of: find.byKey(Key('ranking_row_${idOf(name)}')),
+                matching: find.text('4')),
+            findsOneWidget,
+            reason: '$reason $name');
+      }
+    }
+  });
 }

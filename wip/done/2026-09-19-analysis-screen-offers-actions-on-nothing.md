@@ -1,5 +1,7 @@
 # The analysis screen offers Report, Regenerate and Delete before any analysis exists
 
+**Status:** done (2026-09-19) — closed by fix/app-bar-actions-and-labels. Report, Regenerate and Delete moved into one overflow menu (`Key('analysis_menu')`) that exists only once there is an analysis; Share sits beside it. `test/screens/game_analysis_screen_test.dart` pins both acceptance lines, the title measured in Nunito at 400 dp in `fr`.
+
 - **Noted:** 2026-09-19 — full test pass of the production PWA (fresh Chromium profiles, Playwright, fr-FR at 412 × 860)
 - **Theme:** ai-report
 - **Area:** app
