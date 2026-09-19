@@ -107,11 +107,6 @@
     "description": "Save button text"
   },
 
-  "filterByGameType": "Filtrer par type de jeu",
-  "@filterByGameType": {
-    "description": "Label for game type filter"
-  },
-
   "allGames": "Tous les jeux",
   "@allGames": {
     "description": "Option to show all games (no filter)"
@@ -172,27 +167,6 @@
     "description": "Validation message for empty name"
   },
 
-  "atLeast2PlayersRequired": "Au moins 2 joueurs sont requis",
-  "@atLeast2PlayersRequired": {
-    "description": "Validation message for minimum players"
-  },
-
-  "playerNumber": "Joueur {index}",
-  "@playerNumber": {
-    "description": "Label for player number",
-    "placeholders": {
-      "index": {
-        "type": "int",
-        "example": "1"
-      }
-    }
-  },
-
-  "selectPlayer": "Sélectionner un joueur...",
-  "@selectPlayer": {
-    "description": "Placeholder for player selection"
-  },
-
   "clear": "Effacer",
   "@clear": {
     "description": "Clear button text"
@@ -216,11 +190,6 @@
   "editGameDialogTitle": "Modifier la partie",
   "@editGameDialogTitle": {
     "description": "Title for edit game dialog"
-  },
-
-  "gameSettings": "Paramètres de la partie",
-  "@gameSettings": {
-    "description": "Section title for game settings"
   },
 
   "removePlayer": "Retirer le joueur",
@@ -485,21 +454,6 @@
     "description": "Message when no players exist"
   },
 
-  "playersListSummary": "{count, plural, =0{Aucun joueur} =1{1 joueur: {names}} other{{count} joueurs: {names}}}",
-  "@playersListSummary": {
-    "description": "Players list summary with count and names",
-    "placeholders": {
-      "count": {
-        "type": "int",
-        "example": "3"
-      },
-      "names": {
-        "type": "String",
-        "example": "Alice, Bob, Charlie"
-      }
-    }
-  },
-
   "playersAppearMessage": "Les joueurs apparaîtront ici une fois\nque vous aurez créé des parties",
   "@playersAppearMessage": {
     "description": "Message explaining when players will appear"
@@ -594,11 +548,6 @@
     "description": "Message when no game types exist"
   },
 
-  "predefined": "Prédéfini",
-  "@predefined": {
-    "description": "Label for predefined/default game types"
-  },
-
   "edit": "Modifier",
   "@edit": {
     "description": "Edit button text"
@@ -687,11 +636,6 @@
   "winRate": "Taux de victoire",
   "@winRate": {
     "description": "Label for win rate"
-  },
-
-  "overallStatistics": "Statistiques globales",
-  "@overallStatistics": {
-    "description": "Title for overall statistics section"
   },
 
   "byGameType": "Par type de jeu",
@@ -1609,10 +1553,20 @@
     "description": "Built-in game type: ZapZap (the app's own game)"
   },
 
+  "gameTypeNameZapzapSortKey": "ZapZap",
+  "@gameTypeNameZapzapSortKey": {
+    "description": "Not displayed: what gameTypeNameZapzap sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
+  },
+
   "gameTypeNameUno": "Uno",
 
   "@gameTypeNameUno": {
     "description": "Built-in game type: Uno"
+  },
+
+  "gameTypeNameUnoSortKey": "Uno",
+  "@gameTypeNameUnoSortKey": {
+    "description": "Not displayed: what gameTypeNameUno sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
   },
 
   "gameTypeNameScrabble": "Scrabble",
@@ -1621,10 +1575,20 @@
     "description": "Built-in game type: Scrabble"
   },
 
+  "gameTypeNameScrabbleSortKey": "Scrabble",
+  "@gameTypeNameScrabbleSortKey": {
+    "description": "Not displayed: what gameTypeNameScrabble sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
+  },
+
   "gameTypeNameOther": "Autre",
 
   "@gameTypeNameOther": {
     "description": "Built-in game type: the catch-all type, for a game with no preset"
+  },
+
+  "gameTypeNameOtherSortKey": "Autre",
+  "@gameTypeNameOtherSortKey": {
+    "description": "Not displayed: what gameTypeNameOther sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
   },
 
   "gameTypeNameSkyjo": "Skyjo",
@@ -1633,10 +1597,20 @@
     "description": "Built-in game type: Skyjo"
   },
 
+  "gameTypeNameSkyjoSortKey": "Skyjo",
+  "@gameTypeNameSkyjoSortKey": {
+    "description": "Not displayed: what gameTypeNameSkyjo sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
+  },
+
   "gameTypeNamePresident": "Président",
 
   "@gameTypeNamePresident": {
     "description": "Built-in game type: the President card game"
+  },
+
+  "gameTypeNamePresidentSortKey": "Président",
+  "@gameTypeNamePresidentSortKey": {
+    "description": "Not displayed: what gameTypeNamePresident sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
   },
 
   "gameTypeNameBelote": "Belote",
@@ -1645,10 +1619,20 @@
     "description": "Built-in game type: Belote"
   },
 
+  "gameTypeNameBeloteSortKey": "Belote",
+  "@gameTypeNameBeloteSortKey": {
+    "description": "Not displayed: what gameTypeNameBelote sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
+  },
+
   "gameTypeNameTarot": "Tarot",
 
   "@gameTypeNameTarot": {
     "description": "Built-in game type: Tarot (the trick-taking card game)"
+  },
+
+  "gameTypeNameTarotSortKey": "Tarot",
+  "@gameTypeNameTarotSortKey": {
+    "description": "Not displayed: what gameTypeNameTarot sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
   },
 
   "gameTypeNameBridge": "Bridge",
@@ -1657,10 +1641,20 @@
     "description": "Built-in game type: Bridge"
   },
 
+  "gameTypeNameBridgeSortKey": "Bridge",
+  "@gameTypeNameBridgeSortKey": {
+    "description": "Not displayed: what gameTypeNameBridge sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
+  },
+
   "gameTypeNameRami": "Rami",
 
   "@gameTypeNameRami": {
     "description": "Built-in game type: Rummy"
+  },
+
+  "gameTypeNameRamiSortKey": "Rami",
+  "@gameTypeNameRamiSortKey": {
+    "description": "Not displayed: what gameTypeNameRami sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
   },
 
   "gameTypeNameCoinche": "Coinche",
@@ -1669,10 +1663,20 @@
     "description": "Built-in game type: Coinche (Belote with a bid)"
   },
 
+  "gameTypeNameCoincheSortKey": "Coinche",
+  "@gameTypeNameCoincheSortKey": {
+    "description": "Not displayed: what gameTypeNameCoinche sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
+  },
+
   "gameTypeNameYahtzee": "Yahtzee",
 
   "@gameTypeNameYahtzee": {
     "description": "Built-in game type: Yahtzee"
+  },
+
+  "gameTypeNameYahtzeeSortKey": "Yahtzee",
+  "@gameTypeNameYahtzeeSortKey": {
+    "description": "Not displayed: what gameTypeNameYahtzee sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
   },
 
   "gameTypeNamePhase10": "Phase 10",
@@ -1681,10 +1685,20 @@
     "description": "Built-in game type: Phase 10"
   },
 
+  "gameTypeNamePhase10SortKey": "Phase 10",
+  "@gameTypeNamePhase10SortKey": {
+    "description": "Not displayed: what gameTypeNamePhase10 sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
+  },
+
   "gameTypeNameFlip7": "Flip 7",
 
   "@gameTypeNameFlip7": {
     "description": "Built-in game type: Flip 7"
+  },
+
+  "gameTypeNameFlip7SortKey": "Flip 7",
+  "@gameTypeNameFlip7SortKey": {
+    "description": "Not displayed: what gameTypeNameFlip7 sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
   },
 
   "gameTypeNameMilleBornes": "Mille Bornes",
@@ -1693,10 +1707,20 @@
     "description": "Built-in game type: Mille Bornes"
   },
 
+  "gameTypeNameMilleBornesSortKey": "Mille Bornes",
+  "@gameTypeNameMilleBornesSortKey": {
+    "description": "Not displayed: what gameTypeNameMilleBornes sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
+  },
+
   "gameTypeNameRummikub": "Rummikub",
 
   "@gameTypeNameRummikub": {
     "description": "Built-in game type: Rummikub"
+  },
+
+  "gameTypeNameRummikubSortKey": "Rummikub",
+  "@gameTypeNameRummikubSortKey": {
+    "description": "Not displayed: what gameTypeNameRummikub sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
   },
 
   "gameTypeNameSixNimmt": "6 qui prend",
@@ -1705,10 +1729,20 @@
     "description": "Built-in game type: the '6 takes' card game"
   },
 
+  "gameTypeNameSixNimmtSortKey": "6 qui prend",
+  "@gameTypeNameSixNimmtSortKey": {
+    "description": "Not displayed: what gameTypeNameSixNimmt sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
+  },
+
   "gameTypeNameQwirkle": "Qwirkle",
 
   "@gameTypeNameQwirkle": {
     "description": "Built-in game type: Qwirkle"
+  },
+
+  "gameTypeNameQwirkleSortKey": "Qwirkle",
+  "@gameTypeNameQwirkleSortKey": {
+    "description": "Not displayed: what gameTypeNameQwirkle sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
   },
 
   "gameTypeNameFarkle": "Farkle",
@@ -1717,10 +1751,20 @@
     "description": "Built-in game type: Farkle"
   },
 
+  "gameTypeNameFarkleSortKey": "Farkle",
+  "@gameTypeNameFarkleSortKey": {
+    "description": "Not displayed: what gameTypeNameFarkle sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
+  },
+
   "gameTypeNameCanasta": "Canasta",
 
   "@gameTypeNameCanasta": {
     "description": "Built-in game type: Canasta"
+  },
+
+  "gameTypeNameCanastaSortKey": "Canasta",
+  "@gameTypeNameCanastaSortKey": {
+    "description": "Not displayed: what gameTypeNameCanasta sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
   },
 
   "gameTypeNameWizard": "Wizard",
@@ -1729,10 +1773,20 @@
     "description": "Built-in game type: Wizard"
   },
 
+  "gameTypeNameWizardSortKey": "Wizard",
+  "@gameTypeNameWizardSortKey": {
+    "description": "Not displayed: what gameTypeNameWizard sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
+  },
+
   "gameTypeNameTriomino": "Triomino",
 
   "@gameTypeNameTriomino": {
     "description": "Built-in game type: Triomino"
+  },
+
+  "gameTypeNameTriominoSortKey": "Triomino",
+  "@gameTypeNameTriominoSortKey": {
+    "description": "Not displayed: what gameTypeNameTriomino sorts by in game-type lists. Equal to the name in every locale but zh, where it is the pinyin of the name, tone numbers after each syllable, one space between syllables (lib/utils/game_type_name.dart)."
   },
 
   "groupDeviceOwner": "Propriétaire",

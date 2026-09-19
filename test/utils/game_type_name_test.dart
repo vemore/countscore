@@ -19,10 +19,12 @@ GameType _type({String? builtinKey, String name = 'stored'}) => GameType(
 void main() {
   late AppLocalizations fr;
   late AppLocalizations ja;
+  late AppLocalizations zh;
 
   setUpAll(() async {
     fr = await AppLocalizations.delegate.load(const Locale('fr'));
     ja = await AppLocalizations.delegate.load(const Locale('ja'));
+    zh = await AppLocalizations.delegate.load(const Locale('zh'));
   });
 
   test('every built-in key has a case in the switch', () {
@@ -34,6 +36,30 @@ void main() {
         reason: 'no localized name for ${type.builtinKey}',
       );
     }
+  });
+
+  test('every built-in key has a sort key: the name, or its pinyin in zh',
+      () async {
+    for (final locale in AppLocalizations.supportedLocales) {
+      final l10n = await AppLocalizations.delegate.load(locale);
+      for (final type in GameType.defaultGameTypes()) {
+        final name = builtinGameTypeName(l10n, type.builtinKey)!;
+        final sortKey = builtinGameTypeSortKey(l10n, type.builtinKey);
+        expect(sortKey, isNotNull, reason: '${type.builtinKey} in $locale');
+        if (locale.languageCode == 'zh') {
+          // A Han name is replaced by its reading; a Latin one is kept.
+          final hasHan = name.runes.any((r) => r >= 0x4E00 && r <= 0x9FFF);
+          expect(sortKey == name, !hasHan, reason: '$name → $sortKey');
+          expect(sortKey!.runes.any((r) => r >= 0x4E00 && r <= 0x9FFF),
+              isFalse,
+              reason: '$name → $sortKey');
+        } else {
+          expect(sortKey, name, reason: '${type.builtinKey} in $locale');
+        }
+      }
+    }
+    expect(builtinGameTypeSortKey(zh, 'petanque'), isNull);
+    expect(builtinGameTypeSortKey(zh, null), isNull);
   });
 
   test('the built-in keys are unique', () {
@@ -126,6 +152,31 @@ void main() {
         'ファークル', 'フェーズ 10', 'ブリッジ', 'フリップ 7', 'ベロット',
         'ミルボルヌ', 'ヤッツィー', 'ラミー', 'ラミィキューブ', '大富豪',
       ]);
+    });
+
+    test('Chinese: pinyin order of the displayed names, not code points', () {
+      // Code-point order would put 三角骨牌 first and 桥牌 after 拉米. Each Han
+      // name sorts by its reading among the Latin ones: 贝洛特 (bei) between 6
+      // and Coinche, 其他 (qi) before 桥牌 (qiao) syllable by syllable, and
+      // 拉米 (mǐ) before 拉密 (mì) on the tone.
+      expect(sorted(zh, GameType.defaultGameTypes()), [
+        '6 nimmt!', '贝洛特', 'Coinche', '翻牌 7', 'Farkle', '阶段 10', //
+        '凯纳斯特', '快艇骰子', '拉米', '拉密', 'Mille Bornes', '其他', '桥牌',
+        'Qwirkle', '三角骨牌', 'Scrabble', 'Skyjo', '塔罗牌', 'UNO', 'Wizard',
+        'ZapZap', '总统',
+      ]);
+    });
+
+    test('Chinese: a custom name keeps its code-point order', () {
+      // No reading is known for a name the user typed: a Latin one sorts among
+      // the pinyin keys, a Han one after every Latin key.
+      final inChinese = sorted(zh, [
+        ...GameType.defaultGameTypes(),
+        _type(name: 'Pétanque'),
+        _type(name: '麻将'),
+      ]);
+      expect(inChinese.indexOf('Pétanque'), inChinese.indexOf('其他') - 1);
+      expect(inChinese.last, '麻将');
     });
 
     test('a custom type sorts by its stored name among the built-in ones', () {

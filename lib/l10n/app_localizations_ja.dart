@@ -72,9 +72,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get save => '保存';
 
   @override
-  String get filterByGameType => 'ゲームタイプで絞り込み';
-
-  @override
   String get allGames => 'すべてのゲーム';
 
   @override
@@ -111,17 +108,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get pleaseEnterName => '名前を入力してください';
 
   @override
-  String get atLeast2PlayersRequired => '最低2人のプレイヤーが必要です';
-
-  @override
-  String playerNumber(int index) {
-    return 'プレイヤー$index';
-  }
-
-  @override
-  String get selectPlayer => 'プレイヤーを選択...';
-
-  @override
   String get clear => 'クリア';
 
   @override
@@ -135,9 +121,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get editGameDialogTitle => 'ゲームを編集';
-
-  @override
-  String get gameSettings => 'ゲーム設定';
 
   @override
   String get removePlayer => 'プレイヤーを削除';
@@ -286,17 +269,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get noPlayers => 'プレイヤーがいません';
 
   @override
-  String playersListSummary(int count, String names) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count人のプレイヤー: $names',
-      zero: 'プレイヤーがいません',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get playersAppearMessage => 'ゲームを作成すると\nプレイヤーがここに表示されます';
 
   @override
@@ -355,9 +327,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get noGameTypes => 'ゲームタイプがありません';
 
   @override
-  String get predefined => 'デフォルト';
-
-  @override
   String get edit => '編集';
 
   @override
@@ -410,9 +379,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get winRate => '勝率';
-
-  @override
-  String get overallStatistics => '全体統計';
 
   @override
   String get byGameType => 'ゲームタイプ別';
@@ -964,67 +930,133 @@ class AppLocalizationsJa extends AppLocalizations {
   String get gameTypeNameZapzap => 'ZapZap';
 
   @override
+  String get gameTypeNameZapzapSortKey => 'ZapZap';
+
+  @override
   String get gameTypeNameUno => 'ウノ';
+
+  @override
+  String get gameTypeNameUnoSortKey => 'ウノ';
 
   @override
   String get gameTypeNameScrabble => 'スクラブル';
 
   @override
+  String get gameTypeNameScrabbleSortKey => 'スクラブル';
+
+  @override
   String get gameTypeNameOther => 'その他';
+
+  @override
+  String get gameTypeNameOtherSortKey => 'その他';
 
   @override
   String get gameTypeNameSkyjo => 'スカイジョ';
 
   @override
+  String get gameTypeNameSkyjoSortKey => 'スカイジョ';
+
+  @override
   String get gameTypeNamePresident => '大富豪';
+
+  @override
+  String get gameTypeNamePresidentSortKey => '大富豪';
 
   @override
   String get gameTypeNameBelote => 'ベロット';
 
   @override
+  String get gameTypeNameBeloteSortKey => 'ベロット';
+
+  @override
   String get gameTypeNameTarot => 'タロット';
+
+  @override
+  String get gameTypeNameTarotSortKey => 'タロット';
 
   @override
   String get gameTypeNameBridge => 'ブリッジ';
 
   @override
+  String get gameTypeNameBridgeSortKey => 'ブリッジ';
+
+  @override
   String get gameTypeNameRami => 'ラミー';
+
+  @override
+  String get gameTypeNameRamiSortKey => 'ラミー';
 
   @override
   String get gameTypeNameCoinche => 'コワンシュ';
 
   @override
+  String get gameTypeNameCoincheSortKey => 'コワンシュ';
+
+  @override
   String get gameTypeNameYahtzee => 'ヤッツィー';
+
+  @override
+  String get gameTypeNameYahtzeeSortKey => 'ヤッツィー';
 
   @override
   String get gameTypeNamePhase10 => 'フェーズ 10';
 
   @override
+  String get gameTypeNamePhase10SortKey => 'フェーズ 10';
+
+  @override
   String get gameTypeNameFlip7 => 'フリップ 7';
+
+  @override
+  String get gameTypeNameFlip7SortKey => 'フリップ 7';
 
   @override
   String get gameTypeNameMilleBornes => 'ミルボルヌ';
 
   @override
+  String get gameTypeNameMilleBornesSortKey => 'ミルボルヌ';
+
+  @override
   String get gameTypeNameRummikub => 'ラミィキューブ';
+
+  @override
+  String get gameTypeNameRummikubSortKey => 'ラミィキューブ';
 
   @override
   String get gameTypeNameSixNimmt => 'ニムト';
 
   @override
+  String get gameTypeNameSixNimmtSortKey => 'ニムト';
+
+  @override
   String get gameTypeNameQwirkle => 'クワークル';
+
+  @override
+  String get gameTypeNameQwirkleSortKey => 'クワークル';
 
   @override
   String get gameTypeNameFarkle => 'ファークル';
 
   @override
+  String get gameTypeNameFarkleSortKey => 'ファークル';
+
+  @override
   String get gameTypeNameCanasta => 'カナスタ';
+
+  @override
+  String get gameTypeNameCanastaSortKey => 'カナスタ';
 
   @override
   String get gameTypeNameWizard => 'ウィザード';
 
   @override
+  String get gameTypeNameWizardSortKey => 'ウィザード';
+
+  @override
   String get gameTypeNameTriomino => 'トライオミノ';
+
+  @override
+  String get gameTypeNameTriominoSortKey => 'トライオミノ';
 
   @override
   String get groupDeviceOwner => 'オーナー';
