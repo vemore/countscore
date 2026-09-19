@@ -126,7 +126,7 @@ void main() {
       (1, 'Bob', '20'),
       (2, 'Alice', '30'),
     ]) {
-      final step = find.byKey(Key('game_end_podium_$place'));
+      final step = find.byKey(Key('ranking_podium_$place'));
       expect(find.descendant(of: step, matching: find.text(name)),
           findsOneWidget);
       expect(find.descendant(of: step, matching: find.text(total)),
@@ -139,6 +139,52 @@ void main() {
     expect(find.text('4'), findsOneWidget);
     expect(find.text('5'), findsOneWidget);
     expect(find.byKey(const Key('game_end_continue')), findsNothing);
+  });
+
+  testWidgets('the share action hands the standings to the share sheet',
+      (tester) async {
+    await tester.runAsync(aScoredGame);
+    String? shared;
+    String? sharedSubject;
+    await tester.pumpWidget(wrap(GameEndScreen(
+      boardBuilder: _board,
+      share: (text, {subject}) async {
+        shared = text;
+        sharedSubject = subject;
+      },
+    )));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('share_result')));
+    await tester.pumpAndSettle();
+
+    expect(sharedSubject, l10n.shareResultSubject('Skyjo 3'));
+    expect(
+      shared,
+      contains('1. Dora — 10 points\n'
+          '2. Bob — 20 points\n'
+          '3. Alice — 30 points\n'
+          '4. Chloé — 40 points\n'
+          '5. Eve — 50 points'),
+    );
+    expect(shared, contains(l10n.gameEndLowestWins));
+    expect(shared,
+        contains('https://play.google.com/store/apps/details?id=com.vemore.countscore'));
+  });
+
+  testWidgets('a share sheet that fails to open is reported, not thrown',
+      (tester) async {
+    await tester.runAsync(aScoredGame);
+    await tester.pumpWidget(wrap(GameEndScreen(
+      boardBuilder: _board,
+      share: (text, {subject}) async => throw Exception('no share sheet'),
+    )));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('share_result')));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.shareFailed), findsOneWidget);
   });
 
   testWidgets('"Play again" creates the next game with the same players',

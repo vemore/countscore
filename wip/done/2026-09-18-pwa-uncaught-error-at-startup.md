@@ -1,5 +1,7 @@
 # The PWA throws a bare uncaught `Error` on every load
 
+**Status:** dropped (2026-09-19) — merged into [[2026-09-19-pwa-reload-reruns-the-database-creation]]: the bare `Error` is `SqliteException(2067)` from `onCreate` rerunning on reload, and the data does not fully survive a reload (game types vanish, deletions come back).
+
 - **Noted:** 2026-09-18 — while checking the board's wide layout on a release web build (feat/board-wide-layout)
 - **Theme:** web
 - **Area:** web

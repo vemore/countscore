@@ -1195,4 +1195,243 @@ class AppLocalizationsFr extends AppLocalizations {
   String groupUsageResets(String date) {
     return 'Remise à zéro le $date';
   }
+
+  @override
+  String get statsBestWinRate => 'Meilleur taux de victoire';
+
+  @override
+  String statsWinsOutOfGames(int wins, int games) {
+    String _temp0 = intl.Intl.pluralLogic(
+      wins,
+      locale: localeName,
+      other: '$wins victoires sur $games',
+      one: '$wins victoire sur $games',
+      zero: 'Aucune victoire sur $games',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsColumnPlayer => 'Joueur';
+
+  @override
+  String get statsColumnGames => 'Parties';
+
+  @override
+  String statsUnranked(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count parties · hors classement',
+      one: '$count partie · hors classement',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsLeaderboardFooter(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Classement à partir de $count parties terminées. Touchez un joueur pour voir sa fiche.',
+      one:
+          'Classement à partir de $count partie terminée. Touchez un joueur pour voir sa fiche.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsGamesLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'parties',
+      one: 'partie',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsWinsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'victoires',
+      one: 'victoire',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsAverageRank => 'rang moyen';
+
+  @override
+  String statsRankChartTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Rang, $count dernières parties',
+      one: 'Rang, dernière partie',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsTrendImproving => 'en progrès';
+
+  @override
+  String get statsTrendDeclining => 'en recul';
+
+  @override
+  String get statsTrendSteady => 'régulier';
+
+  @override
+  String statsRankOrdinal(String rank) {
+    String _temp0 = intl.Intl.selectLogic(rank, {
+      '1': '1er',
+      'other': '${rank}e',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String statsWinStreak(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Série : $count victoires',
+      one: 'Série : $count victoire',
+      zero: 'Pas de série en cours',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsRecord(int total) {
+    return 'Record : $total';
+  }
+
+  @override
+  String statsOnGameType(String gameType) {
+    return 'Sur $gameType';
+  }
+
+  @override
+  String get statsAverageTotal => 'Total final moyen';
+
+  @override
+  String get statsBestTotal => 'Meilleur total final';
+
+  @override
+  String get statsMostBeaten => 'Adversaire le plus battu';
+
+  @override
+  String get statsOpenPlayerCard => 'voir la fiche';
+
+  @override
+  String get shareResult => 'Partager le résultat';
+
+  @override
+  String get shareAnalysis => 'Partager l\'analyse';
+
+  @override
+  String shareResultSubject(String gameName) {
+    return 'Résultat : $gameName';
+  }
+
+  @override
+  String shareResultTitle(String date) {
+    return 'Partie du $date';
+  }
+
+  @override
+  String shareResultStanding(int rank, String name, int points) {
+    String _temp0 = intl.Intl.pluralLogic(
+      points,
+      locale: localeName,
+      other: '$points points',
+      one: '$points point',
+    );
+    return '$rank. $name : $_temp0';
+  }
+
+  @override
+  String shareResultFooter(String appName, String url) {
+    return 'Scores comptés avec $appName : $url';
+  }
+
+  @override
+  String get shareFailed => 'Le partage n\'a pas pu s\'ouvrir';
+
+  @override
+  String get newGameNameLabel => 'Nom';
+
+  @override
+  String get newGameGameLabel => 'Jeu';
+
+  @override
+  String newGameAllGames(int count) {
+    return 'Tous les jeux ($count)';
+  }
+
+  @override
+  String get newGamePlayersLabel => 'Joueurs · ordre de jeu';
+
+  @override
+  String get newGameDragToReorder => 'glisser pour réordonner';
+
+  @override
+  String get newGameDealer => 'donne';
+
+  @override
+  String get newGameAddPlayer => 'Ajouter un joueur';
+
+  @override
+  String newGameStart(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Commencer · $count joueurs',
+      one: 'Commencer · 1 joueur',
+      zero: 'Commencer',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get whoIsPlayingTitle => 'Qui joue ?';
+
+  @override
+  String get whoIsPlayingSearchHint => 'Nom, ou nouveau joueur';
+
+  @override
+  String get whoIsPlayingFrequent => 'Joue souvent avec vous';
+
+  @override
+  String whoIsPlayingSameAs(String gameName) {
+    return 'Mêmes joueurs que « $gameName »';
+  }
+
+  @override
+  String whoIsPlayingCreate(String name) {
+    return 'Créer « $name »';
+  }
+
+  @override
+  String whoIsPlayingConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Ajouter $count joueurs',
+      one: 'Ajouter 1 joueur',
+      zero: 'Valider',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String defaultGameName(int number) {
+    return 'Partie $number';
+  }
 }

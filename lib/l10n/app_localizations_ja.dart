@@ -1173,4 +1173,227 @@ class AppLocalizationsJa extends AppLocalizations {
   String groupUsageResets(String date) {
     return '$date にリセット';
   }
+
+  @override
+  String get statsBestWinRate => '最高勝率';
+
+  @override
+  String statsWinsOutOfGames(int wins, int games) {
+    String _temp0 = intl.Intl.pluralLogic(
+      wins,
+      locale: localeName,
+      other: '$games戦$wins勝',
+      zero: '$games戦 勝利なし',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsColumnPlayer => 'プレイヤー';
+
+  @override
+  String get statsColumnGames => '試合';
+
+  @override
+  String statsUnranked(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count試合 · ランク外',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsLeaderboardFooter(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '終了した試合が$count試合以上でランク入り。プレイヤーをタップするとカードを表示します。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsGamesLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '試合',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsWinsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '勝',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsAverageRank => '平均順位';
+
+  @override
+  String statsRankChartTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '順位、直近$count試合',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsTrendImproving => '上昇中';
+
+  @override
+  String get statsTrendDeclining => '下降中';
+
+  @override
+  String get statsTrendSteady => '安定';
+
+  @override
+  String statsRankOrdinal(String rank) {
+    return '$rank位';
+  }
+
+  @override
+  String statsWinStreak(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count連勝中',
+      zero: '連勝なし',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String statsRecord(int total) {
+    return '記録: $total';
+  }
+
+  @override
+  String statsOnGameType(String gameType) {
+    return '$gameTypeでの成績';
+  }
+
+  @override
+  String get statsAverageTotal => '平均最終スコア';
+
+  @override
+  String get statsBestTotal => '最高最終スコア';
+
+  @override
+  String get statsMostBeaten => '最も多く勝った相手';
+
+  @override
+  String get statsOpenPlayerCard => 'プレイヤーカードを開く';
+
+  @override
+  String get shareResult => '結果を共有';
+
+  @override
+  String get shareAnalysis => '分析を共有';
+
+  @override
+  String shareResultSubject(String gameName) {
+    return '結果：$gameName';
+  }
+
+  @override
+  String shareResultTitle(String date) {
+    return '$dateのゲーム';
+  }
+
+  @override
+  String shareResultStanding(int rank, String name, int points) {
+    String _temp0 = intl.Intl.pluralLogic(
+      points,
+      locale: localeName,
+      other: '$points点',
+    );
+    return '$rank. $name — $_temp0';
+  }
+
+  @override
+  String shareResultFooter(String appName, String url) {
+    return '$appNameでスコアを記録：$url';
+  }
+
+  @override
+  String get shareFailed => '共有を開けませんでした';
+
+  @override
+  String get newGameNameLabel => '名前';
+
+  @override
+  String get newGameGameLabel => 'ゲーム';
+
+  @override
+  String newGameAllGames(int count) {
+    return 'すべてのゲーム（$count）';
+  }
+
+  @override
+  String get newGamePlayersLabel => 'プレイヤー · 席順';
+
+  @override
+  String get newGameDragToReorder => 'ドラッグで並べ替え';
+
+  @override
+  String get newGameDealer => '親';
+
+  @override
+  String get newGameAddPlayer => 'プレイヤーを追加';
+
+  @override
+  String newGameStart(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '開始 · $count人',
+      zero: '開始',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get whoIsPlayingTitle => '誰が遊ぶ？';
+
+  @override
+  String get whoIsPlayingSearchHint => '名前、または新しいプレイヤー';
+
+  @override
+  String get whoIsPlayingFrequent => 'よく一緒に遊ぶ人';
+
+  @override
+  String whoIsPlayingSameAs(String gameName) {
+    return '「$gameName」と同じプレイヤー';
+  }
+
+  @override
+  String whoIsPlayingCreate(String name) {
+    return '「$name」を作成';
+  }
+
+  @override
+  String whoIsPlayingConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count人を追加',
+      zero: '完了',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String defaultGameName(int number) {
+    return 'ゲーム$number';
+  }
 }

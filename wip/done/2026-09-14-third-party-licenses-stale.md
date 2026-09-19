@@ -1,5 +1,7 @@
 # THIRD_PARTY_LICENSES.md lists a 2025 dependency set
 
+**Status:** done (2026-09-19) — closed by chore/third-party-licenses. `scripts/third_party_licenses.py` regenerates the file from `pubspec.yaml`'s direct dependencies and each package's `LICENSE` (via `.dart_tool/package_config.json`); the `app` CI job runs its tests and `--check`, and `deps.yml` regenerates it on the monthly refresh.
+
 - **Noted:** 2026-09-14 — while adding `url_launcher` for the AI commentary report control
 - **Theme:** store-listing
 - **Area:** docs

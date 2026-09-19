@@ -567,5 +567,70 @@
   "groupSettingsSaved": "Настройки группы сохранены",
   "groupUsageTitle": "Расход LLM в этом месяце",
   "groupUsageAmount": "Потрачено {used} из {budget}",
-  "groupUsageResets": "Обнулится {date}"
+  "groupUsageResets": "Обнулится {date}",
+  "statsBestWinRate": "Лучший процент побед",
+  "statsWinsOutOfGames": "{wins, plural, =0{Ни одной победы из {games}} one{{wins} победа из {games}} few{{wins} победы из {games}} many{{wins} побед из {games}} other{{wins} победы из {games}}}",
+  "statsColumnPlayer": "Игрок",
+  "statsColumnGames": "Партии",
+  "statsUnranked": "{count, plural, one{{count} партия · пока вне рейтинга} few{{count} партии · пока вне рейтинга} many{{count} партий · пока вне рейтинга} other{{count} партии · пока вне рейтинга}}",
+  "statsLeaderboardFooter": "{count, plural, one{В рейтинге с {count} завершённой партии. Нажмите на игрока, чтобы открыть его карточку.} few{В рейтинге с {count} завершённых партий. Нажмите на игрока, чтобы открыть его карточку.} many{В рейтинге с {count} завершённых партий. Нажмите на игрока, чтобы открыть его карточку.} other{В рейтинге с {count} завершённых партий. Нажмите на игрока, чтобы открыть его карточку.}}",
+  "statsGamesLabel": "{count, plural, one{партия} few{партии} many{партий} other{партии}}",
+  "statsWinsLabel": "{count, plural, one{победа} few{победы} many{побед} other{победы}}",
+  "statsAverageRank": "среднее место",
+  "statsRankChartTitle": "{count, plural, one{Место, последняя {count} партия} few{Место, последние {count} партии} many{Место, последние {count} партий} other{Место, последние {count} партии}}",
+  "statsTrendImproving": "растёт",
+  "statsTrendDeclining": "снижается",
+  "statsTrendSteady": "стабильно",
+  "statsRankOrdinal": "{rank}-е",
+  "statsWinStreak": "{count, plural, =0{Серии побед нет} one{Серия: {count} победа} few{Серия: {count} победы} many{Серия: {count} побед} other{Серия: {count} победы}}",
+  "statsRecord": "Рекорд: {total}",
+  "statsOnGameType": "В игре {gameType}",
+  "statsAverageTotal": "Средний итоговый счёт",
+  "statsBestTotal": "Лучший итоговый счёт",
+  "statsMostBeaten": "Чаще всего обыгран",
+  "statsOpenPlayerCard": "открыть карточку игрока",
+
+  "shareResult": "Поделиться результатом",
+
+  "shareAnalysis": "Поделиться анализом",
+
+  "shareResultSubject": "Результат: {gameName}",
+
+  "shareResultTitle": "Партия от {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} очко} few{{points} очка} many{{points} очков} other{{points} очка}}",
+
+  "shareResultFooter": "Счёт вёлся в {appName}: {url}",
+
+  "shareFailed": "Не удалось открыть меню «Поделиться»",
+
+  "newGameNameLabel": "Название",
+
+  "newGameGameLabel": "Игра",
+
+  "newGameAllGames": "Все игры ({count})",
+
+  "newGamePlayersLabel": "Игроки · порядок хода",
+
+  "newGameDragToReorder": "перетащите, чтобы изменить порядок",
+
+  "newGameDealer": "сдаёт",
+
+  "newGameAddPlayer": "Добавить игрока",
+
+  "newGameStart": "{count, plural, =0{Начать} one{Начать · {count} игрок} few{Начать · {count} игрока} many{Начать · {count} игроков} other{Начать · {count} игрока}}",
+
+  "whoIsPlayingTitle": "Кто играет?",
+
+  "whoIsPlayingSearchHint": "Имя или новый игрок",
+
+  "whoIsPlayingFrequent": "Часто играет с вами",
+
+  "whoIsPlayingSameAs": "Те же игроки, что в «{gameName}»",
+
+  "whoIsPlayingCreate": "Создать «{name}»",
+
+  "whoIsPlayingConfirm": "{count, plural, =0{Готово} one{Добавить {count} игрока} few{Добавить {count} игроков} many{Добавить {count} игроков} other{Добавить {count} игрока}}",
+
+  "defaultGameName": "Игра {number}"
 }

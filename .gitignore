@@ -160,3 +160,6 @@ backend/scripts/deploy.env
 
 # Worktrees created by Claude Code agents (isolation: worktree), one per pull request
 .claude/worktrees/
+
+# /brag launch-video runs: render, composition and audio assets, regenerated on demand
+brag-output/

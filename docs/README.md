@@ -37,13 +37,21 @@ different things — which is exactly the drift that left `PUBLISHING.md` contra
 compliance documents for ten months. A policy that disagrees with the declaration is a Play
 policy violation, not a documentation nit.
 
-## Enabling Pages
+## How it is published
+
+Since 2026-09-19 the page is published by `.github/workflows/deploy-pages.yml`, together with
+the PWA (the Pages site is one artifact for the whole repository): the workflow copies this
+page to the site root, so its URL stays the one above, and runs on every push to `main` that
+changes it. Only `privacy-policy.html` is copied — this README is not published.
 
 One manual step, in the repository settings, done once:
 
-**Settings → Pages → Source: Deploy from a branch → Branch: `main`, folder: `/docs`**
+**Settings → Pages → Source: GitHub Actions**, then run the *Pages* workflow from the Actions
+tab. Until it has deployed, the switch leaves the site without the policy page. Before
+2026-09-19 the source was *Deploy from a branch → `main` / `/docs`*.
 
-Then load the URL in a private window to confirm it is public and needs no login.
+Then load the URL in a private window to confirm it is public and needs no login — the
+workflow's smoke test also fetches it after every deployment.
 
 ## What is *not* here
 

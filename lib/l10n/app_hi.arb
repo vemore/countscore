@@ -567,5 +567,70 @@
   "groupSettingsSaved": "समूह की सेटिंग सहेजी गईं",
   "groupUsageTitle": "इस महीने LLM का उपयोग",
   "groupUsageAmount": "{budget} में से {used} खर्च",
-  "groupUsageResets": "{date} को रीसेट होगा"
+  "groupUsageResets": "{date} को रीसेट होगा",
+  "statsBestWinRate": "सबसे अच्छी जीत दर",
+  "statsWinsOutOfGames": "{wins, plural, =0{{games} में कोई जीत नहीं} one{{games} में {wins} जीत} other{{games} में {wins} जीत}}",
+  "statsColumnPlayer": "खिलाड़ी",
+  "statsColumnGames": "खेल",
+  "statsUnranked": "{count, plural, one{{count} खेल · अभी रैंक नहीं} other{{count} खेल · अभी रैंक नहीं}}",
+  "statsLeaderboardFooter": "{count, plural, one{{count} पूरे खेल के बाद रैंक मिलती है। कार्ड देखने के लिए किसी खिलाड़ी पर टैप करें।} other{{count} पूरे खेलों के बाद रैंक मिलती है। कार्ड देखने के लिए किसी खिलाड़ी पर टैप करें।}}",
+  "statsGamesLabel": "{count, plural, one{खेल} other{खेल}}",
+  "statsWinsLabel": "{count, plural, one{जीत} other{जीत}}",
+  "statsAverageRank": "औसत स्थान",
+  "statsRankChartTitle": "{count, plural, one{स्थान, पिछला खेल} other{स्थान, पिछले {count} खेल}}",
+  "statsTrendImproving": "सुधार पर",
+  "statsTrendDeclining": "गिरावट पर",
+  "statsTrendSteady": "स्थिर",
+  "statsRankOrdinal": "{rank}वां",
+  "statsWinStreak": "{count, plural, =0{कोई जीत का सिलसिला नहीं} one{सिलसिला: {count} जीत} other{सिलसिला: {count} जीत}}",
+  "statsRecord": "रिकॉर्ड: {total}",
+  "statsOnGameType": "{gameType} में",
+  "statsAverageTotal": "औसत अंतिम योग",
+  "statsBestTotal": "सबसे अच्छा अंतिम योग",
+  "statsMostBeaten": "सबसे ज़्यादा हराया गया प्रतिद्वंद्वी",
+  "statsOpenPlayerCard": "खिलाड़ी कार्ड खोलें",
+
+  "shareResult": "परिणाम साझा करें",
+
+  "shareAnalysis": "विश्लेषण साझा करें",
+
+  "shareResultSubject": "परिणाम: {gameName}",
+
+  "shareResultTitle": "{date} का खेल",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} अंक} other{{points} अंक}}",
+
+  "shareResultFooter": "{appName} से स्कोर रखे गए: {url}",
+
+  "shareFailed": "साझा करना नहीं खुल सका",
+
+  "newGameNameLabel": "नाम",
+
+  "newGameGameLabel": "खेल",
+
+  "newGameAllGames": "सभी खेल ({count})",
+
+  "newGamePlayersLabel": "खिलाड़ी · बैठने का क्रम",
+
+  "newGameDragToReorder": "क्रम बदलने के लिए खींचें",
+
+  "newGameDealer": "बाँटता है",
+
+  "newGameAddPlayer": "खिलाड़ी जोड़ें",
+
+  "newGameStart": "{count, plural, =0{शुरू करें} =1{शुरू करें · 1 खिलाड़ी} other{शुरू करें · {count} खिलाड़ी}}",
+
+  "whoIsPlayingTitle": "कौन खेल रहा है?",
+
+  "whoIsPlayingSearchHint": "नाम, या नया खिलाड़ी",
+
+  "whoIsPlayingFrequent": "अक्सर आपके साथ खेलते हैं",
+
+  "whoIsPlayingSameAs": "“{gameName}” वाले ही खिलाड़ी",
+
+  "whoIsPlayingCreate": "“{name}” बनाएँ",
+
+  "whoIsPlayingConfirm": "{count, plural, =0{हो गया} =1{1 खिलाड़ी जोड़ें} other{{count} खिलाड़ी जोड़ें}}",
+
+  "defaultGameName": "खेल {number}"
 }

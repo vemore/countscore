@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../models/game.dart';
 import '../models/game_standing.dart';
 import '../models/player.dart';
+import '../models/player_stats.dart';
 import '../models/round.dart';
 import '../models/score.dart';
 import '../repositories/drift/drift_repositories.dart';
@@ -248,26 +249,6 @@ class GameProvider with ChangeNotifier {
     return total;
   }
 
-  List<Map<String, dynamic>> getRanking() {
-    final ranking = <Map<String, dynamic>>[];
-
-    for (final player in _currentPlayers) {
-      ranking.add({
-        'player': player,
-        'total': getPlayerTotal(player.id!),
-      });
-    }
-
-    if (_currentGame != null) {
-      ranking.sort((a, b) {
-        final comparison = (a['total'] as int).compareTo(b['total'] as int);
-        return _currentGame!.isLowestScoreWins ? comparison : -comparison;
-      });
-    }
-
-    return ranking;
-  }
-
   String? _remotelyDeletedGameName;
 
   /// The name of the open game another device deleted, returned once: the board
@@ -417,6 +398,12 @@ class GameProvider with ChangeNotifier {
     return await _playerRepo.getColorsByName();
   }
 
+  /// How many games each known player has played, by name (see
+  /// `PlayerRepository.getGameCountsByName`).
+  Future<Map<String, int>> getPlayerGameCounts() {
+    return _playerRepo.getGameCountsByName();
+  }
+
   Future<int?> getPlayerColorValue(String name) async {
     final colors = await _playerRepo.getColorsByName();
     return colors[name];
@@ -456,6 +443,11 @@ class GameProvider with ChangeNotifier {
   Future<Map<String, dynamic>> getPlayerStats(String playerName) async {
     return await _statsRepo.getStatsByName(playerName);
   }
+
+  /// Every finished game with its players' totals — what the leaderboard and
+  /// the player card are computed from (`lib/models/player_stats.dart`).
+  Future<List<FinishedGameResult>> getFinishedGameResults() =>
+      _statsRepo.getFinishedGameResults();
 
   Future<void> renamePlayer(String oldName, String newName) async {
     await _playerRepo.renameByName(oldName, newName);

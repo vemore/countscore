@@ -4,6 +4,7 @@ import '../../models/game.dart';
 import '../../models/game_analysis.dart';
 import '../../models/game_type.dart';
 import '../../models/player.dart';
+import '../../models/player_stats.dart';
 import '../../models/round.dart';
 import '../../models/score.dart';
 import '../../services/drift/database.dart';
@@ -564,6 +565,23 @@ class DriftPlayerRepository implements PlayerRepository {
   }
 
   @override
+  Future<Map<String, int>> getGameCountsByName() async {
+    final rows = await _db
+        .customSelect(
+          'SELECT p.name AS name, COUNT(DISTINCT gp.gameId) AS c '
+          'FROM players p '
+          'JOIN game_players gp ON gp.player_id = p.id AND gp.deleted_at IS NULL '
+          'JOIN games g ON g.id = gp.gameId AND g.deleted_at IS NULL '
+          'WHERE p.group_id IS NULL AND p.deleted_at IS NULL '
+          'GROUP BY p.id',
+        )
+        .get();
+    return {
+      for (final r in rows) r.data['name'] as String: r.data['c'] as int,
+    };
+  }
+
+  @override
   Future<int> renameByName(String oldName, String newName) async {
     final now = _nowMs();
     final globals = await _db
@@ -777,6 +795,64 @@ class DriftPlayerStatsRepository implements PlayerStatsRepository {
         'byGameType': <String, Map<String, int>>{},
       };
     }
+  }
+
+  @override
+  Future<List<FinishedGameResult>> getFinishedGameResults() async {
+    // A score counts only while its round lives, as on the board. A game with
+    // no score at all says nothing about anyone and is left out.
+    final rows = await _db.customSelect(
+      '''
+      SELECT g.id AS gameId, g.finishedAt AS finishedAt,
+             g.isLowestScoreWins AS isLowestScoreWins,
+             COALESCE(gt.builtin_key, gt.name) AS gameTypeKey,
+             p.uuid AS playerUuid, p.name AS name,
+             p.deleted_at AS playerDeletedAt,
+             gp.orderIndex AS orderIndex, gp.colorValue AS colorValue,
+             COALESCE(SUM(CASE WHEN r.id IS NOT NULL THEN s.value END), 0)
+               AS total,
+             COUNT(r.id) AS scoreCount
+      FROM games g
+      JOIN game_players gp ON gp.gameId = g.id AND gp.deleted_at IS NULL
+      JOIN players p ON p.id = gp.player_id
+      LEFT JOIN game_types gt ON gt.id = g.gameTypeId
+      LEFT JOIN scores s ON s.playerId = gp.id AND s.deleted_at IS NULL
+      LEFT JOIN rounds r ON r.id = s.roundId AND r.deleted_at IS NULL
+      WHERE g.deleted_at IS NULL AND g.finishedAt IS NOT NULL
+      GROUP BY g.id, gp.id
+      ORDER BY g.finishedAt DESC, g.id DESC, gp.orderIndex ASC
+      ''',
+    ).get();
+
+    final byGame = <int, List<QueryRow>>{};
+    for (final row in rows) {
+      byGame.putIfAbsent(row.data['gameId'] as int, () => []).add(row);
+    }
+    final results = <FinishedGameResult>[];
+    for (final entry in byGame.entries) {
+      final first = entry.value.first.data;
+      if (!entry.value.any((r) => (r.data['scoreCount'] as int) > 0)) continue;
+      final finishedAt = DateTime.tryParse(first['finishedAt'] as String);
+      if (finishedAt == null) continue;
+      results.add(FinishedGameResult(
+        gameId: entry.key,
+        finishedAt: finishedAt,
+        gameTypeKey: first['gameTypeKey'] as String?,
+        isLowestScoreWins: (first['isLowestScoreWins'] as int) == 1,
+        participants: [
+          for (final r in entry.value)
+            GameParticipant(
+              playerUuid: r.data['playerUuid'] as String,
+              name: r.data['name'] as String,
+              orderIndex: r.data['orderIndex'] as int,
+              colorValue: r.data['colorValue'] as int?,
+              total: r.data['total'] as int,
+              isActive: r.data['playerDeletedAt'] == null,
+            ),
+        ],
+      ));
+    }
+    return results;
   }
 }
 

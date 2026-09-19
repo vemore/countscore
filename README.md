@@ -38,8 +38,15 @@ at your own server in Settings → Server if you want the connected features.
 - **Who starts?**: the score table's menu draws one of the game's players at random.
 - **Play again**: from the end screen, the ranking or a finished game in the history, one tap starts
   the next game with the same type and the same players in the same order.
+- **Share a result**: the end screen, the ranking and the analysis share the standings as a
+  short text — game type, date, places and totals, the commentary on the analysis — through
+  the system share sheet, with a link to the app's Play listing.
 - **Global players**: a player exists once and is shared across games, so statistics follow
   them from one game to the next.
+- **Player statistics**: a leaderboard of the finished games, all of them or one game type
+  at a time — win rate, wins and games, the best win rate up top — and, a tap on a player
+  away, their card on that game: average place, the place over the last 12 games, the
+  current win streak, the best and average final totals, the opponent most often beaten.
 - **10 languages**, fully translated: English, French, Spanish, German, Portuguese (BR),
   Russian, Chinese (Simplified), Japanese, Hindi and Arabic — Arabic including RTL layout.
 - **Offline-first**: everything works with no network. Data lives on the device.
@@ -88,7 +95,7 @@ at your own server in Settings → Server if you want the connected features.
 | Legacy migrator | `sqflite` ^2.4.3 — bootstraps an existing database to schema v11, then Drift takes over |
 | UI | `flex_color_picker` ^4.0.0, `flutter_markdown_plus` |
 | Group sync | `web_socket_channel` ^3.0.3 (change signal), `flutter_secure_storage` ^11.1.1 (device token), `crypto` ^3.0.7 (name-based uuids) |
-| Utilities | `intl`, `http`, `url_launcher` (report email, Play listing), `in_app_review` ^2.0.12 (Play review sheet), `package_info_plus` (version), `wakelock_plus`, `shared_preferences`, `path_provider`, `file_picker` |
+| Utilities | `intl`, `http`, `url_launcher` (report email, Play listing), `share_plus` (share a result), `in_app_review` ^2.0.12 (Play review sheet), `package_info_plus` (version), `wakelock_plus`, `shared_preferences`, `path_provider`, `file_picker` |
 
 Data access goes through the repository interfaces in `lib/repositories/`; screens never
 touch the database directly.
@@ -170,6 +177,26 @@ scripts/deploy_web.sh --dry-run   # build + checks, prints what it would run
 scripts/deploy_web.sh             # publish, keeping the previous release
 scripts/deploy_web.sh --rollback  # swap the previous release back
 ```
+
+The PWA is also published on **GitHub Pages**, at `https://<owner>.github.io/<repo>/`, by
+[`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml): on every push to
+`main` that touches the app, and on demand from the Actions tab. That build carries no server
+address, so it runs local-only — scores and statistics in the browser — until the visitor
+enters a server of their own in Settings → Server. It runs the same checks as
+`deploy_web.sh` (`scripts/check_web_build.sh`, `scripts/web_binaries.sh --check`) and
+publishes the privacy policy page next to it. A fork publishes at its own path: the base href
+comes from the repository name.
+
+**If you operate a backend** that users of a Pages build will connect to, that build is
+**cross-origin** to your server, unlike the one it serves itself:
+
+- add the Pages origin to `CORS_ORIGINS` in the backend's `.env` — scheme and host only, no
+  path: `CORS_ORIGINS=https://<owner>.github.io` (comma-separated with any others). Without
+  it the game analysis and group sync fail in the browser, and only there;
+- serve the backend over `https://`: a Pages page cannot call an `http://` server, not even
+  one on your LAN;
+- games stored by the PWA on one origin do not appear in the PWA on another (browser storage
+  is per origin), except through group sync.
 
 ## Project structure
 
@@ -267,8 +294,11 @@ CI — it calls the production endpoint. See `.llmwiki/Testing.md`.
 - **App** — an [`osv-scanner`](https://github.com/google/osv-scanner) audit of every package
   in `pubspec.lock` that fails on any advisory (ignores, each with a `wip/` entry, go in
   [`.github/osv-scanner.toml`](.github/osv-scanner.toml)), then checks that the two binaries committed under `web/` match the versions
-  `pubspec.lock` resolves ([`scripts/web_binaries.sh`](scripts/web_binaries.sh)), then
-  codegen, `flutter analyze`, `flutter test`, release web build.
+  `pubspec.lock` resolves ([`scripts/web_binaries.sh`](scripts/web_binaries.sh)) and that
+  `THIRD_PARTY_LICENSES.md` matches `pubspec.yaml`
+  ([`scripts/third_party_licenses.py`](scripts/third_party_licenses.py)), then codegen, `flutter analyze`, `flutter test`, release web build,
+  checked by [`scripts/check_web_build.sh`](scripts/check_web_build.sh) — the check both
+  publishing paths run.
 - **Android** — debug APK from a clean checkout, as a fresh-clone build proof, plus an
   assertion that the release manifest still declares `INTERNET`.
 - **Sync** — the backend on a real Postgres, then the two-device group sync test against it.
@@ -277,8 +307,12 @@ CI — it calls the production endpoint. See `.llmwiki/Testing.md`.
 for the backend (`uv`), the app (`pub`) and the GitHub Actions. It only proposes the
 dependencies *written in* `pubspec.yaml`, so
 [`.github/workflows/deps.yml`](.github/workflows/deps.yml) runs `flutter pub upgrade`
-monthly for the transitive half, refreshes the committed `web/` binaries to match, runs the
+monthly for the transitive half, refreshes the committed `web/` binaries and
+`THIRD_PARTY_LICENSES.md` to match, runs the
 gates and pushes a `chore/deps-<date>` branch when anything moved.
+[`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) is not a check: it
+publishes the PWA and the privacy page on GitHub Pages after a merge
+([Publishing the PWA](#publishing-the-pwa)).
 
 Both of those cadences are load-bearing and both are triggered by a `schedule:` alone, which
 GitHub disables after 60 days without repository activity — silently, since a scheduled run
@@ -310,7 +344,9 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 CountScore uses several open-source packages. All dependencies use permissive licenses (MIT
 and BSD variants); the bundled Nunito font is under the SIL Open Font License 1.1. See [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) for complete
-attribution, or the built-in Flutter license viewer in the app.
+attribution, or the built-in Flutter license viewer in the app. That file is generated from
+`pubspec.yaml` by `scripts/third_party_licenses.py` (after `flutter pub get`), and CI fails
+when the committed copy differs.
 
 ## Privacy
 
@@ -354,6 +390,10 @@ usage), are stored there too. Anyone with
 the group's invite code can join, so share it only with the people you mean to. Games you do not share never leave the device.
 Leaving the group keeps your copies as local games; it does not remove them from the server,
 whose operator — you — deletes them there.
+
+**Sharing a result** is not a third way out: the app builds the text on the device and hands
+it to your phone's share sheet (the browser's, in the PWA); it sends nothing itself, and the
+text goes only where you choose to send it.
 
 The one Android permission the app declares is `INTERNET`, for these two features and
 nothing else. It is unused until you configure a server. The merged release manifest also

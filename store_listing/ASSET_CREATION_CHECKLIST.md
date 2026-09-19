@@ -199,7 +199,7 @@ Complete checklist for creating all visual assets needed for Google Play Store p
 
 ### Screenshot Capture
 
-**Use the automated script**: `./scripts/capture_screenshots.sh`
+**Use the automated script**: `./scripts/capture_screenshots.sh <locale>` (one store locale, into `store_listing/<locale>/raw/`)
 
 Or manually capture each:
 
