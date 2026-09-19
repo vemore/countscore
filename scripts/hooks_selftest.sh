@@ -361,6 +361,14 @@ git -C "$TREE" rm -q --cached backend/new.py && rm -rf "$TREE/backend"
 mkdir -p "$TREE/lib" && echo "void main() {}" > "$TREE/lib/a.dart" && git -C "$TREE" add lib
 tree_commit "an app change in a tree never set up" 2 "commit again"
 git -C "$TREE" rm -q --cached lib/a.dart && rm -rf "$TREE/lib"
+# The ARB checks run the committed tree's arb_keys.py, so a branch's own exemptions count.
+mkdir -p "$TREE/lib/l10n" "$TREE/.claude/hooks" && echo '{}' > "$TREE/lib/l10n/app_fr.arb"
+git -C "$TREE" add lib
+printf 'import sys\nprint("tree checker")\nsys.exit(1 if "--values" in sys.argv else 0)\n' > "$TREE/.claude/hooks/arb_keys.py"
+tree_commit "the tree's own ARB checker is the one that runs" 2 "tree checker"
+printf 'import sys\nsys.exit(0)\n' > "$TREE/.claude/hooks/arb_keys.py"
+tree_commit "the tree's ARB checker passing lets the commit through to the gates" 2 "commit again"
+git -C "$TREE" rm -q --cached lib/l10n/app_fr.arb && rm -rf "$TREE/lib" "$TREE/.claude"
 
 echo "== pull request ==============================================="
 stop_case() {  # description, expected (silent|block), [stop_hook_active]

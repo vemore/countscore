@@ -183,8 +183,13 @@ $recipe"
 fi
 
 # 4. Localization ----------------------------------------------------------
+# The checker of the tree being committed, when it has one: a branch that adds a key
+# equal to its English value adds the SAME_AS_ENGLISH_OK entry in the same change, and
+# this hook runs from the main checkout, whose list does not have it until the merge.
+ARB_KEYS="$HOOKS/arb_keys.py"
+[ -f "$ROOT/.claude/hooks/arb_keys.py" ] && ARB_KEYS="$ROOT/.claude/hooks/arb_keys.py"
 if printf '%s\n' "$paths" | grep -qE '^lib/l10n/.*\.arb$'; then
-    if ! arb_report=$(CLAUDE_PROJECT_DIR="$ROOT" python3 "$HOOKS/arb_keys.py" --keys 2>&1); then
+    if ! arb_report=$(CLAUDE_PROJECT_DIR="$ROOT" python3 "$ARB_KEYS" --keys 2>&1); then
         refuse "Refused: the ARB files are not in sync.
 
 $arb_report
@@ -192,7 +197,7 @@ $arb_report
 Ten languages must hold the same keys -- a key missing from one is a silent English
 fallback for those users. The \`i18n-add-string\` skill has the procedure."
     fi
-    if ! arb_values=$(CLAUDE_PROJECT_DIR="$ROOT" python3 "$HOOKS/arb_keys.py" --values 2>&1); then
+    if ! arb_values=$(CLAUDE_PROJECT_DIR="$ROOT" python3 "$ARB_KEYS" --values 2>&1); then
         refuse "Refused: some ARB values are still the literal English string.
 
 $arb_values

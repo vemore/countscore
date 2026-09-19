@@ -116,7 +116,8 @@ flutter test
 When a translation legitimately equals the English string — a brand name, a loanword, a
 proper noun such as a game's name — add the key to `SAME_AS_ENGLISH_OK` in
 `.claude/hooks/arb_keys.py` with a comment saying why, rather than distorting the
-translation to get past the check. A key ending in `*` exempts a whole prefix.
+translation to get past the check. A key ending in `*` exempts a whole prefix. The entry
+counts in the same commit: the hook runs the `arb_keys.py` of the tree being committed.
 
 ## Rules
 
