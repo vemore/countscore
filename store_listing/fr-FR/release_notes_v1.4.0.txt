@@ -1,6 +1,6 @@
 CountScore 1.4.0
 
-• Réparé : les types intégrés dont un ancien éditeur avait effacé les règles les retrouvent — ZapZap, 6 qui prend et les autres.
+• Réparé : les types intégrés qui avaient perdu leurs règles avec un ancien éditeur les réaffichent.
 • Une toute nouvelle icône.
 • L'écran des résultats explique pourquoi un jeu à élimination ne suit pas les totaux.
 • Statistiques et classement donnent enfin les mêmes places.

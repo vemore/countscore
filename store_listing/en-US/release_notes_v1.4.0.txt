@@ -1,6 +1,6 @@
 CountScore 1.4.0
 
-• Restored: built-in types whose rules an older editor wiped get them back — ZapZap, Take 6 and the rest.
+• Restored: built-in types that lost their rules to an older editor show them again.
 • A brand-new app icon, on the launcher and in the app.
 • The results screen now says why an elimination game is not ranked by the totals.
 • Statistics and standings agree on the places of a finished game.
