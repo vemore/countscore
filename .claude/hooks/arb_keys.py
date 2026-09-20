@@ -49,7 +49,6 @@ ALL_LOCALES = "*"
 # deliberate; a key ending in "*" exempts every key with that prefix.
 SAME_AS_ENGLISH_OK = {
     "appTitle": ALL_LOCALES,        # "CountScore" -- the product name
-    "artistName": ALL_LOCALES,      # "efendi.sign" -- a person's handle
     "backendUrlHint": ALL_LOCALES,  # an example URL
     "gameTypeName*": ALL_LOCALES,   # Yahtzee, Qwirkle, Uno, Skyjo, Rummikub, Farkle,
                                     # Bridge, Tarot, Canasta, Wizard, Scrabble, ZapZap --

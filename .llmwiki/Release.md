@@ -103,6 +103,12 @@ the process (`release-android` §3b).
 
 ### Icons
 
+**The artwork is the owner's own, and this is the record of where it came from**: he
+generated it with ChatGPT, had Fable transcribe the result to SVG, and it was then reframed,
+flattened, repainted in the app palette and given an authored monochrome layer here. Nobody
+else's work is in it — which is why the About screen credits no artist
+(`wip/done/2026-09-20-about-credits-an-icon-the-app-no-longer-uses.md`).
+
 **The source is vector, and it lives in `design/icon/`** — not in `store_listing/`, because
 the same artwork is the launcher icon, the PWA icon, the in-app asset *and* the store icon.
 `design/icon/source-from-chatgpt.svg` is the owner's untouched original; the six files

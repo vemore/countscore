@@ -1,6 +1,8 @@
 // The About screen reads the version from the platform (pubspec at build
 // time) instead of a string frozen in the ARB files, and lists the connected
-// features next to the local ones.
+// features next to the local ones. It credits nobody for the icon: the one it
+// ships is the owner's own, and the Credits card named the artist of the icon
+// it dropped in #195.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -42,7 +44,8 @@ void main() {
   // and a future completed inside one test's fake-async zone never delivers
   // to a FutureBuilder in the next test.
   testWidgets('shows the platform version and the connected features, '
-      'without overflowing a narrow screen in a long language', (tester) async {
+      'credits no icon artist, and does not overflow a narrow screen in a '
+      'long language', (tester) async {
     await tester.pumpWidget(_app(const Locale('en')));
     await tester.pumpAndSettle();
 
@@ -50,6 +53,10 @@ void main() {
     expect(find.textContaining('1.0.0'), findsNothing);
     expect(find.text('Group sharing'), findsOneWidget);
     expect(find.text('AI game analysis'), findsOneWidget);
+    // No Credits section, and above all not the old icon's artist.
+    expect(find.text('Credits'), findsNothing);
+    expect(find.textContaining('efendi'), findsNothing);
+    expect(find.byIcon(Icons.copyright), findsNothing);
     expect(tester.takeException(), isNull);
 
     tester.view.physicalSize = const Size(320, 568);
