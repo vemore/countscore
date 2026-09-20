@@ -1,0 +1,10 @@
+CountScore 1.3.1
+
+• Corrigé : modifier un type de jeu n'efface plus ses règles.
+• Les jeux à élimination se classent selon qui a tenu le plus longtemps.
+• ZapZap, Rami et 6 qui prend s'arrêtent seuls quand il ne reste qu'un joueur.
+• Un seul écran de classement, et le podium reste dans la liste.
+• L'éditeur de types vérifie vos saisies : seuils, noms, couleurs lisibles.
+• Un groupe dont le propriétaire a disparu peut en retrouver un.
+
+Les fonctions en ligne restent inactives sans serveur.
