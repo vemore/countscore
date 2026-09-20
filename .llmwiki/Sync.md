@@ -99,6 +99,40 @@ reads it while the key is set. See [[SchemaV10]] and [[I18n]].
 - **Idempotence**: the server deduplicates on `(origin_device_id, client_lamport)`. A
   network retry of the same delta is a no-op.
 
+### A wiped `rules_slug` does not travel (since 2026-09-20)
+
+`rules_slug` is the one game-type column whose **null is not a value**. Nothing in the app
+clears it on purpose — *Restore the default* (`game_rules_screen.dart`) clears `rules`, not
+the slug — so a null there is always damage from the pre-1.3.1 editor. Three rules in
+`sync_store.dart` keep that damage from spreading, and from undoing the v18 repair:
+
+- **Push** (`case 'game_type'`): the `rules_slug` key is **omitted** when the local value is
+  null, rather than sent as null. The server keeps a column whose key is absent
+  (`_client_payload` filters on key presence, not on value), so an absent key means "no
+  opinion" end to end.
+- **Pull, update** (`_applyGameType`): `rules_slug` is taken only when the incoming value is
+  non-null, instead of the `containsKey` test every other column uses. `rules` keeps
+  `containsKey`, because the user does clear it.
+- **Pull, insert**: a received built-in type with a null slug is inserted with
+  `defaultRulesSlugs[builtin_key]` — the same derivation `applyV16`/`applyV18` make, imported
+  rather than copied. The migration chain will not run again, so this is the only repair left
+  for a device that joins a group before a healthy one has pushed the slug back.
+
+A non-null slug still travels and still wins: a type the user **renames** loses its
+`builtin_key` (`isBuiltinRename`, `lib/utils/game_type_name.dart`), and the slug is then the
+only thing carrying its rules between devices.
+
+> **Rejected: dropping `rules_slug` from the payload** and deriving it on receipt. It would
+> make the corruption non-contagious in one line, but it is a contract change between
+> devices, and it costs a renamed type its rules — exactly the case the column exists for
+> ([[SchemaV10]]). Weighed twice now, in
+> `wip/2026-09-20-wiped-rules-slug-is-never-restored` and in
+> `wip/2026-09-20-a-null-rules-slug-travels-and-undoes-the-v18-repair`.
+
+Healing the group needs nothing more: the v18 `UPDATE` on a linked row fires the v11 capture
+trigger, so a repaired device pushes its restored slug and overwrites the null the server
+holds. `test/sync/sync_store_test.dart` covers the five cases.
+
 ### The client (since 2026-09-13)
 
 Sync runs only while a server URL is configured **and** the device holds a device token —

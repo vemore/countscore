@@ -88,6 +88,13 @@ void main() {
     return row.data['remote_uuid'] as String;
   }
 
+  /// The `rules` and `rules_slug` a game type row holds.
+  Future<Map<String, Object?>> rulesOf(int typeId) async => (await db
+          .customSelect('SELECT rules, rules_slug FROM game_types WHERE id = ?',
+              variables: [Variable(typeId)])
+          .getSingle())
+      .data;
+
   /// The game type [localGame] plays, linked into the group by a shared game
   /// that is then deleted: the type is free of live games, so it can go too.
   Future<int> sharedTypeFreedOfGames(SyncMembership m) async {
@@ -317,6 +324,42 @@ void main() {
       expect(type.entityUuid, remote,
           reason: 'the group identity the type was linked under');
     });
+
+    test('a game type with no rules_slug is pushed without the key', () async {
+      final m = await joined();
+      const typeId = 1;
+      final g = await localGame();
+      await store.shareGame(g.game, m.groupId);
+      for (final d in await store.preparePush(m)) {
+        await store.markSent(d, m.deviceId);
+      }
+
+      Future<Map<String, dynamic>> pushedTypePayload() async {
+        final deltas = await store.preparePush((await store.membership())!);
+        final type = deltas.firstWhere((d) => d.entityType == 'game_type');
+        for (final d in deltas) {
+          await store.markSent(d, m.deviceId);
+        }
+        return type.payload;
+      }
+
+      await db.customStatement(
+          "UPDATE game_types SET rules_slug = 'zapzap' WHERE id = ?", [typeId]);
+      expect((await pushedTypePayload())['rules_slug'], 'zapzap',
+          reason: 'a slug this device holds still travels — a renamed type has '
+              'nothing else to carry its rules');
+
+      await db.customStatement(
+          'UPDATE game_types SET rules_slug = NULL, rules = NULL WHERE id = ?', [typeId]);
+      final wiped = await pushedTypePayload();
+      expect(wiped.containsKey('rules_slug'), isFalse,
+          reason: 'a wiped slug is never a deliberate value: the key is omitted '
+              'so the group keeps the one a healthy device gave it');
+      expect(wiped.containsKey('rules'), isTrue,
+          reason: 'rules is cleared on purpose (Restore the default), so its '
+              'null still travels');
+      expect(wiped['rules'], isNull);
+    });
   });
 
   group('applyPulled', () {
@@ -434,6 +477,76 @@ void main() {
           .customSelect("SELECT name, builtin_key FROM game_types WHERE uuid = 'mine'")
           .getSingle();
       expect(mine.data, {'name': 'Mon Uno', 'builtin_key': null});
+    });
+
+    test('a pulled null rules_slug does not clear the slug the local row has', () async {
+      final m = await joined();
+      final typeId = await sharedTypeFreedOfGames(m);
+      await db.customStatement(
+        "UPDATE game_types SET rules_slug = 'zapzap', rules = 'Mes règles' WHERE id = ?",
+        [typeId],
+      );
+      final remote = await remoteTypeUuid(typeId);
+
+      // What a device still holding the pre-1.3.1 damage sends.
+      await store.applyPulled(m, [
+        _delta('game_type', remote, 99, 99,
+            {'name': 'ZapZap', 'builtin_key': 'zapzap', 'rules': null, 'rules_slug': null}),
+      ], 99);
+
+      expect((await rulesOf(typeId))['rules_slug'], 'zapzap',
+          reason: 'the v18 repair is not undone by a null travelling back');
+      expect((await rulesOf(typeId))['rules'], isNull,
+          reason: 'rules is still cleared by a null — only the slug is spared');
+    });
+
+    test('a pulled rules_slug still replaces the local one', () async {
+      final m = await joined();
+      final typeId = await sharedTypeFreedOfGames(m);
+      await db.customStatement(
+          "UPDATE game_types SET rules_slug = 'zapzap' WHERE id = ?", [typeId]);
+      final remote = await remoteTypeUuid(typeId);
+
+      await store.applyPulled(m, [
+        _delta('game_type', remote, 99, 99, {'name': 'Belote', 'rules_slug': 'belote'}),
+      ], 99);
+
+      expect((await rulesOf(typeId))['rules_slug'], 'belote',
+          reason: 'sharing a ruleset across devices keeps working');
+    });
+
+    test('a built-in type pulled with a wiped slug is inserted with the derived one',
+        () async {
+      final m = await joined();
+      // A device that does not have this built-in type at all.
+      await db.customStatement("DELETE FROM game_types WHERE builtin_key = 'six_nimmt'");
+      const remote = '66666666-6666-4666-8666-666666666666';
+
+      await store.applyPulled(m, [
+        _delta('game_type', remote, 1, 1,
+            {'name': '6 nimmt!', 'builtin_key': 'six_nimmt', 'rules_slug': null}),
+      ], 1);
+
+      final row = await db
+          .customSelect("SELECT rules_slug FROM game_types WHERE builtin_key = 'six_nimmt'")
+          .getSingle();
+      expect(row.data['rules_slug'], 'six_nimmt',
+          reason: 'derived from the key, as applyV16 does — no migration will '
+              'run again to repair it');
+    });
+
+    test('a custom type pulled with no slug keeps none', () async {
+      final m = await joined();
+      const remote = '77777777-7777-4777-8777-777777777777';
+
+      await store.applyPulled(
+          m, [_delta('game_type', remote, 1, 1, {'name': 'Mon jeu', 'rules_slug': null})], 1);
+
+      final row = await db
+          .customSelect("SELECT rules_slug FROM game_types WHERE name = 'Mon jeu'")
+          .getSingle();
+      expect(row.data['rules_slug'], isNull,
+          reason: 'nothing to derive without a builtin key');
     });
 
     test('a game type deleted in the group is tombstoned here too', () async {
