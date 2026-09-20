@@ -2,7 +2,7 @@
 
 > Scope: how the app reaches SQLite — Drift, the sqflite bootstrap, repositories, codegen.
 > Related: [[SchemaV10]] · [[MobileApp]] · [[Web]] · [[Testing]] · [[Sync]]
-> Updated: 2026-09-19
+> Updated: 2026-09-20
 
 ## Facts
 
@@ -25,15 +25,17 @@ All three remaining roles are inside `lib/services/database_service.dart` (1468 
 - `lib/services/drift/tables.dart` (162 l.) — 9 table declarations mirroring the v9 sqflite
   schema, using `.named()` to keep the legacy mixed-case column names (`gameTypeId`,
   `orderIndex`, `created_at`, `builtin_key`).
-- `lib/services/drift/database.dart` — `AppDatabase`, `schemaVersion => 11`.
+- `lib/services/drift/database.dart` — `AppDatabase`, and the `schemaVersion` getter that
+  must equal `DatabaseService.schemaVersion` ([[SchemaV10]] holds the current number).
   `onUpgrade` is **intentionally a no-op**: by the time Drift opens the file, sqflite has
   already brought it to 9, so Drift sees 9 == 9. `onCreate` (web, fresh install) builds v9
   directly: `m.createAll()` + `_createExtraIndexes()` (20 indexes) + `_insertDefaultGameTypes()`.
 
-  > **Status: Outdated** (2026-09-16) — both bullets above: `tables.dart` declares **12**
-  > tables since v10, `schemaVersion` is **13**, and `onUpgrade` has replayed the post-v9
-  > steps since v11. `_insertDefaultGameTypes()` now seeds 22 types, each with its
-  > `builtin_key`. See [[SchemaV10]].
+  > **Status: Outdated** (2026-09-16, current number 2026-09-20) — both bullets above:
+  > `tables.dart` declares **12** tables since v10, and `onUpgrade` has replayed the
+  > post-v9 steps since v11. `_insertDefaultGameTypes()` now seeds 22 types, each with its
+  > `builtin_key`. The version number is deliberately not repeated here any more — it moves
+  > with every schema change and [[SchemaV10]] owns it.
 - On the web the executor is wrapped in `PersistenceFlushInterceptor`
   (`lib/services/drift/connection/persistence_flush.dart`): drift's IndexedDB storage would
   otherwise leave committed transactions and the schema version unwritten until the next
