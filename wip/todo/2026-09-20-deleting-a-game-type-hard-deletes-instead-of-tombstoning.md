@@ -11,10 +11,18 @@
 'DELETE FROM game_types WHERE id = ?'
 ```
 
-while every other table in the same file soft-deletes — a `deleted_at` stamp the capture
-triggers turn into a delete delta, which is what [[Sync]] pushes and what `getAll` already
-filters on (`WHERE deleted_at IS NULL`). `game_types` carries the column like the rest; only
-this one path ignores it.
+while every other table in the same file soft-deletes **when the row is shared** — a
+`deleted_at` stamp the capture triggers turn into a delete delta, which is what [[Sync]]
+pushes and what `getAll` already filters on (`WHERE deleted_at IS NULL`). `game_types` carries
+the column like the rest; only this one path ignores it.
+
+**Corrected (2026-09-20, refinement).** The entry first said "every other table soft-deletes",
+flatly. It does not: `DriftGameRepository.delete` (`drift_repositories.dart:147`) branches on
+`if (await _isShared(_db, 'games', id))` → `_tombstone`, and falls back to a hard
+`DELETE FROM games` (`:191`) for a row in no group; rounds (`:332`) and game_players (`:540`)
+have the same shape, with the helper at `:44-56`. The fault is therefore narrower and more
+precise than stated: **`game_types` is the only delete path with no shared/unshared branch at
+all** — it hard-deletes a row that is in a group, which is exactly the case the others handle.
 
 Consequences, in order of cost:
 

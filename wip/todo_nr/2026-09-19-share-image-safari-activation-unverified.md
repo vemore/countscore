@@ -14,8 +14,24 @@ window is shorter, or if the draw is slower on a phone, `navigator.share` reject
 `NotAllowedError`, the retry without the image rejects too, and share_plus falls back to a
 `mailto:`.
 
-**Fix:** measure on an iPhone (the PWA, a finished game, Share). If the share is refused,
-draw the card when the screen opens and keep the bytes, so the tap shares at once.
+**Decided (2026-09-20, refinement):** there is no iOS device to measure on, so the entry
+stops depending on a measurement. Measuring first was the better order only while an iPhone
+was assumed to be available; without one the entry could never be closed as written. Draw the
+card **up front** instead — the defensive fix the measurement would have led to anyway if the
+window turned out to be short, and it is correct on every browser rather than only on the one
+that was going to be tested.
+
+**Fix:** render the PNG when the standings screen opens and keep the bytes, so the tap calls
+`navigator.share` immediately and spends none of the transient user activation on drawing.
+`ShareResultButton` (`lib/widgets/share_result_button.dart:133`) has no `initState` today and
+draws inside `_share`; the bytes move to state, with the tap falling back to drawing inline if
+they are not ready yet (a share tapped before the first frame settles must still work). Nothing
+about the Web Share call itself changes.
 
 **Acceptance:**
-- On iOS Safari, Share on the end screen opens the system sheet with the PNG and the text.
+- A widget test proves the PNG is rendered before any tap — `renderImage` is called once on
+  first build, and the tap handler does not call it again.
+- The tap still shares text and image when the pre-render has not finished (the inline draw
+  remains as the fallback, covered by a test).
+- The share path is unchanged on Android and in desktop Chromium: the existing
+  `share_result_button` tests pass untouched.

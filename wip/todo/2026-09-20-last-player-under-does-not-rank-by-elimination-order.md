@@ -24,5 +24,17 @@ hit it, and nothing is wrong today.
 narrow and say so in the game-type editor, so a user who picks `lastPlayerUnder` is not
 surprised.
 
-**Open question:** does the user want the `under` shape to follow the elimination order too?
-The 2026-09-20 decision only named the `over` one.
+**Decided (2026-09-20, refinement):** widen it to both. "Last player standing" means what it
+says whichever direction the threshold runs, so `ranksByEliminationOrder` takes
+`lastPlayerOver` **and** `lastPlayerUnder`. The narrow alternative — keeping the predicate as
+it is and warning in the game-type editor — was rejected: it would ask the user to understand
+a distinction the model itself does not make (`GameType.isGameOver` already documents the two
+as one shape, and `isEliminated` already carries the direction in `playerDeadConditionType`).
+
+**Acceptance:**
+- `ranksByEliminationOrder` is true for a finished game of a type whose `gameOverConditionType`
+  is `lastPlayerUnder` and whose `playerDeadConditionType` is set, and a test mirrors the
+  existing `over` case in `test/models/game_standing_test.dart`.
+- A type with `lastPlayerUnder` and **no** elimination threshold still ranks by the total.
+- The twenty seeded types keep exactly the places they have today (no seeded type is
+  `lastPlayerUnder`, so the existing standings tests must not move).

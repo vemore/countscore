@@ -6,9 +6,11 @@
 - **Blocks release:** no
 
 The third of the table helpers the 2026-09-18 refinement ordered one pull request at a time,
-after **Who starts?** (done) and the dice roller
-(`wip/todo_nr/2026-09-18-no-dice-roller-on-the-board.md`): a per-turn countdown with a sound,
-for the tables that need one ("minuteur" in Play search).
+after **Who starts?** and the dice roller — **both now closed**
+(`wip/done/2026-09-18-no-dice-roller-on-the-board.md`, shipped in #167), so this one's turn in
+the queue has come: a per-turn countdown with a sound, for the tables that need one
+("minuteur" in Play search). The board's overflow menu has eight items today
+(`lib/screens/game_board_screen.dart:265`) and no timer among them.
 
 **Fix:** a countdown reachable from the board's overflow menu: pick a duration, start,
 pause, reset; a sound (`SystemSound` or a bundled asset) at zero. It must keep running
