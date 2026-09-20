@@ -652,5 +652,15 @@
 
   "pwaUpdateReady": "Новая версия CountScore готова",
 
-  "pwaUpdateReload": "Перезагрузить"
+  "pwaUpdateReload": "Перезагрузить",
+
+  "groupDeviceClaimOwner": "Стать владельцем",
+
+  "groupDeviceClaimOwnerConfirm": "«{label}» — владелец группы, но давно не выходил на связь. Сделать владельцем это устройство?",
+
+  "groupDeviceOwnerClaimed": "Теперь это устройство — владелец группы.",
+
+  "groupErrorOwnerActive": "Владелец группы недавно выходил на связь: стать владельцем нельзя.",
+
+  "groupCreatedOwnerExplain": "Группа создана. Это устройство — её владелец; роль можно передать другому в разделе «Устройства»."
 }

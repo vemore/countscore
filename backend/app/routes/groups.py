@@ -6,12 +6,19 @@ sibling device, rotate the share token or set the monthly budget (it is spent on
 operator's key); every other member gets a 403. Leaving — a device revoking itself — and the
 comment style and language stay open to every member, and an owner that leaves passes the
 role to the earliest-joined live device, so a group with members always has an owner.
+
+An owner that *uninstalls* sends no request at all, so none of that fires: the role would
+sit for ever on a device that never comes back, and nobody could rotate the share token.
+``Device.last_seen_at`` is what gives a way out — it is refreshed on every authenticated
+request (``app/auth.py``). Past ``GROUP_OWNER_DORMANT_DAYS`` unseen, another member may take
+the role deliberately (``POST /groups/me/owner/claim``, 409 while the owner is still about),
+and a group down to a single live device simply owns itself, healed on read.
 """
 
 from __future__ import annotations
 
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import select
@@ -72,6 +79,63 @@ async def _locked_group(session: AsyncSession, auth: AuthContext) -> Group:
 def _require_owner(group: Group, auth: AuthContext) -> None:
     if group.owner_device_id != auth.device.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "only the group owner may do this")
+
+
+def _dormant_before(now: datetime) -> datetime:
+    """A device unseen since this instant counts as dormant."""
+    return now - timedelta(days=get_settings().group_owner_dormant_days)
+
+
+def _is_dormant(last_seen_at: datetime, cutoff: datetime) -> bool:
+    # SQLite hands back naive datetimes; they are stored as UTC.
+    seen = last_seen_at if last_seen_at.tzinfo else last_seen_at.replace(tzinfo=UTC)
+    return seen < cutoff
+
+
+async def _owner_is_dormant(session: AsyncSession, group: Group, now: datetime) -> bool:
+    """Whether the group's owner row has gone quiet long enough to be claimed.
+
+    No owner, or an owner that was revoked, counts as dormant: there is nobody the claim
+    could take the role from.
+    """
+    if group.owner_device_id is None:
+        return True
+    owner = await session.get(Device, group.owner_device_id)
+    if owner is None or owner.revoked_at is not None:
+        return True
+    return _is_dormant(owner.last_seen_at, _dormant_before(now))
+
+
+async def _sole_live_device(session: AsyncSession, group_id: uuid.UUID) -> uuid.UUID | None:
+    """The group's only live device, or ``None`` when it has none or several."""
+    rows = await session.execute(
+        select(col(Device.id))
+        .where(col(Device.group_id) == group_id, col(Device.revoked_at).is_(None))
+        .limit(2)
+    )
+    ids = rows.scalars().all()
+    return ids[0] if len(ids) == 1 else None
+
+
+async def _heal_sole_device_owner(session: AsyncSession, auth: AuthContext) -> Group:
+    """Give a group with a single live device back to it, on read.
+
+    The degenerate dormant case: with one device left there is nothing to decide and
+    nobody to take the role from, so it needs no claim and no window. Returns the group to
+    answer with — the re-read row when it healed, the caller's own otherwise.
+    """
+    sole = await _sole_live_device(session, auth.group.id)
+    if sole is None or sole == auth.group.owner_device_id:
+        return auth.group
+    group = await _locked_group(session, auth)
+    sole = await _sole_live_device(session, group.id)  # re-read under the row lock
+    if sole is None or group.owner_device_id == sole:
+        return group
+    group.owner_device_id = sole
+    group.updated_at = datetime.now(UTC)
+    await session.commit()
+    await session.refresh(group)
+    return group
 
 
 async def _earliest_live_device(
@@ -182,8 +246,13 @@ async def join_group(
 
 
 @router.get("/me", response_model=GroupPayload)
-async def get_my_group(auth: AuthContext = Depends(require_device)) -> GroupPayload:
-    return _group_payload(auth.group)
+async def get_my_group(
+    auth: AuthContext = Depends(require_device),
+    session: AsyncSession = Depends(get_session),
+) -> GroupPayload:
+    # This is where the app learns whether it is the owner, so it is where a group left
+    # with one device is healed: the answer already names the right owner.
+    return _group_payload(await _heal_sole_device_owner(session, auth))
 
 
 @router.patch("/me/settings", response_model=GroupPayload)
@@ -235,13 +304,16 @@ async def list_devices(
     """The group's active devices, oldest first — what a member needs to pick one to revoke.
 
     Revoked devices are left out: they cannot come back, and listing them would only offer
-    a revoke that does nothing.
+    a revoke that does nothing. ``dormant`` says the device has not been seen for
+    ``GROUP_OWNER_DORMANT_DAYS``; on the owner's row it is what opens *Claim ownership*.
     """
+    group = await _heal_sole_device_owner(session, auth)
     rows = await session.execute(
         select(Device)
-        .where(col(Device.group_id) == auth.group.id, col(Device.revoked_at).is_(None))
+        .where(col(Device.group_id) == group.id, col(Device.revoked_at).is_(None))
         .order_by(col(Device.joined_at), col(Device.id))
     )
+    cutoff = _dormant_before(datetime.now(UTC))
     return DeviceListResponse(
         devices=[
             DeviceInfo(
@@ -249,7 +321,8 @@ async def list_devices(
                 label=d.label,
                 joined_at=d.joined_at,
                 last_seen_at=d.last_seen_at,
-                is_owner=d.id == auth.group.owner_device_id,
+                is_owner=d.id == group.owner_device_id,
+                dormant=_is_dormant(d.last_seen_at, cutoff),
             )
             for d in rows.scalars()
         ]
@@ -337,4 +410,40 @@ async def transfer_ownership(
         group.updated_at = datetime.now(UTC)
         await session.commit()
         await session.refresh(group)
+    return _group_payload(group)
+
+
+@router.post(
+    "/me/owner/claim",
+    response_model=GroupPayload,
+    responses={409: {"description": "The owner has been seen inside the dormancy window."}},
+)
+async def claim_ownership(
+    auth: AuthContext = Depends(require_device),
+    session: AsyncSession = Depends(get_session),
+) -> GroupPayload:
+    """Take the owner role from an owner that has not been seen for the dormancy window.
+
+    The way back for a group whose owner uninstalled the app: no request is ever sent then,
+    so the role is stuck and the share token can never be rotated. It takes a deliberate act
+    by a member rather than a clock, so a group decides for itself, and the former owner's
+    reinstall is just one more device that may claim it back.
+
+    **409** while the owner has been seen inside ``GROUP_OWNER_DORMANT_DAYS`` — the caller is
+    a member with no special right, so the refusal must not be mistaken for a 403 on an
+    owner-only route. Claiming what one already owns is a no-op, as ``PUT /me/owner`` is.
+    Checked and changed under the group's row lock, so two claims cannot both pass.
+    """
+    group = await _locked_group(session, auth)
+    if group.owner_device_id == auth.device.id:
+        return _group_payload(group)
+    if not await _owner_is_dormant(session, group, datetime.now(UTC)):
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            "the group already has an owner that has been seen recently",
+        )
+    group.owner_device_id = auth.device.id
+    group.updated_at = datetime.now(UTC)
+    await session.commit()
+    await session.refresh(group)
     return _group_payload(group)

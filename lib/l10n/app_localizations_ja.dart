@@ -1431,4 +1431,22 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pwaUpdateReload => '再読み込み';
+
+  @override
+  String get groupDeviceClaimOwner => 'オーナーを引き継ぐ';
+
+  @override
+  String groupDeviceClaimOwnerConfirm(String label) {
+    return '「$label」がグループのオーナーですが、長い間確認されていません。このデバイスでオーナーを引き継ぎますか？';
+  }
+
+  @override
+  String get groupDeviceOwnerClaimed => 'このデバイスがグループのオーナーになりました。';
+
+  @override
+  String get groupErrorOwnerActive => 'グループのオーナーは最近利用しています。オーナーは引き継げません。';
+
+  @override
+  String get groupCreatedOwnerExplain =>
+      'グループを作成しました。このデバイスがオーナーです。この役割は「デバイス」で他のデバイスに引き継げます。';
 }

@@ -61,6 +61,12 @@ class Settings(BaseSettings):
     group_rl_per_minute: int = 3
     group_rl_per_hour: int = 10
 
+    # How long a group owner may go unseen before another member may claim the role
+    # (POST /groups/me/owner/claim). An uninstall sends no request, so without this a
+    # group's share token could never be rotated again. Long enough that a holiday does
+    # not open a claim, short enough that a group is not stuck for a season.
+    group_owner_dormant_days: int = 30
+
     # Per-IP cap on *failed* device-token checks. A token names its device, so a failure
     # costs one argon2 verify; this bounds how many a single address can make us run.
     auth_fail_rl_per_minute: int = 10

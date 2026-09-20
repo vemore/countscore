@@ -2389,5 +2389,33 @@
   "pwaUpdateReload": "Recharger",
   "@pwaUpdateReload": {
     "description": "PWA only: action of the new-version snackbar; reloads the page onto the new build"
+  },
+
+  "groupDeviceClaimOwner": "Reprendre la propriété",
+  "@groupDeviceClaimOwner": {
+    "description": "Action on the owner device's row in Settings > Group > Devices when the server reports it dormant: this device takes the owner role over"
+  },
+
+  "groupDeviceClaimOwnerConfirm": "« {label} » possède le groupe mais ne s'est pas manifesté depuis longtemps. Reprendre la propriété du groupe sur cet appareil ?",
+  "@groupDeviceClaimOwnerConfirm": {
+    "description": "Confirmation asked before claiming the owner role from a dormant owner device",
+    "placeholders": {
+      "label": { "type": "String", "example": "Tel Alice" }
+    }
+  },
+
+  "groupDeviceOwnerClaimed": "Cet appareil est maintenant propriétaire du groupe.",
+  "@groupDeviceOwnerClaimed": {
+    "description": "Message shown after this device took the owner role from a dormant owner"
+  },
+
+  "groupErrorOwnerActive": "Le propriétaire du groupe s'est manifesté récemment : la propriété ne peut pas être reprise.",
+  "@groupErrorOwnerActive": {
+    "description": "Error shown when the server refuses a claim (409) because the owner device has been seen recently"
+  },
+
+  "groupCreatedOwnerExplain": "Groupe créé. Cet appareil en est propriétaire ; ce rôle peut être confié à un autre dans Appareils.",
+  "@groupCreatedOwnerExplain": {
+    "description": "Snackbar shown after a group is created: the owner role lives on this device and can be handed over"
   }
 }

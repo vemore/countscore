@@ -1466,4 +1466,24 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get pwaUpdateReload => 'Recarregar';
+
+  @override
+  String get groupDeviceClaimOwner => 'Assumir a propriedade';
+
+  @override
+  String groupDeviceClaimOwnerConfirm(String label) {
+    return '“$label” é o proprietário do grupo, mas não dá sinal há muito tempo. Assumir a propriedade neste dispositivo?';
+  }
+
+  @override
+  String get groupDeviceOwnerClaimed =>
+      'Este dispositivo agora é o proprietário do grupo.';
+
+  @override
+  String get groupErrorOwnerActive =>
+      'O proprietário do grupo deu sinal recentemente: não é possível assumir a propriedade.';
+
+  @override
+  String get groupCreatedOwnerExplain =>
+      'Grupo criado. Este dispositivo é o proprietário; esse papel pode ser passado para outro em Dispositivos.';
 }
