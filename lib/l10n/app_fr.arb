@@ -2391,6 +2391,96 @@
     "description": "PWA only: action of the new-version snackbar; reloads the page onto the new build"
   },
 
+  "thresholdIsRequired": "Un seuil est obligatoire pour cette condition",
+  "@thresholdIsRequired": {
+    "description": "Error under the threshold field of the game-type editor when a condition type is chosen and the threshold is left empty"
+  },
+
+  "thresholdTooLarge": "Le seuil ne peut pas dépasser {max}",
+  "@thresholdTooLarge": {
+    "description": "Error under the threshold field of the game-type editor when the number typed is above the accepted maximum",
+    "placeholders": {
+      "max": {
+        "type": "int",
+        "format": "decimalPattern",
+        "example": "1000000"
+      }
+    }
+  },
+
+  "deletionImpossible": "Suppression impossible",
+  "@deletionImpossible": {
+    "description": "Title of the dialog refusing to delete a game type that games still use"
+  },
+
+  "gameTypeInUse": "{count, plural, one{1 partie utilise ce type : il ne peut pas être supprimé.} other{{count} parties utilisent ce type : il ne peut pas être supprimé.}}",
+  "@gameTypeInUse": {
+    "description": "Why a game type cannot be deleted: the number of games still using it",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+
+  "confirmDeleteGameType": "Voulez-vous vraiment supprimer le type de jeu « {name} » ?",
+  "@confirmDeleteGameType": {
+    "description": "Confirmation before deleting a game type — the type, not a game",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "ZapZap"
+      }
+    }
+  },
+
+  "winDirectionChangeTitle": "Inverser le sens de la victoire ?",
+  "@winDirectionChangeTitle": {
+    "description": "Title of the confirmation shown when the lowest/highest-score-wins switch is flipped on a game type that already has finished games"
+  },
+
+  "winDirectionChangeWarning": "{count, plural, one{1 partie terminée de ce type verra son classement inversé : son gagnant deviendra le dernier.} other{{count} parties terminées de ce type verront leur classement inversé : leurs gagnants deviendront les derniers.}}",
+  "@winDirectionChangeWarning": {
+    "description": "What flipping the win direction does to the standings of the finished games of that type",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+
+  "winDirectionContradiction": "La condition de fin de partie récompense le sens inverse du vainqueur choisi. Une règle maison peut le vouloir.",
+  "@winDirectionContradiction": {
+    "description": "Non-blocking note under the win-direction switch when the game-over condition pulls the other way"
+  },
+
+  "rulesOutOfDateTitle": "Mettre à jour les règles ?",
+  "@rulesOutOfDateTitle": {
+    "description": "Title of the prompt offered after a saved condition change, on a type that has rules"
+  },
+
+  "rulesOutOfDateMessage": "Les règles de ce type décrivent encore l'ancienne condition.",
+  "@rulesOutOfDateMessage": {
+    "description": "Body of the prompt offering to open the rules editor after a condition changed"
+  },
+
+  "later": "Plus tard",
+  "@later": {
+    "description": "Dismissing action of the rules-out-of-date prompt"
+  },
+
+  "currentIcon": "Icône actuelle",
+  "@currentIcon": {
+    "description": "Tooltip marking the icon a game type currently uses in the icon picker"
+  },
+
+  "currentColor": "Couleur actuelle",
+  "@currentColor": {
+    "description": "Tooltip marking the colour a game type currently uses in the colour picker"
+  },
+
   "groupDeviceClaimOwner": "Reprendre la propriété",
   "@groupDeviceClaimOwner": {
     "description": "Action on the owner device's row in Settings > Group > Devices when the server reports it dormant: this device takes the owner role over"

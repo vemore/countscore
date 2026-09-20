@@ -654,6 +654,32 @@
 
   "pwaUpdateReload": "重新加载",
 
+  "thresholdIsRequired": "此条件需要设置一个阈值",
+
+  "thresholdTooLarge": "阈值不能超过 {max}",
+
+  "deletionImpossible": "无法删除",
+
+  "gameTypeInUse": "{count, plural, other{有 {count} 局游戏使用此类型：无法删除。}}",
+
+  "confirmDeleteGameType": "确实要删除游戏类型「{name}」吗？",
+
+  "winDirectionChangeTitle": "反转获胜方向？",
+
+  "winDirectionChangeWarning": "{count, plural, other{此类型已结束的 {count} 局游戏排名将被反转：获胜者会变成最后一名。}}",
+
+  "winDirectionContradiction": "游戏结束条件奖励的方向与所选的获胜方向相反。如果这是自定义规则，也无妨。",
+
+  "rulesOutOfDateTitle": "更新规则？",
+
+  "rulesOutOfDateMessage": "此类型的规则仍在描述旧的条件。",
+
+  "later": "稍后",
+
+  "currentIcon": "当前图标",
+
+  "currentColor": "当前颜色",
+
   "groupDeviceClaimOwner": "接管所有权",
 
   "groupDeviceClaimOwnerConfirm": "“{label}”是群组的所有者，但很久没有上线。要在本设备上接管群组所有权吗？",

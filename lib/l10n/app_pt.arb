@@ -654,6 +654,32 @@
 
   "pwaUpdateReload": "Recarregar",
 
+  "thresholdIsRequired": "Um limite é necessário para esta condição",
+
+  "thresholdTooLarge": "O limite não pode exceder {max}",
+
+  "deletionImpossible": "Exclusão impossível",
+
+  "gameTypeInUse": "{count, plural, one{1 jogo usa este tipo: não pode ser excluído.} other{{count} jogos usam este tipo: não podem ser excluídos.}}",
+
+  "confirmDeleteGameType": "Você realmente deseja excluir o tipo de jogo \"{name}\"?",
+
+  "winDirectionChangeTitle": "Inverter o vencedor?",
+
+  "winDirectionChangeWarning": "{count, plural, one{A classificação de 1 jogo concluído deste tipo será invertida: seu vencedor se tornará o último.} other{A classificação de {count} jogos concluídos deste tipo será invertida: seus vencedores se tornarão os últimos.}}",
+
+  "winDirectionContradiction": "A condição de fim de jogo recompensa o oposto do vencedor escolhido. Uma regra da casa pode querer exatamente isso.",
+
+  "rulesOutOfDateTitle": "Atualizar as regras?",
+
+  "rulesOutOfDateMessage": "As regras deste tipo ainda descrevem a condição anterior.",
+
+  "later": "Mais tarde",
+
+  "currentIcon": "Ícone atual",
+
+  "currentColor": "Cor atual",
+
   "groupDeviceClaimOwner": "Assumir a propriedade",
 
   "groupDeviceClaimOwnerConfirm": "“{label}” é o proprietário do grupo, mas não dá sinal há muito tempo. Assumir a propriedade neste dispositivo?",

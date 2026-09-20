@@ -1420,6 +1420,69 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pwaUpdateReload => '重新加载';
 
   @override
+  String get thresholdIsRequired => '此条件需要设置一个阈值';
+
+  @override
+  String thresholdTooLarge(int max) {
+    final intl.NumberFormat maxNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String maxString = maxNumberFormat.format(max);
+
+    return '阈值不能超过 $maxString';
+  }
+
+  @override
+  String get deletionImpossible => '无法删除';
+
+  @override
+  String gameTypeInUse(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '有 $count 局游戏使用此类型：无法删除。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String confirmDeleteGameType(String name) {
+    return '确实要删除游戏类型「$name」吗？';
+  }
+
+  @override
+  String get winDirectionChangeTitle => '反转获胜方向？';
+
+  @override
+  String winDirectionChangeWarning(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '此类型已结束的 $count 局游戏排名将被反转：获胜者会变成最后一名。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get winDirectionContradiction =>
+      '游戏结束条件奖励的方向与所选的获胜方向相反。如果这是自定义规则，也无妨。';
+
+  @override
+  String get rulesOutOfDateTitle => '更新规则？';
+
+  @override
+  String get rulesOutOfDateMessage => '此类型的规则仍在描述旧的条件。';
+
+  @override
+  String get later => '稍后';
+
+  @override
+  String get currentIcon => '当前图标';
+
+  @override
+  String get currentColor => '当前颜色';
+
+  @override
   String get groupDeviceClaimOwner => '接管所有权';
 
   @override

@@ -134,6 +134,114 @@ void main() {
       );
       expect(() => gameTypeRepo.delete(gtId), throwsA(isA<Exception>()));
     });
+
+    test('counts the games using a type, and the finished ones', () async {
+      final gtId = await gameTypeRepo.create(GameType(
+        name: 'Counted',
+        iconCodePoint: 0,
+        cardColorValue: 0,
+        isLowestScoreWins: false,
+      ));
+      expect(await gameTypeRepo.countGames(gtId), 0);
+      expect(await gameTypeRepo.countFinishedGames(gtId), 0);
+
+      await gameRepo.create(
+        Game(name: 'open', isLowestScoreWins: false, gameTypeId: gtId),
+      );
+      await gameRepo.create(Game(
+        name: 'done',
+        isLowestScoreWins: false,
+        gameTypeId: gtId,
+        finishedAt: DateTime(2026, 9, 20),
+      ));
+      expect(await gameTypeRepo.countGames(gtId), 2);
+      expect(await gameTypeRepo.countFinishedGames(gtId), 1,
+          reason: 'only a finished game has standings to reverse');
+
+      // The counts are what the screen offers a deletion on, so a tombstoned
+      // game must not hold a type hostage either.
+      final open = (await gameRepo.getAll()).firstWhere((g) => g.name == 'open');
+      await gameRepo.delete(open.id!);
+      expect(await gameTypeRepo.countGames(gtId), 1);
+    });
+
+    test('an edit through copyWith carries every column the form cannot show',
+        () async {
+      // The editor builds the saved row with `copyWith`, and `update` writes
+      // every column of `toMap()`: a column the dialog does not show must
+      // survive an edit of the ones it does.
+      final seeded = (await gameTypeRepo.getAll())
+          .firstWhere((t) => t.builtinKey == 'zapzap');
+      expect(seeded.isDefault, isTrue);
+      expect(seeded.rulesSlug, 'zapzap');
+      await gameTypeRepo.update(seeded.copyWith(rules: 'On joue à 150.'));
+      final stored = (await gameTypeRepo.getById(seeded.id!))!;
+
+      // Every field the dialog shows, changed at once.
+      await gameTypeRepo.update(stored.copyWith(
+        iconCodePoint: 0xE1A3,
+        cardColorValue: 0xFF388E3C,
+        isLowestScoreWins: !stored.isLowestScoreWins,
+        playerDeadConditionType: PlayerDeadConditionType.under,
+        playerDeadThreshold: 42,
+        gameOverConditionType: GameOverConditionType.firstPlayerOver,
+        gameOverThreshold: 500,
+      ));
+
+      final after = (await gameTypeRepo.getById(seeded.id!))!;
+      expect(after.rules, 'On joue à 150.');
+      expect(after.rulesSlug, 'zapzap');
+      expect(after.isDefault, isTrue,
+          reason: 'the rules_slug back-fills select on isDefault = 1');
+      expect(after.builtinKey, 'zapzap');
+      expect(after.playerDeadThreshold, 42);
+
+      // The guard: adding a column to `GameType` without deciding what the
+      // editor does with it fails here rather than in a user's database.
+      expect(
+        after.toMap().keys.toSet(),
+        {
+          'id',
+          'builtin_key',
+          'name',
+          'iconCodePoint',
+          'cardColorValue',
+          'isLowestScoreWins',
+          'isDefault',
+          'playerDeadConditionType',
+          'playerDeadThreshold',
+          'gameOverConditionType',
+          'gameOverThreshold',
+          'rules',
+          'rules_slug',
+        },
+        reason: 'a new column must be carried by `copyWith` in '
+            'game_types_screen.dart, or deliberately left out',
+      );
+    });
+
+    test('a condition cleared back to None writes real NULLs', () async {
+      final id = await gameTypeRepo.create(GameType(
+        name: 'Conditioned',
+        iconCodePoint: 0,
+        cardColorValue: 0,
+        isLowestScoreWins: true,
+        playerDeadConditionType: PlayerDeadConditionType.over,
+        playerDeadThreshold: 100,
+        gameOverConditionType: GameOverConditionType.firstPlayerOver,
+        gameOverThreshold: 500,
+      ));
+      final stored = (await gameTypeRepo.getById(id))!;
+      await gameTypeRepo.update(stored.copyWith(
+        clearPlayerDeadCondition: true,
+        clearGameOverCondition: true,
+      ));
+      final after = (await gameTypeRepo.getById(id))!;
+      expect(after.playerDeadConditionType, isNull);
+      expect(after.playerDeadThreshold, isNull);
+      expect(after.gameOverConditionType, isNull);
+      expect(after.gameOverThreshold, isNull);
+    });
   });
 
   // ── Full game lifecycle ───────────────────────────────────────────────────

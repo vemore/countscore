@@ -1468,6 +1468,75 @@ class AppLocalizationsDe extends AppLocalizations {
   String get pwaUpdateReload => 'Neu laden';
 
   @override
+  String get thresholdIsRequired =>
+      'Für diese Bedingung ist ein Schwellwert erforderlich';
+
+  @override
+  String thresholdTooLarge(int max) {
+    final intl.NumberFormat maxNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String maxString = maxNumberFormat.format(max);
+
+    return 'Der Schwellwert darf $maxString nicht überschreiten';
+  }
+
+  @override
+  String get deletionImpossible => 'Löschen nicht möglich';
+
+  @override
+  String gameTypeInUse(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count Spiele verwenden diesen Typ: Er kann nicht gelöscht werden.',
+      one: '1 Spiel verwendet diesen Typ: Er kann nicht gelöscht werden.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String confirmDeleteGameType(String name) {
+    return 'Möchten Sie den Spieltyp \"$name\" wirklich löschen?';
+  }
+
+  @override
+  String get winDirectionChangeTitle => 'Gewinner umkehren?';
+
+  @override
+  String winDirectionChangeWarning(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Bei $count beendeten Spielen dieses Typs wird die Rangliste umgekehrt: die Gewinner werden die Letzten.',
+      one: 'Bei 1 beendeten Spiel dieses Typs wird die Rangliste umgekehrt: der Gewinner wird der Letzte.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get winDirectionContradiction =>
+      'Die Spielendebedingung belohnt das Gegenteil des gewählten Gewinners. Eine Hausregel könnte das genau wollen.';
+
+  @override
+  String get rulesOutOfDateTitle => 'Regeln aktualisieren?';
+
+  @override
+  String get rulesOutOfDateMessage =>
+      'Die Regeln dieses Typs beschreiben immer noch die alte Bedingung.';
+
+  @override
+  String get later => 'Später';
+
+  @override
+  String get currentIcon => 'Aktuelles Symbol';
+
+  @override
+  String get currentColor => 'Aktuelle Farbe';
+
+  @override
   String get groupDeviceClaimOwner => 'Eigentum übernehmen';
 
   @override
