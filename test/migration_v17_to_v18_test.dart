@@ -147,7 +147,12 @@ void main() {
     await writeV17File();
     final db = await databaseFactoryFfi.openDatabase(path);
     addTearDown(db.close);
-    // A built-in the user deleted: the step must not bring it back.
+    // A built-in the user deleted, whose slug the editor wiped before the
+    // delete. `applyV16` has no `deleted_at` guard, so it *does* rewrite the
+    // slug of a tombstone — which is harmless and is not resurrection: the row
+    // stays dead, and the outbox row the UPDATE enqueues is discarded when the
+    // delta is built (`_build`, `lib/services/sync/sync_store.dart`). The
+    // invariant is that no row comes back and none is inserted.
     await db.update('game_types', {'deleted_at': 9, 'rules_slug': null},
         where: 'builtin_key = ?', whereArgs: ['uno']);
     final before = (await db.query('game_types')).length;
@@ -159,6 +164,12 @@ void main() {
     expect(await db.query('game_types', orderBy: 'id'), once,
         reason: 'a replay changed a row');
     expect(once, hasLength(before), reason: 'the step inserted a row');
+    final uno = once.singleWhere((r) => r['builtin_key'] == 'uno');
+    expect(uno['deleted_at'], 9,
+        reason: 'a type the user deleted was brought back to life');
+    expect(uno['rules_slug'], 'uno',
+        reason: 'the step is not expected to skip a tombstone, only to leave '
+            'it dead');
     expectRestored(stateById(once));
   });
 

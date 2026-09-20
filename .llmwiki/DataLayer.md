@@ -25,7 +25,8 @@ All three remaining roles are inside `lib/services/database_service.dart` (1468 
 - `lib/services/drift/tables.dart` (162 l.) — 9 table declarations mirroring the v9 sqflite
   schema, using `.named()` to keep the legacy mixed-case column names (`gameTypeId`,
   `orderIndex`, `created_at`, `builtin_key`).
-- `lib/services/drift/database.dart` — `AppDatabase`, `schemaVersion => 11`.
+- `lib/services/drift/database.dart` — `AppDatabase`, and the `schemaVersion` getter that
+  must equal `DatabaseService.schemaVersion` ([[SchemaV10]] holds the current number).
   `onUpgrade` is **intentionally a no-op**: by the time Drift opens the file, sqflite has
   already brought it to 9, so Drift sees 9 == 9. `onCreate` (web, fresh install) builds v9
   directly: `m.createAll()` + `_createExtraIndexes()` (20 indexes) + `_insertDefaultGameTypes()`.
