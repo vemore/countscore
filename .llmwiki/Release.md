@@ -167,13 +167,25 @@ and CI refuses a pull request whose committed file differs — never edit it by 
 
 ### Submission state
 
-**1.3.1 (7) is on the internal track** since 2026-09-20 (`play_publish.py publish --track
-internal --commit`), tagged `1.3.1+7` on `df872d6` and published as a GitHub release from the
-en-US notes. Production stays on **1.3.0 (6)**; the internal hop is deliberate, because the
-real-device pass of `release-android` §5 did not run — no device was connected, and the user
-chose the internal track as the substitute, to install from the Store on the Pixel before any
-production rollout. So export/import, the wakelock, the ZapZap analysis and group join/leave
-are still unexercised on a release build of this version.
+**1.3.1 (7) is on production at 20 %** since 2026-09-20 (`play_publish.py publish --track
+production --promote --rollout 0.2 --commit`), promoted from internal after a real-device pass
+on the Pixel 9 Pro XL. It is tagged `1.3.1+7` on `df872d6` and published as a GitHub release
+from the en-US notes; internal keeps the same build. 1.2.0 (5) stays listed as the completed
+production release beside it until the Console widens 1.3.1 to 100 %.
+
+The device pass was an **in-place upgrade over the sideloaded 1.3.0**, not the clean-install
+plus Settings → Import of §5: the installed build carried the upload key
+(`installerPackageName=null`), so `adb install -r` worked and exercised the migration chain on
+the owner's real database — closer to what a Play upgrade does than an import is. All games,
+players and winners survived. Exercised on that build: export (a 786 KB backup written to
+Documents), the wakelock toggle, the ZapZap analysis end to end against production, group sync
+and the device list, and the merged standings screen. **Import was deliberately not tested** —
+it would have overwritten the owner's live data, and the in-place upgrade covers the migration
+chain better.
+
+The promotion needed `publish --promote`, added the same day: the version guard refused the
+code because it was already on internal, and the publish path always re-uploaded a bundle Play
+already held (`wip/done/2026-09-20-play-publish-cannot-promote.md`).
 
 It ships eleven `wip/` entries, the release-blocking one being the game-type editor writing
 `rules`, `rules_slug` and `isDefault` to NULL on every save ([[SchemaV10]]). Also: elimination
@@ -183,8 +195,7 @@ one `StandingsScreen`, and a dormant group owner can be replaced by a deliberate
 ([[Api]]). `verify_aab.sh` passed on the bundle: upload key, `INTERNET`, versionCode 7,
 targetSdk 36, 16 KB alignment.
 
-> **Status: Outdated** (2026-09-20) — superseded by 1.3.1 above, which is on internal only;
-> 1.3.0 (6) remains the production release:
+> **Status: Outdated** (2026-09-20) — superseded by 1.3.1 above, now the production release:
 
 **1.3.0 (6) is on production at 99.9 %** since 2026-09-19 (`play_publish.py publish --track
 production --rollout 0.999 --listing --graphics --commit`, the user's choice of an effectively
