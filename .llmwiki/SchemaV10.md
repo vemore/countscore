@@ -57,6 +57,14 @@ names (`GameType.seededNamesBeforeV14`); the v16 back-fill matches the key, so t
 types of v14 get their rulesets whatever name the row stores. A renamed type loses its key
 and keeps its slug, so it keeps its rules either way.
 
+A **null `rules_slug` is not a value**: no user action clears the slug, so a null is always
+damage. Since 2026-09-20 the sync treats it that way — the push omits the key rather than
+sending null, a pulled null never clears a slug the local row holds, and a received built-in
+type with a null slug is inserted with the slug derived from its `builtin_key`. `rules` keeps
+the opposite rule, since the user does clear it on purpose. The alternative — dropping the
+column from the payload altogether — was rejected because a renamed type has no
+`builtin_key` left to derive from. See [[Sync]].
+
 ### `games.finishedAt` (since v12)
 
 ISO-8601 TEXT, nullable; null means the game is still open. Set when the user declares a
