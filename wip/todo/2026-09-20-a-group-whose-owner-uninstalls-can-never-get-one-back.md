@@ -47,5 +47,13 @@ in one line that the role lives on this device and can be handed over.
 - A group with exactly one live device reports that device as owner.
 - `backend/tests/test_groups.py` covers the dormant, the recent and the single-device cases.
 
-**Open question:** which of the three, and what counts as dormant — 30 days? The choice decides
-whether this is a backend-only change (1) or backend plus a Settings → Group action (2, 3).
+**Decided (2026-09-20, the user):** shape **2, the deliberate claim**. So: a backend change —
+`POST /groups/me/owner/claim`, 409 while the owner has been seen recently, the dormancy window
+in settings as `GROUP_OWNER_DORMANT_DAYS` — plus the *Claim ownership* action in Settings →
+Group → Devices, shown to a member once the device list reports the owner dormant. The two
+small things above ship with it: a single-device group owns itself, and creating a group says
+the role lives on this device.
+
+The window is **30 days** unless the user says otherwise — long enough that a holiday does not
+open a claim, short enough that a group is not stuck for a season. It is a setting, so it costs
+nothing to revisit.

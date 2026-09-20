@@ -46,6 +46,9 @@ running total crosses `playerDeadThreshold`, derivable from the stored scores. A
 - A race-to-a-total type and a type with no rule rank exactly as they do today (regression test).
 - A ZapZap game with one player left offers to end, as a threshold game does.
 
-**Open question:** for a type with no rule — `other` above all — should the screen still hand
-out places, or show totals only? And should the elimination order be shown (a "out in round 4"
-line) rather than only used for sorting?
+**Decided (2026-09-20, the user):** a type with no rule ranks **by score**, which is the
+default the ranking rule falls back to — `other` included. Only a type that carries a rule of
+its own departs from it, and today that is the elimination shape alone.
+
+**Open question:** should the elimination order be *shown* — an "out in round 4" line under a
+player — or only used to sort? The order itself is settled either way.
