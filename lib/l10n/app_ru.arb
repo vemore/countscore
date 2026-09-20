@@ -266,8 +266,8 @@
   "underThreshold": "Ниже порога",
   "firstPlayerOver": "Первый игрок достигает",
   "firstPlayerUnder": "Первый игрок ниже",
-  "lastPlayerOver": "Последний игрок выше",
-  "lastPlayerUnder": "Последний игрок ниже",
+  "lastPlayerOver": "Последний игрок в игре (остальные выше)",
+  "lastPlayerUnder": "Последний игрок в игре (остальные ниже)",
   "threshold": "Порог",
   "conditionType": "Тип условия",
   "continuePlay": "Продолжить игру",
@@ -678,5 +678,15 @@
 
   "currentIcon": "Текущий значок",
 
-  "currentColor": "Текущий цвет"
+  "currentColor": "Текущий цвет",
+
+  "groupDeviceClaimOwner": "Стать владельцем",
+
+  "groupDeviceClaimOwnerConfirm": "«{label}» — владелец группы, но давно не выходил на связь. Сделать владельцем это устройство?",
+
+  "groupDeviceOwnerClaimed": "Теперь это устройство — владелец группы.",
+
+  "groupErrorOwnerActive": "Владелец группы недавно выходил на связь: стать владельцем нельзя.",
+
+  "groupCreatedOwnerExplain": "Группа создана. Это устройство — её владелец; роль можно передать другому в разделе «Устройства»."
 }

@@ -472,10 +472,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get firstPlayerUnder => 'पहला खिलाड़ी नीचे';
 
   @override
-  String get lastPlayerOver => 'अंतिम खिलाड़ी ऊपर';
+  String get lastPlayerOver => 'अंतिम बचा खिलाड़ी (बाकी ऊपर)';
 
   @override
-  String get lastPlayerUnder => 'अंतिम खिलाड़ी नीचे';
+  String get lastPlayerUnder => 'अंतिम बचा खिलाड़ी (बाकी नीचे)';
 
   @override
   String get threshold => 'सीमा';
@@ -1533,4 +1533,23 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get currentColor => 'वर्तमान रंग';
+
+  @override
+  String get groupDeviceClaimOwner => 'स्वामित्व लें';
+
+  @override
+  String groupDeviceClaimOwnerConfirm(String label) {
+    return '“$label” समूह का स्वामी है, लेकिन बहुत समय से दिखाई नहीं दिया। इस डिवाइस पर समूह का स्वामित्व ले लें?';
+  }
+
+  @override
+  String get groupDeviceOwnerClaimed => 'यह डिवाइस अब समूह का स्वामी है।';
+
+  @override
+  String get groupErrorOwnerActive =>
+      'समूह का स्वामी हाल ही में सक्रिय था: स्वामित्व नहीं लिया जा सकता।';
+
+  @override
+  String get groupCreatedOwnerExplain =>
+      'समूह बन गया। यह डिवाइस इसका स्वामी है; यह भूमिका “डिवाइस” में किसी दूसरे को सौंपी जा सकती है।';
 }

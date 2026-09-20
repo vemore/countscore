@@ -2,7 +2,7 @@
 
 > Scope: the HTTP and WebSocket surface. Source of truth is `backend/app/routes/`.
 > Related: [[Backend]] · [[Sync]] · [[LlmProviders]] · [[Security]]
-> Updated: 2026-09-19
+> Updated: 2026-09-20
 
 ## Facts
 
@@ -18,10 +18,11 @@
 | GET | `/me` | device | Returns the group. **No `share_token`** — see below. Carries `owner_device_id` (null only when no device of the group is live): how the app learns whether it is the owner. |
 | PATCH | `/me/settings` | device | `comment_style` and `comment_language`: every member. `monthly_budget_cents`: **owner only** (403 otherwise, whatever else the body carries — a refused request changes nothing), and 422 when it exceeds the operator's `MAX_BUDGET_CENTS` (unset: `DEFAULT_BUDGET_CENTS`) — the owner may lower the budget, not raise it past that. |
 | GET | `/me/usage` | device | Budget consumption: `{current_month_used_cents, budget_cents, resets_at}`, US cents. `resets_at` is always in the future — the next month start, UTC: once the stored reset has passed, the read reports 0 spent and the next month start without waiting for a charge to roll it over (`budget.current_period`; `GET /me`'s `current_month_used_cents` too). Feeds Settings → Group → Comments and usage, with `GET /me` for the style and language. |
-| GET | `/me/devices` | device | The group's **active** devices, oldest first: `{"devices": [{id, label, joined_at, last_seen_at, is_owner}]}`. Revoked devices are left out; no token or hash. Feeds Settings → Group → Devices. |
+| GET | `/me/devices` | device | The group's **active** devices, oldest first: `{"devices": [{id, label, joined_at, last_seen_at, is_owner, dormant}]}`. `dormant` is `last_seen_at` older than `GROUP_OWNER_DORMANT_DAYS` (30) — stated per device because it is meaningful on any row, read by the app on the owner's, where it opens *Claim ownership*. Revoked devices are left out; no token or hash. Feeds Settings → Group → Devices. |
 | POST | `/me/devices/{device_id}/revoke` | device | Another device: **owner only** (403 otherwise); revokes it **and rotates `share_token`**, 200 with `GroupWithShareToken` — the revoked device learnt the old token when it joined. Again on a revoked device: the current token, no new one. The caller's own id: leaving (`GroupProvider.leave`), open to every member, 204, no rotation; an owner that leaves hands the role to the earliest-joined live device (none left: `owner_device_id` null). |
 | POST | `/me/rotate-share-token` | device | **Owner only** (403 otherwise). Invalidates the old share link. Returns `share_token`. |
 | PUT | `/me/owner` | device | `{"device_id": …}`. **Owner only** (403 otherwise). Hands the owner role to a live device of the group — 404 for a revoked device or one of another group; naming itself is a no-op. Returns the group (`GroupPayload`), no `share_token`, no rotation. |
+| POST | `/me/owner/claim` | device | **Any member.** Takes the owner role when the current owner has not been seen for `GROUP_OWNER_DORMANT_DAYS` (30) — **409** while it has, so the refusal is never confused with the 403 of an owner-only route. No owner, or a revoked one, counts as dormant. Claiming what one already owns is a no-op. Returns the group (`GroupPayload`), no `share_token`, no rotation. |
 
 **The owner.** `groups.owner_device_id` (revision `0005_group_owner`) names the device that
 created the group, until it hands over or leaves. The check and the change run under the
@@ -29,6 +30,15 @@ group's row lock (`_locked_group` in `app/routes/groups.py`), so two concurrent 
 a hand-over racing a revoke cannot both pass. `PATCH /me/settings` stays open to every
 member for the comment style and language; its budget is the owner's, checked under the same
 lock.
+
+**An owner that goes dormant.** An uninstall sends no request, so neither the hand-over nor
+the leave fires and the role would sit for ever on a device that never comes back.
+`Device.last_seen_at`, refreshed on every authenticated request (`app/auth.py`), is the
+signal: past `GROUP_OWNER_DORMANT_DAYS` unseen, any member may take the role with
+`POST /me/owner/claim`, and a group down to a **single** live device is given to it on read
+(`_heal_sole_device_owner`, applied by `GET /me` and `GET /me/devices`) — with one device
+left there is nothing to decide. Both run under the same row lock. No schema change:
+`devices.last_seen_at` has existed since `0001_initial`.
 
 ### `app/routes/sync.py` — prefix `/sync`, tag `sync`
 
@@ -104,6 +114,21 @@ even with `EXPOSE_DOCS` off, so turning them on cannot break a deploy that start
 
 ## Decisions & History
 
+- **A dormant owner can be replaced, by a deliberate claim (2026-09-20).** `feat/group-owner-claim`
+  closed the one group failure with no way out: an owner that uninstalls sends no request, so
+  the role never moves and the share token it left behind can never be rotated — a token that
+  leaked stayed valid for ever. Three shapes were weighed (wip entry
+  `2026-09-20-a-group-whose-owner-uninstalls-can-never-get-one-back.md`): automatic
+  succession, a deliberate claim, a recovery code handed out at creation. The user chose the
+  **claim**: automatic succession would take the role from a member merely on holiday, and a
+  recovery code would add a secret to keep and to phish — the only one of the app's secrets
+  that would ever leave a device. So the group decides rather than the clock, and the former
+  owner's reinstall is just one more device that may claim it back. The window is a setting
+  (`GROUP_OWNER_DORMANT_DAYS`, 30 days) because the right value is a guess: long enough that a
+  holiday does not open a claim, short enough that a group is not stuck for a season. The
+  degenerate case needs no claim at all — a group with a single live device is given to it on
+  read. `Device.last_seen_at` already existed, so there is no migration.
+
 - **A shared game's analysis is the group's (2026-09-19).** The group's comment style and
   language, editable in Settings → Group → Comments and usage, shaped nothing the app showed:
   only the group comment endpoint read them, and the app never called it, so usage stayed at
@@ -137,7 +162,11 @@ even with `EXPOSE_DOCS` off, so turning them on cannot break a deploy that start
   the creator because that needs no new input; existing groups were given their
   earliest-joined live device, which is the creator wherever it has not left. Leaving stays
   open to everyone, and an owner that leaves passes the role on automatically, so a group
-  with members never ends up with nobody able to revoke. No foreign key on
+  with members never ends up with nobody able to revoke.
+  > **Status: Incomplete** (2026-09-20) — only an owner that *leaves* passes the role on. An
+  > owner that uninstalls never asks anything of the server, so the group did end up with
+  > nobody able to revoke; `POST /groups/me/owner/claim` and the single-device heal are the
+  > way back (see the 2026-09-20 decision above). No foreign key on
   `owner_device_id`: `devices.group_id` already points the other way, and a device row is
   only ever deleted with its group.
 

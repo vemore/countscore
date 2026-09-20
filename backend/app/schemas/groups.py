@@ -25,13 +25,19 @@ class DevicePayload(BaseModel):
 
 
 class DeviceInfo(BaseModel):
-    """A member device as its siblings see it: enough to recognise a lost phone, no token."""
+    """A member device as its siblings see it: enough to recognise a lost phone, no token.
+
+    ``dormant`` is ``last_seen_at`` older than ``GROUP_OWNER_DORMANT_DAYS``. It is stated
+    per device rather than once for the group because it is meaningful on any row; the app
+    only reads it on the owner's, where it is what opens *Claim ownership*.
+    """
 
     id: uuid.UUID
     label: str
     joined_at: datetime
     last_seen_at: datetime
     is_owner: bool
+    dormant: bool
 
 
 class DeviceListResponse(BaseModel):

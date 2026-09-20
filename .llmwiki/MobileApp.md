@@ -56,7 +56,7 @@ leaderboard's colour that opens the colour picker, rename and delete; the delete
 confirmation alone counts every game, open ones too, from `getPlayerGameCounts`) ·
 `player_stats_screen` (the leaderboard) and `player_card_screen`, below ·
 `settings_screen` ·
-`about_screen` · `ranking_screen` (where an open game stands, below) · `game_end_screen` (who won, below) · `game_rules_screen` ·
+`about_screen` · `standings_screen` (where the game stands — its result once it is finished, below) · `game_rules_screen` ·
 `group_settings_screen`.
 
 **The game-type editor.** `game_types_screen`'s create/edit form is `_GameTypeDialog`, a
@@ -181,24 +181,27 @@ Sixteen components shared out of the screens:
   elimination tests, the tap callbacks), `BoardLanes`, and the pieces the rows share —
   `BoardScoreText` (a zero on an amber pill, `·` for no score), `BoardCrown`, `boardTint`.
 - `board_rows.dart` — `BoardRows`, the one-row-per-player layout.
-- `game_ranking.dart` — the one ranking both `RankingScreen` and `GameEndScreen` draw
-  ([below](#the-game-end-screen)): `GameRanking.of` (the current game best first, its ranks,
+- `game_ranking.dart` — the ranking the `StandingsScreen` draws, open or finished
+  ([below](#the-standings-screen)): `GameRanking.of` (the current game best first, its ranks,
   colours, leader, winners and elimination tests; `GameRanking.fromStanding` builds the same
-  from a `GameStanding`, for a test or a caller without a provider), `RankedPlayers` (podium and rows),
+  from a `GameStanding`, for a test or a caller without a provider), `RankedPlayers` (the
+  podium of the top three *and* the list of every player under it, the top three twice on
+  purpose — since 2026-09-20 the list is the whole ranking, place 1 first, its first place on
+  the primary container),
   `rankingSummary` (type · rounds · win rule). The elimination rule on a total is
   `GameType.isEliminated` / `isNearElimination` (`lib/models/game_type.dart`), which the board
   reads too.
 - `score_keypad_sheet.dart` — `ScoreKeypadSheet`, the bottom sheet every score is entered
   through ([below](#the-board)).
 - `share_result_button.dart` — `ShareResultButton`, the app-bar share action of the end
-  screen, the ranking and the analysis: from one `GameRanking.of` it builds the text
+  screen, the standings and the analysis: from one `GameRanking.of` it builds the text
   (`buildGameResultShareText`) and a `ResultShareCard`, draws the card to a PNG
   (`renderWidgetToPng`), and hands both to `systemShareResult` — `share_plus` with the PNG as
   an `XFile.fromData` (`kShareImageName`) and `downloadFallbackEnabled: false`; if that share
   throws (a browser that cannot share files), the text alone is shared, as before. A card
   that fails to draw costs only the image; a sheet that fails to open becomes a `shareFailed`
   snackbar. Its `share` seam (`ShareResultFn`: text, subject, image) is passed through by the
-  three screens for tests; `renderImage` catches the card instead of drawing it.
+  standings and the analysis screen for tests; `renderImage` catches the card instead of drawing it.
 - `result_share_card.dart` — `ResultShareCard`, the shared picture: `shareResultTitle` (the
   date), the `rankingSummary` line, `RankedPlayers` itself — so the image ranks, colours and
   crowns as the screen does — and `appTitle`, 400 logical pixels wide on the theme's
@@ -336,7 +339,7 @@ repeats by seat. Two colours clash (`playerColorsClash`) when they are equal or 
 optionally avoiding colours another part of the screen shows. `onPlayerColor(colour)` is
 the initial's colour on it — white or `black87`, whichever has the higher WCAG contrast
 (`contrastRatio`), so every palette colour gets at least 4.5:1 and a legacy yellow a dark
-initial. The home avatars, the board's lanes and rows, the ranking and end screen, the keypad
+initial. The home avatars, the board's lanes and rows, the standings, the keypad
 chips, the Players screen, the statistics and the New game screen's seats and "who's playing" chips use it.
 
 
@@ -351,7 +354,7 @@ are the root scrollables of `about_screen.dart:31` (on the child `Padding` — a
 `SingleChildScrollView` never gets the compensation at all),
 `game_types_screen.dart:50` (plus `kFabClearance`, below),
 `home_screen.dart:91` (the drawer) and `:335`, `player_stats_screen.dart:119`, `player_card_screen.dart:110`,
-`players_screen.dart:134`, and in `ranking_screen.dart` on the *Play again* button's
+`players_screen.dart:134`, and in `standings_screen.dart` on the *Play again* button's
 `Padding` under the list, the last thing above the navigation bar. Only the bottom edge is compensated:
 `Scaffold` drops the top padding for a body under an `AppBar`
 (`scaffold.dart`, `removeTopPadding: widget.appBar != null`) and keeps the bottom one unless
@@ -376,13 +379,13 @@ what lets two devices in different locales hold the same type. Renaming one clea
 screen listing game types calls it, since the repository returns them unordered ([[I18n]]).
 
 `play_again.dart` — `playAgain(context, source, board:)`, the one path behind *Play again*
-(the ranking's and the game-end screen's buttons, and a finished game's menu entry on the home screen, where an
+(the standings' button, and a finished game's menu entry on the home screen, where an
 unfinished game shows the same action as "New with same players"). It calls
 `GameProvider.playAgain` — `createGame` with the source's type, win rule and players in
 `orderIndex` order, nothing else read or written on the source — shares the new game if the
 source was shared, and opens its board with `pushAndRemoveUntil(isFirst)`, so back returns
 to the game list. The new game is named by `nextGameName`: `Skyjo 3` → `Skyjo 4`.
-`RankingScreen`, `GameEndScreen` and `HomeScreen` take an optional `boardBuilder`, for tests only, as the
+`StandingsScreen` and `HomeScreen` take an optional `boardBuilder`, for tests only, as the
 board's `analysisRepo` is.
 
 ### Models — `lib/models/`
@@ -404,7 +407,7 @@ gates the Play review sheet.
 
 Both screens show the state and both can change it: a status pill (in progress, or the winner) on the game
 list card, a chip beside the title on the board, and a menu entry that finishes or reopens.
-Finishing opens the game-end screen (below); reopening is confirmed by a snackbar whose
+Finishing opens the standings (below); reopening is confirmed by a snackbar whose
 **Undo** action finishes the game again (the repo's only `SnackBarAction`, built by
 `undoSnackBar`; it expires after 6 s). The entry is
 offered on a game that has at least one round or is already
@@ -412,7 +415,7 @@ finished — a game with no round was never played, which is why the list needs
 `GameProvider.roundCountOf`. Nothing is locked: a finished game still takes rounds and score
 edits.
 
-`_GameBoardScreenState._maybeShowGameOver` finishes the game and opens its end screen after
+`_GameBoardScreenState._maybeShowGameOver` finishes the game and opens its standings after
 a score edit, after a round is added and after one is deleted — every mutation that can move
 a total onto or past the game type's threshold — and once on the board's first build, for an open
 game already past it. `_gameOverDismissed` keeps it to one crossing and re-arms as soon as
@@ -420,37 +423,45 @@ the condition is false again. Raised by the rule, the screen offers **Continue p
 which pops back to the board, reopens the game and is written to `GameOverDismissals`, keyed
 by `Game.uuid`, and read back when the board opens, so leaving the board does not re-ask;
 the stored answer is removed as soon as the condition is false. The back button leaves the
-game finished. A finished game is never raised again: the board's app bar carries a trophy
-(`board_game_end`) that reopens its end screen.
+game finished. A finished game is never raised again; its standings stay one tap away
+behind the app bar's single leaderboard button (`board_standings`, `_openStandings`).
 
-#### The game-end screen
+#### The standings screen
 
-`GameEndScreen` (`lib/screens/game_end_screen.dart`) shows the current game — the caller
-loads it and records it finished (`_finishAndShowEnd` on the board; the home card menu
-loads it before pushing). The winner's name (a tie at the top names every player on it),
-the game type · rounds · win rule, then `RankedPlayers` (`lib/widgets/game_ranking.dart`):
+`StandingsScreen` (`lib/screens/standings_screen.dart`) is the app's one standings screen,
+in two states, told apart by the current game's own `isFinished`:
+
+- **open** — the title is *Ranking*, and the screen shows where the game stands;
+- **finished** — the title is *Results*, and a headline names the winner
+  (`game_end_headline`; a tie at the top names every player on it, and a game with no score
+  says only *Game finished*), with **Analysis** beside *Play again*.
+
+It shows the current game — the caller loads it, and the paths that end a game record it
+finished first (`_finishAndShowEnd` on the board; the home card menu loads it before
+pushing). Common to both states: the game type · rounds · win rule on one line
+(`ranking_summary`), then `RankedPlayers` (`lib/widgets/game_ranking.dart`):
 a podium of the top three in their display colours with their totals (first raised in the
 middle; each step as high as the player's place, so a tie shares a step), the sole leader
 (`GameStanding.soleLeader`) ringed in `kLeaderGold` under a `BoardCrown` — nobody is crowned
 before the first score or on a tie for the lead — then the others in rank order
 (`GameStanding.ranks`, ties sharing a place). As on the board, a total within 20
 points of the type's elimination threshold is orange — except on the first step, whose
-filled block keeps `onPrimary` — and an eliminated player is faded and struck through. Actions: **Play again**
-(`playAgain`) and **Analysis** (`GameAnalysisScreen`), the latter only when
-`BackendProvider.isConfigured` — Play again then spans the row. Unlike the board's menu, a
-cached analysis alone does not bring the button back. The app bar's share action
-(`ShareResultButton`) sends the standings as text and as a picture (`ResultShareCard`). Every path that finishes a game —
-rule, board menu, home menu — calls `ReviewPromptService.onGameFinished` once, on the
-transition `setGameFinished` reports.
+filled block keeps `onPrimary`, and on a first-place row, whose primary container does the
+same — and an eliminated player is faded and struck through. Actions: **Play again**
+(`playAgain`, keyed `game_end_play_again` on a finished game and `ranking_play_again` on an
+open one) and, only on a finished game with `BackendProvider.isConfigured`, **Analysis**
+(`GameAnalysisScreen`) — Play again otherwise spans the row. Unlike the board's menu, a
+cached analysis alone does not bring the button back. With `offerContinue` — the rule ended
+the game, the user did not ask — a **Continue playing** action (`game_end_continue`) pops
+the route with `true`, which the board reads as "reopen this game". The app bar's share
+action (`ShareResultButton`) sends the standings as text and as a picture
+(`ResultShareCard`); the analysis screen's share adds the commentary, and is offered only
+once there is one. Every path that finishes a game — rule, board menu, home menu — calls
+`ReviewPromptService.onGameFinished` once, on the transition `setGameFinished` reports.
 
-#### The ranking screen
-
-`RankingScreen` (`lib/screens/ranking_screen.dart`), from the board's leaderboard button,
-shows an open game with the same `RankedPlayers` as the end screen, so the two cannot rank
-differently; above it, the win rule is one line (`rankingSummary`) under the *Ranking*
-title, and **Play again** stays at the bottom. No headline: the game is not over. The app
-bar shares the standings as text and picture, as on the end screen; the analysis screen's share adds the
-commentary, and is offered only once there is one.
+Its three push sites are the board's leaderboard button and rule (`_openStandings`, which
+reads the `true` back) and "End game" on the home list. There is no named route: all three
+push a `MaterialPageRoute`.
 
 #### The board
 
@@ -585,8 +596,8 @@ not "fix" it by hardcoding a codepoint.
   (`wip/done/2026-09-19-analysis-screen-offers-actions-on-nothing.md`)
 
 - **One elimination rule, 6 qui prend seeded 65, no crown on a tie (2026-09-19).** The board
-  kept three private copies of the elimination test; they went, and the board, the ranking
-  and the end screen all call `GameType.isEliminated` / `isNearElimination`. `over` stays
+  kept three private copies of the elimination test; they went, and the board and the
+  standings all call `GameType.isEliminated` / `isNearElimination`. `over` stays
   strict — ZapZap and Rami say *exceeds* 100 — so 6 qui prend, whose box rule stops at 66,
   is seeded with 65 rather than given an inclusive variant (no schema change); an existing
   row keeps 66, as with the Uno / Président seed change. The rankings crowned the earlier
@@ -596,6 +607,24 @@ not "fix" it by hardcoding a codepoint.
   home card's winner still followed it.
   (`wip/done/2026-09-19-player-elimination-threshold-is-strictly-over.md`,
   `wip/done/2026-09-19-crown-before-any-round.md`)
+
+- **"Last player standing" now means it, and the three elimination types are seeded with it
+  (2026-09-20).** `lastPlayerOver` / `lastPlayerUnder` tested *every* total against the
+  threshold — the survivor's included — while `gameRulesEndLastOver` promised "every player
+  but one", in all ten languages. A player who is out stops being dealt in, so the
+  survivor's total never moved and the condition could not fire. `GameType.isGameOver` now
+  ends the game once at most one total is still on the near side (`_lastPlayerStanding`,
+  `lib/models/game_type.dart`); a table of fewer than two players never ends this way, so a
+  solo game is not over on its first round. The two choices are relabelled to the situation
+  ("Dernier joueur en jeu (les autres au-dessus)" / "Last player standing (others over)",
+  keys unchanged), and `zapzap`, `rami` and `six_nimmt` — the only types with an elimination
+  rule — are seeded `lastPlayerOver` at their elimination threshold (100, 100, 65). As with
+  Uno / Président and the 65 above, **no migration rewrites an existing row**: only a new
+  database seeds it, and a user type that already carries `lastPlayerOver` gains the
+  behaviour its own description claimed. `test/models_test.dart`,
+  `test/l10n/game_over_labels_test.dart`, `test/drift/last_player_standing_seed_test.dart`,
+  `test/migration_last_player_standing_test.dart`.
+  (`wip/done/2026-09-20-the-last-player-standing-condition-is-mislabelled-misimplemented-and-unset.md`)
 
 - **`firstPlayerOver` means "reaches" (2026-09-19).** The game-over test moved from the
   board into `GameType.isGameOver` and `firstPlayerOver` became `>=`: the box rules its
@@ -778,3 +807,27 @@ not "fix" it by hardcoding a codepoint.
   keyed on `n > 8`, so a wide window drew it over lanes that all fit. The reopen snackbar's
   Undo stayed up indefinitely (Flutter's `persist` default for a snackbar with an action);
   it now expires after 6 s. It is not hidden on navigation: the 6 s bound was judged enough.
+
+- **2026-09-20 — one standings screen, and a list that holds everyone**
+  (`refactor/standings-screen`,
+  `wip/done/2026-09-20-ranking-and-end-screen-are-the-same-screen.md`,
+  `wip/done/2026-09-20-podium-hides-the-first-three-from-the-list.md`). `RankingScreen` and
+  `GameEndScreen` had converged on the same body — `rankingSummary`, `RankedPlayers`,
+  `ShareResultButton`, *Play again* — and differed only by a headline and an *Analysis*
+  button, so a finished game's app bar carried two adjacent icons onto two near-identical
+  screens. They became `StandingsScreen`, which branches on the game's own `isFinished`: the
+  distinction *live standings while open, final result when finished* now lives in one place,
+  which is where the ranking **rule** per game type will branch next
+  (`wip/todo/2026-09-20-ranking-ignores-the-game-types-ranking-rule.md`). The trophy button
+  (`board_game_end`) went; the leaderboard one (`board_standings`) is the board's only way
+  in. Every widget key survived the merge, `game_end_play_again` / `ranking_play_again`
+  included — the *Play again* key says which state the screen is in — so the two test files
+  merged into `test/screens/standings_screen_test.dart` rather than being rewritten. No ARB
+  key was added or removed: `ranking` titles the open state and `gameEndResults`, until then
+  the trophy's tooltip, titles the finished one.
+  `RankedPlayers` now lists **every** player under the podium, first to last, the top three
+  twice on purpose: with four players the list used to start at "4 Bob 140", so reading the
+  order meant decoding the podium's 2-1-3 block layout first. The first place is drawn on the
+  primary container to keep the head of the list as findable as the podium; the podium keeps
+  ranking by place, so a tie still shares a step and a place number (1, 1, 3). A widget test
+  holds the screen to no scrolling at 412×860 for four players, in both states.

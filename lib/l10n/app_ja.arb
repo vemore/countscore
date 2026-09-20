@@ -266,8 +266,8 @@
   "underThreshold": "しきい値を下回る",
   "firstPlayerOver": "最初に到達したプレイヤー",
   "firstPlayerUnder": "最初のプレイヤーが下回る",
-  "lastPlayerOver": "最後のプレイヤーが超える",
-  "lastPlayerUnder": "最後のプレイヤーが下回る",
+  "lastPlayerOver": "最後まで残ったプレイヤー（他は超過）",
+  "lastPlayerUnder": "最後まで残ったプレイヤー（他は下回る）",
   "threshold": "しきい値",
   "conditionType": "条件の種類",
   "continuePlay": "続ける",
@@ -678,5 +678,15 @@
 
   "currentIcon": "現在のアイコン",
 
-  "currentColor": "現在の色"
+  "currentColor": "現在の色",
+
+  "groupDeviceClaimOwner": "オーナーを引き継ぐ",
+
+  "groupDeviceClaimOwnerConfirm": "「{label}」がグループのオーナーですが、長い間確認されていません。このデバイスでオーナーを引き継ぎますか？",
+
+  "groupDeviceOwnerClaimed": "このデバイスがグループのオーナーになりました。",
+
+  "groupErrorOwnerActive": "グループのオーナーは最近利用しています。オーナーは引き継げません。",
+
+  "groupCreatedOwnerExplain": "グループを作成しました。このデバイスがオーナーです。この役割は「デバイス」で他のデバイスに引き継げます。"
 }

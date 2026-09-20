@@ -266,8 +266,8 @@
   "underThreshold": "低于阈值",
   "firstPlayerOver": "第一位达到的玩家",
   "firstPlayerUnder": "第一位玩家低于",
-  "lastPlayerOver": "最后一位玩家超过",
-  "lastPlayerUnder": "最后一位玩家低于",
+  "lastPlayerOver": "最后留在场上的玩家（其他人超过）",
+  "lastPlayerUnder": "最后留在场上的玩家（其他人低于）",
   "threshold": "阈值",
   "conditionType": "条件类型",
   "continuePlay": "继续游戏",
@@ -678,5 +678,15 @@
 
   "currentIcon": "当前图标",
 
-  "currentColor": "当前颜色"
+  "currentColor": "当前颜色",
+
+  "groupDeviceClaimOwner": "接管所有权",
+
+  "groupDeviceClaimOwnerConfirm": "“{label}”是群组的所有者，但很久没有上线。要在本设备上接管群组所有权吗？",
+
+  "groupDeviceOwnerClaimed": "本设备现在是群组的所有者。",
+
+  "groupErrorOwnerActive": "群组所有者最近有活动：无法接管所有权。",
+
+  "groupCreatedOwnerExplain": "群组已创建。本设备是其所有者；可在“设备”中将该角色移交给其他设备。"
 }

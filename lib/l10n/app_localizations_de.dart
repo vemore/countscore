@@ -471,10 +471,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get firstPlayerUnder => 'Erster Spieler unter';
 
   @override
-  String get lastPlayerOver => 'Letzter Spieler über';
+  String get lastPlayerOver => 'Letzter Spieler im Spiel (andere darüber)';
 
   @override
-  String get lastPlayerUnder => 'Letzter Spieler unter';
+  String get lastPlayerUnder => 'Letzter Spieler im Spiel (andere darunter)';
 
   @override
   String get threshold => 'Schwellenwert';
@@ -1535,4 +1535,24 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get currentColor => 'Aktuelle Farbe';
+
+  @override
+  String get groupDeviceClaimOwner => 'Eigentum übernehmen';
+
+  @override
+  String groupDeviceClaimOwnerConfirm(String label) {
+    return '„$label“ ist Eigentümer der Gruppe, war aber lange nicht mehr zu sehen. Das Eigentum auf dieses Gerät übernehmen?';
+  }
+
+  @override
+  String get groupDeviceOwnerClaimed =>
+      'Dieses Gerät ist jetzt Eigentümer der Gruppe.';
+
+  @override
+  String get groupErrorOwnerActive =>
+      'Der Eigentümer der Gruppe war kürzlich aktiv: Das Eigentum kann nicht übernommen werden.';
+
+  @override
+  String get groupCreatedOwnerExplain =>
+      'Gruppe erstellt. Dieses Gerät ist ihr Eigentümer; diese Rolle kann unter „Geräte“ an ein anderes übergeben werden.';
 }

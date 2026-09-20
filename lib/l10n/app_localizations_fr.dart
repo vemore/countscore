@@ -472,10 +472,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get firstPlayerUnder => 'Premier joueur en dessous';
 
   @override
-  String get lastPlayerOver => 'Dernier joueur au-dessus';
+  String get lastPlayerOver => 'Dernier joueur en jeu (les autres au-dessus)';
 
   @override
-  String get lastPlayerUnder => 'Dernier joueur en dessous';
+  String get lastPlayerUnder => 'Dernier joueur en jeu (les autres en dessous)';
 
   @override
   String get threshold => 'Seuil';
@@ -1537,4 +1537,24 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get currentColor => 'Couleur actuelle';
+
+  @override
+  String get groupDeviceClaimOwner => 'Reprendre la propriété';
+
+  @override
+  String groupDeviceClaimOwnerConfirm(String label) {
+    return '« $label » possède le groupe mais ne s\'est pas manifesté depuis longtemps. Reprendre la propriété du groupe sur cet appareil ?';
+  }
+
+  @override
+  String get groupDeviceOwnerClaimed =>
+      'Cet appareil est maintenant propriétaire du groupe.';
+
+  @override
+  String get groupErrorOwnerActive =>
+      'Le propriétaire du groupe s\'est manifesté récemment : la propriété ne peut pas être reprise.';
+
+  @override
+  String get groupCreatedOwnerExplain =>
+      'Groupe créé. Cet appareil en est propriétaire ; ce rôle peut être confié à un autre dans Appareils.';
 }

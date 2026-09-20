@@ -473,10 +473,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get firstPlayerUnder => 'Первый игрок ниже';
 
   @override
-  String get lastPlayerOver => 'Последний игрок выше';
+  String get lastPlayerOver => 'Последний игрок в игре (остальные выше)';
 
   @override
-  String get lastPlayerUnder => 'Последний игрок ниже';
+  String get lastPlayerUnder => 'Последний игрок в игре (остальные ниже)';
 
   @override
   String get threshold => 'Порог';
@@ -1569,4 +1569,24 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get currentColor => 'Текущий цвет';
+
+  @override
+  String get groupDeviceClaimOwner => 'Стать владельцем';
+
+  @override
+  String groupDeviceClaimOwnerConfirm(String label) {
+    return '«$label» — владелец группы, но давно не выходил на связь. Сделать владельцем это устройство?';
+  }
+
+  @override
+  String get groupDeviceOwnerClaimed =>
+      'Теперь это устройство — владелец группы.';
+
+  @override
+  String get groupErrorOwnerActive =>
+      'Владелец группы недавно выходил на связь: стать владельцем нельзя.';
+
+  @override
+  String get groupCreatedOwnerExplain =>
+      'Группа создана. Это устройство — её владелец; роль можно передать другому в разделе «Устройства».';
 }

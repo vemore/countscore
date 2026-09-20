@@ -25,10 +25,26 @@ const _lost = '44444444-4444-4444-8444-444444444444';
 
 /// A server that creates a group and has nothing to sync. [owner] is the device
 /// the server says owns the group; null plays a server that predates owners.
-MockClient _server(List<http.BaseRequest> seen, {String? owner = _own}) =>
+/// [dormantOwner] plays an owner that has not been seen for the server's window —
+/// the uninstalled phone — and [claimStatus] what it answers to a claim.
+MockClient _server(
+  List<http.BaseRequest> seen, {
+  String? owner = _own,
+  bool dormantOwner = false,
+  int claimStatus = 200,
+}) =>
     MockClient((request) async {
       seen.add(request);
-      final currentOwner = seen.any((r) => r.url.path == '/groups/me/owner') ? _lost : owner;
+      final claimed = claimStatus == 200 &&
+          seen.any((r) => r.url.path == '/groups/me/owner/claim');
+      final currentOwner = claimed
+          ? _own
+          : seen.any((r) => r.url.path == '/groups/me/owner')
+              ? _lost
+              : owner;
+      if (request.url.path == '/groups/me/owner/claim') {
+        return http.Response.bytes(utf8.encode('{}'), claimStatus);
+      }
       final body = switch (request.url.path) {
         '/groups/me' when request.method == 'GET' => {
             'id': '11111111-1111-4111-8111-111111111111',
@@ -65,6 +81,7 @@ MockClient _server(List<http.BaseRequest> seen, {String? owner = _own}) =>
                 'joined_at': '2026-09-14T10:00:00Z',
                 'last_seen_at': '2026-09-14T10:05:00Z',
                 if (owner != null) 'is_owner': currentOwner == _own,
+                if (owner != null) 'dormant': false,
               },
               if (!seen.any((r) => r.url.path.endsWith('/revoke')))
                 {
@@ -73,6 +90,7 @@ MockClient _server(List<http.BaseRequest> seen, {String? owner = _own}) =>
                   'joined_at': '2026-09-14T10:01:00Z',
                   'last_seen_at': '2026-09-14T10:02:00Z',
                   if (owner != null) 'is_owner': currentOwner == _lost,
+                  if (owner != null) 'dormant': dormantOwner && !claimed,
                 },
             ],
           },
@@ -95,13 +113,20 @@ Future<GroupProvider> _pumpSection(
   WidgetTester tester,
   List<http.BaseRequest> seen, {
   String? owner = _own,
+  bool dormantOwner = false,
+  int claimStatus = 200,
 }) async {
   final db = AppDatabase.forTesting(NativeDatabase.memory());
   addTearDown(db.close);
   final group = GroupProvider(
     db: db,
     credentials: MemorySyncCredentials(),
-    httpClient: _server(seen, owner: owner),
+    httpClient: _server(
+      seen,
+      owner: owner,
+      dormantOwner: dormantOwner,
+      claimStatus: claimStatus,
+    ),
     enableStream: false,
     pollInterval: const Duration(hours: 1),
   );
@@ -228,6 +253,8 @@ void main() {
     expect(find.text('Lost phone'), findsOneWidget);
     expect(find.byKey(const Key('group_device_revoke_$_lost')), findsNothing);
     expect(find.byKey(const Key('group_device_make_owner_$_lost')), findsNothing);
+    // The owner is about: there is nothing to claim either.
+    expect(find.byKey(const Key('group_device_claim_$_lost')), findsNothing);
     expect(
       find.text("Only the group's owner can remove a device or change the invite code."),
       findsOneWidget,
@@ -260,6 +287,65 @@ void main() {
     Navigator.of(tester.element(find.byType(GroupSettingsSection))).pop();
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('group_rotate_share_token')), findsNothing);
+
+    await tester.pumpWidget(const SizedBox());
+    group.dispose();
+  });
+
+  testWidgets('a member claims the group from an owner that has gone quiet', (tester) async {
+    final seen = <http.BaseRequest>[];
+    final group = await _pumpSection(tester, seen, owner: _lost, dormantOwner: true);
+    await _createGroup(tester);
+
+    expect(group.isOwner, isFalse);
+    await tester.tap(find.byKey(const Key('group_devices')));
+    await _settle(tester);
+
+    await tester.tap(find.byKey(const Key('group_device_claim_$_lost')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('group_device_claim_confirm')));
+    await _settle(tester);
+
+    expect(tester.takeException(), isNull);
+    final claim = seen.lastWhere((r) => r.url.path == '/groups/me/owner/claim');
+    expect(claim.method, 'POST');
+    expect(group.isOwner, isTrue);
+    expect(find.text('This device now owns the group.'), findsOneWidget);
+    // With the role in hand, the owner actions are back on the other device.
+    expect(find.byKey(const Key('group_device_revoke_$_lost')), findsOneWidget);
+
+    Navigator.of(tester.element(find.byType(GroupSettingsSection))).pop();
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('group_rotate_share_token')), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox());
+    group.dispose();
+  });
+
+  testWidgets('a claim the server refuses leaves the role where it was', (tester) async {
+    final seen = <http.BaseRequest>[];
+    final group = await _pumpSection(
+      tester,
+      seen,
+      owner: _lost,
+      dormantOwner: true,
+      claimStatus: 409,
+    );
+    await _createGroup(tester);
+
+    await tester.tap(find.byKey(const Key('group_devices')));
+    await _settle(tester);
+    await tester.tap(find.byKey(const Key('group_device_claim_$_lost')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('group_device_claim_confirm')));
+    await _settle(tester);
+
+    expect(tester.takeException(), isNull);
+    expect(group.isOwner, isFalse);
+    expect(
+      find.text("The group's owner has been seen recently: ownership cannot be claimed."),
+      findsOneWidget,
+    );
 
     await tester.pumpWidget(const SizedBox());
     group.dispose();

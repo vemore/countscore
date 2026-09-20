@@ -266,8 +266,8 @@
   "underThreshold": "Por debajo del umbral",
   "firstPlayerOver": "Primer jugador en alcanzar",
   "firstPlayerUnder": "Primer jugador por debajo",
-  "lastPlayerOver": "Último jugador por encima",
-  "lastPlayerUnder": "Último jugador por debajo",
+  "lastPlayerOver": "Último jugador en juego (los demás por encima)",
+  "lastPlayerUnder": "Último jugador en juego (los demás por debajo)",
   "threshold": "Umbral",
   "conditionType": "Tipo de condición",
   "continuePlay": "Continuar jugando",
@@ -678,5 +678,15 @@
 
   "currentIcon": "Icono actual",
 
-  "currentColor": "Color actual"
+  "currentColor": "Color actual",
+
+  "groupDeviceClaimOwner": "Asumir la propiedad",
+
+  "groupDeviceClaimOwnerConfirm": "«{label}» es el propietario del grupo, pero hace mucho que no da señales. ¿Asumir la propiedad en este dispositivo?",
+
+  "groupDeviceOwnerClaimed": "Este dispositivo es ahora el propietario del grupo.",
+
+  "groupErrorOwnerActive": "El propietario del grupo ha dado señales hace poco: no se puede asumir la propiedad.",
+
+  "groupCreatedOwnerExplain": "Grupo creado. Este dispositivo es su propietario; el rol puede cederse a otro en Dispositivos."
 }

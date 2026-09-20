@@ -1,5 +1,7 @@
 # A group whose owner uninstalls the app can never get an owner back
 
+**Status:** done (2026-09-20) — closed by feat/group-owner-claim. Shape 2, the deliberate claim: `POST /groups/me/owner/claim` takes the role once the owner has been unseen for `GROUP_OWNER_DORMANT_DAYS` (30, `backend/app/config.py`), 409 while it has been seen; `GET /groups/me/devices` reports `dormant` per device, and the app offers *Claim ownership* on the owner's row. A group with a single live device owns itself, healed on read, and creating a group now says in one line that the role lives on this device. No migration: `devices.last_seen_at` has existed since `0001_initial`.
+
 - **Noted:** 2026-09-20 — reported by the user, read out of `backend/app/routes/groups.py`
 - **Theme:** groups-v2
 - **Area:** backend

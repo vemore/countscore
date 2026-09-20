@@ -18,11 +18,11 @@ import '../utils/undo_snack_bar.dart';
 import 'about_screen.dart';
 import 'create_game_screen.dart';
 import 'game_board_screen.dart';
-import 'game_end_screen.dart';
 import 'game_types_screen.dart';
 import 'player_stats_screen.dart';
 import 'players_screen.dart';
 import 'settings_screen.dart';
+import 'standings_screen.dart';
 
 /// The game the home screen's Resume card offers: the open game played most
 /// recently (last score or rename, else creation), or null when every game is
@@ -884,11 +884,11 @@ class _HomeScreenState extends State<HomeScreen> {
         unawaited(ReviewPromptService.instance.onGameFinished());
       }
       if (finished) {
-        // Who won, rather than a snackbar that never said: the end screen
-        // reads the current game, so it is loaded first.
+        // Who won, rather than a snackbar that never said: the standings
+        // read the current game, so it is loaded first.
         await gameProvider.loadGame(gameId);
         await navigator.push(MaterialPageRoute(
-          builder: (_) => GameEndScreen(boardBuilder: widget.boardBuilder),
+          builder: (_) => StandingsScreen(boardBuilder: widget.boardBuilder),
         ));
         return;
       }

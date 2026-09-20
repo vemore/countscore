@@ -11,11 +11,11 @@ import '../utils/player_colors.dart';
 import 'board_lanes.dart';
 import 'player_avatars.dart';
 
-/// The current game's players best first, as both rankings draw them: the
-/// in-game `RankingScreen` and the `GameEndScreen`.
+/// The current game's players best first, as the `StandingsScreen` draws
+/// them — open or finished — and as the shared picture repeats them.
 ///
-/// Built from [GameProvider] and the game's type, so the two screens cannot
-/// disagree on a place, a colour or who is out.
+/// Built from [GameProvider] and the game's type, so the screen and the
+/// picture cannot disagree on a place, a colour or who is out.
 class GameRanking {
   GameRanking._({
     required this.standing,
@@ -112,8 +112,12 @@ String rankingSummary(
       isLowestScoreWins ? l10n.gameEndLowestWins : l10n.gameEndHighestWins,
     ].join(' · ');
 
-/// A podium of the top three in their colours, the leader crowned, then the
-/// others in rank order. Not scrollable itself: the screen puts it in a list.
+/// A podium of the top three in their colours, the leader crowned, then
+/// **every** player in rank order — the top three twice on purpose, once as
+/// the picture and once at the head of the list, so the standings read top to
+/// bottom without decoding the podium's 2-1-3 layout first
+/// (`wip/done/2026-09-20-podium-hides-the-first-three-from-the-list.md`).
+/// Not scrollable itself: the screen puts it in a list.
 class RankedPlayers extends StatelessWidget {
   const RankedPlayers({super.key, required this.ranking});
 
@@ -122,13 +126,12 @@ class RankedPlayers extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final podium = ranking.ranked.take(3).toList();
-    final others = ranking.ranked.skip(3).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (podium.isNotEmpty) _Podium(players: podium, ranking: ranking),
         const SizedBox(height: 16),
-        for (final player in others)
+        for (final player in ranking.ranked)
           _RankRow(
             key: Key('ranking_row_${player.id}'),
             player: player,
@@ -286,7 +289,9 @@ class _Step extends StatelessWidget {
   }
 }
 
-/// A player past the podium: place, avatar, name, total.
+/// One player of the list under the podium: place, avatar, name, total. The
+/// first place — every player on it, on a tie — is drawn on the primary
+/// container, so the head of the list is as easy to find as the podium.
 class _RankRow extends StatelessWidget {
   const _RankRow({super.key, required this.player, required this.ranking});
 
@@ -299,24 +304,30 @@ class _RankRow extends StatelessWidget {
     final scheme = theme.colorScheme;
     final total = ranking.totalOf(player);
     final eliminated = ranking.isEliminated(total);
+    final place = ranking.ranks[player.id] ?? 0;
+    final first = ranking.hasScores && place == 1;
     return _outIf(
       eliminated,
       Card(
-        margin: const EdgeInsets.only(bottom: 8),
+        margin: const EdgeInsets.only(bottom: 6),
+        color: first ? scheme.primaryContainer : null,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: scheme.outlineVariant),
+          side: BorderSide(
+              color: first ? scheme.primary : scheme.outlineVariant),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
             children: [
               SizedBox(
                 width: 24,
                 child: Text(
-                  '${ranking.ranks[player.id] ?? 0}',
+                  '$place',
                   style: theme.textTheme.titleMedium?.copyWith(
-                    color: scheme.onSurfaceVariant,
+                    color: first
+                        ? scheme.onPrimaryContainer
+                        : scheme.onSurfaceVariant,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -325,7 +336,7 @@ class _RankRow extends StatelessWidget {
               PlayerAvatar(
                   name: player.name,
                   color: ranking.colourOf(player),
-                  size: 34,
+                  size: 32,
                   letters: 2),
               const SizedBox(width: 12),
               Expanded(
@@ -335,6 +346,7 @@ class _RankRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
+                    color: first ? scheme.onPrimaryContainer : null,
                     decoration: eliminated ? TextDecoration.lineThrough : null,
                   ),
                 ),
@@ -343,8 +355,8 @@ class _RankRow extends StatelessWidget {
                 '$total',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: _totalColour(
-                      context, ranking, total, scheme.onSurface),
+                  color: _totalColour(context, ranking, total,
+                      first ? scheme.onPrimaryContainer : scheme.onSurface),
                 ),
               ),
             ],
