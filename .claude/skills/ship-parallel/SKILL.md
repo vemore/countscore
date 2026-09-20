@@ -37,9 +37,26 @@ behind each choice: `.llmwiki/ParallelDelivery.md`.
 3. Order the merges: schema and backend first, then app, then docs and listing. A pull request
    touching `.claude/` (hooks, settings, skills the hooks rely on) merges **last in its wave**,
    once every agent of that wave has reported (why: `ParallelDelivery.md`).
-4. Present the plan in **one** `AskUserQuestion` — for each pull request: branch name, entries,
-   likely files, wave, merge order — and wait for the answer. The user's go-ahead covers the
-   whole loop below, merges and deploys included.
+4. **Put each pull request in a lane — A, B, C or D** — from what it is about to touch, now,
+   before anything is written (the table, with the full path list:
+   `ParallelDelivery.md` § Execution lanes):
+   - **A** standard. **B** over 1 500 non-generated, non-test lines, or a failure that would
+     be silent (a migration, the sync contract, an Alembic revision, anything persisted or
+     sent to another device), or a call site several features depend on. **C** a diff touching
+     the sensitive paths — `backend/app/routes/`, `backend/app/services/{ws_ticket,trusted_proxy,notify}.py`,
+     `lib/services/sync/`, `lib/services/backend_client.dart`, `privacy_policy.md`,
+     `PLAY_STORE_DATA_SAFETY.md`, `AndroidManifest.xml`. **D** an experiment, on a
+     `noPullRequest` branch, never merged as is.
+   - Lanes **B and C** need **acceptance criteria in the entry**: if the entry carries none,
+     write them with the user now (`wip-refine` §4). §3 refuses the merge without them —
+     they are what the independent reviewer judges the tests against.
+   - In doubt, take the stricter lane: raising a lane costs one review, missing one costs a
+     production fix.
+5. Present the plan in **one** `AskUserQuestion` — for each pull request: branch name, entries,
+   **its lane and, for B and C, the acceptance criteria**, likely files, wave, merge order —
+   and wait for the answer. The user's go-ahead covers the whole loop below, merges and deploys
+   included; it does **not** stand in for lane C's go-ahead in §3, which is asked again once
+   the diff and the review findings exist.
 
 Five agents at a time at most. Parallel `flutter test` runs queue on the SDK lock anyway, and
 each worktree costs a `pub get` and a `build_runner`.
@@ -56,6 +73,9 @@ You implement one pull request of CountScore, in the git worktree you start in.
 
 Pull request: <type>/<topic> — <one-line goal>
 Entries to close: <wip/todo/....md paths>
+Lane: <A | B | C>. <For B and C: this change is reviewed by another agent before it merges;
+the acceptance criteria below are what that review judges your tests against.>
+Acceptance criteria (B and C): <the entries' criteria, one per line>
 Files you will likely touch: <list>. Other agents are working in parallel on: <other PRs and
 their files> — stay out of those files; if you cannot, say so in your report.
 
@@ -84,7 +104,8 @@ Rules:
 7. Never merge, never deploy, never force-push, never push to main.
 8. Report, briefly: PR URL and number, check state, files touched, Alembic revisions, ARB keys
    added, anything the orchestrator must know to merge or deploy (env vars, migrations,
-   manual steps), entries you created, and — if the circuit breaker tripped — its class.
+   manual steps), entries you created, and — if the circuit breaker tripped — its class. On
+   lanes B and C, map **each acceptance criterion to the test that covers it**, by name.
 ```
 
 A `SubagentStop` hook refuses to let an agent finish while its commits have no pull request
@@ -112,12 +133,30 @@ order:
    ```bash
    gh pr view <n> --json files --jq '[.files[] | select(.path | test("\\.g\\.dart$|^lib/l10n/app_localizations.*\\.dart$|^pubspec\\.lock$|^backend/uv\\.lock$|^web/sqlite3\\.wasm$|^web/drift_worker\\.js$|^test/|^integration_test/|^backend/tests/") | not) | .additions + .deletions] | add'
    ```
-   Above **1 500** lines, do not merge without the user's go-ahead: #21 (+6.9 k) needed six
-   fix pull requests the same day. (`files` stops at 100 entries: a pull request that long
-   needs the go-ahead anyway.)
-2. Bring it up to date: `gh api -X PUT repos/{owner}/{repo}/pulls/<n>/update-branch`. (`gh pr update-branch`
+   Above **1 500** lines the pull request is lane B whatever the plan said: this count is the
+   **backstop** for a lane misjudged at planning time, not the gate itself. Run step 2 for it,
+   and do not merge without the user's go-ahead — #21 (+6.9 k) was merged on its size alone
+   and needed six fix pull requests the same day. (`files` stops at 100 entries: a pull
+   request that long needs the go-ahead anyway.)
+2. **Apply the lane** chosen in §1 (`ParallelDelivery.md` § Execution lanes). Lane **A**:
+   nothing more, go to step 3. Lanes **B and C**, before the merge:
+   - Check the entry's acceptance criteria against the agent's report — each one mapped to a
+     test. Criteria missing: write them from the entry and check the diff against them first.
+   - Launch a **fresh agent that did not write the change** (never the implementing one) on
+     the pull request: `/code-review high <n>`, and give it the entries, their acceptance
+     criteria and the four calibration rules of `ParallelDelivery.md` § The independent
+     reviewer's calibration.
+   - Report **every** finding to the user, with what you intend to do about each: fixed in
+     this pull request, a new `wip/` entry, or dismissed and why. A finding showing the change
+     does not do what its entry promised goes back to the implementing agent before the merge;
+     a durable problem beyond this pull request's scope becomes a `wip/` entry and, if it
+     belongs in this release, its own pull request.
+   - Lane **C** only: ask an explicit `AskUserQuestion` go-ahead **for this merge**, after the
+     findings. The §1 plan approval does not cover it, and no CODEOWNERS gate exists.
+   Lane **D** never reaches this section: its branch carries `noPullRequest` and is not merged.
+3. Bring it up to date: `gh api -X PUT repos/{owner}/{repo}/pulls/<n>/update-branch`. (`gh pr update-branch`
    needs gh ≥ 2.49; this machine has 2.45). It merges `main` into the branch on GitHub — no rebase, no force-push, and the agent's worktree stays valid.
-3. If GitHub reports a conflict, resolve it in that pull request's worktree:
+4. If GitHub reports a conflict, resolve it in that pull request's worktree:
    `git -C <worktree> fetch origin && git -C <worktree> merge origin/main`, fix, commit (the
    hook runs the gates on what differs from `main` — `.llmwiki/Hooks.md`), `git push`. Recipes:
    - **`lib/l10n/*.arb`** — keep the union of the keys, valid JSON, same order as the
@@ -130,11 +169,11 @@ order:
    - **`wip/`** — two branches never touch the same entry; a conflict there means one of them
      edited an entry it did not own: keep the owner's version.
    - Anything that is a real semantic clash between two themes: stop and tell the user.
-4. `gh pr checks <n> --watch` — all green or `skipping`, on the updated head.
-5. `gh pr merge <n> --squash --delete-branch` (the hook refuses `--admin`, `--merge`,
+5. `gh pr checks <n> --watch` — all green or `skipping`, on the updated head.
+6. `gh pr merge <n> --squash --delete-branch` (the hook refuses `--admin`, `--merge`,
    `--rebase`). Then `git fetch --prune origin && git merge --ff-only origin/main` in the main
    checkout.
-6. The next pull request is now behind `main`: back to step 2 for it.
+7. The next pull request is now behind `main`: back to step 3 for it.
 
 ## 4. Deploy what the merge changed
 

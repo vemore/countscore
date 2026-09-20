@@ -1,5 +1,13 @@
 # Every change takes the same path to production, whatever its risk
 
+**Status:** done (2026-09-20) — closed by docs/execution-lanes. `.llmwiki/ParallelDelivery.md`
+§ Execution lanes defines lanes A–D with their triggers and the sensitive-path list, and
+§ The independent reviewer's calibration carries the reviewer's four rules; `ship-parallel` §1
+chooses the lane at planning time and shows it with the acceptance criteria in the plan, §2
+passes both to the implementing agent, and §3.2 requires `/code-review high` from an agent that
+did not write the change for lanes B and C plus an `AskUserQuestion` go-ahead for lane C — the
+1 500-line count at §3.1 stays as the backstop only. `SubagentStop` is unchanged.
+
 - **Noted:** 2026-09-18 — comparing the project's SDLC with "Your SDLC is your context
   engineering" (Daniel Kravets, LeadDev, 2026-08-10)
 - **Theme:** merge-safety

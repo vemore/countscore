@@ -89,8 +89,9 @@ A released commit gets an **annotated** tag named exactly as `version:` in `pubs
 `origin`: `1.0.0+1` → `4e52a54`, `1.0.1+2` → `1614707`, `1.0.1+3` → `ee3ff1b` (lightweight,
 predates the rule). `1.1.0+4` → `3808257` (annotated, 2026-09-15). `1.2.0+5` → `29bf108` (annotated,
 2026-09-17), which also carries the repository's **first GitHub Release** — the en-US
-release notes as its body and **no binary asset**, see §Decisions. A local `1.0.1` tag on
-`1614707` (the older scheme) was never pushed and is not part of the scheme.
+release notes as its body and **no binary asset**, see §Decisions. Every tag from `1.2.0+5` on
+carries such a release, published by `release-android` §10 right after the tag. A local `1.0.1`
+tag on `1614707` (the older scheme) was never pushed and is not part of the scheme.
 
 ### Cadence
 
@@ -348,7 +349,11 @@ not apply (`wip/done/2026-09-16-edge-to-edge-insets.md`).
   for Android developer verification (§Developer verification). Attaching one would create the
   distribution channel that section says does not exist, and certified devices in the affected
   countries would refuse to install it. A GitHub Release asset therefore requires registering
-  the upload key first — it is not a packaging decision.
+  the upload key first — it is not a packaging decision. **2026-09-20:** the decision held but
+  the step existed nowhere executable — `release-android` §10 named only the tag, so
+  `1.3.0+6`'s release was created by hand a day after production, once the user noticed the
+  gap between the seven pushed tags and a `gh release list` that stopped at `1.2.0+5`. The
+  command, and the reason no binary is attached, are now in §10 and in its checklist.
 - **Production directly, at 20 %, with no internal rehearsal (2026-09-17).** The user's call
   for 1.2.0. `release-android` §8 prescribes internal → closed → production; skipping it trades
   a rehearsal for a day, and the staged rollout plus a device test on a real release build were

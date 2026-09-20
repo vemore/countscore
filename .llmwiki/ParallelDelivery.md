@@ -1,9 +1,10 @@
 # ParallelDelivery
 
 > Scope: how several changes are built at once and reach production — worktrees, one pull
-> request per theme, serial squash merges, deploy after each merge, and `wip/` work tracking.
+> request per theme, the execution lane a change's risk puts it in, serial squash merges,
+> deploy after each merge, and `wip/` work tracking.
 > Procedure: the `ship-parallel` skill. Related: [[Hooks]] · [[Deployment]] · [[Release]]
-> Updated: 2026-09-19
+> Updated: 2026-09-20
 
 ## Facts
 
@@ -73,6 +74,46 @@ None of the guards makes `--apply` safe to run while agents work: an unlocked wo
 for more than the window, with a branch that carries no commit yet, still looks abandoned.
 They cover the windows that cost work in practice — a live agent session, the five-minute
 setup, and an agent between commits.
+
+### Execution lanes — the path to production is chosen by the risk
+
+A change is put in a lane when the pull requests are **planned** (`ship-parallel` §1), from
+what it is about to touch — not once the diff exists. The lane is named in the plan the user
+approves, and `ship-parallel` §3 applies what it requires before the merge.
+
+| Lane | What falls in it | What it requires before merging |
+|---|---|---|
+| **A — standard** | Everything the other three do not catch | Today's loop: checks green or skipped, the orchestrator reads the diff, squash-merge, deploy |
+| **B — planned** | Over **1 500** lines excluding generated files and tests; or a failure that would be **silent** — a migration, the sync contract, an Alembic revision, anything persisted or sent to another device; or a call site several features depend on | Lane A, plus **acceptance criteria in the entry** (mandatory here, `wip/README.md`), plus `/code-review high` run by an agent that did **not** write the change, its findings reported to the user before the merge |
+| **C — sensitive paths** | A diff touching `backend/app/routes/`, `backend/app/services/{ws_ticket,trusted_proxy,notify}.py`, `lib/services/sync/`, `lib/services/backend_client.dart`, `privacy_policy.md`, `PLAY_STORE_DATA_SAFETY.md`, `AndroidManifest.xml` | Lane B, plus an explicit `AskUserQuestion` go-ahead for that merge, asked after the findings |
+| **D — experiment** | A spike written to learn something, not to ship | A branch held back with `git config branch.<name>.noPullRequest true`, never merged as is; what it taught becomes a `wip/` entry |
+
+A change matching several lanes takes the strictest, and the orchestrator may raise a lane at
+any moment — raising one costs a review, missing one costs a production fix. The `ship-parallel`
+§3.1 size count stays only as the **backstop** for a lane misjudged at planning time: a lane-A
+pull request that turns out to be over 1 500 lines is lane B after all.
+
+Nothing mechanical enforces the lanes. `SubagentStop` is unchanged and still checks only that
+an agent leaves a pull request whose checks are not red ([[Hooks]]); lane C's approval is an
+`AskUserQuestion` in the session, not CODEOWNERS, which would block a solo self-merge outright.
+
+### The independent reviewer's calibration (lanes B and C)
+
+The reviewing agent is **fresh** — the agent that writes a change also writes the tests that
+judge it. It gets `/code-review high` on the pull request, the entries with their acceptance
+criteria, and these four rules, which a generic reviewer does not know:
+
+- **Verify each finding against the pull request head**, not against its description or an
+  earlier commit.
+- **A wiki page, `README.md` or privacy document the change makes false is at least Medium** —
+  documentation is part of the change here ([[Documentation]]).
+- **Read a page's `Decisions & History` before calling something redundant**: most of what
+  looks duplicated was argued for once and kept on purpose.
+- **Judge the tests against the entry's acceptance criteria**, not against coverage: the
+  question is whether what the entry promised is proven.
+
+Every finding goes to the user before the merge, whatever its severity, with what the
+orchestrator intends to do about it.
 
 ### Work tracking, and what a merge deploys
 
@@ -175,3 +216,26 @@ Store is never part of the loop (`release-android`, on request).
   `wip/todo/`, plus the independent review planned for the riskier lanes
   (the entry `2026-09-18-one-lane-for-every-change`, lanes B and C) were judged enough, at the
   2026-09-18 refinement, to keep an agent from grading its own work.
+
+- **Execution lanes A–D (decided 2026-09-18, first run 2026-09-20).** `ship-parallel` ran a
+  one-line wording fix and a sync-contract change through the same loop, and the only brake was
+  the 1 500-line count at §3.1 — applied after the code existed. Following "Your SDLC is your
+  context engineering" (LeadDev, 2026-08-10), the path to production is now chosen by the risk
+  at planning time. The lane table replaced two entries that each held half of it (one keyed on
+  sensitive paths, one on the shape of the change), a third that gave the reviewer its four
+  calibration rules, and a fourth that made acceptance criteria mandatory for lanes B and C.
+  Evidence: **#21** (+6.9 k lines, 64 files) was merged and deployed the day it opened and
+  needed six fix pull requests (#22–#27) the same day, a crash and security findings among
+  them; and **#75**'s planned review found a v4→v5 migration that left the database
+  unopenable — six CI checks were green and there was no v4 fixture. CODEOWNERS was rejected
+  for lane C (it blocks a solo self-merge), and `SubagentStop` was deliberately left alone: the
+  lane is the orchestrator's step, not the implementing agent's.
+- **The first lane-B run paid for itself the same day (2026-09-20).** #192
+  (`fix/rules-slug-restore`, a v18 schema step restoring wiped `rules_slug` values) was planned
+  as lane B; the independent reviewer confirmed the repair but found that it is **not durable**,
+  because a NULL `rules_slug` travels through the sync and writes the damage straight back
+  (`sync_store.dart:458`, `:748`, and the backend keeping null-valued known columns). A query
+  against the production database confirmed it was real rather than theoretical: the
+  four-device group the owner actually uses held a ZapZap row with `builtin_key='zapzap'` and
+  `rules_slug` NULL. Six CI checks were green on #192 throughout — which is the concrete answer
+  to "why not just trust the checks". The repair became `fix/rules-slug-payload`.

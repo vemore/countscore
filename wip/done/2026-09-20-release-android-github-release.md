@@ -1,5 +1,11 @@
 # release-android §10 ne publie jamais la release GitHub du tag
 
+**Status:** done (2026-09-20) — closed by docs/execution-lanes. `release-android` §10 now
+publishes the release with `gh release create`, without `--target` and with no asset, says why
+no AAB or APK is attached (`.llmwiki/Release.md` § Developer verification), and the checklist
+has a line for it; `Release.md` § Tags records that every tag from `1.2.0+5` on carries such a
+release, and its § Decisions the 2026-09-20 hand-made `1.3.0+6` one.
+
 - **Noted:** 2026-09-20 — en publiant après coup la release GitHub 1.3.0, oubliée à la livraison
 - **Theme:** release-automation
 - **Area:** tooling

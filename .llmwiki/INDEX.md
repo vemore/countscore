@@ -49,7 +49,7 @@ Load this file first. Then read only the pages your task touches.
 | [[Deployment]] | Synology NAS, Web Station TLS, `deploy_nas.sh`, `deploy_web.sh`, the Pages copy of the PWA, environment | 2026-09-20 |
 | [[Hooks]] | What Claude Code refuses mechanically, why each rule left CLAUDE.md, recovering from a stale branch | 2026-09-19 |
 | [[Documentation]] | Which documents a change implicates: wiki, README table, the three privacy documents, why a share sheet is not a data flow; the CLAUDE.md budget | 2026-09-19 |
-| [[ParallelDelivery]] | Protection on main, worktrees, local cleanup, why one PR per theme and serial squash merges (`wip/` format: `wip/README.md`), the refinement pass that feeds `wip/todo/` | 2026-09-18 |
+| [[ParallelDelivery]] | Protection on main, worktrees, local cleanup, why one PR per theme and serial squash merges (`wip/` format: `wip/README.md`), the refinement pass that feeds `wip/todo/`, the execution lanes A–D and the independent reviewer's calibration | 2026-09-20 |
 | [[Security]] | Defended surfaces (the group owner among them), and the security debt that is knowingly open | 2026-09-20 |
 | [[Testing]] | Unit, Drift, migration, e2e web and device; backend pytest, release tooling; CI jobs and how `scope` picks them, `alembic check`, dependency audit, the `web/` binary gate, the privacy page check and the monthly lock refresh | 2026-09-20 |
 | [[Release]] | Play Store signing state, publishing through the Play API, target API, 2026 Play policy constraints, release cadence and pruning pass | 2026-09-20 |
