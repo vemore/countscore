@@ -227,7 +227,40 @@ and CI refuses a pull request whose committed file differs — never edit it by 
 
 ### Submission state
 
-**1.3.1 (7) is on production at 20 %** since 2026-09-20 (`play_publish.py publish --track
+**1.4.0 (8) is on production at 20 %** since 2026-09-20 (`play_publish.py publish --track
+production --promote --rollout 0.2 --commit`), promoted from internal after a real-device pass
+on the Pixel 9 Pro XL. It is tagged `1.4.0+8` on `60ba644` and published as a GitHub release
+from the en-US notes — the first release to follow §10's `gh release create` step, which #196
+added the same day after the 1.3.0 release had to be created by hand. Internal keeps the same
+build. 1.2.0 (5) stays listed as the completed production release beside it until the Console
+widens 1.4.0 to 100 %.
+
+The device pass was again an **in-place upgrade over the sideloaded 1.3.1**, not the
+clean-install plus Settings → Import of §5: the installed build carries the upload key
+(`installerPackageName=null`), so `adb install -r` works and exercises the migration chain on
+the owner's real database. The database stepped v17 → v18; every game, player and winner
+survived, and the new launcher icon is live.
+
+**The device pass found that the release does not close its own blocker.** `6 qui prend` still
+shows "Pas encore de règles" after v18. ZapZap *was* repaired, but by sync rather than by the
+migration: the PWA took v18 at 13:56 UTC, repaired its `rules_slug` and pushed it over the
+server's NULL. An export of the owner's database shows three live seeded types with **no
+`builtin_key`** — Skyjo (5 games), `6 qui prend` (7 games), Yam's (0) — and `applyV16`, which
+`applyV18` replays, filters on `builtin_key`. The cause is that the v13/v14 **key** back-fills
+select `WHERE isDefault = 1` while the pre-1.3.1 editor wrote `isDefault = 0`, so those rows
+missed their key permanently and with it every later slug repair.
+`wip/todo/2026-09-20-a-type-that-lost-isdefault-can-never-regain-its-builtin-key.md` carries the
+v19 step, lane B. The release notes were corrected before publishing so they no longer name the
+types 1.4.0 does not repair.
+
+It ships ten merged pull requests since `1.3.1+7` (#191–#201): the v18 repair and its sync
+durability fix, the new icon everywhere, one ranking model for the standings and the statistics,
+the game-type tombstone, the dice chips, the purple identity removed, the About credits dropped,
+and three store screenshots retaken in ten locales.
+
+#### 1.3.1 (7), superseded by 1.4.0 the same day
+
+**1.3.1 (7) was on production at 20 %** on 2026-09-20 (`play_publish.py publish --track
 production --promote --rollout 0.2 --commit`), promoted from internal after a real-device pass
 on the Pixel 9 Pro XL. It is tagged `1.3.1+7` on `df872d6` and published as a GitHub release
 from the en-US notes; internal keeps the same build. 1.2.0 (5) stays listed as the completed
