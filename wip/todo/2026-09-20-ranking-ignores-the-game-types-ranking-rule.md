@@ -30,25 +30,30 @@ the right thing to show for every shape. Only at the end does the elimination or
 The two screens show the same thing today
 ([[2026-09-20-ranking-and-end-screen-are-the-same-screen]]).
 
-**Also found:** an elimination type has no game-over rule at all — `_checkGameOverCondition`
-(`lib/screens/game_board_screen.dart:525`) returns false without a `gameOverConditionType`, so
-a ZapZap game with one player left still offers "Round 6" and never ends by itself. The rules
-screen says as much: "No automatic end: you decide when the game is over."
+**Also found, split out:** an elimination type has no game-over rule at all —
+`_checkGameOverCondition` (`lib/screens/game_board_screen.dart:525`) returns false without a
+`gameOverConditionType`, so a ZapZap game with one player left still offers "Round 6". That is
+its own entry:
+[[2026-09-20-the-last-player-standing-condition-is-mislabelled-misimplemented-and-unset]].
 
 **Fix:** give `GameType` a ranking rule beside its elimination rule, and have `GameStanding`
 take it plus the rounds. Elimination order needs no schema change: it is the first round whose
-running total crosses `playerDeadThreshold`, derivable from the stored scores. Add a
-`lastSurvivor` game-over condition so an elimination game ends on its own.
+running total crosses `playerDeadThreshold`, derivable from the stored scores. The game-over
+rule an elimination type is missing is not a new one —
+[[2026-09-20-the-last-player-standing-condition-is-mislabelled-misimplemented-and-unset]] fixes
+and seeds the `lastPlayerOver` condition that already means it.
 
 **Acceptance:**
 - In the reproduction above the final order is David, Chloe, Bob, Alice, on the board badges and on the standings screen.
 - While the game is open the same game still ranks by total.
 - A race-to-a-total type and a type with no rule rank exactly as they do today (regression test).
-- A ZapZap game with one player left offers to end, as a threshold game does.
 
 **Decided (2026-09-20, the user):** a type with no rule ranks **by score**, which is the
 default the ranking rule falls back to — `other` included. Only a type that carries a rule of
 its own departs from it, and today that is the elimination shape alone.
 
-**Open question:** should the elimination order be *shown* — an "out in round 4" line under a
-player — or only used to sort? The order itself is settled either way.
+**Decided (2026-09-20, the user):** the elimination order applies only to a type that has an
+elimination threshold **and** whose win condition is "last player standing". Anything else —
+including a type with a threshold but a race-to-a-total ending — ranks by score. That makes
+[[2026-09-20-the-last-player-standing-condition-is-mislabelled-misimplemented-and-unset]] a
+prerequisite: no type can express that win condition today.
