@@ -129,33 +129,6 @@ class AboutScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.copyright),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                l10n.credits,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        _buildCredit(l10n.appIconCredit, l10n.artistName),
-                      ],
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
@@ -172,23 +145,6 @@ class AboutScreen extends StatelessWidget {
           Icon(icon, size: 20),
           const SizedBox(width: 12),
           Expanded(child: Text(text)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCredit(String label, String author) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-          ),
-          Text(author, style: const TextStyle(fontStyle: FontStyle.italic)),
         ],
       ),
     );

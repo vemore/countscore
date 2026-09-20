@@ -851,24 +851,6 @@ abstract class AppLocalizations {
   /// **'Noter CountScore'**
   String get rateApp;
 
-  /// Credits section title
-  ///
-  /// In fr, this message translates to:
-  /// **'Crédits'**
-  String get credits;
-
-  /// App icon credit label
-  ///
-  /// In fr, this message translates to:
-  /// **'Icône de l\'application'**
-  String get appIconCredit;
-
-  /// Artist name for app icon
-  ///
-  /// In fr, this message translates to:
-  /// **'efendi.sign'**
-  String get artistName;
-
   /// Search input label
   ///
   /// In fr, this message translates to:

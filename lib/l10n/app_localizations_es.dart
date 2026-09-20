@@ -430,15 +430,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rateApp => 'Valorar CountScore';
 
   @override
-  String get credits => 'Créditos';
-
-  @override
-  String get appIconCredit => 'Ícono de la aplicación';
-
-  @override
-  String get artistName => 'efendi.sign';
-
-  @override
   String get search => 'Buscar';
 
   @override

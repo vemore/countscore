@@ -706,21 +706,6 @@
     "description": "About screen entry opening the app's Play Store listing"
   },
 
-  "credits": "Crédits",
-  "@credits": {
-    "description": "Credits section title"
-  },
-
-  "appIconCredit": "Icône de l'application",
-  "@appIconCredit": {
-    "description": "App icon credit label"
-  },
-
-  "artistName": "efendi.sign",
-  "@artistName": {
-    "description": "Artist name for app icon"
-  },
-
   "search": "Rechercher",
   "@search": {
     "description": "Search input label"
