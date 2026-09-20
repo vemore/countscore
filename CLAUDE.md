@@ -60,9 +60,9 @@ push and merge shapes — and what the hooks do *not* cover: `.llmwiki/Hooks.md`
   changes in one pull request. A branch held back sets
   `git config branch.<name>.noPullRequest true`, and you say so. `.llmwiki/Hooks.md`.
 - **You merge and deploy your own green pull requests, through `ship-parallel`** (decided
-  2026-09-14): squash-merge, deploy what the merge changed, smoke-test production; a problem
-  found after the deploy is a new pull request. A Play Store release only when the user asks,
-  through `release-android`. `.llmwiki/ParallelDelivery.md`.
+  2026-09-14), in the lane their risk picked at planning time: squash-merge, deploy what
+  the merge changed, smoke-test production; a problem found after the deploy is a new pull
+  request. A Play Store release only when the user asks, `release-android`. `.llmwiki/ParallelDelivery.md`.
 - **Several tasks at once are several pull requests, in parallel** — one per theme, one
   agent and worktree each: the `ship-parallel` skill.
 - **Leave the local environment clean**: the main checkout back on a fast-forwarded `main`,

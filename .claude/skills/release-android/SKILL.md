@@ -322,6 +322,19 @@ relay the browser agent's questions yourself: give the user the folder, wait for
   ```bash
   git tag -a <x.y.z+n> <commit> -m "<x.y.z+n>" && git push origin <x.y.z+n>
   ```
+- Publish the **GitHub release for that tag**, from the notes already written for the Play
+  Store — the tag alone shows nothing on the repository's Releases page:
+  ```bash
+  gh release create <x.y.z+n> --title "<x.y.z+n>" \
+    --notes-file store_listing/en-US/release_notes_v<x.y.z>.txt
+  ```
+  No `--target`: the tag is already pushed and `main` has usually moved on since, and the
+  release must stay on the tagged commit. And **no attachment — no AAB, no APK, ever**: the
+  upload key is deliberately not registered with Google (`.llmwiki/Release.md` § Developer
+  verification), so an APK built here would be refused at install on certified Android devices
+  in the affected countries, and attaching one creates a distribution channel outside Play.
+  That is a decision to take with the user and record in `Release.md`, never a convenience
+  added "while we are here".
 - Update **Submission state** in `.llmwiki/Release.md` (what is live on which track) and its
   `Updated:` date.
 - Once the release pull request is merged: `scripts/cleanup_local.sh --apply` removes the
@@ -364,6 +377,7 @@ Requires `rsvg-convert` and Pillow. Full rationale: `.llmwiki/Release.md` §Icon
 - [ ] Store listing text/graphics published through `listing` (never the Console), and the
       user told that `listing --commit` is live at once with no staged rollout
 - [ ] Console-only tasks (content rating, declarations, Data Safety, category and tags) checked, through the brief if needed
-- [ ] Tag pushed, `Release.md` Submission state updated, worktree and brief folder removed
+- [ ] Tag pushed, and the **GitHub release published for the tag** (notes only, no asset)
+- [ ] `Release.md` Submission state updated, worktree and brief folder removed
 - [ ] A `wip-refine` pass proposed to the user for the next release
 - [ ] Keystore and service-account key backups exist and are current
