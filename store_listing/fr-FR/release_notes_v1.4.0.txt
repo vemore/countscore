@@ -1,0 +1,10 @@
+CountScore 1.4.0
+
+• Réparé : les types intégrés qui avaient perdu leurs règles avec un ancien éditeur les réaffichent.
+• Une toute nouvelle icône.
+• L'écran des résultats explique pourquoi un jeu à élimination ne suit pas les totaux.
+• Statistiques et classement donnent enfin les mêmes places.
+• Supprimer un type de jeu se propage à votre groupe.
+• Les six boutons du lanceur de dés tiennent sur une ligne.
+
+Les fonctions en ligne restent inactives sans serveur.
