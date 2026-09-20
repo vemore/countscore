@@ -419,15 +419,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get rateApp => '为 CountScore 评分';
 
   @override
-  String get credits => '致谢';
-
-  @override
-  String get appIconCredit => '应用图标';
-
-  @override
-  String get artistName => 'efendi.sign';
-
-  @override
   String get search => '搜索';
 
   @override

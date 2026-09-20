@@ -431,15 +431,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get rateApp => 'Оценить CountScore';
 
   @override
-  String get credits => 'Авторы';
-
-  @override
-  String get appIconCredit => 'Значок приложения';
-
-  @override
-  String get artistName => 'efendi.sign';
-
-  @override
   String get search => 'Поиск';
 
   @override

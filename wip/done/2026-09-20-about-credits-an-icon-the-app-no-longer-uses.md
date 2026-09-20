@@ -1,5 +1,13 @@
 # The About screen credits an artist who did not draw the current icon
 
+**Status:** done (2026-09-20) — closed by fix/about-credits. The Credits `Card` and the
+`_buildCredit` helper are gone from `about_screen.dart`, which now ends on the *Rate
+CountScore* row; `credits`, `appIconCredit` and `artistName` are removed from all ten ARB
+files with their `@` blocks in the French template, `artistName` left `SAME_AS_ENGLISH_OK`,
+and `.llmwiki/I18n.md` and `INDEX.md` read 409 keys. `about_screen_test.dart` asserts the
+heading, the handle and the copyright icon are absent. The old handle survives nowhere in
+the repository outside this entry and that assertion.
+
 - **Noted:** 2026-09-20 — while reviewing the About screen after the icon change
 - **Theme:** visual-refresh
 - **Area:** app
