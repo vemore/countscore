@@ -246,7 +246,9 @@ Sixteen components shared out of the screens:
 - `dice_roller_dialog.dart` — the board's overflow-menu **Roll dice**, next to **Who
   starts?** and offered whatever the players: choose 1 to 6 six-sided dice (chips), each
   choice rolls at once, *Roll again* re-rolls; each die and the total are shown. Opens on
-  2 dice; the count is not remembered. Nothing stored, nothing sent.
+  2 dice; the count is not remembered. Nothing stored, nothing sent. The six count chips are
+  a `Row` in a `FittedBox`, not a `Wrap`, and the dialog takes a 16 dp `insetPadding`: they
+  stay on one line (see *Decisions & History*).
 - `group_settings_section.dart` — Settings → Group: create or join a group, show its invite
   code, leave it, and show where sync stands; usable only once a server URL is set. *New
   code* is shown to the group's owner only; *Comments and usage* opens
@@ -755,6 +757,13 @@ not "fix" it by hardcoding a codepoint.
   (d4 … d20) as clutter for the games CountScore scores; 1–6 dice cover Yahtzee (5) and
   Farkle (6). A die shows its numeral rather than pips, which reads the same in every
   locale and needs no asset (`wip/done/2026-09-18-no-dice-roller-on-the-board.md`).
+- **A fixed row of controls in an `AlertDialog` is a `Row`, never a `Wrap`** (2026-09-20).
+  `AlertDialog` sizes its column with `IntrinsicWidth`, and `RenderWrap`'s intrinsic width
+  sums its children while ignoring its own `spacing`, so the dice roller's six count chips
+  were given 30 dp less than they need and the sixth wrapped alone — at *every* screen
+  width, 1600 px included, not only on a phone. A `Row` reports its spacers, a `FittedBox`
+  absorbs a large text scale, and a 16 dp `insetPadding` buys the room the six need on a
+  412 dp phone (`wip/done/2026-09-19-dice-count-chips-wrap-five-and-one.md`).
 - **The game list counts rounds in one grouped query, not one per card** (2026-09-16).
   `DriftGameRepository.getAll` returns no count, and a `FutureBuilder` per card would be one
   query per row over the whole history; `RoundRepository.countByGame` is a single `GROUP BY`
