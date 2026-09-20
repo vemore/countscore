@@ -6,7 +6,9 @@ CountScore* row; `credits`, `appIconCredit` and `artistName` are removed from al
 files with their `@` blocks in the French template, `artistName` left `SAME_AS_ENGLISH_OK`,
 and `.llmwiki/I18n.md` and `INDEX.md` read 409 keys. `about_screen_test.dart` asserts the
 heading, the handle and the copyright icon are absent. The old handle survives nowhere in
-the repository outside this entry and that assertion.
+the repository outside this entry and that assertion. `.llmwiki/Release.md` §Icons now names
+the whole chain that made the icon — the owner, ChatGPT, Fable — so the record that replaces
+the deleted credit is complete.
 
 - **Noted:** 2026-09-20 — while reviewing the About screen after the icon change
 - **Theme:** visual-refresh
