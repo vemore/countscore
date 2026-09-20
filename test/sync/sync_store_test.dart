@@ -7,6 +7,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:countscore/models/game.dart';
+import 'package:countscore/models/game_type.dart';
 import 'package:countscore/models/player.dart';
 import 'package:countscore/models/round.dart';
 import 'package:countscore/models/score.dart';
@@ -43,6 +44,7 @@ void main() {
   late AppDatabase db;
   late SyncStore store;
   late DriftGameRepository games;
+  late DriftGameTypeRepository gameTypes;
   late DriftPlayerRepository players;
   late DriftRoundRepository rounds;
   late DriftScoreRepository scores;
@@ -76,10 +78,35 @@ void main() {
     return (game: game, alice: alice, bob: bob, round: round);
   }
 
+  /// The uuid the group knows a linked local game type by.
+  Future<String> remoteTypeUuid(int typeId) async {
+    final row = await db.customSelect(
+      'SELECT l.remote_uuid FROM group_links l JOIN game_types t ON t.uuid = l.local_uuid '
+      "WHERE l.entity_type = 'game_type' AND t.id = ?",
+      variables: [Variable(typeId)],
+    ).getSingle();
+    return row.data['remote_uuid'] as String;
+  }
+
+  /// The game type [localGame] plays, linked into the group by a shared game
+  /// that is then deleted: the type is free of live games, so it can go too.
+  Future<int> sharedTypeFreedOfGames(SyncMembership m) async {
+    const typeId = 1; // localGame() plays the first seeded type
+    final g = await localGame();
+    await store.shareGame(g.game, m.groupId);
+    // Linked into the group, and acknowledged, so only what comes next is pending.
+    for (final d in await store.preparePush(m)) {
+      await store.markSent(d, m.deviceId);
+    }
+    await games.delete(g.game);
+    return typeId;
+  }
+
   setUp(() {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     store = SyncStore(db);
     games = DriftGameRepository(db);
+    gameTypes = DriftGameTypeRepository(db);
     players = DriftPlayerRepository(db);
     rounds = DriftRoundRepository(db);
     scores = DriftScoreRepository(db);
@@ -132,6 +159,70 @@ void main() {
 
       final ops = {for (final r in await outbox()) '${r['entity_type']}': r['op']};
       expect(ops, {'round': 'delete', 'score': 'delete'});
+    });
+
+    test('deleting a game type the group knows leaves a tombstone', () async {
+      final m = await joined();
+      final typeId = await sharedTypeFreedOfGames(m);
+      await db.customStatement('DELETE FROM outbox');
+
+      expect(await gameTypes.delete(typeId), 1);
+
+      final row = await db
+          .customSelect('SELECT deleted_at FROM game_types WHERE id = ?',
+              variables: [Variable(typeId)])
+          .getSingle();
+      expect(row.data['deleted_at'], isNotNull, reason: 'the row stays, stamped');
+      expect(await gameTypes.getById(typeId), isNull);
+      expect((await gameTypes.getAll()).map((t) => t.id), isNot(contains(typeId)));
+
+      final ops = {for (final r in await outbox()) '${r['entity_type']}': r['op']};
+      expect(ops['game_type'], 'delete');
+    });
+
+    test('a tombstoned built-in key is free again under the v15 index', () async {
+      final m = await joined();
+      final typeId = await sharedTypeFreedOfGames(m);
+      final key = (await db
+              .customSelect('SELECT builtin_key FROM game_types WHERE id = ?',
+                  variables: [Variable(typeId)])
+              .getSingle())
+          .data['builtin_key'] as String;
+
+      await gameTypes.delete(typeId);
+
+      // The live-unique index ignores tombstones, so the key can be held again.
+      final fresh = await gameTypes.create(GameType(
+        builtinKey: key,
+        name: 'Encore',
+        iconCodePoint: 0,
+        cardColorValue: 0,
+        isLowestScoreWins: false,
+      ));
+      final live = await db.customSelect(
+        'SELECT id FROM game_types WHERE builtin_key = ? AND deleted_at IS NULL',
+        variables: [Variable(key)],
+      ).get();
+      expect(live.map((r) => r.data['id']), [fresh]);
+    });
+
+    test('deleting a game type no group knows still removes the row', () async {
+      await joined();
+      final typeId = await gameTypes.create(GameType(
+        name: 'Jeu local',
+        iconCodePoint: 0,
+        cardColorValue: 0,
+        isLowestScoreWins: false,
+      ));
+
+      await gameTypes.delete(typeId);
+
+      final rows = await db
+          .customSelect('SELECT id FROM game_types WHERE id = ?',
+              variables: [Variable(typeId)])
+          .get();
+      expect(rows, isEmpty);
+      expect(await outbox(), isEmpty);
     });
   });
 
@@ -210,6 +301,21 @@ void main() {
       final deltas = await store.preparePush(m);
       expect(deltas.where((d) => d.entityType == 'player'), isEmpty);
       expect(await store.rejectedCount(), 1);
+    });
+
+    test('a deleted game type is pushed as a delete delta', () async {
+      final m = await joined();
+      final typeId = await sharedTypeFreedOfGames(m);
+      final remote = await remoteTypeUuid(typeId);
+      await gameTypes.delete(typeId);
+
+      final deltas = await store.preparePush((await store.membership())!);
+
+      final type = deltas.firstWhere((d) => d.entityType == 'game_type');
+      expect(type.op, 'delete');
+      expect(type.payload, isEmpty);
+      expect(type.entityUuid, remote,
+          reason: 'the group identity the type was linked under');
     });
   });
 
@@ -330,6 +436,41 @@ void main() {
       expect(mine.data, {'name': 'Mon Uno', 'builtin_key': null});
     });
 
+    test('a game type deleted in the group is tombstoned here too', () async {
+      final m = await joined();
+      const remote = '55555555-5555-4555-8555-555555555555';
+      await store.applyPulled(m, [_delta('game_type', remote, 1, 1, {'name': 'Mon Uno'})], 1);
+      expect((await gameTypes.getAll()).where((t) => t.name == 'Mon Uno'), hasLength(1));
+
+      await store.applyPulled(m, [_delta('game_type', remote, 2, 2, {}, op: 'delete')], 2);
+
+      expect((await gameTypes.getAll()).where((t) => t.name == 'Mon Uno'), isEmpty);
+      final row = await db
+          .customSelect("SELECT deleted_at FROM game_types WHERE name = 'Mon Uno'")
+          .getSingle();
+      expect(row.data['deleted_at'], isNotNull);
+
+      // A delete wins: a later upsert does not bring the type back.
+      await store.applyPulled(
+          m, [_delta('game_type', remote, 50, 3, {'name': 'Mon Uno'})], 3);
+      expect((await gameTypes.getAll()).where((t) => t.name == 'Mon Uno'), isEmpty);
+    });
+
+    test('a pulled delete spares a type a live game still plays', () async {
+      final m = await joined();
+      const typeId = 1;
+      final g = await localGame();
+      await store.shareGame(g.game, m.groupId);
+      await store.preparePush(m);
+      final remote = await remoteTypeUuid(typeId);
+
+      await store.applyPulled(m, [_delta('game_type', remote, 9, 9, {}, op: 'delete')], 9);
+
+      expect(await gameTypes.getById(typeId), isNotNull,
+          reason: 'the game would lose its icon, colour and rules');
+      expect((await games.getById(g.game))!.gameTypeId, typeId);
+    });
+
     test('children that arrive before their parent wait, then apply', () async {
       final m = await joined();
       final report = await store.applyPulled(m, [
@@ -396,6 +537,19 @@ void main() {
       final rows = await db.customSelect('SELECT uuid, value FROM scores').get();
       expect(rows.single.data, {'uuid': 'ffffffff-0000-4000-8000-000000000005', 'value': 30});
     });
+  });
+
+  test('leaving drops a game type tombstone the group caused', () async {
+    final m = await joined();
+    final typeId = await sharedTypeFreedOfGames(m);
+    await gameTypes.delete(typeId);
+
+    await store.leave(m.groupId);
+
+    final rows = await db
+        .customSelect('SELECT id FROM game_types WHERE deleted_at IS NOT NULL')
+        .get();
+    expect(rows, isEmpty, reason: 'nobody left to inform, and the key is needed');
   });
 
   test('renumberRound moves a round to the next free number', () async {

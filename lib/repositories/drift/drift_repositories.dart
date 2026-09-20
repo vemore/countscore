@@ -41,6 +41,30 @@ Future<bool> _isShared(AppDatabase db, String table, int id) async {
   return row?.data['group_id'] != null;
 }
 
+/// Whether the row [id] of [table] is linked into a group.
+///
+/// Players and game types never carry a `group_id` — they stay local rows and
+/// reach a group through `group_links`, which is also the condition their
+/// capture trigger tests (`sync_schema.dart`, `_linked`). `_isShared` therefore
+/// never sees them, and this is the predicate that decides whether their delete
+/// has to travel.
+Future<bool> _isLinked(
+  AppDatabase db,
+  String entityType,
+  String table,
+  int id,
+) async {
+  final row = await db
+      .customSelect(
+        'SELECT 1 AS linked FROM group_links l '
+        'JOIN $table t ON t.uuid = l.local_uuid '
+        'WHERE l.entity_type = ? AND t.id = ?',
+        variables: [Variable(entityType), Variable(id)],
+      )
+      .getSingleOrNull();
+  return row != null;
+}
+
 /// Tombstones the live rows of [table] matching [where].
 Future<void> _tombstone(
   AppDatabase db,
@@ -276,16 +300,30 @@ class DriftGameTypeRepository implements GameTypeRepository {
     if (count > 0) {
       throw Exception('Cannot delete game type: $count games are using it');
     }
-    // A tombstoned game nobody can see must not keep the type alive.
-    await _db.customStatement(
-      'UPDATE games SET gameTypeId = NULL WHERE gameTypeId = ? AND deleted_at IS NOT NULL',
-      [id],
-    );
-    return _db.customUpdate(
-      'DELETE FROM game_types WHERE id = ?',
-      variables: [Variable(id)],
-      updates: {_db.gameTypes},
-    );
+    return _db.transaction(() async {
+      // A tombstoned game nobody can see must not keep the type alive.
+      await _db.customStatement(
+        'UPDATE games SET gameTypeId = NULL WHERE gameTypeId = ? AND deleted_at IS NOT NULL',
+        [id],
+      );
+      // A type the group knows about is tombstoned, like every other shared row:
+      // the capture trigger turns the stamp into a delete delta, and a row that
+      // is simply gone has no way of telling the other devices it was deleted.
+      if (await _isLinked(_db, 'game_type', 'game_types', id)) {
+        final now = _nowMs();
+        return _db.customUpdate(
+          'UPDATE game_types SET deleted_at = ?, updated_at = ? '
+          'WHERE id = ? AND deleted_at IS NULL',
+          variables: [Variable(now), Variable(now), Variable(id)],
+          updates: {_db.gameTypes},
+        );
+      }
+      return _db.customUpdate(
+        'DELETE FROM game_types WHERE id = ?',
+        variables: [Variable(id)],
+        updates: {_db.gameTypes},
+      );
+    });
   }
 }
 
