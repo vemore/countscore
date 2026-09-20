@@ -1,5 +1,12 @@
 # The 1 500-line merge cap counts deletions, documentation and translations
 
+**Status:** done (2026-09-20) — closed by docs/execution-lanes. `ship-parallel` §3.1 now
+counts the added or modified lines of code from `gh pr diff`, dropping pure deletions,
+`*.md`, `wip/`, `*.arb` and `app_localizations*.dart` on top of the existing exclusions, and
+says why `gh pr view --json files` cannot measure this. The 1 500 threshold is unchanged.
+Re-measured: #199 counts 279 instead of 1 590, #192 counts 50, a docs-only pull request 0.
+`.llmwiki/ParallelDelivery.md` § Decisions records the decision and the #199 numbers.
+
 - **Noted:** 2026-09-20 — measuring `docs/brand-guides` (#199) before merging it
 - **Theme:** merge-safety
 - **Area:** tooling

@@ -33,15 +33,16 @@ behind each choice: `.llmwiki/ParallelDelivery.md`.
    - a group that needs another's result (a schema, an endpoint) → a later wave, started
      after the first merges. Never a stacked pull request (the hook refuses `--base`).
    - one pull request stays reviewable: roughly a day of work, one reason to revert, and
-     under the 1 500-line cap §3 checks before merging.
+     under the 1 500 added-or-modified lines of code §3.1 counts before merging.
 3. Order the merges: schema and backend first, then app, then docs and listing. A pull request
    touching `.claude/` (hooks, settings, skills the hooks rely on) merges **last in its wave**,
    once every agent of that wave has reported (why: `ParallelDelivery.md`).
 4. **Put each pull request in a lane — A, B, C or D** — from what it is about to touch, now,
    before anything is written (the table, with the full path list:
    `ParallelDelivery.md` § Execution lanes):
-   - **A** standard. **B** over 1 500 non-generated, non-test lines, or a failure that would
-     be silent (a migration, the sync contract, an Alembic revision, anything persisted or
+   - **A** standard. **B** over 1 500 added-or-modified lines of code (§3.1's count: pure
+     deletions, documentation and translations do not count), or a failure that would be
+     silent (a migration, the sync contract, an Alembic revision, anything persisted or
      sent to another device), or a call site several features depend on. **C** a diff touching
      the sensitive paths — `backend/app/routes/`, `backend/app/services/{ws_ticket,trusted_proxy,notify}.py`,
      `lib/services/sync/`, `lib/services/backend_client.dart`, `privacy_policy.md`,
@@ -128,16 +129,27 @@ order:
 
 1. `gh pr view <n> --json state,mergeable,mergeStateStatus,headRefName` and read the diff
    (`gh pr diff <n>`) — you are the only reviewer. Check it closes its entries and touches
-   what its report says. Then its size, with generated, lock and binary files and test code
-   left out (tests are what the project most wants; a cap that counts them pushes against them):
+   what its report says. Then its size: the **added or modified lines of code**, which is what
+   one review has to hold in its head. A pure deletion costs nothing, and documentation,
+   translations, generated, lock, binary and test files are not counted at all — removing dead
+   code and translating into ten languages are two of the things this project most wants cheap:
    ```bash
-   gh pr view <n> --json files --jq '[.files[] | select(.path | test("\\.g\\.dart$|^lib/l10n/app_localizations.*\\.dart$|^pubspec\\.lock$|^backend/uv\\.lock$|^web/sqlite3\\.wasm$|^web/drift_worker\\.js$|^test/|^integration_test/|^backend/tests/") | not) | .additions + .deletions] | add'
+   gh pr diff <n> | awk '
+     /^diff --git / { p = $4; sub(/^b\//, "", p)
+                      keep = (p !~ /\.md$|^wip\/|\.arb$|app_localizations.*\.dart$|\.g\.dart$|\.lock$|^web\/sqlite3\.wasm$|^web\/drift_worker\.js$|^test\/|^integration_test\/|^backend\/tests\//) }
+     keep && /^\+/ && !/^\+\+\+/ { n++ }
+     END { print n + 0 }'
    ```
-   Above **1 500** lines the pull request is lane B whatever the plan said: this count is the
-   **backstop** for a lane misjudged at planning time, not the gate itself. Run step 2 for it,
-   and do not merge without the user's go-ahead — #21 (+6.9 k) was merged on its size alone
-   and needed six fix pull requests the same day. (`files` stops at 100 entries: a pull
-   request that long needs the go-ahead anyway.)
+   It counts the `+` lines of the kept files, the `+++` headers aside. A modified line appears
+   in a diff as one `-` and one `+`, so that is exactly *added or modified*, and a removed line
+   adds nothing. It has to be measured on the **diff**: `gh pr view --json files` knows only
+   `additions` and `deletions` per path, cannot tell a modified line from an added one, and
+   would charge the deletions on top — the formula that made a pull request deleting two dead
+   guides measure 1 590 (`ParallelDelivery.md` § Decisions).
+   Above **1 500** counted lines the pull request is lane B whatever the plan said: this count
+   is the **backstop** for a lane misjudged at planning time, not the gate itself. Run step 2
+   for it, and do not merge without the user's go-ahead — #21 (+6.9 k) was merged on its size
+   alone and needed six fix pull requests the same day.
 2. **Apply the lane** chosen in §1 (`ParallelDelivery.md` § Execution lanes). Lane **A**:
    nothing more, go to step 3. Lanes **B and C**, before the merge:
    - Check the entry's acceptance criteria against the agent's report — each one mapped to a

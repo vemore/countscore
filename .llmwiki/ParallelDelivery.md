@@ -84,14 +84,14 @@ approves, and `ship-parallel` §3 applies what it requires before the merge.
 | Lane | What falls in it | What it requires before merging |
 |---|---|---|
 | **A — standard** | Everything the other three do not catch | Today's loop: checks green or skipped, the orchestrator reads the diff, squash-merge, deploy |
-| **B — planned** | Over **1 500** lines excluding generated files and tests; or a failure that would be **silent** — a migration, the sync contract, an Alembic revision, anything persisted or sent to another device; or a call site several features depend on | Lane A, plus **acceptance criteria in the entry** (mandatory here, `wip/README.md`), plus `/code-review high` run by an agent that did **not** write the change, its findings reported to the user before the merge |
+| **B — planned** | Over **1 500** added or modified lines of **code** — pure deletions, documentation, translations, generated, lock, binary and test files are not counted (`ship-parallel` §3.1); or a failure that would be **silent** — a migration, the sync contract, an Alembic revision, anything persisted or sent to another device; or a call site several features depend on | Lane A, plus **acceptance criteria in the entry** (mandatory here, `wip/README.md`), plus `/code-review high` run by an agent that did **not** write the change, its findings reported to the user before the merge |
 | **C — sensitive paths** | A diff touching `backend/app/routes/`, `backend/app/services/{ws_ticket,trusted_proxy,notify}.py`, `lib/services/sync/`, `lib/services/backend_client.dart`, `privacy_policy.md`, `PLAY_STORE_DATA_SAFETY.md`, `AndroidManifest.xml` | Lane B, plus an explicit `AskUserQuestion` go-ahead for that merge, asked after the findings |
 | **D — experiment** | A spike written to learn something, not to ship | A branch held back with `git config branch.<name>.noPullRequest true`, never merged as is; what it taught becomes a `wip/` entry |
 
 A change matching several lanes takes the strictest, and the orchestrator may raise a lane at
 any moment — raising one costs a review, missing one costs a production fix. The `ship-parallel`
 §3.1 size count stays only as the **backstop** for a lane misjudged at planning time: a lane-A
-pull request that turns out to be over 1 500 lines is lane B after all.
+pull request that turns out to be over 1 500 counted lines is lane B after all.
 
 Nothing mechanical enforces the lanes. `SubagentStop` is unchanged and still checks only that
 an agent leaves a pull request whose checks are not red ([[Hooks]]); lane C's approval is an
@@ -204,6 +204,20 @@ Store is never part of the loop (`release-android`, on request).
   request look bigger than an untested one, so the cap pushed against the tests the project
   most wants — the same article excludes test files from its size limits for that reason. The
   cap is about how much production code one review has to hold, not how much is verified.
+- **And it counts added or modified code only (2026-09-20).** `docs/brand-guides` (#199)
+  measured **1 590** lines by that formula — `additions + deletions` over the kept paths — and
+  so needed the user's go-ahead, although it contained no application code beyond a ten-line
+  comment: **1 026** of those lines were the *deletion* of two dead purple design guides,
+  `ICON_DESIGN_GUIDE.md` (612) and `COLOR_THEME_GUIDE.md` (414), which an entry had explicitly
+  asked for, and 269 were a new Pillow script. A cap that counts deletions and documentation
+  taxes cleanup and translation, the two things the project most wants cheap. The **1 500
+  threshold is unchanged**; what is counted is now the added or modified lines of code — no
+  pure deletions, no `*.md` or `wip/`, no `*.arb` or `app_localizations*.dart`, on top of the
+  generated, lock, binary and test exclusions. It is measured on the diff rather than through
+  `gh pr view --json files`, which knows only `additions` and `deletions` per path and cannot
+  tell a modified line from an added one. Re-measured with the new command: #199 counts 279,
+  #192 counts 50 — its lane B came from the silent-failure trigger, not from its size — and a
+  documentation-only pull request counts 0.
 - **An implementing agent stops after three attempts on one failing check (2026-09-18).** The
   agent that writes a change also writes the tests that judge it, and the `SubagentStop` hook
   refuses to let it finish on red checks: together they reward the cheapest way to green — a
