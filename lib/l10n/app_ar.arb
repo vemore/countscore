@@ -278,6 +278,7 @@
   "gameEndHighestWins": "أعلى نتيجة تفوز",
   "gameEndAnalysis": "تحليل",
   "gameEndResults": "النتائج",
+  "rankingEliminationNote": "الترتيب بعكس ترتيب الإقصاء: من خرج متأخرًا يتقدّم على غيره، بغض النظر عن مجموع النقاط.",
   "endGame": "إنهاء اللعبة",
   "reopenGame": "إعادة فتح اللعبة",
   "gameFinished": "منتهية",

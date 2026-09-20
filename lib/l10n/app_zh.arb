@@ -278,6 +278,7 @@
   "gameEndHighestWins": "最高分获胜",
   "gameEndAnalysis": "分析",
   "gameEndResults": "结果",
+  "rankingEliminationNote": "按淘汰顺序倒序排名：无论总分如何，越晚被淘汰的玩家排名越靠前。",
   "endGame": "结束游戏",
   "reopenGame": "重新开始游戏",
   "gameFinished": "已结束",

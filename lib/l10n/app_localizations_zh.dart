@@ -508,6 +508,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get gameEndResults => '结果';
 
   @override
+  String get rankingEliminationNote => '按淘汰顺序倒序排名：无论总分如何，越晚被淘汰的玩家排名越靠前。';
+
+  @override
   String get endGame => '结束游戏';
 
   @override

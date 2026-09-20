@@ -520,6 +520,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get gameEndResults => 'परिणाम';
 
   @override
+  String get rankingEliminationNote =>
+      'क्रम बाहर होने के उल्टे क्रम से है: जो बाद में बाहर हुआ वह आगे रहता है, चाहे कुल स्कोर कुछ भी हो।';
+
+  @override
   String get endGame => 'खेल समाप्त करें';
 
   @override

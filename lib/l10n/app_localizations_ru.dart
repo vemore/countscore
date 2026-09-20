@@ -523,6 +523,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get gameEndResults => 'Итоги';
 
   @override
+  String get rankingEliminationNote =>
+      'Места — по порядку выбывания: кто выбыл позже, тот идёт впереди остальных, независимо от счёта.';
+
+  @override
   String get endGame => 'Завершить игру';
 
   @override

@@ -453,7 +453,12 @@ before the first score or on a tie for the lead — then the others in rank orde
 (`GameStanding.ranks`, ties sharing a place, under the game's ranking rule — [below](#the-ranking-rule)). As on the board, a total within 20
 points of the type's elimination threshold is orange — except on the first step, whose
 filled block keeps `onPrimary`, and on a first-place row, whose primary container does the
-same — and an eliminated player is faded and struck through. Actions: **Play again**
+same — and an eliminated player is faded and struck through. When the standing's rule is
+`RankingRule.eliminationOrder` — a *finished* game only — a second line under the summary
+(`ranking_elimination_note`, `rankingEliminationNote`) says the places follow the
+elimination order and not the totals; nothing shows it anywhere else, so the nineteen other
+types carry no extra line, and the board's `#n` badges are untouched
+(`wip/done/2026-09-20-elimination-ranking-is-unexplained-on-screen.md`). Actions: **Play again**
 (`playAgain`, keyed `game_end_play_again` on a finished game and `ranking_play_again` on an
 open one) and, only on a finished game with `BackendProvider.isConfigured`, **Analysis**
 (`GameAnalysisScreen`) — Play again otherwise spans the row. Unlike the board's menu, a

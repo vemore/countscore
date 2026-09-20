@@ -291,6 +291,7 @@
   "gameEndHighestWins": "highest score wins",
   "gameEndAnalysis": "Analysis",
   "gameEndResults": "Results",
+  "rankingEliminationNote": "Ranked by elimination order: whoever goes out later ranks ahead, whatever the totals.",
 
   "endGame": "End Game",
   "reopenGame": "Reopen game",

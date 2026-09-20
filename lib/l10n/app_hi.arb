@@ -278,6 +278,7 @@
   "gameEndHighestWins": "सबसे अधिक स्कोर जीतता है",
   "gameEndAnalysis": "विश्लेषण",
   "gameEndResults": "परिणाम",
+  "rankingEliminationNote": "क्रम बाहर होने के उल्टे क्रम से है: जो बाद में बाहर हुआ वह आगे रहता है, चाहे कुल स्कोर कुछ भी हो।",
   "endGame": "खेल समाप्त करें",
   "reopenGame": "खेल फिर से खोलें",
   "gameFinished": "समाप्त",

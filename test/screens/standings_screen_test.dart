@@ -5,7 +5,9 @@
 // - an **open** game shows where it stands: the win rule on one line, the
 //   podium, every player in the list under it, "Play again";
 // - a **finished** one adds the winner's headline and, with a server
-//   configured, "Analysis".
+//   configured, "Analysis"; when the elimination order ranks it, a line under
+//   the summary says so, and no other game shows that line
+//   (`wip/done/2026-09-20-elimination-ranking-is-unexplained-on-screen.md`).
 //
 // Common to both: the players' board colours, the leader crowned, totals near
 // the elimination threshold in orange, eliminated players struck out, and the
@@ -828,6 +830,20 @@ void main() {
       });
     });
 
+    testWidgets('says why the places do not follow the totals',
+        (tester) async {
+      await tester.runAsync(() => anEliminationGame(finished: true));
+      await tester
+          .pumpWidget(wrap(const StandingsScreen(boardBuilder: _board)));
+      await tester.pumpAndSettle();
+
+      // Alice is second by total (101) and last on the screen: without the
+      // line under the summary, the places read as a bug.
+      expect(rowNames(tester), ['David', 'Chloé', 'Bob', 'Alice']);
+      expect(find.byKey(const Key('ranking_elimination_note')), findsOneWidget);
+      expect(find.text(l10n.rankingEliminationNote), findsOneWidget);
+    });
+
     testWidgets('open, the same game still ranks by the total',
         (tester) async {
       // Four rounds: Chloé and David are still in, so the game is not over.
@@ -839,6 +855,8 @@ void main() {
 
       expect(rowNames(tester), ['David', 'Chloé', 'Alice', 'Bob']);
       expect(_headline, findsNothing);
+      // The rule only applies to a finished game, so nothing explains it yet.
+      expect(find.byKey(const Key('ranking_elimination_note')), findsNothing);
     });
 
     testWidgets('a race to a total with the same threshold ranks by the total',
@@ -865,6 +883,8 @@ void main() {
 
       expect(rowNames(tester), ['David', 'Alice', 'Chloé', 'Bob']);
       expect(find.text(l10n.gameEndWinner('David')), findsOneWidget);
+      // Ranked by score: no line, and no noise on the nineteen other types.
+      expect(find.byKey(const Key('ranking_elimination_note')), findsNothing);
     });
   });
 }
