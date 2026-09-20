@@ -96,10 +96,15 @@ games* the best total is left out whenever the games mix both win rules. Everyth
 computed in `lib/models/player_stats.dart` from `PlayerStatsRepository.getFinishedGameResults`
 (through `GameProvider.getFinishedGameResults`): live games with `finishedAt` set and at least
 one score on a live round, each player keyed by the global `players.uuid`. Places share on a
-tie (1, 2, 2, 4) and follow the game's `isLowestScoreWins`, like `GameStanding.ranks` under
-its score rule — and unlike it on a finished elimination game, which the statistics still
-rank by the total
-(`wip/todo_nr/2026-09-20-statistics-rank-by-score-while-the-standings-rank-by-elimination.md`).
+tie (1, 2, 2, 4) and are `GameStanding.ranks`' places exactly: each `FinishedGameResult`
+carries the `RankingRule` its game's type calls for
+([above](#the-ranking-rule)) and, under `eliminationOrder`, the round each participant went
+out at, and compares through the same `outranksUnder`. The repository derives both —
+`GameStanding.ranksByEliminationOrder` over the live `game_types`, then one walk of the
+game's scores in round order — so a finished ZapZap game gives the player card, the win
+count, the average place and the rank chart the places its standings screen shows
+(`wip/done/2026-09-20-statistics-rank-by-score-while-the-standings-rank-by-elimination.md`).
+A game of any other type never leaves `RankingRule.score`.
 Colours come from `playerColorsByUuid` — `assignPlayerColors` over the players in the order
 they first appear walking back from the latest game — so the latest game shows exactly its
 board's colours and the filter never recolours anyone. Tests:
@@ -483,16 +488,29 @@ the home cards — reads it through `GameStanding.ranks` and `rankedPlayers`.
   elimination order (the last one out ranks best), the total only breaking a tie. A
   **finished** game of a type that both puts a player out on a threshold
   (`playerDeadConditionType` + `playerDeadThreshold`) and ends on the last player standing
-  (`gameOverConditionType == lastPlayerOver`) — `zapzap`, `rami`, `six_nimmt` —
-  follows it. `GameStanding.ranksByEliminationOrder` is the one test.
+  (`gameOverConditionType` is `lastPlayerOver` **or** `lastPlayerUnder`, the two conditions
+  `GameType.isGameOver` already treats as one shape) follows it. Of the twenty-two seeded
+  types only `zapzap`, `rami` and `six_nimmt` do — all three `lastPlayerOver`; a
+  `lastPlayerUnder` type can only come from the game-type editor.
+  `GameStanding.ranksByEliminationOrder` is the one test.
+
+The comparison itself is one function, `outranksUnder` (`lib/models/game_standing.dart`),
+which `GameStanding._isBetter` and `FinishedGameResult` (the statistics, below) both call:
+the two used to compare separately, and a finished ZapZap game got one order on its
+standings and another on the player card
+(`wip/done/2026-09-20-statistics-rank-by-score-while-the-standings-rank-by-elimination.md`).
 
 Nothing of this is stored: no column, no migration. The round a player went out at is the
 first round whose running total crosses the threshold, walked from the rounds in play order
 (`RoundRepository.getByGame` returns them `ORDER BY roundNumber ASC`) and the scores already
 in hand. `GameStanding.forGame` is the single seam the four call sites build through —
 `game_board_screen.dart`, `GameRanking.of` (the standings screen, `ShareResultButton`) and
-`GameProvider.standingOf` (the home cards) — so they cannot disagree on a place. Tests:
-`test/models/game_standing_test.dart`, and the screen-level cases in
+`GameProvider.standingOf` (the home cards) — so they cannot disagree on a place. The
+statistics walk the same rounds in SQL, in
+`DriftPlayerStatsRepository._eliminatedAtRound`. Tests:
+`test/models/game_standing_test.dart` (the `lastPlayerUnder` mirror of the `over` case
+among them), `test/models/player_stats_test.dart`, the standings-versus-statistics case in
+`test/drift/drift_repositories_test.dart`, and the screen-level cases in
 `test/screens/standings_screen_test.dart` and `test/screens/game_board_lanes_test.dart`.
 
 #### The board
@@ -880,3 +898,25 @@ not "fix" it by hardcoding a codepoint.
   primary container to keep the head of the list as findable as the podium; the podium keeps
   ranking by place, so a tie still shares a step and a place number (1, 1, 3). A widget test
   holds the screen to no scrolling at 412×860 for four players, in both states.
+
+- **2026-09-20 — one ranking model for the standings and the statistics**
+  (`feat/elimination-ranking-model`,
+  `wip/done/2026-09-20-last-player-under-does-not-rank-by-elimination-order.md`,
+  `wip/done/2026-09-20-statistics-rank-by-score-while-the-standings-rank-by-elimination.md`).
+  Two halves of the same gap, closed together. `ranksByEliminationOrder` tested
+  `lastPlayerOver` exactly, though `GameType.isGameOver` documents `lastPlayerOver` and
+  `lastPlayerUnder` as one shape and `isEliminated` already carries the direction: it now
+  takes both, so a type built in the editor with a floor ranks like one with a ceiling. The
+  narrow alternative — keep the predicate and warn in the editor — was rejected as asking the
+  user to understand a distinction the model itself does not make. No seeded type is
+  `lastPlayerUnder`, so no existing standing moved.
+  The statistics ranked by the total whatever the type, because
+  `getFinishedGameResults` handed `FinishedGameResult` totals only: the same finished ZapZap
+  game read David, Chloé, Bob, Alice on its standings and David, Alice, Chloé, Bob on the
+  player card, crediting Alice with a podium she did not earn. Rather than rebuild
+  `FinishedGameResult` from a `GameStanding` — which would need the game's players, rounds
+  and scores per game, four queries deep — the repository now carries the two things the
+  rule needs: the rule itself (`ranksByEliminationOrder` over the live `game_types`, never a
+  condition spelled out in SQL) and, for those games only, one walk of their scores in round
+  order. The comparison moved to `outranksUnder`, called by both, so the next change to the
+  rule cannot land on one side alone.
