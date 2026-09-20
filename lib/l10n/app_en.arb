@@ -273,9 +273,9 @@
 
   "firstPlayerUnder": "First player under",
 
-  "lastPlayerOver": "Last player over",
+  "lastPlayerOver": "Last player standing (others over)",
 
-  "lastPlayerUnder": "Last player under",
+  "lastPlayerUnder": "Last player standing (others under)",
 
   "threshold": "Threshold",
 

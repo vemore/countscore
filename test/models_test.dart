@@ -83,6 +83,15 @@ void main() {
     });
 
     group('GameType.isGameOver', () {
+      GameType withRule(GameOverConditionType type) => GameType(
+            name: 'Seuil',
+            iconCodePoint: 0,
+            cardColorValue: 0,
+            isLowestScoreWins: false,
+            gameOverConditionType: type,
+            gameOverThreshold: 10,
+          );
+
       test('Président: a player on exactly 10 has won, one on 9 has not', () {
         final president = GameType.president();
         expect(president.isGameOver([10, 4, 2]), isTrue);
@@ -95,25 +104,72 @@ void main() {
         expect(GameType.skyjo().isGameOver([99, 40]), isFalse);
       });
 
-      test('the other conditions keep their strict comparison', () {
-        GameType withRule(GameOverConditionType type) => GameType(
-              name: 'Seuil',
-              iconCodePoint: 0,
-              cardColorValue: 0,
-              isLowestScoreWins: false,
-              gameOverConditionType: type,
-              gameOverThreshold: 10,
-            );
+      test('firstPlayerUnder keeps its strict comparison', () {
         expect(withRule(GameOverConditionType.firstPlayerUnder).isGameOver([10, 20]), isFalse);
         expect(withRule(GameOverConditionType.firstPlayerUnder).isGameOver([9, 20]), isTrue);
-        expect(withRule(GameOverConditionType.lastPlayerOver).isGameOver([10, 20]), isFalse);
-        expect(withRule(GameOverConditionType.lastPlayerOver).isGameOver([11, 20]), isTrue);
-        expect(withRule(GameOverConditionType.lastPlayerUnder).isGameOver([10, 5]), isFalse);
-        expect(withRule(GameOverConditionType.lastPlayerUnder).isGameOver([9, 5]), isTrue);
+      });
+
+      test('lastPlayerOver ends when every player but one is past the threshold', () {
+        final rule = withRule(GameOverConditionType.lastPlayerOver);
+        // Four players, threshold 10: the game runs until three of them are out.
+        expect(rule.isGameOver([11, 12, 5, 4]), isFalse);
+        expect(rule.isGameOver([11, 12, 13, 4]), isTrue);
+        // The survivor's own total is irrelevant — it is what stopped moving.
+        expect(rule.isGameOver([11, 12, 13, 0]), isTrue);
+        // Everyone out at once still ends the game.
+        expect(rule.isGameOver([11, 12, 13, 14]), isTrue);
+        // Two players: one out is enough, and 10 is not "over" 10.
+        expect(rule.isGameOver([10, 9]), isFalse);
+        expect(rule.isGameOver([9, 11]), isTrue);
+        // A single player has nobody to be the last one standing.
+        expect(rule.isGameOver([4]), isFalse);
+        expect(rule.isGameOver([40]), isFalse);
+      });
+
+      test('lastPlayerUnder is the mirror image', () {
+        final rule = withRule(GameOverConditionType.lastPlayerUnder);
+        expect(rule.isGameOver([9, 8, 15, 16]), isFalse);
+        expect(rule.isGameOver([9, 8, 7, 16]), isTrue);
+        expect(rule.isGameOver([9, 8, 7, 6]), isTrue);
+        expect(rule.isGameOver([10, 20]), isFalse);
+        expect(rule.isGameOver([11, 9]), isTrue);
+        expect(rule.isGameOver([5]), isFalse);
       });
 
       test('a type without a rule never ends by itself', () {
         expect(GameType.scrabble().isGameOver([1000000]), isFalse);
+      });
+
+      test('the three elimination types end on the last player standing', () {
+        for (final type in [GameType.zapzap(), GameType.rami()]) {
+          expect(type.gameOverConditionType,
+              GameOverConditionType.lastPlayerOver, reason: type.name);
+          expect(type.gameOverThreshold, type.playerDeadThreshold,
+              reason: type.name);
+          // Four players past 100 one by one: the fourth round is the last.
+          expect(type.isGameOver([101, 130, 90, 40]), isFalse, reason: type.name);
+          expect(type.isGameOver([101, 130, 120, 40]), isTrue, reason: type.name);
+        }
+
+        final sixNimmt = GameType.sixNimmt();
+        expect(sixNimmt.gameOverConditionType,
+            GameOverConditionType.lastPlayerOver);
+        expect(sixNimmt.gameOverThreshold, 65);
+        // The same strict 65 as the elimination rule: 65 is still in.
+        expect(sixNimmt.isGameOver([66, 70, 65, 10]), isFalse);
+        expect(sixNimmt.isGameOver([66, 70, 80, 10]), isTrue);
+      });
+
+      test('the types with no automatic end keep none', () {
+        const keyless = {
+          'scrabble', 'tarot', 'bridge', 'yahtzee', 'phase10',
+          'rummikub', 'qwirkle', 'wizard', 'triomino', 'other',
+        };
+        for (final type in GameType.defaultGameTypes()
+            .where((t) => keyless.contains(t.builtinKey))) {
+          expect(type.gameOverConditionType, isNull, reason: type.name);
+          expect(type.gameOverThreshold, isNull, reason: type.name);
+        }
       });
     });
 

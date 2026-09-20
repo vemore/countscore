@@ -1,5 +1,11 @@
 # "Last player over" says last player standing, does not do it, and is set on no built-in type
 
+**Status:** done (2026-09-20) — closed by feat/last-player-standing. `GameType.isGameOver`
+ends the game once every total but one is past the threshold (`_lastPlayerStanding`, a table
+of fewer than two players excluded); the two choices are relabelled to the situation in all
+ten languages, keys unchanged; and `zapzap`, `rami` and `six_nimmt` are seeded
+`lastPlayerOver` at their elimination threshold (100, 100, 65), on a new database only.
+
 - **Noted:** 2026-09-20 — reported by the user; labels and seeds read out of `lib/l10n/` and `lib/models/game_type.dart`
 - **Theme:** game-types
 - **Area:** app
