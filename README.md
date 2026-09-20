@@ -35,6 +35,8 @@ at your own server in Settings → Server if you want the connected features.
   Belote, Uno …) end the game by themselves as soon as a score or a round brings a total to
   that threshold, or when you open a game already at or past it — once: the end screen then offers
   "Continue playing", remembered on the device until the game drops back under its threshold.
+  The games played to a last survivor (ZapZap, Rami, 6 qui prend) end instead once every
+  player but one is past the elimination threshold — last player standing.
 - **Who starts?**: the score table's menu draws one of the game's players at random.
 - **Roll dice**: the score table's menu rolls 1 to 6 six-sided dice and shows each die and the total.
 - **Play again**: from the end screen, the ranking or a finished game in the history, one tap starts

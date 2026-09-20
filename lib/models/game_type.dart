@@ -123,9 +123,16 @@ class GameType {
   /// `firstPlayerOver` means **reaches**: a total equal to the threshold ends
   /// the game, as the box rules the thresholds come from say — Président is won
   /// at 10, Uno at 500, Skyjo stops at 100 or more. It was strictly greater
-  /// until 2026-09-19, which asked for one more hand. The other three
-  /// conditions are unchanged. `gameRulesEndFirstOver` and the texts in
+  /// until 2026-09-19, which asked for one more hand. `firstPlayerUnder` keeps
+  /// its strict comparison. `gameRulesEndFirstOver` and the texts in
   /// `assets/rules/` say the same.
+  ///
+  /// `lastPlayerOver` and `lastPlayerUnder` are **last player standing**: the
+  /// game ends once every player *but one* is past the threshold, which is what
+  /// `gameRulesEndLastOver` has always promised. They tested *every* player,
+  /// the survivor included, until 2026-09-20 — a condition that never fired,
+  /// because a player who is out stops being dealt in and the survivor's total
+  /// never moves again (`wip/done/2026-09-20-the-last-player-standing-condition-is-mislabelled-misimplemented-and-unset.md`).
   bool isGameOver(Iterable<int> totals) {
     final type = gameOverConditionType;
     final threshold = gameOverThreshold;
@@ -136,10 +143,25 @@ class GameType {
       case GameOverConditionType.firstPlayerUnder:
         return totals.any((total) => total < threshold);
       case GameOverConditionType.lastPlayerOver:
-        return totals.every((total) => total > threshold);
+        return _lastPlayerStanding(totals, (total) => total > threshold);
       case GameOverConditionType.lastPlayerUnder:
-        return totals.every((total) => total < threshold);
+        return _lastPlayerStanding(totals, (total) => total < threshold);
     }
+  }
+
+  /// True when [isOut] holds for every total but one — or for all of them, a
+  /// game everybody left at the same time.
+  ///
+  /// A table of fewer than two players has nobody to be the *last* one
+  /// standing, so it never ends this way: a solo game would otherwise be over
+  /// on its first round.
+  static bool _lastPlayerStanding(
+    Iterable<int> totals,
+    bool Function(int total) isOut,
+  ) {
+    final all = totals.toList(growable: false);
+    if (all.length < 2) return false;
+    return all.where((total) => !isOut(total)).length <= 1;
   }
 
   Map<String, dynamic> toMap() {
@@ -221,6 +243,14 @@ class GameType {
   }
 
   // Types de jeux prédéfinis
+
+  // The three types that play to a last survivor — ZapZap, Rami and 6 qui
+  // prend, the only ones with a `playerDeadConditionType` — end on
+  // `lastPlayerOver` at the same threshold that puts a player out
+  // (feat/last-player-standing, 2026-09-20). They carried no game-over
+  // condition at all before, which is why a game with one player left still
+  // offered another round. As with Uno and Président below, no migration
+  // rewrites an existing row: only a new database seeds these values.
   static GameType zapzap() => GameType(
         builtinKey: 'zapzap',
         name: 'ZapZap',
@@ -231,6 +261,8 @@ class GameType {
         isDefault: true,
         playerDeadConditionType: PlayerDeadConditionType.over,
         playerDeadThreshold: 100,
+        gameOverConditionType: GameOverConditionType.lastPlayerOver,
+        gameOverThreshold: 100,
       );
 
   // Uno and Président follow the box rule — highest total wins — since
@@ -341,6 +373,8 @@ class GameType {
         isDefault: true,
         playerDeadConditionType: PlayerDeadConditionType.over,
         playerDeadThreshold: 100,
+        gameOverConditionType: GameOverConditionType.lastPlayerOver,
+        gameOverThreshold: 100,
       );
 
 
@@ -431,6 +465,8 @@ class GameType {
         isDefault: true,
         playerDeadConditionType: PlayerDeadConditionType.over,
         playerDeadThreshold: 65,
+        gameOverConditionType: GameOverConditionType.lastPlayerOver,
+        gameOverThreshold: 65,
       );
 
   static GameType qwirkle() => GameType(

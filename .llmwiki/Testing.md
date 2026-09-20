@@ -2,7 +2,7 @@
 
 > Scope: what is tested, how to run it, and the traps.
 > Related: [[MobileApp]] · [[DataLayer]] · [[SchemaV10]] · [[Backend]] · [[Web]] · [[KnownLimits]]
-> Updated: 2026-09-19
+> Updated: 2026-09-20
 
 ## Facts
 
@@ -25,6 +25,9 @@
 | `test/migration_v5_to_v10_test.dart` | The production upgrade: a real v5 file from tag `1.0.1+3`'s DDL, upgraded with the production callbacks (`DatabaseService.openForTesting`), then read back through Drift — games, merged players, scores, stats — and written to, `finishedAt` included. Its name understates its range: it asserts `DatabaseService.schemaVersion`, so it runs v5 → **v15** today and will follow the next bump without an edit. |
 | `test/drift/drift_repositories_test.dart` | Full lifecycle through the Drift repositories over `AppDatabase.forTesting(NativeDatabase.memory())`; Drift `onCreate` builds the v10 tables; shared rows are tombstoned (game, round, membership, `deleteByName`), local ones deleted, and tombstones count in no statistic; `finishedAt` survives create, update and reopen — the only test that catches a field missing from `update`'s hand-written column list. |
 | `test/drift/six_nimmt_seed_test.dart` | A fresh database seeds 6 qui prend at 65, so a player is out on exactly 66 and not on 65. |
+| `test/drift/last_player_standing_seed_test.dart` | A fresh database seeds `lastPlayerOver` at the elimination threshold on ZapZap, Rami and 6 qui prend (100, 100, 65), and a four-player ZapZap ends once three are past 100 and not before; the types with no automatic end are seeded without one. |
+| `test/migration_last_player_standing_test.dart` | The mirror image, through both engines' real upgrade callbacks: a database that already holds those three rows without a game-over condition keeps them condition-less — a seed change never rewrites an existing row. |
+| `test/l10n/game_over_labels_test.dart` | The en and fr wording of `firstPlayerOver` and of the two last-player labels, and the `gameRulesEndLastOver` / `…Under` sentence checked against `GameType.isGameOver`: what the rules screen promises ("every player but one") is what the code does. |
 | `test/sync/sync_store_test.dart` | Group sync without a network: capture triggers (local games capture nothing, sharing captures a game and its children, inherited `group_id`, deletes captured as deletes), `preparePush` (coalescing, uuid5 player links, parent-first order, stable lamports on retry, refused names), `applyPulled` (a full game from another device, merge by name, quarantine and replay, LWW, delete wins, own deltas skipped, score-cell adoption), `renumberRound`, `leave`; and `ended_at` both ways — sent even while open so that a reopen can clear it, a pulled null reopening the game rather than being ignored. |
 | `test/sync/sync_ids_test.dart` | uuid5 against Python's `uuid.uuid5` vector, name normalisation, a built-in game type linked by its key rather than its localized name, the player-name allow-list — combining marks accepted after a letter and refused anywhere else, the same cases as `backend/tests/test_sync.py`. |
 | `test/sync/sync_two_devices_test.dart` (`integration`) | Two in-memory devices through a **real** backend: a shared game and its scores both ways, the same round entered on both (renumbered, nothing lost), delete wins, same-name players merged, leaving. Skipped unless `SYNC_BACKEND_URL` is set — recipe below. |

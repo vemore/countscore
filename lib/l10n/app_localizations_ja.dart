@@ -464,10 +464,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get firstPlayerUnder => '最初のプレイヤーが下回る';
 
   @override
-  String get lastPlayerOver => '最後のプレイヤーが超える';
+  String get lastPlayerOver => '最後まで残ったプレイヤー（他は超過）';
 
   @override
-  String get lastPlayerUnder => '最後のプレイヤーが下回る';
+  String get lastPlayerUnder => '最後まで残ったプレイヤー（他は下回る）';
 
   @override
   String get threshold => 'しきい値';

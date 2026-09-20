@@ -473,10 +473,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get firstPlayerUnder => 'Primer jugador por debajo';
 
   @override
-  String get lastPlayerOver => 'Último jugador por encima';
+  String get lastPlayerOver => 'Último jugador en juego (los demás por encima)';
 
   @override
-  String get lastPlayerUnder => 'Último jugador por debajo';
+  String get lastPlayerUnder =>
+      'Último jugador en juego (los demás por debajo)';
 
   @override
   String get threshold => 'Umbral';
