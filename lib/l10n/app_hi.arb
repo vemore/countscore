@@ -652,5 +652,31 @@
 
   "pwaUpdateReady": "CountScore का नया संस्करण तैयार है",
 
-  "pwaUpdateReload": "फिर से लोड करें"
+  "pwaUpdateReload": "फिर से लोड करें",
+
+  "thresholdIsRequired": "इस शर्त के लिए एक सीमा आवश्यक है",
+
+  "thresholdTooLarge": "सीमा {max} से अधिक नहीं हो सकती",
+
+  "deletionImpossible": "विलोपन असंभव है",
+
+  "gameTypeInUse": "{count, plural, one{1 खेल इस प्रकार का उपयोग करता है: इसे हटाया नहीं जा सकता।} other{{count} खेल इस प्रकार का उपयोग करते हैं: उन्हें हटाया नहीं जा सकता।}}",
+
+  "confirmDeleteGameType": "क्या आप सच में गेम प्रकार \"{name}\" को हटाना चाहते हैं?",
+
+  "winDirectionChangeTitle": "जीत की दिशा उलट दें?",
+
+  "winDirectionChangeWarning": "{count, plural, one{इस प्रकार का 1 समाप्त खेल अपनी स्थिति उलट देगा: इसका विजेता अंतिम हो जाएगा।} other{इस प्रकार के {count} समाप्त खेल अपनी स्थिति उलट देंगे: उनके विजेता अंतिम हो जाएंगे।}}",
+
+  "winDirectionContradiction": "गेम-ओवर शर्त चुने गए विजेता के विपरीत पुरस्कृत करती है। एक कस्टम नियम बिल्कुल यही चाह सकता है।",
+
+  "rulesOutOfDateTitle": "नियमों को अपडेट करें?",
+
+  "rulesOutOfDateMessage": "इस प्रकार के नियम अभी भी पुरानी स्थिति का वर्णन करते हैं।",
+
+  "later": "बाद में",
+
+  "currentIcon": "वर्तमान आइकन",
+
+  "currentColor": "वर्तमान रंग"
 }

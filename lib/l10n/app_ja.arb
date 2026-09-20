@@ -652,5 +652,31 @@
 
   "pwaUpdateReady": "CountScore の新しいバージョンの準備ができました",
 
-  "pwaUpdateReload": "再読み込み"
+  "pwaUpdateReload": "再読み込み",
+
+  "thresholdIsRequired": "この条件にはしきい値が必要です",
+
+  "thresholdTooLarge": "しきい値は{max}を超えられません",
+
+  "deletionImpossible": "削除できません",
+
+  "gameTypeInUse": "{count, plural, other{この種類は{count}件のゲームで使われているため、削除できません。}}",
+
+  "confirmDeleteGameType": "ゲームの種類「{name}」を本当に削除しますか？",
+
+  "winDirectionChangeTitle": "勝敗の向きを逆にしますか？",
+
+  "winDirectionChangeWarning": "{count, plural, other{この種類の終了した{count}件のゲームの順位が反転し、勝者が最下位になります。}}",
+
+  "winDirectionContradiction": "ゲーム終了条件が、選んだ勝敗の向きと逆の結果を有利にします。ハウスルールであればそれで構いません。",
+
+  "rulesOutOfDateTitle": "ルールを更新しますか？",
+
+  "rulesOutOfDateMessage": "この種類のルールは、まだ以前の条件を説明しています。",
+
+  "later": "後で",
+
+  "currentIcon": "現在のアイコン",
+
+  "currentColor": "現在の色"
 }

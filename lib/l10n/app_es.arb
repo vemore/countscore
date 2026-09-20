@@ -652,5 +652,31 @@
 
   "pwaUpdateReady": "Hay una nueva versión de CountScore lista",
 
-  "pwaUpdateReload": "Recargar"
+  "pwaUpdateReload": "Recargar",
+
+  "thresholdIsRequired": "Se requiere un umbral para esta condición",
+
+  "thresholdTooLarge": "El umbral no puede exceder {max}",
+
+  "deletionImpossible": "Eliminación imposible",
+
+  "gameTypeInUse": "{count, plural, one{1 juego usa este tipo: no se puede eliminar.} other{{count} juegos usan este tipo: no se pueden eliminar.}}",
+
+  "confirmDeleteGameType": "¿Realmente deseas eliminar el tipo de juego \"{name}\"?",
+
+  "winDirectionChangeTitle": "¿Invertir quién gana?",
+
+  "winDirectionChangeWarning": "{count, plural, one{La clasificación de 1 juego terminado de este tipo se invertirá: su ganador será el último.} other{La clasificación de {count} juegos terminados de este tipo se invertirá: sus ganadores serán los últimos.}}",
+
+  "winDirectionContradiction": "La condición de final del juego recompensa lo opuesto del ganador elegido. Una regla de la casa podría quererlo así.",
+
+  "rulesOutOfDateTitle": "¿Actualizar las reglas?",
+
+  "rulesOutOfDateMessage": "Las reglas de este tipo aún describen la condición anterior.",
+
+  "later": "Más tarde",
+
+  "currentIcon": "Icono actual",
+
+  "currentColor": "Color actual"
 }

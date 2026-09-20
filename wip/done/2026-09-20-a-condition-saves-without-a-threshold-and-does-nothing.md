@@ -1,5 +1,7 @@
 # A game-type condition saves without a threshold and then does nothing, while the editor still shows it as chosen
 
+**Status:** done (2026-09-20) — closed by fix/game-type-editor. A threshold is required as soon as a condition type is chosen, refused as a field error; both fields carry `FilteringTextInputFormatter.digitsOnly` and stop at `kMaxGameTypeThreshold` (1000000), so no letter and no negative value reaches the controller. Clearing the condition back to *Aucune* clears the threshold and writes both as NULL. Rows that already hold a condition with a NULL threshold are still read as "no condition".
+
 - **Noted:** 2026-09-20 — reviewing the game-type editor at the user's request
 - **Theme:** game-types
 - **Area:** app

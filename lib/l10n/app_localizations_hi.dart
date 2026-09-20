@@ -1465,4 +1465,72 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get pwaUpdateReload => 'फिर से लोड करें';
+
+  @override
+  String get thresholdIsRequired => 'इस शर्त के लिए एक सीमा आवश्यक है';
+
+  @override
+  String thresholdTooLarge(int max) {
+    final intl.NumberFormat maxNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String maxString = maxNumberFormat.format(max);
+
+    return 'सीमा $maxString से अधिक नहीं हो सकती';
+  }
+
+  @override
+  String get deletionImpossible => 'विलोपन असंभव है';
+
+  @override
+  String gameTypeInUse(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count खेल इस प्रकार का उपयोग करते हैं: उन्हें हटाया नहीं जा सकता।',
+      one: '1 खेल इस प्रकार का उपयोग करता है: इसे हटाया नहीं जा सकता।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String confirmDeleteGameType(String name) {
+    return 'क्या आप सच में गेम प्रकार \"$name\" को हटाना चाहते हैं?';
+  }
+
+  @override
+  String get winDirectionChangeTitle => 'जीत की दिशा उलट दें?';
+
+  @override
+  String winDirectionChangeWarning(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'इस प्रकार के $count समाप्त खेल अपनी स्थिति उलट देंगे: उनके विजेता अंतिम हो जाएंगे।',
+      one: 'इस प्रकार का 1 समाप्त खेल अपनी स्थिति उलट देगा: इसका विजेता अंतिम हो जाएगा।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get winDirectionContradiction =>
+      'गेम-ओवर शर्त चुने गए विजेता के विपरीत पुरस्कृत करती है। एक कस्टम नियम बिल्कुल यही चाह सकता है।';
+
+  @override
+  String get rulesOutOfDateTitle => 'नियमों को अपडेट करें?';
+
+  @override
+  String get rulesOutOfDateMessage =>
+      'इस प्रकार के नियम अभी भी पुरानी स्थिति का वर्णन करते हैं।';
+
+  @override
+  String get later => 'बाद में';
+
+  @override
+  String get currentIcon => 'वर्तमान आइकन';
+
+  @override
+  String get currentColor => 'वर्तमान रंग';
 }

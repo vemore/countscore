@@ -725,5 +725,31 @@
 
   "pwaUpdateReady": "A new version of CountScore is ready",
 
-  "pwaUpdateReload": "Reload"
+  "pwaUpdateReload": "Reload",
+
+  "thresholdIsRequired": "A threshold is required for this condition",
+
+  "thresholdTooLarge": "The threshold cannot be above {max}",
+
+  "deletionImpossible": "Deletion impossible",
+
+  "gameTypeInUse": "{count, plural, one{1 game uses this type: it cannot be deleted.} other{{count} games use this type: it cannot be deleted.}}",
+
+  "confirmDeleteGameType": "Do you really want to delete the game type \"{name}\"?",
+
+  "winDirectionChangeTitle": "Reverse who wins?",
+
+  "winDirectionChangeWarning": "{count, plural, one{1 finished game of this type will have its standings reversed: its winner becomes the last.} other{{count} finished games of this type will have their standings reversed: their winners become the last.}}",
+
+  "winDirectionContradiction": "The game-over condition rewards the opposite of the chosen winner. A house rule may want exactly that.",
+
+  "rulesOutOfDateTitle": "Update the rules?",
+
+  "rulesOutOfDateMessage": "This type's rules still describe the old condition.",
+
+  "later": "Later",
+
+  "currentIcon": "Current icon",
+
+  "currentColor": "Current colour"
 }

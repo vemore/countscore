@@ -30,6 +30,14 @@ class GameTypeProvider with ChangeNotifier {
     await loadGameTypes();
   }
 
+  /// How many live games use the type, and how many of those are finished —
+  /// what the editor needs before it offers a deletion or flips the win
+  /// direction. Neither changes the loaded list, so neither notifies.
+  Future<int> countGames(int gameTypeId) => _repo.countGames(gameTypeId);
+
+  Future<int> countFinishedGames(int gameTypeId) =>
+      _repo.countFinishedGames(gameTypeId);
+
   Future<void> deleteGameType(int id) async {
     await _repo.delete(id);
     await loadGameTypes();

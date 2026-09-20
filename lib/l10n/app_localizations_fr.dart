@@ -1469,4 +1469,72 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get pwaUpdateReload => 'Recharger';
+
+  @override
+  String get thresholdIsRequired =>
+      'Un seuil est obligatoire pour cette condition';
+
+  @override
+  String thresholdTooLarge(int max) {
+    final intl.NumberFormat maxNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String maxString = maxNumberFormat.format(max);
+
+    return 'Le seuil ne peut pas dépasser $maxString';
+  }
+
+  @override
+  String get deletionImpossible => 'Suppression impossible';
+
+  @override
+  String gameTypeInUse(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count parties utilisent ce type : il ne peut pas être supprimé.',
+      one: '1 partie utilise ce type : il ne peut pas être supprimé.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String confirmDeleteGameType(String name) {
+    return 'Voulez-vous vraiment supprimer le type de jeu « $name » ?';
+  }
+
+  @override
+  String get winDirectionChangeTitle => 'Inverser le sens de la victoire ?';
+
+  @override
+  String winDirectionChangeWarning(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count parties terminées de ce type verront leur classement inversé : leurs gagnants deviendront les derniers.',
+      one: '1 partie terminée de ce type verra son classement inversé : son gagnant deviendra le dernier.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get winDirectionContradiction =>
+      'La condition de fin de partie récompense le sens inverse du vainqueur choisi. Une règle maison peut le vouloir.';
+
+  @override
+  String get rulesOutOfDateTitle => 'Mettre à jour les règles ?';
+
+  @override
+  String get rulesOutOfDateMessage =>
+      'Les règles de ce type décrivent encore l\'ancienne condition.';
+
+  @override
+  String get later => 'Plus tard';
+
+  @override
+  String get currentIcon => 'Icône actuelle';
+
+  @override
+  String get currentColor => 'Couleur actuelle';
 }

@@ -1513,4 +1513,82 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get pwaUpdateReload => 'إعادة التحميل';
+
+  @override
+  String get thresholdIsRequired => 'هذا الشرط يتطلب حدًا';
+
+  @override
+  String thresholdTooLarge(int max) {
+    final intl.NumberFormat maxNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String maxString = maxNumberFormat.format(max);
+
+    return 'لا يمكن أن يتجاوز الحد $maxString';
+  }
+
+  @override
+  String get deletionImpossible => 'الحذف غير ممكن';
+
+  @override
+  String gameTypeInUse(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count لعبة تستخدم هذا النوع: لا يمكن حذفه.',
+      many: '$count لعبة تستخدم هذا النوع: لا يمكن حذفه.',
+      few: '$count ألعاب تستخدم هذا النوع: لا يمكن حذفه.',
+      two: 'لعبتان تستخدمان هذا النوع: لا يمكن حذفه.',
+      one: 'لعبة واحدة تستخدم هذا النوع: لا يمكن حذفه.',
+      zero: 'لا توجد ألعاب تستخدم هذا النوع.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String confirmDeleteGameType(String name) {
+    return 'هل تريد حقًا حذف نوع اللعبة «$name»؟';
+  }
+
+  @override
+  String get winDirectionChangeTitle => 'عكس اتجاه الفوز؟';
+
+  @override
+  String winDirectionChangeWarning(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count لعبة منتهية من هذا النوع سيُعكس ترتيبها: سيصبح فائزوها الأخيرين.',
+      many:
+          '$count لعبة منتهية من هذا النوع سيُعكس ترتيبها: سيصبح فائزوها الأخيرين.',
+      few:
+          '$count ألعاب منتهية من هذا النوع سيُعكس ترتيبها: سيصبح فائزوها الأخيرين.',
+      two: 'لعبتان منتهيتان من هذا النوع سيُعكس ترتيبهما: سيصبح فائزاهما الأخيرين.',
+      one:
+          'لعبة واحدة منتهية من هذا النوع سيُعكس ترتيبها: سيصبح فائزها الأخير.',
+      zero: 'لا توجد ألعاب منتهية من هذا النوع.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get winDirectionContradiction =>
+      'شرط نهاية اللعبة يكافئ عكس الفائز المختار. قد تريد قاعدة مخصصة ذلك تمامًا.';
+
+  @override
+  String get rulesOutOfDateTitle => 'تحديث القواعد؟';
+
+  @override
+  String get rulesOutOfDateMessage =>
+      'ما زالت قواعد هذا النوع تصف الشرط القديم.';
+
+  @override
+  String get later => 'لاحقًا';
+
+  @override
+  String get currentIcon => 'الأيقونة الحالية';
+
+  @override
+  String get currentColor => 'اللون الحالي';
 }

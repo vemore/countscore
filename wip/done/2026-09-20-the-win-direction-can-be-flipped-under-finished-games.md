@@ -1,5 +1,7 @@
 # The win direction can be flipped on a type that already has finished games, reversing every past standing
 
+**Status:** done (2026-09-20) — closed by fix/game-type-editor. The user answered the open question with the confirmation rather than a read-only switch: flipping the direction on a type with at least one **finished** game asks first, naming the count (`countFinishedGames`), and cancelling leaves the row untouched; a type with no finished game saves with no interruption. The contradiction between the direction and a *Premier joueur à atteindre* condition is a line under the switch, never a refusal.
+
 - **Noted:** 2026-09-20 — reviewing the game-type editor at the user's request
 - **Theme:** game-types
 - **Area:** app

@@ -2476,6 +2476,84 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Recharger'**
   String get pwaUpdateReload;
+
+  /// Error under the threshold field of the game-type editor when a condition type is chosen and the threshold is left empty
+  ///
+  /// In fr, this message translates to:
+  /// **'Un seuil est obligatoire pour cette condition'**
+  String get thresholdIsRequired;
+
+  /// Error under the threshold field of the game-type editor when the number typed is above the accepted maximum
+  ///
+  /// In fr, this message translates to:
+  /// **'Le seuil ne peut pas dépasser {max}'**
+  String thresholdTooLarge(int max);
+
+  /// Title of the dialog refusing to delete a game type that games still use
+  ///
+  /// In fr, this message translates to:
+  /// **'Suppression impossible'**
+  String get deletionImpossible;
+
+  /// Why a game type cannot be deleted: the number of games still using it
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, one{1 partie utilise ce type : il ne peut pas être supprimé.} other{{count} parties utilisent ce type : il ne peut pas être supprimé.}}'**
+  String gameTypeInUse(int count);
+
+  /// Confirmation before deleting a game type — the type, not a game
+  ///
+  /// In fr, this message translates to:
+  /// **'Voulez-vous vraiment supprimer le type de jeu « {name} » ?'**
+  String confirmDeleteGameType(String name);
+
+  /// Title of the confirmation shown when the lowest/highest-score-wins switch is flipped on a game type that already has finished games
+  ///
+  /// In fr, this message translates to:
+  /// **'Inverser le sens de la victoire ?'**
+  String get winDirectionChangeTitle;
+
+  /// What flipping the win direction does to the standings of the finished games of that type
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, one{1 partie terminée de ce type verra son classement inversé : son gagnant deviendra le dernier.} other{{count} parties terminées de ce type verront leur classement inversé : leurs gagnants deviendront les derniers.}}'**
+  String winDirectionChangeWarning(int count);
+
+  /// Non-blocking note under the win-direction switch when the game-over condition pulls the other way
+  ///
+  /// In fr, this message translates to:
+  /// **'La condition de fin de partie récompense le sens inverse du vainqueur choisi. Une règle maison peut le vouloir.'**
+  String get winDirectionContradiction;
+
+  /// Title of the prompt offered after a saved condition change, on a type that has rules
+  ///
+  /// In fr, this message translates to:
+  /// **'Mettre à jour les règles ?'**
+  String get rulesOutOfDateTitle;
+
+  /// Body of the prompt offering to open the rules editor after a condition changed
+  ///
+  /// In fr, this message translates to:
+  /// **'Les règles de ce type décrivent encore l\'ancienne condition.'**
+  String get rulesOutOfDateMessage;
+
+  /// Dismissing action of the rules-out-of-date prompt
+  ///
+  /// In fr, this message translates to:
+  /// **'Plus tard'**
+  String get later;
+
+  /// Tooltip marking the icon a game type currently uses in the icon picker
+  ///
+  /// In fr, this message translates to:
+  /// **'Icône actuelle'**
+  String get currentIcon;
+
+  /// Tooltip marking the colour a game type currently uses in the colour picker
+  ///
+  /// In fr, this message translates to:
+  /// **'Couleur actuelle'**
+  String get currentColor;
 }
 
 class _AppLocalizationsDelegate

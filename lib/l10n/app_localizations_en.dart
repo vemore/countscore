@@ -1467,4 +1467,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pwaUpdateReload => 'Reload';
+
+  @override
+  String get thresholdIsRequired =>
+      'A threshold is required for this condition';
+
+  @override
+  String thresholdTooLarge(int max) {
+    final intl.NumberFormat maxNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String maxString = maxNumberFormat.format(max);
+
+    return 'The threshold cannot be above $maxString';
+  }
+
+  @override
+  String get deletionImpossible => 'Deletion impossible';
+
+  @override
+  String gameTypeInUse(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count games use this type: it cannot be deleted.',
+      one: '1 game uses this type: it cannot be deleted.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String confirmDeleteGameType(String name) {
+    return 'Do you really want to delete the game type \"$name\"?';
+  }
+
+  @override
+  String get winDirectionChangeTitle => 'Reverse who wins?';
+
+  @override
+  String winDirectionChangeWarning(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count finished games of this type will have their standings reversed: their winners become the last.',
+      one: '1 finished game of this type will have its standings reversed: its winner becomes the last.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get winDirectionContradiction =>
+      'The game-over condition rewards the opposite of the chosen winner. A house rule may want exactly that.';
+
+  @override
+  String get rulesOutOfDateTitle => 'Update the rules?';
+
+  @override
+  String get rulesOutOfDateMessage =>
+      'This type\'s rules still describe the old condition.';
+
+  @override
+  String get later => 'Later';
+
+  @override
+  String get currentIcon => 'Current icon';
+
+  @override
+  String get currentColor => 'Current colour';
 }

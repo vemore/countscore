@@ -1,5 +1,7 @@
 # Deleting a game type that has games reports "error during export", followed by an English sentence
 
+**Status:** done (2026-09-20) — closed by fix/game-type-editor. `GameTypeRepository.countGames` is asked **before** the deletion is offered: a type in use gets *Suppression impossible* and `gameTypeInUse`, an ICU plural in the ten languages, and the confirmation for an unused one is `confirmDeleteGameType`, which says *type de jeu* rather than reusing `confirmDeleteGame`. `errorDuringExport` and every `e.toString()` have left the screen; the repository's exception stays as the guard it always was.
+
 - **Noted:** 2026-09-20 — reviewing the game-type editor at the user's request
 - **Theme:** game-types
 - **Area:** app

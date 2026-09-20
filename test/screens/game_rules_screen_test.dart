@@ -45,6 +45,10 @@ class _FakeGameTypeRepository implements GameTypeRepository {
   @override
   Future<List<GameType>> getAll() async => const [];
   @override
+  Future<int> countGames(int id) async => 0;
+  @override
+  Future<int> countFinishedGames(int id) async => 0;
+  @override
   Future<int> delete(int id) async => 1;
 }
 

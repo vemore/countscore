@@ -184,6 +184,10 @@ class GameType {
 
   /// Pass `clearBuiltinKey: true` to turn a built-in row into a user row — what
   /// renaming one does, so that the chosen name is what gets rendered.
+  ///
+  /// `clearPlayerDeadCondition` and `clearGameOverCondition` drop a condition
+  /// *and* its threshold, which `x ?? this.x` cannot express — the editor needs
+  /// them to save *None* over a condition the type used to have.
   GameType copyWith({
     int? id,
     String? builtinKey,
@@ -195,8 +199,10 @@ class GameType {
     bool? isDefault,
     PlayerDeadConditionType? playerDeadConditionType,
     int? playerDeadThreshold,
+    bool clearPlayerDeadCondition = false,
     GameOverConditionType? gameOverConditionType,
     int? gameOverThreshold,
+    bool clearGameOverCondition = false,
     String? rules,
     String? rulesSlug,
     bool clearRules = false,
@@ -209,10 +215,18 @@ class GameType {
       cardColorValue: cardColorValue ?? this.cardColorValue,
       isLowestScoreWins: isLowestScoreWins ?? this.isLowestScoreWins,
       isDefault: isDefault ?? this.isDefault,
-      playerDeadConditionType: playerDeadConditionType ?? this.playerDeadConditionType,
-      playerDeadThreshold: playerDeadThreshold ?? this.playerDeadThreshold,
-      gameOverConditionType: gameOverConditionType ?? this.gameOverConditionType,
-      gameOverThreshold: gameOverThreshold ?? this.gameOverThreshold,
+      playerDeadConditionType: clearPlayerDeadCondition
+          ? null
+          : (playerDeadConditionType ?? this.playerDeadConditionType),
+      playerDeadThreshold: clearPlayerDeadCondition
+          ? null
+          : (playerDeadThreshold ?? this.playerDeadThreshold),
+      gameOverConditionType: clearGameOverCondition
+          ? null
+          : (gameOverConditionType ?? this.gameOverConditionType),
+      gameOverThreshold: clearGameOverCondition
+          ? null
+          : (gameOverThreshold ?? this.gameOverThreshold),
       // `x ?? this.x` cannot express "put this back to null", and restoring the
       // shipped rules is exactly that — same shape as Game.clearFinishedAt.
       rules: clearRules ? null : (rules ?? this.rules),
