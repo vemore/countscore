@@ -4,7 +4,7 @@
 > assets behind it. The Console walkthrough is `PUBLISHING.md`; the publishing mechanism is
 > [[Release]] and the `release-android` skill.
 > Related: [[Release]] · [[I18n]] · [[Documentation]] · [[KnownLimits]]
-> Updated: 2026-09-19
+> Updated: 2026-09-20
 
 ## Facts
 
@@ -17,8 +17,11 @@
 finds, so **the files are the source of truth**: a field edited in the Console and not in the
 file silently reverts at the next release.
 
-`store_listing/assets/` has the 512×512 icon `icon_512.png` (also the source
-`flutter_launcher_icons` generates the Android densities from), the 1024×500
+`store_listing/assets/` has the 512×512 icon `icon_512.png` — a *generated* file, written
+by `scripts/generate_icons.py` from the vector source in `design/icon/`, never edited by
+hand; it is also a Flutter asset (`pubspec.yaml`), which is how the home and About screens
+show it, and the input `flutter_launcher_icons` uses for the legacy square mipmap
+([[Release]] §Icons) — plus the 1024×500
 `feature_graphic.png` (Template 1 of `store_listing/FEATURE_GRAPHIC_TEMPLATES.md`: icon, name,
 tagline and the scoring grid in a phone frame, drawn with Pillow) — every locale's, unless
 `<locale>/feature_graphic.png` exists. It holds **no screenshots**: the old shared raw set
