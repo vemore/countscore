@@ -776,14 +776,14 @@
     "description": "Game over when first player goes under threshold"
   },
 
-  "lastPlayerOver": "Dernier joueur au-dessus",
+  "lastPlayerOver": "Dernier joueur en jeu (les autres au-dessus)",
   "@lastPlayerOver": {
-    "description": "Game over when last player goes over threshold"
+    "description": "Game over when every player but one is over the threshold - last player standing"
   },
 
-  "lastPlayerUnder": "Dernier joueur en dessous",
+  "lastPlayerUnder": "Dernier joueur en jeu (les autres en dessous)",
   "@lastPlayerUnder": {
-    "description": "Game over when last player goes under threshold"
+    "description": "Game over when every player but one is under the threshold - last player standing"
   },
 
   "threshold": "Seuil",

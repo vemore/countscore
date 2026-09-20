@@ -935,16 +935,16 @@ abstract class AppLocalizations {
   /// **'Premier joueur en dessous'**
   String get firstPlayerUnder;
 
-  /// Game over when last player goes over threshold
+  /// Game over when every player but one is over the threshold - last player standing
   ///
   /// In fr, this message translates to:
-  /// **'Dernier joueur au-dessus'**
+  /// **'Dernier joueur en jeu (les autres au-dessus)'**
   String get lastPlayerOver;
 
-  /// Game over when last player goes under threshold
+  /// Game over when every player but one is under the threshold - last player standing
   ///
   /// In fr, this message translates to:
-  /// **'Dernier joueur en dessous'**
+  /// **'Dernier joueur en jeu (les autres en dessous)'**
   String get lastPlayerUnder;
 
   /// Label for threshold value input

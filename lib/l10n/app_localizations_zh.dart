@@ -461,10 +461,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get firstPlayerUnder => '第一位玩家低于';
 
   @override
-  String get lastPlayerOver => '最后一位玩家超过';
+  String get lastPlayerOver => '最后留在场上的玩家（其他人超过）';
 
   @override
-  String get lastPlayerUnder => '最后一位玩家低于';
+  String get lastPlayerUnder => '最后留在场上的玩家（其他人低于）';
 
   @override
   String get threshold => '阈值';

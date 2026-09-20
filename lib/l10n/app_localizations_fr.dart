@@ -472,10 +472,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get firstPlayerUnder => 'Premier joueur en dessous';
 
   @override
-  String get lastPlayerOver => 'Dernier joueur au-dessus';
+  String get lastPlayerOver => 'Dernier joueur en jeu (les autres au-dessus)';
 
   @override
-  String get lastPlayerUnder => 'Dernier joueur en dessous';
+  String get lastPlayerUnder => 'Dernier joueur en jeu (les autres en dessous)';
 
   @override
   String get threshold => 'Seuil';

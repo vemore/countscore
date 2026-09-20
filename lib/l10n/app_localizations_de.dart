@@ -471,10 +471,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get firstPlayerUnder => 'Erster Spieler unter';
 
   @override
-  String get lastPlayerOver => 'Letzter Spieler über';
+  String get lastPlayerOver => 'Letzter Spieler im Spiel (andere darüber)';
 
   @override
-  String get lastPlayerUnder => 'Letzter Spieler unter';
+  String get lastPlayerUnder => 'Letzter Spieler im Spiel (andere darunter)';
 
   @override
   String get threshold => 'Schwellenwert';

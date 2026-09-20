@@ -470,10 +470,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get firstPlayerUnder => 'أول لاعب تحت الحد';
 
   @override
-  String get lastPlayerOver => 'آخر لاعب فوق الحد';
+  String get lastPlayerOver => 'آخر لاعب متبقٍ (الآخرون فوق الحد)';
 
   @override
-  String get lastPlayerUnder => 'آخر لاعب تحت الحد';
+  String get lastPlayerUnder => 'آخر لاعب متبقٍ (الآخرون تحت الحد)';
 
   @override
   String get threshold => 'الحد';

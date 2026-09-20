@@ -473,10 +473,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get firstPlayerUnder => 'Первый игрок ниже';
 
   @override
-  String get lastPlayerOver => 'Последний игрок выше';
+  String get lastPlayerOver => 'Последний игрок в игре (остальные выше)';
 
   @override
-  String get lastPlayerUnder => 'Последний игрок ниже';
+  String get lastPlayerUnder => 'Последний игрок в игре (остальные ниже)';
 
   @override
   String get threshold => 'Порог';
