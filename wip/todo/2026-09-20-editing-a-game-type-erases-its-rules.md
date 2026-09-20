@@ -20,6 +20,12 @@ The type keeps its `builtinKey`, so it is still displayed as ZapZap; only the li
 `assets/rules/` and the user's own text are lost. The loss syncs to the group like any other
 column ([[Sync]]).
 
+`isDefault` is not cosmetic either (found 2026-09-20, reviewing the editor): it is what the
+schema migrations use to tell a row the app seeded from one the user wrote — the `rules_slug`
+back-fill selects `WHERE isDefault = 1 AND rules_slug IS NULL`, and the name-based link does
+the same (`lib/services/sync/sync_schema.dart:243`, `:293`). A type cleared by an edit is
+skipped by every future back-fill of that shape, so the damage outlives the edit.
+
 **Fix:** carry `rules`, `rulesSlug` and `isDefault` through the edit — build the saved row with
 `existingGameType.copyWith(...)` instead of a fresh `GameType(...)`, so a column the dialog
 does not show cannot be cleared by it. The user asks, on top of that, for the rules text to be
