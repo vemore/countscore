@@ -2,8 +2,13 @@
 
 Complete checklist for creating all visual assets needed for Google Play Store publication.
 
-**Last Updated**: November 9, 2025
+**Last Updated**: 2026-09-20
 **Status Tracking**: Use this document to track your progress
+
+**The palette is not repeated here.** The brand colours live in `lib/utils/app_theme.dart` —
+`kBrandSeedLight` `#0E8F88` (the teal), `kBrandSeedDark` `#5ED8CF`, `kLeaderGold` `#F2B705` —
+and the icon's ground is the ink `#0E1716`. Read them there; a hex copied into a document
+goes stale the day the theme moves.
 
 ---
 
@@ -24,34 +29,35 @@ Complete checklist for creating all visual assets needed for Google Play Store p
 
 - [ ] **Review all documentation**
   - [ ] Read `ASSET_REQUIREMENTS.md`
-  - [ ] Read `COLOR_THEME_GUIDE.md`
   - [ ] Read `SCREENSHOT_GUIDE.md`
+  - [ ] Read the palette in `lib/utils/app_theme.dart`
 
 - [ ] **Gather resources**
   - [ ] Choose design tool (Figma, Canva, GIMP, etc.)
   - [ ] Install tool if needed
-  - [ ] Bookmark color hex codes (#673AB7, #FFC107, etc.)
+  - [ ] Read the hex codes off `lib/utils/app_theme.dart`, never off a document
 
 - [ ] **Understand app colors**
-  - [ ] Primary: Deep Purple (#673AB7)
-  - [ ] Game colors: Amber, Red, Green, Blue
+  - [ ] Primary: brand teal (`kBrandSeedLight`, #0E8F88)
+  - [ ] Leader gold (`kLeaderGold`, #F2B705); the icon's ground is ink #0E1716
   - [ ] Style: Material Design 3
 
 - [ ] **Review existing app icon**
-  - Location: `android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png`
+  - Location: `store_listing/assets/icon_512.png`, generated from `design/icon/`
   - [ ] Viewed current icon
-  - [ ] Decided if keeping similar design or redesigning
 
 ---
 
 ## Phase 2: App Icon Creation (1-2 hours)
 
+> **The icon is generated, not drawn by hand.** `scripts/generate_icons.py` writes every
+> size — the launcher, the PWA, the in-app asset and `store_listing/assets/icon_512.png` —
+> from the vector source in `design/icon/`. Its constraints and the regeneration command are
+> `.llmwiki/Release.md` §Icons. This phase applies only to a redesign of that source.
+
 ### Design Phase
 
-- [ ] **Choose icon concept**
-  - [ ] Concept 1: Solid Purple with white symbol
-  - [ ] Concept 2: Multi-color (game variety)
-  - [ ] Concept 3: Modern gradient
+- [ ] **Agree the concept** against `.llmwiki/Release.md` §Icons
   - [ ] Custom concept: _________________
 
 - [ ] **Create icon design**
@@ -59,7 +65,7 @@ Complete checklist for creating all visual assets needed for Google Play Store p
   - [ ] Format: PNG with alpha channel
   - [ ] Background color chosen
   - [ ] Symbol/graphic added
-  - [ ] Colors match brand (#673AB7 primary)
+  - [ ] Colors match the brand palette in `lib/utils/app_theme.dart`
 
 - [ ] **Design validation**
   - [ ] Works on light backgrounds
@@ -108,10 +114,15 @@ Complete checklist for creating all visual assets needed for Google Play Store p
 
 ## Phase 3: Feature Graphic Creation (1-2 hours)
 
+> **The shipped graphic is generated too.** `uv run --script
+> scripts/generate_feature_graphic.py` redraws `store_listing/assets/feature_graphic.png`
+> (Template 1, teal) from the committed icon, the en-US demo capture and the bundled Nunito;
+> `--check` verifies the committed PNG still matches. This phase applies to a new design.
+
 ### Design Phase
 
 - [ ] **Choose layout concept**
-  - [ ] Option 1: App name + screenshot mockup
+  - [ ] Option 1: App name + screenshot mockup (what ships)
   - [ ] Option 2: Feature highlights with icons
   - [ ] Option 3: Typography focus with tagline
   - [ ] Option 4: Phone mockup with gradient background
@@ -318,7 +329,7 @@ Or manually capture each:
   - [ ] Screenshots: 2-8 files, valid dimensions, <8MB each
 
 - [ ] **Visual consistency**
-  - [ ] All use brand colors (Deep Purple primary)
+  - [ ] All use brand colors (teal #0E8F88 primary, gold #F2B705 accent)
   - [ ] Style is consistent across assets
   - [ ] Professional appearance throughout
 

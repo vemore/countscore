@@ -2,13 +2,19 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// The app's look — "Material soigné": a teal taken from the icon's podium,
-/// Nunito, flat outlined cards. Both themes are built here and nowhere else.
+/// The app's look — "Material soigné": the brand teal, Nunito, flat outlined
+/// cards. Both themes are built here and nowhere else.
+///
+/// This file is the palette's home, and the only one: the icon
+/// (`design/icon/`), the store assets and the screenshot composer take their
+/// colours from here — a test pins the composer's gradient to
+/// [kBrandSeedLight] — and no document restates them.
 
-/// Brand seed on the light theme: the icon's teal.
+/// Brand seed on the light theme: the brand teal.
 const Color kBrandSeedLight = Color(0xFF0E8F88);
 
-/// Brand seed on the dark theme: the same teal, lifted to read on a dark surface.
+/// Brand seed on the dark theme: the same teal, lifted to read on a dark
+/// surface. It is the teal the icon's third pawn is painted in.
 const Color kBrandSeedDark = Color(0xFF5ED8CF);
 
 /// The leader's gold — the crown, the leading total.

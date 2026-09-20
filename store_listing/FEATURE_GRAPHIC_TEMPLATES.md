@@ -2,8 +2,25 @@
 
 Complete guide with layouts and templates for creating the 1024×500 feature graphic banner.
 
-**Last Updated**: November 9, 2025
+**Last Updated**: 2026-09-20
 **Target**: 1024×500px promotional banner for Google Play Store
+
+> **What ships, and how to redraw it.** `store_listing/assets/feature_graphic.png` is
+> **Template 1** in the brand teal, drawn by `scripts/generate_feature_graphic.py` (Pillow):
+>
+> ```bash
+> uv run --script scripts/generate_feature_graphic.py           # redraw the PNG
+> uv run --script scripts/generate_feature_graphic.py --check   # verify, write nothing
+> ```
+>
+> It composes committed inputs only — the generated icon `store_listing/assets/icon_512.png`,
+> the en-US capture of the fictional demo database (`en-US/raw/05_game_board.png`) and the
+> bundled Nunito — so the graphic is reproducible and shows no real person's data.
+>
+> **The colours below are copies.** Their home is `lib/utils/app_theme.dart`:
+> `kBrandSeedLight` `#0E8F88`, `kBrandSeedDark` `#5ED8CF`, `kLeaderGold` `#F2B705`; the ink
+> `#0E1716` is the icon's ground and the dark theme's surface. When the theme moves, that
+> file moves first and this one follows.
 
 ---
 
@@ -61,10 +78,10 @@ The feature graphic is a **wide promotional banner** (1024×500px) that appears:
 ```
 
 **Color Scheme**:
-- Background: Deep Purple (#673AB7) or gradient
+- Background: brand teal (#0E8F88) or a gradient of it
 - Text: White (#FFFFFF)
-- Mockup: Natural phone colors
-- Accent: Amber (#FFC107) for highlights
+- Mockup: natural phone colors, in an ink (#0E1716) frame
+- Accent: leader gold (#F2B705) for highlights
 
 **Use Cases**: Best for showing actual app interface clearly
 
@@ -93,9 +110,9 @@ The feature graphic is a **wide promotional banner** (1024×500px) that appears:
 ```
 
 **Color Scheme**:
-- Background: Purple to Pink gradient
+- Background: teal gradient (#189890 → #095954)
 - Text: White
-- Icons: Game colors (Amber, Green, Blue, Purple)
+- Icons: the icon's own accents (gold #F2B705, vermilion #E4572E, blue #3B82F6)
 
 **Use Cases**: Best for communicating multiple features quickly
 
@@ -124,9 +141,9 @@ The feature graphic is a **wide promotional banner** (1024×500px) that appears:
 ```
 
 **Color Scheme**:
-- Background: Solid Deep Purple (#673AB7) or White
-- Text: White (on purple) or Purple (on white)
-- Bold, modern font (60-100px)
+- Background: solid brand teal (#0E8F88) or White
+- Text: White (on teal) or teal (on white)
+- Bold, modern font (60-100px) — Nunito, the app's own (`assets/fonts/`)
 
 **Use Cases**: Best for clear, direct messaging
 
@@ -152,13 +169,13 @@ The feature graphic is a **wide promotional banner** (1024×500px) that appears:
 │  games, and sports       │                              │
 │                          │                              │
 └──────────────────────────┴──────────────────────────────┘
-    Purple side                 Screenshot side
+    Teal side                   Screenshot side
 ```
 
 **Color Scheme**:
-- Left: Deep Purple (#673AB7)
+- Left: brand teal (#0E8F88)
 - Right: White or light grey background with screenshot
-- Text: White on purple, dark on light
+- Text: White on teal, dark on light
 
 **Use Cases**: Balanced approach, shows UI and messaging
 
@@ -189,8 +206,8 @@ The feature graphic is a **wide promotional banner** (1024×500px) that appears:
 
 **Color Scheme**:
 - Background: White (#FFFFFF) or very light grey
-- Icon: App icon colors (purple primary)
-- Text: Deep Purple or dark grey
+- Icon: the app icon as it is, on its ink ground
+- Text: brand teal (#0E8F88) or dark grey
 
 **Use Cases**: Premium feel, less is more approach
 
@@ -200,47 +217,52 @@ The feature graphic is a **wide promotional banner** (1024×500px) that appears:
 
 ## Recommended Template
 
-### **RECOMMENDED: Template 2 - Feature Highlights**
+### **SHIPPED: Template 1 - App Name + Screenshot Mockup**
 
-**Why This Works Best for CountScore**:
-- Communicates multiple value propositions quickly
-- Colorful and eye-catching
-- Not dependent on UI screenshots
-- Easy to create and modify
-- Works well at thumbnail size
+`scripts/generate_feature_graphic.py` draws it. **Why it won over Template 2** (2026-09-20):
+the four-icon board of Template 2 says what the app promises, while the real scoring grid in
+a phone frame shows that it delivers — and the app name stays legible at thumbnail size
+either way. The three promises survive as gold pills under the tagline.
+
+**What it puts on the canvas**:
+- Left: the app icon, `CountScore` in Nunito ExtraBold, the tagline *Keep score for every
+  game*, the line *Offline scores · Stats · Share with your group*, and the gold pills
+  *No ads · No tracking · Open source*
+- Right: an ink phone frame holding the en-US board capture, bleeding off the bottom edge
+- Background: a teal gradient with two soft lighter discs behind the phone
 
 **Detailed Specifications**:
 
 **Canvas**: 1024×500px
 **Safe Zone**: 924×400 (keep critical content within)
 
-**Layout Breakdown**:
+**Layout Breakdown** (the geometry the script draws, in canvas pixels):
 ```
-Top Section (200px height):
-- App name: "CountScore" (60-80px font)
-- Tagline: "Track Any Game Score" (30-40px font)
+Left column (x 58 → 640):
+- Icon:     126×126 at (58, 98), corners rounded 23.5 %
+- App name: "CountScore", Nunito ExtraBold 72px, white, beside the icon
+- Tagline:  "Keep score for every game", Nunito Bold 38px, baseline y 262
+- Sub-line: "Offline scores · Stats · Share with your group", Nunito 25px, baseline y 310
+- Pills:    three, 48px high, gold, top y 336
 
-Bottom Section (300px height):
-- 4 icons with labels (100×100px icons)
-- Short feature descriptions (20px font)
+Right column:
+- Phone: 322×556 ink frame at (664, 46) — it runs off the bottom edge on purpose
 
-Padding: 50px all sides
+Padding: 50px all sides (the 924×400 safe zone)
 ```
 
-**Color Recipe**:
+**Color Recipe** (the values `scripts/generate_feature_graphic.py` uses):
 ```
 Background: Linear gradient
-  - Start: #673AB7 (Deep Purple)
-  - End: #9C27B0 (Purple 500)
-  - Direction: Left to right or top to bottom
+  - Start: #189890 (the teal, lifted 12 % towards #5ED8CF)
+  - End:   #095954 (the same teal at 62 %)
+  - Direction: top to bottom
 
-Text: #FFFFFF (White) with subtle shadow
+Text: #FFFFFF (White)
 
-Icons:
-  - Icon 1: #FFC107 (Amber) - Multiple Games
-  - Icon 2: #4CAF50 (Green) - Players
-  - Icon 3: #2196F3 (Blue) - History
-  - Icon 4: #FFFFFF (White) - Privacy
+Accents:
+  - Promise pills: #F2B705 (leader gold) with #0E1716 (ink) text
+  - Phone frame:   #0E1716 (ink)
 ```
 
 ---
@@ -258,8 +280,8 @@ Icons:
 **Step 2: Background** (5 minutes)
 1. Select frame
 2. Fill > Linear gradient
-3. Top color: #673AB7
-4. Bottom color: #9C27B0
+3. Top color: #189890
+4. Bottom color: #095954
 5. Adjust gradient angle (try 90° or 135°)
 
 **Step 3: Safe Zone Guide** (2 minutes)
@@ -322,9 +344,9 @@ Icons:
 
 **Step 2: Background**
 1. Elements > Gradients
-2. Search "purple gradient"
+2. Search "teal gradient"
 3. Apply to background
-4. Adjust colors to match #673AB7
+4. Adjust colors to match #0E8F88
 
 **Step 3: Add Text**
 1. Text > Add heading: "CountScore"
@@ -343,7 +365,7 @@ Icons:
 1. Elements > Icons
 2. Search: "game", "user", "history", "check"
 3. Add 4 icons
-4. Color icons: Purple, Amber, Green, Blue
+4. Color icons: teal, gold, vermilion, blue
 5. Add text labels below each
 
 **Step 6: Export**
@@ -400,34 +422,34 @@ Icons:
 
 ## Color Scheme Variations
 
-### Variation 1: Purple Gradient (Recommended)
+### Variation 1: Teal Gradient (what ships)
 ```
-Background: #673AB7 → #9C27B0
+Background: #189890 → #095954
 Text: White
-Icons: Amber, Green, Blue, White
-Style: Modern, energetic
+Accents: gold #F2B705, ink #0E1716
+Style: Modern, calm
 ```
 
 ### Variation 2: Light & Clean
 ```
 Background: White (#FFFFFF)
-Text: Deep Purple (#673AB7)
-Icons: All game colors (Amber, Red, Green, Purple, Blue)
+Text: brand teal (#0E8F88)
+Accents: the icon's own colors (gold, vermilion #E4572E, blue #3B82F6, teal #5ED8CF)
 Style: Professional, clean
 ```
 
-### Variation 3: Dark Mode
+### Variation 3: Dark
 ```
-Background: Dark blue-grey (#263238)
+Background: ink (#0E1716), the icon's own ground
 Text: White
-Icons: Bright colors (Amber, Green, Blue)
+Accents: the lifted teal #5ED8CF and the gold
 Style: Modern, tech-focused
 ```
 
 ### Variation 4: Multi-Color
 ```
 Background: White
-Colored sections: Purple, Amber, Green, Blue blocks
+Colored sections: teal, gold, vermilion, blue blocks
 Text: White on colored sections
 Style: Playful, colorful
 ```
@@ -596,7 +618,7 @@ Before finalizing your feature graphic:
 
 ### Design Quality
 - [ ] Message is clear and concise
-- [ ] Uses brand colors (#673AB7 primary)
+- [ ] Uses brand colors (teal #0E8F88 primary, gold #F2B705 accent)
 - [ ] Text is readable (good contrast)
 - [ ] Not too cluttered (3-5 main elements)
 - [ ] Professional appearance

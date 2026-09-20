@@ -246,7 +246,9 @@ Sixteen components shared out of the screens:
 - `dice_roller_dialog.dart` — the board's overflow-menu **Roll dice**, next to **Who
   starts?** and offered whatever the players: choose 1 to 6 six-sided dice (chips), each
   choice rolls at once, *Roll again* re-rolls; each die and the total are shown. Opens on
-  2 dice; the count is not remembered. Nothing stored, nothing sent.
+  2 dice; the count is not remembered. Nothing stored, nothing sent. The six count chips are
+  a `Row` in a `FittedBox`, not a `Wrap`, and the dialog takes a 16 dp `insetPadding`: they
+  stay on one line (see *Decisions & History*).
 - `group_settings_section.dart` — Settings → Group: create or join a group, show its invite
   code, leave it, and show where sync stands; usable only once a server URL is set. *New
   code* is shown to the group's owner only; *Comments and usage* opens
@@ -326,9 +328,11 @@ widget in a `PipelineOwner`/`BuildOwner` of its own under a loose `BoxConstraint
 then `RenderRepaintBoundary.toImage` → PNG, and unmounts the tree. Nothing is shown on
 screen. In a widget test its future completes only under `tester.runAsync`.
 
-`app_theme.dart` — the one place the look is defined. `buildAppTheme(brightness)` seeds
-`ColorScheme.fromSeed` with `kBrandSeedLight` (`#0E8F88`, the icon's teal) or
-`kBrandSeedDark` (`#5ED8CF`) under `DynamicSchemeVariant.fidelity`, sets `primary` to the seed
+`app_theme.dart` — the one place the look is defined, and the palette's only home: the icon
+(`design/icon/`), the store assets and `scripts/compose_screenshots.py` read their colours
+from it, and no document restates them. `buildAppTheme(brightness)` seeds
+`ColorScheme.fromSeed` with `kBrandSeedLight` (`#0E8F88`, the brand teal) or
+`kBrandSeedDark` (`#5ED8CF`, the teal of the icon's third pawn) under `DynamicSchemeVariant.fidelity`, sets `primary` to the seed
 itself, and sets the surfaces (`#F3F8F7` / `#0E1716`), white (dark: `#172221`) cards with a
 1 px `outlineVariant` border and elevation 0, and `fontFamily: kAppFontFamily` (`Nunito`).
 `kLeaderGold` (`#F2B705`) is the leader's colour for the screens that mark one. Nunito is
@@ -755,13 +759,21 @@ not "fix" it by hardcoding a codepoint.
   (d4 … d20) as clutter for the games CountScore scores; 1–6 dice cover Yahtzee (5) and
   Farkle (6). A die shows its numeral rather than pips, which reads the same in every
   locale and needs no asset (`wip/done/2026-09-18-no-dice-roller-on-the-board.md`).
+- **A fixed row of controls in an `AlertDialog` is a `Row`, never a `Wrap`** (2026-09-20).
+  `AlertDialog` sizes its column with `IntrinsicWidth`, and `RenderWrap`'s intrinsic width
+  sums its children while ignoring its own `spacing`, so the dice roller's six count chips
+  were given 30 dp less than they need and the sixth wrapped alone — at *every* screen
+  width, 1600 px included, not only on a phone. A `Row` reports its spacers, a `FittedBox`
+  absorbs a large text scale, and a 16 dp `insetPadding` buys the room the six need on a
+  412 dp phone (`wip/done/2026-09-19-dice-count-chips-wrap-five-and-one.md`).
 - **The game list counts rounds in one grouped query, not one per card** (2026-09-16).
   `DriftGameRepository.getAll` returns no count, and a `FutureBuilder` per card would be one
   query per row over the whole history; `RoundRepository.countByGame` is a single `GROUP BY`
   that `loadGames` folds into the provider.
 - **The look is teal "Material soigné", with a bundled font** (2026-09-18). The deep-purple
-  seed matched nothing in the icon's teal podium, and cards tinted to 10 % of the game colour
-  turned ZapZap's amber beige. Direction A of four mock-ups
+  seed matched nothing in the icon of the time — a teal podium, replaced on 2026-09-20 by the
+  cards-and-pawns artwork ([[Release]] §Icons), whose own teal is `kBrandSeedDark`. Cards
+  tinted to 10 % of the game colour turned ZapZap's amber beige. Direction A of four mock-ups
   (`wip/assets/2026-09-18-app-looks-like-a-default-material-template/`). Nunito is bundled,
   not fetched with `google_fonts`: a runtime download from Google would be an outbound data
   flow in an app whose privacy model is that it makes none. Static instances rather than the
