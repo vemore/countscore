@@ -2,7 +2,7 @@
 
 > Scope: the mobile database — tables, the global-player model, the migration chain.
 > Related: [[DataLayer]] · [[Sync]] · [[MobileApp]] · [[Testing]]
-> Updated: 2026-09-19
+> Updated: 2026-09-20
 
 This page was `SchemaV9` until v10 landed on 2026-09-13; links were renamed with it.
 v11 followed the same day, v12, v13 and v14 on 2026-09-16, v15 on 2026-09-18 and v16 on
@@ -61,7 +61,7 @@ and keeps its slug, so it keeps its rules either way.
 
 ISO-8601 TEXT, nullable; null means the game is still open. Set when the user declares a
 game over — the board's overflow menu, the home-screen game menu, or the threshold
-reached by the game type's rule, which opens the end screen — and cleared by reopening it
+reached by the game type's rule, which opens the standings — and cleared by reopening it
 (or "Continue playing" on that screen). It locks nothing: a finished game
 still takes rounds and score edits.
 
