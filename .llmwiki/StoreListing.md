@@ -91,6 +91,15 @@ reports one — which is how a stray capture committed there turns CI red ([[Tes
   `main` at 038a76a: the avatars are two letters with the contrast-picked initial (#152), the
   home card, keypad and podium as 1.3.0 draws them. Published with the 1.3.0 release
   (`play_publish.py listing --graphics`).
+- **Three of the eight were retaken again on 2026-09-20** against `main` at 2f4c37b, in all ten
+  locales, and are **committed but not published** — they ship with the next Android release.
+  `04_podium` (the standings merged into one screen: the *Results* title and the ranked rows
+  starting at place 1, not at place 4), `03_game_types` (ZapZap's game-over condition added a
+  second line under the tiles) and `06_customization` (the *Edit type* name field gained a
+  `4/64` counter). The five others were checked screen by screen on the device and left: only
+  `01_main_screen`'s dates would move, and they follow the day the demo database is generated
+  rather than the app. The app icon is in none of the eight — it appears in the drawer header
+  and on the About screen only.
 - The retake was driven over `adb` (`uiautomator dump` to find each control by the demo's
   player and game names, which no locale translates), one session for the ten locales, with
   the status-bar demo mode on (`sysui_demo_allowed`, `am broadcast -a
@@ -247,6 +256,28 @@ store:
 
 ## Decisions & History
 
+- **A retake captures a score-ranked game, and the screenshot build installs beside the real
+  app (2026-09-20).** `04_podium` had to move because the standings merged into one screen, and
+  the game to capture was a real choice: an elimination-ranked game now draws
+  `ranking_elimination_note` under the summary, which pushes the podium down and spends the
+  picture explaining a rule. The retake keeps **Kyoto (Tarot, highest score wins)** — the same
+  game the published shot used — so the only visible difference is the one the entry asked for.
+  Checking the whole set at the same time caught two more stale screens (`03_game_types`,
+  `06_customization`); the other five were verified on the device and left, which is the point
+  of checking rather than retaking everything.
+  The session could not follow this page's "uninstall the installed app first" instruction: the
+  only device is the owner's phone, carrying 172 real games and the `shared_prefs` that hold
+  the backend URL, the device token and a live group's membership, and its build is
+  release-signed, so a debug-signed profile APK cannot replace it. The screenshots were taken
+  from a profile build with a temporary `applicationIdSuffix = ".shots"`, installed **beside**
+  the real app and uninstalled afterwards — nothing of the owner's was touched.
+  `wip/todo_nr/2026-09-20-capture-screenshots-hardcodes-the-package-name.md` proposes making
+  that the permanent shape (the suffix committed, `capture_screenshots.sh` taking the package
+  from the environment) and deleting the uninstall paragraph, because its recovery path —
+  export, uninstall, re-import — is only ever tested at the moment it fails. Closed
+  `wip/done/2026-09-20-store-screenshot-of-the-podium-is-stale.md`. **Not published**: the user
+  was asked on 2026-09-20 and answered "not now", so the set ships with the next Android
+  release.
 - **The feature graphic is teal, generated, and the two brand guides are gone (2026-09-20).**
   `store_listing/assets/feature_graphic.png` was the deep-purple banner of the abandoned
   identity, built around the podium icon that PR #195 replaced, and its phone mockup showed
