@@ -38,6 +38,9 @@ enum GroupActionError {
 
   /// Only the group's owner may revoke a device, rotate the code or hand over (403).
   notOwner,
+
+  /// The owner role cannot be claimed: that device has been seen recently (409).
+  ownerActive,
 }
 
 class GroupActionException implements Exception {
@@ -189,6 +192,11 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
       notifyListeners();
       return GroupActionException(GroupActionError.notOwner);
     }
+    // A refused claim: the owner is alive after all. Nothing to forget — this device
+    // never had the role — so [_isOwner] is left alone.
+    if (e is BackendException && e.statusCode == 409) {
+      return GroupActionException(GroupActionError.ownerActive);
+    }
     return GroupActionException(
         e is BackendException ? GroupActionError.server : GroupActionError.unreachable);
   }
@@ -285,6 +293,23 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
       throw _ownerActionError(e);
     }
     _isOwner = false;
+    notifyListeners();
+  }
+
+  /// Takes the owner role over from an owner device the server reports dormant —
+  /// a phone that uninstalled the app never leaves the group by itself, and the
+  /// invite code it left behind could otherwise never be renewed. The server
+  /// refuses (409, [GroupActionError.ownerActive]) while that device is still
+  /// about, so the role is never flipped here on a guess.
+  Future<void> claimOwnership() async {
+    final token = _deviceToken;
+    if (token == null || _baseUrl == null) return;
+    try {
+      await _client().claimOwnership(token);
+    } catch (e) {
+      throw _ownerActionError(e);
+    }
+    _isOwner = true;
     notifyListeners();
   }
 

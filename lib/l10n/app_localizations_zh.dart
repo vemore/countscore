@@ -461,10 +461,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get firstPlayerUnder => '第一位玩家低于';
 
   @override
-  String get lastPlayerOver => '最后一位玩家超过';
+  String get lastPlayerOver => '最后留在场上的玩家（其他人超过）';
 
   @override
-  String get lastPlayerUnder => '最后一位玩家低于';
+  String get lastPlayerUnder => '最后留在场上的玩家（其他人低于）';
 
   @override
   String get threshold => '阈值';
@@ -1418,4 +1418,21 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get pwaUpdateReload => '重新加载';
+
+  @override
+  String get groupDeviceClaimOwner => '接管所有权';
+
+  @override
+  String groupDeviceClaimOwnerConfirm(String label) {
+    return '“$label”是群组的所有者，但很久没有上线。要在本设备上接管群组所有权吗？';
+  }
+
+  @override
+  String get groupDeviceOwnerClaimed => '本设备现在是群组的所有者。';
+
+  @override
+  String get groupErrorOwnerActive => '群组所有者最近有活动：无法接管所有权。';
+
+  @override
+  String get groupCreatedOwnerExplain => '群组已创建。本设备是其所有者；可在“设备”中将该角色移交给其他设备。';
 }

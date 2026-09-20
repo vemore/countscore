@@ -2,7 +2,7 @@
 
 > Scope: what is defended, and what is knowingly open.
 > Related: [[Backend]] · [[Api]] · [[LlmProviders]] · [[Deployment]] · [[KnownLimits]]
-> Updated: 2026-09-19
+> Updated: 2026-09-20
 
 ## Facts
 
@@ -25,7 +25,7 @@
 | WebSocket auth | Single-use ticket from `POST /sync/ws-ticket`, 60 s TTL. `app/services/ws_ticket.py`. |
 | WebSocket cost | One shared LISTEN connection for all streams (`app/services/notify.py`), at most `MAX_STREAMS_PER_DEVICE` (3) streams per device — a member can no longer exhaust Postgres connections. See [[Sync]]. |
 | LLM budget | Only the group owner sets `monthly_budget_cents` (403 for any other member), and only up to the operator's `MAX_BUDGET_CENTS` (unset: `DEFAULT_BUDGET_CENTS`). `backend/tests/test_groups.py`. |
-| Group owner | `groups.owner_device_id`: the creator, until it hands over (`PUT /groups/me/owner`) or leaves (the earliest-joined live device inherits). Only the owner may revoke another device, rotate `share_token` or hand over — 403 for any other member, checked under the group's row lock. `backend/tests/test_groups.py`. See [[Api]]. |
+| Group owner | `groups.owner_device_id`: the creator, until it hands over (`PUT /groups/me/owner`) or leaves (the earliest-joined live device inherits). Only the owner may revoke another device, rotate `share_token` or hand over — 403 for any other member, checked under the group's row lock. An owner that **uninstalls** does neither, so since 2026-09-20 any member may take the role once that device has been unseen for `GROUP_OWNER_DORMANT_DAYS` (30) — `POST /groups/me/owner/claim`, 409 while it has been seen, under the same lock — and a group with a single live device owns itself on read. Without it a leaked `share_token` could never be rotated again. `backend/tests/test_groups.py`. See [[Api]]. |
 | Revocation | Only the owner revokes another device ([[Api]]). Revoking another device rotates `share_token`, so the revoked device cannot rejoin with the token it learnt when joining. Its open `/sync/stream` is closed (1008) before the next frame it would receive — a push signal or the idle heartbeat (`app/routes/sync.py:_serve_stream`, `tests/test_sync_stream_cap.py`, `tests/test_sync_ws_integration.py`). |
 | Sync payload values | Per-entity bounds in `app/services/delta_bounds.py`, enforced before write. |
 | Security headers | `security_headers` middleware in `app/main.py:main`; HSTS behind `HSTS_ENABLED`. API responses get `default-src 'none'`; `/docs` a Swagger CSP, and only exists with `EXPOSE_DOCS=true`; paths under `PWA_BASE_PATH` get `_PWA_CSP` (`'self'` for scripts, fonts and everything else — no third-party host, CanvasKit and the fallback fonts being served from the build — plus `'wasm-unsafe-eval'` and `connect-src 'self' https: wss:`) plus `Cache-Control: no-cache`. No directive holds a wildcard (`backend/tests/test_pwa.py`). The PWA's service worker is same-origin (`worker-src 'self'`), scoped to `PWA_BASE_PATH/`, intercepts only `GET`s inside that scope and caches only files whose SHA-256 its build names; a cached `index.html` keeps the CSP it was served with ([[Web]], "Offline and updates"). |

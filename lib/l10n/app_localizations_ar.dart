@@ -470,10 +470,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get firstPlayerUnder => 'أول لاعب تحت الحد';
 
   @override
-  String get lastPlayerOver => 'آخر لاعب فوق الحد';
+  String get lastPlayerOver => 'آخر لاعب متبقٍ (الآخرون فوق الحد)';
 
   @override
-  String get lastPlayerUnder => 'آخر لاعب تحت الحد';
+  String get lastPlayerUnder => 'آخر لاعب متبقٍ (الآخرون تحت الحد)';
 
   @override
   String get threshold => 'الحد';
@@ -1513,4 +1513,23 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get pwaUpdateReload => 'إعادة التحميل';
+
+  @override
+  String get groupDeviceClaimOwner => 'تولّي الملكية';
+
+  @override
+  String groupDeviceClaimOwnerConfirm(String label) {
+    return '«$label» هو مالك المجموعة، لكنه لم يظهر منذ مدة طويلة. هل تتولّى ملكية المجموعة على هذا الجهاز؟';
+  }
+
+  @override
+  String get groupDeviceOwnerClaimed => 'أصبح هذا الجهاز مالك المجموعة.';
+
+  @override
+  String get groupErrorOwnerActive =>
+      'ظهر مالك المجموعة مؤخرًا: لا يمكن تولّي الملكية.';
+
+  @override
+  String get groupCreatedOwnerExplain =>
+      'تم إنشاء المجموعة. هذا الجهاز هو مالكها؛ ويمكن تسليم هذا الدور إلى جهاز آخر من «الأجهزة».';
 }

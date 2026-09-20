@@ -568,6 +568,24 @@ not "fix" it by hardcoding a codepoint.
   (`wip/done/2026-09-19-player-elimination-threshold-is-strictly-over.md`,
   `wip/done/2026-09-19-crown-before-any-round.md`)
 
+- **"Last player standing" now means it, and the three elimination types are seeded with it
+  (2026-09-20).** `lastPlayerOver` / `lastPlayerUnder` tested *every* total against the
+  threshold — the survivor's included — while `gameRulesEndLastOver` promised "every player
+  but one", in all ten languages. A player who is out stops being dealt in, so the
+  survivor's total never moved and the condition could not fire. `GameType.isGameOver` now
+  ends the game once at most one total is still on the near side (`_lastPlayerStanding`,
+  `lib/models/game_type.dart`); a table of fewer than two players never ends this way, so a
+  solo game is not over on its first round. The two choices are relabelled to the situation
+  ("Dernier joueur en jeu (les autres au-dessus)" / "Last player standing (others over)",
+  keys unchanged), and `zapzap`, `rami` and `six_nimmt` — the only types with an elimination
+  rule — are seeded `lastPlayerOver` at their elimination threshold (100, 100, 65). As with
+  Uno / Président and the 65 above, **no migration rewrites an existing row**: only a new
+  database seeds it, and a user type that already carries `lastPlayerOver` gains the
+  behaviour its own description claimed. `test/models_test.dart`,
+  `test/l10n/game_over_labels_test.dart`, `test/drift/last_player_standing_seed_test.dart`,
+  `test/migration_last_player_standing_test.dart`.
+  (`wip/done/2026-09-20-the-last-player-standing-condition-is-mislabelled-misimplemented-and-unset.md`)
+
 - **`firstPlayerOver` means "reaches" (2026-09-19).** The game-over test moved from the
   board into `GameType.isGameOver` and `firstPlayerOver` became `>=`: the box rules its
   thresholds come from say *reaches* — Président is won at 10, Uno at 500, Skyjo stops at

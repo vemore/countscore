@@ -470,10 +470,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get firstPlayerUnder => 'First player under';
 
   @override
-  String get lastPlayerOver => 'Last player over';
+  String get lastPlayerOver => 'Last player standing (others over)';
 
   @override
-  String get lastPlayerUnder => 'Last player under';
+  String get lastPlayerUnder => 'Last player standing (others under)';
 
   @override
   String get threshold => 'Threshold';
@@ -1467,4 +1467,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pwaUpdateReload => 'Reload';
+
+  @override
+  String get groupDeviceClaimOwner => 'Claim ownership';
+
+  @override
+  String groupDeviceClaimOwnerConfirm(String label) {
+    return '“$label” owns the group but has not been seen for a long time. Take ownership over on this device?';
+  }
+
+  @override
+  String get groupDeviceOwnerClaimed => 'This device now owns the group.';
+
+  @override
+  String get groupErrorOwnerActive =>
+      'The group\'s owner has been seen recently: ownership cannot be claimed.';
+
+  @override
+  String get groupCreatedOwnerExplain =>
+      'Group created. This device owns it; the role can be handed over to another one in Devices.';
 }

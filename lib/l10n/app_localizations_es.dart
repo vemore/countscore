@@ -473,10 +473,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get firstPlayerUnder => 'Primer jugador por debajo';
 
   @override
-  String get lastPlayerOver => 'Último jugador por encima';
+  String get lastPlayerOver => 'Último jugador en juego (los demás por encima)';
 
   @override
-  String get lastPlayerUnder => 'Último jugador por debajo';
+  String get lastPlayerUnder =>
+      'Último jugador en juego (los demás por debajo)';
 
   @override
   String get threshold => 'Umbral';
@@ -1469,4 +1470,24 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get pwaUpdateReload => 'Recargar';
+
+  @override
+  String get groupDeviceClaimOwner => 'Asumir la propiedad';
+
+  @override
+  String groupDeviceClaimOwnerConfirm(String label) {
+    return '«$label» es el propietario del grupo, pero hace mucho que no da señales. ¿Asumir la propiedad en este dispositivo?';
+  }
+
+  @override
+  String get groupDeviceOwnerClaimed =>
+      'Este dispositivo es ahora el propietario del grupo.';
+
+  @override
+  String get groupErrorOwnerActive =>
+      'El propietario del grupo ha dado señales hace poco: no se puede asumir la propiedad.';
+
+  @override
+  String get groupCreatedOwnerExplain =>
+      'Grupo creado. Este dispositivo es su propietario; el rol puede cederse a otro en Dispositivos.';
 }

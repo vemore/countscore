@@ -266,8 +266,8 @@
   "underThreshold": "सीमा से नीचे",
   "firstPlayerOver": "पहला खिलाड़ी जो पहुँचे",
   "firstPlayerUnder": "पहला खिलाड़ी नीचे",
-  "lastPlayerOver": "अंतिम खिलाड़ी ऊपर",
-  "lastPlayerUnder": "अंतिम खिलाड़ी नीचे",
+  "lastPlayerOver": "अंतिम बचा खिलाड़ी (बाकी ऊपर)",
+  "lastPlayerUnder": "अंतिम बचा खिलाड़ी (बाकी नीचे)",
   "threshold": "सीमा",
   "conditionType": "शर्त का प्रकार",
   "continuePlay": "खेलते रहें",
@@ -652,5 +652,15 @@
 
   "pwaUpdateReady": "CountScore का नया संस्करण तैयार है",
 
-  "pwaUpdateReload": "फिर से लोड करें"
+  "pwaUpdateReload": "फिर से लोड करें",
+
+  "groupDeviceClaimOwner": "स्वामित्व लें",
+
+  "groupDeviceClaimOwnerConfirm": "“{label}” समूह का स्वामी है, लेकिन बहुत समय से दिखाई नहीं दिया। इस डिवाइस पर समूह का स्वामित्व ले लें?",
+
+  "groupDeviceOwnerClaimed": "यह डिवाइस अब समूह का स्वामी है।",
+
+  "groupErrorOwnerActive": "समूह का स्वामी हाल ही में सक्रिय था: स्वामित्व नहीं लिया जा सकता।",
+
+  "groupCreatedOwnerExplain": "समूह बन गया। यह डिवाइस इसका स्वामी है; यह भूमिका “डिवाइस” में किसी दूसरे को सौंपी जा सकती है।"
 }

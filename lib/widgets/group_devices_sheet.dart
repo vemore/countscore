@@ -88,6 +88,31 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
     );
   }
 
+  /// Takes the group over from an owner device that has gone quiet — a phone that
+  /// uninstalled the app never leaves the group by itself. The server decides: it
+  /// refuses while that device has been seen inside its dormancy window.
+  Future<void> _claimOwnership(GroupDevice device) async {
+    final l10n = AppLocalizations.of(context)!;
+    final group = context.read<GroupProvider>();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.confirmation),
+        content: Text(l10n.groupDeviceClaimOwnerConfirm(device.label)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
+          TextButton(
+            key: const Key('group_device_claim_confirm'),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.groupDeviceClaimOwner),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await _act(group.claimOwnership, done: l10n.groupDeviceOwnerClaimed);
+  }
+
   /// Runs an owner action, then reloads the list — on failure too, since a
   /// refusal usually means the owner changed meanwhile.
   Future<void> _act(Future<void> Function() action, {required String done}) async {
@@ -123,6 +148,16 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
             onPressed: _busy ? null : () => _revoke(device),
           ),
         ],
+      );
+
+  /// Offered to a member on the owner's row once the server reports that device
+  /// dormant: without it, a group whose owner uninstalled the app keeps an owner
+  /// that can never revoke a device or renew the invite code again.
+  Widget _claimAction(GroupDevice device, AppLocalizations l10n) => IconButton(
+        key: Key('group_device_claim_${device.id}'),
+        icon: const Icon(Icons.key_outlined),
+        tooltip: l10n.groupDeviceClaimOwner,
+        onPressed: _busy ? null : () => _claimOwnership(device),
       );
 
   @override
@@ -194,12 +229,15 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
                             ),
                           ].join(' · ')),
                           // Only the owner acts on another device; the server
-                          // refuses anyone else.
+                          // refuses anyone else. The one exception is the claim: a
+                          // member may take the role from an owner gone quiet.
                           trailing: device.id == ownId
                               ? Text(l10n.groupDeviceThisOne, style: theme.textTheme.labelMedium)
                               : isOwner
                                   ? _ownerActions(device, theme, l10n)
-                                  : null,
+                                  : device.isOwner == true && device.dormant == true
+                                      ? _claimAction(device, l10n)
+                                      : null,
                         ),
                     ],
                   );
