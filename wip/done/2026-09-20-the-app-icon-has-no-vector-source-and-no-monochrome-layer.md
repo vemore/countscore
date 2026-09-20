@@ -1,5 +1,8 @@
 # The app icon has no vector source, no monochrome layer, and a white adaptive background
 
+**Status:** dropped (2026-09-20) — merged into [[2026-09-20-the-app-icon-does-not-say-what-the-app-does]]. Three of the four acceptance criteria below are closed verbatim by that entry's work (an SVG source plus a documented regeneration command, nothing clipped under a circular mask, `.llmwiki/Release.md` matching the new procedure). The fourth is **contradicted rather than met**: it asks for a teal launcher tile, but the chosen artwork's `chosen-adaptive-bg.svg` is a single fill `#0E1716` — the ink of the ensemble. The survivor carries that criterion reworded to brand ink, so nothing here is lost.
+
+
 - **Noted:** 2026-09-20 — while auditing the app icon before proposing replacements
 - **Theme:** visual-refresh
 - **Area:** android

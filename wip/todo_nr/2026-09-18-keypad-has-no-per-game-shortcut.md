@@ -32,7 +32,12 @@ No shortcut for Uno (the 0 for the player who went out is a plain 0), Président
 Tarot or Bridge. Skyjo's −2 is a card value, not a round score. Yahtzee and the other types
 without rules in `assets/rules/` are decided once their rules land (`feat/game-rules-seeds`).
 
-Waits for [[2026-09-18-score-entry-takes-a-dialog-per-cell]]: the keypad has to exist first.
+**Unblocked (2026-09-20, refinement):** [[2026-09-18-score-entry-takes-a-dialog-per-cell]] is
+closed and the keypad shipped as `lib/widgets/score_keypad_sheet.dart`, still ZapZap-only —
+the `isZapZap` bool threaded through `:60`/`:75`/`:93`/`:117`/`:312`, `_zapZap()` at
+`:201-202` and the key itself at `:532-543` (`'keypad_zapzap'`, `l10n.keypadZeroZapZap`).
+Nothing waits on anything now; what is left is the per-game-type column and the five keys
+decided below.
 
 **Acceptance:**
 - Widget test: in a Skyjo game, typing 12 then "×2" enters 24; in a Belote game, "162" enters 162.

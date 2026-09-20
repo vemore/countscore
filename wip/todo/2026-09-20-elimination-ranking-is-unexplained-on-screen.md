@@ -41,7 +41,9 @@ ordre d'élimination inversé » — une fonction optionnelle, qui demande un se
 - Sur une partie terminée classée à l'élimination, l'écran des résultats dit pourquoi l'ordre
   n'est pas celui des totaux.
 - Une partie classée au score n'affiche aucune de ces mentions (pas de bruit sur les 19 autres types).
-- Un test couvre les deux états.
+- Un test couvre les deux états, et les badges `#n` du plateau sont inchangés.
 
-**Open question:** faut-il aussi montrer le tour d'élimination sur les badges du plateau, ou
-garder le plateau au score tant que la partie n'est pas finie et ne rien y changer ?
+**Décidé (2026-09-20, refinement) :** l'écran des résultats seulement. Le plateau garde ses
+badges au score et ne change pas : une partie ouverte s'y classe au total, ce qui est déjà
+cohérent, et la règle d'élimination ne s'applique qu'à une partie **terminée**. Expliquer la
+règle là où elle ne s'applique pas encore ajouterait du bruit sur les vingt types.

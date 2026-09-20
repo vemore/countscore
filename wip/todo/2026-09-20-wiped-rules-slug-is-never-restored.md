@@ -57,7 +57,7 @@ Aucune décision d'exécution ne le consulte. Et la ligne `:801` a une conséque
 drapeau ne distingue pas « semé par l'app » de « écrit par l'utilisateur » dès qu'un groupe
 existe — c'est `builtin_key` qui le fait, et lui seul.
 
-**Fix proposé**, en deux temps qui peuvent tenir dans la même pull request :
+**Fix:** en deux temps qui peuvent tenir dans la même pull request :
 
 1. **Un pas v18 qui rejoue `applyV16`.** Idempotent par construction (il ne touche que les
    `rules_slug IS NULL`), il ne ressuscite rien (aucun INSERT), et aucun chemin utilisateur ne
@@ -68,7 +68,7 @@ existe — c'est `builtin_key` qui le fait, et lui seul.
    laisser une colonne que le code écrit, envoie, jette à la réception, et dont une entrée a
    déduit à tort qu'une perte était irréparable.
 
-## Acceptance
+**Acceptance:**
 
 - Après la migration, une base où `rules_slug` a été vidé sur une ligne qui garde son
   `builtin_key` réaffiche le jeu de règles livré, sur mobile et sur le web.
@@ -78,9 +78,16 @@ existe — c'est `builtin_key` qui le fait, et lui seul.
 - Le sort d'`isDefault` est écrit quelque part : soit son sens dans [[SchemaV10]], soit sa
   suppression.
 
-## Open question
+**Décidé (2026-09-20, refinement) :** la question de la charge utile se tranche en
+l'implémentant, et **ne fait pas partie de cette entrée**. Réparer les données perdues est ce
+qui bloque la livraison ; retirer `rules_slug` de la synchronisation est un changement de
+contrat entre appareils, qui mérite sa propre entrée et ses propres critères. Si
+l'implémentation montre que le pas v18 ne tient pas sans y toucher, elle ouvre l'entrée
+correspondante plutôt que d'élargir celle-ci.
 
-`rules_slug` est dérivable de `builtin_key` — c'est exactement ce que fait `applyV16`. Faut-il
-alors continuer à le synchroniser ? C'est son transport qui a propagé le NULL au groupe. Le
-retirer de la charge utile rendrait la corruption non contagieuse, au prix d'un slug recalculé
-à la réception.
+Ce qu'il faudra y peser, pour ne pas le redécouvrir : `rules_slug` est dérivable de
+`builtin_key` — c'est exactement ce que fait `applyV16` — donc le retirer de la charge utile
+rendrait la corruption non contagieuse, au prix d'un slug recalculé à la réception. Mais un
+type **renommé** par l'utilisateur perd son `builtin_key` (`isBuiltinRename`,
+`lib/utils/game_type_name.dart:149`), et le slug devient alors la seule chose qui porte ses
+règles d'un appareil à l'autre.

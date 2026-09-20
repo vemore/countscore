@@ -106,6 +106,35 @@ comes "from the icon's podium", and the stale guides of
 - Nothing is clipped under a circular mask, and the themed monochrome icon is legible.
 - The launcher tile, the PWA icons and the in-app asset all show the same new artwork.
 - `.llmwiki/Release.md`'s icon section matches the new procedure and its `Updated:` moves.
+- The adaptive background is the artwork's ink `#0E1716` and `colors.xml`'s
+  `ic_launcher_background` matches it — no white tile is left anywhere.
+- `pubspec.yaml` passes an `adaptive_icon_monochrome`, and `grep -rn monochrome android/
+  pubspec.yaml` stops returning nothing.
+
+## Absorbed (2026-09-20, refinement)
+
+This entry is now the only one on the app icon. It carries
+**`2026-09-20-the-app-icon-has-no-vector-source-and-no-monochrome-layer`**, dropped into
+`done/` the same day, and with it the three faults that entry found in how the icon is
+*authored and wired*, independently of what it depicts:
+
+- **No vector source.** `store_listing/assets/icon_512.png` was the only original — one
+  commit, `75dc8f6 "Update app icon"`, no provenance or attribution anywhere.
+  `svg/chosen*.svg` is the answer, and `tools/gen5.py` the command.
+- **The adaptive foreground is the full-bleed icon.** `pubspec.yaml:137-139` passes the same
+  512 PNG as `adaptive_icon_foreground`, which `mipmap-anydpi-v26/ic_launcher.xml` insets by
+  16 %, so the circular mask clips artwork that was never laid out inside the 66 % safe
+  circle. The chosen foreground is measured to r=367.8 of 368 instead.
+- **No `monochrome` layer, and a white background.** `grep -rn monochrome android/
+  pubspec.yaml` returns nothing, and `android/app/src/main/res/values/colors.xml` still sets
+  `ic_launcher_background` to `#FFFFFF`. `chosen-mono.svg` is authored rather than derived,
+  because flattening the file to one colour gives a blob.
+
+**One criterion changed in the absorption.** The dropped entry asked for a launcher tile in
+*brand teal*. That is not what the chosen artwork wants: `chosen-adaptive-bg.svg` is a single
+fill `#0E1716`, and teal `#5ED8CF` survives only as one of the three pawns. The criterion is
+carried above as **brand ink**, not teal — a distinction worth keeping, because a teal tile
+behind this foreground would drop the ensemble's own ground out of it.
 
 **Known weakness of the choice:** seven objects is well past the one idea the shelf rewards,
 and 48 px is this artwork's floor rather than its margin — a 16 px favicon will not hold it.
