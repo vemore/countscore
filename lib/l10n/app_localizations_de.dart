@@ -519,6 +519,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get gameEndResults => 'Ergebnis';
 
   @override
+  String get rankingEliminationNote =>
+      'Platzierung nach Ausscheidungsreihenfolge: wer später ausscheidet, steht weiter vorn, unabhängig von den Punkten.';
+
+  @override
   String get endGame => 'Spiel beenden';
 
   @override

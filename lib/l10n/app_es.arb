@@ -278,6 +278,7 @@
   "gameEndHighestWins": "gana la puntuación más alta",
   "gameEndAnalysis": "Análisis",
   "gameEndResults": "Resultados",
+  "rankingEliminationNote": "Clasificación por orden de eliminación: quien cae más tarde queda por delante, sea cual sea el total.",
   "endGame": "Terminar juego",
   "reopenGame": "Reabrir juego",
   "gameFinished": "Finalizado",

@@ -1,5 +1,14 @@
 # The statistics rank a finished elimination game by the total, while its standings rank it by the elimination order
 
+**Status:** done (2026-09-20) — closed by `feat/elimination-ranking-model`, with the entry
+above: one model, one pull request. `getFinishedGameResults` now carries what the rule needs
+— the game's `RankingRule`, derived by `GameStanding.ranksByEliminationOrder` over the live
+`game_types` (never a condition spelled out in SQL), and, for those games only, each seat's
+elimination round from one walk of their scores in round order. `FinishedGameResult` and
+`GameStanding` compare through the same `outranksUnder`, so the player card, the leaderboard,
+the win count, the average place and the rank chart show the standings screen's places. A
+race to a total and a game with no type keep exactly the places they had.
+
 - **Noted:** 2026-09-20 — while implementing the ranking rule (`feat/ranking-rule`)
 - **Theme:** game-types
 - **Area:** app

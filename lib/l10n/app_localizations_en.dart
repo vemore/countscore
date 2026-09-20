@@ -518,6 +518,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gameEndResults => 'Results';
 
   @override
+  String get rankingEliminationNote =>
+      'Ranked by elimination order: whoever goes out later ranks ahead, whatever the totals.';
+
+  @override
   String get endGame => 'End Game';
 
   @override

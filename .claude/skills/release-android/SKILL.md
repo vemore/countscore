@@ -331,11 +331,23 @@ relay the browser agent's questions yourself: give the user the folder, wait for
 
 ## Icons — only if the artwork changed
 
+The source is vector, in `design/icon/`, and `scripts/generate_icons.py` writes **every**
+raster: the store icon, the two Android layers and the five web files. Never hand-edit a PNG.
+
 ```bash
-# replace store_listing/assets/icon_512.png (512×512 PNG) first
-dart run flutter_launcher_icons
+uv run --script scripts/generate_icons.py --svg   # only if the artwork itself changed
+uv run --script scripts/generate_icons.py         # every raster, from design/icon/*.svg
+dart run flutter_launcher_icons                   # densities, colors.xml, ic_launcher.xml
 ```
-Adaptive icon on white `#FFFFFF`; every density is generated.
+
+`flutter_launcher_icons` emits **no web icons**: `web/icons/*.png` and `web/favicon.png` come
+only from the first command, which is why they were the Flutter logo until 2026-09-20. Run it
+even when only Android seems to be affected.
+
+Adaptive icon on the artwork's ink `#0E1716`, with a monochrome layer and an 8 % foreground
+inset; the favicon carries the "+1" alone, not the whole ensemble. The generator prints the
+measured subject radius against each mask's limit — read that print, it is the check.
+Requires `rsvg-convert` and Pillow. Full rationale: `.llmwiki/Release.md` §Icons.
 
 ## Checklist
 

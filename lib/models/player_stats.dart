@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../utils/player_colors.dart';
+import 'game_standing.dart';
 
 /// The player statistics: the leaderboard and the player card.
 ///
 /// Everything here is computed in memory from [FinishedGameResult]s, which
-/// `PlayerStatsRepository.getFinishedGameResults` reads in one query. Only
+/// `PlayerStatsRepository.getFinishedGameResults` reads. Only
 /// finished games (`finishedAt` set) with at least one score count, and a
 /// player is known by the uuid of their global `players` row — the key stats
 /// have had since v9 (.llmwiki/SchemaV10.md).
@@ -28,6 +29,7 @@ class GameParticipant {
     required this.total,
     this.colorValue,
     this.isActive = true,
+    this.eliminatedAtRound,
   });
 
   /// The global player's uuid (`players.uuid`).
@@ -46,6 +48,13 @@ class GameParticipant {
   /// False for a player removed from this device's catalogue: their games
   /// still place everyone else, but they are not listed themselves.
   final bool isActive;
+
+  /// The round this player went out at — the first round whose running total
+  /// crossed the type's elimination threshold — or null where they never did.
+  /// Always null outside [RankingRule.eliminationOrder], which is the only
+  /// rule that reads it. The same walk `GameStanding.forGame` does, run by
+  /// `PlayerStatsRepository.getFinishedGameResults`.
+  final int? eliminatedAtRound;
 }
 
 /// One finished game and its players' totals, in seat order.
@@ -56,6 +65,7 @@ class FinishedGameResult {
     required this.gameTypeKey,
     required this.isLowestScoreWins,
     required List<GameParticipant> participants,
+    this.rule = RankingRule.score,
   }) : participants = [...participants]
           ..sort((a, b) => a.orderIndex.compareTo(b.orderIndex));
 
@@ -68,24 +78,39 @@ class FinishedGameResult {
   final bool isLowestScoreWins;
   final List<GameParticipant> participants;
 
+  /// The rule this finished game's places follow — the same one its standings
+  /// screen follows, derived by `GameStanding.ranksByEliminationOrder` from
+  /// the game's type and handed over by
+  /// `PlayerStatsRepository.getFinishedGameResults`. Every game that is not of
+  /// an elimination type keeps [RankingRule.score], the default.
+  final RankingRule rule;
+
   late final Map<String, int> _ranks = _computeRanks();
 
   Map<String, int> _computeRanks() {
     final result = <String, int>{};
     for (final p in participants) {
-      final better = participants.where((o) => isLowestScoreWins
-          ? o.total < p.total
-          : o.total > p.total).length;
+      final better = participants
+          .where((o) => outranksUnder(
+                rule: rule,
+                eliminatedAtRoundA: o.eliminatedAtRound,
+                eliminatedAtRoundB: p.eliminatedAtRound,
+                totalA: o.total,
+                totalB: p.total,
+                isLowestScoreWins: isLowestScoreWins,
+              ))
+          .length;
       result[p.playerUuid] = better + 1;
     }
     return result;
   }
 
-  /// [playerUuid]'s final place: 1 for the best total, a tie shares the place
-  /// (1, 2, 2, 4) — the rule of `GameStanding.ranks`. Null if absent.
+  /// [playerUuid]'s final place under [rule]: 1 for the best, a tie shares the
+  /// place (1, 2, 2, 4) — the rule of `GameStanding.ranks`, down to the
+  /// comparison ([outranksUnder]). Null if absent.
   int? rankOf(String playerUuid) => _ranks[playerUuid];
 
-  /// Whether [playerUuid] won — every player tied on the best total did.
+  /// Whether [playerUuid] won — every player tied on the first place did.
   bool wonBy(String playerUuid) => rankOf(playerUuid) == 1;
 
   GameParticipant? participant(String playerUuid) {

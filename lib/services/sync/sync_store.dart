@@ -130,6 +130,13 @@ class SyncStore {
         'DELETE FROM players WHERE deleted_at IS NOT NULL AND id NOT IN '
         '(SELECT player_id FROM game_players)',
       );
+      // A game type is only ever tombstoned for the group's sake (a local delete
+      // is a hard one). With the group gone the stamp has nobody to inform, and
+      // it would otherwise keep its `builtin_key` reserved against the seed.
+      await _db.customStatement(
+        'DELETE FROM game_types WHERE deleted_at IS NOT NULL AND id NOT IN '
+        '(SELECT gameTypeId FROM games WHERE gameTypeId IS NOT NULL)',
+      );
       for (final table in ['outbox', 'group_links', 'entity_versions', 'sync_inbox', 'sync_state']) {
         await _db.customStatement('DELETE FROM $table');
       }
@@ -431,9 +438,15 @@ class SyncStore {
         );
 
       case 'game_type':
-        if (deleted) return null;
         final remote = await _remoteOf(groupId, type, uuid);
         if (remote == null) return null;
+        // Unlike a player, a game type is a group object: it names the game the
+        // group plays, and it can only be deleted once no live game uses it.
+        // The delete therefore travels, or the other devices keep a type the
+        // group has dropped — and hand it back on the next pull.
+        if (deleted) {
+          return (op: op, remoteUuid: remote, payload: const <String, dynamic>{}, error: null);
+        }
         return (
           op: op,
           remoteUuid: remote,
@@ -728,9 +741,24 @@ class SyncStore {
   }
 
   Future<String?> _applyGameType(String groupId, PulledDelta d) async {
-    if (d.op == 'delete') return null;
     final p = d.payload;
     final now = _nowMs();
+    if (d.op == 'delete') {
+      final linked = await _localOf(groupId, 'game_type', d.entityUuid);
+      if (linked == null) return null;
+      final id = await _idOf('game_types', linked);
+      if (id == null) return null;
+      // The local rule holds for a pulled delete too: a type a live game still
+      // points at stays, or that game would lose its icon, its colour and its
+      // rules. Those games may be local ones the group never saw.
+      final inUse = await _db.customSelect(
+        'SELECT 1 FROM games WHERE gameTypeId = ? AND deleted_at IS NULL',
+        variables: [Variable(id)],
+      ).getSingleOrNull();
+      if (inUse != null) return null;
+      await _tombstoneWhere('game_types', 'id = ?', [id], now);
+      return null;
+    }
     final values = <String, Object?>{
       if (p.containsKey('name')) 'name': p['name'],
       if (p.containsKey('builtin_key')) 'builtin_key': p['builtin_key'],
@@ -753,6 +781,9 @@ class SyncStore {
           variables: [Variable(linked)]).getSingleOrNull();
       if (exists != null) {
         final id = exists.data['id'] as int;
+        // A delete wins here as it does on the server: a tombstoned type is not
+        // brought back by an upsert that was in flight when it went.
+        if (await _isTombstoned('game_types', id)) return null;
         // One live row per built-in key (schema v15). A row linked by name
         // before its remote gained a key would otherwise take a key another
         // local row already holds, and the unique index would fail the pull.

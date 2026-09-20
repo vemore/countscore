@@ -278,6 +278,7 @@
   "gameEndHighestWins": "vence a maior pontuação",
   "gameEndAnalysis": "Análise",
   "gameEndResults": "Resultados",
+  "rankingEliminationNote": "Classificação por ordem de eliminação: quem sai mais tarde fica à frente, independentemente dos totais.",
   "endGame": "Terminar Jogo",
   "reopenGame": "Reabrir jogo",
   "gameFinished": "Terminado",

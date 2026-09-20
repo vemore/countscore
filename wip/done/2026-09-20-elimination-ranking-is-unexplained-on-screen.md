@@ -1,5 +1,12 @@
 # Le classement par élimination affiche des places qui contredisent les totaux, sans rien expliquer
 
+**Status:** done (2026-09-20) — closed by feat/elimination-ranking-explained. L'écran des
+résultats affiche, sous la ligne de résumé et seulement quand la partie terminée se classe
+à l'élimination (`RankingRule.eliminationOrder`), une ligne `ranking_elimination_note` qui
+dit que le dernier éliminé passe devant quel que soit le total. Une partie classée au score
+— ouverte ou terminée — n'affiche rien, et les badges `#n` du plateau sont inchangés, comme
+décidé au refinement.
+
 - **Noted:** 2026-09-20 — test sur appareil de 1.3.1+7 avant la mise en production, partie réelle p172
 - **Theme:** game-types
 - **Area:** app

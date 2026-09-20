@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/game.dart';
+import '../models/game_standing.dart';
 import '../models/game_type.dart';
 import '../providers/backend_provider.dart';
 import '../providers/game_provider.dart';
@@ -21,7 +22,9 @@ import 'game_board_screen.dart';
 /// standings under the *Ranking* title, a **finished** one shows its result —
 /// the winner's name (`game_end_headline`) and, with a server configured,
 /// *Analysis*. Everything else is common to both: the win rule on one line
-/// (`ranking_summary`), the podium and the ranked rows (`RankedPlayers`),
+/// (`ranking_summary`) — followed, on a game the elimination order ranks, by
+/// the line that says so (`ranking_elimination_note`) — the podium and the
+/// ranked rows (`RankedPlayers`),
 /// *Play again*, and the app bar's share action (`ShareResultButton`), which
 /// sends the standings as text and as an image.
 ///
@@ -152,6 +155,22 @@ class _Standings extends StatelessWidget {
                 style: theme.textTheme.bodyMedium
                     ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
+              // Read alone, a finished elimination game's places look like a
+              // bug: the last one out ranks second whatever the totals say.
+              // Only the finished game gets the line — the rule is derived
+              // from `isFinished`, and an open game ranks by the total, which
+              // needs no explaining
+              // (`wip/done/2026-09-20-elimination-ranking-is-unexplained-on-screen.md`).
+              if (ranking.standing.rule == RankingRule.eliminationOrder) ...[
+                const SizedBox(height: 6),
+                Text(
+                  l10n.rankingEliminationNote,
+                  key: const Key('ranking_elimination_note'),
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                ),
+              ],
               const SizedBox(height: 20),
               RankedPlayers(ranking: ranking),
             ],

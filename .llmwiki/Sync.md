@@ -117,8 +117,10 @@ the user's design. One group per device.
 `flutter_secure_storage` (`sync_credentials.dart`); group id, name and device id go to
 `sync_state`. Leaving revokes the device when the server answers, then `SyncStore.leave`
 turns every shared row back into a local one and empties `outbox`, `group_links`,
-`entity_versions`, `sync_inbox` and `sync_state`. Clearing the server URL while in a group
-asks, then leaves.
+`entity_versions`, `sync_inbox` and `sync_state`. Tombstones with nobody left to inform go
+for good, game types among them: a game-type tombstone no game points at is deleted, or it
+would hold its `builtin_key` reserved against the seed for ever. Clearing the server URL
+while in a group asks, then leaves.
 
 **Removing another device.** Settings → Group → *Devices* (`group_devices_sheet.dart`) lists
 `GET /groups/me/devices`, marks the owner, and — on the owner only — offers a revoke and a
@@ -173,8 +175,13 @@ answers, so a retry is a `duplicate`, never a second apply. Players and game typ
 first: their server uuid is `uuid5(group_id, "<type>:<normalised name>")`, so every device
 computes the same identity for "Alice" and the server's unique name never collides. Batches of
 100, parents first (`game_type` → `player` → `game` → `game_player` → `round` → `score` →
-`game_analysis`). Strings are clipped to the server bounds. Player and game-type deletes are
-not sent: removing a player from this device's catalogue is not a group event.
+`game_analysis`). Strings are clipped to the server bounds. A player's delete is
+not sent: removing a player from this device's catalogue is not a group event. **A game
+type's delete is** (since 2026-09-20). Game types carry no `group_id` — they reach a group
+through `group_links` — so `DriftGameTypeRepository.delete` tombstones a type that has a
+link and hard-deletes one the group never saw (`_isLinked`,
+`lib/repositories/drift/drift_repositories.dart`); the capture trigger, which tests the same
+link, turns the stamp into a `delete` delta with an empty payload.
 
 | Server answer | Client does |
 |---|---|
@@ -188,7 +195,10 @@ not sent: removing a player from this device's catalogue is not a group event.
 **Pull** (`SyncStore.applyPulled`, one transaction per page). Own deltas skipped. Upserts
 are applied only when `(client_lamport, origin_device_id)` beats `entity_versions`; a delete
 always applies, tombstones the row and its children, and drops pending outbox rows for it.
-A pulled player or game type links to the local one of the same name or is created. A delta
+A pulled player or game type links to the local one of the same name or is created. A
+pulled `game_type` delete tombstones the linked local row — unless a live game still plays
+it, which may be a local game the group never saw, and then the row stays (`_applyGameType`).
+An upsert for a type this device has already tombstoned is ignored, as on the server. A delta
 whose parent is not local yet waits in `sync_inbox`, replayed after every page. The local
 lamport is raised past every lamport seen.
 
@@ -307,6 +317,13 @@ closed with 1013 before `accept()`. The counter is process memory too (`_open_st
   ("Round 5 was entered on another device — here are its scores"). The consequence is that
   the client outbox must handle three per-delta statuses: `applied`, `merged_lww`,
   `rejected`.
+- **A game type's delete travels, a player's does not (2026-09-20).** Until then
+  `game_types` was the one table whose delete had no shared branch at all: the row was
+  removed outright even inside a group, so nothing ever told the other devices, and the next
+  pull could hand the type back. The two are not symmetric. A player is a name in *this*
+  device's catalogue and its shared memberships tombstone on their own; a game type names
+  what the group plays, and it can only be deleted once no live game uses it — the same
+  guard the other devices apply before following the delete.
 - **A delete wins over a concurrent edit (2026-09-13).** Chosen with the user for the
   client design: deleting a shared game removes it for the whole group. Row-level LWW alone
   would let a late upsert with a higher lamport resurrect a game somebody deleted, which

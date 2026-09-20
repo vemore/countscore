@@ -1,5 +1,14 @@
 # Deleting a game type hard-deletes the row, so the deletion cannot be expressed as a sync delta
 
+**Status:** done (2026-09-20) — closed by fix/game-type-tombstone.
+`DriftGameTypeRepository.delete` now tombstones a type the group knows (`_isLinked`, on
+`group_links`, since a game type never carries a `group_id`) and hard-deletes one it does not;
+the capture trigger turns the stamp into a `delete` delta, `_build` sends it and
+`_applyGameType` applies it on the other device, sparing a type a live game still plays.
+`leave` drops a game-type tombstone no game points at. The two leftovers the entry names are
+filed: `2026-09-20-tombstoned-games-keep-a-gametypeid-cleanup-that-may-be-moot.md` and
+`2026-09-20-a-re-created-game-type-can-never-sync-under-the-same-name.md`.
+
 - **Noted:** 2026-09-20 — while fixing the game-type editor (`fix/game-type-editor`); named in that task as known and to be filed rather than fixed
 - **Theme:** game-types
 - **Area:** app

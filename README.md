@@ -40,8 +40,11 @@ at your own server in Settings → Server if you want the connected features.
   The games played to a last survivor (ZapZap, Rami, 6 qui prend) end instead once every
   player but one is past the elimination threshold — last player standing, and their final
   standings follow the order the players went out in: the survivor first, then whoever lasted
-  longest, so a player out after one hand is last however low their total. Every other game,
-  and every game still in play, ranks by the total.
+  longest, so a player out after one hand is last however low their total — on the standings
+  and in the statistics alike. A game type you build yourself follows the same rule as soon
+  as it both puts a player out on a threshold and ends on the last player standing, whether
+  the threshold is a ceiling or a floor. Every other game, and every game still in play,
+  ranks by the total.
 - **Who starts?**: the score table's menu draws one of the game's players at random.
 - **Roll dice**: the score table's menu rolls 1 to 6 six-sided dice and shows each die and the total.
 - **Play again**: from the standings or a finished game in the history, one tap starts
@@ -56,6 +59,8 @@ at your own server in Settings → Server if you want the connected features.
   at a time — win rate, wins and games, the best win rate up top — and, a tap on a player
   away, their card on that game: average place, the place over the last 12 games, the
   current win streak, the best and average final totals, the opponent most often beaten.
+  Every place counted here is the place the game's own standings show, elimination order
+  included.
 - **10 languages**, fully translated: English, French, Spanish, German, Portuguese (BR),
   Russian, Chinese (Simplified), Japanese, Hindi and Arabic — Arabic including RTL layout.
 - **Offline-first**: everything works with no network. Data lives on the device.
