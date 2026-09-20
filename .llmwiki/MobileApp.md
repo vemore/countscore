@@ -59,6 +59,27 @@ confirmation alone counts every game, open ones too, from `getPlayerGameCounts`)
 `about_screen` · `standings_screen` (where the game stands — its result once it is finished, below) · `game_rules_screen` ·
 `group_settings_screen`.
 
+**The game-type editor.** `game_types_screen`'s create/edit form is `_GameTypeDialog`, a
+`StatefulWidget` of its own (it owns three `TextEditingController`s and the per-field
+errors). What it saves is `existingGameType.copyWith(...)`, never a fresh `GameType`:
+`DriftGameTypeRepository.update` writes every column of `toMap()`, so a column the form does
+not show — `rules`, `rulesSlug`, `isDefault` — would otherwise be written NULL by an edit of
+the colour ([[SchemaV10]]). Clearing a condition back to *None* goes through
+`clearPlayerDeadCondition` / `clearGameOverCondition`, since `x ?? this.x` cannot express a
+null. Validation is on the fields, never in a snackbar: `ScaffoldMessenger.of` reaches the
+app's messenger, which draws *behind* the modal barrier. A threshold is required as soon as
+a condition type is chosen, digits only (`keyboardType` is a keyboard hint, not a
+constraint), at most `kMaxGameTypeThreshold` (1000000); the name is trimmed and capped at 64,
+the server's `max_length` (`backend/app/models/game.py`). Two guards sit on top: flipping
+`isLowestScoreWins` on a type with at least one **finished** game asks first, naming the
+count, because `GameStanding.ranks` is recomputed from the scores every time and would
+reverse every past standing; and a game-over condition pulling against the chosen winner is
+flagged under the switch without blocking the save. A deletion asks
+`GameTypeRepository.countGames` **before** offering itself, so the refusal is a localized
+ICU plural rather than the repository's English exception. After a save that changed a
+condition on a type that has rules, the screen *offers* the rules editor — nothing is
+rewritten.
+
 **Player statistics.** `player_stats_screen` is a leaderboard: a row of game-type chips
 (`Key('stats_chip_all')`, then `stats_chip_<key>` for each type with a finished game, most
 played first), a teal hero for the best win rate with the leader's avatar in a
@@ -272,6 +293,12 @@ Cross-cutting helpers, since 2026-09-16: `insets.dart`, `game_type_name.dart` �
 from a built-in game type's `builtin_key` to its localized name, which every screen showing a
 game type's name goes through ([[I18n]]) — `play_again.dart`, `app_theme.dart`,
 `player_colors.dart`, `recent_game_types.dart` (the New game screen's tile order),
+`game_type_appearance.dart` — the two closed sets the game-type editor offers,
+`kGameTypeIcons` (34 glyphs, every seeded one among them) and `kGameTypePalette` (18
+swatches, each at least `kGameTypeColorMinContrast` = 3.0 against both themes' surfaces and
+their tinted cards, checked in `test/utils/game_type_appearance_test.dart`); the seeded
+`cardColorValue`s are deliberately left outside it, and a type already coloured otherwise
+keeps its colour as an extra swatch —
 `game_result_share.dart`, `widget_image.dart` and `undo_snack_bar.dart` — `undoSnackBar`, the one snackbar that
 offers an action back: `persist: false` and `kUndoSnackBarDuration` (6 s), so the Undo
 goes away on its own instead of staying up until dismissed, Flutter's default for a
@@ -566,6 +593,19 @@ not "fix" it by hardcoding a codepoint.
 
 ## Decisions & History
 
+- **The game-type editor saves with `copyWith`, and validates on the fields (2026-09-20,
+  `fix/game-type-editor`).** It built a fresh `GameType` from the form, so every save wrote
+  `rules`, `rulesSlug` and `isDefault` as NULL / 0 — a colour change silently destroyed a
+  shipped ruleset, the text a user had written, and the flag every future back-fill selects
+  on ([[SchemaV10]]). Five findings of one review closed together because they are one
+  dialog: the data loss, three leaked controllers and an unvalidated form, a condition
+  saved without a threshold (which every reader then treats as *no condition*), an English
+  `Exception:` shown under "error during export" when a used type is deleted, and a win
+  direction flippable under finished games. The user chose a **confirmation** for the
+  direction rather than making it read-only, a **curated palette** rather than blending a
+  freely picked colour towards contrast, and an **offer** to open the rules editor rather
+  than generating or rewriting rules. `wip/done/2026-09-20-editing-a-game-type-erases-its-rules.md`
+  and the four entries beside it.
 - **Home is a card grid on a wide screen, not master-detail (2026-09-19,
   `feat/home-card-grid`).** At 1600 px a game card was a 1 568 px strip. A master-detail
   home would need a detail pane to show; the cards already carry what the list needs, so

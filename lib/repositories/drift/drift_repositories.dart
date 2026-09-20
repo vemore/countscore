@@ -252,14 +252,26 @@ class DriftGameTypeRepository implements GameTypeRepository {
   }
 
   @override
-  Future<int> delete(int id) async {
-    final countRow = await _db
+  Future<int> countGames(int id) => _countGames(id, finishedOnly: false);
+
+  @override
+  Future<int> countFinishedGames(int id) => _countGames(id, finishedOnly: true);
+
+  Future<int> _countGames(int id, {required bool finishedOnly}) async {
+    final row = await _db
         .customSelect(
-          'SELECT COUNT(*) AS c FROM games WHERE gameTypeId = ? AND deleted_at IS NULL',
+          'SELECT COUNT(*) AS c FROM games '
+          'WHERE gameTypeId = ? AND deleted_at IS NULL'
+          '${finishedOnly ? ' AND finishedAt IS NOT NULL' : ''}',
           variables: [Variable(id)],
         )
         .getSingle();
-    final count = countRow.data['c'] as int;
+    return row.data['c'] as int;
+  }
+
+  @override
+  Future<int> delete(int id) async {
+    final count = await countGames(id);
     if (count > 0) {
       throw Exception('Cannot delete game type: $count games are using it');
     }

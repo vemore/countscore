@@ -1498,6 +1498,79 @@ class AppLocalizationsRu extends AppLocalizations {
   String get pwaUpdateReload => 'Перезагрузить';
 
   @override
+  String get thresholdIsRequired => 'Для этого условия необходим порог';
+
+  @override
+  String thresholdTooLarge(int max) {
+    final intl.NumberFormat maxNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String maxString = maxNumberFormat.format(max);
+
+    return 'Порог не может быть больше $maxString';
+  }
+
+  @override
+  String get deletionImpossible => 'Удаление невозможно';
+
+  @override
+  String gameTypeInUse(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Этот тип используется в $count играх: удалить его нельзя.',
+      many: 'Этот тип используется в $count играх: удалить его нельзя.',
+      few: 'Этот тип используется в $count играх: удалить его нельзя.',
+      one: 'Этот тип используется в 1 игре: удалить его нельзя.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String confirmDeleteGameType(String name) {
+    return 'Вы действительно хотите удалить тип игры «$name»?';
+  }
+
+  @override
+  String get winDirectionChangeTitle => 'Обратить направление победы?';
+
+  @override
+  String winDirectionChangeWarning(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Порядок в $count завершённых играх этого типа будет обращён: победители станут последними.',
+      many:
+          'Порядок в $count завершённых играх этого типа будет обращён: победители станут последними.',
+      few:
+          'Порядок в $count завершённых играх этого типа будет обращён: победители станут последними.',
+      one: 'Порядок в 1 завершённой игре этого типа будет обращён: победитель станет последним.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get winDirectionContradiction =>
+      'Условие завершения игры поощряет направление, обратное выбранному победителю. Домашнее правило может этого и требовать.';
+
+  @override
+  String get rulesOutOfDateTitle => 'Обновить правила?';
+
+  @override
+  String get rulesOutOfDateMessage =>
+      'Правила этого типа по-прежнему описывают старое условие.';
+
+  @override
+  String get later => 'Позже';
+
+  @override
+  String get currentIcon => 'Текущий значок';
+
+  @override
+  String get currentColor => 'Текущий цвет';
+
+  @override
   String get groupDeviceClaimOwner => 'Стать владельцем';
 
   @override

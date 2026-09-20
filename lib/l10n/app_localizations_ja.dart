@@ -1433,6 +1433,69 @@ class AppLocalizationsJa extends AppLocalizations {
   String get pwaUpdateReload => '再読み込み';
 
   @override
+  String get thresholdIsRequired => 'この条件にはしきい値が必要です';
+
+  @override
+  String thresholdTooLarge(int max) {
+    final intl.NumberFormat maxNumberFormat = intl.NumberFormat.decimalPattern(
+      localeName,
+    );
+    final String maxString = maxNumberFormat.format(max);
+
+    return 'しきい値は$maxStringを超えられません';
+  }
+
+  @override
+  String get deletionImpossible => '削除できません';
+
+  @override
+  String gameTypeInUse(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'この種類は$count件のゲームで使われているため、削除できません。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String confirmDeleteGameType(String name) {
+    return 'ゲームの種類「$name」を本当に削除しますか？';
+  }
+
+  @override
+  String get winDirectionChangeTitle => '勝敗の向きを逆にしますか？';
+
+  @override
+  String winDirectionChangeWarning(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'この種類の終了した$count件のゲームの順位が反転し、勝者が最下位になります。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get winDirectionContradiction =>
+      'ゲーム終了条件が、選んだ勝敗の向きと逆の結果を有利にします。ハウスルールであればそれで構いません。';
+
+  @override
+  String get rulesOutOfDateTitle => 'ルールを更新しますか？';
+
+  @override
+  String get rulesOutOfDateMessage => 'この種類のルールは、まだ以前の条件を説明しています。';
+
+  @override
+  String get later => '後で';
+
+  @override
+  String get currentIcon => '現在のアイコン';
+
+  @override
+  String get currentColor => '現在の色';
+
+  @override
   String get groupDeviceClaimOwner => 'オーナーを引き継ぐ';
 
   @override

@@ -654,6 +654,32 @@
 
   "pwaUpdateReload": "Neu laden",
 
+  "thresholdIsRequired": "Für diese Bedingung ist ein Schwellwert erforderlich",
+
+  "thresholdTooLarge": "Der Schwellwert darf {max} nicht überschreiten",
+
+  "deletionImpossible": "Löschen nicht möglich",
+
+  "gameTypeInUse": "{count, plural, one{1 Spiel verwendet diesen Typ: Er kann nicht gelöscht werden.} other{{count} Spiele verwenden diesen Typ: Er kann nicht gelöscht werden.}}",
+
+  "confirmDeleteGameType": "Möchten Sie den Spieltyp \"{name}\" wirklich löschen?",
+
+  "winDirectionChangeTitle": "Gewinner umkehren?",
+
+  "winDirectionChangeWarning": "{count, plural, one{Bei 1 beendeten Spiel dieses Typs wird die Rangliste umgekehrt: der Gewinner wird der Letzte.} other{Bei {count} beendeten Spielen dieses Typs wird die Rangliste umgekehrt: die Gewinner werden die Letzten.}}",
+
+  "winDirectionContradiction": "Die Spielendebedingung belohnt das Gegenteil des gewählten Gewinners. Eine Hausregel könnte das genau wollen.",
+
+  "rulesOutOfDateTitle": "Regeln aktualisieren?",
+
+  "rulesOutOfDateMessage": "Die Regeln dieses Typs beschreiben immer noch die alte Bedingung.",
+
+  "later": "Später",
+
+  "currentIcon": "Aktuelles Symbol",
+
+  "currentColor": "Aktuelle Farbe",
+
   "groupDeviceClaimOwner": "Eigentum übernehmen",
 
   "groupDeviceClaimOwnerConfirm": "„{label}“ ist Eigentümer der Gruppe, war aber lange nicht mehr zu sehen. Das Eigentum auf dieses Gerät übernehmen?",

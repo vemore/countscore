@@ -1,5 +1,7 @@
 # The game-type editor leaks its controllers, and its name, icon and colour inputs accept what the rest of the app cannot render
 
+**Status:** done (2026-09-20) — closed by fix/game-type-editor. The dialog body is a `StatefulWidget` with a real `dispose`; the name is trimmed on save and the field capped at 64; the icon grid marks the current icon and holds the two seeded glyphs it lacked (`style_outlined`, `change_history`); the colour wheel is gone, replaced by `kGameTypePalette` (`lib/utils/game_type_appearance.dart`) — 18 swatches whose contrast is tested against both themes, with the type's own colour shown as an extra swatch when it is outside the set, so no existing type is recoloured; and the "name required" error is on the field, not in a snackbar drawn behind the barrier.
+
 - **Noted:** 2026-09-20 — reviewing the game-type editor at the user's request
 - **Theme:** game-types
 - **Area:** app

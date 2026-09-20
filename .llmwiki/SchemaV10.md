@@ -89,7 +89,10 @@ is what makes the chosen name stick.
 2. **back-fills every seeded row**, matched by the literal name it was seeded with *and* by
    `isDefault = 1` — the precedent is the v4→v5 step, `database_service.dart`. `isDefault` is
    what separates a row the app wrote from one the user made, so a user's own "Yahtzee" is
-   never claimed and renamed under them. At most one row per key: the guard is on the key,
+   never claimed and renamed under them. It is therefore **not cosmetic**: a row that loses
+   it is skipped by every back-fill of this shape for good. Until 2026-09-20 the edit dialog
+   cleared it — and `rules` and `rules_slug` with it — on every save
+   (`wip/done/2026-09-20-editing-a-game-type-erases-its-rules.md`, [[MobileApp]]). At most one row per key: the guard is on the key,
    not on the row, which is what makes a replay over a duplicated name safe;
 3. **inserts the twelve types the pre-v14 seed never held**, when the key is absent *and* no
    live row already uses that name.
@@ -210,6 +213,13 @@ repairs the shape before the rest of the chain runs.
 
 ## Decisions & History
 
+- **A row is edited with `copyWith`, never rebuilt (2026-09-20, `fix/game-type-editor`).**
+  `DriftGameTypeRepository.update` writes every column of `toMap()`, which is what lets a
+  new column need no repository code — and what turned the edit dialog's fresh
+  `GameType(...)` into silent data loss: `rules`, `rules_slug` and `isDefault` were written
+  NULL / 0 by any save, including one that only changed the colour. Rebuilding a row from a
+  form is now the shape to avoid anywhere a screen writes a table; the repository test pins
+  `toMap()`'s column set so the next column added cannot slip through ([[Testing]]).
 - **v10 adds tables, it does not add a column per synced row (2026-09-13).** The sync
   client needs, per entity, the last `(lamport, device)` and, for players and game types,
   a server uuid that can differ from the local one. Columns on six tables would have meant

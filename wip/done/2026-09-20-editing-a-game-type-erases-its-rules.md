@@ -1,5 +1,7 @@
 # Editing a game type erases its rules — the shipped ruleset and anything the user wrote
 
+**Status:** done (2026-09-20) — closed by fix/game-type-editor. The edit dialog now saves `existingGameType.copyWith(...)` instead of a fresh `GameType`, so `rules`, `rules_slug` and `isDefault` survive every save; `copyWith` gained `clearPlayerDeadCondition` / `clearGameOverCondition` so choosing *Aucune* can still write a real NULL. The open question is answered the way the user chose: after a save that actually changed a condition on a type that has rules, the screen **offers** the rules editor (*Plus tard* / *Modifier*) — nothing is generated or rewritten. A repository test pins `GameType.toMap()`'s column set so the next column added cannot be dropped by the dialog in silence.
+
 - **Noted:** 2026-09-20 — reported by the user, reproduced on the PWA built from `main`
 - **Theme:** game-types
 - **Area:** app
