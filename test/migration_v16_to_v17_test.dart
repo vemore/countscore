@@ -122,7 +122,7 @@ void main() {
     final db = await DatabaseService.instance.openForTesting(path);
     addTearDown(db.close);
 
-    expect(await db.getVersion(), 17);
+    expect(await db.getVersion(), DatabaseService.schemaVersion);
     final liveKeyed = (await db.rawQuery(liveKeyedSql)).single['c'] as int;
     expectDeduped(byId(await db.query('game_types')), liveKeyed);
     final copy = (await db
@@ -145,7 +145,7 @@ void main() {
         (await db.customSelect(liveKeyedSql).getSingle()).data['c'] as int;
     expectDeduped(byId(rows.map((r) => r.data).toList()), liveKeyed);
     final version = await db.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 17);
+    expect(version.data.values.single, DatabaseService.schemaVersion);
   });
 
   test('applyV17 leaves a shared copy alone and replays as a no-op', () async {
