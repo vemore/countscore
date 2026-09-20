@@ -324,6 +324,72 @@ def test_low_version_code_refused_before_upload(repo: Path) -> None:
     assert service.methods() == ["edits.insert", "edits.tracks.list", "edits.delete"]
 
 
+def test_promote_moves_a_held_build_without_uploading(repo: Path) -> None:
+    # versionCode 4 is on internal; production holds 2. Promoting it must not re-upload:
+    # Play refuses a version code it has already seen.
+    service = FakeService(
+        {
+            "edits.tracks.list": {
+                "tracks": [
+                    {"track": "internal", "releases": [{"versionCodes": ["4"], "status": "completed"}]},
+                    {"track": "production", "releases": [{"versionCodes": ["2"], "status": "completed"}]},
+                ]
+            }
+        }
+    )
+    out = publish(repo, service, track="production", promote=True, rollout=0.2, commit=True)
+    assert "edits.bundles.upload" not in service.methods()
+    assert "promoting versionCode 4 — no upload" in out
+    update = dict(service.calls)["edits.tracks.update"]
+    assert update["track"] == "production"
+    assert update["body"]["releases"] == [
+        {
+            "name": "1.1.0 (4)",
+            "versionCodes": ["4"],
+            "status": "inProgress",
+            "userFraction": 0.2,
+            "releaseNotes": [
+                {"language": "en-US", "text": "Notes en-US"},
+                {"language": "fr-FR", "text": "Notes fr-FR"},
+            ],
+        }
+    ]
+
+
+def test_promote_refused_when_the_build_is_on_no_track(repo: Path) -> None:
+    # The default fake holds 3 and 2; 4 has never been published.
+    service = FakeService()
+    with pytest.raises(pp.PublishError, match="is on no track yet"):
+        publish(repo, service, track="production", promote=True, commit=True)
+    assert "edits.bundles.upload" not in service.methods()
+
+
+def test_promote_refused_when_already_on_the_target_track(repo: Path) -> None:
+    service = FakeService(
+        {
+            "edits.tracks.list": {
+                "tracks": [
+                    {"track": "production", "releases": [{"versionCodes": ["4"], "status": "completed"}]},
+                ]
+            }
+        }
+    )
+    with pytest.raises(pp.PublishError, match="already on track 'production': nothing to promote"):
+        publish(repo, service, track="production", promote=True, commit=True)
+
+
+def test_a_low_version_code_points_at_promote(repo: Path) -> None:
+    service = FakeService({"edits.tracks.list": {"tracks": [{"track": "alpha", "releases": [{"versionCodes": ["4"]}]}]}})
+    with pytest.raises(pp.PublishError, match="--promote"):
+        publish(repo, service, track="production", commit=True)
+
+
+def test_promote_takes_no_aab(repo: Path, capsys: Any) -> None:
+    # main turns a PublishError into exit 1 and a line on stderr, it does not raise.
+    assert pp.main(["publish", "--track", "production", "--promote", "--aab", "x.aab"]) == 1
+    assert "--aab is unused" in capsys.readouterr().err
+
+
 def test_bundle_version_code_mismatch_refused(repo: Path) -> None:
     service = FakeService({"edits.bundles.upload": {"versionCode": 5}})
     with pytest.raises(pp.PublishError, match="rebuild the bundle"):

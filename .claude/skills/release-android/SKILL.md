@@ -181,9 +181,11 @@ P=.claude/skills/release-android/scripts/play_publish.py
 uv run --script $P status                                # read-only: releases per track, listings
 uv run --script $P publish --track internal              # validate only — nothing is published
 uv run --script $P publish --track internal --commit     # ONLY on the user's explicit go
+uv run --script $P publish --track production --promote --rollout 0.2 --commit   # internal -> production
 #   --track closed (API track "alpha") · --track production [--rollout 0.2]
 #   --draft · --listing (title, descriptions) · --graphics (feature graphic, phone screenshots)
 #   --aab <path>, default build/app/outputs/bundle/release/app-release.aab
+#   --promote: move a build Play already holds to this track — no build, no upload
 uv run --script $P listing [--graphics]                  # the store listing alone, validate only
 uv run --script $P listing [--graphics] --commit         # ONLY on the user's explicit go — §8a
 ```
@@ -200,6 +202,14 @@ uv run --script $P listing [--graphics] --commit         # ONLY on the user's ex
    decision, in the Console). If Google answers that `changesNotSentForReview` must be set,
    the script prints it and stops: nothing was published, and the changes are sent for review
    from the Console.
+
+4. **`--promote`** moves a build Play **already holds** to another track — the internal →
+   production step. Play refuses a version code it has seen before, so a promotion references
+   the build instead of re-uploading it: no `flutter build`, no bundle, and `verify_aab.sh` is
+   not re-run (it passed when that build was published). It refuses a code that is on no track
+   yet, and one that is already on the target track. Without it, a second `publish` of the same
+   version is refused as "not above" the code sitting on internal — the release that is being
+   promoted (`wip/done/2026-09-20-play-publish-cannot-promote.md`).
 
 Order: **internal → closed (if required) → production at a staged percentage**, and watch
 Crashes & ANRs for 48 h before widening.
