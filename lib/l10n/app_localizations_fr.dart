@@ -1469,4 +1469,24 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get pwaUpdateReload => 'Recharger';
+
+  @override
+  String get groupDeviceClaimOwner => 'Reprendre la propriété';
+
+  @override
+  String groupDeviceClaimOwnerConfirm(String label) {
+    return '« $label » possède le groupe mais ne s\'est pas manifesté depuis longtemps. Reprendre la propriété du groupe sur cet appareil ?';
+  }
+
+  @override
+  String get groupDeviceOwnerClaimed =>
+      'Cet appareil est maintenant propriétaire du groupe.';
+
+  @override
+  String get groupErrorOwnerActive =>
+      'Le propriétaire du groupe s\'est manifesté récemment : la propriété ne peut pas être reprise.';
+
+  @override
+  String get groupCreatedOwnerExplain =>
+      'Groupe créé. Cet appareil en est propriétaire ; ce rôle peut être confié à un autre dans Appareils.';
 }

@@ -33,12 +33,16 @@ typedef GroupMembership = ({
 /// A member device of the caller's group, as `GET /groups/me/devices` lists it.
 ///
 /// [isOwner] is null when the server predates group owners (every device equal).
+/// [dormant] — the device has not been seen for the server's dormancy window — is
+/// null on a server that predates the claim; on the owner's row it is what opens
+/// *Claim ownership*.
 typedef GroupDevice = ({
   String id,
   String label,
   DateTime joinedAt,
   DateTime lastSeenAt,
   bool? isOwner,
+  bool? dormant,
 });
 
 /// The group's comment settings, as `GET /groups/me` and `PATCH /groups/me/settings`
@@ -224,6 +228,7 @@ class BackendClient {
           joinedAt: DateTime.parse(d['joined_at'] as String),
           lastSeenAt: DateTime.parse(d['last_seen_at'] as String),
           isOwner: d['is_owner'] as bool?,
+          dormant: d['dormant'] as bool?,
         ),
     ];
   }
@@ -280,6 +285,13 @@ class BackendClient {
   /// `PUT /groups/me/owner`: hands the owner role to [deviceId]. Owner only (403).
   Future<void> transferOwnership(String deviceToken, String deviceId) async {
     await _send('PUT', '/groups/me/owner', token: deviceToken, body: {'device_id': deviceId});
+  }
+
+  /// `POST /groups/me/owner/claim`: takes the owner role over from an owner that
+  /// the server reports dormant — the way back for a group whose owner uninstalled
+  /// the app. **409** while that owner has been seen inside the server's window.
+  Future<void> claimOwnership(String deviceToken) async {
+    await _send('POST', '/groups/me/owner/claim', token: deviceToken);
   }
 
   /// `POST /groups/me/devices/{id}/revoke`.

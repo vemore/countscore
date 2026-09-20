@@ -17,6 +17,7 @@ String groupActionErrorText(AppLocalizations l10n, GroupActionException e) => sw
       GroupActionError.server => l10n.groupErrorServer,
       GroupActionError.invalidPlayerNames => l10n.invalidPlayerNamesForSync(e.detail.join(', ')),
       GroupActionError.notOwner => l10n.groupErrorNotOwner,
+      GroupActionError.ownerActive => l10n.groupErrorOwnerActive,
     };
 
 /// Settings → Group: create or join a group, show its invite code and devices,
@@ -86,7 +87,11 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
       (label: l10n.deviceLabelLabel, initial: l10n.deviceLabelDefault, hint: null),
     ]);
     if (values == null) return;
-    await _run(() => group.createGroup(values[0], values[1]), done: l10n.groupJoined);
+    // The creator owns the group, and nothing on screen says so otherwise: the one
+    // line that follows is where the user learns the role lives on this device and
+    // can be handed to another one.
+    await _run(() => group.createGroup(values[0], values[1]),
+        done: l10n.groupCreatedOwnerExplain);
   }
 
   Future<void> _join(GroupProvider group) async {

@@ -652,5 +652,15 @@
 
   "pwaUpdateReady": "Hay una nueva versión de CountScore lista",
 
-  "pwaUpdateReload": "Recargar"
+  "pwaUpdateReload": "Recargar",
+
+  "groupDeviceClaimOwner": "Asumir la propiedad",
+
+  "groupDeviceClaimOwnerConfirm": "«{label}» es el propietario del grupo, pero hace mucho que no da señales. ¿Asumir la propiedad en este dispositivo?",
+
+  "groupDeviceOwnerClaimed": "Este dispositivo es ahora el propietario del grupo.",
+
+  "groupErrorOwnerActive": "El propietario del grupo ha dado señales hace poco: no se puede asumir la propiedad.",
+
+  "groupCreatedOwnerExplain": "Grupo creado. Este dispositivo es su propietario; el rol puede cederse a otro en Dispositivos."
 }

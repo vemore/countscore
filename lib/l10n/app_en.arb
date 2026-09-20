@@ -725,5 +725,15 @@
 
   "pwaUpdateReady": "A new version of CountScore is ready",
 
-  "pwaUpdateReload": "Reload"
+  "pwaUpdateReload": "Reload",
+
+  "groupDeviceClaimOwner": "Claim ownership",
+
+  "groupDeviceClaimOwnerConfirm": "“{label}” owns the group but has not been seen for a long time. Take ownership over on this device?",
+
+  "groupDeviceOwnerClaimed": "This device now owns the group.",
+
+  "groupErrorOwnerActive": "The group's owner has been seen recently: ownership cannot be claimed.",
+
+  "groupCreatedOwnerExplain": "Group created. This device owns it; the role can be handed over to another one in Devices."
 }

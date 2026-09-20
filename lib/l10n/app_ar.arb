@@ -652,5 +652,15 @@
 
   "pwaUpdateReady": "إصدار جديد من CountScore جاهز",
 
-  "pwaUpdateReload": "إعادة التحميل"
+  "pwaUpdateReload": "إعادة التحميل",
+
+  "groupDeviceClaimOwner": "تولّي الملكية",
+
+  "groupDeviceClaimOwnerConfirm": "«{label}» هو مالك المجموعة، لكنه لم يظهر منذ مدة طويلة. هل تتولّى ملكية المجموعة على هذا الجهاز؟",
+
+  "groupDeviceOwnerClaimed": "أصبح هذا الجهاز مالك المجموعة.",
+
+  "groupErrorOwnerActive": "ظهر مالك المجموعة مؤخرًا: لا يمكن تولّي الملكية.",
+
+  "groupCreatedOwnerExplain": "تم إنشاء المجموعة. هذا الجهاز هو مالكها؛ ويمكن تسليم هذا الدور إلى جهاز آخر من «الأجهزة»."
 }

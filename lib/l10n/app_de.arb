@@ -652,5 +652,15 @@
 
   "pwaUpdateReady": "Eine neue Version von CountScore ist bereit",
 
-  "pwaUpdateReload": "Neu laden"
+  "pwaUpdateReload": "Neu laden",
+
+  "groupDeviceClaimOwner": "Eigentum übernehmen",
+
+  "groupDeviceClaimOwnerConfirm": "„{label}“ ist Eigentümer der Gruppe, war aber lange nicht mehr zu sehen. Das Eigentum auf dieses Gerät übernehmen?",
+
+  "groupDeviceOwnerClaimed": "Dieses Gerät ist jetzt Eigentümer der Gruppe.",
+
+  "groupErrorOwnerActive": "Der Eigentümer der Gruppe war kürzlich aktiv: Das Eigentum kann nicht übernommen werden.",
+
+  "groupCreatedOwnerExplain": "Gruppe erstellt. Dieses Gerät ist ihr Eigentümer; diese Rolle kann unter „Geräte“ an ein anderes übergeben werden."
 }

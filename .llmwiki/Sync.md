@@ -2,7 +2,7 @@
 
 > Scope: the offline-first sharing protocol — server and Flutter client.
 > Related: [[Api]] · [[SchemaV10]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-09-19
+> Updated: 2026-09-20
 
 ## Facts
 
@@ -115,8 +115,14 @@ asks, then leaves.
 **Removing another device.** Settings → Group → *Devices* (`group_devices_sheet.dart`) lists
 `GET /groups/me/devices`, marks the owner, and — on the owner only — offers a revoke and a
 hand-over (*Make owner*, `PUT /groups/me/owner`) on every device but this one; this one leaves
-instead. A member that is not the owner sees the list and no action, and Settings → Group
-hides *New code* from it. `GroupProvider.isOwner` is held in memory, never in the database:
+instead. A member that is not the owner sees the list and no action, with one exception: when
+the list reports the **owner's** row `dormant` — unseen for `GROUP_OWNER_DORMANT_DAYS`, which
+is what an uninstalled app looks like — that row offers *Claim ownership*
+(`POST /groups/me/owner/claim`, key `group_device_claim_<id>`). The server decides, so a 409
+(`GroupActionError.ownerActive`) is shown as a message and `isOwner` is not flipped on a
+guess; a server that predates the field sends no `dormant` and the action never appears.
+Creating a group says in one line that the role lives on this device and can be handed over
+(`groupCreatedOwnerExplain`). Settings → Group hides *New code* from a member. `GroupProvider.isOwner` is held in memory, never in the database:
 true after creating, false after joining, then refreshed from `owner_device_id`
 (`GET /groups/me`) on every start and resume, from `is_owner` whenever the list loads, and
 dropped on any 403. A server that predates owners sends neither field; every device then

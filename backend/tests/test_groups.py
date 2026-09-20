@@ -86,8 +86,9 @@ async def test_list_devices_shows_the_active_members_of_the_callers_group(client
     devices = r.json()["devices"]
     assert [d["label"] for d in devices] == ["alice", "bob", "carol"]
     assert [d["id"] for d in devices] == [alice_id, bob_id, carol_id]
-    assert set(devices[0]) == {"id", "label", "joined_at", "last_seen_at", "is_owner"}
+    assert set(devices[0]) == {"id", "label", "joined_at", "last_seen_at", "is_owner", "dormant"}
     assert [d["is_owner"] for d in devices] == [True, False, False]
+    assert [d["dormant"] for d in devices] == [False, False, False]
 
     # A revoked device drops out of the list.
     await client.post(f"/groups/me/devices/{bob_id}/revoke", headers=alice)
@@ -476,6 +477,102 @@ async def test_the_last_device_leaving_leaves_no_owner(client, session):
     assert r.status_code == 204
     group = await session.get(Group, group_id)
     assert group is not None and group.owner_device_id is None
+
+
+# ── A dormant owner ──────────────────────────────────────────────────────────
+
+
+async def _go_quiet(session, device_id: str, *, days: int = 40) -> None:
+    """Backdate a device's last_seen_at: what an uninstalled app looks like on the server."""
+    import uuid
+    from datetime import UTC, datetime, timedelta
+
+    from app.models import Device
+
+    device = await session.get(Device, uuid.UUID(device_id))
+    assert device is not None
+    device.last_seen_at = datetime.now(UTC) - timedelta(days=days)
+    await session.commit()
+
+
+async def test_the_device_list_says_which_devices_have_gone_quiet(client, session):
+    heads, ids, _ = await _group_of_three(client)
+    await _go_quiet(session, ids["alice"])
+
+    r = await client.get("/groups/me/devices", headers=heads["bob"])
+    assert r.status_code == 200, r.text
+    assert [(d["label"], d["dormant"]) for d in r.json()["devices"]] == [
+        ("alice", True),
+        ("bob", False),
+        ("carol", False),
+    ]
+
+
+async def test_a_member_claims_the_group_from_a_dormant_owner(client, session):
+    """The owner uninstalled: no request is ever sent, so only a claim gets the group back."""
+    heads, ids, _ = await _group_of_three(client)
+    await _go_quiet(session, ids["alice"])
+
+    r = await client.post("/groups/me/owner/claim", headers=heads["bob"])
+    assert r.status_code == 200, r.text
+    assert r.json()["owner_device_id"] == ids["bob"]
+    assert "share_token" not in r.json()
+
+    # The point of the claim: the share token the dormant owner left behind can be rotated.
+    r = await client.post("/groups/me/rotate-share-token", headers=heads["bob"])
+    assert r.status_code == 200
+    # And the role really moved: carol still has none.
+    r = await client.post("/groups/me/rotate-share-token", headers=heads["carol"])
+    assert r.status_code == 403
+
+
+async def test_a_member_cannot_claim_the_group_from_an_owner_that_is_about(client):
+    heads, ids, _ = await _group_of_three(client)
+
+    r = await client.post("/groups/me/owner/claim", headers=heads["bob"])
+    assert r.status_code == 409, r.text
+    r = await client.get("/groups/me", headers=heads["bob"])
+    assert r.json()["owner_device_id"] == ids["alice"]
+
+    # Claiming what one already owns is a no-op, not a 409: the owner is not refused itself.
+    r = await client.post("/groups/me/owner/claim", headers=heads["alice"])
+    assert r.status_code == 200  # claiming what one owns is a no-op
+    assert r.json()["owner_device_id"] == ids["alice"]
+
+
+async def test_a_claim_needs_a_device_token(client):
+    assert (await client.post("/groups/me/owner/claim")).status_code == 401
+
+
+async def test_a_dormant_owner_that_comes_back_closes_the_window(client, session):
+    heads, ids, _ = await _group_of_three(client)
+    await _go_quiet(session, ids["alice"])
+
+    # Any authenticated request refreshes last_seen_at (app/auth.py).
+    assert (await client.get("/groups/me", headers=heads["alice"])).status_code == 200
+    r = await client.post("/groups/me/owner/claim", headers=heads["bob"])
+    assert r.status_code == 409, r.text
+
+
+async def test_a_group_with_one_live_device_owns_itself(client):
+    """Alice leaves alone, leaving no owner; the next device to join is the only one there."""
+    r = await client.post("/groups", json={"name": "solo", "device_label": "alice"})
+    share = r.json()["group"]["share_token"]
+    alice = {"Authorization": f"Bearer {r.json()['device']['token']}"}
+    assert (
+        await client.post(f"/groups/me/devices/{r.json()['device']['id']}/revoke", headers=alice)
+    ).status_code == 204
+
+    r = await client.post("/groups/join", json={"share_token": share, "device_label": "bob"})
+    assert r.status_code == 201
+    bob_id = r.json()["device"]["id"]
+    bob = {"Authorization": f"Bearer {r.json()['device']['token']}"}
+
+    r = await client.get("/groups/me", headers=bob)
+    assert r.json()["owner_device_id"] == bob_id
+    r = await client.get("/groups/me/devices", headers=bob)
+    assert [(d["id"], d["is_owner"]) for d in r.json()["devices"]] == [(bob_id, True)]
+    assert (await client.post("/groups/me/rotate-share-token", headers=bob)).status_code == 200
 
 
 def _utc(iso: str):

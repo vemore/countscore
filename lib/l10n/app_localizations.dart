@@ -2476,6 +2476,36 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Recharger'**
   String get pwaUpdateReload;
+
+  /// Action on the owner device's row in Settings > Group > Devices when the server reports it dormant: this device takes the owner role over
+  ///
+  /// In fr, this message translates to:
+  /// **'Reprendre la propriété'**
+  String get groupDeviceClaimOwner;
+
+  /// Confirmation asked before claiming the owner role from a dormant owner device
+  ///
+  /// In fr, this message translates to:
+  /// **'« {label} » possède le groupe mais ne s\'est pas manifesté depuis longtemps. Reprendre la propriété du groupe sur cet appareil ?'**
+  String groupDeviceClaimOwnerConfirm(String label);
+
+  /// Message shown after this device took the owner role from a dormant owner
+  ///
+  /// In fr, this message translates to:
+  /// **'Cet appareil est maintenant propriétaire du groupe.'**
+  String get groupDeviceOwnerClaimed;
+
+  /// Error shown when the server refuses a claim (409) because the owner device has been seen recently
+  ///
+  /// In fr, this message translates to:
+  /// **'Le propriétaire du groupe s\'est manifesté récemment : la propriété ne peut pas être reprise.'**
+  String get groupErrorOwnerActive;
+
+  /// Snackbar shown after a group is created: the owner role lives on this device and can be handed over
+  ///
+  /// In fr, this message translates to:
+  /// **'Groupe créé. Cet appareil en est propriétaire ; ce rôle peut être confié à un autre dans Appareils.'**
+  String get groupCreatedOwnerExplain;
 }
 
 class _AppLocalizationsDelegate
