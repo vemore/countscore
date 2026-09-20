@@ -22,12 +22,18 @@ store_listing/
 │   └── release_notes_v<x.y.z>.txt  # 500 characters max — en-US and fr-FR only
 ├── assets/
 │   ├── icon_512.png                # 512×512, generated from design/icon/ — see .llmwiki/Release.md
-│   └── feature_graphic.png         # 1024×500, opaque — every locale's, unless it has its own
+│   └── feature_graphic.png         # 1024×500, opaque — generated, every locale's, unless it has its own
 ├── ASSET_REQUIREMENTS.md           # image specifications
-├── ASSET_CREATION_CHECKLIST.md · COLOR_THEME_GUIDE.md
-├── FEATURE_GRAPHIC_TEMPLATES.md · ICON_DESIGN_GUIDE.md · SCREENSHOT_GUIDE.md
+├── ASSET_CREATION_CHECKLIST.md · FEATURE_GRAPHIC_TEMPLATES.md · SCREENSHOT_GUIDE.md
 └── README.md                       # this file
 ```
+
+**The brand palette is not documented here.** It lives in `lib/utils/app_theme.dart` —
+`kBrandSeedLight` `#0E8F88`, `kBrandSeedDark` `#5ED8CF`, `kLeaderGold` `#F2B705` — and the
+icon's ink ground is `#0E1716`. The two colour-and-icon guides that used to restate that
+palette here were deleted on 2026-09-20: both still specified the deep purple the app left
+behind on 2026-09-18, and a palette copied into prose goes stale in silence. The icon's own
+constraints are `.llmwiki/Release.md` §Icons, beside the command that regenerates it.
 
 The ten published locales are Play's identifiers, **not** the app's:
 
@@ -111,6 +117,19 @@ release rejected or wasted:
 Committed and published since 2026-09-15: the icon, the feature graphic and eight phone
 screenshots. Specifications are in `ASSET_REQUIREMENTS.md`; `scripts/capture_screenshots.sh
 <locale>` pulls fresh captures of one locale over ADB into `<locale>/raw/`.
+
+Both images in `assets/` are **generated, then committed** — neither is edited by hand:
+
+```bash
+uv run --script scripts/generate_icons.py                     # icon_512.png, from design/icon/
+uv run --script scripts/generate_feature_graphic.py           # feature_graphic.png, Template 1
+uv run --script scripts/generate_feature_graphic.py --check   # verify the committed PNG
+```
+
+The feature graphic composes the icon, the en-US board capture of the demo database and the
+bundled Nunito into the 1024×500 banner — layout and colours in
+`FEATURE_GRAPHIC_TEMPLATES.md`. It is every locale's, unless a locale drops its own
+`feature_graphic.png` beside its `title.txt`; none does, so the ten locales publish this one.
 
 The eight phone screenshots are composed per locale, from that locale's own captures (see
 Screenshots above; `.llmwiki/StoreListing.md`). There is no tablet

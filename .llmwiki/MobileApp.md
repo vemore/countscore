@@ -328,9 +328,11 @@ widget in a `PipelineOwner`/`BuildOwner` of its own under a loose `BoxConstraint
 then `RenderRepaintBoundary.toImage` → PNG, and unmounts the tree. Nothing is shown on
 screen. In a widget test its future completes only under `tester.runAsync`.
 
-`app_theme.dart` — the one place the look is defined. `buildAppTheme(brightness)` seeds
-`ColorScheme.fromSeed` with `kBrandSeedLight` (`#0E8F88`, the icon's teal) or
-`kBrandSeedDark` (`#5ED8CF`) under `DynamicSchemeVariant.fidelity`, sets `primary` to the seed
+`app_theme.dart` — the one place the look is defined, and the palette's only home: the icon
+(`design/icon/`), the store assets and `scripts/compose_screenshots.py` read their colours
+from it, and no document restates them. `buildAppTheme(brightness)` seeds
+`ColorScheme.fromSeed` with `kBrandSeedLight` (`#0E8F88`, the brand teal) or
+`kBrandSeedDark` (`#5ED8CF`, the teal of the icon's third pawn) under `DynamicSchemeVariant.fidelity`, sets `primary` to the seed
 itself, and sets the surfaces (`#F3F8F7` / `#0E1716`), white (dark: `#172221`) cards with a
 1 px `outlineVariant` border and elevation 0, and `fontFamily: kAppFontFamily` (`Nunito`).
 `kLeaderGold` (`#F2B705`) is the leader's colour for the screens that mark one. Nunito is
@@ -769,8 +771,9 @@ not "fix" it by hardcoding a codepoint.
   query per row over the whole history; `RoundRepository.countByGame` is a single `GROUP BY`
   that `loadGames` folds into the provider.
 - **The look is teal "Material soigné", with a bundled font** (2026-09-18). The deep-purple
-  seed matched nothing in the icon's teal podium, and cards tinted to 10 % of the game colour
-  turned ZapZap's amber beige. Direction A of four mock-ups
+  seed matched nothing in the icon of the time — a teal podium, replaced on 2026-09-20 by the
+  cards-and-pawns artwork ([[Release]] §Icons), whose own teal is `kBrandSeedDark`. Cards
+  tinted to 10 % of the game colour turned ZapZap's amber beige. Direction A of four mock-ups
   (`wip/assets/2026-09-18-app-looks-like-a-default-material-template/`). Nunito is bundled,
   not fetched with `google_fonts`: a runtime download from Google would be an outbound data
   flow in an app whose privacy model is that it makes none. Static instances rather than the
