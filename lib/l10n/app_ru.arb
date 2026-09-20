@@ -278,6 +278,7 @@
   "gameEndHighestWins": "побеждает наибольший счёт",
   "gameEndAnalysis": "Анализ",
   "gameEndResults": "Итоги",
+  "rankingEliminationNote": "Места — по порядку выбывания: кто выбыл позже, тот идёт впереди остальных, независимо от счёта.",
   "endGame": "Завершить игру",
   "reopenGame": "Возобновить игру",
   "gameFinished": "Завершена",

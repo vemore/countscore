@@ -278,6 +278,7 @@
   "gameEndHighestWins": "höchste Punktzahl gewinnt",
   "gameEndAnalysis": "Analyse",
   "gameEndResults": "Ergebnis",
+  "rankingEliminationNote": "Platzierung nach Ausscheidungsreihenfolge: wer später ausscheidet, steht weiter vorn, unabhängig von den Punkten.",
   "endGame": "Spiel beenden",
   "reopenGame": "Spiel fortsetzen",
   "gameFinished": "Beendet",

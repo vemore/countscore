@@ -511,6 +511,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get gameEndResults => '結果';
 
   @override
+  String get rankingEliminationNote =>
+      '順位は脱落した順の逆です。合計点に関係なく、後に脱落した人ほど上位になります。';
+
+  @override
   String get endGame => 'ゲームを終了';
 
   @override

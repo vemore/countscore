@@ -522,6 +522,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get gameEndResults => 'النتائج';
 
   @override
+  String get rankingEliminationNote =>
+      'الترتيب بعكس ترتيب الإقصاء: من خرج متأخرًا يتقدّم على غيره، بغض النظر عن مجموع النقاط.';
+
+  @override
   String get endGame => 'إنهاء اللعبة';
 
   @override
