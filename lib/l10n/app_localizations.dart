@@ -1007,6 +1007,12 @@ abstract class AppLocalizations {
   /// **'Résultats'**
   String get gameEndResults;
 
+  /// Line under the summary on the results screen of a finished game ranked by elimination order, explaining why the places do not follow the totals
+  ///
+  /// In fr, this message translates to:
+  /// **'Classement à l\'ordre d\'élimination : qui sort le plus tard passe devant, quels que soient les totaux.'**
+  String get rankingEliminationNote;
+
   /// Button to end the game
   ///
   /// In fr, this message translates to:

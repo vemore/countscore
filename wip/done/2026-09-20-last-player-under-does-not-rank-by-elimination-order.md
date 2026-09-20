@@ -1,5 +1,14 @@
 # `lastPlayerUnder` is last player standing too, but does not rank by the elimination order
 
+**Status:** done (2026-09-20) — closed by `feat/elimination-ranking-model`.
+`GameStanding.ranksByEliminationOrder` now switches on the game-over condition and takes
+`lastPlayerOver` **and** `lastPlayerUnder`, the two conditions `GameType.isGameOver` already
+treats as one shape; a `lastPlayerUnder` type with no elimination threshold, and
+`firstPlayerUnder`, still rank by the total. `test/models/game_standing_test.dart` mirrors
+the `over` reproduction round for round and place for place, and pins the twenty-two seeded
+types to the three that depart from the score order (`zapzap`, `rami`, `six_nimmt`) — none
+of them `lastPlayerUnder`, so no existing standing moved.
+
 - **Noted:** 2026-09-20 — while implementing the ranking rule (`feat/ranking-rule`)
 - **Theme:** game-types
 - **Area:** app

@@ -854,6 +854,11 @@
     "description": "Tooltip of the board's app-bar button that reopens the game-end screen of a finished game"
   },
 
+  "rankingEliminationNote": "Classement à l'ordre d'élimination : qui sort le plus tard passe devant, quels que soient les totaux.",
+  "@rankingEliminationNote": {
+    "description": "Line under the summary on the results screen of a finished game ranked by elimination order, explaining why the places do not follow the totals"
+  },
+
   "endGame": "Terminer la partie",
   "@endGame": {
     "description": "Button to end the game"

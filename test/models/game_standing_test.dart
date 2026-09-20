@@ -58,6 +58,32 @@ GameType _elimination({
       gameOverThreshold: over == null ? null : dead,
     );
 
+/// The mirror image of [_elimination], the way a user can build it: out once
+/// a total falls **below** a floor, the game over on the last player standing
+/// under it. No seeded type has this shape
+/// (`wip/done/2026-09-20-last-player-under-does-not-rank-by-elimination-order.md`).
+GameType _eliminationUnder({
+  int dead = -100,
+  GameOverConditionType? under = GameOverConditionType.lastPlayerUnder,
+}) =>
+    GameType(
+      name: 'Maison',
+      iconCodePoint: 0,
+      cardColorValue: 0,
+      isLowestScoreWins: false,
+      playerDeadConditionType: PlayerDeadConditionType.under,
+      playerDeadThreshold: dead,
+      gameOverConditionType: under,
+      gameOverThreshold: under == null ? null : dead,
+    );
+
+/// The reproduction's scores, negated: the same players go out in the same
+/// rounds under a floor of -100, and the totals run the other way.
+int? _negatedScoreOf(int playerId, int roundId) {
+  final score = _scoreOf(playerId, roundId);
+  return score == null ? null : -score;
+}
+
 /// A type with no rule of its own: Scrabble, Autre, and anything the user
 /// builds without a threshold.
 GameType _plain({bool lowestWins = false}) => GameType(
@@ -175,6 +201,66 @@ void main() {
     test('a threshold plus last player standing is the one shape that does',
         () {
       expect(GameStanding.ranksByEliminationOrder(_elimination()), isTrue);
+    });
+
+    test('lastPlayerUnder is last player standing too, and ranks the same way',
+        () {
+      expect(GameStanding.ranksByEliminationOrder(_eliminationUnder()), isTrue);
+
+      final standing = _standing(
+        isFinished: true,
+        gameType: _eliminationUnder(),
+        scoreOf: _negatedScoreOf,
+        lowestWins: false,
+      );
+
+      expect(standing.rule, RankingRule.eliminationOrder);
+      expect(standing.totals, {1: -101, 2: -140, 3: -115, 4: -50});
+      // The mirror of the `over` case, round for round and place for place.
+      expect(standing.eliminatedAtRound, {1: 1, 2: 4, 3: 5});
+      expect(_order(standing), ['David', 'Chloé', 'Bob', 'Alice']);
+      expect(standing.ranks, {4: 1, 3: 2, 2: 3, 1: 4});
+      expect(standing.soleLeader?.name, 'David');
+    });
+
+    test('lastPlayerUnder without an elimination threshold ranks by the total',
+        () {
+      final noThreshold = GameType(
+        name: 'Maison',
+        iconCodePoint: 0,
+        cardColorValue: 0,
+        isLowestScoreWins: false,
+        gameOverConditionType: GameOverConditionType.lastPlayerUnder,
+        gameOverThreshold: -100,
+      );
+
+      expect(GameStanding.ranksByEliminationOrder(noThreshold), isFalse);
+      final standing = _standing(
+        isFinished: true,
+        gameType: noThreshold,
+        scoreOf: _negatedScoreOf,
+        lowestWins: false,
+      );
+      expect(standing.rule, RankingRule.score);
+      expect(_order(standing), ['David', 'Alice', 'Chloé', 'Bob']);
+    });
+
+    test('firstPlayerUnder is a race, not a last player standing', () {
+      expect(
+        GameStanding.ranksByEliminationOrder(_eliminationUnder(
+          under: GameOverConditionType.firstPlayerUnder,
+        )),
+        isFalse,
+      );
+    });
+
+    test('the twenty-two seeded types: only the three survivor games depart '
+        'from the score order', () {
+      final byElimination = [
+        for (final type in GameType.defaultGameTypes())
+          if (GameStanding.ranksByEliminationOrder(type)) type.builtinKey,
+      ];
+      expect(byElimination, ['zapzap', 'rami', 'six_nimmt']);
     });
   });
 

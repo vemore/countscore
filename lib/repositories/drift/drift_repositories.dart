@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../../models/game.dart';
 import '../../models/game_analysis.dart';
+import '../../models/game_standing.dart';
 import '../../models/game_type.dart';
 import '../../models/player.dart';
 import '../../models/player_stats.dart';
@@ -766,7 +767,9 @@ class DriftPlayerStatsRepository implements PlayerStatsRepository {
       '''
       SELECT g.id AS gameId, g.finishedAt AS finishedAt,
              g.isLowestScoreWins AS isLowestScoreWins,
+             g.gameTypeId AS gameTypeId,
              COALESCE(gt.builtin_key, gt.name) AS gameTypeKey,
+             gp.id AS gamePlayerId,
              p.uuid AS playerUuid, p.name AS name,
              p.deleted_at AS playerDeletedAt,
              gp.orderIndex AS orderIndex, gp.colorValue AS colorValue,
@@ -789,17 +792,37 @@ class DriftPlayerStatsRepository implements PlayerStatsRepository {
     for (final row in rows) {
       byGame.putIfAbsent(row.data['gameId'] as int, () => []).add(row);
     }
+
+    // The places a finished game shows in the statistics are the places its
+    // standings screen shows, so the statistics need the same two things the
+    // standings derive them from: the type's ranking rule, and the round each
+    // player went out at
+    // (`wip/done/2026-09-20-statistics-rank-by-score-while-the-standings-rank-by-elimination.md`).
+    final types = await _eliminationTypesById();
+    final eliminationRule = <int, GameType>{};
+    for (final entry in byGame.entries) {
+      final typeId = entry.value.first.data['gameTypeId'] as int?;
+      final type = typeId == null ? null : types[typeId];
+      if (type != null) eliminationRule[entry.key] = type;
+    }
+    final outAt = await _eliminatedAtRound(eliminationRule);
+
     final results = <FinishedGameResult>[];
     for (final entry in byGame.entries) {
       final first = entry.value.first.data;
       if (!entry.value.any((r) => (r.data['scoreCount'] as int) > 0)) continue;
       final finishedAt = DateTime.tryParse(first['finishedAt'] as String);
       if (finishedAt == null) continue;
+      final byElimination = eliminationRule.containsKey(entry.key);
+      final gameOutAt = outAt[entry.key] ?? const <int, int>{};
       results.add(FinishedGameResult(
         gameId: entry.key,
         finishedAt: finishedAt,
         gameTypeKey: first['gameTypeKey'] as String?,
         isLowestScoreWins: (first['isLowestScoreWins'] as int) == 1,
+        rule: byElimination
+            ? RankingRule.eliminationOrder
+            : RankingRule.score,
         participants: [
           for (final r in entry.value)
             GameParticipant(
@@ -809,11 +832,75 @@ class DriftPlayerStatsRepository implements PlayerStatsRepository {
               colorValue: r.data['colorValue'] as int?,
               total: r.data['total'] as int,
               isActive: r.data['playerDeletedAt'] == null,
+              eliminatedAtRound:
+                  byElimination ? gameOutAt[r.data['gamePlayerId'] as int] : null,
             ),
         ],
       ));
     }
     return results;
+  }
+
+  /// The live game types whose finished games rank by the elimination order,
+  /// keyed by id. The one test is `GameStanding.ranksByEliminationOrder`, so
+  /// the statistics cannot drift from the standings: the SQL never spells the
+  /// condition out. The catalogue is a couple of dozen rows.
+  Future<Map<int, GameType>> _eliminationTypesById() async {
+    final rows = await _db
+        .customSelect('SELECT * FROM game_types WHERE deleted_at IS NULL')
+        .get();
+    final types = <int, GameType>{};
+    for (final row in rows) {
+      final type = GameType.fromMap(row.data);
+      final id = type.id;
+      if (id != null && GameStanding.ranksByEliminationOrder(type)) {
+        types[id] = type;
+      }
+    }
+    return types;
+  }
+
+  /// For each game in [eliminationGames], the round each seat went out at —
+  /// the first round whose running total crosses the type's threshold —
+  /// keyed by game id then `game_players.id`. A seat that never went out is
+  /// absent.
+  ///
+  /// The same walk `GameStanding.forGame` does: the rounds in play order, and
+  /// only the rounds a player actually scored, since a player who is out
+  /// stops being dealt in.
+  Future<Map<int, Map<int, int>>> _eliminatedAtRound(
+    Map<int, GameType> eliminationGames,
+  ) async {
+    if (eliminationGames.isEmpty) return const {};
+    final ids = eliminationGames.keys.toList();
+    final ph = List.filled(ids.length, '?').join(',');
+    final rows = await _db.customSelect(
+      '''
+      SELECT gp.gameId AS gameId, gp.id AS gamePlayerId,
+             r.roundNumber AS roundNumber, s.value AS value
+      FROM scores s
+      JOIN game_players gp ON gp.id = s.playerId AND gp.deleted_at IS NULL
+      JOIN rounds r ON r.id = s.roundId AND r.deleted_at IS NULL
+      WHERE s.deleted_at IS NULL AND gp.gameId IN ($ph)
+      ORDER BY gp.gameId, gp.id, r.roundNumber ASC
+      ''',
+      variables: [for (final id in ids) Variable(id)],
+    ).get();
+
+    final result = <int, Map<int, int>>{};
+    final running = <int, int>{};
+    for (final row in rows) {
+      final gameId = row.data['gameId'] as int;
+      final seat = row.data['gamePlayerId'] as int;
+      final total = (running[seat] ?? 0) + (row.data['value'] as int);
+      running[seat] = total;
+      final out = result.putIfAbsent(gameId, () => <int, int>{});
+      if (!out.containsKey(seat) &&
+          eliminationGames[gameId]!.isEliminated(total)) {
+        out[seat] = row.data['roundNumber'] as int;
+      }
+    }
+    return result;
   }
 }
 

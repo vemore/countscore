@@ -278,6 +278,7 @@
   "gameEndHighestWins": "高得点の勝ち",
   "gameEndAnalysis": "分析",
   "gameEndResults": "結果",
+  "rankingEliminationNote": "順位は脱落した順の逆です。合計点に関係なく、後に脱落した人ほど上位になります。",
   "endGame": "ゲームを終了",
   "reopenGame": "ゲームを再開",
   "gameFinished": "終了済み",
