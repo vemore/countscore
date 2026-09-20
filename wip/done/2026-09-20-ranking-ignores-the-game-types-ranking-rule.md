@@ -1,5 +1,13 @@
 # The ranking is always the score order, whatever the game type's rule, and does not tell the live standings from the final result
 
+**Status:** done (2026-09-20) — closed by `feat/ranking-rule`. `GameStanding.forGame`
+derives the rule from the type and the game's state — no column, no migration: a **finished**
+game of a type with an elimination threshold whose win condition is `lastPlayerOver` ranks by
+the elimination order (survivor first, then last out first, the total breaking a tie),
+everything else by the total. The four construction sites — the board, `GameRanking.of` (the
+standings screen and the shared text and picture) and `GameProvider.standingOf` (the home
+cards) — all build through it.
+
 - **Noted:** 2026-09-20 — reported by the user, reproduced on the PWA built from `main`
 - **Theme:** game-types
 - **Area:** app

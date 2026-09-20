@@ -84,14 +84,11 @@ class BoardData {
   bool isRoundCommented(Round round) =>
       round.comment != null && round.comment!.trim().isNotEmpty;
 
-  /// The players best first; a tie keeps seat order.
-  List<Player> get byRank {
-    final seat = {for (var i = 0; i < players.length; i++) players[i]: i};
-    return [...players]..sort((a, b) {
-        final byPlace = (ranks[a.id] ?? 0).compareTo(ranks[b.id] ?? 0);
-        return byPlace != 0 ? byPlace : seat[a]!.compareTo(seat[b]!);
-      });
-  }
+  /// The players best first; a tie keeps seat order. The standings screen
+  /// draws the very same list (`GameStanding.rankedPlayers`), so the board and
+  /// the standings cannot disagree on an order
+  /// (`wip/done/2026-09-20-rank-then-seat-sort-is-duplicated.md`).
+  List<Player> get byRank => standing.rankedPlayers;
 }
 
 /// A lane's (or a row's) background: the player's colour over the surface.

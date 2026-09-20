@@ -576,7 +576,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Padding(
                 padding: const EdgeInsetsDirectional.only(end: 12),
                 child: FutureBuilder<GameStanding>(
-                  future: gameProvider.standingOf(game),
+                  future: gameProvider.standingOf(game, gameType: gameType),
                   builder: (context, snapshot) {
                     final standing = snapshot.data;
                     // Nobody is named on a tie for the lead.
@@ -652,7 +652,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Padding(
           padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 4, 16),
           child: FutureBuilder<GameStanding>(
-            future: gameProvider.standingOf(game),
+            future: gameProvider.standingOf(game, gameType: gameType),
             builder: (context, snapshot) {
               final standing = snapshot.data;
               return Row(

@@ -162,6 +162,54 @@ void main() {
     return games.currentGame!;
   }
 
+  /// The reproduced ZapZap game of four (out above 100, the game over when the
+  /// last player stands), five rounds: Alice out in round 1 with 101, Bob out
+  /// in round 4 with 140, Chloé out in round 5 with 115, David alone at the
+  /// end with 50. By total it is David, Alice, Chloé, Bob; by elimination
+  /// order it is David, Chloé, Bob, Alice
+  /// (`wip/done/2026-09-20-ranking-ignores-the-game-types-ranking-rule.md`).
+  ///
+  /// [rounds] stops the game short — four of them leave Chloé and David in,
+  /// so an open game is not over.
+  Future<GameType> anEliminationGame({
+    required bool finished,
+    int rounds = 5,
+  }) async {
+    // No `builtinKey`: the database already seeds a zapzap row, and the key is
+    // unique among the live ones.
+    final typeId = await gameTypes.createGameType(GameType(
+      name: 'ZapZap',
+      iconCodePoint: Icons.bolt.codePoint,
+      cardColorValue: Colors.amber.toARGB32(),
+      isLowestScoreWins: true,
+      playerDeadConditionType: PlayerDeadConditionType.over,
+      playerDeadThreshold: 100,
+      gameOverConditionType: GameOverConditionType.lastPlayerOver,
+      gameOverThreshold: 100,
+    ));
+    final id = await games.createGame(
+        'ZapZap 1', typeId, true, ['Alice', 'Bob', 'Chloé', 'David'], null);
+    await games.loadGame(id);
+    for (final scores in const [
+      {'Alice': 101, 'Bob': 20, 'Chloé': 10, 'David': 5},
+      {'Bob': 30, 'Chloé': 20, 'David': 10},
+      {'Bob': 40, 'Chloé': 30, 'David': 10},
+      {'Bob': 50, 'Chloé': 25, 'David': 15},
+      {'Chloé': 30, 'David': 10},
+    ].take(rounds)) {
+      await games.addRound();
+      final round = games.currentRounds.last.id!;
+      for (final p in games.currentPlayers) {
+        final score = scores[p.name];
+        if (score != null) await games.updateScore(p.id!, round, score);
+      }
+    }
+    if (finished) await games.setGameFinished(id, true);
+    await games.loadGames();
+    await games.loadGame(id);
+    return gameTypes.getGameTypeById(typeId)!;
+  }
+
   /// [count] players, each 10 points apart so that nobody ties, highest wins.
   Future<void> aGameOf(int count) async {
     final names = [
@@ -725,6 +773,98 @@ void main() {
         expect(games.games.single.id, game!.id);
         expect(games.games.single.isFinished, isTrue);
       });
+    });
+  });
+
+  // The elimination rule, on the screen this entry is about
+  // (`wip/done/2026-09-20-ranking-ignores-the-game-types-ranking-rule.md`):
+  // finished, a game of a type that puts a player out and ends on the last
+  // player standing ranks by who went out when, not by the total.
+  group('a finished elimination game', () {
+    testWidgets('ranks by the elimination order, not the total',
+        (tester) async {
+      await tester.runAsync(() => anEliminationGame(finished: true));
+      await tester
+          .pumpWidget(wrap(const StandingsScreen(boardBuilder: _board)));
+      await tester.pumpAndSettle();
+
+      // David alone at the end, then the others last-out first. Alice, out
+      // after one hand with the second-lowest total, is last.
+      expect(rowNames(tester), ['David', 'Chloé', 'Bob', 'Alice']);
+      expect(rowPlaces(tester), ['1', '2', '3', '4']);
+      expect(podiumNames(tester), ['David', 'Chloé', 'Bob']);
+      expect(find.text(l10n.gameEndWinner('David')), findsOneWidget);
+    });
+
+    testWidgets('the share text and the home list agree with the screen',
+        (tester) async {
+      final type =
+          await tester.runAsync(() => anEliminationGame(finished: true));
+      String? shared;
+      await tester.pumpWidget(wrap(StandingsScreen(
+        boardBuilder: _board,
+        share: (text, {subject, image}) async => shared = text,
+      )));
+      await tester.pumpAndSettle();
+      await tapShare(tester, () => shared != null);
+
+      expect(rowNames(tester), ['David', 'Chloé', 'Bob', 'Alice']);
+      expect(
+        shared,
+        contains('1. David — 50 points\n'
+            '2. Chloé — 115 points\n'
+            '3. Bob — 140 points\n'
+            '4. Alice — 101 points'),
+      );
+
+      // The home list's cards read `standingOf`, off the current game: it
+      // must reach the same order, or a card would contradict the screen.
+      await tester.runAsync(() async {
+        final standing =
+            await games.standingOf(games.currentGame!, gameType: type);
+        expect([for (final p in standing.rankedPlayers) p.name],
+            ['David', 'Chloé', 'Bob', 'Alice']);
+        expect(standing.soleLeader?.name, 'David');
+      });
+    });
+
+    testWidgets('open, the same game still ranks by the total',
+        (tester) async {
+      // Four rounds: Chloé and David are still in, so the game is not over.
+      await tester
+          .runAsync(() => anEliminationGame(finished: false, rounds: 4));
+      await tester
+          .pumpWidget(wrap(const StandingsScreen(boardBuilder: _board)));
+      await tester.pumpAndSettle();
+
+      expect(rowNames(tester), ['David', 'Chloé', 'Alice', 'Bob']);
+      expect(_headline, findsNothing);
+    });
+
+    testWidgets('a race to a total with the same threshold ranks by the total',
+        (tester) async {
+      // The same game, of a type that ends when a player reaches 100 instead:
+      // a threshold alone does not change the order (decided 2026-09-20).
+      await tester.runAsync(() async {
+        final type = await anEliminationGame(finished: true);
+        await gameTypes.updateGameType(GameType(
+          id: type.id,
+          name: type.name,
+          iconCodePoint: type.iconCodePoint,
+          cardColorValue: type.cardColorValue,
+          isLowestScoreWins: true,
+          playerDeadConditionType: PlayerDeadConditionType.over,
+          playerDeadThreshold: 100,
+          gameOverConditionType: GameOverConditionType.firstPlayerOver,
+          gameOverThreshold: 100,
+        ));
+      });
+      await tester
+          .pumpWidget(wrap(const StandingsScreen(boardBuilder: _board)));
+      await tester.pumpAndSettle();
+
+      expect(rowNames(tester), ['David', 'Alice', 'Chloé', 'Bob']);
+      expect(find.text(l10n.gameEndWinner('David')), findsOneWidget);
     });
   });
 }

@@ -1,5 +1,10 @@
 # The rank-then-seat sort is written twice, in the ranking and on the board
 
+**Status:** done (2026-09-20) — closed by `feat/ranking-rule`, which owned
+`lib/models/game_standing.dart` as this entry asked. The one sort is
+`GameStanding.rankedPlayers`, keyed on `player.id`; `GameRanking.fromStanding` and
+`BoardData.byRank` both return it.
+
 - **Noted:** 2026-09-20 — while merging the two standings screens (`refactor/standings-screen`)
 - **Theme:** code-health
 - **Area:** app
