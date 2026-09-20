@@ -5,13 +5,13 @@
 > Updated: 2026-09-20
 
 This page was `SchemaV9` until v10 landed on 2026-09-13; links were renamed with it.
-v11 followed the same day, v12, v13 and v14 on 2026-09-16, v15 on 2026-09-18 and v16 on
-2026-09-19; all are described here too.
+v11 followed the same day, v12, v13 and v14 on 2026-09-16, v15 on 2026-09-18, v16 on
+2026-09-19, and v17 and v18 on 2026-09-20; all are described here too.
 
 ## Facts
 
-Schema version **17**, declared in two places that must stay in sync:
-`lib/services/drift/database.dart` (`schemaVersion => 17`) and
+Schema version **18**, declared in two places that must stay in sync:
+`lib/services/drift/database.dart` (`schemaVersion => 18`) and
 `DatabaseService.schemaVersion` in `lib/services/database_service.dart`, which both
 `openDatabase` calls use.
 
@@ -19,7 +19,7 @@ Schema version **17**, declared in two places that must stay in sync:
 
 | Table | Role |
 |---|---|
-| `game_types` | Game types. uuid + sync columns, `rules` and `rules_slug` since v13, `builtin_key` since v14, one live row per `builtin_key` since v15. |
+| `game_types` | Game types. uuid + sync columns, `rules` and `rules_slug` since v13 (re-derived from `builtin_key` by v18), `builtin_key` since v14, one live row per `builtin_key` since v15. `isDefault` is historical only — see below. |
 | `games` | Games. uuid, `group_id`, sync columns, `finishedAt` since v12. |
 | `players` | **Global identity**: `(id, name, colorValue, uuid, group_id, …)`. UNIQUE on `name COLLATE NOCASE` where `group_id IS NULL`. |
 | `game_players` | **Per-game membership**: `(id, gameId, player_id FK→players, name, orderIndex, colorValue, uuid, …)`. UNIQUE `(gameId, player_id)`. |
@@ -88,12 +88,14 @@ is what makes the chosen name stick.
 1. adds the column;
 2. **back-fills every seeded row**, matched by the literal name it was seeded with *and* by
    `isDefault = 1` — the precedent is the v4→v5 step, `database_service.dart`. `isDefault` is
-   what separates a row the app wrote from one the user made, so a user's own "Yahtzee" is
-   never claimed and renamed under them. It is therefore **not cosmetic**: a row that loses
-   it is skipped by every back-fill of this shape for good. Until 2026-09-20 the edit dialog
-   cleared it — and `rules` and `rules_slug` with it — on every save
-   (`wip/done/2026-09-20-editing-a-game-type-erases-its-rules.md`, [[MobileApp]]). At most one row per key: the guard is on the key,
-   not on the row, which is what makes a replay over a duplicated name safe;
+   what separates a row the app wrote from one the user made **at this point of the chain**,
+   so a user's own "Yahtzee" is never claimed and renamed under them. A row that loses it is
+   skipped by every back-fill of this shape for good, and until 2026-09-20 the edit dialog
+   cleared it — with `rules` and `rules_slug` — on every save
+   (`wip/done/2026-09-20-editing-a-game-type-erases-its-rules.md`, [[MobileApp]]). That is
+   why no back-fill written since keys on it: see *`game_types.isDefault`* below. At most one
+   row per key: the guard is on the key, not on the row, which is what makes a replay over a
+   duplicated name safe;
 3. **inserts the twelve types the pre-v14 seed never held**, when the key is absent *and* no
    live row already uses that name.
 
@@ -115,6 +117,35 @@ Pushed as `builtin_key`, a column the server gained in `0004_game_type_builtin_k
 group link of a built-in type is derived from the key rather than the name
 (`linkedGameTypeRemoteUuid`, `lib/services/sync/sync_ids.dart`), so two devices in different
 locales compute the same server uuid. See [[Sync]].
+
+### `game_types.isDefault` — historical only (settled 2026-09-20)
+
+INTEGER NOT NULL DEFAULT 0, since v1. It means **"this row was written by this device's own
+seed"**, and nothing more. **Nothing in the app reads it, and nothing new may.**
+
+| Where | What it does |
+|---|---|
+| `GameType.defaultGameTypes()`, both `_insertDefaultGameTypes` | writes 1 on every seeded row |
+| `applyV13`, `applyV14` step 2 (`sync_schema.dart`) | two past back-fills select on `isDefault = 1` |
+| `sync_store.dart` `case 'game_type'` | pushed as `is_default`; the server stores it (`backend/app/models/game.py`) |
+| `sync_store.dart` `_applyGameType` | a **received** row is inserted with `isDefault: 0` — the pushed value is dropped |
+
+Two consequences, both of which had already cost data before they were written down.
+
+- **It does not mean "built in".** A built-in type that arrived from a group carries 0 from
+  the start, so it was invisible to an `isDefault = 1` back-fill long before any bug. What
+  separates a built-in row from the user's own is `builtin_key`, and only that.
+- **It is not durable.** Until 2026-09-20 the edit dialog cleared it — with `rules` and
+  `rules_slug` — on every save, the colour included
+  (`wip/done/2026-09-20-editing-a-game-type-erases-its-rules.md`, fixed in #179). A row that
+  lost it is skipped by every back-fill of that shape for good, which is exactly why
+  `applyV13` and `applyV14` could not repair the rows `applyV18` repairs.
+
+So **every future migration, query and screen tests `builtin_key`, never `isDefault`**. The
+column stays (dropping it rewrites every user's `game_types` for nothing) and keeps being
+pushed (the server has carried it since `0001_initial`; removing it from the payload is a
+contract change worth more than the byte it saves). `applyV18` deliberately does not restore
+it. `lib/models/game_type.dart` carries the same warning on the field.
 
 ### One live row per built-in type (since v15)
 
@@ -181,6 +212,7 @@ and scores. Deleting a game type ignores tombstoned games and clears their `game
 | **v15** | **Unique index on live built-in game types** (`builtin_key`, live rows only). `applyV15` in `lib/services/sync/sync_schema.dart`, run by both engines on upgrade and on a fresh install. Clears a surplus key rather than failing; deletes nothing. |
 | **v16** | **Rulesets for the twelve types of v14**: `rules_slug` back-filled by `builtin_key`, where it is still NULL. `applyV16` in `lib/services/sync/sync_schema.dart`, run by both engines. No column change; `UPDATE`s only, so nothing deleted comes back, a slug already set is kept and a renamed type (no key) is left alone. `test/migration_v15_to_v16_test.dart`. |
 | **v17** | **Keyless copies of the built-in types soft-deleted** — the ones the pre-#153 PWA reload bug seeded again and v15 stripped of their key. `applyV17` in `lib/services/sync/sync_schema.dart`, run by both engines on upgrade only (a fresh install has none). A row goes only if it is live, keyless, group-less, holds no `rules`, a live built-in row has the same stored name and the same scoring fields (`isLowestScoreWins`, the dead and game-over conditions and thresholds, NULL-safe), and no game, live or deleted, points at it. `deleted_at` + `updated_at`, not a `DELETE`, so sync sees a tombstone; a copy with a game is the user's and is kept. No column change. `test/migration_v16_to_v17_test.dart`. |
+| **v18** | **`applyV16` replayed**, so a `rules_slug` emptied *after* v16 had run comes back. `applyV18` in `lib/services/sync/sync_schema.dart` is literally `applyV16`, run by both engines; no column change, no new logic. It repairs the rows the pre-1.3.1 editor wiped (`rules`, `rules_slug`, `isDefault` cleared on every save, #179): `builtin_key` survives an edit, and `applyV16` keys on it and ignores `isDefault`, so the repair was already written — only a second run was missing. `UPDATE`s only, on `rules_slug IS NULL` alone, so a written ruleset, a slug already set and a keyless (created or renamed) type are untouched, and nothing is inserted. No user action clears a slug on purpose, so replaying is safe. `rules` the bug erased is user content with no second source and is not recoverable; `isDefault` is deliberately not restored. `test/migration_v17_to_v18_test.dart`. |
 | v10 | **Sync bookkeeping**: `group_links`, `entity_versions`, `sync_inbox`; `outbox.rejected_at` / `reject_reason`; `sync_state.device_id` / `group_name`. Additive only — `_createSyncV10Tables` is the fresh-install and the upgrade path at once. |
 
 ### The v9 migration in detail
@@ -213,6 +245,27 @@ repairs the shape before the rest of the chain runs.
 
 ## Decisions & History
 
+- **The repair for wiped rules is a replay, not new code (2026-09-20, `fix/rules-slug-restore`).**
+  #179 stopped the editor clearing `rules_slug`; it repaired nothing already lost, and the
+  owner's production device reached 1.3.1 with ZapZap and 6 qui prend showing the empty
+  "write your own rules" state. The entry that reported the editor bug concluded the damage
+  was irreversible, having read only `applyV13` and the v14 key back-fill — both keyed on
+  `isDefault = 1`, which the same bug cleared. `applyV16` is keyed on `builtin_key`, which an
+  edit does **not** clear, and covers all 21 rulesets rather than the twelve its dartdoc
+  highlights. So the fix is a version bump whose step is `applyV16` again. Writing a new,
+  narrower repair was rejected: it would have been the same `UPDATE` with a second chance to
+  get it wrong, and a step that is an alias cannot drift from the one it replays. A step that
+  fires the v11 capture triggers also pushes the restored slug to the group, which is the
+  wanted behaviour — the NULL had already travelled there.
+- **`isDefault` is settled as historical, not removed (2026-09-20, `fix/rules-slug-restore`).**
+  It is written by the seed, read by nobody, pushed to the server and dropped on receipt.
+  Giving it a live meaning was rejected: a built-in row pulled from a group has carried 0
+  since the first sync, so it cannot mean "built in" — `builtin_key` already does, and two
+  answers to one question is how the wrong one gets used. Removing it was rejected too: the
+  column costs a table rewrite on every install to delete, and taking `is_default` out of the
+  payload is a sync-contract change with no benefit. It keeps one documented meaning — "this
+  device's seed wrote this row" — and the rule that nothing may branch on it. The section
+  above and the field's dartdoc carry that rule where the next back-fill will look.
 - **A row is edited with `copyWith`, never rebuilt (2026-09-20, `fix/game-type-editor`).**
   `DriftGameTypeRepository.update` writes every column of `toMap()`, which is what lets a
   new column need no repository code — and what turned the edit dialog's fresh

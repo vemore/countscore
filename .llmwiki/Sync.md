@@ -90,6 +90,14 @@ different languages hold "Autre" and "その他" for one and the same type. Thre
 Last-writer-wins on `game_types.name` is therefore harmless for a built-in row — nothing
 reads it while the key is set. See [[SchemaV10]] and [[I18n]].
 
+> **`is_default` is pushed but never applied.** The payload carries it
+> (`sync_store.dart`, `case 'game_type'`) and the server stores it, but `_applyGameType`
+> inserts every received row with `isDefault: 0`, so the value never round-trips and a
+> built-in type acquired from a group has always carried 0. It is a historical column that
+> nothing reads; `builtin_key` is the identity. [[SchemaV10]] settles it, and no back-fill
+> written since v14 keys on it — which is what let the v18 step repair the `rules_slug` the
+> pre-1.3.1 editor wiped, NULLs it had already pushed to the group included.
+
 > A group that was already sharing *before* this change keeps its existing name-derived
 > links (`_ensureLinks` only links rows it has not linked yet). Those groups converge on the
 > next pull instead, through the key match in `_applyGameType`.
