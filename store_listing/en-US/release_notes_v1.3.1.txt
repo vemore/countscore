@@ -1,0 +1,10 @@
+CountScore 1.3.1
+
+• Fixed: editing a game type no longer erases its rules.
+• Elimination games now rank by who lasted longest, not by score.
+• ZapZap, Rummy and Take 6 end on their own when one player is left.
+• One standings screen instead of two, and the podium's top three stay in the list.
+• The game-type editor checks what you enter: thresholds, names, readable colours.
+• A group whose owner is long gone can get an owner back.
+
+Online features stay off until you enter your server.
