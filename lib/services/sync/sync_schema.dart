@@ -430,3 +430,33 @@ Future<void> applyV17(SqlExecutor execute) async {
     [now, now],
   );
 }
+
+/// Schema v18, shared by both engines: replays [applyV16], so a `rules_slug`
+/// emptied *after* v16 had already run comes back.
+///
+/// The pre-1.3.1 game-type editor rebuilt the row from the form fields alone,
+/// writing `rules`, `rules_slug` and `isDefault` NULL / 0 on every save —
+/// including a save that only changed the colour
+/// (`wip/done/2026-09-20-editing-a-game-type-erases-its-rules.md`, fixed in
+/// #179). #179 stops it happening again; nothing repaired the rows already
+/// emptied, and the owner's device reached 1.3.1 with ZapZap and 6 qui prend
+/// showing the empty "write your own rules" state, `builtin_key` still intact.
+///
+/// [applyV16] *is* that repair, with no new logic: it fills `rules_slug` from
+/// `builtin_key` for all 21 keys of [defaultRulesSlugs] — not only the twelve
+/// its own dartdoc highlights — and it never looks at `isDefault`, which the
+/// same bug cleared and which is what makes the v13 and v14 back-fills unable
+/// to help. The one reason it did not repair these rows is that a migration
+/// step runs once. This step is that second run.
+///
+/// Safe to replay by construction: it only touches rows whose slug is still
+/// NULL, it never inserts — so nothing deleted comes back — and no user action
+/// clears a slug on purpose (*Restore the default* in `game_rules_screen.dart`
+/// clears `rules`, not the slug). A ruleset the user wrote is left untouched,
+/// and a type they created or renamed has no key and is left alone.
+///
+/// `rules` that the bug erased is user content with no second source and
+/// cannot be restored. `isDefault` is deliberately not restored either:
+/// `builtin_key` is the only test for a built-in type and nothing reads
+/// `isDefault`. See .llmwiki/SchemaV10.md.
+Future<void> applyV18(SqlExecutor execute) => applyV16(execute);

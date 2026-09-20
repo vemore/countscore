@@ -1,5 +1,16 @@
 # The brand documents still describe the abandoned purple identity
 
+**Status:** done (2026-09-20) — closed by docs/brand-guides. `ICON_DESIGN_GUIDE.md` (612
+lines) and `COLOR_THEME_GUIDE.md` (414) deleted; the purple repainted teal in
+`FEATURE_GRAPHIC_TEMPLATES.md` and `ASSET_CREATION_CHECKLIST.md`, whose pointers at the two
+guides are gone, as are `store_listing/README.md`'s. `store_listing/assets/feature_graphic.png`
+is redrawn in the brand teal around the new cards-and-pawns icon, by the new
+`scripts/generate_feature_graphic.py` (Template 1, Pillow, `--check` to verify) from committed
+inputs only — no locale has an override, so all ten publish it, once the user asks for a
+listing publish. `lib/utils/app_theme.dart:5` no longer sources the teal from a podium, and
+the two `.llmwiki/MobileApp.md` lines that repeated that claim are corrected;
+`.llmwiki/StoreListing.md` records the decision.
+
 - **Noted:** 2026-09-20 — while auditing the app icon before proposing replacements
 - **Theme:** docs
 - **Area:** docs

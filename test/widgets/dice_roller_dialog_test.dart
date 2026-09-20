@@ -1,6 +1,8 @@
 // The dice roller rolls 1 to 6 six-sided dice and shows each face and the
 // total. A seeded Random makes the rolls reproducible: every value is 1..6 and
 // the total shown is their sum, for every count and after every re-roll.
+// The six count choices also have to sit on a single row inside the dialog on a
+// 412 dp phone — the geometry, not merely the presence of six widgets.
 
 import 'dart:math';
 
@@ -28,6 +30,29 @@ void main() {
         supportedLocales: const [Locale('en', '')],
         locale: const Locale('en', ''),
         home: Scaffold(body: DiceRollerDialog(random: random)),
+      );
+
+  Widget showDialogApp(Random random) => MaterialApp(
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('en', '')],
+        locale: const Locale('en', ''),
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              key: const Key('open_dice_roller'),
+              onPressed: () => showDialog<void>(
+                context: context,
+                builder: (_) => DiceRollerDialog(random: random),
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
       );
 
   List<int> dice(WidgetTester tester) => [
@@ -82,4 +107,60 @@ void main() {
     await tester.pumpWidget(wrap(Random(7)));
     expect(dice(tester), first);
   });
+
+  // The sixth chip used to wrap onto a line of its own (1 2 3 4 5 / 6) because
+  // AlertDialog sizes its column with IntrinsicWidth and a Wrap's intrinsic
+  // width ignores its own spacing. Assert the laid-out geometry, not that six
+  // widgets exist: one row means one distinct top edge.
+  for (final view in const [
+    (label: '412 dp phone', size: Size(412, 915)),
+    (label: 'PWA at 1600 px', size: Size(1600, 900)),
+  ]) {
+    testWidgets('the six count choices sit on one row — ${view.label}',
+        (tester) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = view.size;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(showDialogApp(Random(3)));
+      await tester.tap(find.byKey(const Key('open_dice_roller')));
+      await tester.pumpAndSettle();
+
+      final rects = <Rect>[];
+      for (var n = 1; n <= DiceRollerDialog.maxDice; n++) {
+        final finder = find.byKey(Key('dice_count_$n'));
+        expect(finder, findsOneWidget);
+        rects.add(tester.getRect(finder));
+      }
+
+      expect(
+        rects.map((r) => r.top).toSet(),
+        hasLength(1),
+        reason: 'the six count choices share one row on a ${view.label}, '
+            'but they landed at $rects',
+      );
+
+      // In order, left to right, and on the surface of the dialog.
+      final surface = tester.getRect(
+        find
+            .descendant(
+              of: find.byType(Dialog),
+              matching: find.byType(Material),
+            )
+            .first,
+      );
+      for (var i = 0; i < rects.length; i++) {
+        expect(rects[i].left, greaterThanOrEqualTo(surface.left - 0.01));
+        expect(rects[i].right, lessThanOrEqualTo(surface.right + 0.01));
+        if (i > 0) {
+          expect(rects[i].left, greaterThanOrEqualTo(rects[i - 1].right));
+        }
+      }
+
+      // Still usable at that width: the last choice rolls six dice.
+      await tester.tap(find.byKey(const Key('dice_count_6')));
+      await tester.pumpAndSettle();
+      expect(dice(tester), hasLength(6));
+    });
+  }
 }

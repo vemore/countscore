@@ -107,7 +107,7 @@ at your own server in Settings → Server if you want the connected features.
 | Database | `drift` ^2.35.0 + `drift_flutter` ^0.3.1 over SQLite |
 | — on Android | native SQLite via FFI |
 | — on web | `sqlite3.wasm` persisted in IndexedDB |
-| Legacy migrator | `sqflite` ^2.4.3 — bootstraps an existing database to schema v11, then Drift takes over |
+| Legacy migrator | `sqflite` ^2.4.3 — runs the migration chain on an existing database up to the current schema version, then Drift takes over |
 | UI | `flex_color_picker` ^4.0.0, `flutter_markdown_plus` |
 | Group sync | `web_socket_channel` ^3.0.3 (change signal), `flutter_secure_storage` ^11.1.1 (device token), `crypto` ^3.0.7 (name-based uuids) |
 | Utilities | `intl`, `http`, `url_launcher` (report email, Play listing), `share_plus` (share a result), `in_app_review` ^2.0.12 (Play review sheet), `package_info_plus` (version), `wakelock_plus`, `shared_preferences`, `path_provider`, `file_picker` |

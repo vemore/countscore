@@ -22,9 +22,13 @@ by `scripts/generate_icons.py` from the vector source in `design/icon/`, never e
 hand; it is also a Flutter asset (`pubspec.yaml`), which is how the home and About screens
 show it, and the input `flutter_launcher_icons` uses for the legacy square mipmap
 ([[Release]] §Icons) — plus the 1024×500
-`feature_graphic.png` (Template 1 of `store_listing/FEATURE_GRAPHIC_TEMPLATES.md`: icon, name,
-tagline and the scoring grid in a phone frame, drawn with Pillow) — every locale's, unless
-`<locale>/feature_graphic.png` exists. It holds **no screenshots**: the old shared raw set
+`feature_graphic.png`, **generated too**, by `uv run --script
+scripts/generate_feature_graphic.py` (`--check` verifies the committed PNG): Template 1 of
+`store_listing/FEATURE_GRAPHIC_TEMPLATES.md` — the icon, the name in the bundled Nunito, the
+tagline, three gold promise pills and the en-US board capture of the demo database in an ink
+phone frame, on a teal gradient (`#189890` → `#095954`, both derived from `kBrandSeedLight`).
+It is every locale's, unless `<locale>/feature_graphic.png` exists; **none of the ten has
+one**, so the ten publish this single file. It holds **no screenshots**: the old shared raw set
 (`assets/screenshots/phone/`, French, purple, pre-refresh) was deleted on 2026-09-19, and each
 locale has its own `raw/` set. `scripts/capture_screenshots.sh <locale>` switches CountScore alone to a
 store locale's language (`adb shell cmd locale set-app-locales com.vemore.countscore --locales
@@ -243,6 +247,22 @@ store:
 
 ## Decisions & History
 
+- **The feature graphic is teal, generated, and the two brand guides are gone (2026-09-20).**
+  `store_listing/assets/feature_graphic.png` was the deep-purple banner of the abandoned
+  identity, built around the podium icon that PR #195 replaced, and its phone mockup showed
+  five real first names. It is redrawn by `scripts/generate_feature_graphic.py` from
+  committed inputs only — the generated `icon_512.png`, the en-US capture of the fictional
+  demo database and the bundled Nunito — so a redraw is a command rather than an afternoon in
+  Figma, and `--check` turns a stale PNG into a failure instead of a surprise on the store
+  page. The same change deleted `store_listing/`'s icon-design and colour-theme guides (612
+  and 414 lines) rather than repainting them: both restated a palette that had moved ten
+  months earlier, and a hex copied into prose has no way of noticing. The palette's home is
+  `lib/utils/app_theme.dart`, the icon's constraints are [[Release]] §Icons, and what survives
+  in `store_listing/` — `FEATURE_GRAPHIC_TEMPLATES.md`, `ASSET_CREATION_CHECKLIST.md` — points
+  at both instead of copying them. Closed
+  `wip/done/2026-09-20-the-brand-docs-still-describe-the-abandoned-purple.md`.
+  **Not published yet**: the new graphic reaches the store only through `play_publish.py
+  listing --graphics`, which is the user's call.
 - **One English promo video for every locale (2026-09-19).** The user's call: a video in a
   language the visitor may not read still shows the app working, which ten empty slots do
   not. Unlisted, because the listing is its only audience. A localized cut replaces the URL in

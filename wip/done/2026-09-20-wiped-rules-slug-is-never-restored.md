@@ -1,5 +1,7 @@
 # Les `rules_slug` effacés par l'ancien éditeur ne sont jamais restaurés, alors qu'une reprise existe déjà
 
+**Status:** done (2026-09-20) — closed by fix/rules-slug-restore. Le schéma passe en **v18** (`lib/services/drift/database.dart`, `lib/services/database_service.dart`) et le pas v18, `applyV18` (`lib/services/sync/sync_schema.dart`), **est** `applyV16` : aucune logique nouvelle, seulement la deuxième exécution qui manquait. Les deux moteurs le lancent (chaîne sqflite sur natif, `onUpgrade` de Drift sur web). Le sort d'`isDefault` est tranché et écrit : colonne **historique**, que rien ne lit et sur laquelle plus aucune migration, requête ou écran ne branche — `builtin_key` est la seule identité d'un type intégré. Elle n'est ni supprimée (réécrire `game_types` chez tout le monde pour rien) ni retirée de la charge utile (changement de contrat sans bénéfice), et v18 ne la restaure pas. Documenté dans [[SchemaV10]] (section `game_types.isDefault`, ligne v18 de l'historique, deux décisions), dans [[Sync]] et sur le champ lui-même (`lib/models/game_type.dart`). `test/migration_v17_to_v18_test.dart` couvre les quatre critères. Le `rules` écrit à la main que le bug a effacé reste irrécupérable : c'est du contenu utilisateur sans seconde source. La question de la charge utile `rules_slug` n'a pas eu à être ouverte : le pas v18 tient sans y toucher.
+
 - **Noted:** 2026-09-20 — test sur appareil de 1.3.1+7, ZapZap et 6 qui prend affichent « Pas encore de règles » sur le Pixel du propriétaire
 - **Theme:** game-types
 - **Area:** app
