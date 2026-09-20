@@ -468,10 +468,16 @@ class SyncStore {
               final String rules => _clip(rules, _gameTypeRulesMax),
               _ => null,
             },
-            'rules_slug': switch (r['rules_slug']) {
-              final String slug => _clip(slug, _gameTypeRulesSlugMax),
-              _ => null,
-            },
+            // A NULL slug is never a deliberate value — nothing in the app
+            // clears it, and the pre-1.3.1 editor wiped it by accident
+            // (the `wiped-rules-slug` entry in `wip/`) — so it
+            // is *omitted* rather than pushed as null. An absent key means "no
+            // opinion" all the way through: the server keeps the column it has
+            // (`_client_payload` filters on key presence), and the other
+            // devices never pull a null over a slug they hold. `rules`, which
+            // the user does clear on purpose, still travels as null.
+            if (r['rules_slug'] case final String slug)
+              'rules_slug': _clip(slug, _gameTypeRulesSlugMax),
           },
           error: null,
         );
@@ -773,7 +779,10 @@ class SyncStore {
         'gameOverConditionType': p['game_over_condition_type'],
       if (p.containsKey('game_over_threshold')) 'gameOverThreshold': p['game_over_threshold'],
       if (p.containsKey('rules')) 'rules': p['rules'],
-      if (p.containsKey('rules_slug')) 'rules_slug': p['rules_slug'],
+      // `rules_slug` is the one column a null does not clear: see the push side
+      // above. A group that still holds a wiped slug must not undo the v18
+      // repair on a device that has it back.
+      if (p['rules_slug'] != null) 'rules_slug': p['rules_slug'],
     };
     final linked = await _localOf(groupId, 'game_type', d.entityUuid);
     if (linked != null) {
@@ -835,7 +844,11 @@ class SyncStore {
         'gameOverConditionType': p['game_over_condition_type'],
         'gameOverThreshold': p['game_over_threshold'],
         'rules': p['rules'],
-        'rules_slug': p['rules_slug'],
+        // A built-in type arriving with a wiped slug is derived from its key,
+        // the way `applyV16` does it: the migration chain will not run again,
+        // so this is the only repair left for a device joining the group before
+        // a healthy one has pushed the slug back.
+        'rules_slug': p['rules_slug'] ?? defaultRulesSlugs[builtinKey],
         'uuid': localUuid,
         'created_at': now,
         'updated_at': now,

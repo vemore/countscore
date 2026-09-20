@@ -52,6 +52,9 @@ class _DiceRollerDialogState extends State<DiceRollerDialog> {
     final theme = Theme.of(context);
     final total = _values.fold<int>(0, (sum, v) => sum + v);
     return AlertDialog(
+      // Wider than the default 40 dp inset: the six count choices need the room
+      // to stay on one row on a 412 dp phone.
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       title: Text(l10n.diceRoller),
       content: SingleChildScrollView(
         child: Column(
@@ -59,20 +62,31 @@ class _DiceRollerDialogState extends State<DiceRollerDialog> {
           children: [
             Text(l10n.diceCount, style: theme.textTheme.labelLarge),
             const SizedBox(height: 8),
-            Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                for (var n = 1; n <= DiceRollerDialog.maxDice; n++)
-                  ChoiceChip(
-                    key: Key('dice_count_$n'),
-                    label: Text('$n'),
-                    showCheckmark: false,
-                    selected: n == _count,
-                    onSelected: (_) => _setCount(n),
-                  ),
-              ],
+            // A Row, not a Wrap: AlertDialog sizes its column with
+            // IntrinsicWidth, and a Wrap's intrinsic width ignores its own
+            // spacing, so the sixth chip wrapped alone however wide the screen
+            // was. The Row reports the spacers too, and the FittedBox keeps the
+            // six on one line even at a large text scale.
+            Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var n = 1; n <= DiceRollerDialog.maxDice; n++) ...[
+                      if (n > 1) const SizedBox(width: 6),
+                      ChoiceChip(
+                        key: Key('dice_count_$n'),
+                        label: Text('$n'),
+                        showCheckmark: false,
+                        visualDensity: VisualDensity.compact,
+                        selected: n == _count,
+                        onSelected: (_) => _setCount(n),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 16),
             Wrap(
