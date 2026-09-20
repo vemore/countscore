@@ -49,6 +49,17 @@ class GameType {
   final int iconCodePoint;
   final int cardColorValue;
   final bool isLowestScoreWins;
+
+  /// **Historical only: nothing reads it, and nothing new may.** It means "this
+  /// row was written by *this device's* seed" and nothing more — a built-in
+  /// type that arrived from a group is inserted with 0
+  /// (`lib/services/sync/sync_store.dart`, `_applyGameType`), so it does not
+  /// separate "built in" from "the user's own" as soon as a group exists.
+  /// [builtinKey] is what does that, and it is the only test any migration,
+  /// query or screen may use. The two back-fills that still select on it
+  /// (`applyV13`, `applyV14`) are past steps, and the pre-1.3.1 editor cleared
+  /// it on every save, which is precisely why they could not repair the rows
+  /// `applyV18` repairs. See .llmwiki/SchemaV10.md.
   final bool isDefault;
   final PlayerDeadConditionType? playerDeadConditionType;
   final int? playerDeadThreshold;
