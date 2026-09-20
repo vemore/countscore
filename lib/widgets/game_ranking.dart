@@ -29,17 +29,14 @@ class GameRanking {
   /// without one). The caller checks that a game is current.
   factory GameRanking.of(GameProvider games, GameType? gameType) {
     final game = games.currentGame!;
-    final players = games.currentPlayers;
-    final rounds = games.currentRounds;
-    final hasScores = players.any(
-        (p) => rounds.any((r) => games.getScore(p.id!, r.id!) != null));
     return GameRanking.fromStanding(
-      GameStanding(
-        players: players,
-        totals: hasScores
-            ? {for (final p in players) p.id!: games.getPlayerTotal(p.id!)}
-            : const {},
+      GameStanding.forGame(
+        players: games.currentPlayers,
+        rounds: games.currentRounds,
+        scoreOf: games.getScore,
         isLowestScoreWins: game.isLowestScoreWins,
+        isFinished: game.isFinished,
+        gameType: gameType,
       ),
       gameType,
     );
@@ -48,19 +45,14 @@ class GameRanking {
   /// The ranking of [standing] under [gameType]'s elimination rule — what
   /// [GameRanking.of] builds from the current game, open to a caller (a test,
   /// the shared text) that holds a standing without a [GameProvider].
+  ///
+  /// The order is [standing]'s own (`GameStanding.rankedPlayers`), the same
+  /// the board draws: which rule decides it is the standing's business.
   factory GameRanking.fromStanding(GameStanding standing, GameType? gameType) {
     final players = standing.players;
-    final ranks = standing.ranks;
-    // Best first; a tie keeps the seat order, as the board's `byRank` does.
-    // `List.sort` is not stable, so the seat is the tie-breaker.
-    final seat = {for (var i = 0; i < players.length; i++) players[i].id: i};
-    final ranked = [...players]..sort((a, b) {
-        final byRank = (ranks[a.id] ?? 0).compareTo(ranks[b.id] ?? 0);
-        return byRank != 0 ? byRank : seat[a.id]!.compareTo(seat[b.id]!);
-      });
     return GameRanking._(
       standing: standing,
-      ranked: ranked,
+      ranked: standing.rankedPlayers,
       colours: playerColorsById(players),
       isEliminated: (total) => gameType?.isEliminated(total) ?? false,
       isNearThreshold: (total) =>

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/game.dart';
 import '../models/game_standing.dart';
+import '../models/game_type.dart';
 import '../models/player.dart';
 import '../models/player_stats.dart';
 import '../models/round.dart';
@@ -418,25 +419,33 @@ class GameProvider with ChangeNotifier {
     return _playerRepo.getByGame(gameId);
   }
 
-  /// [game]'s players in seat order and their totals, without making it the
-  /// current game. Only scores of rounds that still exist are counted, as on
-  /// the board.
-  Future<GameStanding> standingOf(Game game) async {
+  /// [game]'s players in seat order, their totals and its ranking rule,
+  /// without making it the current game. Only scores of rounds that still
+  /// exist are counted, as on the board, and the rounds keep their play order
+  /// so that a finished elimination game ranks by who went out when
+  /// (`GameStanding.forGame`).
+  ///
+  /// [gameType] is the game's type, which the caller holds
+  /// (`GameTypeProvider`); null ranks by score, as every type without an
+  /// elimination rule does.
+  Future<GameStanding> standingOf(Game game, {GameType? gameType}) async {
     final players = await _playerRepo.getByGame(game.id!);
-    final roundIds = {
-      for (final round in await _roundRepo.getByGame(game.id!)) round.id,
-    };
-    final totals = <int, int>{};
+    final rounds = await _roundRepo.getByGame(game.id!);
+    final roundIds = {for (final round in rounds) round.id};
+    final scores = <int, Map<int, int>>{};
     for (final player in players) {
       for (final score in await _scoreRepo.getByPlayer(player.id!)) {
         if (!roundIds.contains(score.roundId)) continue;
-        totals[player.id!] = (totals[player.id!] ?? 0) + score.value;
+        (scores[player.id!] ??= {})[score.roundId] = score.value;
       }
     }
-    return GameStanding(
+    return GameStanding.forGame(
       players: players,
-      totals: totals,
+      rounds: rounds,
+      scoreOf: (playerId, roundId) => scores[playerId]?[roundId],
       isLowestScoreWins: game.isLowestScoreWins,
+      isFinished: game.isFinished,
+      gameType: gameType,
     );
   }
 

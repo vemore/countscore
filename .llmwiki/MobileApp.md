@@ -96,7 +96,10 @@ games* the best total is left out whenever the games mix both win rules. Everyth
 computed in `lib/models/player_stats.dart` from `PlayerStatsRepository.getFinishedGameResults`
 (through `GameProvider.getFinishedGameResults`): live games with `finishedAt` set and at least
 one score on a live round, each player keyed by the global `players.uuid`. Places share on a
-tie (1, 2, 2, 4) and follow the game's `isLowestScoreWins`, like `GameStanding.ranks`.
+tie (1, 2, 2, 4) and follow the game's `isLowestScoreWins`, like `GameStanding.ranks` under
+its score rule — and unlike it on a finished elimination game, which the statistics still
+rank by the total
+(`wip/todo_nr/2026-09-20-statistics-rank-by-score-while-the-standings-rank-by-elimination.md`).
 Colours come from `playerColorsByUuid` — `assignPlayerColors` over the players in the order
 they first appear walking back from the latest game — so the latest game shows exactly its
 board's colours and the filter never recolours anyone. Tests:
@@ -128,9 +131,10 @@ colour lives in the tile only, never tinting the card), the name, "type · date"
 (`DateFormat.MMMd`, `yMMMd` for another year), the player avatars, and a status pill — *In
 progress*, or the winner with a trophy — *Finished* under a flag when nobody scored or on a
 tie for the lead, whose tooltip then names every tied player (`gameEndTie`). Leader and
-winner come from `GameProvider.standingOf(game)`, a `GameStanding`
-(`lib/models/game_standing.dart`) of the players in seat order and their totals over the
-rounds that still exist: `soleLeader`, null on a tie, so a tied Resume card names no leader.
+winner come from `GameProvider.standingOf(game, gameType:)`, a `GameStanding`
+(`lib/models/game_standing.dart`) of the players in seat order, their totals over the rounds
+that still exist and the game's ranking rule ([below](#the-ranking-rule), which is why the
+card passes the type): `soleLeader`, null on a tie, so a tied Resume card names no leader.
 It is read per card, as the player names were before, without touching
 the current game. The filter applies to both the card and the list.
 
@@ -184,7 +188,9 @@ Sixteen components shared out of the screens:
 - `game_ranking.dart` — the ranking the `StandingsScreen` draws, open or finished
   ([below](#the-standings-screen)): `GameRanking.of` (the current game best first, its ranks,
   colours, leader, winners and elimination tests; `GameRanking.fromStanding` builds the same
-  from a `GameStanding`, for a test or a caller without a provider), `RankedPlayers` (the
+  from a `GameStanding`, for a test or a caller without a provider). The order is the
+  standing's own `rankedPlayers`, which the board returns too — one sort, not two
+  ([below](#the-ranking-rule)). `RankedPlayers` (the
   podium of the top three *and* the list of every player under it, the top three twice on
   purpose — since 2026-09-20 the list is the whole ranking, place 1 first, its first place on
   the primary container),
@@ -444,7 +450,7 @@ a podium of the top three in their display colours with their totals (first rais
 middle; each step as high as the player's place, so a tie shares a step), the sole leader
 (`GameStanding.soleLeader`) ringed in `kLeaderGold` under a `BoardCrown` — nobody is crowned
 before the first score or on a tie for the lead — then the others in rank order
-(`GameStanding.ranks`, ties sharing a place). As on the board, a total within 20
+(`GameStanding.ranks`, ties sharing a place, under the game's ranking rule — [below](#the-ranking-rule)). As on the board, a total within 20
 points of the type's elimination threshold is orange — except on the first step, whose
 filled block keeps `onPrimary`, and on a first-place row, whose primary container does the
 same — and an eliminated player is faded and struck through. Actions: **Play again**
@@ -463,6 +469,32 @@ Its three push sites are the board's leaderboard button and rule (`_openStanding
 reads the `true` back) and "End game" on the home list. There is no named route: all three
 push a `MaterialPageRoute`.
 
+#### The ranking rule
+
+What "best" means is the standing's, not the screen's: `GameStanding`
+(`lib/models/game_standing.dart`) carries a `RankingRule`, and every place in the app —
+the board's `#n` badges and rank sort, the standings screen, the shared text and picture,
+the home cards — reads it through `GameStanding.ranks` and `rankedPlayers`.
+
+- **`RankingRule.score`** — the total decides, under the game's `isLowestScoreWins`. The
+  default, the fallback, and what an **open** game always shows whatever its type: while the
+  game runs, the score order is the right thing to show.
+- **`RankingRule.eliminationOrder`** — the survivor first, then the others by *reverse*
+  elimination order (the last one out ranks best), the total only breaking a tie. A
+  **finished** game of a type that both puts a player out on a threshold
+  (`playerDeadConditionType` + `playerDeadThreshold`) and ends on the last player standing
+  (`gameOverConditionType == lastPlayerOver`) — `zapzap`, `rami`, `six_nimmt` —
+  follows it. `GameStanding.ranksByEliminationOrder` is the one test.
+
+Nothing of this is stored: no column, no migration. The round a player went out at is the
+first round whose running total crosses the threshold, walked from the rounds in play order
+(`RoundRepository.getByGame` returns them `ORDER BY roundNumber ASC`) and the scores already
+in hand. `GameStanding.forGame` is the single seam the four call sites build through —
+`game_board_screen.dart`, `GameRanking.of` (the standings screen, `ShareResultButton`) and
+`GameProvider.standingOf` (the home cards) — so they cannot disagree on a place. Tests:
+`test/models/game_standing_test.dart`, and the screen-level cases in
+`test/screens/standings_screen_test.dart` and `test/screens/game_board_lanes_test.dart`.
+
 #### The board
 
 The board is **one lane per player** (`BoardLanes`, `lib/widgets/board_lanes.dart`): a band
@@ -473,8 +505,10 @@ numbers are a column of their own, pinned on the left, and tapping one opens the
 comment. The sole leader (`GameStanding.soleLeader`, following the game's
 `isLowestScoreWins`; none before the first score, none on a tie for the lead) has its lane
 outlined in its colour and a crown in `kLeaderGold`. Places are shared on a tie
-(`GameStanding.ranks`); the rank sort, the places and the ribbon's order key on
-`GameStanding.hasScores`, so a tied round still reads `#1` for every player. A total within 20 points of the type's
+(`GameStanding.ranks`, which follows the game's ranking rule — [below](#the-ranking-rule));
+the rank sort (`BoardData.byRank`, the standing's own `rankedPlayers`), the places and the
+ribbon's order key on `GameStanding.hasScores`, so a tied round still reads `#1` for every
+player. A total within 20 points of the type's
 `playerDeadThreshold` turns orange; an eliminated player's lane is dimmed and the name struck
 through; a zero sits on an amber pill, whatever the game type.
 
@@ -579,6 +613,21 @@ not "fix" it by hardcoding a codepoint.
   none since its lanes size themselves. Two columns start at 600 dp even though a card is
   then only 278 dp, so the compact card exists rather than a later breakpoint; a phone's
   one-column card is never compact (`wip/done/2026-09-18-home-master-detail.md`).
+
+- **An elimination game's final standings follow the elimination order, and the rule is
+  derived, not stored (2026-09-20, `feat/ranking-rule`).** The app knew one rule — count the
+  better totals — so a ZapZap player out after one hand with 101 was ranked second, ahead of
+  the two who played to the end. `GameStanding` now carries a `RankingRule`
+  ([above](#the-ranking-rule)). The user decided both halves of it: a type with no rule of
+  its own ranks by score, `other` included; and the elimination order applies only to a type
+  that has an elimination threshold **and** ends on the last player standing — a threshold
+  with a race-to-a-total ending is not enough. That second decision is what makes a stored
+  field unnecessary: the two conditions `GameType` already carries say it, so there is no
+  column and no migration. Only a **finished** game departs from the score order; an open one
+  shows where it stands. The rank-then-seat sort, written twice until now, became
+  `GameStanding.rankedPlayers`, which both the board and the standings return
+  (`wip/done/2026-09-20-ranking-ignores-the-game-types-ranking-rule.md`,
+  `wip/done/2026-09-20-rank-then-seat-sort-is-duplicated.md`).
 
 - **The board and the home card crown only a sole leader (2026-09-19,
   `fix/board-home-tie-crown`).** The board's crown, outlined lane and ribbon ring, the Resume

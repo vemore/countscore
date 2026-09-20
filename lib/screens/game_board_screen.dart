@@ -448,20 +448,21 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
             );
           }
 
-          // No leader, no place, until a score has been entered.
-          final hasScores = players.any((p) =>
-              rounds.any((r) => gameProvider.getScore(p.id!, r.id!) != null));
+          // No leader, no place, until a score has been entered; the places
+          // follow the type's ranking rule once the game is finished
+          // (`GameStanding.forGame`).
           final board = BoardData(
             players: players,
             rounds: rounds,
             scoreOf: gameProvider.getScore,
-            standing: GameStanding(
+            standing: GameStanding.forGame(
               players: players,
-              totals: hasScores
-                  ? {for (final p in players) p.id!: gameProvider.getPlayerTotal(p.id!)}
-                  : const {},
+              rounds: rounds,
+              scoreOf: gameProvider.getScore,
               isLowestScoreWins:
                   gameProvider.currentGame?.isLowestScoreWins ?? false,
+              isFinished: gameProvider.currentGame?.isFinished ?? false,
+              gameType: gameType,
             ),
             colors: playerColorsById(players),
             isEliminated: (total) => gameType?.isEliminated(total) ?? false,

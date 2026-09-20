@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:countscore/l10n/app_localizations.dart';
 import 'package:countscore/models/game_analysis.dart';
 import 'package:countscore/models/game_standing.dart';
+import 'package:countscore/models/game_type.dart';
 import 'package:countscore/models/player.dart';
 import 'package:countscore/providers/backend_provider.dart';
 import 'package:countscore/providers/game_provider.dart';
@@ -358,6 +359,84 @@ void main() {
     expect(find.byKey(const Key('board_rows_order')), findsOneWidget);
     expect(rowY('Zoe'), lessThan(rowY('Adam')),
         reason: 'a new board opens in seat order');
+  });
+
+  // wip/done/2026-09-20-ranking-ignores-the-game-types-ranking-rule.md: the
+  // badges read the standing, so they follow the type's ranking rule too.
+  group('an elimination game', () {
+    /// The reproduced ZapZap game of four, out above 100, five rounds: Alice
+    /// out in round 1 with 101, Bob out in round 4 with 140, Chloé out in
+    /// round 5 with 115, David alone at the end with 50.
+    Future<void> openZapZap(WidgetTester tester,
+        {required bool finished, int rounds = 5}) async {
+      tester.view.physicalSize = const Size(600, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      // No `builtinKey`: the database already seeds one zapzap row, and the
+      // key is unique among the live ones.
+      final typeId = await gameTypes.createGameType(GameType(
+        name: 'ZapZap',
+        iconCodePoint: Icons.bolt.codePoint,
+        cardColorValue: 0xFFFFC107,
+        isLowestScoreWins: true,
+        playerDeadConditionType: PlayerDeadConditionType.over,
+        playerDeadThreshold: 100,
+        gameOverConditionType: GameOverConditionType.lastPlayerOver,
+        gameOverThreshold: 100,
+      ));
+      final id = await games.createGame(
+          'ZapZap 1', typeId, true, ['Alice', 'Bob', 'Chloé', 'David'], null);
+      await games.loadGame(id);
+      for (final scores in const [
+        {'Alice': 101, 'Bob': 20, 'Chloé': 10, 'David': 5},
+        {'Bob': 30, 'Chloé': 20, 'David': 10},
+        {'Bob': 40, 'Chloé': 30, 'David': 10},
+        {'Bob': 50, 'Chloé': 25, 'David': 15},
+        {'Chloé': 30, 'David': 10},
+      ].take(rounds)) {
+        await games.addRound();
+        final round = games.currentRounds.last.id!;
+        for (final p in games.currentPlayers) {
+          final score = scores[p.name];
+          if (score != null) await games.updateScore(p.id!, round, score);
+        }
+      }
+      if (finished) await games.setGameFinished(id, true);
+      await games.loadGame(id);
+      await tester.pumpWidget(wrap());
+      await tester.pumpAndSettle();
+    }
+
+    String badgeIn(WidgetTester tester, String name) => tester
+        .widgetList<Text>(find.descendant(
+            of: lane(name), matching: find.textContaining('#')))
+        .first
+        .data!;
+
+    testWidgets('finished, the badges follow the elimination order',
+        (tester) async {
+      await openZapZap(tester, finished: true);
+
+      // David alone at the end, then the others last-out first: Alice, out
+      // after one hand, is last however low her total.
+      expect(badgeIn(tester, 'David'), '#1');
+      expect(badgeIn(tester, 'Chloé'), '#2');
+      expect(badgeIn(tester, 'Bob'), '#3');
+      expect(badgeIn(tester, 'Alice'), '#4');
+    });
+
+    testWidgets('open, the badges still follow the total', (tester) async {
+      // Four rounds: Alice (101) and Bob (140) are out, Chloé (85) and David
+      // (40) are still in, so the game is not over and the board stays up.
+      // By total Alice is third, by elimination order she would be last.
+      await openZapZap(tester, finished: false, rounds: 4);
+
+      expect(badgeIn(tester, 'David'), '#1');
+      expect(badgeIn(tester, 'Chloé'), '#2');
+      expect(badgeIn(tester, 'Alice'), '#3');
+      expect(badgeIn(tester, 'Bob'), '#4');
+    });
   });
 
   test('places are shared on a tie and follow the winning direction', () {
