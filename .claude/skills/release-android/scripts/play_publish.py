@@ -279,6 +279,18 @@ def max_version_code(service: Any, edit_id: str) -> tuple[int, str]:
     return best, where
 
 
+def version_codes_on_track(service: Any, edit_id: str, api_track: str) -> set[int]:
+    """The version codes already released on one track."""
+    tracks = service.edits().tracks().list(packageName=PACKAGE, editId=edit_id).execute()
+    return {
+        int(vc)
+        for track in tracks.get("tracks", [])
+        if track.get("track") == api_track
+        for release in track.get("releases", [])
+        for vc in release.get("versionCodes", [])
+    }
+
+
 def describe_tracks(tracks: dict[str, Any]) -> list[str]:
     lines = []
     for track in tracks.get("tracks", []):
@@ -424,6 +436,39 @@ class PublishOptions:
     graphics: bool = False
     commit: bool = False
     aab: Path = Path(DEFAULT_AAB)
+    promote: bool = False
+
+
+def upload_bundle(
+    edits: Any,
+    edit_id: str,
+    opts: "PublishOptions",
+    code: int,
+    media: Callable[[Path, str], Any],
+    out: TextIO,
+) -> None:
+    """Send the bundle to Play and check it carries the version code pubspec.yaml names."""
+    try:
+        uploaded = (
+            edits.bundles()
+            .upload(
+                packageName=PACKAGE,
+                editId=edit_id,
+                media_body=media(opts.aab, "application/octet-stream"),
+            )
+            .execute(num_retries=NUM_RETRIES)
+        )
+    except TimeoutError as err:
+        raise PublishError(
+            f"the bundle upload timed out after {HTTP_TIMEOUT}s and {NUM_RETRIES} retries. "
+            "Nothing was committed and the edit is discarded: rerun the same command."
+        ) from err
+    if int(uploaded.get("versionCode", -1)) != code:
+        raise PublishError(
+            f"Play read versionCode {uploaded.get('versionCode')} from the bundle, "
+            f"pubspec.yaml says {code}: rebuild the bundle"
+        )
+    print(f"uploaded {opts.aab} — versionCode {code}", file=out)
 
 
 def cmd_publish(
@@ -449,33 +494,30 @@ def cmd_publish(
     edit_id = edits.insert(packageName=PACKAGE, body={}).execute()["id"]
     committed = False
     try:
-        highest, where = max_version_code(service, edit_id)
-        if code <= highest:
-            raise PublishError(
-                f"versionCode {code} (pubspec.yaml) is not above {highest}, already on track "
-                f"'{where}'. Bump `version:` in pubspec.yaml and rebuild."
-            )
-        try:
-            uploaded = (
-                edits.bundles()
-                .upload(
-                    packageName=PACKAGE,
-                    editId=edit_id,
-                    media_body=media(opts.aab, "application/octet-stream"),
+        if opts.promote:
+            # Promotion moves a build Play already holds to another track. Play refuses a
+            # versionCode it has seen before, so the bundle is referenced, never re-uploaded
+            # (wip/done/2026-09-20-play-publish-cannot-promote.md).
+            highest, where = max_version_code(service, edit_id)
+            if code > highest:
+                raise PublishError(
+                    f"versionCode {code} (pubspec.yaml) is on no track yet — the highest Play "
+                    f"holds is {highest} on '{where}'. Publish it first, without --promote."
                 )
-                .execute(num_retries=NUM_RETRIES)
-            )
-        except TimeoutError as err:
-            raise PublishError(
-                f"the bundle upload timed out after {HTTP_TIMEOUT}s and {NUM_RETRIES} retries. "
-                "Nothing was committed and the edit is discarded: rerun the same command."
-            ) from err
-        if int(uploaded.get("versionCode", -1)) != code:
-            raise PublishError(
-                f"Play read versionCode {uploaded.get('versionCode')} from the bundle, "
-                f"pubspec.yaml says {code}: rebuild the bundle"
-            )
-        print(f"uploaded {opts.aab} — versionCode {code}", file=out)
+            if code in version_codes_on_track(service, edit_id, api_track):
+                raise PublishError(
+                    f"versionCode {code} is already on track '{api_track}': nothing to promote."
+                )
+            print(f"promoting versionCode {code} — no upload", file=out)
+        else:
+            highest, where = max_version_code(service, edit_id)
+            if code <= highest:
+                raise PublishError(
+                    f"versionCode {code} (pubspec.yaml) is not above {highest}, already on track "
+                    f"'{where}'. Bump `version:` in pubspec.yaml and rebuild, or promote the "
+                    f"build Play already holds with --promote."
+                )
+            upload_bundle(edits, edit_id, opts, code, media, out)
 
         edits.tracks().update(
             packageName=PACKAGE,
@@ -524,6 +566,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     pub.add_argument("--graphics", action="store_true", help="replace feature graphic and phone screenshots")
     pub.add_argument("--commit", action="store_true", help="publish the edit; without it, validate only")
     pub.add_argument("--aab", type=Path, default=None, help=f"default {DEFAULT_AAB}")
+    pub.add_argument(
+        "--promote",
+        action="store_true",
+        help="move a build Play already holds to this track; no bundle is built or uploaded",
+    )
     lst = sub.add_parser(
         "listing",
         help="the store listing alone — no bundle, no version bump; --commit is live at once",
@@ -551,6 +598,8 @@ def main(argv: list[str] | None = None) -> int:
         if args.rollout is not None and args.track != "production":
             raise PublishError("--rollout applies to --track production only")
         aab = args.aab or root / DEFAULT_AAB
+        if args.promote and args.aab is not None:
+            raise PublishError("--promote references a build Play already holds: --aab is unused")
         opts = PublishOptions(
             track=args.track,
             rollout=DEFAULT_ROLLOUT if args.rollout is None else args.rollout,
@@ -559,11 +608,15 @@ def main(argv: list[str] | None = None) -> int:
             graphics=args.graphics,
             commit=args.commit,
             aab=aab,
+            promote=args.promote,
         )
         if not 0 < opts.rollout < 1:
             raise PublishError(f"rollout must be strictly between 0 and 1, got {opts.rollout}")
         key = read_service_account_path(root)
-        verify_aab(root, aab)
+        # A promotion builds and uploads nothing, so there is no local bundle to verify — the
+        # one Play holds was verified when it was published.
+        if not opts.promote:
+            verify_aab(root, aab)
         cmd_publish(build_service(key), root, opts)
         return 0
     except PublishError as err:
