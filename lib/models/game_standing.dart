@@ -20,6 +20,35 @@ enum RankingRule {
   eliminationOrder,
 }
 
+/// Whether one competitor outranks another under [rule].
+///
+/// The one comparison the whole app places by: [GameStanding._isBetter] for a
+/// game on screen, and `FinishedGameResult` (`lib/models/player_stats.dart`)
+/// for a finished game in the statistics, so a player card and a standings
+/// screen cannot disagree on a place
+/// (`wip/done/2026-09-20-statistics-rank-by-score-while-the-standings-rank-by-elimination.md`).
+///
+/// Under [RankingRule.eliminationOrder] the survivor comes first (a null
+/// round: never out), then whoever went out later; the total only breaks a
+/// tie between two players out at the same round. Under [RankingRule.score]
+/// the elimination rounds are not read at all.
+bool outranksUnder({
+  required RankingRule rule,
+  required int? eliminatedAtRoundA,
+  required int? eliminatedAtRoundB,
+  required int totalA,
+  required int totalB,
+  required bool isLowestScoreWins,
+}) {
+  if (rule == RankingRule.eliminationOrder &&
+      eliminatedAtRoundA != eliminatedAtRoundB) {
+    if (eliminatedAtRoundA == null) return true;
+    if (eliminatedAtRoundB == null) return false;
+    return eliminatedAtRoundA > eliminatedAtRoundB;
+  }
+  return isLowestScoreWins ? totalA < totalB : totalA > totalB;
+}
+
 /// Where a game stands: its players in seat order, each one's total, and the
 /// rule its places follow.
 ///
@@ -92,14 +121,31 @@ class GameStanding {
   /// Only a type that both puts a player out on a threshold and ends when the
   /// last player is left standing does: a type with a threshold but a
   /// race-to-a-total ending, and a type with no rule at all, rank by score
-  /// (decided 2026-09-20 by the user, in the entry above). `lastPlayerUnder`
-  /// is the same shape and does not qualify today —
-  /// `wip/todo_nr/2026-09-20-last-player-under-does-not-rank-by-elimination-order.md`.
-  static bool ranksByEliminationOrder(GameType? gameType) =>
-      gameType != null &&
-      gameType.playerDeadConditionType != null &&
-      gameType.playerDeadThreshold != null &&
-      gameType.gameOverConditionType == GameOverConditionType.lastPlayerOver;
+  /// (decided 2026-09-20 by the user, in the entry above).
+  ///
+  /// **Both** last-player-standing conditions qualify. `lastPlayerOver` and
+  /// `lastPlayerUnder` are one shape — `GameType.isGameOver` treats them as
+  /// one, and `GameType.isEliminated` already carries the direction in
+  /// `playerDeadConditionType` — so "last player standing" means what it says
+  /// whichever way the threshold runs (decided 2026-09-20,
+  /// `wip/done/2026-09-20-last-player-under-does-not-rank-by-elimination-order.md`).
+  /// No seeded type is `lastPlayerUnder`; only a type the user builds is.
+  static bool ranksByEliminationOrder(GameType? gameType) {
+    if (gameType == null ||
+        gameType.playerDeadConditionType == null ||
+        gameType.playerDeadThreshold == null) {
+      return false;
+    }
+    return switch (gameType.gameOverConditionType) {
+      GameOverConditionType.lastPlayerOver ||
+      GameOverConditionType.lastPlayerUnder =>
+        true,
+      GameOverConditionType.firstPlayerOver ||
+      GameOverConditionType.firstPlayerUnder =>
+        false,
+      null => false,
+    };
+  }
 
   /// The game's players sorted by `orderIndex`.
   final List<Player> players;
@@ -159,19 +205,14 @@ class GameStanding {
   /// Whether [a] outranks [b].
   bool _isBetter(Player a, Player b) {
     if (a.id == null || b.id == null || a.id == b.id) return false;
-    if (rule == RankingRule.eliminationOrder) {
-      final outA = eliminatedAtRound[a.id];
-      final outB = eliminatedAtRound[b.id];
-      if (outA != outB) {
-        // The survivor first, then whoever went out later.
-        if (outA == null) return true;
-        if (outB == null) return false;
-        return outA > outB;
-      }
-    }
-    final totalA = totalOf(a);
-    final totalB = totalOf(b);
-    return isLowestScoreWins ? totalA < totalB : totalA > totalB;
+    return outranksUnder(
+      rule: rule,
+      eliminatedAtRoundA: eliminatedAtRound[a.id],
+      eliminatedAtRoundB: eliminatedAtRound[b.id],
+      totalA: totalOf(a),
+      totalB: totalOf(b),
+      isLowestScoreWins: isLowestScoreWins,
+    );
   }
 
   /// The players best first; a tie keeps the seat order, since `List.sort` is

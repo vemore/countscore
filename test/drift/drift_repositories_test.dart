@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:countscore/models/game.dart';
 import 'package:countscore/models/game_analysis.dart';
+import 'package:countscore/models/game_standing.dart';
 import 'package:countscore/models/game_type.dart';
 import 'package:countscore/models/player.dart';
 import 'package:countscore/models/round.dart';
@@ -433,6 +434,129 @@ void main() {
           .data['uuid'] as String;
       expect(game.participants[1].playerUuid, bobUuid);
       expect(game.wonBy(bobUuid), isTrue);
+    });
+
+    // The two entries closed by feat/elimination-ranking-model: the statistics
+    // place a finished elimination game exactly as its standings screen does
+    // (`wip/done/2026-09-20-statistics-rank-by-score-while-the-standings-rank-by-elimination.md`).
+    test('a finished elimination game is placed by the elimination order, '
+        'the same places its standings show', () async {
+      // The seeded ZapZap: out above 100, over on the last player standing.
+      final typeId = (await gameTypeRepo.getAll())
+          .firstWhere((t) => t.builtinKey == 'zapzap')
+          .id!;
+      final gameId = await gameRepo.create(Game(
+        name: 'ZapZap',
+        gameTypeId: typeId,
+        isLowestScoreWins: true,
+        finishedAt: DateTime(2026, 9, 3),
+      ));
+      // The reproduction of `test/models/game_standing_test.dart`: Alice out
+      // in round 1 with 101, Bob in round 4 with 140, Chloé in round 5 with
+      // 115, David alone at the end with 50.
+      const scores = <String, List<int?>>{
+        'Alice': [101, null, null, null, null],
+        'Bob': [20, 30, 40, 50, null],
+        'Chloé': [10, 20, 30, 25, 30],
+        'David': [5, 10, 10, 15, 10],
+      };
+      final seats = <String, int>{};
+      var seat = 0;
+      for (final name in scores.keys) {
+        seats[name] = await playerRepo.create(
+          Player(gameId: gameId, name: name, orderIndex: seat++),
+        );
+      }
+      final rounds = [
+        for (var n = 1; n <= 5; n++)
+          await roundRepo.create(Round(gameId: gameId, roundNumber: n)),
+      ];
+      for (final name in scores.keys) {
+        for (var i = 0; i < rounds.length; i++) {
+          final value = scores[name]![i];
+          if (value == null) continue;
+          await scoreRepo.upsert(
+            Score(playerId: seats[name]!, roundId: rounds[i], value: value),
+          );
+        }
+      }
+
+      final result = (await statsRepo.getFinishedGameResults())
+          .firstWhere((r) => r.gameId == gameId);
+      expect(result.rule, RankingRule.eliminationOrder);
+      expect(result.participants.map((p) => p.total), [101, 140, 115, 50]);
+      expect(
+        result.participants.map((p) => p.eliminatedAtRound),
+        [1, 4, 5, null],
+      );
+
+      // The standings screen's own places, built the way `standingOf` does.
+      final players = await playerRepo.getByGame(gameId);
+      final liveRounds = await roundRepo.getByGame(gameId);
+      final byPlayer = <int, Map<int, int>>{};
+      for (final player in players) {
+        for (final score in await scoreRepo.getByPlayer(player.id!)) {
+          (byPlayer[player.id!] ??= {})[score.roundId] = score.value;
+        }
+      }
+      final standing = GameStanding.forGame(
+        players: players,
+        rounds: liveRounds,
+        scoreOf: (p, r) => byPlayer[p]?[r],
+        isLowestScoreWins: true,
+        isFinished: true,
+        gameType: await gameTypeRepo.getById(typeId),
+      );
+      final statisticsPlaces = {
+        for (final p in result.participants) p.name: result.rankOf(p.playerUuid),
+      };
+      final standingsPlaces = {
+        for (final p in players) p.name: standing.ranks[p.id],
+      };
+      expect(statisticsPlaces, standingsPlaces);
+      expect(statisticsPlaces,
+          {'Alice': 4, 'Bob': 3, 'Chloé': 2, 'David': 1});
+    });
+
+    test('a race to a total, and a game with no type, keep the score order',
+        () async {
+      // Skyjo has a threshold but ends on the first total to reach it: the
+      // elimination order is not its rule, here or on the standings.
+      final typeId = (await gameTypeRepo.getAll())
+          .firstWhere((t) => t.builtinKey == 'skyjo')
+          .id!;
+      final raced = await gameRepo.create(Game(
+        name: 'Skyjo',
+        gameTypeId: typeId,
+        isLowestScoreWins: true,
+        finishedAt: DateTime(2026, 9, 4),
+      ));
+      final typeless = await gameRepo.create(Game(
+        name: 'Sans type',
+        isLowestScoreWins: true,
+        finishedAt: DateTime(2026, 9, 5),
+      ));
+      for (final gameId in [raced, typeless]) {
+        final a = await playerRepo.create(
+          Player(gameId: gameId, name: 'Alice', orderIndex: 0),
+        );
+        final b = await playerRepo.create(
+          Player(gameId: gameId, name: 'Bob', orderIndex: 1),
+        );
+        final r = await roundRepo.create(Round(gameId: gameId, roundNumber: 1));
+        await scoreRepo.upsert(Score(playerId: a, roundId: r, value: 120));
+        await scoreRepo.upsert(Score(playerId: b, roundId: r, value: 10));
+      }
+
+      final results = await statsRepo.getFinishedGameResults();
+      for (final gameId in [raced, typeless]) {
+        final result = results.firstWhere((r) => r.gameId == gameId);
+        expect(result.rule, RankingRule.score);
+        expect(result.participants.map((p) => p.eliminatedAtRound),
+            [null, null]);
+        final bob = result.participants[1].playerUuid;
+        expect(result.wonBy(bob), isTrue);
+      }
     });
   });
 
