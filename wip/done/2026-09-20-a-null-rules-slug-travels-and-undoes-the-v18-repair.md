@@ -1,5 +1,11 @@
 # Un `rules_slug` NULL voyage dans la synchronisation et défait la réparation v18
 
+**Status:** done (2026-09-20) — closed by fix/rules-slug-payload. La poussée omet la clé
+`rules_slug` quand la valeur locale est NULL, une valeur NULL tirée n'efface plus un slug
+local posé, et un type intégré reçu sans slug est inséré avec celui dérivé de son
+`builtin_key`. Cinq tests dans `test/sync/sync_store_test.dart` ; la règle et
+l'alternative écartée sont dans [[Sync]] et [[SchemaV10]]. Aucun changement de serveur.
+
 - **Noted:** 2026-09-20 — revue indépendante de #192 (`fix/rules-slug-restore`), puis requête directe sur la base de production
 - **Theme:** game-types
 - **Area:** app
