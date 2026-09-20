@@ -40,25 +40,57 @@ direct competitor "+10".
 
 ![All sixteen candidates](../assets/2026-09-20-the-app-icon-does-not-say-what-the-app-does/all-candidates.png)
 
-- **C1–C5** (tally, podium, score sheet, crown, pips) carried no digits at all and each named
-  an idea next to the product rather than the product. Dropped.
-- **D1–D6** carried digits. **D1** (number grid) and **D3** (cards with "+1") are already the
-  icons of Score Counter and Score Counter – For any game, so both are out. **D2** is the
-  shelf's most copied shape and promises two players. **D4** and **D5** read as a notepad and
-  a bare total.
-- **D6 Classement** and **E2/E3**, the game-pieces ensemble (cards, a die, a pawn, a "+1"),
-  are the shortlist.
+C1–C5 carried no digits and each named an idea next to the product rather than the product.
+D1–D6 carried digits, but **D1** (a number grid) and **D3** (cards with a "+1") are already
+the icons of Score Counter and Score Counter – For any game, and **D2** is the shelf's most
+copied shape. D6 and the E-series ensemble were the shortlist, until the owner drew a
+better ensemble than any of them.
 
 ![Shortlist at 512 px](../assets/2026-09-20-the-app-icon-does-not-say-what-the-app-does/shortlist-512.png)
 ![Shortlist at 48 px, current icon first](../assets/2026-09-20-the-app-icon-does-not-say-what-the-app-does/shortlist-48.png)
 
-**Fix:** adopt one candidate and wire it through everything the icon touches. The SVGs in
-`svg/` are the source: two named layers (`#bg`, `#fg`), artwork inside the 66% adaptive safe
-circle, and a hand-built `-mono` layer. Adopting any of them closes most of
+**The artwork is decided** (2026-09-20). None of the sixteen won: the owner generated an
+ensemble with ChatGPT and had it transcribed to SVG, and it reads better than anything
+drawn here — a fan of cards with an ace, a "+1", an isometric die and **three pawns**,
+which say "several players" with no digit at all. That last part is what every candidate
+above missed.
+
+![The chosen icon](../assets/2026-09-20-the-app-icon-does-not-say-what-the-app-does/chosen-512.png)
+![The chosen icon at the four tests](../assets/2026-09-20-the-app-icon-does-not-say-what-the-app-does/chosen-tests.png)
+
+It did not survive the pipeline as drawn, so `svg/chosen*.svg` is that artwork hardened —
+the shapes and their positions are untouched, and `svg/source-from-chatgpt.svg` is what it
+started from (its C2PA manifest stripped, it drew nothing). Three changes:
+
+- **Reframed.** 31.2% of its subject fell outside the 66% adaptive safe circle; measured
+  and refitted, the flat icon reaches r=440 of the 512 canvas and the adaptive foreground
+  r=367.8 of 368 — nothing clipped.
+- **Flattened.** The two linear gradients became flat fills and the fake drop shadow under
+  the "+1" (a dark copy of the glyph at `translate(8,10)`) is gone. The pawns' two-tone
+  shading stays: those are solid fills, and they hold at every size.
+- **A monochrome layer, authored.** It cannot be derived — flattening the file to one
+  colour gives a blob. Cards in ink each freed from the one beneath, the ace and the spade
+  as holes, the die solid with its edges as hairlines and its pips as holes, the three
+  pawns separated, the "+1" at the weight of the glyph rather than of its keyline.
+
+**Repainted in the app's palette** (the owner's call, 2026-09-20), because the original
+navy is the most crowded ground on this shelf: ink `#0E1716`, the leader's gold `#F2B705`
+on the "+1" and the rays, cream cards and die, and the three pawns in real player colours
+from `lib/utils/player_colors.dart` — vermilion `#E4572E`, blue `#3B82F6`, and the brand's
+light teal `#5ED8CF`. The icon, `app_theme.dart` and the store listing become one identity
+again. Keeping the navy was the alternative and would have meant repainting the app,
+the feature graphic and ten locales of screenshots instead.
+
+**Fix:** wire `svg/chosen*.svg` through everything the icon touches. `chosen.svg` is the
+flat icon, `chosen-adaptive-fg.svg` and `chosen-adaptive-bg.svg` the two Android layers,
+`chosen-mono.svg` the themed one. Adopting it closes most of
 [[2026-09-20-the-app-icon-has-no-vector-source-and-no-monochrome-layer]] at the same time.
-`tools/` holds the generators — they encode the safe-zone measurement and the monochrome
-knockout, which is the part that is easy to get wrong: flattening every shape to one colour
-turns the score sheet into a black slab and the tally into a scribble.
+`tools/gen5.py` regenerates all four from the source artwork and holds both palettes;
+`gen2.py`/`gen3.py` built the sixteen candidates. They encode the two things that are easy
+to get wrong: the safe-zone fit is *measured* from the rendered alpha, because analytic
+bounds on rotated shapes overstate the ink by a third; and a monochrome shape carrying no
+`fill` attribute falls back to black, which is invisible against the mask — that is what
+made the pawns and the rays disappear from the first monochrome layer.
 
 The change spans: `store_listing/assets/icon_512.png`, `dart run flutter_launcher_icons`, a
 brand `adaptive_icon_background` instead of `#FFFFFF`, an `adaptive_icon_monochrome`, the
@@ -69,14 +101,14 @@ comes "from the icon's podium", and the stale guides of
 [[2026-09-20-the-brand-docs-still-describe-the-abandoned-purple]].
 
 **Acceptance:**
-- The chosen artwork ships as SVG, and a documented command regenerates every raster.
+- `svg/chosen*.svg` ships as the source, and a documented command regenerates every raster.
 - At 48 px the icon reads as score-keeping, not as a smudge — checked on a real render.
 - Nothing is clipped under a circular mask, and the themed monochrome icon is legible.
 - The launcher tile, the PWA icons and the in-app asset all show the same new artwork.
 - `.llmwiki/Release.md`'s icon section matches the new procedure and its `Updated:` moves.
 
-**Open question:** which candidate. The user decides; the shortlist is **E3** (the ensemble,
-ink ground — says what you play *and* that points are scored, but four objects is one idea
-more than the category rewards and 48 px is its floor, not its margin) and **D6** (standings
-— says what makes CountScore different from a shelf of single-digit counters). Ground colour
-is part of the same decision: ink separates from the shelf, teal keeps brand continuity.
+**Known weakness of the choice:** seven objects is well past the one idea the shelf rewards,
+and 48 px is this artwork's floor rather than its margin — a 16 px favicon will not hold it.
+The PWA favicon may need a reduced mark (the "+1" alone, or the die) rather than the whole
+ensemble; decide that while closing
+[[2026-09-20-pwa-icons-are-still-the-flutter-logo]].
