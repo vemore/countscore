@@ -53,7 +53,7 @@ Load this file first. Then read only the pages your task touches.
 | [[Security]] | Defended surfaces (the group owner among them), and the security debt that is knowingly open | 2026-09-20 |
 | [[Testing]] | Unit, Drift, migration, e2e web and device; backend pytest, release tooling; CI jobs and how `scope` picks them, `alembic check`, dependency audit, the `web/` binary gate, the privacy page check and the monthly lock refresh | 2026-09-20 |
 | [[Release]] | Play Store signing state, publishing through the Play API, target API, 2026 Play policy constraints, release cadence and pruning pass | 2026-09-20 |
-| [[StoreListing]] | The 10 store locales, the keyword per market, category and tags, the assets and the per-locale composed screenshots, Play's text limits, and the 2026-09-16 acquisition baseline | 2026-09-19 |
+| [[StoreListing]] | The 10 store locales, the keyword per market, category and tags, the generated assets (icon and teal feature graphic) and the per-locale composed screenshots, Play's text limits, and the 2026-09-16 acquisition baseline | 2026-09-20 |
 
 ## Procedures live in skills, not here
 
