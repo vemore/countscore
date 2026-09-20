@@ -28,20 +28,22 @@ at your own server in Settings → Server if you want the connected features.
   leader — or one row per player at the tap of a button (remembered for every game); rounds,
   live ranking and per-player statistics.
 - **An explicit end**: any game that has been played can be declared over from the board or
-  the game list, which marks it in the history and opens an end screen: the winner, a podium
-  of the top three with their totals, the rest in rank order, then *Play again* and — with a
-  server configured — *Analysis*. A finished game's board brings that screen back, and
+  the game list, which marks it in the history and opens the standings on their result: the
+  winner, a podium of the top three with their totals, every player in the list under it in
+  rank order, then *Play again* and — with a server configured — *Analysis*. The same screen
+  shows where an open game stands, from the score table's leaderboard button; a finished
+  game's board brings the result back from that same button, and
   reopening a game lets you play on. Game types that define a threshold (Skyjo, Président,
   Belote, Uno …) end the game by themselves as soon as a score or a round brings a total to
-  that threshold, or when you open a game already at or past it — once: the end screen then offers
+  that threshold, or when you open a game already at or past it — once: the standings then offer
   "Continue playing", remembered on the device until the game drops back under its threshold.
   The games played to a last survivor (ZapZap, Rami, 6 qui prend) end instead once every
   player but one is past the elimination threshold — last player standing.
 - **Who starts?**: the score table's menu draws one of the game's players at random.
 - **Roll dice**: the score table's menu rolls 1 to 6 six-sided dice and shows each die and the total.
-- **Play again**: from the end screen, the ranking or a finished game in the history, one tap starts
+- **Play again**: from the standings or a finished game in the history, one tap starts
   the next game with the same type and the same players in the same order.
-- **Share a result**: the end screen, the ranking and the analysis share the standings as a
+- **Share a result**: the standings and the analysis share them as a
   short text — game type, date, places and totals, the commentary on the analysis — and as a
   picture of the podium in the players' colours, through the system share sheet, with a link
   to the app's Play listing.

@@ -1,5 +1,15 @@
 # Ranking and the end screen are the same screen, reached by two buttons
 
+**Status:** done (2026-09-20) — closed by `refactor/standings-screen`. `RankingScreen` and
+`GameEndScreen` became one `StandingsScreen` (`lib/screens/standings_screen.dart`), which
+branches on the current game's own `isFinished`: *Ranking* and the live standings while the
+game is open, *Results* with the winner's headline and *Analysis* once it is finished. The
+board's trophy button (`board_game_end`) went; its leaderboard button (`board_standings`,
+`_openStandings`) is the only way in, and it keeps the `true`-back contract that reopens a
+game. Every widget key survived, so the two test files merged into
+`test/screens/standings_screen_test.dart`. No ARB key moved: `ranking` titles the open
+state, `gameEndResults` the finished one.
+
 - **Noted:** 2026-09-20 — reported by the user, reproduced on the PWA built from `main` (412×860)
 - **Theme:** visual-refresh
 - **Area:** app

@@ -27,9 +27,8 @@ import '../widgets/dice_roller_dialog.dart';
 import '../widgets/score_keypad_sheet.dart';
 import '../widgets/who_starts_dialog.dart';
 import 'game_analysis_screen.dart';
-import 'game_end_screen.dart';
 import 'game_rules_screen.dart';
-import 'ranking_screen.dart';
+import 'standings_screen.dart';
 
 class GameBoardScreen extends StatefulWidget {
   const GameBoardScreen({super.key, this.analysisRepo});
@@ -230,29 +229,13 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
               onPressed: () => _toggleBoardView(context),
             );
           }),
-          // A finished game's end screen, one tap away.
-          Consumer<GameProvider>(
-            builder: (context, gameProvider, child) =>
-                (gameProvider.currentGame?.isFinished ?? false)
-                    ? IconButton(
-                        key: const Key('board_game_end'),
-                        tooltip: l10n.gameEndResults,
-                        icon: const Icon(Icons.emoji_events_outlined),
-                        onPressed: _openGameEnd,
-                      )
-                    : const SizedBox.shrink(),
-          ),
+          // One button for the standings, finished or not: the screen itself
+          // decides whether to show the result or where the game stands.
           IconButton(
+            key: const Key('board_standings'),
             icon: const Icon(Icons.leaderboard),
             tooltip: l10n.ranking,
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const RankingScreen(),
-                ),
-              );
-            },
+            onPressed: () => _openStandings(),
           ),
           Consumer<GameProvider>(
             builder: (context, gameProvider, child) {
@@ -802,7 +785,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     );
   }
 
-  /// Records the game as finished and opens its end screen.
+  /// Records the game as finished and opens its standings.
   ///
   /// [byRule] is the game type's rule ending the game rather than the user:
   /// the screen then offers "Continue playing", which reopens the game and is
@@ -820,17 +803,17 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
       unawaited(ReviewPromptService.instance.onGameFinished());
     }
     if (!mounted) return;
-    await _openGameEnd(offerContinue: byRule);
+    await _openStandings(offerContinue: byRule);
   }
 
-  /// The end screen of the current game, finished already. `true` back from
-  /// it is "Continue playing".
-  Future<void> _openGameEnd({bool offerContinue = false}) async {
+  /// The current game's standings — its result once it is finished. `true`
+  /// back from the screen is "Continue playing", which reopens the game.
+  Future<void> _openStandings({bool offerContinue = false}) async {
     final game = _gameProvider.currentGame;
     final continued = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (_) => GameEndScreen(offerContinue: offerContinue),
+        builder: (_) => StandingsScreen(offerContinue: offerContinue),
       ),
     );
     final gameId = game?.id;
@@ -839,7 +822,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
       final uuid = game?.uuid;
       if (uuid != null) await GameOverDismissals.dismiss(uuid);
     }
-    // The end screen may have generated an analysis.
+    // The standings may have generated an analysis.
     if (mounted) await _refreshCachedAnalysis();
   }
 

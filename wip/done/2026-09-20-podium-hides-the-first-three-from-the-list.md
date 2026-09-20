@@ -1,5 +1,12 @@
 # The podium hides the first three from the list, so the standings cannot be read top to bottom
 
+**Status:** done (2026-09-20) — closed by `refactor/standings-screen`. `RankedPlayers`
+(`lib/widgets/game_ranking.dart`) now lists **every** player under the podium, first to
+last, the top three twice on purpose; the first place is drawn on the primary container so
+the head of the list is as findable as the podium. The podium still steps by rank, so a tie
+shares a step and a place number (1, 1, 3). Tested for 2, 3, 4 and 8 players, and held to no
+scrolling at 412×860 for four.
+
 - **Noted:** 2026-09-20 — reported by the user, reproduced on the PWA built from `main` (412×860)
 - **Theme:** visual-refresh
 - **Area:** app

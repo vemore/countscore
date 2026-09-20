@@ -112,7 +112,7 @@ void main() {
       expect(find.text('15'), findsWidgets);
       expect(find.text('17'), findsWidgets);
 
-      // === Step 6: end the game from the board's menu → the end screen. The
+      // === Step 6: end the game from the board's menu → the standings. The
       // leaderboard (#137) counts finished games only.
       await tester.tap(find.byIcon(Icons.more_vert));
       await _waitFor(tester, find.byIcon(Icons.flag_outlined));
@@ -123,7 +123,7 @@ void main() {
         timeout: const Duration(seconds: 15),
       );
       await _waitFor(tester, find.byKey(const Key('game_end_headline')));
-      await _back(tester); // end screen → board
+      await _back(tester); // standings → board
       await _waitFor(tester, find.byKey(const Key('board_finished_badge')));
       await _back(tester); // board → home
 

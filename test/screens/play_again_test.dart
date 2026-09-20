@@ -1,5 +1,5 @@
 // "Play again": the next game of the evening without the creation flow, from
-// the end-of-game ranking and from a finished game's menu on the home screen.
+// the standings of a finished game and from its menu on the home screen.
 //
 // Same type, same win rule, same players in the same order, opened on its
 // board — and the game it was started from is left exactly as it was.
@@ -25,7 +25,7 @@ import 'package:countscore/providers/game_type_provider.dart';
 import 'package:countscore/providers/group_provider.dart';
 import 'package:countscore/repositories/drift/drift_repositories.dart';
 import 'package:countscore/screens/home_screen.dart';
-import 'package:countscore/screens/ranking_screen.dart';
+import 'package:countscore/screens/standings_screen.dart';
 import 'package:countscore/services/drift/database.dart';
 import 'package:countscore/utils/play_again.dart';
 
@@ -132,16 +132,16 @@ void main() {
     expect(stored.gameTypeId, source.gameTypeId);
   }
 
-  testWidgets('the ranking offers Play again, which opens the new game',
+  testWidgets('the standings offer Play again, which opens the new game',
       (tester) async {
     final source = await tester.runAsync(aFinishedGame);
 
-    await tester.pumpWidget(wrap(const RankingScreen(boardBuilder: _board)));
+    await tester.pumpWidget(wrap(const StandingsScreen(boardBuilder: _board)));
     await tester.pumpAndSettle();
     expect(find.text('Play again'), findsOneWidget);
 
     await tester.runAsync(() async {
-      await tester.tap(find.byKey(const Key('ranking_play_again')));
+      await tester.tap(find.byKey(const Key('game_end_play_again')));
       // The writes run on the real database; let them land.
       for (var i = 0; i < 20 && find.byKey(_boardKey).evaluate().isEmpty; i++) {
         await Future<void>.delayed(const Duration(milliseconds: 20));
