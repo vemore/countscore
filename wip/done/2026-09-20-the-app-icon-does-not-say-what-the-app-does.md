@@ -1,5 +1,21 @@
 # The app icon does not say what the app does
 
+**Status:** done (2026-09-20) — closed by feat/app-icon. The chosen artwork is wired through
+the whole pipeline. Its permanent home is **`design/icon/`** (the six working SVGs plus
+`source-from-chatgpt.svg`, the untouched original) and **`scripts/generate_icons.py`** (what
+`tools/gen5.py` became: it reproduces the four decided SVGs byte for byte, adds a maskable
+and a favicon source, and rasterizes every destination). `svg/` and `tools/` are gone from
+`../assets/` so there is only one generator; the entry's images stay. `pubspec.yaml` now
+passes `adaptive_icon_background: "#0E1716"`, the measured `adaptive_foreground.png`, an
+`adaptive_icon_monochrome` and `adaptive_icon_foreground_inset: 8`; `colors.xml` reads
+`#0E1716`. Checked by rendering: the flat icon at 32/48/64/96, the adaptive layers under a
+circle and a squircle mask, the themed layer tinted on a light ground, the maskable pair
+under a full circle — nothing clipped, the monochrome legible rather than a blob. The
+procedure and the reasoning are `.llmwiki/Release.md` §Icons. Not in this pull request, by
+design: the feature graphic redraw, the two stale guides in `store_listing/`, and the
+`lib/utils/app_theme.dart:5` comment about the icon's podium.
+
+
 - **Noted:** 2026-09-20 — while reviewing the icon against ASO guidance the user supplied
 - **Theme:** visual-refresh
 - **Area:** android

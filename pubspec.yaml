@@ -130,11 +130,20 @@ flutter:
           weight: 800
 
 # Flutter Launcher Icons Configuration
-# Generates app icons for Android from the 512x512 source icon
+# Every input below is written by scripts/generate_icons.py from the vector
+# source in design/icon/ — never edited by hand. See .llmwiki/Release.md.
 flutter_launcher_icons:
   android: true
   ios: false
+  # the flat, full-bleed icon: the legacy square mipmap and the Play listing
   image_path: "store_listing/assets/icon_512.png"
-  adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "store_listing/assets/icon_512.png"
+  # the artwork's own ink, so the tile has the ground the ensemble was drawn on
+  adaptive_icon_background: "#0E1716"
+  # the same artwork measured into the safe circle — not the full-bleed icon
+  adaptive_icon_foreground: "design/icon/adaptive_foreground.png"
+  # authored, not derived: flattening the icon to one colour gives a blob
+  adaptive_icon_monochrome: "design/icon/adaptive_monochrome.png"
+  # 8%, not the package's default 16%: the foreground reaches r=367.8/512, so
+  # 8% lands it on Android's 66 dp safe circle instead of well inside it
+  adaptive_icon_foreground_inset: 8
   remove_alpha_ios: true

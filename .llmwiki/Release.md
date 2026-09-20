@@ -103,10 +103,63 @@ the process (`release-android` §3b).
 
 ### Icons
 
-`flutter_launcher_icons` (dev dependency) generates every Android density from
-`store_listing/assets/icon_512.png` (512×512 PNG). Adaptive icon on a white `#FFFFFF`
-background. To change it: replace that PNG and run
-`dart run flutter_launcher_icons`.
+**The source is vector, and it lives in `design/icon/`** — not in `store_listing/`, because
+the same artwork is the launcher icon, the PWA icon, the in-app asset *and* the store icon.
+`design/icon/source-from-chatgpt.svg` is the owner's untouched original; the six files
+`scripts/generate_icons.py` writes from it are the working sources:
+
+| Source | What reads it |
+|---|---|
+| `chosen.svg` | `store_listing/assets/icon_512.png`, `web/icons/Icon-192.png`, `Icon-512.png` |
+| `chosen-adaptive-fg.svg` | `design/icon/adaptive_foreground.png` → every Android density |
+| `chosen-adaptive-bg.svg` | nothing: the background is a flat colour, `#0E1716`, passed in `pubspec.yaml` |
+| `chosen-mono.svg` | `design/icon/adaptive_monochrome.png` → the Android themed icon |
+| `chosen-maskable.svg` | `web/icons/Icon-maskable-192.png`, `Icon-maskable-512.png` |
+| `chosen-favicon.svg` | `web/favicon.png` |
+
+**The procedure, in full** — the first line only when the drawing itself moved, the other
+two always, in this order:
+
+```bash
+uv run --script scripts/generate_icons.py --svg   # only if the artwork itself changed
+uv run --script scripts/generate_icons.py         # every raster, from design/icon/*.svg
+dart run flutter_launcher_icons                   # densities, colors.xml, ic_launcher.xml
+```
+
+`scripts/generate_icons.py` is the *first* step and the only thing that writes an icon
+raster anywhere: `flutter_launcher_icons` reads the two PNGs it produces in `design/icon/`.
+**It does not emit web icons at all** — that is why `web/icons/*.png` and `web/favicon.png`
+stayed the Flutter logo from the project template until 2026-09-20, through every release.
+The web files have no second chance in the pipeline; the generator is it.
+
+`pubspec.yaml` passes `adaptive_icon_background: "#0E1716"` (the artwork's ink, which
+`flutter_launcher_icons` writes into `android/app/src/main/res/values/colors.xml` as
+`ic_launcher_background`), an `adaptive_icon_foreground` measured into the safe circle
+rather than the full-bleed icon, an `adaptive_icon_monochrome`, and
+`adaptive_icon_foreground_inset: 8` instead of the package's default 16 — the foreground
+reaches r=367.8 of 512, so 8 % lands it on Android's 66 dp safe circle while 16 % would
+leave it small inside a mask it already fits.
+
+The generator prints what it measured, and that print is the check: the subject radius of
+each source against the limit that would really cut it (the canvas, Android's safe circle,
+the PWA's 80 % circle). It measures the *rendered alpha*, because analytic bounds on rotated
+shapes overstate the ink by about a third. It also refuses to leave a monochrome shape with
+no `fill`: such a shape falls back to black, which is invisible against the themed mask —
+that is what made the pawns and the rays disappear from the first monochrome layer.
+
+**The favicon carries a reduced mark, not the ensemble (decided 2026-09-20).** The artwork
+is seven objects and 48 px is its floor: at 16 px the whole ensemble is a smudge. So
+`web/favicon.png` is the **"+1" alone**, in gold on the ink ground, at 64 px so a 2× tab has
+real pixels to downscale. Rendered and compared at 16 px, the three candidates the entry
+allowed behave very differently: the die becomes a grey speckle with no readable silhouette,
+the "+" alone is crisp but says only "add", and the "+1" holds — it is the one element that
+states what the app does, it needs no translation across the ten locales, and it keeps the
+tab, the launcher and the store icon the same identity because it is lifted out of the
+ensemble rather than drawn beside it. The keyline is dropped on the favicon: it is the colour
+of the favicon's own ground, so it would only shrink the gold by its own width.
+
+Requires `rsvg-convert` (librsvg) and Pillow. Nothing in CI runs the generator: the rasters
+are committed, and `flutter_launcher_icons` is a dev dependency run by hand.
 
 ### Target
 
@@ -269,6 +322,23 @@ not apply (`wip/done/2026-09-16-edge-to-edge-insets.md`).
 
 ## Decisions & History
 
+- **The icon has a vector source, and one command owns every raster (2026-09-20).** Until
+  then `store_listing/assets/icon_512.png` was the only original — one commit, `75dc8f6
+  "Update app icon"`, no provenance — and the procedure above was two lines that were true
+  for Android and silently incomplete everywhere else. The home is `design/icon/` rather
+  than `store_listing/`: the artwork is the launcher icon, the PWA icon and the in-app asset
+  as much as the store one, and filing it under the store listing is what let the web files
+  be forgotten. The generator is `scripts/generate_icons.py` rather than a checked-in blob of
+  SVGs alone, because the two things that were got wrong before — the safe-zone fit and the
+  monochrome fallback to black — are decisions that have to be *re-taken* every time the
+  artwork moves, and only a script re-takes them. It holds both palettes, the shipped ink and
+  gold and the original navy, so the repaint stays reversible.
+- **The adaptive foreground inset is 8 %, not the package default 16 % (2026-09-20).** The
+  foreground is measured into the safe circle at r=367.8/512 = 71.8 % of the drawable. At the
+  default inset that is 52.8 dp inside a 72 dp mask — nothing clipped, but visibly timid; at
+  8 % it is 65.2 dp, right on Android's 66 dp safe circle. Checked by rendering the generated
+  `drawable-xxxhdpi` layers under a circle and a squircle mask rather than by arithmetic
+  alone.
 - **A GitHub Release accompanies the tag from 1.2.0+5 on, with no binary attached
   (2026-09-17).** The user asked for the release to be tagged on GitHub. The tag alone was the
   existing scheme, so the question was whether to add a Release page — and, if so, whether to

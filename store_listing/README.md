@@ -21,7 +21,7 @@ store_listing/
 │   ├── screenshots/phone/          # the composed set, 1080×1920 RGB (generated, committed)
 │   └── release_notes_v<x.y.z>.txt  # 500 characters max — en-US and fr-FR only
 ├── assets/
-│   ├── icon_512.png                # 512×512, also the source of the Android launcher icons
+│   ├── icon_512.png                # 512×512, generated from design/icon/ — see .llmwiki/Release.md
 │   └── feature_graphic.png         # 1024×500, opaque — every locale's, unless it has its own
 ├── ASSET_REQUIREMENTS.md           # image specifications
 ├── ASSET_CREATION_CHECKLIST.md · COLOR_THEME_GUIDE.md

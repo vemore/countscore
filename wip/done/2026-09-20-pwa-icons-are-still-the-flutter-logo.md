@@ -1,5 +1,19 @@
 # The PWA's icons are still the stock Flutter logo
 
+**Status:** done (2026-09-20) — closed by feat/app-icon, in the same pull request as
+[[2026-09-20-the-app-icon-does-not-say-what-the-app-does]], which spans it. All five files
+are regenerated from the vector source by `scripts/generate_icons.py`: `Icon-192.png` and
+`Icon-512.png` from `chosen.svg`, the maskable pair from `chosen-maskable.svg` — its own
+framing, subject radius 0.391 of the width against the 80 % circle's 0.400, printed by the
+generator at every run — and `favicon.png` from `chosen-favicon.svg`. The open question is
+settled: **the favicon carries the "+1" alone, not the ensemble**, at 64 px; the three
+candidates were rendered and compared at 16 px, where the die is a grey speckle and the whole
+ensemble a smudge. `.llmwiki/Release.md` §Icons now names the web step, says in so many words
+that `flutter_launcher_icons` emits no web icons, and records the favicon decision; the
+`release-android` skill says the same. The production smoke test belongs to whoever deploys
+the PWA after the merge.
+
+
 - **Noted:** 2026-09-20 — while auditing the app icon before proposing replacements
 - **Theme:** web
 - **Area:** web
