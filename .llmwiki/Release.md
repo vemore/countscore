@@ -2,7 +2,7 @@
 
 > Scope: the Play Store configuration state. For the procedure, use the `release-android` skill.
 > Related: [[MobileApp]] · [[StoreListing]] · [[Testing]] · [[KnownLimits]] · [[Documentation]]
-> Updated: 2026-09-19
+> Updated: 2026-09-20
 
 ## Facts
 
@@ -166,6 +166,25 @@ and CI refuses a pull request whose committed file differs — never edit it by 
 | Release notes ≤ 500 characters per language | Play Console | `play_publish.py` refuses longer notes. |
 
 ### Submission state
+
+**1.3.1 (7) is on the internal track** since 2026-09-20 (`play_publish.py publish --track
+internal --commit`), tagged `1.3.1+7` on `df872d6` and published as a GitHub release from the
+en-US notes. Production stays on **1.3.0 (6)**; the internal hop is deliberate, because the
+real-device pass of `release-android` §5 did not run — no device was connected, and the user
+chose the internal track as the substitute, to install from the Store on the Pixel before any
+production rollout. So export/import, the wakelock, the ZapZap analysis and group join/leave
+are still unexercised on a release build of this version.
+
+It ships eleven `wip/` entries, the release-blocking one being the game-type editor writing
+`rules`, `rules_slug` and `isDefault` to NULL on every save ([[SchemaV10]]). Also: elimination
+games rank by elimination order when finished, `lastPlayerOver` does what its description
+always claimed and is seeded on the three elimination types, the ranking and end screens became
+one `StandingsScreen`, and a dormant group owner can be replaced by a deliberate claim
+([[Api]]). `verify_aab.sh` passed on the bundle: upload key, `INTERNET`, versionCode 7,
+targetSdk 36, 16 KB alignment.
+
+> **Status: Outdated** (2026-09-20) — superseded by 1.3.1 above, which is on internal only;
+> 1.3.0 (6) remains the production release:
 
 **1.3.0 (6) is on production at 99.9 %** since 2026-09-19 (`play_publish.py publish --track
 production --rollout 0.999 --listing --graphics --commit`, the user's choice of an effectively
