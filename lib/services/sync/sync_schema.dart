@@ -15,7 +15,9 @@
 /// received from the server is not captured and sent straight back.
 library;
 
+import '../../l10n/app_localizations.dart';
 import '../../models/game_type.dart';
+import '../../utils/game_type_name.dart';
 import '../uuid.dart';
 
 /// Runs one statement, with optional positional arguments. `Database.execute`
@@ -460,3 +462,86 @@ Future<void> applyV17(SqlExecutor execute) async {
 /// `builtin_key` is the only test for a built-in type and nothing reads
 /// `isDefault`. See .llmwiki/SchemaV10.md.
 Future<void> applyV18(SqlExecutor execute) => applyV16(execute);
+
+/// Every name a built-in type is known by, mapped to its key: its name in each
+/// of the ten locales (`game_type_name.dart`), the name it is seeded with, and —
+/// for the first ten — the name the pre-v14 seed wrote. A name two keys share,
+/// ignoring case, is left out: it says nothing about which game the row plays.
+///
+/// The names keep their case: [applyV19] compares them `COLLATE NOCASE`, which
+/// folds ASCII only, so a lower-cased Cyrillic or accented name would never
+/// match its stored form.
+Map<String, String> builtinKeysByName() {
+  final keysByName = <String, String>{};
+  final keysByFolded = <String, Set<String>>{};
+  void add(String name, String key) {
+    keysByName[name] = key;
+    keysByFolded.putIfAbsent(name.toLowerCase(), () => {}).add(key);
+  }
+
+  final locales = AppLocalizations.supportedLocales.map(lookupAppLocalizations);
+  for (final type in GameType.defaultGameTypes()) {
+    final key = type.builtinKey!;
+    add(type.name, key);
+    final seeded = GameType.seededNamesBeforeV14[key];
+    if (seeded != null) add(seeded, key);
+    for (final l10n in locales) {
+      add(builtinGameTypeName(l10n, key)!, key);
+    }
+  }
+  return {
+    for (final e in keysByName.entries)
+      if (keysByFolded[e.key.toLowerCase()]!.length == 1) e.key: e.value,
+  };
+}
+
+/// Schema v19, shared by both engines: gives `builtin_key` back to the live
+/// rows that never got it, then replays [applyV16] so they get their ruleset.
+///
+/// The v13 and v14 key back-fills selected `isDefault = 1`, and the pre-1.3.1
+/// editor wrote `isDefault = 0` on every save
+/// (`wip/done/2026-09-20-editing-a-game-type-erases-its-rules.md`). A seeded row
+/// edited before those steps ran missed its key for good, and with it every
+/// later slug repair — [applyV18] included, since [applyV16] filters on the
+/// key. The owner's Skyjo is that row
+/// (`wip/done/2026-09-20-a-type-that-lost-isdefault-can-never-regain-its-builtin-key.md`).
+///
+/// A keyless live row takes a key when **both** hold:
+///
+/// - its stored name is — ignoring ASCII case, as [applyV14] matched — a name
+///   of exactly one built-in type ([builtinKeysByName]) — so a renamed built-in, whose new name is the
+///   user's choice, keeps no key;
+/// - **no live row holds that key**. While the built-in type is there, a
+///   homonym is the user's second row and stays theirs. The key is free only
+///   when the seeded row itself lost it, or when v14 declined to insert the
+///   built-in because a row of that name already existed — the owner's own
+///   "6 qui prend", which predates the built-in and plays the same game.
+///
+/// At most one row per key, the oldest, as in [applyV14]; the unique index of
+/// [applyV15] holds on every replay.
+///
+/// Neither `isDefault` nor the scoring columns are read. `isDefault` is the flag
+/// the bug cleared. The scoring columns do not identify a built-in either: the
+/// shipped definitions changed after these rows were seeded (6 qui prend put a
+/// player out at 66, now 65), and a user who moved a threshold still plays the
+/// same game, with the same rules. Nothing but `builtin_key` and `rules_slug`
+/// is written: the scoring, the colours and a ruleset the user wrote stay.
+/// `isDefault` is not restored, as in [applyV18]. See .llmwiki/SchemaV10.md.
+///
+/// Idempotent: a keyed row is never selected again, and it never inserts, so a
+/// type the user deleted is not resurrected.
+Future<void> applyV19(SqlExecutor execute) async {
+  for (final entry in builtinKeysByName().entries) {
+    await execute(
+      'UPDATE game_types SET builtin_key = ? WHERE id = ('
+      '  SELECT id FROM game_types'
+      '  WHERE builtin_key IS NULL AND deleted_at IS NULL'
+      '  AND name = ? COLLATE NOCASE'
+      '  ORDER BY id LIMIT 1)'
+      ' AND NOT EXISTS (SELECT 1 FROM game_types'
+      '                 WHERE builtin_key = ? AND deleted_at IS NULL)',
+      [entry.value, entry.key, entry.value],
+    );
+  }
+  await applyV16(execute);
+}
