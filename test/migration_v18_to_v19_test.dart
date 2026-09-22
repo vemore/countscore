@@ -44,6 +44,8 @@ void main() {
   late int renamed; // a built-in the user renamed
   late int deletedBelote; // a keyless homonym, deleted
   late int secondSkyjo; // a younger keyless Skyjo
+  late int youngerWizard; // keyless, English name, younger than the Russian one
+  late int myOther; // the user's "Other", after deleting the seeded "Autre"
 
   Future<int> insertType(Database db, String name, String uuid,
           {int? deletedAt, String? rules, int? deadThreshold}) =>
@@ -83,8 +85,8 @@ void main() {
         where: 'id = ?', whereArgs: [skyjo]);
 
     // The built-ins v14 never inserted, because a row of that name existed.
-    await db.delete('game_types', where: 'builtin_key IN (?, ?, ?)',
-        whereArgs: ['six_nimmt', 'wizard', 'belote']);
+    await db.delete('game_types', where: 'builtin_key IN (?, ?, ?, ?)',
+        whereArgs: ['six_nimmt', 'wizard', 'belote', 'other']);
     sixNimmt = await insertType(db, '6 qui prend', 'six-1',
         rules: 'Nos règles maison.', deadThreshold: 66);
     wizard = await insertType(db, wizardInRussian, 'wizard-1');
@@ -93,6 +95,8 @@ void main() {
     yams = await insertType(db, "Yam's", 'yams-1');
     yahtzeeCopy = await insertType(db, 'YAHTZEE', 'yahtzee-1');
     secondSkyjo = await insertType(db, 'Skyjo', 'skyjo-2');
+    youngerWizard = await insertType(db, 'Wizard', 'wizard-2');
+    myOther = await insertType(db, 'Other', 'other-1');
 
     renamed = await idOf('tarot');
     await db.update('game_types',
@@ -132,6 +136,12 @@ void main() {
         reason: 'a deleted row took a key');
     expect(state[secondSkyjo], [null, null, null],
         reason: 'a second Skyjo took a key already given');
+    // The oldest row takes the key whichever of the key's names it stores.
+    expect(state[youngerWizard], [null, null, null],
+        reason: 'a younger row took the key from an older one under another name');
+    // `other` carries no ruleset, and its names are anyone's.
+    expect(state[myOther], [null, null, null],
+        reason: "the user's own \"Other\" was claimed as the built-in");
   }
 
   test('native: the sqflite chain gives the keys back', () async {
@@ -187,16 +197,18 @@ void main() {
     expectRekeyed(stateById(once));
   });
 
-  test('every built-in name maps to one key, in all ten locales', () {
-    final names = builtinKeysByName();
-    expect(names['Skyjo'], 'skyjo');
-    expect(names['6 qui prend'], 'six_nimmt');
-    expect(names['Autre'], 'other');
-    expect(names[wizardInRussian], 'wizard');
-    expect(names.containsKey("Yam's"), isFalse);
+  test('every built-in with a ruleset is known by its name in all ten locales',
+      () {
+    final names = builtinNamesByKey();
+    expect(names.keys.toSet(), defaultRulesSlugs.keys.toSet(),
+        reason: '`other` has no ruleset and is not claimed');
+    expect(names['skyjo'], contains('Skyjo'));
+    expect(names['six_nimmt'], contains('6 qui prend'));
+    expect(names['wizard'], contains(wizardInRussian));
+    expect(names.values.expand((n) => n), isNot(contains("Yam's")));
     for (final locale in AppLocalizations.supportedLocales) {
       final l10n = lookupAppLocalizations(locale);
-      expect(names[l10n.gameTypeNameSixNimmt], 'six_nimmt',
+      expect(names['six_nimmt'], contains(l10n.gameTypeNameSixNimmt),
           reason: '${locale.languageCode}: 6 qui prend is not matched');
     }
   });
