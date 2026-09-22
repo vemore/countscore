@@ -4,8 +4,9 @@
 //
 // Simulated on a native file: build the current schema, strip everything v10,
 // v11, v12, v13, v14, v15 and v16 added, stamp user_version 9, and reopen through Drift.
-// v17 and v18 add no column: v17 finds no keyless copy to dedupe, and v18
-// replays the v16 back-fill, which has nothing left to fill.
+// v17, v18 and v19 add no column: v17 finds no keyless copy to dedupe, v18
+// replays the v16 back-fill, which has nothing left to fill, and v19 finds no
+// keyless row to give a key back to.
 
 import 'dart:io';
 

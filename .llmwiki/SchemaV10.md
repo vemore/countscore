@@ -2,16 +2,16 @@
 
 > Scope: the mobile database — tables, the global-player model, the migration chain.
 > Related: [[DataLayer]] · [[Sync]] · [[MobileApp]] · [[Testing]]
-> Updated: 2026-09-20
+> Updated: 2026-09-22
 
 This page was `SchemaV9` until v10 landed on 2026-09-13; links were renamed with it.
 v11 followed the same day, v12, v13 and v14 on 2026-09-16, v15 on 2026-09-18, v16 on
-2026-09-19, and v17 and v18 on 2026-09-20; all are described here too.
+2026-09-19, v17 and v18 on 2026-09-20, and v19 on 2026-09-22; all are described here too.
 
 ## Facts
 
-Schema version **18**, declared in two places that must stay in sync:
-`lib/services/drift/database.dart` (`schemaVersion => 18`) and
+Schema version **19**, declared in two places that must stay in sync:
+`lib/services/drift/database.dart` (`schemaVersion => 19`) and
 `DatabaseService.schemaVersion` in `lib/services/database_service.dart`, which both
 `openDatabase` calls use.
 
@@ -19,7 +19,7 @@ Schema version **18**, declared in two places that must stay in sync:
 
 | Table | Role |
 |---|---|
-| `game_types` | Game types. uuid + sync columns, `rules` and `rules_slug` since v13 (re-derived from `builtin_key` by v18), `builtin_key` since v14, one live row per `builtin_key` since v15. `isDefault` is historical only — see below. |
+| `game_types` | Game types. uuid + sync columns, `rules` and `rules_slug` since v13 (re-derived from `builtin_key` by v18 and v19), `builtin_key` since v14 (given back by v19 to the rows that missed it), one live row per `builtin_key` since v15. `isDefault` is historical only — see below. |
 | `games` | Games. uuid, `group_id`, sync columns, `finishedAt` since v12. |
 | `players` | **Global identity**: `(id, name, colorValue, uuid, group_id, …)`. UNIQUE on `name COLLATE NOCASE` where `group_id IS NULL`. |
 | `game_players` | **Per-game membership**: `(id, gameId, player_id FK→players, name, orderIndex, colorValue, uuid, …)`. UNIQUE `(gameId, player_id)`. |
@@ -147,7 +147,9 @@ Two consequences, both of which had already cost data before they were written d
   `rules_slug` — on every save, the colour included
   (`wip/done/2026-09-20-editing-a-game-type-erases-its-rules.md`, fixed in #179). A row that
   lost it is skipped by every back-fill of that shape for good, which is exactly why
-  `applyV13` and `applyV14` could not repair the rows `applyV18` repairs.
+  `applyV13` and `applyV14` could not repair the rows `applyV18` repairs — and why a seeded
+  row edited *before* v14 ran never got its `builtin_key` at all, so `applyV18`, keyed on
+  it, could not reach it either. `applyV19` gives those rows their key back by name alone.
 
 So **every future migration, query and screen tests `builtin_key`, never `isDefault`**. The
 column stays (dropping it rewrites every user's `game_types` for nothing) and keeps being
@@ -221,6 +223,7 @@ and scores. Deleting a game type ignores tombstoned games and clears their `game
 | **v16** | **Rulesets for the twelve types of v14**: `rules_slug` back-filled by `builtin_key`, where it is still NULL. `applyV16` in `lib/services/sync/sync_schema.dart`, run by both engines. No column change; `UPDATE`s only, so nothing deleted comes back, a slug already set is kept and a renamed type (no key) is left alone. `test/migration_v15_to_v16_test.dart`. |
 | **v17** | **Keyless copies of the built-in types soft-deleted** — the ones the pre-#153 PWA reload bug seeded again and v15 stripped of their key. `applyV17` in `lib/services/sync/sync_schema.dart`, run by both engines on upgrade only (a fresh install has none). A row goes only if it is live, keyless, group-less, holds no `rules`, a live built-in row has the same stored name and the same scoring fields (`isLowestScoreWins`, the dead and game-over conditions and thresholds, NULL-safe), and no game, live or deleted, points at it. `deleted_at` + `updated_at`, not a `DELETE`, so sync sees a tombstone; a copy with a game is the user's and is kept. No column change. `test/migration_v16_to_v17_test.dart`. |
 | **v18** | **`applyV16` replayed**, so a `rules_slug` emptied *after* v16 had run comes back. `applyV18` in `lib/services/sync/sync_schema.dart` is literally `applyV16`, run by both engines; no column change, no new logic. It repairs the rows the pre-1.3.1 editor wiped (`rules`, `rules_slug`, `isDefault` cleared on every save, #179): `builtin_key` survives an edit, and `applyV16` keys on it and ignores `isDefault`, so the repair was already written — only a second run was missing. `UPDATE`s only, on `rules_slug IS NULL` alone, so a written ruleset, a slug already set and a keyless (created or renamed) type are untouched, and nothing is inserted. No user action clears a slug on purpose, so replaying is safe. `rules` the bug erased is user content with no second source and is not recoverable; `isDefault` is deliberately not restored. `test/migration_v17_to_v18_test.dart`. |
+| **v19** | **`builtin_key` given back to the live rows that never got it**, then `applyV16` replayed so they get their ruleset. `applyV19` in `lib/services/sync/sync_schema.dart`, run by both engines. A keyless live row takes a key when its stored name is — ignoring ASCII case — a name of exactly one built-in type **with a ruleset** in any of the ten locales, its seed name or its pre-v14 seed name (`builtinNamesByKey`), **and no live row holds that key**; one row per key, the oldest across all of that key's names. `other` is excluded: it has no ruleset, and "Other" is what anyone calls a type of their own. `isDefault` and the scoring columns are not read, and only `builtin_key` and `rules_slug` are written. It repairs the seeded row the v14 back-fill skipped because the old editor had cleared `isDefault` (the owner's Skyjo), and a user's own row older than the built-in it names, which v14 declined to insert beside it (the owner's "6 qui prend"). A renamed built-in, and a homonym of a built-in that is still there, stay keyless. No column change; nothing is inserted. `test/migration_v18_to_v19_test.dart`. |
 | v10 | **Sync bookkeeping**: `group_links`, `entity_versions`, `sync_inbox`; `outbox.rejected_at` / `reject_reason`; `sync_state.device_id` / `group_name`. Additive only — `_createSyncV10Tables` is the fresh-install and the upgrade path at once. |
 
 ### The v9 migration in detail
@@ -253,6 +256,24 @@ repairs the shape before the rest of the chain runs.
 
 ## Decisions & History
 
+- **Keys are given back by name, with the key free, and nothing else (2026-09-22, `fix/builtin-key-rekey`).**
+  After 1.4.0 the owner's device still showed no rules for 6 qui prend: three live rows
+  had no `builtin_key` at all, so `applyV18` never saw them. Git history settled what they
+  were — only Skyjo was ever seeded; "6 qui prend" and "Yam's" were the owner's own, made
+  before v6, which is why they share the seeds' `created_at` (the v6 back-fill stamped every
+  row alike, so `created_at` proves nothing about origin). The entry proposed matching on the
+  scoring columns too; it was rejected because the shipped definitions moved after these rows
+  were written (6 qui prend put a player out at 66, it is 65 since 2026-09-19), so a
+  scoring match fails on exactly the rows to repair. The free key is what stands between the
+  step and a user's own type: while a built-in is live, a homonym is a second row the user
+  chose to make. Adopting the owner's older "6 qui prend" was the user's decision
+  (2026-09-22): it plays the built-in game, and its scoring and any written `rules` are
+  untouched — only the displayed name now follows the locale. "Yam's" matches no built-in
+  name and Yahtzee's key is held, so it stays a custom type. `isDefault` is not restored,
+  as in v18. The independent review of #205 moved two things: the key goes to the oldest row
+  across all of its names rather than per name (a younger "Wizard" had won over an older row
+  stored in Russian), and `other` is not claimed at all.
+
 - **The repair for wiped rules is a replay, not new code (2026-09-20, `fix/rules-slug-restore`).**
   #179 stopped the editor clearing `rules_slug`; it repaired nothing already lost, and the
   owner's production device reached 1.3.1 with ZapZap and 6 qui prend showing the empty
@@ -265,6 +286,9 @@ repairs the shape before the rest of the chain runs.
   get it wrong, and a step that is an alias cannot drift from the one it replays. A step that
   fires the v11 capture triggers also pushes the restored slug to the group, which is the
   wanted behaviour — the NULL had already travelled there.
+  > **Status: Outdated** (2026-09-22) — "`builtin_key` survives an edit" holds, but it only
+  > helps a row that *had* a key. On the owner's device 6 qui prend never had one, and Skyjo
+  > had lost it before v14 could give it: v18 repaired neither. v19 gives the key back first.
 - **`isDefault` is settled as historical, not removed (2026-09-20, `fix/rules-slug-restore`).**
   It is written by the seed, read by nobody, pushed to the server and dropped on receipt.
   Giving it a live meaning was rejected: a built-in row pulled from a group has carried 0

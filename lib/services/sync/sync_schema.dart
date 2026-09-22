@@ -15,7 +15,9 @@
 /// received from the server is not captured and sent straight back.
 library;
 
+import '../../l10n/app_localizations.dart';
 import '../../models/game_type.dart';
+import '../../utils/game_type_name.dart';
 import '../uuid.dart';
 
 /// Runs one statement, with optional positional arguments. `Database.execute`
@@ -460,3 +462,98 @@ Future<void> applyV17(SqlExecutor execute) async {
 /// `builtin_key` is the only test for a built-in type and nothing reads
 /// `isDefault`. See .llmwiki/SchemaV10.md.
 Future<void> applyV18(SqlExecutor execute) => applyV16(execute);
+
+/// Every name each built-in type with a ruleset is known by: its name in each
+/// of the ten locales (`game_type_name.dart`), the name it is seeded with, and —
+/// for the first ten — the name the pre-v14 seed wrote. A name two keys share,
+/// ignoring case, is left out: it says nothing about which game the row plays.
+///
+/// `other` is left out too. "Autre", "Other", "Otro" are what anyone calls a
+/// type of their own, and the built-in carries no ruleset, so claiming such a
+/// row would only swap the user's name for a localized one.
+///
+/// The names keep their case: [applyV19] compares them `COLLATE NOCASE`, which
+/// folds ASCII only, so a lower-cased Cyrillic or accented name would never
+/// match its stored form.
+Map<String, Set<String>> builtinNamesByKey() {
+  final namesByKey = <String, Set<String>>{};
+  final keysByFolded = <String, Set<String>>{};
+  void add(String key, String name) {
+    namesByKey.putIfAbsent(key, () => {}).add(name);
+    keysByFolded.putIfAbsent(name.toLowerCase(), () => {}).add(key);
+  }
+
+  final locales = AppLocalizations.supportedLocales.map(lookupAppLocalizations);
+  for (final type in GameType.defaultGameTypes()) {
+    final key = type.builtinKey!;
+    if (!defaultRulesSlugs.containsKey(key)) continue;
+    add(key, type.name);
+    final seeded = GameType.seededNamesBeforeV14[key];
+    if (seeded != null) add(key, seeded);
+    for (final l10n in locales) {
+      add(key, builtinGameTypeName(l10n, key)!);
+    }
+  }
+  return {
+    for (final e in namesByKey.entries)
+      e.key: {
+        for (final name in e.value)
+          if (keysByFolded[name.toLowerCase()]!.length == 1) name,
+      },
+  };
+}
+
+/// Schema v19, shared by both engines: gives `builtin_key` back to the live
+/// rows that never got it, then replays [applyV16] so they get their ruleset.
+///
+/// The v13 and v14 key back-fills selected `isDefault = 1`, and the pre-1.3.1
+/// editor wrote `isDefault = 0` on every save
+/// (`wip/done/2026-09-20-editing-a-game-type-erases-its-rules.md`). A seeded row
+/// edited before those steps ran missed its key for good, and with it every
+/// later slug repair — [applyV18] included, since [applyV16] filters on the
+/// key. The owner's Skyjo is that row
+/// (`wip/done/2026-09-20-a-type-that-lost-isdefault-can-never-regain-its-builtin-key.md`).
+///
+/// A keyless live row takes a key when **both** hold:
+///
+/// - its stored name is — ignoring ASCII case, as [applyV14] matched — a name
+///   of exactly one built-in type with a ruleset ([builtinNamesByKey]) — so a renamed built-in, whose new name is the
+///   user's choice, keeps no key;
+/// - **no live row holds that key**. While the built-in type is there, a
+///   homonym is the user's second row and stays theirs. The key is free only
+///   when the seeded row itself lost it, or when v14 declined to insert the
+///   built-in because a row of that name already existed — the owner's own
+///   "6 qui prend", which predates the built-in and plays the same game.
+///
+/// At most one row per key: the oldest across **all** of that key's names, as
+/// in [applyV14], so a keyless "Wizard" does not win over an older row stored
+/// under the Russian name. The unique index of [applyV15] holds on every replay.
+///
+/// Neither `isDefault` nor the scoring columns are read. `isDefault` is the flag
+/// the bug cleared. The scoring columns do not identify a built-in either: the
+/// shipped definitions changed after these rows were seeded (6 qui prend put a
+/// player out at 66, now 65), and a user who moved a threshold still plays the
+/// same game, with the same rules. Nothing but `builtin_key` and `rules_slug`
+/// is written: the scoring, the colours and a ruleset the user wrote stay.
+/// `isDefault` is not restored, as in [applyV18]. See .llmwiki/SchemaV10.md.
+///
+/// Idempotent: a keyed row is never selected again, and it never inserts, so a
+/// type the user deleted is not resurrected.
+Future<void> applyV19(SqlExecutor execute) async {
+  for (final entry in builtinNamesByKey().entries) {
+    final names = entry.value.toList();
+    if (names.isEmpty) continue;
+    final placeholders = List.filled(names.length, '?').join(', ');
+    await execute(
+      'UPDATE game_types SET builtin_key = ? WHERE id = ('
+      '  SELECT id FROM game_types'
+      '  WHERE builtin_key IS NULL AND deleted_at IS NULL'
+      '  AND name COLLATE NOCASE IN ($placeholders)'
+      '  ORDER BY id LIMIT 1)'
+      ' AND NOT EXISTS (SELECT 1 FROM game_types'
+      '                 WHERE builtin_key = ? AND deleted_at IS NULL)',
+      [entry.key, ...names, entry.key],
+    );
+  }
+  await applyV16(execute);
+}

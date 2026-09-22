@@ -2,7 +2,7 @@
 
 > Scope: the offline-first sharing protocol — server and Flutter client.
 > Related: [[Api]] · [[SchemaV10]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-09-20
+> Updated: 2026-09-22
 
 ## Facts
 
@@ -140,6 +140,15 @@ only thing carrying its rules between devices.
 Healing the group needs nothing more: the v18 `UPDATE` on a linked row fires the v11 capture
 trigger, so a repaired device pushes its restored slug and overwrites the null the server
 holds. `test/sync/sync_store_test.dart` covers the five cases.
+
+The v19 step does the same with a `builtin_key` it gives back ([[SchemaV10]]): a linked row
+pushes its new key and slug. Where the group already holds a live row with that key the
+server answers `builtin_key_taken`, and the client supersedes the delta and pulls — which
+relinks the local row only if the group's keyed row had **not** been pulled yet. If it had
+been, and was linked to another local row, the pull brings nothing and the row's later
+pushes are superseded for good. No test covers the v19 path through sync; the owner's three
+rows were in no group in the 2026-09-19 backup.
+`wip/todo_nr/2026-09-22-a-rekeyed-type-linked-by-name-can-stop-syncing.md`.
 
 ### The client (since 2026-09-13)
 
