@@ -146,6 +146,23 @@ void main() {
       expect(devices.single.isOwner, isNull);
     });
 
+    test('renameDevice patches this device only and returns the stored label', () async {
+      late http.Request seen;
+      final client = BackendClient(
+        'https://countscore.example.com',
+        httpClient: MockClient((request) async {
+          seen = request;
+          return http.Response.bytes(utf8.encode('{"id":"a","label":"Zoé"}'), 200);
+        }),
+      );
+
+      expect(await client.renameDevice('tok', 'Zoé'), 'Zoé');
+      expect(seen.method, 'PATCH');
+      expect(seen.url.path, '/groups/devices/me');
+      expect(seen.headers['Authorization'], 'Bearer tok');
+      expect(jsonDecode(seen.body), {'label': 'Zoé'});
+    });
+
     test('groupOwner reads the owner, and tells a server that predates owners', () async {
       final current = BackendClient('https://countscore.example.com',
           httpClient: _answering('{"id":"g","name":"n","owner_device_id":"d1"}', 200));

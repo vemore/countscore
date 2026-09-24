@@ -2,7 +2,7 @@
 
 > Scope: what is defended, and what is knowingly open.
 > Related: [[Backend]] · [[Api]] · [[LlmProviders]] · [[Deployment]] · [[KnownLimits]]
-> Updated: 2026-09-20
+> Updated: 2026-09-24
 
 ## Facts
 
@@ -19,7 +19,7 @@
 | SQL injection | SQLModel/asyncpg parameterised throughout; no string concatenation. |
 | CSRF | Stateless API with a bearer token, so not applicable. |
 | CORS | Explicit origin whitelist in `config.py`; `*` is rejected at startup. |
-| Rate limiting | Per device, per group budget, and per IP — including group create/join. `/sync/push` has its own per-device limit (`SYNC_PUSH_RL_*`, in-memory bucket `sync_push`). The IP is `request.client.host`, which `TrustedProxyMiddleware` (`app/services/trusted_proxy.py`) sets from `X-Real-IP` only when the peer is in `TRUSTED_PROXY_IPS` (the pinned compose gateway, see [[Deployment]]). `X-Forwarded-For` is read by nothing: Web Station passes it through as the client wrote it. `backend/tests/test_ip_rate_limit.py`. |
+| Rate limiting | Per device, per group budget, and per IP — including group create/join. `/sync/push` has its own per-device limit (`SYNC_PUSH_RL_*`, in-memory bucket `sync_push`), and so does a device renaming itself (`DEVICE_RENAME_RL_*`, bucket `device_rename`). The IP is `request.client.host`, which `TrustedProxyMiddleware` (`app/services/trusted_proxy.py`) sets from `X-Real-IP` only when the peer is in `TRUSTED_PROXY_IPS` (the pinned compose gateway, see [[Deployment]]). `X-Forwarded-For` is read by nothing: Web Station passes it through as the client wrote it. `backend/tests/test_ip_rate_limit.py`. |
 | Analysis payload | `GameAnalysisPayload` (`app/schemas/comments.py`): 422 on a wrong shape or a count out of bounds (12 players, 200 rounds, 10 history entries, thresholds ±1 000 000); text clipped, player names filtered through the sync allow-list. `style`, `language` and the two condition enums are normalised to a known value instead of refused — see [[Api]]. The **game-type name** now drives a section of the prompt rather than one data line, so it is escaped, wrapped in `<game_type>`, stripped of newlines and of a leading `#`, and named by the anti-injection rule alongside `<player_name>`. |
 | Body size | `limit_body_size` middleware, 413 above `MAX_BODY_BYTES` (262144); 411 when `Content-Length` is absent on a write. |
 | WebSocket auth | Single-use ticket from `POST /sync/ws-ticket`, 60 s TTL. `app/services/ws_ticket.py`. |

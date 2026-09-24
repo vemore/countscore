@@ -32,6 +32,16 @@ class GroupSettingsSection extends StatefulWidget {
 class _GroupSettingsSectionState extends State<GroupSettingsSection> {
   bool _busy = false;
 
+  @override
+  void initState() {
+    super.initState();
+    // After an offline start the nickname is still unknown: opening the section
+    // is one more chance to read it (the provider also retries on its own).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<GroupProvider>().refreshDeviceLabel();
+    });
+  }
+
   void _snack(String message, {bool ok = true}) {
     final scheme = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -53,10 +63,10 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
     }
   }
 
-  /// Asks for one or two text values; null when cancelled.
+  /// Asks for one or two text values, trimmed and none blank; null when cancelled.
   Future<List<String>?> _ask({
     required String title,
-    required List<({String label, String initial, String? hint})> fields,
+    required List<_Field> fields,
   }) {
     return showDialog<List<String>>(
       context: context,
@@ -80,28 +90,62 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
     return ok == true;
   }
 
+  /// The nickname field, first in the create and join dialogs and alone in the
+  /// rename one. It starts empty on joining: a pre-filled default was left as it
+  /// was, and a group's devices could no longer be told apart.
+  _Field _nicknameField(AppLocalizations l10n, {String initial = ''}) => (
+        key: const Key('group_nickname_field'),
+        label: l10n.groupNicknameLabel,
+        initial: initial,
+        hint: null,
+        helper: l10n.groupNicknameHint,
+      );
+
   Future<void> _create(GroupProvider group) async {
     final l10n = AppLocalizations.of(context)!;
     final values = await _ask(title: l10n.groupCreate, fields: [
-      (label: l10n.groupNameLabel, initial: '', hint: null),
-      (label: l10n.deviceLabelLabel, initial: l10n.deviceLabelDefault, hint: null),
+      _nicknameField(l10n),
+      (
+        key: const Key('group_name_field'),
+        label: l10n.groupNameLabel,
+        initial: '',
+        hint: null,
+        helper: null,
+      ),
     ]);
     if (values == null) return;
     // The creator owns the group, and nothing on screen says so otherwise: the one
     // line that follows is where the user learns the role lives on this device and
     // can be handed to another one.
-    await _run(() => group.createGroup(values[0], values[1]),
+    await _run(() => group.createGroup(values[1], values[0]),
         done: l10n.groupCreatedOwnerExplain);
   }
 
   Future<void> _join(GroupProvider group) async {
     final l10n = AppLocalizations.of(context)!;
     final values = await _ask(title: l10n.groupJoin, fields: [
-      (label: l10n.shareTokenLabel, initial: '', hint: l10n.shareTokenHint),
-      (label: l10n.deviceLabelLabel, initial: l10n.deviceLabelDefault, hint: null),
+      _nicknameField(l10n),
+      (
+        key: const Key('group_invite_field'),
+        label: l10n.shareTokenLabel,
+        initial: '',
+        hint: l10n.shareTokenHint,
+        helper: null,
+      ),
     ]);
     if (values == null) return;
-    await _run(() => group.joinGroup(values[0], values[1]), done: l10n.groupJoined);
+    await _run(() => group.joinGroup(values[1], values[0]), done: l10n.groupJoined);
+  }
+
+  Future<void> _rename(GroupProvider group) async {
+    final l10n = AppLocalizations.of(context)!;
+    final values = await _ask(
+      title: l10n.groupNicknameEdit,
+      fields: [_nicknameField(l10n, initial: group.deviceLabel ?? '')],
+    );
+    // Unchanged (the dialog trims): nothing to send.
+    if (values == null || values[0] == group.deviceLabel) return;
+    await _run(() => group.renameDevice(values[0]));
   }
 
   String _statusText(AppLocalizations l10n, GroupProvider group) {
@@ -153,8 +197,25 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
       final problem = group.status == SyncStatus.offline ||
           group.status == SyncStatus.unauthorized ||
           group.status == SyncStatus.error;
+      final nickname = group.deviceLabel;
       children.addAll([
         Text(l10n.groupCurrent(group.groupName ?? ''), style: theme.textTheme.titleMedium),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                nickname == null ? l10n.groupNicknameLabel : l10n.groupNicknameCurrent(nickname),
+                key: const Key('group_nickname'),
+              ),
+            ),
+            IconButton(
+              key: const Key('group_nickname_edit'),
+              icon: const Icon(Icons.edit),
+              tooltip: l10n.groupNicknameEdit,
+              onPressed: _busy ? null : () => _rename(group),
+            ),
+          ],
+        ),
         const SizedBox(height: 8),
         if (group.shareToken != null) ...[
           Text(l10n.shareTokenLabel, style: theme.textTheme.labelMedium),
@@ -258,7 +319,19 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
 }
 
 
-/// A dialog of one or more text fields that owns its controllers.
+/// The server's limit on a device label and a group name, in code points.
+const _maxLength = 64;
+
+final _maxCodePoints = TextInputFormatter.withFunction(
+  (oldValue, newValue) => newValue.text.runes.length > _maxLength ? oldValue : newValue,
+);
+
+/// One field of [_TextFieldsDialog]. [hint] shows inside the empty field,
+/// [helper] under it for as long as the dialog is open.
+typedef _Field = ({Key key, String label, String initial, String? hint, String? helper});
+
+/// A dialog of one or more required text fields that owns its controllers. OK
+/// stays disabled while any field is blank, and returns the values trimmed.
 ///
 /// The controllers must outlive the dialog's exit transition, which keeps
 /// rebuilding the fields after `showDialog` has returned: disposing them in the
@@ -268,7 +341,7 @@ class _TextFieldsDialog extends StatefulWidget {
   const _TextFieldsDialog({required this.title, required this.fields});
 
   final String title;
-  final List<({String label, String initial, String? hint})> fields;
+  final List<_Field> fields;
 
   @override
   State<_TextFieldsDialog> createState() => _TextFieldsDialogState();
@@ -276,8 +349,14 @@ class _TextFieldsDialog extends StatefulWidget {
 
 class _TextFieldsDialogState extends State<_TextFieldsDialog> {
   late final List<TextEditingController> _controllers = [
-    for (final f in widget.fields) TextEditingController(text: f.initial),
+    for (final f in widget.fields) TextEditingController(text: f.initial)..addListener(_changed),
   ];
+
+  List<String> get _values => [for (final c in _controllers) c.text.trim()];
+
+  bool get _complete => _values.every((v) => v.isNotEmpty);
+
+  void _changed() => setState(() {});
 
   @override
   void dispose() {
@@ -298,13 +377,18 @@ class _TextFieldsDialogState extends State<_TextFieldsDialog> {
           for (var i = 0; i < widget.fields.length; i++) ...[
             if (i > 0) const SizedBox(height: 12),
             TextField(
-              key: Key('group_field_$i'),
+              key: widget.fields[i].key,
               controller: _controllers[i],
               autofocus: i == 0,
-              maxLength: 64,
+              // The server counts code points, where `maxLength` counts grapheme
+              // clusters: an emoji sequence would pass here and fail there.
+              inputFormatters: [_maxCodePoints],
               decoration: InputDecoration(
                 labelText: widget.fields[i].label,
                 hintText: widget.fields[i].hint,
+                counterText: '${_controllers[i].text.runes.length}/$_maxLength',
+                helperText: widget.fields[i].helper,
+                helperMaxLines: 2,
                 border: const OutlineInputBorder(),
               ),
             ),
@@ -318,11 +402,7 @@ class _TextFieldsDialogState extends State<_TextFieldsDialog> {
         ),
         FilledButton(
           key: const Key('group_dialog_ok'),
-          onPressed: () {
-            final values = [for (final c in _controllers) c.text.trim()];
-            if (values.any((v) => v.isEmpty)) return;
-            Navigator.pop(context, values);
-          },
+          onPressed: _complete ? () => Navigator.pop(context, _values) : null,
           child: Text(l10n.ok),
         ),
       ],

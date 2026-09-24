@@ -1,5 +1,7 @@
 # Every device joins a group as "Mon appareil"
 
+**Status:** done (2026-09-24) — closed by feat/group-nickname-and-rename. The join and create dialogs ask for a nickname first, empty, with OK disabled until every field is non-blank, and pass the trimmed values; `deviceLabelLabel` and `deviceLabelDefault` gave way to four `groupNickname*` keys in the ten ARB files.
+
 - **Noted:** 2026-09-23 — user request. Production holds two active devices named "Mon appareil", and one of them requested last night's p173 analysis
 - **Theme:** groups-v2
 - **Area:** app

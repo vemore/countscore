@@ -294,6 +294,15 @@ class BackendClient {
     await _send('POST', '/groups/me/owner/claim', token: deviceToken);
   }
 
+  /// `PATCH /groups/devices/me`: renames this device in its group. The route
+  /// names no device, so a device can only ever rename itself. Returns the label
+  /// the server stored (trimmed); **422** on a blank or over-64-character one.
+  Future<String> renameDevice(String deviceToken, String label) async {
+    final body =
+        await _send('PATCH', '/groups/devices/me', token: deviceToken, body: {'label': label});
+    return body['label'] as String;
+  }
+
   /// `POST /groups/me/devices/{id}/revoke`.
   ///
   /// On another device's id the server also rotates the invite code and returns

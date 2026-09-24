@@ -342,9 +342,13 @@
 
   "groupNameLabel": "समूह का नाम",
 
-  "deviceLabelLabel": "इस उपकरण का नाम",
+  "groupNicknameLabel": "आपका उपनाम",
 
-  "deviceLabelDefault": "मेरा उपकरण",
+  "groupNicknameHint": "समूह के बाकी सदस्य इसे देखेंगे",
+
+  "groupNicknameCurrent": "आपका उपनाम: {nickname}",
+
+  "groupNicknameEdit": "अपना उपनाम बदलें",
 
   "shareTokenLabel": "आमंत्रण कोड",
 
