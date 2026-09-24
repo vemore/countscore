@@ -100,12 +100,50 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
       _checkGameOverOnOpen();
     });
     _gameProvider.addListener(_closeIfDeletedElsewhere);
+    _totalsSeen = _totalsKey();
+    _gameProvider.addListener(_checkGameOverOnTotals);
   }
 
   @override
   void dispose() {
     _gameProvider.removeListener(_closeIfDeletedElsewhere);
+    _gameProvider.removeListener(_checkGameOverOnTotals);
     super.dispose();
+  }
+
+  /// The current game and every player's total, as last seen by
+  /// [_checkGameOverOnTotals].
+  String? _totalsSeen;
+
+  String _totalsKey() {
+    final game = _gameProvider.currentGame;
+    return [
+      game?.id,
+      game?.isFinished,
+      for (final p in _gameProvider.currentPlayers)
+        '${p.id}:${_gameProvider.getPlayerTotal(p.id!)}',
+    ].join(',');
+  }
+
+  /// Runs the game-over check whenever the provider brings new totals —
+  /// in particular when a group sync pull reloads the game
+  /// (`GameProvider.refreshFromSync`), so a round typed on another device ends
+  /// the game on this one too. The writes made on this board notify as well;
+  /// [_maybeShowGameOver] asks once per crossing, so the second call is a
+  /// no-op. The finished flag is part of what is compared: a game finished or
+  /// reopened by a pull is recorded as answered (see [_maybeShowGameOver]). A
+  /// notification that changes neither does not check again.
+  void _checkGameOverOnTotals() {
+    final key = _totalsKey();
+    if (key == _totalsSeen) return;
+    _totalsSeen = key;
+    final game = _gameProvider.currentGame;
+    if (game == null || !mounted) return;
+    final typeId = game.gameTypeId;
+    final gameType = typeId == null
+        ? null
+        : context.read<GameTypeProvider>().getGameTypeById(typeId);
+    unawaited(_maybeShowGameOver(_gameProvider, gameType));
   }
 
   /// A shared game deleted on another device leaves nothing to show here.
@@ -127,10 +165,10 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
   /// A game can be past its threshold before the board opens — crossed on
   /// another device, or in a session that ended without an answer. It is asked
   /// about once here, unless the user already chose to keep playing. A finished
-  /// game has had its answer.
+  /// game has had its answer, which [_maybeShowGameOver] records.
   Future<void> _checkGameOverOnOpen() async {
     final game = _gameProvider.currentGame;
-    if (game == null || game.isFinished) return;
+    if (game == null) return;
     final typeId = game.gameTypeId;
     final gameType = typeId == null
         ? null
@@ -200,8 +238,9 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                 ],
                 // The list shows a finished game as finished; the board used to
                 // show nothing at all, so the two disagreed about a fact one of
-                // them was willing to display. Nothing is locked — a finished
-                // game still takes rounds and score edits.
+                // them was willing to display. A finished game takes no new
+                // round until it is reopened (the round button below); score
+                // edits stay open, to correct a mistake.
                 if (game?.isFinished ?? false) ...[
                   const SizedBox(width: 8),
                   Chip(
@@ -489,9 +528,15 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                   padding: const EdgeInsets.all(16),
                   child: SizedBox(
                     width: double.infinity,
+                    // Disabled while the game is finished: the end is a
+                    // fact, not a screen shown once. "Reopen" in the menu, or
+                    // "Continue playing" on the end screen, clears
+                    // `finishedAt` and brings it back.
                     child: FilledButton.icon(
                       key: const Key('board_add_round'),
-                      onPressed: () => _enterRound(gameProvider, gameType),
+                      onPressed: (gameProvider.currentGame?.isFinished ?? false)
+                          ? null
+                          : () => _enterRound(gameProvider, gameType),
                       icon: const Icon(Icons.add),
                       label: Text(
                           l10n.boardRoundButton(gameProvider.nextRoundNumber)),
@@ -519,7 +564,8 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
   /// Opens the end screen once per crossing of the threshold.
   ///
   /// Every mutation that can change a total calls this — a score edit, a round
-  /// added, a round deleted — and so does the board's first build
+  /// added, a round deleted, new totals from a sync pull
+  /// ([_checkGameOverOnTotals]) — and so does the board's first build
   /// ([_checkGameOverOnOpen]). The stored "Continue playing" is dropped as soon
   /// as the condition is false, so the next crossing asks again.
   Future<void> _maybeShowGameOver(
@@ -532,17 +578,50 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
       if (uuid != null) await GameOverDismissals.clear(uuid);
       return;
     }
-    // A finished game has had its end screen; the app bar keeps it one tap
-    // away.
-    if (_gameOverDismissed || (gameProvider.currentGame?.isFinished ?? false)) {
+    // A finished game past its threshold has had its answer, wherever it was
+    // given: here, on another device, or by the user. It is recorded as
+    // answered, as "Continue playing" is, so that a reopen — typed here or
+    // pulled from another device that chose to keep playing — is not undone
+    // by this board re-finishing the game on the next round. A crossing this
+    // board did not end is not its to re-end.
+    final game = gameProvider.currentGame;
+    if (game?.isFinished ?? false) {
+      _gameOverDismissed = true;
+      final uuid = game?.uuid;
+      if (uuid != null) await GameOverDismissals.dismiss(uuid);
       return;
     }
+    if (_gameOverDismissed) return;
     _gameOverDismissed = true;
     // A slight delay so the table shows the new total before the end screen
     // covers it.
     Future.delayed(const Duration(milliseconds: 100), () {
-      if (mounted) unawaited(_finishAndShowEnd(byRule: true));
+      if (!mounted) return;
+      if (_keypadOpen) {
+        // Not over the keypad: the sheet would sit under the end screen and a
+        // round validated after it would land in a finished game. The game is
+        // finished now; the end screen opens when the sheet closes.
+        _endScreenPending = true;
+        unawaited(_gameProvider.setGameFinished(game!.id!, true));
+        return;
+      }
+      unawaited(_finishAndShowEnd(byRule: true));
     });
+  }
+
+  /// Whether a score keypad sheet is open over the board.
+  bool _keypadOpen = false;
+
+  /// The rule ended the game while the keypad was open: its end screen opens
+  /// as soon as the sheet closes ([_showPendingEndScreen]).
+  bool _endScreenPending = false;
+
+  Future<void> _showPendingEndScreen() async {
+    if (!_endScreenPending || !mounted) return;
+    _endScreenPending = false;
+    if (!(_gameProvider.currentGame?.isFinished ?? false)) return;
+    unawaited(ReviewPromptService.instance.onGameFinished());
+    await _openStandings(offerContinue: true);
   }
 
   void _showEditGameDialog() {
@@ -844,15 +923,29 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
             for (final p in players)
               if (!gameType.isEliminated(before[p.id]!)) p
           ];
-    final scores = await ScoreKeypadSheet.round(
-      context,
-      players: inPlay.isEmpty ? players : inPlay,
-      colors: playerColorsById(players),
-      totalsBefore: before,
-      roundNumber: gameProvider.nextRoundNumber,
-      isZapZap: _isZapZap(gameType),
-    );
-    if (scores == null || !mounted) return;
+    _keypadOpen = true;
+    final Map<int, int>? scores;
+    try {
+      scores = await ScoreKeypadSheet.round(
+        context,
+        players: inPlay.isEmpty ? players : inPlay,
+        colors: playerColorsById(players),
+        totalsBefore: before,
+        roundNumber: gameProvider.nextRoundNumber,
+        isZapZap: _isZapZap(gameType),
+      );
+    } finally {
+      _keypadOpen = false;
+    }
+    if (!mounted) return;
+    // The game can end while the sheet is open — the rule, on a round pulled
+    // from another device, or a finish pulled as such. A finished game takes
+    // no new round, so the one typed is dropped.
+    if (gameProvider.currentGame?.isFinished ?? false) {
+      await _showPendingEndScreen();
+      return;
+    }
+    if (scores == null) return;
     await gameProvider.addRoundWithScores(scores);
     _noteEliminations(gameProvider, gameType, before);
     // Also the moment a game already past its threshold — crossed on another
@@ -870,18 +963,28 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     final before = {
       for (final p in players) p.id!: gameProvider.getPlayerTotal(p.id!)
     };
-    final result = await ScoreKeypadSheet.single(
-      context,
-      players: players,
-      colors: playerColorsById(players),
-      totalsBefore: {
-        for (final p in players) p.id!: before[p.id]! - (roundScores[p.id] ?? 0)
-      },
-      roundNumber: round.roundNumber,
-      isZapZap: _isZapZap(gameType),
-      roundScores: roundScores,
-      playerId: player.id!,
-    );
+    _keypadOpen = true;
+    final Map<int, int>? result;
+    try {
+      result = await ScoreKeypadSheet.single(
+        context,
+        players: players,
+        colors: playerColorsById(players),
+        totalsBefore: {
+          for (final p in players)
+            p.id!: before[p.id]! - (roundScores[p.id] ?? 0)
+        },
+        roundNumber: round.roundNumber,
+        isZapZap: _isZapZap(gameType),
+        roundScores: roundScores,
+        playerId: player.id!,
+      );
+    } finally {
+      _keypadOpen = false;
+    }
+    if (!mounted) return;
+    // A score edit stays open on a finished game, to correct a mistake.
+    await _showPendingEndScreen();
     final value = result?[player.id];
     if (value == null || !mounted) return;
     await gameProvider.updateScore(player.id!, round.id!, value);

@@ -2,7 +2,7 @@
 
 > Scope: the Flutter app's own structure — entry point, state, screens, models.
 > Related: [[DataLayer]] · [[SchemaV10]] · [[I18n]] · [[Web]] · [[Testing]]
-> Updated: 2026-09-20
+> Updated: 2026-09-24
 
 ## Facts
 
@@ -427,19 +427,33 @@ Finishing opens the standings (below); reopening is confirmed by a snackbar whos
 `undoSnackBar`; it expires after 6 s). The entry is
 offered on a game that has at least one round or is already
 finished — a game with no round was never played, which is why the list needs
-`GameProvider.roundCountOf`. Nothing is locked: a finished game still takes rounds and score
-edits.
+`GameProvider.roundCountOf`. While the game is finished the board's round button
+(`board_add_round`) is disabled; **Reopen** or **Continue playing** brings it back. Score
+edits stay open, to correct a mistake.
 
 `_GameBoardScreenState._maybeShowGameOver` finishes the game and opens its standings after
 a score edit, after a round is added and after one is deleted — every mutation that can move
-a total onto or past the game type's threshold — and once on the board's first build, for an open
-game already past it. `_gameOverDismissed` keeps it to one crossing and re-arms as soon as
+a total onto or past the game type's threshold — whenever the provider brings the open game new
+totals or a new finished state (`_checkGameOverOnTotals`, a `GameProvider` listener: a group
+sync pull reloads the game through `refreshFromSync`, so a round typed on another device ends
+the game on this board too), and once on the board's first build. `_gameOverDismissed` keeps it to one crossing and re-arms as soon as
 the condition is false again. Raised by the rule, the screen offers **Continue playing**,
 which pops back to the board, reopens the game and is written to `GameOverDismissals`, keyed
 by `Game.uuid`, and read back when the board opens, so leaving the board does not re-ask;
 the stored answer is removed as soon as the condition is false. The back button leaves the
 game finished. A finished game is never raised again; its standings stay one tap away
 behind the app bar's single leaderboard button (`board_standings`, `_openStandings`).
+A game the check finds **finished and past its threshold** — ended here, on another device or
+by hand — is recorded as answered, in `_gameOverDismissed` and in `GameOverDismissals`, as
+"Continue playing" is: a reopen, typed here or pulled from a device that chose to keep
+playing, is never undone by this board re-ending the game on the next round. A crossing
+this board did not end is not its to re-end.
+
+While a score keypad sheet is open (`_keypadOpen`) the rule finishes the game without
+pushing the end screen over the sheet; it opens when the sheet closes
+(`_endScreenPending`, `_showPendingEndScreen`). "Round N" re-reads `isFinished` when its
+sheet returns and drops the round if the game ended meanwhile, by the rule or by a pull; a
+score edit is still written.
 
 #### The standings screen
 
@@ -701,6 +715,13 @@ not "fix" it by hardcoding a codepoint.
   `test/l10n/game_over_labels_test.dart`, `test/drift/last_player_standing_seed_test.dart`,
   `test/migration_last_player_standing_test.dart`.
   (`wip/done/2026-09-20-the-last-player-standing-condition-is-mislabelled-misimplemented-and-unset.md`)
+  > **Status: Outdated** (2026-09-24) — superseded by schema v20 (`fix/game-ends-on-last-player`):
+  > `applyV20` gives `lastPlayerOver` to existing ZapZap, Rami and 6 qui prend rows that have
+  > an `over` elimination and no end, at their own elimination threshold. A NULL end left
+  > older groups with games that never ended by themselves. The user accepted that finished
+  > games of these types are re-ranked by elimination order ([[SchemaV10]]).
+  > `test/migration_last_player_standing_test.dart` is gone, replaced by
+  > `test/migration_v19_to_v20_test.dart`.
 
 - **`firstPlayerOver` means "reaches" (2026-09-19).** The game-over test moved from the
   board into `GameType.isGameOver` and `firstPlayerOver` became `>=`: the box rules its

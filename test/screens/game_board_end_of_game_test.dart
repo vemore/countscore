@@ -23,6 +23,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:countscore/l10n/app_localizations.dart';
 import 'package:countscore/models/game_analysis.dart';
 import 'package:countscore/models/game_type.dart';
+import 'package:countscore/models/round.dart';
+import 'package:countscore/models/score.dart';
 import 'package:countscore/providers/backend_provider.dart';
 import 'package:countscore/providers/game_provider.dart';
 import 'package:countscore/providers/game_type_provider.dart';
@@ -170,6 +172,12 @@ void main() {
     await settleTheEndScreen(tester);
   }
 
+  bool roundButtonEnabled(WidgetTester tester) =>
+      tester
+          .widget<FilledButton>(find.byKey(const Key('board_add_round')))
+          .onPressed !=
+      null;
+
   Future<bool> storedDismissal() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(GameOverDismissals.key(games.currentGame!.uuid!)) ??
@@ -287,7 +295,9 @@ void main() {
     expect(find.byType(StandingsScreen), findsNothing);
   });
 
-  testWidgets('a crossing on a score edit is noticed by the next round',
+  // Until 2026-09-24 a crossing made outside the board waited for the next
+  // round typed on it; the board now listens to the provider's totals.
+  testWidgets('a crossing made outside the board is noticed at once',
       (tester) async {
     await aGamePast(10);
     await tester.pumpWidget(wrap());
@@ -300,8 +310,9 @@ void main() {
       games.currentRounds.first.id!,
       150,
     );
-    await addARound(tester);
+    await settleTheEndScreen(tester);
     expect(find.byType(StandingsScreen), findsOneWidget);
+    expect(games.currentGame!.isFinished, isTrue);
   });
 
   testWidgets('"Continue playing" survives leaving the board', (tester) async {
@@ -334,14 +345,16 @@ void main() {
     expect(find.byType(StandingsScreen), findsNothing);
     expect(await storedDismissal(), isFalse);
 
-    // And crossing it a second time is a new event, asked once — even after
-    // the board was left in between.
+    // And crossing it a second time is a new event, asked once — even when
+    // it happens while the board is closed.
+    await tester.pumpWidget(const SizedBox());
     await games.updateScore(
       games.currentPlayers.first.id!,
       games.currentRounds.first.id!,
       150,
     );
-    await leaveAndComeBack(tester);
+    await tester.pumpWidget(wrap());
+    await settleTheEndScreen(tester);
     expect(find.byType(StandingsScreen), findsOneWidget);
     await continuePlaying(tester);
     await addARound(tester);
@@ -397,16 +410,340 @@ void main() {
       expect(badge, findsOneWidget);
       expect(find.text(l10n.gameFinished), findsOneWidget);
 
-      // Nothing is locked: a finished game still takes rounds.
-      expect(
-          tester
-              .widget<FilledButton>(find.byKey(const Key('board_add_round')))
-              .onPressed,
-          isNotNull);
+      // A finished game takes no new round until it is reopened
+      // (2026-09-24; before, the button stayed enabled).
+      expect(roundButtonEnabled(tester), isFalse);
 
       await games.setGameFinished(games.currentGame!.id!, false);
       await tester.pumpAndSettle();
       expect(badge, findsNothing);
+      expect(roundButtonEnabled(tester), isTrue);
     });
+  });
+
+  // A game whose type ends on the last player standing ends reliably
+  // (wip/done/2026-09-23-a-game-with-one-player-left-does-not-reliably-end-itself.md).
+  group('a ZapZap game with one player left', () {
+    /// A seeded ZapZap (`lastPlayerOver`/100, out past 100) with one round:
+    /// Alice 90, Bob 110 (out), Carol 50.
+    Future<void> aZapZapGame() async {
+      await gameTypes.loadGameTypes();
+      final zapzap =
+          gameTypes.gameTypes.singleWhere((t) => t.builtinKey == 'zapzap');
+      expect(zapzap.gameOverConditionType, GameOverConditionType.lastPlayerOver);
+      final gameId = await games.createGame(
+          'ZapZap', zapzap.id, true, ['Alice', 'Bob', 'Carol'], null);
+      await games.loadGame(gameId);
+      final ids = [for (final p in games.currentPlayers) p.id!];
+      await games.addRoundWithScores({ids[0]: 90, ids[1]: 110, ids[2]: 50});
+    }
+
+    Future<void> tapKey(WidgetTester tester, String key) async {
+      await tester.tap(find.byKey(Key(key)));
+      await tester.pumpAndSettle();
+    }
+
+    /// Round 2 on the keypad: Alice takes [aliceScore], Carol 0. Bob is out and
+    /// is not asked.
+    Future<void> typeRoundTwo(WidgetTester tester, int aliceScore) async {
+      await tester.tap(find.byKey(const Key('board_add_round')));
+      await tester.pumpAndSettle();
+      for (final d in '$aliceScore'.split('')) {
+        await tapKey(tester, 'keypad_digit_$d');
+      }
+      await tapKey(tester, 'keypad_primary'); // Alice -> Carol
+      await tapKey(tester, 'keypad_primary'); // Validate round
+      await settleTheEndScreen(tester);
+    }
+
+    /// "Reopen" in the board's menu. Selected through `onSelected`, as in
+    /// undo_snack_bar_test.dart: the test font lays the open menu out wider
+    /// than a device does.
+    Future<void> reopenFromTheMenu(WidgetTester tester) async {
+      final dynamic menu =
+          tester.widget(find.byWidgetPredicate((w) => w is PopupMenuButton));
+      await tester.runAsync(() async {
+        await menu.onSelected('finish_game');
+      });
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets(
+        'the round that leaves one player standing finishes the game and '
+        'opens the end screen; the round button stays disabled until Reopen',
+        (tester) async {
+      await aZapZapGame();
+      await tester.pumpWidget(wrap());
+      await settleTheEndScreen(tester);
+      expect(find.byType(StandingsScreen), findsNothing);
+      expect(roundButtonEnabled(tester), isTrue);
+
+      await typeRoundTwo(tester, 15); // Alice 105: only Carol is left
+      expect(games.currentGame!.isFinished, isTrue);
+      expect(find.byType(StandingsScreen), findsOneWidget);
+      expect(find.byKey(const Key('game_end_headline')), findsOneWidget);
+
+      // Back to the board: the game stays finished and takes no round.
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.byType(StandingsScreen), findsNothing);
+      expect(games.currentGame!.isFinished, isTrue);
+      expect(roundButtonEnabled(tester), isFalse);
+
+      // Leaving and coming back does not bring it back either.
+      await leaveAndComeBack(tester);
+      expect(find.byType(StandingsScreen), findsNothing);
+      expect(roundButtonEnabled(tester), isFalse);
+
+      await reopenFromTheMenu(tester);
+      expect(games.currentGame!.isFinished, isFalse);
+      expect(roundButtonEnabled(tester), isTrue);
+    });
+
+    testWidgets('"Continue playing" brings the round button back',
+        (tester) async {
+      await aZapZapGame();
+      await tester.pumpWidget(wrap());
+      await settleTheEndScreen(tester);
+
+      await typeRoundTwo(tester, 15);
+      expect(find.byType(StandingsScreen), findsOneWidget);
+      expect(games.currentGame!.isFinished, isTrue);
+
+      await continuePlaying(tester);
+      expect(games.currentGame!.isFinished, isFalse);
+      expect(roundButtonEnabled(tester), isTrue);
+    });
+
+    testWidgets('a round that leaves two players standing does not end it',
+        (tester) async {
+      await aZapZapGame();
+      await tester.pumpWidget(wrap());
+      await settleTheEndScreen(tester);
+
+      await typeRoundTwo(tester, 10); // Alice 100: not past 100
+      expect(find.byType(StandingsScreen), findsNothing);
+      expect(games.currentGame!.isFinished, isFalse);
+      expect(roundButtonEnabled(tester), isTrue);
+    });
+
+    testWidgets(
+        'a round delivered through the provider, as sync does, ends the game '
+        'on a board that did not type it', (tester) async {
+      await aZapZapGame();
+      await tester.pumpWidget(wrap());
+      await settleTheEndScreen(tester);
+      expect(find.byType(StandingsScreen), findsNothing);
+
+      // Another device typed round 2; the pull wrote it to the database
+      // underneath this board, then reloaded the provider.
+      final game = games.currentGame!;
+      final ids = [for (final p in games.currentPlayers) p.id!];
+      final roundId = await DriftRoundRepository(db)
+          .create(Round(gameId: game.id!, roundNumber: 2));
+      final scores = DriftScoreRepository(db);
+      await scores.upsert(Score(playerId: ids[0], roundId: roundId, value: 30));
+      await scores.upsert(Score(playerId: ids[2], roundId: roundId, value: 0));
+      await games.refreshFromSync();
+      await settleTheEndScreen(tester);
+
+      expect(games.currentRounds, hasLength(2));
+      expect(find.byType(StandingsScreen), findsOneWidget);
+      expect(games.currentGame!.isFinished, isTrue);
+      final stored = await DriftGameRepository(db).getById(game.id!);
+      expect(stored!.isFinished, isTrue,
+          reason: 'the end is stored, so it syncs as ended_at');
+    });
+
+    testWidgets('a pull that changes no total does not ask', (tester) async {
+      await aZapZapGame();
+      await tester.pumpWidget(wrap());
+      await settleTheEndScreen(tester);
+
+      await games.refreshFromSync();
+      await settleTheEndScreen(tester);
+      expect(find.byType(StandingsScreen), findsNothing);
+      expect(games.currentGame!.isFinished, isFalse);
+    });
+
+    /// What a pull does: write to the database underneath the board, then
+    /// reload the provider. [aliceScore] is a round 2 (Carol 0) from another
+    /// device; [finished] is the game's `ended_at` as that device left it.
+    Future<void> pull(WidgetTester tester,
+        {int? aliceScore, int roundNumber = 2, bool? finished}) async {
+      final game = games.currentGame!;
+      if (aliceScore != null) {
+        final ids = [for (final p in games.currentPlayers) p.id!];
+        final roundId = await DriftRoundRepository(db)
+            .create(Round(gameId: game.id!, roundNumber: roundNumber));
+        final scores = DriftScoreRepository(db);
+        await scores
+            .upsert(Score(playerId: ids[0], roundId: roundId, value: aliceScore));
+        await scores.upsert(Score(playerId: ids[2], roundId: roundId, value: 0));
+      }
+      if (finished != null) {
+        final gameRepo = DriftGameRepository(db);
+        final stored = (await gameRepo.getById(game.id!))!;
+        await gameRepo.update(finished
+            ? stored.copyWith(finishedAt: DateTime.now())
+            : stored.copyWith(clearFinishedAt: true));
+      }
+      await games.refreshFromSync();
+      await settleTheEndScreen(tester);
+    }
+
+    // Review of #213, point 1: device A ends the game, then chooses "Continue
+    // playing"; this board must not end it again on A's next round.
+    testWidgets(
+        'a finish, a reopen and a round pulled from another device leave the '
+        'game open, with no end screen', (tester) async {
+      await aZapZapGame();
+      await tester.pumpWidget(wrap());
+      await settleTheEndScreen(tester);
+
+      // A typed the crossing round and ended the game: both arrive together.
+      await pull(tester, aliceScore: 15, finished: true);
+      expect(games.currentGame!.isFinished, isTrue);
+      expect(find.byType(StandingsScreen), findsNothing,
+          reason: 'a game another device ended is not announced here');
+
+      // A chose "Continue playing": the reopen arrives, totals unchanged.
+      await pull(tester, finished: false);
+      expect(games.currentGame!.isFinished, isFalse);
+      expect(roundButtonEnabled(tester), isTrue);
+
+      // A typed round 3.
+      await pull(tester, aliceScore: 5, roundNumber: 3);
+      expect(games.currentRounds, hasLength(3));
+      expect(games.currentGame!.isFinished, isFalse,
+          reason: 'this board re-ended a game another device kept playing');
+      expect(find.byType(StandingsScreen), findsNothing);
+      expect(roundButtonEnabled(tester), isTrue);
+
+      // Nor when the board is opened again.
+      await leaveAndComeBack(tester);
+      expect(find.byType(StandingsScreen), findsNothing);
+      expect(games.currentGame!.isFinished, isFalse);
+    });
+
+    testWidgets(
+        'a game reopened by a pull while past its threshold is not re-ended, '
+        'even on a board opened on it finished', (tester) async {
+      await aZapZapGame();
+      await pull(tester, aliceScore: 15, finished: true);
+      await tester.pumpWidget(wrap());
+      await settleTheEndScreen(tester);
+      expect(find.byType(StandingsScreen), findsNothing);
+
+      await pull(tester, finished: false);
+      await pull(tester, aliceScore: 5, roundNumber: 3);
+      expect(games.currentGame!.isFinished, isFalse);
+      expect(find.byType(StandingsScreen), findsNothing);
+    });
+
+    // Review of #213, point 2: the end must not land under an open keypad,
+    // and a round validated after the end must not reach a finished game.
+    testWidgets(
+        'a pulled round that ends the game while the keypad is open: no end '
+        'screen under the sheet, and the round typed there is dropped',
+        (tester) async {
+      await aZapZapGame();
+      await tester.pumpWidget(wrap());
+      await settleTheEndScreen(tester);
+
+      await tester.tap(find.byKey(const Key('board_add_round')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('keypad_sheet')), findsOneWidget);
+
+      await pull(tester, aliceScore: 15);
+      expect(games.currentGame!.isFinished, isTrue,
+          reason: 'the rule still ends the game');
+      expect(find.byType(StandingsScreen), findsNothing,
+          reason: 'the end screen was pushed over the open keypad');
+      expect(find.byKey(const Key('keypad_sheet')), findsOneWidget);
+
+      await tapKey(tester, 'keypad_primary'); // Alice -> Carol
+      await tapKey(tester, 'keypad_primary'); // Validate round
+      await settleTheEndScreen(tester);
+
+      expect(games.currentRounds, hasLength(2),
+          reason: 'a round was written to a finished game');
+      expect(find.byType(StandingsScreen), findsOneWidget,
+          reason: 'the end screen opens once the sheet is closed');
+      expect(games.currentGame!.isFinished, isTrue);
+    });
+
+    testWidgets(
+        'a finish pulled while the keypad is open drops the round typed there',
+        (tester) async {
+      await aZapZapGame();
+      await tester.pumpWidget(wrap());
+      await settleTheEndScreen(tester);
+
+      await tester.tap(find.byKey(const Key('board_add_round')));
+      await tester.pumpAndSettle();
+      await pull(tester, finished: true);
+
+      await tapKey(tester, 'keypad_primary');
+      await tapKey(tester, 'keypad_primary');
+      await settleTheEndScreen(tester);
+
+      expect(games.currentRounds, hasLength(1));
+      expect(games.currentGame!.isFinished, isTrue);
+      expect(find.byType(StandingsScreen), findsNothing);
+    });
+  });
+
+  // Regression: the types that end on the first player to reach a total keep
+  // ending as they did.
+  group('a firstPlayerOver type', () {
+    Future<void> aSeededGame(String key) async {
+      await gameTypes.loadGameTypes();
+      final type = gameTypes.gameTypes.singleWhere((t) => t.builtinKey == key);
+      expect(type.gameOverConditionType, GameOverConditionType.firstPlayerOver);
+      final gameId = await games.createGame(
+          key, type.id, type.isLowestScoreWins, ['Alice', 'Bob'], null);
+      await games.loadGame(gameId);
+    }
+
+    Future<void> typeRound(WidgetTester tester, int aliceScore) async {
+      await tester.tap(find.byKey(const Key('board_add_round')));
+      await tester.pumpAndSettle();
+      for (final d in '$aliceScore'.split('')) {
+        await tester.tap(find.byKey(Key('keypad_digit_$d')));
+        await tester.pumpAndSettle();
+      }
+      while (find.byKey(const Key('keypad_sheet')).evaluate().isNotEmpty) {
+        await tester.tap(find.byKey(const Key('keypad_primary')));
+        await tester.pumpAndSettle();
+      }
+      await settleTheEndScreen(tester);
+    }
+
+    for (final (key, threshold) in [('president', 10), ('uno', 500)]) {
+      testWidgets('$key ends when a player reaches $threshold, not before',
+          (tester) async {
+        await aSeededGame(key);
+        await tester.pumpWidget(wrap());
+        await settleTheEndScreen(tester);
+
+        await typeRound(tester, threshold - 1);
+        expect(find.byType(StandingsScreen), findsNothing);
+        expect(games.currentGame!.isFinished, isFalse);
+
+        await typeRound(tester, 1);
+        expect(find.byType(StandingsScreen), findsOneWidget);
+        expect(games.currentGame!.isFinished, isTrue);
+        expect(
+            tester
+                .widget<Text>(find.byKey(const Key('game_end_headline')))
+                .data,
+            l10n.gameEndWinner('Alice'));
+
+        await tester.pageBack();
+        await tester.pumpAndSettle();
+        expect(roundButtonEnabled(tester), isFalse);
+      });
+    }
   });
 }

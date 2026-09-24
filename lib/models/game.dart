@@ -8,8 +8,9 @@ class Game {
 
   /// When the game was declared over, or null while it is still open. Set from
   /// the board, the home-screen menu or the game-over dialog; cleared by
-  /// reopening. Nothing is locked by it — a finished game still takes rounds
-  /// and score edits. Synced as `ended_at`.
+  /// reopening. The board takes no new round while it is set (the round button
+  /// is disabled until the game is reopened); score edits stay open. Synced as
+  /// `ended_at`.
   final DateTime? finishedAt;
 
   /// The group this game is shared with, or null for a local game. Read-only here:
