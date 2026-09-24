@@ -187,6 +187,32 @@ void main() {
       expect(ops['game_type'], 'delete');
     });
 
+    test('tombstoning a game type leaves its deleted games\' gameTypeId alone', () async {
+      final m = await joined();
+      final typeId = await sharedTypeFreedOfGames(m);
+      final before = await db
+          .customSelect('SELECT id, gameTypeId FROM games WHERE deleted_at IS NOT NULL')
+          .get();
+      expect(before.map((r) => r.data['gameTypeId']), [typeId],
+          reason: 'the shared game was tombstoned, still pointing at the type');
+      // Push the game's own delete, so only what the type delete causes is pending.
+      for (final d in await store.preparePush(m)) {
+        await store.markSent(d, m.deviceId);
+      }
+      await db.customStatement('DELETE FROM outbox');
+
+      await gameTypes.delete(typeId);
+
+      final after = await db
+          .customSelect('SELECT id, gameTypeId FROM games WHERE deleted_at IS NOT NULL')
+          .get();
+      expect(after.map((r) => r.data), before.map((r) => r.data),
+          reason: 'the type row stays, so the history keeps pointing at it');
+      final pending = await outbox();
+      expect(pending.map((r) => '${r['entity_type']}:${r['op']}'), ['game_type:delete'],
+          reason: 'no second delete delta for a game already deleted');
+    });
+
     test('a tombstoned built-in key is free again under the v15 index', () async {
       final m = await joined();
       final typeId = await sharedTypeFreedOfGames(m);

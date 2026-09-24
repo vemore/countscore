@@ -301,14 +301,12 @@ class DriftGameTypeRepository implements GameTypeRepository {
       throw Exception('Cannot delete game type: $count games are using it');
     }
     return _db.transaction(() async {
-      // A tombstoned game nobody can see must not keep the type alive.
-      await _db.customStatement(
-        'UPDATE games SET gameTypeId = NULL WHERE gameTypeId = ? AND deleted_at IS NOT NULL',
-        [id],
-      );
       // A type the group knows about is tombstoned, like every other shared row:
       // the capture trigger turns the stamp into a delete delta, and a row that
       // is simply gone has no way of telling the other devices it was deleted.
+      // Tombstoned games keep their gameTypeId: the row they point at stays,
+      // and rewriting them would re-enqueue a delete for each and lose which
+      // type they were played with.
       if (await _isLinked(_db, 'game_type', 'game_types', id)) {
         final now = _nowMs();
         return _db.customUpdate(
@@ -318,6 +316,13 @@ class DriftGameTypeRepository implements GameTypeRepository {
           updates: {_db.gameTypes},
         );
       }
+      // The row is about to go: a tombstoned game must not keep pointing at
+      // it. The Drift schema declares no foreign key on gameTypeId, so SQLite
+      // would not clear it on its own.
+      await _db.customStatement(
+        'UPDATE games SET gameTypeId = NULL WHERE gameTypeId = ? AND deleted_at IS NOT NULL',
+        [id],
+      );
       return _db.customUpdate(
         'DELETE FROM game_types WHERE id = ?',
         variables: [Variable(id)],
