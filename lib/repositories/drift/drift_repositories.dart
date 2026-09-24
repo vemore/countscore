@@ -317,12 +317,25 @@ class DriftGameTypeRepository implements GameTypeRepository {
         );
       }
       // The row is about to go: a tombstoned game must not keep pointing at
-      // it. The Drift schema declares no foreign key on gameTypeId, so SQLite
-      // would not clear it on its own.
+      // it. No foreign key is enforced on gameTypeId: Drift declares none, and
+      // on native, where the sqflite schema declares ON DELETE SET NULL
+      // (database_service.dart), PRAGMA foreign_keys is off.
+      // Capture is suppressed around the UPDATE: a shared game already
+      // tombstoned (its type unlinked, e.g. a `taken` remote identity) would
+      // otherwise enqueue a second delete delta with nothing new in it.
+      final flag = await _db
+          .customSelect('SELECT suppress FROM sync_flags WHERE id = 1')
+          .getSingleOrNull();
+      final wasSuppressed = (flag?.data['suppress'] as int? ?? 0) == 1;
+      await _db.customStatement(
+          'INSERT OR REPLACE INTO sync_flags (id, suppress) VALUES (1, 1)');
       await _db.customStatement(
         'UPDATE games SET gameTypeId = NULL WHERE gameTypeId = ? AND deleted_at IS NOT NULL',
         [id],
       );
+      await _db.customStatement(
+          'INSERT OR REPLACE INTO sync_flags (id, suppress) VALUES (1, ?)',
+          [wasSuppressed ? 1 : 0]);
       return _db.customUpdate(
         'DELETE FROM game_types WHERE id = ?',
         variables: [Variable(id)],

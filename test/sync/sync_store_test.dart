@@ -195,10 +195,6 @@ void main() {
           .get();
       expect(before.map((r) => r.data['gameTypeId']), [typeId],
           reason: 'the shared game was tombstoned, still pointing at the type');
-      // Push the game's own delete, so only what the type delete causes is pending.
-      for (final d in await store.preparePush(m)) {
-        await store.markSent(d, m.deviceId);
-      }
       await db.customStatement('DELETE FROM outbox');
 
       await gameTypes.delete(typeId);
@@ -211,6 +207,32 @@ void main() {
       final pending = await outbox();
       expect(pending.map((r) => '${r['entity_type']}:${r['op']}'), ['game_type:delete'],
           reason: 'no second delete delta for a game already deleted');
+    });
+
+    test('hard-deleting an unlinked type enqueues nothing for its shared tombstoned game',
+        () async {
+      final m = await joined();
+      final g = await localGame();
+      await store.shareGame(g.game, m.groupId);
+      await games.delete(g.game); // tombstoned, before any push
+      // A type the group has no link for, as when `_link` finds its identity taken.
+      await db.customStatement(
+          "DELETE FROM group_links WHERE entity_type = 'game_type'");
+      const typeId = 1;
+      final before = await outbox();
+
+      expect(await gameTypes.delete(typeId), 1);
+
+      final gone = await db.customSelect('SELECT id FROM game_types WHERE id = ?',
+          variables: [Variable(typeId)]).get();
+      expect(gone, isEmpty, reason: 'no link: hard delete');
+      final game = await db.customSelect('SELECT gameTypeId FROM games WHERE id = ?',
+          variables: [Variable(g.game)]).getSingle();
+      expect(game.data['gameTypeId'], isNull);
+      expect((await outbox()).map((r) => r['id']), before.map((r) => r['id']),
+          reason: 'no second game delete for a game already deleted');
+      final flag = await db.customSelect('SELECT suppress FROM sync_flags WHERE id = 1').getSingle();
+      expect(flag.data['suppress'], 0, reason: 'capture is back on');
     });
 
     test('a tombstoned built-in key is free again under the v15 index', () async {

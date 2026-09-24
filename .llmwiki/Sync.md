@@ -226,8 +226,10 @@ link and hard-deletes one the group never saw (`_isLinked`,
 `lib/repositories/drift/drift_repositories.dart`); the capture trigger, which tests the same
 link, turns the stamp into a `delete` delta with an empty payload. Tombstoned games keep their
 `gameTypeId` when the type is tombstoned (the row stays, and rewriting them would enqueue a
-second `delete` for each); only the hard delete clears it first, since the Drift schema
-declares no foreign key on `gameTypeId` (since 2026-09-24).
+second `delete` for each); only the hard delete clears it first, with capture suppressed,
+since no foreign key is enforced on `gameTypeId`: Drift declares none, and on native, where the
+sqflite schema declares `ON DELETE SET NULL` (`database_service.dart`), `PRAGMA foreign_keys` is
+off (since 2026-09-24).
 
 | Server answer | Client does |
 |---|---|
