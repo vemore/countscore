@@ -1,5 +1,7 @@
 # README says the Flutter client for groups and sync has not been written
 
+**Status:** done (2026-09-24) — closed by docs/readme-and-asset-requirements. The README Backend paragraph now says the app is a client of `/comments/*`, `/groups/*` and `/sync/*` once a server is configured, and of none of them without one.
+
 - **Noted:** 2026-09-19 — while updating README.md for feat/group-comment-analysis
 - **Theme:** docs
 - **Area:** docs

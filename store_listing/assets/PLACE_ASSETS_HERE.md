@@ -31,7 +31,7 @@ None yet. Like the phone set, a tablet set would be per locale, not placed here:
 
 ## How to Create
 
-See `../ASSET_REQUIREMENTS.md` for complete specifications, design tips, and tool recommendations.
+See `../ASSET_REQUIREMENTS.md` for Play's image specifications; the palette is in `lib/utils/app_theme.dart`.
 
 ## Current Status
 
