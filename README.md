@@ -25,7 +25,7 @@ at your own server in Settings → Server if you want the connected features.
   or your own, gets that summary. Any of it can be
   rewritten: your table's own rules replace the shipped text and travel with your group.
 - **Scoring grid**: one coloured lane per player — avatar, big total, place, a crown on the
-  leader — or one row per player at the tap of a button (remembered for every game); rounds,
+  leader, a skull on a player a game type with elimination has put out — or one row per player at the tap of a button (remembered for every game); rounds,
   live ranking and per-player statistics.
 - **An explicit end**: any game that has been played can be declared over from the board or
   the game list, which marks it in the history and opens the standings on their result: the
@@ -47,6 +47,12 @@ at your own server in Settings → Server if you want the connected features.
   ranks by the total.
 - **Who starts?**: the score table's menu draws one of the game's players at random.
 - **Roll dice**: the score table's menu rolls 1 to 6 six-sided dice and shows each die and the total.
+- **Turn timer**: the score table's menu counts down from 15 seconds to 10 minutes, with
+  pause and reset, and says so at zero; each game type reopens it on its own last duration.
+- **Game sounds** (Settings → Sounds, off by default): a sound when a player is eliminated,
+  when a game type's rule ends the game, and when the turn timer reaches zero. The three
+  sounds are bundled in the app (CC0, made by `scripts/generate_sounds.py`); nothing is
+  fetched, and no permission is needed.
 - **Play again**: from the standings or a finished game in the history, one tap starts
   the next game with the same type and the same players in the same order.
 - **Share a result**: the standings and the analysis share them as a
@@ -110,7 +116,7 @@ at your own server in Settings → Server if you want the connected features.
 | Legacy migrator | `sqflite` ^2.4.3 — runs the migration chain on an existing database up to the current schema version, then Drift takes over |
 | UI | `flex_color_picker` ^4.0.0, `flutter_markdown_plus` |
 | Group sync | `web_socket_channel` ^3.0.3 (change signal), `flutter_secure_storage` ^11.1.1 (device token), `crypto` ^3.0.7 (name-based uuids) |
-| Utilities | `intl`, `http`, `url_launcher` (report email, Play listing), `share_plus` (share a result), `in_app_review` ^2.0.12 (Play review sheet), `package_info_plus` (version), `wakelock_plus`, `shared_preferences`, `path_provider`, `file_picker` |
+| Utilities | `intl`, `http`, `url_launcher` (report email, Play listing), `share_plus` (share a result), `in_app_review` ^2.0.12 (Play review sheet), `package_info_plus` (version), `audioplayers` ^6.8.1 (game sounds), `wakelock_plus`, `shared_preferences`, `path_provider`, `file_picker` |
 
 Data access goes through the repository interfaces in `lib/repositories/`; screens never
 touch the database directly.

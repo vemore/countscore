@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../models/game_standing.dart';
@@ -20,30 +19,39 @@ import '../repositories/drift/drift_repositories.dart';
 import '../repositories/game_analysis_repository.dart';
 import '../services/drift/database.dart';
 import '../services/game_over_dismissals.dart';
+import '../services/game_sounds.dart';
 import '../services/review_prompt.dart';
 import '../widgets/board_lanes.dart';
 import '../widgets/board_rows.dart';
 import '../widgets/dice_roller_dialog.dart';
 import '../widgets/score_keypad_sheet.dart';
+import '../widgets/turn_timer_dialog.dart';
 import '../widgets/who_starts_dialog.dart';
 import 'game_analysis_screen.dart';
 import 'game_rules_screen.dart';
 import 'standings_screen.dart';
 
 class GameBoardScreen extends StatefulWidget {
-  const GameBoardScreen({super.key, this.analysisRepo});
+  const GameBoardScreen({super.key, this.analysisRepo, this.sounds});
 
   /// Injected by tests only, as `GameProvider`'s repositories are: the default
   /// reaches the `AppDatabase` singleton, which opens the real database.
   final GameAnalysisRepository? analysisRepo;
+
+  /// Injected by tests only, on a fake player; the default is
+  /// [GameSounds.instance], which plays nothing while "Game sounds" is off.
+  final GameSounds? sounds;
 
   @override
   State<GameBoardScreen> createState() => _GameBoardScreenState();
 }
 
 class _GameBoardScreenState extends State<GameBoardScreen> {
-  // Track eliminated players to play sound only once
+  /// The players this board has already sounded out, so each elimination
+  /// plays once; a correction that brings one back forgets them.
   final Set<int> _eliminatedPlayers = {};
+
+  late final GameSounds _sounds = widget.sounds ?? GameSounds.instance;
 
   late final GameAnalysisRepository _analysisRepo =
       widget.analysisRepo ?? DriftGameAnalysisRepository(AppDatabase.instance);
@@ -336,6 +344,16 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                     ),
                   ),
                   PopupMenuItem(
+                    value: 'turn_timer',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.timer_outlined),
+                        const SizedBox(width: 8),
+                        Text(l10n.turnTimer),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
                     value: 'edit_game',
                     child: Row(
                       children: [
@@ -406,6 +424,12 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                     );
                   } else if (value == 'roll_dice') {
                     await DiceRollerDialog.show(context);
+                  } else if (value == 'turn_timer') {
+                    await TurnTimerDialog.show(
+                      context,
+                      gameTypeId: gameProvider.currentGame?.gameTypeId,
+                      sounds: _sounds,
+                    );
                   } else if (value == 'edit_game') {
                     _showEditGameDialog();
                   } else if (value == 'delete_round' &&
@@ -621,6 +645,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     _endScreenPending = false;
     if (!(_gameProvider.currentGame?.isFinished ?? false)) return;
     unawaited(ReviewPromptService.instance.onGameFinished());
+    unawaited(_sounds.play(GameSound.victory));
     await _openStandings(offerContinue: true);
   }
 
@@ -881,6 +906,9 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     // on Play.
     if (justFinished) {
       unawaited(ReviewPromptService.instance.onGameFinished());
+      // The rule's end is a win to celebrate; the user's own "End game" is not
+      // an event, and a game already finished never gets here.
+      if (byRule) unawaited(_sounds.play(GameSound.victory));
     }
     if (!mounted) return;
     await _openStandings(offerContinue: byRule);
@@ -990,8 +1018,10 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     await _maybeShowGameOver(gameProvider, gameType);
   }
 
-  /// Plays the alert once for each player a write just put out of the game,
-  /// and forgets a player a correction brought back.
+  /// Plays the elimination sound when a write just put a player out of the
+  /// game — once per write, however many went out with it, and never twice for
+  /// the same player — and forgets a player a correction brought back. With
+  /// "Game sounds" off (the default) nothing plays at all.
   void _noteEliminations(
       GameProvider gameProvider, GameType? gameType, Map<int, int> before) {
     if (gameType == null || !mounted) return;
@@ -1007,7 +1037,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
         }
       }
     });
-    if (someoneOut) SystemSound.play(SystemSoundType.alert);
+    if (someoneOut) unawaited(_sounds.play(GameSound.elimination));
   }
 
   void _showCommentDialog(

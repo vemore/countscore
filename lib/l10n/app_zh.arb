@@ -701,5 +701,16 @@
 
   "groupErrorOwnerActive": "群组所有者最近有活动：无法接管所有权。",
 
-  "groupCreatedOwnerExplain": "群组已创建。本设备是其所有者；可在“设备”中将该角色移交给其他设备。"
+  "groupCreatedOwnerExplain": "群组已创建。本设备是其所有者；可在“设备”中将该角色移交给其他设备。",
+  "boardEliminated": "已淘汰",
+  "soundsSection": "声音",
+  "gameSounds": "游戏音效",
+  "gameSoundsDescription": "玩家被淘汰、赢得游戏和计时结束时播放声音",
+  "turnTimer": "回合计时器",
+  "turnTimerLess": "减少时间",
+  "turnTimerMore": "增加时间",
+  "turnTimerStart": "开始",
+  "turnTimerPause": "暂停",
+  "turnTimerReset": "重置",
+  "turnTimerTimeUp": "时间到！"
 }

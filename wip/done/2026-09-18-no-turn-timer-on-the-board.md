@@ -1,5 +1,7 @@
 # The board has no turn timer
 
+**Status:** done (2026-09-24) — closed by feat/board-skull-sounds-timer. The board's overflow menu has **Turn timer** (`lib/widgets/turn_timer_dialog.dart`): 15 s to 10 min by 15 s, start, pause, reset, "Time's up!" and a haptic at zero, plus the timer sound when *Game sounds* is on. The last duration is remembered per game type in SharedPreferences (`turnTimerSeconds.<id>`), default 60 s. Tested in `test/screens/game_board_turn_timer_test.dart`.
+
 - **Noted:** 2026-09-18 — split out of `wip/done/2026-09-16-no-dice-timer-first-player-helpers.md` when feat/board-growth shipped **Who starts?** alone
 - **Theme:** growth
 - **Area:** app

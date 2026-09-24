@@ -701,5 +701,16 @@
 
   "groupErrorOwnerActive": "O proprietário do grupo deu sinal recentemente: não é possível assumir a propriedade.",
 
-  "groupCreatedOwnerExplain": "Grupo criado. Este dispositivo é o proprietário; esse papel pode ser passado para outro em Dispositivos."
+  "groupCreatedOwnerExplain": "Grupo criado. Este dispositivo é o proprietário; esse papel pode ser passado para outro em Dispositivos.",
+  "boardEliminated": "Eliminado",
+  "soundsSection": "Sons",
+  "gameSounds": "Sons do jogo",
+  "gameSoundsDescription": "Um som quando um jogador é eliminado, quando a partida é ganha e quando o cronômetro termina",
+  "turnTimer": "Cronômetro de turno",
+  "turnTimerLess": "Menos tempo",
+  "turnTimerMore": "Mais tempo",
+  "turnTimerStart": "Iniciar",
+  "turnTimerPause": "Pausar",
+  "turnTimerReset": "Redefinir",
+  "turnTimerTimeUp": "Acabou o tempo!"
 }

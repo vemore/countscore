@@ -1584,4 +1584,38 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get groupCreatedOwnerExplain =>
       'Grupo creado. Este dispositivo es su propietario; el rol puede cederse a otro en Dispositivos.';
+
+  @override
+  String get boardEliminated => 'Eliminado';
+
+  @override
+  String get soundsSection => 'Sonidos';
+
+  @override
+  String get gameSounds => 'Sonidos del juego';
+
+  @override
+  String get gameSoundsDescription =>
+      'Un sonido cuando un jugador queda eliminado, cuando se gana la partida y al terminar el temporizador';
+
+  @override
+  String get turnTimer => 'Temporizador de turno';
+
+  @override
+  String get turnTimerLess => 'Menos tiempo';
+
+  @override
+  String get turnTimerMore => 'Más tiempo';
+
+  @override
+  String get turnTimerStart => 'Iniciar';
+
+  @override
+  String get turnTimerPause => 'Pausar';
+
+  @override
+  String get turnTimerReset => 'Reiniciar';
+
+  @override
+  String get turnTimerTimeUp => '¡Se acabó el tiempo!';
 }

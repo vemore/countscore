@@ -701,5 +701,16 @@
 
   "groupErrorOwnerActive": "Der Eigentümer der Gruppe war kürzlich aktiv: Das Eigentum kann nicht übernommen werden.",
 
-  "groupCreatedOwnerExplain": "Gruppe erstellt. Dieses Gerät ist ihr Eigentümer; diese Rolle kann unter „Geräte“ an ein anderes übergeben werden."
+  "groupCreatedOwnerExplain": "Gruppe erstellt. Dieses Gerät ist ihr Eigentümer; diese Rolle kann unter „Geräte“ an ein anderes übergeben werden.",
+  "boardEliminated": "Ausgeschieden",
+  "soundsSection": "Töne",
+  "gameSounds": "Spielgeräusche",
+  "gameSoundsDescription": "Ein Ton, wenn ein Spieler ausscheidet, wenn das Spiel gewonnen ist und wenn der Timer abläuft",
+  "turnTimer": "Zugtimer",
+  "turnTimerLess": "Weniger Zeit",
+  "turnTimerMore": "Mehr Zeit",
+  "turnTimerStart": "Starten",
+  "turnTimerPause": "Anhalten",
+  "turnTimerReset": "Zurücksetzen",
+  "turnTimerTimeUp": "Die Zeit ist um!"
 }

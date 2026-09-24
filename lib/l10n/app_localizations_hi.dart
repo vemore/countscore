@@ -1578,4 +1578,38 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get groupCreatedOwnerExplain =>
       'समूह बन गया। यह डिवाइस इसका स्वामी है; यह भूमिका “डिवाइस” में किसी दूसरे को सौंपी जा सकती है।';
+
+  @override
+  String get boardEliminated => 'बाहर';
+
+  @override
+  String get soundsSection => 'ध्वनियाँ';
+
+  @override
+  String get gameSounds => 'खेल की ध्वनियाँ';
+
+  @override
+  String get gameSoundsDescription =>
+      'जब कोई खिलाड़ी बाहर हो, जब खेल जीता जाए और जब टाइमर खत्म हो, तब एक ध्वनि';
+
+  @override
+  String get turnTimer => 'बारी का टाइमर';
+
+  @override
+  String get turnTimerLess => 'कम समय';
+
+  @override
+  String get turnTimerMore => 'अधिक समय';
+
+  @override
+  String get turnTimerStart => 'शुरू करें';
+
+  @override
+  String get turnTimerPause => 'रोकें';
+
+  @override
+  String get turnTimerReset => 'रीसेट करें';
+
+  @override
+  String get turnTimerTimeUp => 'समय समाप्त!';
 }

@@ -701,5 +701,16 @@
 
   "groupErrorOwnerActive": "グループのオーナーは最近利用しています。オーナーは引き継げません。",
 
-  "groupCreatedOwnerExplain": "グループを作成しました。このデバイスがオーナーです。この役割は「デバイス」で他のデバイスに引き継げます。"
+  "groupCreatedOwnerExplain": "グループを作成しました。このデバイスがオーナーです。この役割は「デバイス」で他のデバイスに引き継げます。",
+  "boardEliminated": "脱落",
+  "soundsSection": "サウンド",
+  "gameSounds": "ゲームサウンド",
+  "gameSoundsDescription": "プレイヤーの脱落時、勝利時、タイマー終了時に音を鳴らします",
+  "turnTimer": "ターンタイマー",
+  "turnTimerLess": "時間を減らす",
+  "turnTimerMore": "時間を増やす",
+  "turnTimerStart": "スタート",
+  "turnTimerPause": "一時停止",
+  "turnTimerReset": "リセット",
+  "turnTimerTimeUp": "時間切れ！"
 }

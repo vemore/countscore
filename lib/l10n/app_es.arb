@@ -701,5 +701,16 @@
 
   "groupErrorOwnerActive": "El propietario del grupo ha dado señales hace poco: no se puede asumir la propiedad.",
 
-  "groupCreatedOwnerExplain": "Grupo creado. Este dispositivo es su propietario; el rol puede cederse a otro en Dispositivos."
+  "groupCreatedOwnerExplain": "Grupo creado. Este dispositivo es su propietario; el rol puede cederse a otro en Dispositivos.",
+  "boardEliminated": "Eliminado",
+  "soundsSection": "Sonidos",
+  "gameSounds": "Sonidos del juego",
+  "gameSoundsDescription": "Un sonido cuando un jugador queda eliminado, cuando se gana la partida y al terminar el temporizador",
+  "turnTimer": "Temporizador de turno",
+  "turnTimerLess": "Menos tiempo",
+  "turnTimerMore": "Más tiempo",
+  "turnTimerStart": "Iniciar",
+  "turnTimerPause": "Pausar",
+  "turnTimerReset": "Reiniciar",
+  "turnTimerTimeUp": "¡Se acabó el tiempo!"
 }
