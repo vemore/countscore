@@ -717,3 +717,33 @@ async def test_a_rename_is_rate_limited_per_device(client, monkeypatch):
     # Another device has its own bucket.
     r = await client.patch("/groups/devices/me", json={"label": "c"}, headers=bob)
     assert r.status_code == 200
+
+
+async def test_join_and_create_refuse_a_blank_label_and_trim_a_padded_one(client):
+    r = await client.post("/groups", json={"name": "g", "device_label": "   "})
+    assert r.status_code == 422
+    r = await client.post("/groups", json={"name": "g", "device_label": "  Alice  "})
+    assert r.status_code == 201
+    assert r.json()["device"]["label"] == "Alice"
+    share = r.json()["group"]["share_token"]
+
+    for label in ["", "   ", "​", "x" * 65]:
+        r = await client.post("/groups/join", json={"share_token": share, "device_label": label})
+        assert r.status_code == 422, (label, r.text)
+    r = await client.post("/groups/join", json={"share_token": share, "device_label": " Bob "})
+    assert r.status_code == 201
+    assert r.json()["device"]["label"] == "Bob"
+
+
+async def test_a_label_with_a_control_character_or_only_zero_width_ones_is_refused(client):
+    alice, _, _, _ = await _group_of_two(client)
+
+    for label in ["Al\nice", "Bob\t2", "a\x1b[31m", "​", "​‍﻿", "⁠"]:
+        r = await client.patch("/groups/devices/me", json={"label": label}, headers=alice)
+        assert r.status_code == 422, (label, r.text)
+
+    # A format character next to visible ones is fine: emoji sequences need the joiner.
+    r = await client.patch(
+        "/groups/devices/me", json={"label": "Zoé \U0001f469‍\U0001f4bb"}, headers=alice
+    )
+    assert r.status_code == 200, r.text

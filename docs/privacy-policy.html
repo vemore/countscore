@@ -91,13 +91,13 @@ CountScore</h1>
 <p><strong>Last Updated</strong>: September 24, 2026 (v2.11)</p>
 <p><strong>Effective Date</strong>: Applies to CountScore v1.1.0 and
 later</p>
-<p><strong>Previous versions</strong>: v2.9 (September 19, 2026), v2.8
-(September 18, 2026), v2.7 and v2.6 (September 16, 2026), v2.5
-(September 14, 2026), v2.4 (September 14, 2026), v2.3 (September 13,
-2026), v2.2 (September 11, 2026), v2.1 and v2.0 (September 9, 2026) and
-v1.0 (November 9, 2025). v1.0 applies to CountScore 1.0.x — the versions
-currently on the Play Store. See <a href="#version-history">Version
-History</a>.</p>
+<p><strong>Previous versions</strong>: v2.10 (September 19, 2026), v2.9
+(September 19, 2026), v2.8 (September 18, 2026), v2.7 and v2.6
+(September 16, 2026), v2.5 (September 14, 2026), v2.4 (September 14,
+2026), v2.3 (September 13, 2026), v2.2 (September 11, 2026), v2.1 and
+v2.0 (September 9, 2026) and v1.0 (November 9, 2025). v1.0 applies to
+CountScore 1.0.x — the versions currently on the Play Store. See <a
+href="#version-history">Version History</a>.</p>
 <p><strong>Published at</strong>: <a
 href="https://vemore.github.io/countscore/privacy-policy.html">https://vemore.github.io/countscore/privacy-policy.html</a></p>
 <h2 id="introduction">Introduction</h2>
@@ -537,6 +537,13 @@ with a new "Last Updated" date, and significant changes are announced
 through app updates on the Google Play Store.</p>
 <h3 id="version-history">Version History</h3>
 <ul>
+<li><strong>v2.11</strong> (September 24, 2026): The create and join
+dialogs now ask for your nickname in the group (the name the other
+devices see for this one), empty rather than pre-filled, and a device
+can change it later from Settings → Group
+(<code>PATCH /groups/devices/me</code>), which replaces the name stored
+on your server. No new recipient and no new category of information
+about you.</li>
 <li><strong>v2.10</strong> (September 19, 2026): The AI analysis of a
 game shared with your group now goes through the group on your server:
 it is written in the group's language (and in the group's comment style

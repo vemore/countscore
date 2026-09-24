@@ -191,8 +191,13 @@ every field holds a non-blank value; the values go out trimmed. Settings → Gro
 (`groupNicknameCurrent`) with an edit button (`group_nickname_edit`) that reuses the same field
 and calls `GroupProvider.renameDevice`, i.e. `PATCH /groups/devices/me`. The provider holds the
 label in memory only: set on create and join, from the rename's answer and from this device's
-row whenever the devices list loads; after a restart the section reads that list once
-(`refreshDeviceLabel`). A rename changes no synced row.
+row whenever the devices list loads, unless a rename completed while that list was in flight
+(a counter bumped by each rename). After a restart `refreshDeviceLabel` reads the list on
+start and resume, after each successful sync while the label is still unknown, and when the
+section opens, so an offline start does not leave it unknown. The dialog fields stop at 64
+**code points**, as the server counts (`maxLength` would count grapheme clusters); an
+unchanged nickname sends nothing; a 422 on rename shows the generic server error, since no
+existing string says "invalid name". A rename changes no synced row.
 
 **Comment settings and usage.** Settings → Group → *Comments and usage*
 (`group_settings_screen.dart`) shows the group's `comment_style` and `comment_language` from

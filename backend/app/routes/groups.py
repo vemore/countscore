@@ -273,12 +273,11 @@ async def rename_my_device(
             f"rate-limited at {dec.scope} scope",
             headers={"Retry-After": str(dec.retry_after_seconds)},
         )
-    device = await session.get(Device, auth.device.id)
-    assert device is not None
-    device.label = body.label
+    # ``require_device`` loaded the row through this request's session: it is the one to change.
+    auth.device.label = body.label
     await session.commit()
-    await session.refresh(device)
-    return RenamedDevice(id=device.id, label=device.label)
+    await session.refresh(auth.device)
+    return RenamedDevice(id=auth.device.id, label=auth.device.label)
 
 
 @router.get("/me", response_model=GroupPayload)

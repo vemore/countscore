@@ -32,6 +32,16 @@ class GroupSettingsSection extends StatefulWidget {
 class _GroupSettingsSectionState extends State<GroupSettingsSection> {
   bool _busy = false;
 
+  @override
+  void initState() {
+    super.initState();
+    // After an offline start the nickname is still unknown: opening the section
+    // is one more chance to read it (the provider also retries on its own).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<GroupProvider>().refreshDeviceLabel();
+    });
+  }
+
   void _snack(String message, {bool ok = true}) {
     final scheme = Theme.of(context).colorScheme;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -133,11 +143,10 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
       title: l10n.groupNicknameEdit,
       fields: [_nicknameField(l10n, initial: group.deviceLabel ?? '')],
     );
-    if (values == null) return;
+    // Unchanged (the dialog trims): nothing to send.
+    if (values == null || values[0] == group.deviceLabel) return;
     await _run(() => group.renameDevice(values[0]));
   }
-
-  bool _labelRequested = false;
 
   String _statusText(AppLocalizations l10n, GroupProvider group) {
     return switch (group.status) {
@@ -188,11 +197,6 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
       final problem = group.status == SyncStatus.offline ||
           group.status == SyncStatus.unauthorized ||
           group.status == SyncStatus.error;
-      // After a restart the nickname is not known until the devices list is read.
-      if (group.deviceLabel == null && !_labelRequested) {
-        _labelRequested = true;
-        group.refreshDeviceLabel();
-      }
       final nickname = group.deviceLabel;
       children.addAll([
         Text(l10n.groupCurrent(group.groupName ?? ''), style: theme.textTheme.titleMedium),
@@ -315,6 +319,13 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
 }
 
 
+/// The server's limit on a device label and a group name, in code points.
+const _maxLength = 64;
+
+final _maxCodePoints = TextInputFormatter.withFunction(
+  (oldValue, newValue) => newValue.text.runes.length > _maxLength ? oldValue : newValue,
+);
+
 /// One field of [_TextFieldsDialog]. [hint] shows inside the empty field,
 /// [helper] under it for as long as the dialog is open.
 typedef _Field = ({Key key, String label, String initial, String? hint, String? helper});
@@ -369,10 +380,13 @@ class _TextFieldsDialogState extends State<_TextFieldsDialog> {
               key: widget.fields[i].key,
               controller: _controllers[i],
               autofocus: i == 0,
-              maxLength: 64,
+              // The server counts code points, where `maxLength` counts grapheme
+              // clusters: an emoji sequence would pass here and fail there.
+              inputFormatters: [_maxCodePoints],
               decoration: InputDecoration(
                 labelText: widget.fields[i].label,
                 hintText: widget.fields[i].hint,
+                counterText: '${_controllers[i].text.runes.length}/$_maxLength',
                 helperText: widget.fields[i].helper,
                 helperMaxLines: 2,
                 border: const OutlineInputBorder(),

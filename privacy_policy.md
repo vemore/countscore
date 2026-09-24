@@ -4,7 +4,7 @@
 
 **Effective Date**: Applies to CountScore v1.1.0 and later
 
-**Previous versions**: v2.9 (September 19, 2026), v2.8 (September 18, 2026), v2.7 and v2.6 (September 16, 2026), v2.5 (September 14, 2026), v2.4 (September 14, 2026), v2.3 (September 13, 2026), v2.2 (September 11, 2026), v2.1 and v2.0 (September 9, 2026) and v1.0 (November 9, 2025). v1.0
+**Previous versions**: v2.10 (September 19, 2026), v2.9 (September 19, 2026), v2.8 (September 18, 2026), v2.7 and v2.6 (September 16, 2026), v2.5 (September 14, 2026), v2.4 (September 14, 2026), v2.3 (September 13, 2026), v2.2 (September 11, 2026), v2.1 and v2.0 (September 9, 2026) and v1.0 (November 9, 2025). v1.0
 applies to CountScore 1.0.x — the versions currently on the Play Store. See
 [Version History](#version-history).
 
@@ -409,6 +409,11 @@ changes are announced through app updates on the Google Play Store.
 
 ### Version History
 
+- **v2.11** (September 24, 2026): The create and join dialogs now ask for your nickname in
+  the group (the name the other devices see for this one), empty rather than pre-filled, and
+  a device can change it later from Settings → Group (`PATCH /groups/devices/me`), which
+  replaces the name stored on your server. No new recipient and no new category of
+  information about you.
 - **v2.10** (September 19, 2026): The AI analysis of a game shared with your group now goes
   through the group on your server: it is written in the group's language (and in the
   group's comment style if you never picked a voice), counts against the group's monthly AI

@@ -402,6 +402,51 @@ void main() {
     group.dispose();
   });
 
+  testWidgets('an unchanged nickname sends no rename', (tester) async {
+    final seen = <http.BaseRequest>[];
+    final group = await _pumpSection(tester, seen);
+    await _createGroup(tester);
+
+    await tester.tap(find.byKey(const Key('group_nickname_edit')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('group_nickname_field')), '  Alice ');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('group_dialog_ok')));
+    await _settle(tester);
+
+    expect(seen.where((r) => r.url.path == '/groups/devices/me'), isEmpty);
+    expect(find.text('Your nickname: Alice'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox());
+    group.dispose();
+  });
+
+  testWidgets('the nickname field stops at 64 code points, as the server counts', (tester) async {
+    await _pumpWithFake(tester);
+    await tester.tap(find.byKey(const Key('group_join')));
+    await tester.pumpAndSettle();
+    final nickname = find.byKey(const Key('group_nickname_field'));
+    String text() => tester.widget<TextField>(nickname).controller!.text;
+
+    // 👩‍💻 is one grapheme but three code points: 21 of them are 63, 22 are 66.
+    const coder = '\u{1F469}‍\u{1F4BB}';
+    await tester.enterText(nickname, coder * 21);
+    await tester.pump();
+    expect(text().runes.length, 63);
+    expect(find.text('63/64'), findsOneWidget);
+
+    await tester.enterText(nickname, coder * 22);
+    await tester.pump();
+    expect(text(), coder * 21, reason: 'refused: over 64 code points');
+
+    await tester.enterText(nickname, 'x' * 64);
+    await tester.pump();
+    expect(text(), 'x' * 64);
+    await tester.enterText(nickname, 'x' * 65);
+    await tester.pump();
+    expect(text(), 'x' * 64);
+  });
+
   group('the join and create dialogs ask for a nickname first', () {
     testWidgets('join: nickname above the invite code, empty, OK disabled until both are filled',
         (tester) async {
