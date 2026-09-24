@@ -5,6 +5,9 @@
 - **Area:** app, backend
 - **Blocks release:** no
 
+**Decided (2026-09-24, refinement):** ships in one pull request with
+[[2026-09-23-every-device-joins-a-group-as-mon-appareil]]; the backend route needs a deploy.
+
 A device's name in a group (`devices.label`) is chosen once, when the device joins or creates
 the group (`backend/app/routes/groups.py:203,236`), and can't be changed afterwards. There is
 no endpoint and no field in Settings → Group. The two production devices still called "Mon

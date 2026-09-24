@@ -46,5 +46,8 @@ so the check works on the path it covers.
 - Widget test: a score change delivered through the provider (as sync does) that leaves one player standing ends the game on a board that did not type it.
 - `firstPlayerOver` types (e.g. Uno, Président) keep ending as before (regression test).
 
-**Open question:** after "Continue playing", should the round button come back, as today
-(the user chose to go on), or should only "Reopen" bring it back?
+**Decided (2026-09-24, refinement):** after "Continue playing" the round button comes back, as
+today: the player chose to go on. It is disabled only while the game is finished and neither
+reopened nor continued. The migration's UPDATE fires the `game_types` capture trigger
+(`lib/services/sync/sync_schema.dart:95`), so a linked row reaches the server with no
+server-side change.

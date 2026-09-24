@@ -31,17 +31,20 @@ Constraints the design must respect:
   behaviour. Leaving a group that holds unsynced rows must warn first (see memory: sync
   bugs are the expensive ones).
 
-**Fix:** a "Share configuration" QR sheet in Settings (a QR package, e.g. `qr_flutter`,
-through the dependency review), a `/join` route in the PWA, a `countscore://join` handler
-in the app (e.g. `app_links`), and a shared "replace configuration?" dialog. README and
-`.llmwiki` pages for groups and deep links updated. No new outbound data flow: the QR is
+**Decided (2026-09-24, refinement):** split in three, this entry keeping part (a); the others
+are [[2026-09-24-the-app-opens-no-countscore-join-link]] and
+[[2026-09-24-the-pwa-has-no-join-route]], which build on it. The QR also works for a server
+with no group: it then carries the server alone. The invite code does not expire: the current
+code goes in as it is, no backend change.
+
+**Fix (part a):** a "Share configuration" QR sheet in Settings (a QR package, e.g.
+`qr_flutter`, through the dependency review), the link's encoder and parser in one Dart
+file, and the shared "replace configuration?" dialog, which joins through `GroupProvider` and
+warns before leaving a group that holds unsynced rows. No new outbound data flow: the QR is
 rendered locally.
 
 **Acceptance:**
-- Settings shows a QR whose decoded payload round-trips (unit test: encode → parse → same server and invite).
-- Opening `countscore://join#…` on Android shows the replace dialog; cancelling leaves the settings untouched (widget test + one device run).
-- The PWA `/join#…` route shows the same dialog, and the fragment never reaches the backend (backend access log checked in the smoke test).
-- The landing page on Android without the app sends the user to the Play listing (fallback URL checked in a test of the generated link).
-
-**Open question:** should the QR also work for a server with no group (server URL only)?
-And should the invite in the QR expire, which needs a backend change to invite codes?
+- Settings shows a QR whose decoded payload round-trips (unit test: encode → parse → same server and invite), with and without a group.
+- The invite code is in the fragment, never in the path or the query (unit test on the encoder).
+- The replace dialog shows the old and new values; cancelling leaves the settings untouched (widget test).
+- Leaving a group with unsynced rows through the dialog warns first (widget test with a fake `GroupProvider`).

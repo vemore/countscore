@@ -32,6 +32,10 @@ For a type the group never saw, the hard delete is still what runs, and the FK i
 `ON DELETE SET NULL`. Check the Drift schema declares that FK action too, not only the
 sqflite one.
 
+**Decided (2026-09-24, refinement):** run the cleanup on the hard-delete branch only; the
+tombstone branch leaves `gameTypeId` alone. Not dropped outright: the Drift schema declares no
+foreign key on `gameTypeId` (`lib/services/drift/tables.dart:44`), only the sqflite chain does.
+
 **Acceptance:**
 - Deleting a game type the group knows leaves every tombstoned game's `gameTypeId` untouched.
 - No extra outbox row is enqueued for a game that was already deleted.
