@@ -22,5 +22,6 @@ the Material minimum. Wider screens stay the same, pixel for pixel.
 - Golden tests at 412×915 and one tablet width are unchanged by the pull request.
 - Before/after screenshots at 375×667 (Chrome device emulation of the PWA) are attached to the pull request. No iOS device is needed.
 
-**Open question:** which texts did the user find unreadable (game names, stats, dates,
-the type chips)? A screenshot in `wip/assets/<slug>/` would pin the target.
+**Decided (2026-09-24, refinement):** the unreadable texts are the game names (card titles)
+and the secondary lines (stats, dates); the type chips are fine. The compact layout targets
+those two, e.g. the `TextOverflow.ellipsis` at `home_screen.dart:548`, `:604`, `:683`, `:704`.

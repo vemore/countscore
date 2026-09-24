@@ -29,6 +29,6 @@ out of scope (see Open question).
 - `joinGroup` / `createGroup` receive the trimmed nickname (widget test with a fake `GroupProvider`).
 - The new label and hint exist in the ten ARB files; `deviceLabelDefault` is gone or still referenced.
 
-**Open question:** should a device already in a group be able to change its nickname
-(a `PATCH /groups/devices/me` plus a field in Settings → Group)? That would fix the two
-existing "Mon appareil" devices without leaving and rejoining.
+**Decided (2026-09-24, refinement):** yes, through
+[[2026-09-23-a-device-cannot-rename-itself-in-its-group]], promoted with this entry and shipped
+in the same pull request (theme `groups-v2`).
