@@ -3,10 +3,12 @@
 // database. Drift's onUpgrade must then bring it to the current schema itself.
 //
 // Simulated on a native file: build the current schema, strip everything v10,
-// v11, v12, v13, v14, v15 and v16 added, stamp user_version 9, and reopen through Drift.
+// v11, v12, v13, v14, v15, v16 and v21 added, stamp user_version 9, and reopen
+// through Drift.
 // v17, v18 and v19 add no column: v17 finds no keyless copy to dedupe, v18
 // replays the v16 back-fill, which has nothing left to fill, and v19 finds no
-// keyless row to give a key back to.
+// keyless row to give a key back to. v20 adds no column either. v21 adds
+// `keypad_shortcut`, and fills it on the five built-ins that have one.
 
 import 'dart:io';
 
@@ -49,7 +51,7 @@ void main() {
     await raw.execute('ALTER TABLE games DROP COLUMN finishedAt');
     await raw.execute('DROP INDEX $gameTypesBuiltinKeyIndex');
     await raw.execute('ALTER TABLE game_types DROP COLUMN builtin_key');
-    for (final column in ['rules', 'rules_slug']) {
+    for (final column in ['rules', 'rules_slug', 'keypad_shortcut']) {
       await raw.execute('ALTER TABLE game_types DROP COLUMN $column');
     }
     // A v9 browser holds the ten types the seed wrote then, and no more.
@@ -90,6 +92,17 @@ void main() {
     for (final r in slugs) {
       expect(r.data['rules_slug'], defaultRulesSlugs[r.data['builtin_key']],
           reason: '${r.data['builtin_key']} has the wrong ruleset');
+    }
+    // v21: the keypad shortcut, on the five built-ins that have one only.
+    final shortcuts = await db
+        .customSelect('SELECT builtin_key, keypad_shortcut FROM game_types')
+        .get();
+    final seeds = keypadShortcutSeeds();
+    expect(seeds.keys.toSet(),
+        {'zapzap', 'skyjo', 'belote', 'scrabble', 'rami'});
+    for (final r in shortcuts) {
+      expect(r.data['keypad_shortcut'], seeds[r.data['builtin_key']],
+          reason: '${r.data['builtin_key']} has the wrong keypad shortcut');
     }
     // v15: one live row per built-in key.
     final index = await db

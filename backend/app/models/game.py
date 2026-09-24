@@ -54,6 +54,10 @@ class GameType(SQLModel, table=True):
     # Names a ruleset shipped in the app's ``assets/rules/``. Kept apart from
     # ``name`` because the name is user-editable.
     rules_slug: str | None = Field(default=None, max_length=32)
+    # The score keypad's extra key for this type, as the client's compact JSON
+    # (``{"kind": "multiply", "amount": 2}``, optional ``"label"``). NULL is a
+    # plain 0. Validated in ``app/services/delta_bounds.py``.
+    keypad_shortcut: str | None = Field(default=None, max_length=128)
 
     created_at: datetime = Field(
         default_factory=_utcnow,

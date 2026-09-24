@@ -189,13 +189,37 @@ class AppLocalizationsDe extends AppLocalizations {
   String get keypadValidateRound => 'Runde bestätigen';
 
   @override
-  String get keypadZeroZapZap => '0 ZapZap';
-
-  @override
   String get keypadToggleSign => 'Vorzeichen wechseln';
 
   @override
   String get keypadBackspace => 'Ziffer löschen';
+
+  @override
+  String get keypadShortcutTitle => 'Tastenkürzel im Ziffernblock';
+
+  @override
+  String get keypadShortcutKind => 'Tastentyp';
+
+  @override
+  String get keypadShortcutKindValue => 'Wert eingeben';
+
+  @override
+  String get keypadShortcutKindMultiply =>
+      'Punktzahl multiplizieren (nur positiv)';
+
+  @override
+  String get keypadShortcutKindAdd => 'Zur Punktzahl addieren';
+
+  @override
+  String get keypadShortcutAmount => 'Zahl';
+
+  @override
+  String get keypadShortcutLabel => 'Tastenbeschriftung (optional)';
+
+  @override
+  String keypadShortcutAmountRange(int min, int max) {
+    return 'Eine ganze Zahl zwischen $min und $max';
+  }
 
   @override
   String get appearance => 'Erscheinungsbild';

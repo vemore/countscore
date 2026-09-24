@@ -107,11 +107,25 @@
 
   "keypadValidateRound": "Runde bestätigen",
 
-  "keypadZeroZapZap": "0 ZapZap",
-
   "keypadToggleSign": "Vorzeichen wechseln",
 
   "keypadBackspace": "Ziffer löschen",
+
+  "keypadShortcutTitle": "Tastenkürzel im Ziffernblock",
+
+  "keypadShortcutKind": "Tastentyp",
+
+  "keypadShortcutKindValue": "Wert eingeben",
+
+  "keypadShortcutKindMultiply": "Punktzahl multiplizieren (nur positiv)",
+
+  "keypadShortcutKindAdd": "Zur Punktzahl addieren",
+
+  "keypadShortcutAmount": "Zahl",
+
+  "keypadShortcutLabel": "Tastenbeschriftung (optional)",
+
+  "keypadShortcutAmountRange": "Eine ganze Zahl zwischen {min} und {max}",
 
   "appearance": "Erscheinungsbild",
 

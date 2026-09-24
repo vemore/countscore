@@ -189,13 +189,36 @@ class AppLocalizationsHi extends AppLocalizations {
   String get keypadValidateRound => 'राउंड पक्का करें';
 
   @override
-  String get keypadZeroZapZap => '0 ZapZap';
-
-  @override
   String get keypadToggleSign => 'चिह्न बदलें';
 
   @override
   String get keypadBackspace => 'एक अंक मिटाएँ';
+
+  @override
+  String get keypadShortcutTitle => 'कीपैड शॉर्टकट';
+
+  @override
+  String get keypadShortcutKind => 'कुंजी का प्रकार';
+
+  @override
+  String get keypadShortcutKindValue => 'मान दर्ज करें';
+
+  @override
+  String get keypadShortcutKindMultiply => 'स्कोर गुणा करें (केवल धनात्मक)';
+
+  @override
+  String get keypadShortcutKindAdd => 'स्कोर में जोड़ें';
+
+  @override
+  String get keypadShortcutAmount => 'संख्या';
+
+  @override
+  String get keypadShortcutLabel => 'कुंजी का लेबल (वैकल्पिक)';
+
+  @override
+  String keypadShortcutAmountRange(int min, int max) {
+    return '$min और $max के बीच एक पूर्ण संख्या';
+  }
 
   @override
   String get appearance => 'रूप-रंग';

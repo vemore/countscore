@@ -107,11 +107,25 @@
 
   "keypadValidateRound": "ラウンドを確定",
 
-  "keypadZeroZapZap": "0 ZapZap",
-
   "keypadToggleSign": "符号を切り替え",
 
   "keypadBackspace": "1桁削除",
+
+  "keypadShortcutTitle": "キーパッドのショートカット",
+
+  "keypadShortcutKind": "キーの種類",
+
+  "keypadShortcutKindValue": "値を入力",
+
+  "keypadShortcutKindMultiply": "スコアを掛ける（正の値のみ）",
+
+  "keypadShortcutKindAdd": "スコアに足す",
+
+  "keypadShortcutAmount": "数値",
+
+  "keypadShortcutLabel": "キーの表示（任意）",
+
+  "keypadShortcutAmountRange": "{min}〜{max} の整数",
 
   "appearance": "外観",
 

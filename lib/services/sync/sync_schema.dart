@@ -299,11 +299,18 @@ Future<void> applyV14(
     );
   }
 
+  // The seed is written against the table as it is at v14, not as the model
+  // describes it: a column a later step adds (`keypad_shortcut`, v21) is not
+  // there yet, and one key too many fails the whole open. See
+  // `DatabaseService._gameTypeRow`.
+  final columnsNow = await columnsOf('game_types');
   final now = DateTime.now().millisecondsSinceEpoch;
   for (final type in GameType.defaultGameTypes()) {
     final key = type.builtinKey;
     if (key == null || GameType.seededNamesBeforeV14.containsKey(key)) continue;
-    final values = Map<String, Object?>.from(type.toMap())..remove('id');
+    final values = Map<String, Object?>.from(type.toMap())
+      ..remove('id')
+      ..removeWhere((column, _) => !columnsNow.contains(column));
     values['uuid'] = newUuid();
     values['created_at'] = now;
     values['updated_at'] = now;
@@ -556,4 +563,47 @@ Future<void> applyV19(SqlExecutor execute) async {
     );
   }
   await applyV16(execute);
+}
+
+/// The built-in types seeded with a keypad shortcut, keyed on `builtin_key`,
+/// with the stored (encoded) shortcut: ZapZap, Skyjo, Belote, Scrabble and
+/// Rami (`GameType.zapzap` and the others).
+Map<String, String> keypadShortcutSeeds() => {
+      for (final type in GameType.defaultGameTypes())
+        if (type.keypadShortcut case final shortcut?)
+          type.builtinKey!: shortcut.encode(),
+    };
+
+/// Schema v21, shared by both engines: `game_types.keypad_shortcut`, the score
+/// keypad's per-type key — a value, or an operation on the score typed
+/// (`lib/models/keypad_shortcut.dart`). TEXT, nullable: null is a plain 0.
+///
+/// Adds the column, then gives the live built-in rows of
+/// [keypadShortcutSeeds] their shortcut, matched on `builtin_key` alone (never
+/// `isDefault`, see .llmwiki/SchemaV10.md). The column is new, so a NULL here
+/// was never a choice and every such row is filled; a renamed type (no key)
+/// and a deleted one are left alone. `updated_at` moves, and the UPDATE fires
+/// the v11 `game_types` capture trigger, so a row linked into a group pushes
+/// its shortcut on the next sync.
+///
+/// Idempotent: the column is checked before it is added, and the back-fill
+/// only touches `keypad_shortcut IS NULL`. It never inserts, so a type the
+/// user deleted is not resurrected.
+Future<void> applyV21(
+  SqlExecutor execute,
+  Future<Set<String>> Function(String table) columnsOf,
+) async {
+  final existing = await columnsOf('game_types');
+  if (!existing.contains('keypad_shortcut')) {
+    await execute('ALTER TABLE game_types ADD COLUMN keypad_shortcut TEXT');
+  }
+  final now = DateTime.now().millisecondsSinceEpoch;
+  for (final entry in keypadShortcutSeeds().entries) {
+    await execute(
+      'UPDATE game_types SET keypad_shortcut = ?, updated_at = ? '
+      'WHERE builtin_key = ? AND deleted_at IS NULL '
+      'AND keypad_shortcut IS NULL',
+      [entry.value, now, entry.key],
+    );
+  }
 }

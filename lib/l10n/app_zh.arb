@@ -107,11 +107,25 @@
 
   "keypadValidateRound": "确认本轮",
 
-  "keypadZeroZapZap": "0 ZapZap",
-
   "keypadToggleSign": "切换正负号",
 
   "keypadBackspace": "删除一位数字",
+
+  "keypadShortcutTitle": "键盘快捷键",
+
+  "keypadShortcutKind": "按键类型",
+
+  "keypadShortcutKindValue": "输入数值",
+
+  "keypadShortcutKindMultiply": "分数乘以倍数（仅正分）",
+
+  "keypadShortcutKindAdd": "加到分数上",
+
+  "keypadShortcutAmount": "数字",
+
+  "keypadShortcutLabel": "按键文字（可选）",
+
+  "keypadShortcutAmountRange": "{min} 到 {max} 之间的整数",
 
   "appearance": "外观",
 

@@ -607,3 +607,68 @@ async def test_game_type_rules_over_the_bound_are_rejected_cleanly(client):
     statuses = _statuses(body)
     assert [s for s, _ in statuses] == ["rejected", "rejected"]
     assert all("too long" in r or "rules" in r for _, r in statuses), statuses
+
+
+async def test_a_game_type_keypad_shortcut_makes_the_round_trip(client):
+    """Schema v21: the keypad key travels like any other game-type column, null too."""
+    _body, headers = await _group(client)
+    game_type = uuid.uuid4()
+    shortcut = '{"kind":"value","amount":162,"label":"Dedans"}'
+    body = await _push(
+        client,
+        headers,
+        _delta(
+            "game_type",
+            game_type,
+            1,
+            name="Belote",
+            icon_code_point=1,
+            card_color_value=1,
+            keypad_shortcut=shortcut,
+        ),
+        _delta("game_type", game_type, 2, name="Belote", keypad_shortcut=None),
+    )
+    assert _statuses(body) == [("applied", None), ("applied", None)]
+
+    r = await client.get("/sync/pull", params={"since": 0}, headers=headers)
+    assert r.status_code == 200, r.text
+    pulled = [d for d in r.json()["deltas"] if d["entity_type"] == "game_type"]
+    assert [d["payload"]["keypad_shortcut"] for d in pulled] == [shortcut, None]
+
+
+@pytest.mark.parametrize(
+    "shortcut",
+    [
+        "not json",
+        "[1, 2]",
+        '{"kind":"divide","amount":2}',
+        '{"kind":"multiply","amount":1}',
+        '{"kind":"multiply","amount":"2"}',
+        '{"kind":"multiply","amount":true}',
+        '{"kind":"add","amount":0}',
+        '{"kind":"value","amount":1000000}',
+        '{"kind":"value","amount":1,"label":""}',
+        '{"kind":"value","amount":1,"label":"thirteen char"}',
+        '{"kind":"value","amount":1,"extra":1}',
+        7,
+    ],
+)
+async def test_a_malformed_keypad_shortcut_is_rejected_cleanly(client, shortcut):
+    """A value the app could not read never reaches the log, so no device pulls it."""
+    _body, headers = await _group(client)
+    body = await _push(
+        client,
+        headers,
+        _delta(
+            "game_type",
+            uuid.uuid4(),
+            1,
+            name="Skyjo",
+            icon_code_point=1,
+            card_color_value=1,
+            keypad_shortcut=shortcut,
+        ),
+    )
+    [(status, reason)] = _statuses(body)
+    assert status == "rejected"
+    assert "keypad_shortcut" in reason

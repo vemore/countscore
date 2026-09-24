@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
+import '../models/keypad_shortcut.dart';
 import '../models/player.dart';
 import '../utils/app_theme.dart';
 import 'fit_words_text.dart';
@@ -48,16 +49,19 @@ class _Entry {
 /// **One score** ([ScoreKeypadSheet.single]) opens on the tapped player with its
 /// current value, and the key reads "Save".
 ///
-/// For ZapZap the bottom-left key is "0 ZapZap" — a zero for the player who
-/// called it, moving on to the next one; for every other game it is the plain
-/// digit 0 (wip/todo_nr/2026-09-18-keypad-has-no-per-game-shortcut.md).
+/// A game type with a [KeypadShortcut] gets it as the bottom-left key, the 0
+/// moving to the bottom of the third column: a value ("0 ZapZap", "162")
+/// enters that score and moves on to the next player; an operation ("×2",
+/// "+50") applies to the score on display and stays on the player. Every other
+/// type has the plain digit 0 bottom-left
+/// (wip/done/2026-09-18-keypad-has-no-per-game-shortcut.md).
 class ScoreKeypadSheet extends StatefulWidget {
   const ScoreKeypadSheet._({
     required this.players,
     required this.colors,
     required this.totalsBefore,
     required this.roundNumber,
-    required this.isZapZap,
+    required this.shortcut,
     required this.initialScores,
     required this.singlePlayerId,
   });
@@ -72,7 +76,9 @@ class ScoreKeypadSheet extends StatefulWidget {
   final Map<int, int> totalsBefore;
 
   final int roundNumber;
-  final bool isZapZap;
+
+  /// The game type's extra key, or null for a plain 0.
+  final KeypadShortcut? shortcut;
 
   /// The scores already there, keyed by id (one score only).
   final Map<int, int?> initialScores;
@@ -90,7 +96,7 @@ class ScoreKeypadSheet extends StatefulWidget {
     required Map<int, Color> colors,
     required Map<int, int> totalsBefore,
     required int roundNumber,
-    required bool isZapZap,
+    KeypadShortcut? shortcut,
   }) =>
       _show(
         context,
@@ -99,7 +105,7 @@ class ScoreKeypadSheet extends StatefulWidget {
           colors: colors,
           totalsBefore: totalsBefore,
           roundNumber: roundNumber,
-          isZapZap: isZapZap,
+          shortcut: shortcut,
           initialScores: const {},
           singlePlayerId: null,
         ),
@@ -114,7 +120,7 @@ class ScoreKeypadSheet extends StatefulWidget {
     required Map<int, Color> colors,
     required Map<int, int> totalsBefore,
     required int roundNumber,
-    required bool isZapZap,
+    KeypadShortcut? shortcut,
     required Map<int, int?> roundScores,
     required int playerId,
   }) =>
@@ -125,7 +131,7 @@ class ScoreKeypadSheet extends StatefulWidget {
           colors: colors,
           totalsBefore: totalsBefore,
           roundNumber: roundNumber,
-          isZapZap: isZapZap,
+          shortcut: shortcut,
           initialScores: roundScores,
           singlePlayerId: playerId,
         ),
@@ -198,15 +204,23 @@ class _ScoreKeypadSheetState extends State<ScoreKeypadSheet> {
           ..prefilled = false;
       });
 
-  /// ZapZap's shortcut: a zero for this player, then the next one.
-  void _zapZap() {
+  /// The game type's key. A value replaces the entry and moves on, as the
+  /// "0 ZapZap" key always did; an operation rewrites the score on display
+  /// (12 then ×2 is 24) and stays, and the next digit typed starts a new
+  /// number, as on a calculator. A key that does not apply — ×2 on a zero or
+  /// a negative score, a result past six digits — does nothing.
+  void _shortcut() {
+    final shortcut = widget.shortcut;
+    if (shortcut == null) return;
+    final result = shortcut.apply(_entry.value);
+    if (result == null) return;
     setState(() {
       _entry
-        ..digits = '0'
-        ..negative = false
-        ..prefilled = false;
+        ..digits = '${result.abs()}'
+        ..negative = result < 0
+        ..prefilled = !shortcut.movesOn;
     });
-    if (widget.isRound && !_isLast) _next();
+    if (shortcut.movesOn && widget.isRound && !_isLast) _next();
   }
 
   void _goTo(int index) => setState(() {
@@ -309,12 +323,12 @@ class _ScoreKeypadSheetState extends State<ScoreKeypadSheet> {
             ),
             const SizedBox(height: 20),
             _Pad(
-              isZapZap: widget.isZapZap,
+              shortcut: widget.shortcut,
               primaryLabel: primaryLabel,
               onDigit: _digit,
               onBackspace: _backspace,
               onToggleSign: _toggleSign,
-              onZapZap: _zapZap,
+              onShortcut: _shortcut,
               onPrimary: _primary,
             ),
           ],
@@ -440,21 +454,21 @@ class _Chips extends StatelessWidget {
 /// calculator keypad. The labels keep the locale's own direction.
 class _Pad extends StatelessWidget {
   const _Pad({
-    required this.isZapZap,
+    required this.shortcut,
     required this.primaryLabel,
     required this.onDigit,
     required this.onBackspace,
     required this.onToggleSign,
-    required this.onZapZap,
+    required this.onShortcut,
     required this.onPrimary,
   });
 
-  final bool isZapZap;
+  final KeypadShortcut? shortcut;
   final String primaryLabel;
   final void Function(int) onDigit;
   final VoidCallback onBackspace;
   final VoidCallback onToggleSign;
-  final VoidCallback onZapZap;
+  final VoidCallback onShortcut;
   final VoidCallback onPrimary;
 
   static const double _keyHeight = 64;
@@ -529,19 +543,25 @@ class _Pad extends StatelessWidget {
       onTap: onToggleSign,
     );
     final zero = digit(0);
-    final zapZap = key(
-      'keypad_zapzap',
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: Text(l10n.keypadZeroZapZap, textDirection: textDirection),
-        ),
-      ),
-      background: dark ? kLeaderGold.withValues(alpha: 0.2) : const Color(0xFFFFF0C2),
-      foreground: dark ? const Color(0xFFFFD166) : const Color(0xFF8A5A00),
-      onTap: onZapZap,
-    );
+    final shortcut = this.shortcut;
+    final shortcutKey = shortcut == null
+        ? null
+        : key(
+            'keypad_shortcut',
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                // The label is digits, ×, + and — for ZapZap — a game's name,
+                // or the user's own text: the locale's direction, never
+                // translated.
+                child: Text(shortcut.displayLabel, textDirection: textDirection),
+              ),
+            ),
+            background: dark ? kLeaderGold.withValues(alpha: 0.2) : const Color(0xFFFFF0C2),
+            foreground: dark ? const Color(0xFFFFD166) : const Color(0xFF8A5A00),
+            onTap: onShortcut,
+          );
     const hole = SizedBox(height: _keyHeight);
 
     return Directionality(
@@ -549,13 +569,13 @@ class _Pad extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // For ZapZap: "0 ZapZap", ±, 0. Otherwise the 0 itself sits
+          // With a shortcut: the shortcut, ±, 0. Otherwise the 0 itself sits
           // bottom-left, beside ±.
-          column([digit(1), digit(4), digit(7), isZapZap ? zapZap : zero]),
+          column([digit(1), digit(4), digit(7), shortcutKey ?? zero]),
           const SizedBox(width: _gap),
           column([digit(2), digit(5), digit(8), sign]),
           const SizedBox(width: _gap),
-          column([digit(3), digit(6), digit(9), isZapZap ? zero : hole]),
+          column([digit(3), digit(6), digit(9), shortcutKey == null ? hole : zero]),
           const SizedBox(width: _gap),
           column([
             key(

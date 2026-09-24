@@ -7,6 +7,7 @@
 // wip/done/2026-09-20-a-condition-saves-without-a-threshold-and-does-nothing.md
 // wip/done/2026-09-20-deleting-a-used-game-type-reports-an-export-error-in-english.md
 // wip/done/2026-09-20-the-win-direction-can-be-flipped-under-finished-games.md
+// wip/done/2026-09-18-keypad-has-no-per-game-shortcut.md
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -142,6 +143,15 @@ Finder get _playerDeadDropdown =>
     find.byType(DropdownButtonFormField<PlayerDeadConditionType?>);
 Finder get _gameOverDropdown =>
     find.byType(DropdownButtonFormField<GameOverConditionType?>);
+Finder get _shortcutDropdown =>
+    find.byKey(const Key('game_type_shortcut_kind'));
+
+/// Scrolls the keypad-shortcut section into view, then chooses [label].
+Future<void> _chooseShortcut(WidgetTester tester, String label) async {
+  await tester.ensureVisible(_shortcutDropdown);
+  await tester.pumpAndSettle();
+  await _choose(tester, _shortcutDropdown, label);
+}
 
 GameType _zapzap({
   String? rules,
@@ -613,5 +623,78 @@ void main() {
 
     expect(repo.creations.single.name, 'Triomino');
     expect(repo.updates, isEmpty);
+  });
+  group('the keypad shortcut', () {
+    testWidgets('a new type gets the shortcut and label set in the form',
+        (tester) async {
+      final repo = await _pump(tester, count: 1, size: _editorSurface);
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+          find.byKey(const Key('game_type_name_field')), 'Maison');
+      await _chooseShortcut(tester, 'Ajouter au score');
+      await tester.enterText(
+          find.byKey(const Key('game_type_shortcut_amount')), '-5');
+      await tester.enterText(
+          find.byKey(const Key('game_type_shortcut_label')), 'Pénalité');
+      await _save(tester);
+
+      expect(repo.creations.single.keypadShortcut,
+          KeypadShortcut.tryCreate(KeypadShortcutKind.add, -5, label: 'Pénalité'));
+    });
+
+    testWidgets('an edit shows the type\'s shortcut and keeps it',
+        (tester) async {
+      final skyjo = GameType.skyjo();
+      final repo = await _pump(tester, size: _editorSurface, types: [
+        GameType.fromMap({...skyjo.toMap(), 'id': 1}),
+      ]);
+
+      await _openEditor(tester);
+      expect(find.text('Multiplier le score (positif seulement)'), findsOneWidget);
+      final amount = tester.widget<TextField>(
+          find.byKey(const Key('game_type_shortcut_amount')));
+      expect(amount.controller!.text, '2');
+      await _save(tester);
+
+      expect(repo.updates.single.keypadShortcut, KeypadShortcut.multiply(2));
+    });
+
+    testWidgets('choosing Aucune clears it', (tester) async {
+      final repo = await _pump(tester, size: _editorSurface, types: [
+        GameType.fromMap({...GameType.belote().toMap(), 'id': 1}),
+      ]);
+
+      await _openEditor(tester);
+      await _chooseShortcut(tester, 'Aucune');
+      await _save(tester);
+
+      expect(repo.updates.single.keypadShortcut, isNull);
+    });
+
+    testWidgets('a multiplier out of bounds, or none, is refused under its field',
+        (tester) async {
+      final repo = await _pump(tester, count: 1, size: _editorSurface);
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+          find.byKey(const Key('game_type_name_field')), 'Maison');
+      await _chooseShortcut(tester, 'Multiplier le score (positif seulement)');
+      await _save(tester);
+      expect(find.text('Un nombre entier entre 2 et 10'), findsOneWidget);
+
+      await tester.enterText(
+          find.byKey(const Key('game_type_shortcut_amount')), '11');
+      await _save(tester);
+      expect(find.text('Un nombre entier entre 2 et 10'), findsOneWidget);
+      expect(repo.creations, isEmpty);
+
+      await tester.enterText(
+          find.byKey(const Key('game_type_shortcut_amount')), '3');
+      await _save(tester);
+      expect(repo.creations.single.keypadShortcut, KeypadShortcut.multiply(3));
+    });
   });
 }

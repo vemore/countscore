@@ -107,11 +107,25 @@
 
   "keypadValidateRound": "राउंड पक्का करें",
 
-  "keypadZeroZapZap": "0 ZapZap",
-
   "keypadToggleSign": "चिह्न बदलें",
 
   "keypadBackspace": "एक अंक मिटाएँ",
+
+  "keypadShortcutTitle": "कीपैड शॉर्टकट",
+
+  "keypadShortcutKind": "कुंजी का प्रकार",
+
+  "keypadShortcutKindValue": "मान दर्ज करें",
+
+  "keypadShortcutKindMultiply": "स्कोर गुणा करें (केवल धनात्मक)",
+
+  "keypadShortcutKindAdd": "स्कोर में जोड़ें",
+
+  "keypadShortcutAmount": "संख्या",
+
+  "keypadShortcutLabel": "कुंजी का लेबल (वैकल्पिक)",
+
+  "keypadShortcutAmountRange": "{min} और {max} के बीच एक पूर्ण संख्या",
 
   "appearance": "रूप-रंग",
 

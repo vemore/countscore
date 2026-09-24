@@ -188,13 +188,36 @@ class AppLocalizationsZh extends AppLocalizations {
   String get keypadValidateRound => '确认本轮';
 
   @override
-  String get keypadZeroZapZap => '0 ZapZap';
-
-  @override
   String get keypadToggleSign => '切换正负号';
 
   @override
   String get keypadBackspace => '删除一位数字';
+
+  @override
+  String get keypadShortcutTitle => '键盘快捷键';
+
+  @override
+  String get keypadShortcutKind => '按键类型';
+
+  @override
+  String get keypadShortcutKindValue => '输入数值';
+
+  @override
+  String get keypadShortcutKindMultiply => '分数乘以倍数（仅正分）';
+
+  @override
+  String get keypadShortcutKindAdd => '加到分数上';
+
+  @override
+  String get keypadShortcutAmount => '数字';
+
+  @override
+  String get keypadShortcutLabel => '按键文字（可选）';
+
+  @override
+  String keypadShortcutAmountRange(int min, int max) {
+    return '$min 到 $max 之间的整数';
+  }
 
   @override
   String get appearance => '外观';

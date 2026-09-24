@@ -906,8 +906,6 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     if (mounted) await _refreshCachedAnalysis();
   }
 
-  bool _isZapZap(GameType? gameType) => gameType?.builtinKey == 'zapzap';
-
   /// "Round N": the keypad on every player still in the game, in seat order.
   /// The round is written only on "Validate round" — closing the sheet leaves
   /// nothing behind.
@@ -932,7 +930,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
         colors: playerColorsById(players),
         totalsBefore: before,
         roundNumber: gameProvider.nextRoundNumber,
-        isZapZap: _isZapZap(gameType),
+        shortcut: gameType?.keypadShortcut,
       );
     } finally {
       _keypadOpen = false;
@@ -975,7 +973,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
             p.id!: before[p.id]! - (roundScores[p.id] ?? 0)
         },
         roundNumber: round.roundNumber,
-        isZapZap: _isZapZap(gameType),
+        shortcut: gameType?.keypadShortcut,
         roundScores: roundScores,
         playerId: player.id!,
       );

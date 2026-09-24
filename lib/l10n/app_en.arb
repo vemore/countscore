@@ -107,11 +107,25 @@
 
   "keypadValidateRound": "Validate round",
 
-  "keypadZeroZapZap": "0 ZapZap",
-
   "keypadToggleSign": "Change sign",
 
   "keypadBackspace": "Delete a digit",
+
+  "keypadShortcutTitle": "Keypad shortcut",
+
+  "keypadShortcutKind": "Key type",
+
+  "keypadShortcutKindValue": "Enter a value",
+
+  "keypadShortcutKindMultiply": "Multiply the score (positive only)",
+
+  "keypadShortcutKindAdd": "Add to the score",
+
+  "keypadShortcutAmount": "Number",
+
+  "keypadShortcutLabel": "Key label (optional)",
+
+  "keypadShortcutAmountRange": "A whole number between {min} and {max}",
 
   "appearance": "Appearance",
 

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 
+import '../../models/keypad_shortcut.dart';
 import '../backend_client.dart';
 import '../drift/database.dart';
 import '../uuid.dart';
@@ -64,6 +65,18 @@ const _gameTypeRulesMax = 8000;
 const _gameTypeRulesSlugMax = 32;
 const _roundCommentMax = 500;
 const _analysisContentMax = 20000;
+
+/// The push side of `game_types.keypad_shortcut`: see `case 'game_type'`.
+Map<String, Object?> _keypadShortcutPayload(Object? raw) {
+  if (raw == null) return const {'keypad_shortcut': null};
+  final shortcut = KeypadShortcut.decode(raw);
+  return shortcut == null ? const {} : {'keypad_shortcut': shortcut.encode()};
+}
+
+/// The pull side: a shortcut in its canonical form, or null for anything the
+/// model cannot read — a new row stores that null (a plain 0), an existing row
+/// keeps its own value (`_applyGameType`).
+String? _pulledKeypadShortcut(Object? raw) => KeypadShortcut.decode(raw)?.encode();
 
 const _rank = {
   'game_type': 0,
@@ -478,6 +491,12 @@ class SyncStore {
             // the user does clear on purpose, still travels as null.
             if (r['rules_slug'] case final String slug)
               'rules_slug': _clip(slug, _gameTypeRulesSlugMax),
+            // The keypad key (schema v21). Null travels — the user clears it on
+            // purpose — and a valid one travels in its canonical form. A value
+            // this version cannot read (malformed, or a kind from a later
+            // version) is omitted, so the server does not reject the whole row
+            // over it and keeps what it has.
+            ..._keypadShortcutPayload(r['keypad_shortcut']),
           },
           error: null,
         );
@@ -783,6 +802,12 @@ class SyncStore {
       // above. A group that still holds a wiped slug must not undo the v18
       // repair on a device that has it back.
       if (p['rules_slug'] != null) 'rules_slug': p['rules_slug'],
+      // A null clears, as the user's own "None" does; a value this version
+      // cannot read leaves the local one alone rather than clearing it.
+      if (p.containsKey('keypad_shortcut') &&
+          (p['keypad_shortcut'] == null ||
+              _pulledKeypadShortcut(p['keypad_shortcut']) != null))
+        'keypad_shortcut': _pulledKeypadShortcut(p['keypad_shortcut']),
     };
     final linked = await _localOf(groupId, 'game_type', d.entityUuid);
     if (linked != null) {
@@ -849,6 +874,7 @@ class SyncStore {
         // so this is the only repair left for a device joining the group before
         // a healthy one has pushed the slug back.
         'rules_slug': p['rules_slug'] ?? defaultRulesSlugs[builtinKey],
+        'keypad_shortcut': _pulledKeypadShortcut(p['keypad_shortcut']),
         'uuid': localUuid,
         'created_at': now,
         'updated_at': now,

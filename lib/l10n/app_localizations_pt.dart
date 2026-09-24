@@ -189,13 +189,37 @@ class AppLocalizationsPt extends AppLocalizations {
   String get keypadValidateRound => 'Validar rodada';
 
   @override
-  String get keypadZeroZapZap => '0 ZapZap';
-
-  @override
   String get keypadToggleSign => 'Trocar sinal';
 
   @override
   String get keypadBackspace => 'Apagar um dígito';
+
+  @override
+  String get keypadShortcutTitle => 'Atalho do teclado';
+
+  @override
+  String get keypadShortcutKind => 'Tipo de tecla';
+
+  @override
+  String get keypadShortcutKindValue => 'Inserir um valor';
+
+  @override
+  String get keypadShortcutKindMultiply =>
+      'Multiplicar a pontuação (só positiva)';
+
+  @override
+  String get keypadShortcutKindAdd => 'Somar à pontuação';
+
+  @override
+  String get keypadShortcutAmount => 'Número';
+
+  @override
+  String get keypadShortcutLabel => 'Texto da tecla (opcional)';
+
+  @override
+  String keypadShortcutAmountRange(int min, int max) {
+    return 'Um número inteiro entre $min e $max';
+  }
 
   @override
   String get appearance => 'Aparência';
