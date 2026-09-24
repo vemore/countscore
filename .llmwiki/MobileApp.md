@@ -2,7 +2,7 @@
 
 > Scope: the Flutter app's own structure — entry point, state, screens, models.
 > Related: [[DataLayer]] · [[SchemaV10]] · [[I18n]] · [[Web]] · [[Testing]]
-> Updated: 2026-09-20
+> Updated: 2026-09-24
 
 ## Facts
 
@@ -427,13 +427,16 @@ Finishing opens the standings (below); reopening is confirmed by a snackbar whos
 `undoSnackBar`; it expires after 6 s). The entry is
 offered on a game that has at least one round or is already
 finished — a game with no round was never played, which is why the list needs
-`GameProvider.roundCountOf`. Nothing is locked: a finished game still takes rounds and score
-edits.
+`GameProvider.roundCountOf`. While the game is finished the board's round button
+(`board_add_round`) is disabled; **Reopen** or **Continue playing** brings it back. Score
+edits stay open, to correct a mistake.
 
 `_GameBoardScreenState._maybeShowGameOver` finishes the game and opens its standings after
 a score edit, after a round is added and after one is deleted — every mutation that can move
-a total onto or past the game type's threshold — and once on the board's first build, for an open
-game already past it. `_gameOverDismissed` keeps it to one crossing and re-arms as soon as
+a total onto or past the game type's threshold — whenever the provider brings the open game new
+totals (`_checkGameOverOnTotals`, a `GameProvider` listener: a group sync pull reloads the
+game through `refreshFromSync`, so a round typed on another device ends the game on this
+board too), and once on the board's first build, for an open game already past it. `_gameOverDismissed` keeps it to one crossing and re-arms as soon as
 the condition is false again. Raised by the rule, the screen offers **Continue playing**,
 which pops back to the board, reopens the game and is written to `GameOverDismissals`, keyed
 by `Game.uuid`, and read back when the board opens, so leaving the board does not re-ask;

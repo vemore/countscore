@@ -100,12 +100,48 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
       _checkGameOverOnOpen();
     });
     _gameProvider.addListener(_closeIfDeletedElsewhere);
+    _totalsSeen = _totalsKey();
+    _gameProvider.addListener(_checkGameOverOnTotals);
   }
 
   @override
   void dispose() {
     _gameProvider.removeListener(_closeIfDeletedElsewhere);
+    _gameProvider.removeListener(_checkGameOverOnTotals);
     super.dispose();
+  }
+
+  /// The current game and every player's total, as last seen by
+  /// [_checkGameOverOnTotals].
+  String? _totalsSeen;
+
+  String _totalsKey() {
+    final game = _gameProvider.currentGame;
+    return [
+      game?.id,
+      for (final p in _gameProvider.currentPlayers)
+        '${p.id}:${_gameProvider.getPlayerTotal(p.id!)}',
+    ].join(',');
+  }
+
+  /// Runs the game-over check whenever the provider brings new totals —
+  /// in particular when a group sync pull reloads the game
+  /// (`GameProvider.refreshFromSync`), so a round typed on another device ends
+  /// the game on this one too. The writes made on this board notify as well;
+  /// [_maybeShowGameOver] asks once per crossing, so the second call is a
+  /// no-op. A notification that leaves the totals as they were — the game
+  /// finished or reopened, "Continue playing" — does not check again.
+  void _checkGameOverOnTotals() {
+    final key = _totalsKey();
+    if (key == _totalsSeen) return;
+    _totalsSeen = key;
+    final game = _gameProvider.currentGame;
+    if (game == null || !mounted) return;
+    final typeId = game.gameTypeId;
+    final gameType = typeId == null
+        ? null
+        : context.read<GameTypeProvider>().getGameTypeById(typeId);
+    unawaited(_maybeShowGameOver(_gameProvider, gameType));
   }
 
   /// A shared game deleted on another device leaves nothing to show here.
@@ -200,8 +236,9 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                 ],
                 // The list shows a finished game as finished; the board used to
                 // show nothing at all, so the two disagreed about a fact one of
-                // them was willing to display. Nothing is locked — a finished
-                // game still takes rounds and score edits.
+                // them was willing to display. A finished game takes no new
+                // round until it is reopened (the round button below); score
+                // edits stay open, to correct a mistake.
                 if (game?.isFinished ?? false) ...[
                   const SizedBox(width: 8),
                   Chip(
@@ -489,9 +526,15 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                   padding: const EdgeInsets.all(16),
                   child: SizedBox(
                     width: double.infinity,
+                    // Disabled while the game is finished: the end is a
+                    // fact, not a screen shown once. "Reopen" in the menu, or
+                    // "Continue playing" on the end screen, clears
+                    // `finishedAt` and brings it back.
                     child: FilledButton.icon(
                       key: const Key('board_add_round'),
-                      onPressed: () => _enterRound(gameProvider, gameType),
+                      onPressed: (gameProvider.currentGame?.isFinished ?? false)
+                          ? null
+                          : () => _enterRound(gameProvider, gameType),
                       icon: const Icon(Icons.add),
                       label: Text(
                           l10n.boardRoundButton(gameProvider.nextRoundNumber)),
@@ -519,7 +562,8 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
   /// Opens the end screen once per crossing of the threshold.
   ///
   /// Every mutation that can change a total calls this — a score edit, a round
-  /// added, a round deleted — and so does the board's first build
+  /// added, a round deleted, new totals from a sync pull
+  /// ([_checkGameOverOnTotals]) — and so does the board's first build
   /// ([_checkGameOverOnOpen]). The stored "Continue playing" is dropped as soon
   /// as the condition is false, so the next crossing asks again.
   Future<void> _maybeShowGameOver(

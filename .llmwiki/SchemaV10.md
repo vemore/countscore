@@ -2,16 +2,17 @@
 
 > Scope: the mobile database — tables, the global-player model, the migration chain.
 > Related: [[DataLayer]] · [[Sync]] · [[MobileApp]] · [[Testing]]
-> Updated: 2026-09-22
+> Updated: 2026-09-24
 
 This page was `SchemaV9` until v10 landed on 2026-09-13; links were renamed with it.
 v11 followed the same day, v12, v13 and v14 on 2026-09-16, v15 on 2026-09-18, v16 on
-2026-09-19, v17 and v18 on 2026-09-20, and v19 on 2026-09-22; all are described here too.
+2026-09-19, v17 and v18 on 2026-09-20, v19 on 2026-09-22 and v20 on 2026-09-24; all are
+described here too.
 
 ## Facts
 
-Schema version **19**, declared in two places that must stay in sync:
-`lib/services/drift/database.dart` (`schemaVersion => 19`) and
+Schema version **20**, declared in two places that must stay in sync:
+`lib/services/drift/database.dart` (`schemaVersion => 20`) and
 `DatabaseService.schemaVersion` in `lib/services/database_service.dart`, which both
 `openDatabase` calls use.
 
@@ -70,8 +71,8 @@ column from the payload altogether — was rejected because a renamed type has n
 ISO-8601 TEXT, nullable; null means the game is still open. Set when the user declares a
 game over — the board's overflow menu, the home-screen game menu, or the threshold
 reached by the game type's rule, which opens the standings — and cleared by reopening it
-(or "Continue playing" on that screen). It locks nothing: a finished game
-still takes rounds and score edits.
+(or "Continue playing" on that screen). The board disables its round button while it is
+set; score edits stay open.
 
 Pushed as `ended_at`, a column the server has carried since `0001_initial` and that nothing
 ever wrote (`backend/app/models/game.py`). The payload always carries the key, null
@@ -224,6 +225,7 @@ and scores. Deleting a game type ignores tombstoned games and clears their `game
 | **v17** | **Keyless copies of the built-in types soft-deleted** — the ones the pre-#153 PWA reload bug seeded again and v15 stripped of their key. `applyV17` in `lib/services/sync/sync_schema.dart`, run by both engines on upgrade only (a fresh install has none). A row goes only if it is live, keyless, group-less, holds no `rules`, a live built-in row has the same stored name and the same scoring fields (`isLowestScoreWins`, the dead and game-over conditions and thresholds, NULL-safe), and no game, live or deleted, points at it. `deleted_at` + `updated_at`, not a `DELETE`, so sync sees a tombstone; a copy with a game is the user's and is kept. No column change. `test/migration_v16_to_v17_test.dart`. |
 | **v18** | **`applyV16` replayed**, so a `rules_slug` emptied *after* v16 had run comes back. `applyV18` in `lib/services/sync/sync_schema.dart` is literally `applyV16`, run by both engines; no column change, no new logic. It repairs the rows the pre-1.3.1 editor wiped (`rules`, `rules_slug`, `isDefault` cleared on every save, #179): `builtin_key` survives an edit, and `applyV16` keys on it and ignores `isDefault`, so the repair was already written — only a second run was missing. `UPDATE`s only, on `rules_slug IS NULL` alone, so a written ruleset, a slug already set and a keyless (created or renamed) type are untouched, and nothing is inserted. No user action clears a slug on purpose, so replaying is safe. `rules` the bug erased is user content with no second source and is not recoverable; `isDefault` is deliberately not restored. `test/migration_v17_to_v18_test.dart`. |
 | **v19** | **`builtin_key` given back to the live rows that never got it**, then `applyV16` replayed so they get their ruleset. `applyV19` in `lib/services/sync/sync_schema.dart`, run by both engines. A keyless live row takes a key when its stored name is — ignoring ASCII case — a name of exactly one built-in type **with a ruleset** in any of the ten locales, its seed name or its pre-v14 seed name (`builtinNamesByKey`), **and no live row holds that key**; one row per key, the oldest across all of that key's names. `other` is excluded: it has no ruleset, and "Other" is what anyone calls a type of their own. `isDefault` and the scoring columns are not read, and only `builtin_key` and `rules_slug` are written. It repairs the seeded row the v14 back-fill skipped because the old editor had cleared `isDefault` (the owner's Skyjo), and a user's own row older than the built-in it names, which v14 declined to insert beside it (the owner's "6 qui prend"). A renamed built-in, and a homonym of a built-in that is still there, stay keyless. No column change; nothing is inserted. `test/migration_v18_to_v19_test.dart`. |
+| **v20** | **`lastPlayerOver` on the last-survivor built-ins that have no end** — ZapZap, Rami and 6 qui prend (the seeds with `lastPlayerOver`, `lastPlayerStandingSeeds`), which feat/last-player-standing seeded on a new database only. `applyV20` in `lib/services/drift/schema_v20.dart` (not `sync_schema.dart`, to keep the sync layer untouched), run by both engines on upgrade. A live row keyed on one of the three, with `gameOverConditionType IS NULL` and an `over` (or no) elimination, gets `lastPlayerOver` at its own `playerDeadThreshold` (the seeded one if NULL: 100, 100, 65) and a new `updated_at`. A condition the user set, a deleted row and an `under` elimination are left alone. The `UPDATE` fires the v11 `game_types` capture trigger, so a row linked into a group is pushed on the next sync; the server needs no change. No column change; nothing is inserted. `test/migration_v19_to_v20_test.dart`. |
 | v10 | **Sync bookkeeping**: `group_links`, `entity_versions`, `sync_inbox`; `outbox.rejected_at` / `reject_reason`; `sync_state.device_id` / `group_name`. Additive only — `_createSyncV10Tables` is the fresh-install and the upgrade path at once. |
 
 ### The v9 migration in detail
@@ -255,6 +257,18 @@ Added in `b340c98`. Some installs recorded version 8 while still carrying pre-v6
 repairs the shape before the rest of the chain runs.
 
 ## Decisions & History
+
+- **Existing last-survivor types get their end by migration (2026-09-24, `fix/game-ends-on-last-player`).**
+  feat/last-player-standing (2026-09-20) had followed the Uno/Président rule, "no migration
+  rewrites an existing row", so a game in progress would not gain an end its players did
+  not agree to. Production showed the cost: a group's ZapZap created on 2026-09-19 still had
+  no condition and never ended by itself, and games were finished days late, when someone
+  reopened them (`wip/done/2026-09-23-a-game-with-one-player-left-does-not-reliably-end-itself.md`).
+  The difference from Uno/Président is that those flipped a *winning direction*, which
+  reverses finished standings; a NULL end is not a choice, it is the missing half of a
+  type that already puts players out. The threshold is the row's own elimination threshold,
+  so an older 6 qui prend at 66 ends where it eliminates. A condition the user set is
+  theirs and stays.
 
 - **Keys are given back by name, with the key free, and nothing else (2026-09-22, `fix/builtin-key-rekey`).**
   After 1.4.0 the owner's device still showed no rules for 6 qui prend: three live rows

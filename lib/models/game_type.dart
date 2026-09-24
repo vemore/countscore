@@ -274,8 +274,9 @@ class GameType {
   // `lastPlayerOver` at the same threshold that puts a player out
   // (feat/last-player-standing, 2026-09-20). They carried no game-over
   // condition at all before, which is why a game with one player left still
-  // offered another round. As with Uno and Président below, no migration
-  // rewrites an existing row: only a new database seeds these values.
+  // offered another round. Unlike Uno and Président below, an existing row
+  // with no end gets this one from schema v20 (`applyV20`,
+  // lib/services/drift/schema_v20.dart); a condition the user set is kept.
   static GameType zapzap() => GameType(
         builtinKey: 'zapzap',
         name: 'ZapZap',

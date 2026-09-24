@@ -1,5 +1,7 @@
 # A game with one player left does not reliably end itself
 
+**Status:** done (2026-09-24) — closed by fix/game-ends-on-last-player. Schema v20 (`applyV20`, `lib/services/drift/schema_v20.dart`, both engines) sets `lastPlayerOver` at the row's elimination threshold on live ZapZap, Rami and 6 qui prend rows with no condition, leaving a user-set one alone; the capture trigger pushes linked rows, no server change. The board disables "Round N" while the game is finished (back after Reopen or "Continue playing") and runs the game-over check whenever the provider brings new totals, so a sync pull ends the game on an open board. Tests: `test/migration_v19_to_v20_test.dart`, `test/screens/game_board_end_of_game_test.dart`.
+
 - **Noted:** 2026-09-23 — user report on ZapZap ("still true of other types, probably"); checked against the production database and `lib/screens/game_board_screen.dart`
 - **Theme:** game-types
 - **Area:** app

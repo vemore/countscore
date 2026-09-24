@@ -9,6 +9,7 @@ import '../models/player.dart';
 import '../models/game_analysis.dart';
 import '../models/round.dart';
 import '../models/score.dart';
+import 'drift/schema_v20.dart';
 import 'sync/sync_schema.dart';
 
 class DatabaseService {
@@ -19,7 +20,7 @@ class DatabaseService {
 
   /// Must equal `AppDatabase.schemaVersion`: Drift adopts the file this chain
   /// produced and never migrates it itself.
-  static const schemaVersion = 19;
+  static const schemaVersion = 20;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -527,6 +528,10 @@ class DatabaseService {
 
     if (oldVersion < 19) {
       await applyV19(db.execute);
+    }
+
+    if (oldVersion < 20) {
+      await applyV20(db.execute);
     }
   }
 

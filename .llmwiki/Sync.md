@@ -2,7 +2,7 @@
 
 > Scope: the offline-first sharing protocol — server and Flutter client.
 > Related: [[Api]] · [[SchemaV10]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-09-22
+> Updated: 2026-09-24
 
 ## Facts
 
@@ -149,6 +149,14 @@ been, and was linked to another local row, the pull brings nothing and the row's
 pushes are superseded for good. No test covers the v19 path through sync; the owner's three
 rows were in no group in the 2026-09-19 backup.
 `wip/todo_nr/2026-09-22-a-rekeyed-type-linked-by-name-can-stop-syncing.md`.
+
+The v20 step (2026-09-24) relies on the same trigger: the `lastPlayerOver` condition it
+writes on a linked ZapZap, Rami or 6 qui prend with no end is pushed on the next sync, so a
+group's row gets its end from the first device that upgrades, with no server change. On the
+receiving side, a pull that changes the open game's totals reloads it through
+`GameProvider.refreshFromSync`, and the board runs its game-over check on the new totals
+(`_checkGameOverOnTotals`, [[MobileApp]]): a round typed on one device ends the game on
+another whose board is open.
 
 ### The client (since 2026-09-13)
 

@@ -1,8 +1,8 @@
 // The three types that play to a last survivor — ZapZap, Rami and 6 qui prend,
 // the only ones with a `playerDeadConditionType` — are seeded with
 // `lastPlayerOver` at the elimination threshold on a fresh database
-// (feat/last-player-standing, 2026-09-20). No migration rewrites an existing
-// row, as with Uno and Président: only a new database seeds these values.
+// (feat/last-player-standing, 2026-09-20). An existing row with no end gets
+// the same condition from schema v20: test/migration_v19_to_v20_test.dart.
 
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
