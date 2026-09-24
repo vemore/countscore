@@ -1307,17 +1307,29 @@ abstract class AppLocalizations {
   /// **'Nom du groupe'**
   String get groupNameLabel;
 
-  /// Text field label: how this device is named in the group
+  /// Text field label, first field of the create and join dialogs: the name the other members of the group see for this device. Starts empty and is required
   ///
   /// In fr, this message translates to:
-  /// **'Nom de cet appareil'**
-  String get deviceLabelLabel;
+  /// **'Votre pseudo'**
+  String get groupNicknameLabel;
 
-  /// Default value of the device name field
+  /// Hint under the nickname field: who will see it
   ///
   /// In fr, this message translates to:
-  /// **'Mon appareil'**
-  String get deviceLabelDefault;
+  /// **'Les autres membres du groupe le verront'**
+  String get groupNicknameHint;
+
+  /// Settings → Group: the nickname this device goes by in the group
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre pseudo : {nickname}'**
+  String groupNicknameCurrent(String nickname);
+
+  /// Tooltip of the edit button next to the nickname, and title of the rename dialog
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier votre pseudo'**
+  String get groupNicknameEdit;
 
   /// Label of the group invite code (the share token)
   ///

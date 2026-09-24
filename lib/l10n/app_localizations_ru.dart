@@ -687,10 +687,18 @@ class AppLocalizationsRu extends AppLocalizations {
   String get groupNameLabel => 'Название группы';
 
   @override
-  String get deviceLabelLabel => 'Имя этого устройства';
+  String get groupNicknameLabel => 'Ваш псевдоним';
 
   @override
-  String get deviceLabelDefault => 'Моё устройство';
+  String get groupNicknameHint => 'Его увидят другие участники группы';
+
+  @override
+  String groupNicknameCurrent(String nickname) {
+    return 'Ваш псевдоним: $nickname';
+  }
+
+  @override
+  String get groupNicknameEdit => 'Изменить псевдоним';
 
   @override
   String get shareTokenLabel => 'Код приглашения';

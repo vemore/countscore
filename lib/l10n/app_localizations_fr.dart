@@ -684,10 +684,18 @@ class AppLocalizationsFr extends AppLocalizations {
   String get groupNameLabel => 'Nom du groupe';
 
   @override
-  String get deviceLabelLabel => 'Nom de cet appareil';
+  String get groupNicknameLabel => 'Votre pseudo';
 
   @override
-  String get deviceLabelDefault => 'Mon appareil';
+  String get groupNicknameHint => 'Les autres membres du groupe le verront';
+
+  @override
+  String groupNicknameCurrent(String nickname) {
+    return 'Votre pseudo : $nickname';
+  }
+
+  @override
+  String get groupNicknameEdit => 'Modifier votre pseudo';
 
   @override
   String get shareTokenLabel => 'Code d\'invitation';

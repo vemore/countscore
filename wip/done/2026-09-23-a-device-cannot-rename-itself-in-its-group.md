@@ -1,5 +1,7 @@
 # A device cannot rename itself in its group
 
+**Status:** done (2026-09-24) — closed by feat/group-nickname-and-rename. `PATCH /groups/devices/me` renames the calling device (trimmed, 1 to 64 characters, own per-device bucket `DEVICE_RENAME_RL_*`), and Settings → Group shows the nickname with an edit action that reuses the join dialog's field. The backend route needs a deploy.
+
 - **Noted:** 2026-09-23 — user request, following [[2026-09-23-every-device-joins-a-group-as-mon-appareil]]
 - **Theme:** groups-v2
 - **Area:** app, backend

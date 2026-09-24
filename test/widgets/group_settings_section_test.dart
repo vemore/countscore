@@ -72,6 +72,10 @@ MockClient _server(
               'label': 'd',
             },
           },
+        '/groups/devices/me' => {
+            'id': _own,
+            'label': jsonDecode(request.body)['label'],
+          },
         '/sync/pull' => {'deltas': [], 'server_seq_max': 0, 'has_more': false},
         '/groups/me/devices' => {
             'devices': [
@@ -160,7 +164,9 @@ Future<void> _settle(WidgetTester tester) async {
 Future<void> _createGroup(WidgetTester tester) async {
   await tester.tap(find.byKey(const Key('group_create')));
   await tester.pumpAndSettle();
-  await tester.enterText(find.byKey(const Key('group_field_0')), 'Famille');
+  await tester.enterText(find.byKey(const Key('group_nickname_field')), 'Alice');
+  await tester.enterText(find.byKey(const Key('group_name_field')), 'Famille');
+  await tester.pump();
   await tester.tap(find.byKey(const Key('group_dialog_ok')));
   // The exit transition runs here: this is where the disposed controllers used
   // to trip the framework.
@@ -362,4 +368,200 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     group.dispose();
   });
+
+  testWidgets('the nickname shows in Settings → Group and renames this device, trimmed',
+      (tester) async {
+    final seen = <http.BaseRequest>[];
+    final group = await _pumpSection(tester, seen);
+    await _createGroup(tester);
+
+    expect(find.text('Your nickname: Alice'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('group_nickname_edit')));
+    await tester.pumpAndSettle();
+    // The rename dialog reuses the nickname field, filled with the current name.
+    final field = find.byKey(const Key('group_nickname_field'));
+    expect(tester.widget<TextField>(field).controller!.text, 'Alice');
+    await tester.enterText(field, '   ');
+    await tester.pump();
+    expect(_okButton(tester).onPressed, isNull);
+
+    await tester.enterText(field, '  Alice B  ');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('group_dialog_ok')));
+    await _settle(tester);
+
+    expect(tester.takeException(), isNull);
+    final patch = seen.lastWhere((r) => r.url.path == '/groups/devices/me') as http.Request;
+    expect(patch.method, 'PATCH');
+    expect(jsonDecode(patch.body), {'label': 'Alice B'});
+    expect(group.deviceLabel, 'Alice B');
+    expect(find.text('Your nickname: Alice B'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox());
+    group.dispose();
+  });
+
+  testWidgets('an unchanged nickname sends no rename', (tester) async {
+    final seen = <http.BaseRequest>[];
+    final group = await _pumpSection(tester, seen);
+    await _createGroup(tester);
+
+    await tester.tap(find.byKey(const Key('group_nickname_edit')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('group_nickname_field')), '  Alice ');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('group_dialog_ok')));
+    await _settle(tester);
+
+    expect(seen.where((r) => r.url.path == '/groups/devices/me'), isEmpty);
+    expect(find.text('Your nickname: Alice'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox());
+    group.dispose();
+  });
+
+  testWidgets('the nickname field stops at 64 code points, as the server counts', (tester) async {
+    await _pumpWithFake(tester);
+    await tester.tap(find.byKey(const Key('group_join')));
+    await tester.pumpAndSettle();
+    final nickname = find.byKey(const Key('group_nickname_field'));
+    String text() => tester.widget<TextField>(nickname).controller!.text;
+
+    // 👩‍💻 is one grapheme but three code points: 21 of them are 63, 22 are 66.
+    const coder = '\u{1F469}‍\u{1F4BB}';
+    await tester.enterText(nickname, coder * 21);
+    await tester.pump();
+    expect(text().runes.length, 63);
+    expect(find.text('63/64'), findsOneWidget);
+
+    await tester.enterText(nickname, coder * 22);
+    await tester.pump();
+    expect(text(), coder * 21, reason: 'refused: over 64 code points');
+
+    await tester.enterText(nickname, 'x' * 64);
+    await tester.pump();
+    expect(text(), 'x' * 64);
+    await tester.enterText(nickname, 'x' * 65);
+    await tester.pump();
+    expect(text(), 'x' * 64);
+  });
+
+  group('the join and create dialogs ask for a nickname first', () {
+    testWidgets('join: nickname above the invite code, empty, OK disabled until both are filled',
+        (tester) async {
+      final fake = await _pumpWithFake(tester);
+      await tester.tap(find.byKey(const Key('group_join')));
+      await tester.pumpAndSettle();
+
+      final nickname = find.byKey(const Key('group_nickname_field'));
+      final invite = find.byKey(const Key('group_invite_field'));
+      expect(nickname, findsOneWidget);
+      expect(invite, findsOneWidget);
+      expect(tester.getTopLeft(nickname).dy, lessThan(tester.getTopLeft(invite).dy));
+      expect(tester.widget<TextField>(nickname).controller!.text, isEmpty);
+      expect(find.text('Your nickname'), findsOneWidget);
+      expect(find.text('The others in the group will see it'), findsOneWidget);
+      expect(_okButton(tester).onPressed, isNull);
+
+      await tester.enterText(invite, '22222222-2222-4222-8222-222222222222');
+      await tester.pump();
+      expect(_okButton(tester).onPressed, isNull, reason: 'no nickname yet');
+
+      await tester.enterText(nickname, '   ');
+      await tester.pump();
+      expect(_okButton(tester).onPressed, isNull, reason: 'a blank nickname is no nickname');
+
+      await tester.enterText(nickname, '  Zoé  ');
+      await tester.enterText(invite, '');
+      await tester.pump();
+      expect(_okButton(tester).onPressed, isNull, reason: 'no invite code');
+
+      await tester.enterText(invite, ' 22222222-2222-4222-8222-222222222222 ');
+      await tester.pump();
+      expect(_okButton(tester).onPressed, isNotNull);
+      await tester.tap(find.byKey(const Key('group_dialog_ok')));
+      await tester.pumpAndSettle();
+
+      expect(fake.joined, [('22222222-2222-4222-8222-222222222222', 'Zoé')]);
+      expect(fake.created, isEmpty);
+    });
+
+    testWidgets('create: nickname above the group name, empty, OK disabled until both are filled',
+        (tester) async {
+      final fake = await _pumpWithFake(tester);
+      await tester.tap(find.byKey(const Key('group_create')));
+      await tester.pumpAndSettle();
+
+      final nickname = find.byKey(const Key('group_nickname_field'));
+      final name = find.byKey(const Key('group_name_field'));
+      expect(tester.getTopLeft(nickname).dy, lessThan(tester.getTopLeft(name).dy));
+      expect(tester.widget<TextField>(nickname).controller!.text, isEmpty);
+      expect(_okButton(tester).onPressed, isNull);
+
+      await tester.enterText(name, 'Famille');
+      await tester.pump();
+      expect(_okButton(tester).onPressed, isNull, reason: 'no nickname yet');
+
+      await tester.enterText(nickname, ' \t ');
+      await tester.pump();
+      expect(_okButton(tester).onPressed, isNull, reason: 'a blank nickname is no nickname');
+
+      await tester.enterText(nickname, '  Alice ');
+      await tester.enterText(name, '  ');
+      await tester.pump();
+      expect(_okButton(tester).onPressed, isNull, reason: 'a blank group name');
+
+      await tester.enterText(name, ' Famille ');
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('group_dialog_ok')));
+      await tester.pumpAndSettle();
+
+      expect(fake.created, [('Famille', 'Alice')]);
+      expect(fake.joined, isEmpty);
+    });
+  });
+}
+
+FilledButton _okButton(WidgetTester tester) =>
+    tester.widget<FilledButton>(find.byKey(const Key('group_dialog_ok')));
+
+/// A [GroupProvider] that records what the dialogs hand it and touches no server.
+class _FakeGroupProvider extends GroupProvider {
+  _FakeGroupProvider(AppDatabase db)
+      : super(db: db, credentials: MemorySyncCredentials(), enableStream: false);
+
+  final created = <(String, String)>[];
+  final joined = <(String, String)>[];
+
+  @override
+  Future<void> createGroup(String name, String deviceLabel) async =>
+      created.add((name, deviceLabel));
+
+  @override
+  Future<void> joinGroup(String shareToken, String deviceLabel) async =>
+      joined.add((shareToken, deviceLabel));
+}
+
+Future<_FakeGroupProvider> _pumpWithFake(WidgetTester tester) async {
+  final db = AppDatabase.forTesting(NativeDatabase.memory());
+  addTearDown(db.close);
+  final fake = _FakeGroupProvider(db);
+  await tester.pumpWidget(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => BackendProvider('https://countscore.example.com')),
+      ChangeNotifierProvider<GroupProvider>.value(value: fake),
+    ],
+    child: const MaterialApp(
+      locale: Locale('en'),
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: [Locale('en')],
+      home: Scaffold(body: SingleChildScrollView(child: GroupSettingsSection())),
+    ),
+  ));
+  return fake;
 }

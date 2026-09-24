@@ -85,6 +85,12 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   String? _shareToken;
   String? _deviceToken;
   bool _isOwner = false;
+  String? _deviceLabel;
+
+  /// Bumped by every completed [renameDevice], so a devices list requested
+  /// before a rename cannot put the old name back when it arrives after it.
+  int _renames = 0;
+  bool _loadingLabel = false;
   SyncStatus _status = SyncStatus.off;
   DateTime? _lastSyncAt;
   int _pending = 0;
@@ -104,6 +110,13 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   String? get groupId => _membership?.groupId;
   String? get deviceId => _membership?.deviceId;
   String? get shareToken => _shareToken;
+
+  /// This device's name in the group, as its siblings see it: what it joined or
+  /// created the group with, then the server's answer to [devices] or
+  /// [renameDevice]. Held in memory only, so null after a restart until the
+  /// devices list is read: on start, on resume and after a successful sync while
+  /// it is still unknown ([refreshDeviceLabel]).
+  String? get deviceLabel => isJoined ? _deviceLabel : null;
 
   /// Whether this device owns the group: the only one that may remove another
   /// device, renew the invite code or hand the role over. Held in memory only —
@@ -138,13 +151,24 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
 
   // ── Membership ────────────────────────────────────────────────────────────
 
-  Future<void> createGroup(String name, String deviceLabel) =>
-      _enter(() => _client().createGroup(name, deviceLabel), owner: true);
+  /// Creates a group as [deviceLabel], trimmed, and joins it as its owner.
+  Future<void> createGroup(String name, String deviceLabel) {
+    final label = deviceLabel.trim();
+    return _enter(() => _client().createGroup(name, label), owner: true, label: label);
+  }
 
-  Future<void> joinGroup(String shareToken, String deviceLabel) =>
-      _enter(() => _client().joinGroup(shareToken.trim(), deviceLabel), owner: false);
+  /// Joins the group [shareToken] names as [deviceLabel]; both are trimmed.
+  Future<void> joinGroup(String shareToken, String deviceLabel) {
+    final label = deviceLabel.trim();
+    return _enter(() => _client().joinGroup(shareToken.trim(), label),
+        owner: false, label: label);
+  }
 
-  Future<void> _enter(Future<GroupMembership> Function() call, {required bool owner}) async {
+  Future<void> _enter(
+    Future<GroupMembership> Function() call, {
+    required bool owner,
+    required String label,
+  }) async {
     if (_baseUrl == null) throw GroupActionException(GroupActionError.unreachable);
     if (_membership != null) await leave();
     final GroupMembership m;
@@ -164,6 +188,7 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     _deviceToken = m.deviceToken;
     _shareToken = m.shareToken;
     _isOwner = owner;
+    _deviceLabel = label;
     _membership = await _store.membership();
     await _restart();
   }
@@ -220,6 +245,7 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     _deviceToken = null;
     _shareToken = null;
     _isOwner = false;
+    _deviceLabel = null;
     _status = SyncStatus.off;
     _pending = 0;
     _rejected = 0;
@@ -239,18 +265,22 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     notifyListeners();
   }
 
-  /// The group's active devices, this one included. Refreshes [isOwner] from
-  /// this device's own entry.
+  /// The group's active devices, this one included. Refreshes [isOwner] and
+  /// [deviceLabel] from this device's own entry — the label only when no rename
+  /// completed while the list was on its way, since the list may predate it.
   Future<List<GroupDevice>> devices() async {
     final token = _deviceToken;
     if (token == null || _baseUrl == null) return const [];
+    final renames = _renames;
     try {
       final list = await _client().listDevices(token);
       final own = list.where((d) => d.id == deviceId).firstOrNull;
       if (own != null) {
         final isOwner = own.isOwner ?? true;
-        if (isOwner != _isOwner) {
+        final label = renames == _renames ? own.label : _deviceLabel;
+        if (isOwner != _isOwner || label != _deviceLabel) {
           _isOwner = isOwner;
+          _deviceLabel = label;
           notifyListeners();
         }
       }
@@ -260,6 +290,39 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     } catch (_) {
       throw GroupActionException(GroupActionError.unreachable);
     }
+  }
+
+  /// Reads [deviceLabel] from the server when it is not known yet — after a
+  /// restart. Called on start and resume, after each successful sync while the
+  /// label is unknown, and when Settings → Group opens; one request at a time.
+  /// Silent on failure: the next of those tries again.
+  Future<void> refreshDeviceLabel() async {
+    if (_deviceLabel != null || _loadingLabel || !_active) return;
+    _loadingLabel = true;
+    try {
+      await devices();
+    } catch (_) {
+      // Offline, or revoked: the sync status says so.
+    } finally {
+      _loadingLabel = false;
+    }
+  }
+
+  /// Renames this device in its group — the name the other members see in
+  /// their devices list. [label] is trimmed; the server refuses a blank one, one
+  /// over 64 code points, or one with a control character. Changes no synced row.
+  Future<void> renameDevice(String label) async {
+    final token = _deviceToken;
+    if (token == null || _baseUrl == null) {
+      throw GroupActionException(GroupActionError.unreachable);
+    }
+    try {
+      _deviceLabel = await _client().renameDevice(token, label.trim());
+    } catch (e) {
+      throw _settingsError(e);
+    }
+    _renames++;
+    notifyListeners();
   }
 
   /// Shuts another device out of the group — a lost or sold phone. The owner's
@@ -428,7 +491,11 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
           SyncFailure.unauthorized => SyncStatus.unauthorized,
           SyncFailure.server => SyncStatus.error,
         };
-        if (result.failure == null) _lastSyncAt = DateTime.now();
+        if (result.failure == null) {
+          _lastSyncAt = DateTime.now();
+          // The server answers again: fetch a nickname an offline start missed.
+          if (_deviceLabel == null) unawaited(refreshDeviceLabel());
+        }
         if (result.failure != null) break;
       } while (_rerun && _active);
       _pending = await _store.pendingCount();
@@ -461,6 +528,7 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     }
     notifyListeners();
     unawaited(refreshOwner());
+    unawaited(refreshDeviceLabel());
     unawaited(syncNow());
   }
 
@@ -479,6 +547,7 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       scheduleSync(Duration.zero);
       unawaited(refreshOwner());
+      unawaited(refreshDeviceLabel());
     }
   }
 

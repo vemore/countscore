@@ -686,10 +686,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get groupNameLabel => 'اسم المجموعة';
 
   @override
-  String get deviceLabelLabel => 'اسم هذا الجهاز';
+  String get groupNicknameLabel => 'اسمك المستعار';
 
   @override
-  String get deviceLabelDefault => 'جهازي';
+  String get groupNicknameHint => 'سيراه الأعضاء الآخرون في المجموعة';
+
+  @override
+  String groupNicknameCurrent(String nickname) {
+    return 'اسمك المستعار: $nickname';
+  }
+
+  @override
+  String get groupNicknameEdit => 'تغيير اسمك المستعار';
 
   @override
   String get shareTokenLabel => 'رمز الدعوة';

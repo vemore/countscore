@@ -411,7 +411,7 @@ we receive it only if you press send.
 games you share — their name, type, player names and colours, round comments, scores,
 whether and when you ended them, and analysis — are uploaded to **your** server, which **stores** them with a log of every change,
 and downloaded by the group's other devices. Each device of the group also sees the others'
-names and when they were last seen, so a lost phone can be recognised and removed. The
+names (the nickname each one chose, which it can change in Settings → Group) and when they were last seen, so a lost phone can be recognised and removed. The
 group's comment style and language, if a member changes them (Settings → Group → Comments and
 usage), are stored there too, with the analyses generated for shared games. Anyone with
 the group's invite code can join, so share it only with the people you mean to. Games you do not share never leave the device.

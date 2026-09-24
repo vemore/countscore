@@ -2,7 +2,7 @@
 
 > Scope: production topology and environment. For the procedure, use the `backend-deploy` skill.
 > Related: [[Backend]] · [[Security]] · [[Web]] · [[LlmProviders]]
-> Updated: 2026-09-20
+> Updated: 2026-09-24
 
 ## Facts
 
@@ -262,6 +262,7 @@ whose users run it lists `https://<owner>.github.io` in `CORS_ORIGINS` and serve
 | `GROUP_OWNER_DORMANT_DAYS` | Days a group owner may go unseen before a member may claim the role (`POST /groups/me/owner/claim`) | `30` |
 | `AUTH_FAIL_RL_PER_MINUTE` / `AUTH_FAIL_RL_PER_HOUR` | Failed device-token checks per IP before a 429 | `10` / `60` |
 | `SYNC_PUSH_RL_PER_MINUTE` / `SYNC_PUSH_RL_PER_HOUR` | `/sync/push` calls per device before a 429 (the app pushes batches of 100) | `60` / `1200` |
+| `DEVICE_RENAME_RL_PER_MINUTE` / `DEVICE_RENAME_RL_PER_HOUR` | `PATCH /groups/devices/me` (a device renaming itself) calls per device before a 429 | `5` / `30` |
 | `EXPOSE_DOCS` | Serve `/docs`, `/redoc`, `/openapi.json`. Leave off in production | `false` |
 | `HSTS_ENABLED` | Send `Strict-Transport-Security`. `true` in prod, `false` for local http | `false` |
 | `MAX_BODY_BYTES` | Request body cap (413 above) | `262144` |

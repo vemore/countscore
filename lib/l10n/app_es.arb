@@ -342,9 +342,13 @@
 
   "groupNameLabel": "Nombre del grupo",
 
-  "deviceLabelLabel": "Nombre de este dispositivo",
+  "groupNicknameLabel": "Tu apodo",
 
-  "deviceLabelDefault": "Mi dispositivo",
+  "groupNicknameHint": "Los demás miembros del grupo lo verán",
+
+  "groupNicknameCurrent": "Tu apodo: {nickname}",
+
+  "groupNicknameEdit": "Cambiar tu apodo",
 
   "shareTokenLabel": "Código de invitación",
 
