@@ -1515,4 +1515,37 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get groupCreatedOwnerExplain =>
       'グループを作成しました。このデバイスがオーナーです。この役割は「デバイス」で他のデバイスに引き継げます。';
+
+  @override
+  String get boardEliminated => '脱落';
+
+  @override
+  String get soundsSection => 'サウンド';
+
+  @override
+  String get gameSounds => 'ゲームサウンド';
+
+  @override
+  String get gameSoundsDescription => 'プレイヤーの脱落時、勝利時、タイマー終了時に音を鳴らします';
+
+  @override
+  String get turnTimer => 'ターンタイマー';
+
+  @override
+  String get turnTimerLess => '時間を減らす';
+
+  @override
+  String get turnTimerMore => '時間を増やす';
+
+  @override
+  String get turnTimerStart => 'スタート';
+
+  @override
+  String get turnTimerPause => '一時停止';
+
+  @override
+  String get turnTimerReset => 'リセット';
+
+  @override
+  String get turnTimerTimeUp => '時間切れ！';
 }

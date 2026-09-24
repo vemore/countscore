@@ -265,14 +265,16 @@ class _NameCell extends StatelessWidget {
     final colour = data.colorOf(player);
     final eliminated = data.isEliminated(data.totalOf(player));
     final isLeader = data.leader?.id == player.id;
+    final mark =
+        boardMark(eliminated: eliminated, isLeader: isLeader, size: 16);
     return Container(
       height: height,
       margin: EdgeInsets.only(bottom: gap),
       child: Row(
         children: [
           const SizedBox(width: 11),
-          if (isLeader) ...[
-            const BoardCrown(size: 16),
+          if (mark != null) ...[
+            mark,
             const SizedBox(width: 2),
           ],
           PlayerAvatar(name: player.name, color: colour, size: 30, letters: 2),

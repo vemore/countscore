@@ -1500,4 +1500,37 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get groupCreatedOwnerExplain => '群组已创建。本设备是其所有者；可在“设备”中将该角色移交给其他设备。';
+
+  @override
+  String get boardEliminated => '已淘汰';
+
+  @override
+  String get soundsSection => '声音';
+
+  @override
+  String get gameSounds => '游戏音效';
+
+  @override
+  String get gameSoundsDescription => '玩家被淘汰、赢得游戏和计时结束时播放声音';
+
+  @override
+  String get turnTimer => '回合计时器';
+
+  @override
+  String get turnTimerLess => '减少时间';
+
+  @override
+  String get turnTimerMore => '增加时间';
+
+  @override
+  String get turnTimerStart => '开始';
+
+  @override
+  String get turnTimerPause => '暂停';
+
+  @override
+  String get turnTimerReset => '重置';
+
+  @override
+  String get turnTimerTimeUp => '时间到！';
 }

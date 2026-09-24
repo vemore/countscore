@@ -687,5 +687,16 @@
 
   "groupErrorOwnerActive": "समूह का स्वामी हाल ही में सक्रिय था: स्वामित्व नहीं लिया जा सकता।",
 
-  "groupCreatedOwnerExplain": "समूह बन गया। यह डिवाइस इसका स्वामी है; यह भूमिका “डिवाइस” में किसी दूसरे को सौंपी जा सकती है।"
+  "groupCreatedOwnerExplain": "समूह बन गया। यह डिवाइस इसका स्वामी है; यह भूमिका “डिवाइस” में किसी दूसरे को सौंपी जा सकती है।",
+  "boardEliminated": "बाहर",
+  "soundsSection": "ध्वनियाँ",
+  "gameSounds": "खेल की ध्वनियाँ",
+  "gameSoundsDescription": "जब कोई खिलाड़ी बाहर हो, जब खेल जीता जाए और जब टाइमर खत्म हो, तब एक ध्वनि",
+  "turnTimer": "बारी का टाइमर",
+  "turnTimerLess": "कम समय",
+  "turnTimerMore": "अधिक समय",
+  "turnTimerStart": "शुरू करें",
+  "turnTimerPause": "रोकें",
+  "turnTimerReset": "रीसेट करें",
+  "turnTimerTimeUp": "समय समाप्त!"
 }

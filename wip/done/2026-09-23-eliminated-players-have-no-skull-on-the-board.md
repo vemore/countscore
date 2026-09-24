@@ -1,5 +1,7 @@
 # Eliminated players have no skull on the board
 
+**Status:** done (2026-09-24) — closed by feat/board-skull-sounds-timer. `BoardSkull` (painted, since the pinned Material Icons font has no skull; label `boardEliminated` in the ten ARB files) takes the crown's place above an eliminated player's avatar in lanes and rows, through `boardMark`, and wins over the crown. Tested in `test/screens/game_board_skull_test.dart`.
+
 - **Noted:** 2026-09-23 — user request
 - **Theme:** growth
 - **Area:** app

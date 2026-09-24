@@ -687,5 +687,16 @@
 
   "groupErrorOwnerActive": "Владелец группы недавно выходил на связь: стать владельцем нельзя.",
 
-  "groupCreatedOwnerExplain": "Группа создана. Это устройство — её владелец; роль можно передать другому в разделе «Устройства»."
+  "groupCreatedOwnerExplain": "Группа создана. Это устройство — её владелец; роль можно передать другому в разделе «Устройства».",
+  "boardEliminated": "Выбыл",
+  "soundsSection": "Звуки",
+  "gameSounds": "Игровые звуки",
+  "gameSoundsDescription": "Звук, когда игрок выбывает, когда партия выиграна и когда таймер истекает",
+  "turnTimer": "Таймер хода",
+  "turnTimerLess": "Меньше времени",
+  "turnTimerMore": "Больше времени",
+  "turnTimerStart": "Старт",
+  "turnTimerPause": "Пауза",
+  "turnTimerReset": "Сбросить",
+  "turnTimerTimeUp": "Время вышло!"
 }

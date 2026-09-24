@@ -1592,4 +1592,38 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get groupCreatedOwnerExplain =>
       'Группа создана. Это устройство — её владелец; роль можно передать другому в разделе «Устройства».';
+
+  @override
+  String get boardEliminated => 'Выбыл';
+
+  @override
+  String get soundsSection => 'Звуки';
+
+  @override
+  String get gameSounds => 'Игровые звуки';
+
+  @override
+  String get gameSoundsDescription =>
+      'Звук, когда игрок выбывает, когда партия выиграна и когда таймер истекает';
+
+  @override
+  String get turnTimer => 'Таймер хода';
+
+  @override
+  String get turnTimerLess => 'Меньше времени';
+
+  @override
+  String get turnTimerMore => 'Больше времени';
+
+  @override
+  String get turnTimerStart => 'Старт';
+
+  @override
+  String get turnTimerPause => 'Пауза';
+
+  @override
+  String get turnTimerReset => 'Сбросить';
+
+  @override
+  String get turnTimerTimeUp => 'Время вышло!';
 }

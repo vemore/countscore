@@ -1,5 +1,7 @@
 # No optional sound on elimination and victory
 
+**Status:** done (2026-09-24) — closed by feat/board-skull-sounds-timer. Settings → Sounds → *Game sounds* (off by default) governs `GameSounds` (`lib/services/game_sounds.dart`, audioplayers 6.8.1, MIT), which plays the elimination sound once per write that puts a player out and the victory sound when the rule ends the game; the unconditional `SystemSound` alert is gone. The sounds are synthesised by `scripts/generate_sounds.py`, CC0, recorded in `THIRD_PARTY_LICENSES.md` (no credit needed). Tested in `test/screens/game_board_sounds_test.dart`, `test/services/game_sounds_test.dart` and `test/screens/settings_screen_test.dart`.
+
 - **Noted:** 2026-09-23 — user request
 - **Theme:** growth
 - **Area:** app
