@@ -682,10 +682,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupNameLabel => 'Group name';
 
   @override
-  String get deviceLabelLabel => 'Name of this device';
+  String get groupNicknameLabel => 'Your nickname';
 
   @override
-  String get deviceLabelDefault => 'My device';
+  String get groupNicknameHint => 'The others in the group will see it';
+
+  @override
+  String groupNicknameCurrent(String nickname) {
+    return 'Your nickname: $nickname';
+  }
+
+  @override
+  String get groupNicknameEdit => 'Change your nickname';
 
   @override
   String get shareTokenLabel => 'Invite code';

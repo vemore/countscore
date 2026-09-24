@@ -342,9 +342,13 @@
 
   "groupNameLabel": "グループ名",
 
-  "deviceLabelLabel": "この端末の名前",
+  "groupNicknameLabel": "ニックネーム",
 
-  "deviceLabelDefault": "マイ端末",
+  "groupNicknameHint": "グループの他のメンバーに表示されます",
+
+  "groupNicknameCurrent": "ニックネーム：{nickname}",
+
+  "groupNicknameEdit": "ニックネームを変更",
 
   "shareTokenLabel": "招待コード",
 

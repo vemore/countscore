@@ -342,9 +342,13 @@
 
   "groupNameLabel": "Название группы",
 
-  "deviceLabelLabel": "Имя этого устройства",
+  "groupNicknameLabel": "Ваш псевдоним",
 
-  "deviceLabelDefault": "Моё устройство",
+  "groupNicknameHint": "Его увидят другие участники группы",
+
+  "groupNicknameCurrent": "Ваш псевдоним: {nickname}",
+
+  "groupNicknameEdit": "Изменить псевдоним",
 
   "shareTokenLabel": "Код приглашения",
 

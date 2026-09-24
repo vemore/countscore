@@ -342,9 +342,13 @@
 
   "groupNameLabel": "Gruppenname",
 
-  "deviceLabelLabel": "Name dieses Geräts",
+  "groupNicknameLabel": "Dein Spitzname",
 
-  "deviceLabelDefault": "Mein Gerät",
+  "groupNicknameHint": "Die anderen Gruppenmitglieder sehen ihn",
+
+  "groupNicknameCurrent": "Dein Spitzname: {nickname}",
+
+  "groupNicknameEdit": "Spitznamen ändern",
 
   "shareTokenLabel": "Einladungscode",
 

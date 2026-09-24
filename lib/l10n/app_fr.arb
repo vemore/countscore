@@ -1102,14 +1102,30 @@
     "description": "Text field label: name of the group being created"
   },
 
-  "deviceLabelLabel": "Nom de cet appareil",
-  "@deviceLabelLabel": {
-    "description": "Text field label: how this device is named in the group"
+  "groupNicknameLabel": "Votre pseudo",
+  "@groupNicknameLabel": {
+    "description": "Text field label, first field of the create and join dialogs: the name the other members of the group see for this device. Starts empty and is required"
   },
 
-  "deviceLabelDefault": "Mon appareil",
-  "@deviceLabelDefault": {
-    "description": "Default value of the device name field"
+  "groupNicknameHint": "Les autres membres du groupe le verront",
+  "@groupNicknameHint": {
+    "description": "Hint under the nickname field: who will see it"
+  },
+
+  "groupNicknameCurrent": "Votre pseudo : {nickname}",
+  "@groupNicknameCurrent": {
+    "description": "Settings → Group: the nickname this device goes by in the group",
+    "placeholders": {
+      "nickname": {
+        "type": "String",
+        "example": "Alice"
+      }
+    }
+  },
+
+  "groupNicknameEdit": "Modifier votre pseudo",
+  "@groupNicknameEdit": {
+    "description": "Tooltip of the edit button next to the nickname, and title of the rename dialog"
   },
 
   "shareTokenLabel": "Code d'invitation",

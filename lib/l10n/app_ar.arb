@@ -342,9 +342,13 @@
 
   "groupNameLabel": "اسم المجموعة",
 
-  "deviceLabelLabel": "اسم هذا الجهاز",
+  "groupNicknameLabel": "اسمك المستعار",
 
-  "deviceLabelDefault": "جهازي",
+  "groupNicknameHint": "سيراه الأعضاء الآخرون في المجموعة",
+
+  "groupNicknameCurrent": "اسمك المستعار: {nickname}",
+
+  "groupNicknameEdit": "تغيير اسمك المستعار",
 
   "shareTokenLabel": "رمز الدعوة",
 

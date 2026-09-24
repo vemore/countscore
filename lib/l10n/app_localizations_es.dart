@@ -686,10 +686,18 @@ class AppLocalizationsEs extends AppLocalizations {
   String get groupNameLabel => 'Nombre del grupo';
 
   @override
-  String get deviceLabelLabel => 'Nombre de este dispositivo';
+  String get groupNicknameLabel => 'Tu apodo';
 
   @override
-  String get deviceLabelDefault => 'Mi dispositivo';
+  String get groupNicknameHint => 'Los demás miembros del grupo lo verán';
+
+  @override
+  String groupNicknameCurrent(String nickname) {
+    return 'Tu apodo: $nickname';
+  }
+
+  @override
+  String get groupNicknameEdit => 'Cambiar tu apodo';
 
   @override
   String get shareTokenLabel => 'Código de invitación';

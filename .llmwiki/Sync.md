@@ -2,7 +2,7 @@
 
 > Scope: the offline-first sharing protocol — server and Flutter client.
 > Related: [[Api]] · [[SchemaV10]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-09-22
+> Updated: 2026-09-24
 
 ## Facts
 
@@ -183,6 +183,16 @@ keeps the actions, as before. `GroupProvider.revokeDevice` stores the rotated `s
 the section shows the new invite code at once. The revoked device learns of it on its next
 request: a 401, shown as `SyncStatus.unauthorized` (its open stream closes with 1008 at the
 next push to the group or the next idle heartbeat, whichever comes first — see *WebSocket*). Its local copies of the games stay where they are.
+
+**The nickname.** A device's name in the group (`devices.label`) is what its siblings see in
+the devices list. The create and join dialogs ask for it first (`group_nickname_field`,
+`groupNicknameLabel` with the `groupNicknameHint` helper), empty, and OK stays disabled until
+every field holds a non-blank value; the values go out trimmed. Settings → Group shows it
+(`groupNicknameCurrent`) with an edit button (`group_nickname_edit`) that reuses the same field
+and calls `GroupProvider.renameDevice`, i.e. `PATCH /groups/devices/me`. The provider holds the
+label in memory only: set on create and join, from the rename's answer and from this device's
+row whenever the devices list loads; after a restart the section reads that list once
+(`refreshDeviceLabel`). A rename changes no synced row.
 
 **Comment settings and usage.** Settings → Group → *Comments and usage*
 (`group_settings_screen.dart`) shows the group's `comment_style` and `comment_language` from

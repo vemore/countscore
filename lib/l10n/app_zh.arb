@@ -342,9 +342,13 @@
 
   "groupNameLabel": "群组名称",
 
-  "deviceLabelLabel": "本设备名称",
+  "groupNicknameLabel": "你的昵称",
 
-  "deviceLabelDefault": "我的设备",
+  "groupNicknameHint": "群组中的其他成员会看到它",
+
+  "groupNicknameCurrent": "你的昵称：{nickname}",
+
+  "groupNicknameEdit": "修改昵称",
 
   "shareTokenLabel": "邀请码",
 

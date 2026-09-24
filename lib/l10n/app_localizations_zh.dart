@@ -665,10 +665,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get groupNameLabel => '群组名称';
 
   @override
-  String get deviceLabelLabel => '本设备名称';
+  String get groupNicknameLabel => '你的昵称';
 
   @override
-  String get deviceLabelDefault => '我的设备';
+  String get groupNicknameHint => '群组中的其他成员会看到它';
+
+  @override
+  String groupNicknameCurrent(String nickname) {
+    return '你的昵称：$nickname';
+  }
+
+  @override
+  String get groupNicknameEdit => '修改昵称';
 
   @override
   String get shareTokenLabel => '邀请码';

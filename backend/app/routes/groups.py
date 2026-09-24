@@ -39,6 +39,8 @@ from app.schemas.groups import (
     GroupWithShareToken,
     JoinGroupRequest,
     JoinGroupResponse,
+    RenamedDevice,
+    RenameDeviceRequest,
     TransferOwnershipRequest,
     UpdateGroupSettings,
     UsagePayload,
@@ -243,6 +245,40 @@ async def join_group(
         group=_group_payload_with_token(group),
         device=DevicePayload(id=device.id, token=raw_token, label=device.label),
     )
+
+
+@router.patch("/devices/me", response_model=RenamedDevice)
+async def rename_my_device(
+    body: RenameDeviceRequest,
+    auth: AuthContext = Depends(require_device),
+    session: AsyncSession = Depends(get_session),
+) -> RenamedDevice:
+    """Rename the calling device in its group: ``devices.label``, and nothing else.
+
+    There is no device id in the path on purpose: a device can only ever name itself, so
+    there is nothing to check and no way to rename a sibling. The label is trimmed and
+    must hold 1 to 64 characters (422 otherwise). It is not a synced row, so no delta is
+    logged; the others see it on their next ``GET /me/devices``. Its own per-device bucket.
+    """
+    settings = get_settings()
+    dec = check_ip_rate_limit(
+        str(auth.device.id),
+        bucket="device_rename",
+        per_minute=settings.device_rename_rl_per_minute,
+        per_hour=settings.device_rename_rl_per_hour,
+    )
+    if not dec.allowed:
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            f"rate-limited at {dec.scope} scope",
+            headers={"Retry-After": str(dec.retry_after_seconds)},
+        )
+    device = await session.get(Device, auth.device.id)
+    assert device is not None
+    device.label = body.label
+    await session.commit()
+    await session.refresh(device)
+    return RenamedDevice(id=device.id, label=device.label)
 
 
 @router.get("/me", response_model=GroupPayload)

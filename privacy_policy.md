@@ -1,6 +1,6 @@
 # Privacy Policy for CountScore
 
-**Last Updated**: September 19, 2026 (v2.10)
+**Last Updated**: September 24, 2026 (v2.11)
 
 **Effective Date**: Applies to CountScore v1.1.0 and later
 
@@ -176,8 +176,11 @@ For each **shared** game, and kept up to date as you play:
 - its analysis, if one was generated.
 
 When you create or join a group, the app also sends the **group name** and the **name you give
-this device** (both typed by you). The server issues this device an identifier and a secret
-access token; the token authenticates each later request.
+this device**, your nickname in the group (both typed by you). The server issues this device
+an identifier and a secret access token; the token authenticates each later request. If you
+change that nickname later (Settings → Group), the app sends the new one to the server, which
+replaces the old one; the other devices of the group see it the next time they list the
+group's devices.
 
 If you change the group's **comment style or language** (Settings → Group → Comments and
 usage), the app sends your choice — one of three styles and a language code — to the server,

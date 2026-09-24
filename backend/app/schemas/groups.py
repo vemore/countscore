@@ -4,8 +4,13 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from typing import Annotated
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StringConstraints
+
+# A device's name in its group, as its siblings see it. Surrounding whitespace is dropped
+# before the length is checked, so a blank label is a 422 rather than an invisible name.
+DeviceLabel = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=64)]
 
 
 class CreateGroupRequest(BaseModel):
@@ -16,6 +21,17 @@ class CreateGroupRequest(BaseModel):
 class JoinGroupRequest(BaseModel):
     share_token: uuid.UUID
     device_label: str = Field(min_length=1, max_length=64)
+
+
+class RenameDeviceRequest(BaseModel):
+    label: DeviceLabel
+
+
+class RenamedDevice(BaseModel):
+    """The caller's device after a rename: its id and the label now stored."""
+
+    id: uuid.UUID
+    label: str
 
 
 class DevicePayload(BaseModel):

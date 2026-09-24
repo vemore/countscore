@@ -635,3 +635,85 @@ def test_current_period_rolls_over_only_once_the_reset_has_passed():
     assert current_period(group, now) == (7, datetime(2027, 1, 1, tzinfo=UTC))
     group.budget_resets_at = datetime(2026, 12, 1)  # naive, as SQLite hands it back
     assert current_period(group, now) == (0, datetime(2027, 1, 1, tzinfo=UTC))
+
+
+async def _group_of_two(client) -> tuple[dict, str, dict, str]:
+    r = await client.post("/groups", json={"name": "g", "device_label": "Mon appareil"})
+    alice = {"Authorization": f"Bearer {r.json()['device']['token']}"}
+    alice_id = r.json()["device"]["id"]
+    share = r.json()["group"]["share_token"]
+    r = await client.post(
+        "/groups/join", json={"share_token": share, "device_label": "Mon appareil"}
+    )
+    bob = {"Authorization": f"Bearer {r.json()['device']['token']}"}
+    return alice, alice_id, bob, r.json()["device"]["id"]
+
+
+async def test_a_device_renames_itself_with_a_trimmed_label(client):
+    alice, alice_id, bob, bob_id = await _group_of_two(client)
+
+    r = await client.patch("/groups/devices/me", json={"label": "  Alice  "}, headers=alice)
+    assert r.status_code == 200, r.text
+    assert r.json() == {"id": alice_id, "label": "Alice"}
+
+    # Its siblings see the new name on their next read; nothing else changed.
+    r = await client.get("/groups/me/devices", headers=bob)
+    assert [(d["id"], d["label"]) for d in r.json()["devices"]] == [
+        (alice_id, "Alice"),
+        (bob_id, "Mon appareil"),
+    ]
+
+
+async def test_a_rename_refuses_an_empty_blank_or_too_long_label(client):
+    alice, _, _, _ = await _group_of_two(client)
+
+    for label in ["", "   ", "x" * 65]:
+        r = await client.patch("/groups/devices/me", json={"label": label}, headers=alice)
+        assert r.status_code == 422, (label, r.text)
+    r = await client.patch("/groups/devices/me", json={}, headers=alice)
+    assert r.status_code == 422
+
+    # 64 is the limit, inclusive.
+    r = await client.patch("/groups/devices/me", json={"label": "y" * 64}, headers=alice)
+    assert r.status_code == 200
+    assert r.json()["label"] == "y" * 64
+
+
+async def test_a_rename_needs_a_device_token(client):
+    r = await client.patch("/groups/devices/me", json={"label": "Eve"})
+    assert r.status_code == 401
+
+
+async def test_a_device_cannot_rename_another_device(client):
+    alice, alice_id, bob, bob_id = await _group_of_two(client)
+
+    # There is no device id in the route: a body naming a sibling is ignored, and only the
+    # caller's own row changes.
+    r = await client.patch("/groups/devices/me", json={"label": "Bob", "id": alice_id}, headers=bob)
+    assert r.status_code == 200
+    assert r.json()["id"] == bob_id
+    r = await client.patch(f"/groups/devices/{alice_id}", json={"label": "pwned"}, headers=bob)
+    assert r.status_code in (404, 405)
+
+    r = await client.get("/groups/me/devices", headers=alice)
+    assert {d["id"]: d["label"] for d in r.json()["devices"]} == {
+        alice_id: "Mon appareil",
+        bob_id: "Bob",
+    }
+
+
+async def test_a_rename_is_rate_limited_per_device(client, monkeypatch):
+    from app.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "device_rename_rl_per_minute", 2)
+    alice, _, bob, _ = await _group_of_two(client)
+
+    for name in ["a", "b"]:
+        r = await client.patch("/groups/devices/me", json={"label": name}, headers=alice)
+        assert r.status_code == 200
+    r = await client.patch("/groups/devices/me", json={"label": "c"}, headers=alice)
+    assert r.status_code == 429
+    assert "Retry-After" in r.headers
+    # Another device has its own bucket.
+    r = await client.patch("/groups/devices/me", json={"label": "c"}, headers=bob)
+    assert r.status_code == 200

@@ -102,6 +102,13 @@ server already stored both dates. The recipients are the devices of the group th
 to join — the same audience that already receives the shared games — so the answers below are
 unchanged.
 
+**Nickname in the group (September 24, 2026).** The create and join dialogs now ask for a
+nickname (the same **device name** field, first, empty and required instead of pre-filled),
+and Settings → Group lets a device change it (`PATCH /groups/devices/me`, `{label}`). The
+server replaces the stored device name; it goes to the same self-hosted server and the same
+group members as before. No new data type and no new recipient: the answers below are
+unchanged.
+
 **Comment settings and usage (September 19, 2026).** Settings → Group → *Comments and usage*
 sends the group's comment style (one of three fixed values) and language code with
 `PATCH /groups/me/settings`, and reads them back with `GET /groups/me`, along with the

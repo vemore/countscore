@@ -30,7 +30,7 @@ Load this file first. Then read only the pages your task touches.
 | [[MobileApp]] | `lib/` layout, providers, screens (the game-type editor among them), widgets, services (the review prompt), `utils/`, the dynamic-icon constraint | 2026-09-20 |
 | [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-09-20 |
 | [[SchemaV10]] | Schema v19: the twelve tables, `rules`/`rules_slug` (21 rulesets, keyed on `builtin_key`), `builtin_key` and its live-unique index, what `isDefault` does and does not mean, sync bookkeeping and capture triggers, tombstones, the migration chain, the v17 dedupe of keyless built-in copies, the v18 replay that restores a wiped slug, and the v19 step that gives a lost `builtin_key` back | 2026-09-22 |
-| [[I18n]] | 10 languages × 409 keys, French template, English fallback; built-in game-type names are localized and sorted by a per-name key (pinyin in zh); the key *and* value checks; long-form rules are assets, not ARB; store locales differ | 2026-09-20 |
+| [[I18n]] | 10 languages × 411 keys, French template, English fallback; built-in game-type names are localized and sorted by a per-name key (pinyin in zh); the key *and* value checks; long-form rules are assets, not ARB; store locales differ | 2026-09-24 |
 | [[Web]] | PWA specifics: sqlite3.wasm, IndexedDB (not OPFS) and the flush that makes it survive a reload, committed binaries and the check that gates them, `kIsWeb` guards, the wake lock and sharing under the CSP, base href, the self-hosted CanvasKit and fallback fonts (no Google request), the service worker (offline after one visit, a reload offered after a deploy), the GitHub Pages workflow and its CORS consequences | 2026-09-19 |
 
 ## Backend (FastAPI)
@@ -38,20 +38,20 @@ Load this file first. Then read only the pages your task touches.
 | Page | Summary | Updated |
 |---|---|---|
 | [[Backend]] | Stack, module layout, settings, device-token auth | 2026-09-14 |
-| [[Api]] | Every endpoint, its auth requirement and its failure modes | 2026-09-20 |
-| [[Sync]] | Delta-log + row-level LWW, the Flutter client (triggers, push/pull, conflicts), the group owner on screen, WebSocket | 2026-09-20 |
+| [[Api]] | Every endpoint, its auth requirement and its failure modes | 2026-09-24 |
+| [[Sync]] | Delta-log + row-level LWW, the Flutter client (triggers, push/pull, conflicts), the group owner on screen, WebSocket | 2026-09-24 |
 | [[LlmProviders]] | The analysis prompt — nine voices, ten languages, the game-type registry — the pluggable provider factory, the separate Claude path, the report control | 2026-09-19 |
 
 ## Operations
 
 | Page | Summary | Updated |
 |---|---|---|
-| [[Deployment]] | Synology NAS, Web Station TLS, `deploy_nas.sh`, `deploy_web.sh`, the Pages copy of the PWA, environment | 2026-09-20 |
+| [[Deployment]] | Synology NAS, Web Station TLS, `deploy_nas.sh`, `deploy_web.sh`, the Pages copy of the PWA, environment | 2026-09-24 |
 | [[Hooks]] | What Claude Code refuses mechanically, why each rule left CLAUDE.md, recovering from a stale branch | 2026-09-19 |
 | [[Documentation]] | Which documents a change implicates: wiki, README table, the three privacy documents, why a share sheet is not a data flow; the CLAUDE.md budget | 2026-09-19 |
 | [[ParallelDelivery]] | Protection on main, worktrees, local cleanup, why one PR per theme and serial squash merges (`wip/` format: `wip/README.md`), the refinement pass that feeds `wip/todo/`, the execution lanes A–D and the independent reviewer's calibration | 2026-09-20 |
-| [[Security]] | Defended surfaces (the group owner among them), and the security debt that is knowingly open | 2026-09-20 |
-| [[Testing]] | Unit, Drift, migration, e2e web and device; backend pytest, release tooling; CI jobs and how `scope` picks them, `alembic check`, dependency audit, the `web/` binary gate, the privacy page check and the monthly lock refresh | 2026-09-20 |
+| [[Security]] | Defended surfaces (the group owner among them), and the security debt that is knowingly open | 2026-09-24 |
+| [[Testing]] | Unit, Drift, migration, e2e web and device; backend pytest, release tooling; CI jobs and how `scope` picks them, `alembic check`, dependency audit, the `web/` binary gate, the privacy page check and the monthly lock refresh | 2026-09-24 |
 | [[Release]] | Play Store signing state, publishing through the Play API, target API, 2026 Play policy constraints, release cadence and pruning pass | 2026-09-20 |
 | [[StoreListing]] | The 10 store locales, the keyword per market, category and tags, the generated assets (icon and teal feature graphic) and the per-locale composed screenshots, Play's text limits, and the 2026-09-16 acquisition baseline | 2026-09-20 |
 
