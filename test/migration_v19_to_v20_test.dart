@@ -202,4 +202,23 @@ void main() {
         .single;
     expect(six['gameOverConditionType'], isNull);
   });
+
+  test('a row with no elimination at all is left alone', () async {
+    await writeV19File();
+    final db = await databaseFactoryFfi.openDatabase(path);
+    addTearDown(db.close);
+    await db.update('game_types',
+        {'playerDeadConditionType': null, 'playerDeadThreshold': null},
+        where: 'builtin_key = ? AND deleted_at IS NULL',
+        whereArgs: ['zapzap']);
+
+    await applyV20(db.execute);
+    final zapzap = (await db.query('game_types',
+            where: 'builtin_key = ? AND deleted_at IS NULL',
+            whereArgs: ['zapzap']))
+        .single;
+    expect(zapzap['gameOverConditionType'], isNull,
+        reason: 'a type with nobody ever out got a last-player-standing end');
+    expect(zapzap['gameOverThreshold'], isNull);
+  });
 }

@@ -28,16 +28,26 @@ Map<String, int> lastPlayerStandingSeeds() => {
 /// (`wip/done/2026-09-23-a-game-with-one-player-left-does-not-reliably-end-itself.md`).
 ///
 /// - A row whose condition is set is left alone: that is the user's choice,
-///   whatever it is.
+///   whatever it is. A NULL end the user chose on purpose — "None" (*Aucune*)
+///   in the game-type editor — cannot be told apart from one that was never
+///   set, so it is overwritten; the user can pick "None" again.
+/// - Only a row that still puts a player out on an `over` threshold is
+///   touched. A row with no elimination, or one the user turned into an
+///   `under` elimination, is left alone: a last-player-over end would have
+///   nothing to count, or would contradict it.
 /// - The threshold is the row's own `playerDeadThreshold` when it has one, the
 ///   seeded value otherwise: the game ends when all but one player are out,
 ///   and "out" is what that row says. An older 6 qui prend puts a player out
 ///   past 66, not 65, and must end on the same number.
-/// - A row the user turned into an `under` elimination is left alone: a
-///   last-player-over end would contradict it.
 /// - `updated_at` moves, as for any edit. The UPDATE fires the `game_types`
 ///   capture trigger, so a row linked into a group is pushed on the next sync
 ///   and the server needs no change.
+/// - **Games already finished are re-ranked.** `GameStanding.ranksByEliminationOrder`
+///   is true for a `lastPlayerOver` type, so the final standings of every
+///   finished ZapZap, Rami and 6 qui prend game — and the places the
+///   statistics count — follow the elimination order from now on, not the
+///   totals; when everyone went out, the winner can change. The user accepted
+///   this on 2026-09-24: elimination order is the right rule for these games.
 ///
 /// Idempotent: a replay finds the condition set and matches nothing. It never
 /// inserts, so a type the user deleted stays deleted.
@@ -49,7 +59,7 @@ Future<void> applyV20(SqlExecutor execute) async {
       'gameOverThreshold = COALESCE(playerDeadThreshold, ?), updated_at = ? '
       'WHERE builtin_key = ? AND deleted_at IS NULL '
       'AND gameOverConditionType IS NULL '
-      "AND (playerDeadConditionType IS NULL OR playerDeadConditionType = 'over')",
+      "AND playerDeadConditionType = 'over'",
       [
         GameOverConditionType.lastPlayerOver.toDbString(),
         entry.value,
