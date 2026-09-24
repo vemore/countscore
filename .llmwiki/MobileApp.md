@@ -36,7 +36,7 @@ whether the connected features exist; the third starts the review prompt's clock
 |---|---|
 | `game_provider.dart` | The substantial one. Repositories are constructor-injectable, defaulting to the six Drift implementations over `AppDatabase.instance`. Owns `_games`, `_currentGame`, `_currentPlayers`, `_currentRounds`, `_scores` (keyed `"playerId_roundId"`) and `_roundCounts` (game id → rounds played, one grouped query in `loadGames`, kept in step by `addRound`/`deleteRound`). Game/round/score CRUD plus stats. |
 | `game_type_provider.dart` | Game-type list CRUD, `getGameTypeById`. The 22 built-in types are rows like any other; their *displayed* name comes from `lib/utils/game_type_name.dart`, not from the row. |
-| `settings_provider.dart` | Wakelock toggle and the board's layout, `BoardView` (`lanes` or `rows`, key `boardView`, app-wide) — both SharedPreferences-backed, read by `ready` — and DB export/import. The **only** caller of `DatabaseService` for I/O. Exposes `supportsDbExportImport => !kIsWeb`. |
+| `settings_provider.dart` | Wakelock toggle, *Game sounds* (key `gameSounds`, off by default, the one `GameSounds` reads) and the board's layout, `BoardView` (`lanes` or `rows`, key `boardView`, app-wide) — all SharedPreferences-backed, read by `ready` — and DB export/import. The **only** caller of `DatabaseService` for I/O. Exposes `supportsDbExportImport => !kIsWeb`. |
 | `theme_provider.dart` | `ThemeMode` only, persisted to SharedPreferences under `themeMode` as `ThemeMode.name`. `load()` is called from `main()` before `runApp`. |
 | `group_provider.dart` | Group membership and the sync loop — create/join/leave/rotate, the device list and `revokeDevice`, `shareGame`, `syncNow`, `SyncStatus`, and a `SyncEvent` stream shown as snackbars by `_SyncEventListener` in `main.dart`. A `ChangeNotifierProxyProvider` over `BackendProvider`: runs only with a URL **and** a device token. Calls `GameProvider.refreshFromSync` after remote changes. See [[Sync]]. |
 | `backend_provider.dart` | The self-hosted backend base URL, SharedPreferences key `backendUrl`, **no default**. `check()` validates and canonicalises what the user typed; `isConfigured` gates every connected feature. `load()` is called from `main()` before `runApp`. |
@@ -183,12 +183,14 @@ prompt below.
 
 ### Widgets — `lib/widgets/`
 
-Sixteen components shared out of the screens:
+Seventeen components shared out of the screens:
 
 - `board_lanes.dart` — the board's default layout ([below](#the-board)): `BoardData` (what
   both layouts draw from: players in seat order, rounds, a `GameStanding`, colours, the
   elimination tests, the tap callbacks), `BoardLanes`, and the pieces the rows share —
-  `BoardScoreText` (a zero on an amber pill, `·` for no score), `BoardCrown`, `boardTint`.
+  `BoardScoreText` (a zero on an amber pill, `·` for no score), `BoardCrown`, `BoardSkull`
+  (drawn by a `CustomPainter`: Material Icons has no skull), `boardMark` (which of the two
+  sits above an avatar), `boardTint`.
 - `board_rows.dart` — `BoardRows`, the one-row-per-player layout.
 - `game_ranking.dart` — the ranking the `StandingsScreen` draws, open or finished
   ([below](#the-standings-screen)): `GameRanking.of` (the current game best first, its ranks,
@@ -249,6 +251,13 @@ Sixteen components shared out of the screens:
   2 dice; the count is not remembered. Nothing stored, nothing sent. The six count chips are
   a `Row` in a `FittedBox`, not a `Wrap`, and the dialog takes a 16 dp `insetPadding`: they
   stay on one line (see *Decisions & History*).
+- `turn_timer_dialog.dart` — the board's overflow-menu **Turn timer**, next to **Roll dice**:
+  − and + by 15 s (15 s to 10 min), start / pause, reset; at zero "Time's up!" in the error
+  colour, a heavy haptic and `GameSound.timerEnd`. The countdown is a 1 s `Timer.periodic`
+  in the dialog's own `State`, so the board's is never touched and closing the dialog stops
+  it. The last duration is remembered **per game type**, SharedPreferences
+  `turnTimerSeconds.<game type id>` (`turnTimerSeconds.none` for a game without a type),
+  default 60 s. No schema, no permission.
 - `group_settings_section.dart` — Settings → Group: create or join a group, show its invite
   code, leave it, and show where sync stands; usable only once a server URL is set. *New
   code* is shown to the group's owner only; *Comments and usage* opens
@@ -293,6 +302,17 @@ Sixteen components shared out of the screens:
   answered "Continue playing", on this device only (SharedPreferences
   `gameOverDismissed.<game uuid>`; not synced, no schema). A deleted game leaves its key
   behind — one boolean, never read again.
+- `game_sounds.dart` — `GameSounds` and its `GameSounds.instance`: the elimination, victory
+  and turn-timer sounds (`GameSound`), bundled under `assets/sounds/` (WAV, synthesised by
+  `scripts/generate_sounds.py`, CC0). One setting governs all three: Settings → Sounds →
+  *Game sounds* (`SettingsProvider.gameSounds`), SharedPreferences `gameSounds`, **off by
+  default**, read on every play so a board needs no provider. The platform is behind the
+  `SoundPlayer` seam — `AudioplayersSoundPlayer` (audioplayers 6.8.1, MIT, one short-lived
+  low-latency player per sound) in the app, `test/support/fake_sound_player.dart` in tests;
+  `GameBoardScreen.sounds` takes the instance. A failure to play is swallowed. On the web
+  the browser allows sound only after a user gesture, and a score typed on the keypad is one;
+  audioplayers fetches the asset from the app's own origin (`connect-src 'self'`) and plays
+  it in an `<audio>` element (`default-src 'self'`), so the PWA's CSP needs no change.
 
 ### Utilities — `lib/utils/`
 
@@ -551,7 +571,10 @@ the rank sort (`BoardData.byRank`, the standing's own `rankedPlayers`), the plac
 ribbon's order key on `GameStanding.hasScores`, so a tied round still reads `#1` for every
 player. A total within 20 points of the type's
 `playerDeadThreshold` turns orange; an eliminated player's lane is dimmed and the name struck
-through; a zero sits on an amber pill, whatever the game type.
+through, with a skull (`BoardSkull`, `board_eliminated_skull`, label `boardEliminated`)
+in the crown's place above the avatar — in lanes and rows alike, and in place of the crown
+on a leader who is out; a type without elimination never shows one. A zero sits on an amber
+pill, whatever the game type.
 
 Widths come from a `LayoutBuilder`, not from a breakpoint: up to 8 players
 (`kBoardMaxFittingLanes`) the lanes share the width and never scroll; beyond, a lane keeps
@@ -587,8 +610,12 @@ for every other game it is the plain 0 (per-game shortcuts are
 `wip/todo_nr/2026-09-18-keypad-has-no-per-game-shortcut.md`). From five players
 (`kKeypadPositionFrom`) the chips scroll with the current one kept in view, and the caption
 adds the position ("4/8"). A cell tap opens the same sheet on that one score, prefilled —
-the first digit replaces it — with "Save". Both paths play the elimination alert and then
-run the game-over check, as the score dialog they replace did.
+the first digit replaces it — with "Save". Both paths then note the eliminations — the
+elimination sound once per write that puts a player out, never twice for the same player
+until a correction brings them back, and only with *Game sounds* on — and run the game-over
+check, as the score dialog they replace did. When that check ends the game by rule
+(`_finishAndShowEnd(byRule: true)`, or the end screen held back while the keypad was open)
+the victory sound plays; a finished game reopened plays nothing, nor does *End game* by hand.
 
 ### Toolchain
 
@@ -776,6 +803,19 @@ not "fix" it by hardcoding a codepoint.
 - **Who starts? is the first of three table helpers** (2026-09-18) — the dice roller and
   the turn timer follow, one pull request each, so a bad idea is cheap to drop
   (`wip/done/2026-09-16-no-dice-timer-first-player-helpers.md`).
+- **The turn timer, the game sounds and the skull shipped together** (2026-09-24,
+  feat/board-skull-sounds-timer). The timer remembers its last duration per game type in
+  SharedPreferences, keyed on the type's id, not in the schema (refinement 4, 2026-09-18). The
+  sounds and the timer share one setting and one player, off by default; with it off, the
+  unconditional `SystemSound.alert` the elimination used to play is gone too — it did
+  nothing on most Android devices and on the web, and could not be turned off. The sounds
+  are synthesised by a script in the repository rather than downloaded, so their provenance
+  and CC0 dedication need no third party; audioplayers because it covers Android and the web
+  with one API and adds no permission (its Android manifest declares none). The skull is
+  painted, since the pinned Material Icons font has none and a bundled SVG would have needed
+  a package (`wip/done/2026-09-18-no-turn-timer-on-the-board.md`,
+  `wip/done/2026-09-23-no-optional-sound-on-elimination-and-victory.md`,
+  `wip/done/2026-09-23-eliminated-players-have-no-skull-on-the-board.md`).
 - **The dice roller is d6 only** (2026-09-19) — the refinement dropped a kind selector
   (d4 … d20) as clutter for the games CountScore scores; 1–6 dice cover Yahtzee (5) and
   Farkle (6). A die shows its numeral rather than pips, which reads the same in every

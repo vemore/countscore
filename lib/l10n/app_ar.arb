@@ -687,5 +687,16 @@
 
   "groupErrorOwnerActive": "ظهر مالك المجموعة مؤخرًا: لا يمكن تولّي الملكية.",
 
-  "groupCreatedOwnerExplain": "تم إنشاء المجموعة. هذا الجهاز هو مالكها؛ ويمكن تسليم هذا الدور إلى جهاز آخر من «الأجهزة»."
+  "groupCreatedOwnerExplain": "تم إنشاء المجموعة. هذا الجهاز هو مالكها؛ ويمكن تسليم هذا الدور إلى جهاز آخر من «الأجهزة».",
+  "boardEliminated": "مُقصى",
+  "soundsSection": "الأصوات",
+  "gameSounds": "أصوات اللعبة",
+  "gameSoundsDescription": "صوت عند إقصاء لاعب، وعند الفوز باللعبة، وعند انتهاء المؤقت",
+  "turnTimer": "مؤقت الدور",
+  "turnTimerLess": "وقت أقل",
+  "turnTimerMore": "وقت أكثر",
+  "turnTimerStart": "ابدأ",
+  "turnTimerPause": "إيقاف مؤقت",
+  "turnTimerReset": "إعادة ضبط",
+  "turnTimerTimeUp": "انتهى الوقت!"
 }

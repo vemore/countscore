@@ -1613,4 +1613,38 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get groupCreatedOwnerExplain =>
       'تم إنشاء المجموعة. هذا الجهاز هو مالكها؛ ويمكن تسليم هذا الدور إلى جهاز آخر من «الأجهزة».';
+
+  @override
+  String get boardEliminated => 'مُقصى';
+
+  @override
+  String get soundsSection => 'الأصوات';
+
+  @override
+  String get gameSounds => 'أصوات اللعبة';
+
+  @override
+  String get gameSoundsDescription =>
+      'صوت عند إقصاء لاعب، وعند الفوز باللعبة، وعند انتهاء المؤقت';
+
+  @override
+  String get turnTimer => 'مؤقت الدور';
+
+  @override
+  String get turnTimerLess => 'وقت أقل';
+
+  @override
+  String get turnTimerMore => 'وقت أكثر';
+
+  @override
+  String get turnTimerStart => 'ابدأ';
+
+  @override
+  String get turnTimerPause => 'إيقاف مؤقت';
+
+  @override
+  String get turnTimerReset => 'إعادة ضبط';
+
+  @override
+  String get turnTimerTimeUp => 'انتهى الوقت!';
 }

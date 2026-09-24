@@ -166,6 +166,76 @@ class BoardCrown extends StatelessWidget {
   }
 }
 
+/// An eliminated player's mark, in the crown's place and at its size.
+///
+/// Material Icons has no skull, so it is drawn: a cranium and a jaw, with the
+/// eyes, the nose and the teeth cut out of it, in the surface's ink.
+class BoardSkull extends StatelessWidget {
+  const BoardSkull({super.key, this.size = 18});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: AppLocalizations.of(context)!.boardEliminated,
+      child: CustomPaint(
+        key: const Key('board_eliminated_skull'),
+        size: Size.square(size),
+        painter: _SkullPainter(Theme.of(context).colorScheme.onSurface),
+      ),
+    );
+  }
+}
+
+class _SkullPainter extends CustomPainter {
+  const _SkullPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.shortestSide;
+    final head = Path()
+      ..addOval(
+          Rect.fromCircle(center: Offset(0.5 * s, 0.42 * s), radius: 0.4 * s))
+      ..addRRect(RRect.fromLTRBR(
+          0.27 * s, 0.55 * s, 0.73 * s, 0.96 * s, Radius.circular(0.08 * s)));
+    final holes = Path()
+      ..addOval(
+          Rect.fromCircle(center: Offset(0.34 * s, 0.46 * s), radius: 0.11 * s))
+      ..addOval(
+          Rect.fromCircle(center: Offset(0.66 * s, 0.46 * s), radius: 0.11 * s))
+      ..addPolygon([
+        Offset(0.5 * s, 0.6 * s),
+        Offset(0.44 * s, 0.72 * s),
+        Offset(0.56 * s, 0.72 * s),
+      ], true);
+    for (final x in const [0.4, 0.5, 0.6]) {
+      holes.addRect(
+          Rect.fromLTWH((x - 0.025) * s, 0.8 * s, 0.05 * s, 0.16 * s));
+    }
+    canvas.drawPath(
+      Path.combine(PathOperation.difference, head, holes),
+      Paint()..color = color,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_SkullPainter oldDelegate) => oldDelegate.color != color;
+}
+
+/// The mark above a player's avatar: the skull for a player out of the game,
+/// else the crown for the sole leader, else nothing. A player who is both —
+/// the leader of a type where the best total can still put a player out — gets
+/// the skull.
+Widget? boardMark(
+    {required bool eliminated, required bool isLeader, double size = 18}) {
+  if (eliminated) return BoardSkull(size: size);
+  if (isLeader) return BoardCrown(size: size);
+  return null;
+}
+
 /// The board as one lane per player: a band in the player's colour running
 /// from the header (avatar, name, total, place) down to the last round. The
 /// header and the cells of a lane are one column, so they cannot drift apart.
@@ -484,7 +554,7 @@ class _LaneHeader extends StatelessWidget {
     final children = <Widget>[
       SizedBox(
         height: 20,
-        child: isLeader ? const BoardCrown() : null,
+        child: boardMark(eliminated: eliminated, isLeader: isLeader),
       ),
       PlayerAvatar(
         name: player.name,

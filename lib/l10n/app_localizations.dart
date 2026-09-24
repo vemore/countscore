@@ -2584,6 +2584,72 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Groupe créé. Cet appareil en est propriétaire ; ce rôle peut être confié à un autre dans Appareils.'**
   String get groupCreatedOwnerExplain;
+
+  /// Screen-reader label of the skull above an eliminated player's avatar on the board
+  ///
+  /// In fr, this message translates to:
+  /// **'Éliminé'**
+  String get boardEliminated;
+
+  /// Settings section heading for the game sounds switch
+  ///
+  /// In fr, this message translates to:
+  /// **'Sons'**
+  String get soundsSection;
+
+  /// Settings switch: play sounds on elimination, victory and at the end of the turn timer (off by default)
+  ///
+  /// In fr, this message translates to:
+  /// **'Sons de jeu'**
+  String get gameSounds;
+
+  /// Subtitle of the game sounds switch in Settings
+  ///
+  /// In fr, this message translates to:
+  /// **'Un son quand un joueur est éliminé, quand la partie est gagnée et à la fin du minuteur'**
+  String get gameSoundsDescription;
+
+  /// Board overflow menu item and dialog title: a countdown for each player's turn
+  ///
+  /// In fr, this message translates to:
+  /// **'Minuteur'**
+  String get turnTimer;
+
+  /// Tooltip of the button that shortens the turn timer's duration by 15 seconds
+  ///
+  /// In fr, this message translates to:
+  /// **'Moins de temps'**
+  String get turnTimerLess;
+
+  /// Tooltip of the button that lengthens the turn timer's duration by 15 seconds
+  ///
+  /// In fr, this message translates to:
+  /// **'Plus de temps'**
+  String get turnTimerMore;
+
+  /// Turn timer button: start the countdown
+  ///
+  /// In fr, this message translates to:
+  /// **'Démarrer'**
+  String get turnTimerStart;
+
+  /// Turn timer button: pause the running countdown
+  ///
+  /// In fr, this message translates to:
+  /// **'Mettre en pause'**
+  String get turnTimerPause;
+
+  /// Turn timer button: put the countdown back to the chosen duration
+  ///
+  /// In fr, this message translates to:
+  /// **'Réinitialiser'**
+  String get turnTimerReset;
+
+  /// Shown in the turn timer when the countdown reaches zero
+  ///
+  /// In fr, this message translates to:
+  /// **'Temps écoulé !'**
+  String get turnTimerTimeUp;
 }
 
 class _AppLocalizationsDelegate

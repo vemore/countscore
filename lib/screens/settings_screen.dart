@@ -237,6 +237,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             value: settings.keepScreenAwake,
             onChanged: (_) => settings.toggleKeepScreenAwake(),
           ),
+          const Divider(),
+
+          // Section Sons — bundled assets, on the web too; off by default.
+          _SectionTitle(l10n.soundsSection),
+          SwitchListTile(
+            key: const Key('game_sounds'),
+            title: Text(l10n.gameSounds),
+            subtitle: Text(l10n.gameSoundsDescription),
+            value: settings.gameSounds,
+            onChanged: settings.setGameSounds,
+          ),
 
           // Section Sauvegarde — heading and rows together, or neither: it
           // needs dart:io, so the PWA has none of it.

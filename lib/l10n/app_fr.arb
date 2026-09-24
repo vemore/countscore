@@ -2513,5 +2513,49 @@
   "groupCreatedOwnerExplain": "Groupe créé. Cet appareil en est propriétaire ; ce rôle peut être confié à un autre dans Appareils.",
   "@groupCreatedOwnerExplain": {
     "description": "Snackbar shown after a group is created: the owner role lives on this device and can be handed over"
+  },
+  "boardEliminated": "Éliminé",
+  "@boardEliminated": {
+    "description": "Screen-reader label of the skull above an eliminated player's avatar on the board"
+  },
+  "soundsSection": "Sons",
+  "@soundsSection": {
+    "description": "Settings section heading for the game sounds switch"
+  },
+  "gameSounds": "Sons de jeu",
+  "@gameSounds": {
+    "description": "Settings switch: play sounds on elimination, victory and at the end of the turn timer (off by default)"
+  },
+  "gameSoundsDescription": "Un son quand un joueur est éliminé, quand la partie est gagnée et à la fin du minuteur",
+  "@gameSoundsDescription": {
+    "description": "Subtitle of the game sounds switch in Settings"
+  },
+  "turnTimer": "Minuteur",
+  "@turnTimer": {
+    "description": "Board overflow menu item and dialog title: a countdown for each player's turn"
+  },
+  "turnTimerLess": "Moins de temps",
+  "@turnTimerLess": {
+    "description": "Tooltip of the button that shortens the turn timer's duration by 15 seconds"
+  },
+  "turnTimerMore": "Plus de temps",
+  "@turnTimerMore": {
+    "description": "Tooltip of the button that lengthens the turn timer's duration by 15 seconds"
+  },
+  "turnTimerStart": "Démarrer",
+  "@turnTimerStart": {
+    "description": "Turn timer button: start the countdown"
+  },
+  "turnTimerPause": "Mettre en pause",
+  "@turnTimerPause": {
+    "description": "Turn timer button: pause the running countdown"
+  },
+  "turnTimerReset": "Réinitialiser",
+  "@turnTimerReset": {
+    "description": "Turn timer button: put the countdown back to the chosen duration"
+  },
+  "turnTimerTimeUp": "Temps écoulé !",
+  "@turnTimerTimeUp": {
+    "description": "Shown in the turn timer when the countdown reaches zero"
   }
 }

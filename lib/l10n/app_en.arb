@@ -760,5 +760,16 @@
 
   "groupErrorOwnerActive": "The group's owner has been seen recently: ownership cannot be claimed.",
 
-  "groupCreatedOwnerExplain": "Group created. This device owns it; the role can be handed over to another one in Devices."
+  "groupCreatedOwnerExplain": "Group created. This device owns it; the role can be handed over to another one in Devices.",
+  "boardEliminated": "Eliminated",
+  "soundsSection": "Sounds",
+  "gameSounds": "Game sounds",
+  "gameSoundsDescription": "A sound when a player is eliminated, when the game is won and when the timer ends",
+  "turnTimer": "Turn timer",
+  "turnTimerLess": "Less time",
+  "turnTimerMore": "More time",
+  "turnTimerStart": "Start",
+  "turnTimerPause": "Pause",
+  "turnTimerReset": "Reset",
+  "turnTimerTimeUp": "Time's up!"
 }
