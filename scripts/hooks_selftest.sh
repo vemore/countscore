@@ -740,6 +740,34 @@ sched_stub "$ACTIVE" "$(ago 40)" "$(ago 20)" 1
 session_start >/dev/null
 report "an unanswered check banks no day" "no stamp" "$([ -s "$STAMP" ] && echo stamped || echo "no stamp")"
 
+echo "== wip refine flags =========================================="
+# `wip.sh refine` reads the Acceptance, Fix and Open question sections by name, not by
+# punctuation: a missed open-question is silence the pass has no other way to notice
+# (wip/done/2026-09-20-refine-flags-miss-a-heading-written-any-other-way.md).
+WIPT="$SANDBOX/wiptree"
+mkdir -p "$WIPT/scripts" "$WIPT/wip/todo"
+cp "$ROOT/scripts/wip.sh" "$WIPT/scripts/"
+refine_flags() {  # description, expected flags, entry body
+    rm -f "$WIPT/wip/todo/"*.md
+    printf -- '# t\n\n- **Noted:** 2026-09-20\n- **Theme:** t\n- **Area:** tooling\n- **Blocks release:** no\n\n%b\n' "$3" \
+        > "$WIPT/wip/todo/2026-09-20-entry.md"
+    local got
+    got=$("$WIPT/scripts/wip.sh" refine todo 2>/dev/null | sed -n 's/.*2026-09-20-entry\.md\( → \)\{0,1\}//p')
+    report "$1" "$2" "$(echo $got)"
+}
+refine_flags "the template spellings" "open-question" \
+    '**Fix:** x\n\n**Acceptance:**\n- y\n\n**Open question:** z?'
+refine_flags "## headings and a French **Fix proposé**" "open-question" \
+    '**Fix proposé**\n\nx\n\n## Acceptance\n\n- y\n\n## Open question\n\nz?'
+refine_flags "French names, colon after the bold" "open-question" \
+    '**Correctif**: x\n\n### Critères d'"'"'acceptation :\n- y\n\n**Question ouverte :** z?'
+refine_flags "any case, a (part a) qualifier" "" \
+    '**FIX (part a):** x\n\n## acceptance:\n- y'
+refine_flags "no section at all" "no-acceptance no-fix" \
+    'The fix is to accept it.\n\n**Fixed** in prose, ## Acceptance mid-line\n## Fixture'
+refine_flags "an open question and nothing else" "no-acceptance no-fix open-question" \
+    '## Open questions\n\nz?'
+
 echo "== wiring ===================================================="
 for script in "$HOOKS"/*.sh "$HOOKS"/*.py; do
     [ -x "$script" ] && pass=$((pass + 1)) || { fail=$((fail + 1)); echo "  FAIL  $script is not executable"; }
