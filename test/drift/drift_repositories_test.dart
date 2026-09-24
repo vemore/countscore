@@ -136,6 +136,31 @@ void main() {
       expect(() => gameTypeRepo.delete(gtId), throwsA(isA<Exception>()));
     });
 
+    test('hard-deleting a type clears it from the tombstoned games', () async {
+      final gtId = await gameTypeRepo.create(GameType(
+        name: 'Gone',
+        iconCodePoint: 0,
+        cardColorValue: 0,
+        isLowestScoreWins: false,
+      ));
+      final gameId = await gameRepo.create(
+        Game(name: 'G', isLowestScoreWins: false, gameTypeId: gtId),
+      );
+      // A tombstoned game: invisible, so it does not block the delete.
+      await db.customStatement(
+          'UPDATE games SET deleted_at = 1 WHERE id = ?', [gameId]);
+
+      expect(await gameTypeRepo.delete(gtId), 1);
+
+      final type = await db.customSelect('SELECT id FROM game_types WHERE id = ?',
+          variables: [Variable(gtId)]).get();
+      expect(type, isEmpty, reason: 'no group knows the type: hard delete');
+      final game = await db.customSelect('SELECT gameTypeId FROM games WHERE id = ?',
+          variables: [Variable(gameId)]).getSingle();
+      expect(game.data['gameTypeId'], isNull,
+          reason: 'no game may point at a row that is gone');
+    });
+
     test('counts the games using a type, and the finished ones', () async {
       final gtId = await gameTypeRepo.create(GameType(
         name: 'Counted',

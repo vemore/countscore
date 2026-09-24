@@ -2,7 +2,7 @@
 
 > Scope: the mobile database — tables, the global-player model, the migration chain.
 > Related: [[DataLayer]] · [[Sync]] · [[MobileApp]] · [[Testing]]
-> Updated: 2026-09-22
+> Updated: 2026-09-24
 
 This page was `SchemaV9` until v10 landed on 2026-09-13; links were renamed with it.
 v11 followed the same day, v12, v13 and v14 on 2026-09-16, v15 on 2026-09-18, v16 on
@@ -204,7 +204,9 @@ a shared game with its rounds, scores, memberships and analysis; a shared round 
 scores; a shared membership with its scores. `deleteByName` tombstones the global player
 only when a shared membership still points at it. Every read of games, game types, rounds,
 scores and analyses filters `deleted_at IS NULL`, and the statistics join only live games
-and scores. Deleting a game type ignores tombstoned games and clears their `gameTypeId`.
+and scores. Deleting a game type ignores tombstoned games; their `gameTypeId` is cleared only when
+the type is hard-deleted (no group link), while a tombstoned type keeps its tombstoned games
+pointing at it ([[Sync]]).
 
 ### Migration history
 

@@ -32,6 +32,15 @@ field() {  # file, field name
     sed -n "s/^- \*\*$2:\*\* *//p" "$1" | head -1
 }
 
+section() {  # file, section names (ERE alternation) -> 0 when the entry has that section
+    # The section, not its punctuation: a `## Name` heading or a `**Name:**` run-in, the
+    # colon inside the bold, after it or absent, an optional `(part a)` qualifier, any
+    # case. English and French names, since entries are written in both. An accented
+    # letter goes in an alternation, (e|é), never a bracket: [eé] fails in a C locale.
+    local q='([[:space:]]*\([^)]*\))?[[:space:]]*'
+    grep -qiE "^(#{2,}[[:space:]]*($2)$q(:.*)?\$|\*\*($2)$q:?[[:space:]]*\*\*)" "$1"
+}
+
 rows() {  # prints: folder<TAB>theme<TAB>blocks<TAB>area<TAB>file<TAB>title
     local folder file
     for folder in "${dirs[@]}"; do
@@ -92,9 +101,9 @@ case "$cmd" in
             age=$([ -n "$noted" ] && days_since "$noted" || echo "?")
             idle=$([ -n "$touched" ] && days_since "$touched" || echo "new")
             flags=""
-            grep -q '^\*\*Acceptance:\*\*' "$path" || flags="$flags no-acceptance"
-            grep -q '^\*\*Fix:\*\*' "$path" || flags="$flags no-fix"
-            grep -q '^\*\*Open question:\*\*' "$path" && flags="$flags open-question"
+            section "$path" 'acceptance|acceptation|crit(e|è)res? d.acceptation' || flags="$flags no-acceptance"
+            section "$path" 'fix|proposed fix|fix propos(e|é)|correctif( propos(e|é))?' || flags="$flags no-fix"
+            section "$path" 'open questions?|questions? ouvertes?' && flags="$flags open-question"
             [ "$idle" != new ] && [ "$idle" -gt 60 ] && flags="$flags stale"
             # Repository paths quoted in backticks that no longer exist.
             dead=$(grep -oE '`(lib|backend|scripts|test|integration_test|web|android|\.claude|\.llmwiki|\.github|store_listing|tool)/[^` :]*`' "$path" \
