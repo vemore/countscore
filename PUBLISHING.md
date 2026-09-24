@@ -83,8 +83,8 @@ silently reverts it. `play_publish.py` refuses any file over its limit. What the
 and must not say, and the keyword targeted in each market: `.llmwiki/StoreListing.md`.
 
 **Graphics**: app icon 512×512 (`store_listing/assets/icon_512.png`), feature graphic
-1024×500, and 2–8 phone screenshots — ratio no wider than 16:9, opaque. Requirements and
-design guidance are in `store_listing/ASSET_REQUIREMENTS.md` and the guides beside it;
+1024×500, and 2–8 phone screenshots — ratio no wider than 16:9, opaque. Play's image
+requirements are in `store_listing/ASSET_REQUIREMENTS.md`, the palette in `lib/utils/app_theme.dart`;
 capture screenshots with `scripts/capture_screenshots.sh`, which does **not** produce a
 compliant ratio on its own.
 

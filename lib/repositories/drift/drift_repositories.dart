@@ -301,14 +301,12 @@ class DriftGameTypeRepository implements GameTypeRepository {
       throw Exception('Cannot delete game type: $count games are using it');
     }
     return _db.transaction(() async {
-      // A tombstoned game nobody can see must not keep the type alive.
-      await _db.customStatement(
-        'UPDATE games SET gameTypeId = NULL WHERE gameTypeId = ? AND deleted_at IS NOT NULL',
-        [id],
-      );
       // A type the group knows about is tombstoned, like every other shared row:
       // the capture trigger turns the stamp into a delete delta, and a row that
       // is simply gone has no way of telling the other devices it was deleted.
+      // Tombstoned games keep their gameTypeId: the row they point at stays,
+      // and rewriting them would re-enqueue a delete for each and lose which
+      // type they were played with.
       if (await _isLinked(_db, 'game_type', 'game_types', id)) {
         final now = _nowMs();
         return _db.customUpdate(
@@ -318,6 +316,26 @@ class DriftGameTypeRepository implements GameTypeRepository {
           updates: {_db.gameTypes},
         );
       }
+      // The row is about to go: a tombstoned game must not keep pointing at
+      // it. No foreign key is enforced on gameTypeId: Drift declares none, and
+      // on native, where the sqflite schema declares ON DELETE SET NULL
+      // (database_service.dart), PRAGMA foreign_keys is off.
+      // Capture is suppressed around the UPDATE: a shared game already
+      // tombstoned (its type unlinked, e.g. a `taken` remote identity) would
+      // otherwise enqueue a second delete delta with nothing new in it.
+      final flag = await _db
+          .customSelect('SELECT suppress FROM sync_flags WHERE id = 1')
+          .getSingleOrNull();
+      final wasSuppressed = (flag?.data['suppress'] as int? ?? 0) == 1;
+      await _db.customStatement(
+          'INSERT OR REPLACE INTO sync_flags (id, suppress) VALUES (1, 1)');
+      await _db.customStatement(
+        'UPDATE games SET gameTypeId = NULL WHERE gameTypeId = ? AND deleted_at IS NOT NULL',
+        [id],
+      );
+      await _db.customStatement(
+          'INSERT OR REPLACE INTO sync_flags (id, suppress) VALUES (1, ?)',
+          [wasSuppressed ? 1 : 0]);
       return _db.customUpdate(
         'DELETE FROM game_types WHERE id = ?',
         variables: [Variable(id)],

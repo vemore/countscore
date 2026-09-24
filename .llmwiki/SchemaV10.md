@@ -205,7 +205,9 @@ a shared game with its rounds, scores, memberships and analysis; a shared round 
 scores; a shared membership with its scores. `deleteByName` tombstones the global player
 only when a shared membership still points at it. Every read of games, game types, rounds,
 scores and analyses filters `deleted_at IS NULL`, and the statistics join only live games
-and scores. Deleting a game type ignores tombstoned games and clears their `gameTypeId`.
+and scores. Deleting a game type ignores tombstoned games; their `gameTypeId` is cleared only when
+the type is hard-deleted (no group link), while a tombstoned type keeps its tombstoned games
+pointing at it ([[Sync]]).
 
 ### Migration history
 

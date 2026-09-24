@@ -4,7 +4,7 @@
 > assets behind it. The Console walkthrough is `PUBLISHING.md`; the publishing mechanism is
 > [[Release]] and the `release-android` skill.
 > Related: [[Release]] · [[I18n]] · [[Documentation]] · [[KnownLimits]]
-> Updated: 2026-09-20
+> Updated: 2026-09-24
 
 ## Facts
 
@@ -256,6 +256,14 @@ store:
 
 ## Decisions & History
 
+- **`ASSET_REQUIREMENTS.md` is Play's image limits and nothing else (2026-09-24).** The last
+  of the November 2025 asset documents still asked the reader to pick a brand colour
+  ("consider blue, green, or purple") and an icon concept, three decisions settled months
+  before: the palette in `lib/utils/app_theme.dart`, the icon generated from `design/icon/`
+  ([[Release]] §Icons), the feature graphic generated in teal. It was cut from 645 lines to
+  one limits table plus the file layout, and points at those sources instead of restating
+  them; the table matches *Play limits that apply* above. Closed
+  `wip/done/2026-09-20-asset-requirements-still-asks-which-colour-the-brand-is.md`.
 - **A retake captures a score-ranked game, and the screenshot build installs beside the real
   app (2026-09-20).** `04_podium` had to move because the standings merged into one screen, and
   the game to capture was a real choice: an elimination-ranked game now draws

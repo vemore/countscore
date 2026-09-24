@@ -260,11 +260,12 @@ your own, and your data stays on it. It exposes:
 | `/comments/*` | LLM game commentary, including the game analysis |
 | `$PWA_BASE_PATH/` | Optional: the web app itself, same origin as the API (off unless `PWA_BASE_PATH` is set) |
 
-**Current state, stated plainly:** the server side of groups and sync is implemented and
-tested, but **the Flutter client for it has not been written yet**. The app is therefore
-local-only today, and the single live app↔backend call is the game analysis — which
-itself only happens once you have configured a server. See [wip/](wip/README.md) and
-`.llmwiki/Architecture.md`.
+Once a server is configured in Settings → Server, the app is a client of every surface
+above except the web app itself: the game analysis goes to `/comments/*` for a game played
+alone, and to the group's comment endpoint for a game shared with a group; creating or
+joining a group (Settings → Group) turns on `/groups/*`, and a group's games then sync
+through `/sync/push`, `/sync/pull` and the change stream (`lib/services/sync/`). With no
+server configured, none of these calls is made. See `.llmwiki/Architecture.md`.
 
 The app accepts an `https://` URL for any host, and an `http://` URL only for a private or
 loopback address (`192.168.x.x`, `10.x.x.x`, `172.16–31.x.x`, `localhost`, `*.local`), so a

@@ -1,5 +1,7 @@
 # `wip.sh refine` reads three sections by their exact punctuation, so a heading written any other way is invisible
 
+**Status:** done (2026-09-24) — closed by fix/wip-refine-heading-flags. `wip.sh` has a `section` helper, one `grep -qiE` per section: a `##`+ heading or a bold run-in, the colon inside the bold, after it or absent, an optional `(part a)` qualifier, any case; English and French names (Acceptance/Acceptation/Critères d'acceptation, Fix/Proposed fix/Fix proposé/Correctif, Open question(s)/Question ouverte). Accented letters are alternations, since `[eé]` fails in a C locale. `scripts/hooks_selftest.sh` § wip refine flags pins six cases. `refine all` before and after differs on one entry only: `2026-09-23-server-and-group-config-cannot-be-shared-by-qr-code` loses `no-fix`, its `**Fix (part a):**` now counting.
+
 - **Noted:** 2026-09-20 — during the refinement pass, on the one entry that blocks the release
 - **Theme:** hooks
 - **Area:** tooling
