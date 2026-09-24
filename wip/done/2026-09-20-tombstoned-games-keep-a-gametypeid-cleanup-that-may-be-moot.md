@@ -1,5 +1,7 @@
 # Deleting a game type still clears `gameTypeId` on tombstoned games, which may now be moot
 
+**Status:** done (2026-09-24) — closed by fix/game-type-tombstone-keeps-gametypeid. `DriftGameTypeRepository.delete` clears `gameTypeId` on tombstoned games only on the hard-delete branch; the tombstone branch leaves them alone, so no game is re-enqueued and the history stays.
+
 - **Noted:** 2026-09-20 — while tombstoning game-type deletes (`fix/game-type-tombstone`);
   named in that task as a leftover to file rather than decide
 - **Theme:** game-types
