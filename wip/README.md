@@ -36,6 +36,10 @@ the fix, twenty lines or so.
 pass writes it, and the answer replaces it.>
 ```
 
+The three bold run-ins are a guide, not a schema: `wip.sh refine` finds each section as a
+`##` heading too, with or without the colon, in any case, and in French (`Fix proposé`,
+`Correctif`, `Question ouverte`).
+
 An entry whose target is visual links its images from `assets/<its slug>/` with relative links
 (`../assets/<slug>/<image>.png`), so the target lives in the repository and not only behind a
 link to an external page.
