@@ -25,3 +25,6 @@ over, reads as someone the rule did not reach.
 - `_GAME_OVER["lastPlayerOver"]` and `["lastPlayerUnder"]` say the game ends when all but one
   player are past the threshold; a pytest asserts the rendered line for `lastPlayerOver`/100.
 - No other key in `_GAME_OVER` changes.
+
+**Promoted (2026-09-25):** by the user, for the next release: it touches what that release
+ships (sounds, turn timer, new-game flow, the last-player-standing rule).

@@ -25,3 +25,6 @@ the victory sound.
   afterwards.
 - A unit test on `GameSounds`: a write that eliminates a player and ends the game plays
   `victory` alone.
+
+**Promoted (2026-09-25):** by the user, for the next release: it touches what that release
+ships (sounds, turn timer, new-game flow, the last-player-standing rule).

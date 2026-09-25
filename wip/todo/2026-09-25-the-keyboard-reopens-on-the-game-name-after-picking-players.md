@@ -16,3 +16,6 @@ the players you just picked are visible.
 **Acceptance:**
 - A widget test: with the name field focused, open the player sheet, pick a player, validate,
   and find no focused `EditableText`.
+
+**Promoted (2026-09-25):** by the user, for the next release: it touches what that release
+ships (sounds, turn timer, new-game flow, the last-player-standing rule).
