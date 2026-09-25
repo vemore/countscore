@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,12 +31,63 @@ abstract class SoundPlayer {
 /// audioplayers, one short-lived player per sound: they are a second long and
 /// rare, so nothing is kept loaded. On the web the browser allows playback
 /// only after a user gesture, and a score typed on the keypad is one.
+///
+/// Game sounds must not take the audio focus from the music the players have
+/// on in another app: before the first player, [audioContext] is set as
+/// audioplayers' global context — Android `USAGE_GAME` with a transient
+/// may-duck focus request, iOS the `ambient` session category, which mixes
+/// with other audio. A focus request is only given back when the player
+/// stops, so each player plays in `mediaPlayer` mode, which reports its
+/// completion (Android's low-latency SoundPool never does, and so never gave
+/// the focus back), and is disposed on completion or after [releaseAfter],
+/// whichever comes first.
 class AudioplayersSoundPlayer implements SoundPlayer {
+  /// The context every game sound plays in.
+  static final AudioContext audioContext = AudioContext(
+    android: const AudioContextAndroid(
+      contentType: AndroidContentType.sonification,
+      usageType: AndroidUsageType.game,
+      audioFocus: AndroidAudioFocus.gainTransientMayDuck,
+    ),
+    iOS: AudioContextIOS(category: AVAudioSessionCategory.ambient),
+  );
+
+  /// Longer than any bundled sound: a player still alive by then is disposed
+  /// anyway, so its focus request never outlives it.
+  static const Duration releaseAfter = Duration(seconds: 5);
+
+  static Future<void>? _contextSet;
+
+  /// Sets [audioContext] globally, once. The web has no audio context to set
+  /// (audioplayers only logs that it is unsupported), so it is skipped there.
+  static Future<void> _ensureContext() {
+    if (kIsWeb) return Future.value();
+    return _contextSet ??=
+        AudioPlayer.global.setAudioContext(audioContext).catchError((Object e) {
+      _contextSet = null;
+      debugPrint('game sound context unavailable: $e');
+    });
+  }
+
   @override
   Future<void> play(GameSound sound) async {
+    await _ensureContext();
     final player = AudioPlayer();
-    player.onPlayerComplete.first.then((_) => player.dispose());
-    await player.play(AssetSource(sound.asset), mode: PlayerMode.lowLatency);
+    var disposed = false;
+    void release() {
+      if (disposed) return;
+      disposed = true;
+      player.dispose().catchError((Object _) {});
+    }
+
+    player.onPlayerComplete.first.then((_) => release(), onError: (_) {});
+    Timer(releaseAfter, release);
+    try {
+      await player.play(AssetSource(sound.asset), mode: PlayerMode.mediaPlayer);
+    } catch (_) {
+      release();
+      rethrow;
+    }
   }
 }
 

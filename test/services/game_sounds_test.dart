@@ -3,6 +3,7 @@
 
 import 'dart:io';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -47,5 +48,15 @@ void main() {
       expect(s.asset, endsWith('.wav'));
       expect(File('assets/${s.asset}').existsSync(), isTrue, reason: s.asset);
     }
+  });
+
+  test(
+      'sounds duck the music of other apps instead of taking the audio focus '
+      'from it', () {
+    final ctx = AudioplayersSoundPlayer.audioContext;
+    expect(ctx.android.usageType, AndroidUsageType.game);
+    expect(ctx.android.audioFocus, AndroidAudioFocus.gainTransientMayDuck);
+    // iOS: ambient mixes with other audio and respects the silent switch.
+    expect(ctx.iOS.category, AVAudioSessionCategory.ambient);
   });
 }

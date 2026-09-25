@@ -326,11 +326,20 @@ Seventeen components shared out of the screens:
   *Game sounds* (`SettingsProvider.gameSounds`), SharedPreferences `gameSounds`, **off by
   default**, read on every play so a board needs no provider. The platform is behind the
   `SoundPlayer` seam — `AudioplayersSoundPlayer` (audioplayers 6.8.1, MIT, one short-lived
-  low-latency player per sound) in the app, `test/support/fake_sound_player.dart` in tests;
+  player per sound) in the app, `test/support/fake_sound_player.dart` in tests;
   `GameBoardScreen.sounds` takes the instance. A failure to play is swallowed. On the web
   the browser allows sound only after a user gesture, and a score typed on the keypad is one;
   audioplayers fetches the asset from the app's own origin (`connect-src 'self'`) and plays
   it in an `<audio>` element (`default-src 'self'`), so the PWA's CSP needs no change.
+  **The sounds never take the music away** from another app: before its first player,
+  `AudioplayersSoundPlayer` sets audioplayers' global `AudioContext`
+  (`AudioplayersSoundPlayer.audioContext`) — Android `USAGE_GAME`, `CONTENT_TYPE_SONIFICATION`
+  and a `AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK` request, so background music ducks and comes back;
+  iOS the `ambient` session category, which mixes (the web has no audio context and skips it).
+  Android only gives the focus back when the player stops, so each player runs in
+  `PlayerMode.mediaPlayer`, which reports its completion — the low-latency SoundPool mode never
+  does, and so used to hold `AUDIOFOCUS_GAIN` for good — and is disposed on completion or after
+  5 s, whichever comes first.
 
 ### Utilities — `lib/utils/`
 
@@ -645,8 +654,9 @@ removed). From five players
 adds the position ("4/8"). A cell tap opens the same sheet on that one score, prefilled —
 the first digit replaces it — with "Save". Both paths then note the eliminations — the
 elimination sound once per write that puts a player out, never twice for the same player
-until a correction brings them back, and only with *Game sounds* on — and run the game-over
-check, as the score dialog they replace did. When that check ends the game by rule
+until a correction brings them back, and only with *Game sounds* on; not at all when the same
+write ends the game (`_canEndByRule`, read before the write), so the last round plays the
+victory sound alone — and run the game-over check, as the score dialog they replace did. When that check ends the game by rule
 (`_finishAndShowEnd(byRule: true)`, or the end screen held back while the keypad was open)
 the victory sound plays; a finished game reopened plays nothing, nor does *End game* by hand.
 
