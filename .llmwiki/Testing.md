@@ -2,7 +2,7 @@
 
 > Scope: what is tested, how to run it, and the traps.
 > Related: [[MobileApp]] · [[DataLayer]] · [[SchemaV10]] · [[Backend]] · [[Web]] · [[KnownLimits]]
-> Updated: 2026-09-24
+> Updated: 2026-09-25
 
 ## Facts
 
@@ -29,6 +29,10 @@
 | `test/drift/six_nimmt_seed_test.dart` | A fresh database seeds 6 qui prend at 65, so a player is out on exactly 66 and not on 65. |
 | `test/drift/last_player_standing_seed_test.dart` | A fresh database seeds `lastPlayerOver` at the elimination threshold on ZapZap, Rami and 6 qui prend (100, 100, 65), and a four-player ZapZap ends once three are past 100 and not before; the types with no automatic end are seeded without one. |
 | `test/migration_v19_to_v20_test.dart` | `applyV20` through both engines' real upgrade callbacks from a v19 file: a live ZapZap with no game-over condition gets `lastPlayerOver`/100, a 6 qui prend at the old elimination threshold of 66 gets `lastPlayerOver`/66, a condition the user set (Rami `firstPlayerOver`/500, a ZapZap `lastPlayerOver`/150) and Uno stay as they were, a deleted row, a row with no elimination and an `under` elimination are left alone; the UPDATE queues the group-linked row in `outbox` (the capture trigger) and a replay changes nothing. It replaces `migration_last_player_standing_test.dart`, which asserted that no migration rewrote those rows. |
+| `test/migration_v20_to_v21_test.dart` | `applyV21` through both engines' real upgrade callbacks from a v20 file (the column dropped): `keypad_shortcut` is added and filled on the live ZapZap, Scrabble, Belote and Rami rows from their seeds; a renamed Skyjo (no key), a deleted Belote, a user's own type and the types with no shortcut stay NULL; the linked ZapZap is queued in `outbox`; a replay changes nothing and keeps a shortcut the user set. It also pins `keypadShortcutSeeds()` to the five decided types. |
+| `test/models/keypad_shortcut_test.dart` | The keypad shortcut model: ×2 on positive scores only, +50 and a value, a result past six digits refused, the derived labels, the per-kind bounds, and `decode` returning null for every malformed input — never throwing — including through `GameType.fromMap`. |
+| `test/screens/game_board_keypad_test.dart` (shortcut group) | Through the real board and a Drift database seeded with the built-ins: ZapZap "0 ZapZap" enters 0 and moves on, Skyjo 12 then "×2" enters 24 (and leaves 0 and −3 alone), Belote "162", Scrabble 23 then "+50", Rami "100", Tarot a plain 0 bottom-left and no shortcut key, a custom type's own label. |
+| `test/screens/game_type_shortcut_restart_test.dart` | A shortcut set in the game-type editor, on a file database, read back by a new `AppDatabase` on the same file — the restart. |
 | `test/l10n/game_over_labels_test.dart` | The en and fr wording of `firstPlayerOver` and of the two last-player labels, and the `gameRulesEndLastOver` / `…Under` sentence checked against `GameType.isGameOver`: what the rules screen promises ("every player but one") is what the code does. |
 | `test/sync/sync_store_test.dart` | Group sync without a network: capture triggers (local games capture nothing, sharing captures a game and its children, inherited `group_id`, deletes captured as deletes), `preparePush` (coalescing, uuid5 player links, parent-first order, stable lamports on retry, refused names), `applyPulled` (a full game from another device, merge by name, quarantine and replay, LWW, delete wins, own deltas skipped, score-cell adoption), `renumberRound`, `leave`; and `ended_at` both ways — sent even while open so that a reopen can clear it, a pulled null reopening the game rather than being ignored. |
 | `test/sync/sync_ids_test.dart` | uuid5 against Python's `uuid.uuid5` vector, name normalisation, a built-in game type linked by its key rather than its localized name, the player-name allow-list — combining marks accepted after a letter and refused anywhere else, the same cases as `backend/tests/test_sync.py`. |

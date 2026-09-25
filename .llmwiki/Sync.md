@@ -2,7 +2,7 @@
 
 > Scope: the offline-first sharing protocol — server and Flutter client.
 > Related: [[Api]] · [[SchemaV10]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-09-24
+> Updated: 2026-09-25
 
 ## Facts
 
@@ -58,7 +58,7 @@ field**, ordered lexicographically by `(client_lamport, origin_device_id)`.
    back as a stable reason code rather than a driver error — codes in [[Api]].
 7. The log stores the payload's known client columns only; that is what other devices pull.
 
-Synced entities: `player`, `game_type` (with `rules` and `rules_slug` since v13, `builtin_key` since v14), `game`,
+Synced entities: `player`, `game_type` (with `rules` and `rules_slug` since v13, `builtin_key` since v14, `keypad_shortcut` since v21), `game`,
 `game_player`, `round` (with `comment`), `score`, `game_analysis`. `game_player` still has
 no uuid and is hard-deleted.
 
@@ -106,6 +106,27 @@ reads it while the key is set. See [[SchemaV10]] and [[I18n]].
   `lamport = max(local_max, last_server_seq_received) + 1`.
 - **Idempotence**: the server deduplicates on `(origin_device_id, client_lamport)`. A
   network retry of the same delta is a no-op.
+
+### The keypad shortcut travels only well formed (since 2026-09-24)
+
+`game_types.keypad_shortcut` (schema v21, [[SchemaV10]]) is the compact JSON of a
+`KeypadShortcut` (`lib/models/keypad_shortcut.dart`). Both ends check its shape:
+
+- **Server**: `keypad_shortcut_problem` in `backend/app/services/delta_bounds.py` refuses
+  anything but an object of `kind` (value, multiply, add), an integer `amount` within that
+  kind's bounds and an optional `label` of 1 to 12 characters, as a rejected delta whose
+  reason names `keypad_shortcut`. The log therefore never holds a malformed one.
+- **Push** (`case 'game_type'`, `_keypadShortcutPayload`): a null is sent as null — the
+  editor's *None* clears it on purpose, unlike `rules_slug` — and a valid value in its
+  canonical form. A value this version cannot read (malformed, or a kind a later version
+  added) is **omitted**, so the whole row is not rejected over it and the server keeps what
+  it has.
+- **Pull** (`_applyGameType`): an update takes a null or a readable value, and leaves the
+  local one alone when the incoming value cannot be read; an insert stores the canonical
+  form, or NULL. An absent key changes nothing, as for every column.
+
+Tests: `test/sync/sync_store_test.dart`, `backend/tests/test_sync_contract.py`, and the
+round trip through a real server in `test/sync/sync_two_devices_test.dart`.
 
 ### A wiped `rules_slug` does not travel (since 2026-09-20)
 
