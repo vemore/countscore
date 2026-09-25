@@ -1,0 +1,11 @@
+CountScore 1.5.0
+
+• Sons de jeu, désactivés par défaut : élimination, victoire, et votre musique baisse.
+• Un minuteur de tour dans le menu de la partie.
+• Une tête de mort marque les joueurs éliminés.
+• Chaque type de jeu peut avoir sa touche : ×2 au Skyjo, 162 à la Belote…
+• Groupes : choisissez un pseudo en rejoignant, et renommez votre appareil.
+• Les jeux au dernier survivant se terminent enfin à coup sûr.
+• Petites corrections.
+
+Les fonctions en ligne restent inactives sans serveur.
