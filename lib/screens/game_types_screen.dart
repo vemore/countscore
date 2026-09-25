@@ -283,14 +283,20 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
       TextEditingController();
   final TextEditingController _gameOverThresholdController =
       TextEditingController();
+  final TextEditingController _shortcutAmountController =
+      TextEditingController();
+  final TextEditingController _shortcutLabelController =
+      TextEditingController();
 
   late IconData _icon;
   late Color _colour;
   late bool _isLowestScoreWins;
   PlayerDeadConditionType? _playerDeadType;
   GameOverConditionType? _gameOverType;
+  KeypadShortcutKind? _shortcutKind;
 
   String? _nameError;
+  String? _shortcutError;
   String? _playerDeadError;
   String? _gameOverError;
   bool _saving = false;
@@ -312,6 +318,10 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
     _isLowestScoreWins = existing?.isLowestScoreWins ?? false;
     _playerDeadType = existing?.playerDeadConditionType;
     _gameOverType = existing?.gameOverConditionType;
+    final shortcut = existing?.keypadShortcut;
+    _shortcutKind = shortcut?.kind;
+    _shortcutAmountController.text = shortcut?.amount.toString() ?? '';
+    _shortcutLabelController.text = shortcut?.label ?? '';
   }
 
   @override
@@ -333,6 +343,8 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
     _nameController.dispose();
     _playerDeadThresholdController.dispose();
     _gameOverThresholdController.dispose();
+    _shortcutAmountController.dispose();
+    _shortcutLabelController.dispose();
     super.dispose();
   }
 
@@ -360,6 +372,31 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
     return (value: parsed, error: null);
   }
 
+  /// The keypad shortcut the form describes, and the error to show under its
+  /// number. The bounds are the model's own ([KeypadShortcut.boundsOf]), the
+  /// ones the server checks too.
+  ({KeypadShortcut? value, String? error}) _shortcut(AppLocalizations l10n) {
+    final kind = _shortcutKind;
+    if (kind == null) return (value: null, error: null);
+    final (min, max) = KeypadShortcut.boundsOf(kind);
+    final amount = int.tryParse(_shortcutAmountController.text.trim());
+    final shortcut = amount == null
+        ? null
+        : KeypadShortcut.tryCreate(kind, amount,
+            label: _shortcutLabelController.text);
+    if (shortcut == null) {
+      // An addition of 0 would be a key that does nothing: the message names
+      // the exclusion, since 0 lies inside the range it gives.
+      return (
+        value: null,
+        error: kind == KeypadShortcutKind.add
+            ? l10n.keypadShortcutAddRange(min, max)
+            : l10n.keypadShortcutAmountRange(min, max),
+      );
+    }
+    return (value: shortcut, error: null);
+  }
+
   Future<void> _submit() async {
     if (_saving) return;
     final l10n = AppLocalizations.of(context)!;
@@ -368,13 +405,18 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
         _threshold(l10n, _playerDeadType != null, _playerDeadThresholdController.text);
     final gameOver =
         _threshold(l10n, _gameOverType != null, _gameOverThresholdController.text);
+    final shortcut = _shortcut(l10n);
 
     setState(() {
       _nameError = name.isEmpty ? l10n.nameIsRequired : null;
       _playerDeadError = playerDead.error;
       _gameOverError = gameOver.error;
+      _shortcutError = shortcut.error;
     });
-    if (_nameError != null || _playerDeadError != null || _gameOverError != null) {
+    if (_nameError != null ||
+        _playerDeadError != null ||
+        _gameOverError != null ||
+        _shortcutError != null) {
       return;
     }
 
@@ -391,6 +433,7 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
         playerDeadThreshold: playerDead.value,
         gameOverConditionType: _gameOverType,
         gameOverThreshold: gameOver.value,
+        keypadShortcut: shortcut.value,
       );
       setState(() => _saving = true);
       await provider.createGameType(created);
@@ -430,6 +473,8 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
       gameOverConditionType: _gameOverType,
       gameOverThreshold: gameOver.value,
       clearGameOverCondition: _gameOverType == null,
+      keypadShortcut: shortcut.value,
+      clearKeypadShortcut: shortcut.value == null,
     );
     final conditionsChanged =
         saved.playerDeadConditionType != existing.playerDeadConditionType ||
@@ -468,6 +513,14 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
       ),
     );
     return confirmed == true;
+  }
+
+  /// The key's default text for the number typed so far, or null.
+  String? _shortcutPreview() {
+    final kind = _shortcutKind;
+    final amount = int.tryParse(_shortcutAmountController.text.trim());
+    if (kind == null || amount == null) return null;
+    return KeypadShortcut.tryCreate(kind, amount)?.defaultLabel;
   }
 
   Future<void> _pickIcon() async {
@@ -671,6 +724,88 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
                 errorText: _gameOverError,
               ),
             ],
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 8),
+            Text(
+              l10n.keypadShortcutTitle,
+              style: theme.textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<KeypadShortcutKind?>(
+              key: const Key('game_type_shortcut_kind'),
+              initialValue: _shortcutKind,
+              isExpanded: true,
+              decoration: InputDecoration(
+                labelText: l10n.keypadShortcutKind,
+                border: const OutlineInputBorder(),
+              ),
+              items: [
+                DropdownMenuItem(value: null, child: Text(l10n.none)),
+                DropdownMenuItem(
+                  value: KeypadShortcutKind.value,
+                  child: Text(l10n.keypadShortcutKindValue),
+                ),
+                DropdownMenuItem(
+                  value: KeypadShortcutKind.multiply,
+                  child: Text(l10n.keypadShortcutKindMultiply),
+                ),
+                DropdownMenuItem(
+                  value: KeypadShortcutKind.add,
+                  child: Text(l10n.keypadShortcutKindAdd),
+                ),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  // A label names what the key did ("Capot" for a value):
+                  // another kind makes it wrong, so it goes with the old one.
+                  if (value != _shortcutKind) _shortcutLabelController.clear();
+                  _shortcutKind = value;
+                  _shortcutError = null;
+                  if (value == null) _shortcutAmountController.clear();
+                });
+              },
+            ),
+            if (_shortcutKind != null) ...[
+              const SizedBox(height: 8),
+              TextField(
+                key: const Key('game_type_shortcut_amount'),
+                controller: _shortcutAmountController,
+                decoration: InputDecoration(
+                  labelText: l10n.keypadShortcutAmount,
+                  border: const OutlineInputBorder(),
+                  errorText: _shortcutError,
+                ),
+                keyboardType:
+                    const TextInputType.numberWithOptions(signed: true),
+                inputFormatters: [
+                  // A minus sign first, then digits: a value or an addition
+                  // may be negative. The bounds are checked on save.
+                  FilteringTextInputFormatter.allow(RegExp(r'^-?\d*')),
+                  LengthLimitingTextInputFormatter(7),
+                ],
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                key: const Key('game_type_shortcut_label'),
+                controller: _shortcutLabelController,
+                // Code points, as the model and the server count them: a
+                // character past the limit is refused as it is typed, never
+                // accepted here and dropped on save.
+                inputFormatters: [_labelCodePoints],
+                onChanged: (_) => setState(() {}),
+                decoration: InputDecoration(
+                  labelText: l10n.keypadShortcutLabel,
+                  counterText: '${_shortcutLabelController.text.runes.length}'
+                      '/${KeypadShortcut.labelMaxLength}',
+                  // What the key reads when the label is left empty: digits
+                  // and a sign, the same in every locale.
+                  hintText: _shortcutPreview(),
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -688,6 +823,15 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
     );
   }
 }
+
+/// Caps the keypad-shortcut label at [KeypadShortcut.labelMaxLength] code
+/// points, the unit the model and the server count.
+final _labelCodePoints = TextInputFormatter.withFunction(
+  (oldValue, newValue) =>
+      newValue.text.runes.length > KeypadShortcut.labelMaxLength
+          ? oldValue
+          : newValue,
+);
 
 /// A whole-number field: `keyboardType` is a keyboard *hint* — on the web build
 /// letters reach the controller unless a formatter stops them.

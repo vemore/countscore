@@ -27,6 +27,10 @@ at your own server in Settings → Server if you want the connected features.
 - **Scoring grid**: one coloured lane per player — avatar, big total, place, a crown on the
   leader, a skull on a player a game type with elimination has put out — or one row per player at the tap of a button (remembered for every game); rounds,
   live ranking and per-player statistics.
+- **A keypad for scores**, with a shortcut key per game type: "0 ZapZap", Skyjo's "×2" on the
+  score typed, Belote's "162", Scrabble's "+50", Rami's "100" — and one of your choosing (a
+  value, a multiplication or an addition, with its own label) on any type in the game-type
+  editor.
 - **An explicit end**: any game that has been played can be declared over from the board or
   the game list, which marks it in the history and opens the standings on their result: the
   winner, a podium of the top three with their totals, every player in the list under it in

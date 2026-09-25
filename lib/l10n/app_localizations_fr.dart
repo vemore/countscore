@@ -189,13 +189,42 @@ class AppLocalizationsFr extends AppLocalizations {
   String get keypadValidateRound => 'Valider le tour';
 
   @override
-  String get keypadZeroZapZap => '0 ZapZap';
-
-  @override
   String get keypadToggleSign => 'Changer le signe';
 
   @override
   String get keypadBackspace => 'Effacer un chiffre';
+
+  @override
+  String get keypadShortcutTitle => 'Raccourci du pavé';
+
+  @override
+  String get keypadShortcutKind => 'Type de touche';
+
+  @override
+  String get keypadShortcutKindValue => 'Saisir une valeur';
+
+  @override
+  String get keypadShortcutKindMultiply =>
+      'Multiplier le score (positif seulement)';
+
+  @override
+  String get keypadShortcutKindAdd => 'Ajouter au score';
+
+  @override
+  String get keypadShortcutAmount => 'Nombre';
+
+  @override
+  String get keypadShortcutLabel => 'Libellé de la touche (facultatif)';
+
+  @override
+  String keypadShortcutAddRange(int min, int max) {
+    return 'Un nombre entier entre $min et $max, autre que 0';
+  }
+
+  @override
+  String keypadShortcutAmountRange(int min, int max) {
+    return 'Un nombre entier entre $min et $max';
+  }
 
   @override
   String get appearance => 'Apparence';

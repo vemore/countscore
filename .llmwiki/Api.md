@@ -2,7 +2,7 @@
 
 > Scope: the HTTP and WebSocket surface. Source of truth is `backend/app/routes/`.
 > Related: [[Backend]] · [[Sync]] · [[LlmProviders]] · [[Security]]
-> Updated: 2026-09-24
+> Updated: 2026-09-25
 
 ## Facts
 
@@ -70,7 +70,10 @@ the top of `app/routes/sync.py`:
 | `integrity constraint violation` | Anything the pre-checks missed, e.g. a NOT NULL column absent on create |
 
 Bounds failures keep their prose (`value out of bounds (…)`, `comment longer than 500
-characters`, …) — see `app/services/delta_bounds.py`.
+characters`, …) — see `app/services/delta_bounds.py`. A `game_type` payload's
+`keypad_shortcut` (since `0006_game_type_keypad_shortcut`, 2026-09-24) must be the client's
+closed JSON shape, or the delta is rejected with a reason that starts `keypad_shortcut`
+(`keypad_shortcut_problem`; [[Sync]]).
 
 Device tokens are `<device id hex>.<secret>` (`app/auth.py`). `require_device` runs at most
 one argon2 verify; a client address over `AUTH_FAIL_RL_PER_MINUTE` / `_PER_HOUR` failed

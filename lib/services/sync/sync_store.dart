@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 
+import '../../models/keypad_shortcut.dart';
 import '../backend_client.dart';
 import '../drift/database.dart';
 import '../uuid.dart';
@@ -64,6 +65,41 @@ const _gameTypeRulesMax = 8000;
 const _gameTypeRulesSlugMax = 32;
 const _roundCommentMax = 500;
 const _analysisContentMax = 20000;
+
+/// The push side of `game_types.keypad_shortcut`: see `case 'game_type'`.
+///
+/// A NULL is pushed as a clear, so every way a local NULL arises has to be a
+/// choice: the editor's *None*, a type seeded or created without a shortcut,
+/// or a clear pulled from the group. The two that were not — a built-in row
+/// inserted from a delta with no key, and one whose pulled value this version
+/// cannot read — get the seed instead (`_insertedKeypadShortcut`), and the v21
+/// back-fill leaves no built-in row with a seed NULL.
+Map<String, Object?> _keypadShortcutPayload(Object? raw) {
+  if (raw == null) return const {'keypad_shortcut': null};
+  final shortcut = KeypadShortcut.decode(raw);
+  return shortcut == null ? const {} : {'keypad_shortcut': shortcut.encode()};
+}
+
+/// The pull side: a shortcut in its canonical form, or null for anything the
+/// model cannot read — a new row stores that null (a plain 0), an existing row
+/// keeps its own value (`_applyGameType`).
+String? _pulledKeypadShortcut(Object? raw) => KeypadShortcut.decode(raw)?.encode();
+
+/// The shortcut a game type inserted from a pulled delta gets.
+///
+/// - an explicit null is the group's own *None*, kept;
+/// - a readable value, in its canonical form;
+/// - no key at all (a device that predates v21) or a value this version cannot
+///   read: the shortcut derived from the built-in key, as `rules_slug` is
+///   derived, and NULL for a user's type. A NULL there would be pushed by the
+///   next local edit as a clear nobody chose.
+String? _insertedKeypadShortcut(Map<String, dynamic> p, String? builtinKey) {
+  if (p.containsKey('keypad_shortcut') && p['keypad_shortcut'] == null) {
+    return null;
+  }
+  return _pulledKeypadShortcut(p['keypad_shortcut']) ??
+      keypadShortcutSeeds()[builtinKey];
+}
 
 const _rank = {
   'game_type': 0,
@@ -478,6 +514,12 @@ class SyncStore {
             // the user does clear on purpose, still travels as null.
             if (r['rules_slug'] case final String slug)
               'rules_slug': _clip(slug, _gameTypeRulesSlugMax),
+            // The keypad key (schema v21). Null travels — the user clears it on
+            // purpose — and a valid one travels in its canonical form. A value
+            // this version cannot read (malformed, or a kind from a later
+            // version) is omitted, so the server does not reject the whole row
+            // over it and keeps what it has.
+            ..._keypadShortcutPayload(r['keypad_shortcut']),
           },
           error: null,
         );
@@ -783,6 +825,12 @@ class SyncStore {
       // above. A group that still holds a wiped slug must not undo the v18
       // repair on a device that has it back.
       if (p['rules_slug'] != null) 'rules_slug': p['rules_slug'],
+      // A null clears, as the user's own "None" does; a value this version
+      // cannot read leaves the local one alone rather than clearing it.
+      if (p.containsKey('keypad_shortcut') &&
+          (p['keypad_shortcut'] == null ||
+              _pulledKeypadShortcut(p['keypad_shortcut']) != null))
+        'keypad_shortcut': _pulledKeypadShortcut(p['keypad_shortcut']),
     };
     final linked = await _localOf(groupId, 'game_type', d.entityUuid);
     if (linked != null) {
@@ -849,6 +897,7 @@ class SyncStore {
         // so this is the only repair left for a device joining the group before
         // a healthy one has pushed the slug back.
         'rules_slug': p['rules_slug'] ?? defaultRulesSlugs[builtinKey],
+        'keypad_shortcut': _insertedKeypadShortcut(p, builtinKey),
         'uuid': localUuid,
         'created_at': now,
         'updated_at': now,

@@ -324,11 +324,6 @@
     "description": "Score keypad key, on the round's last player: writes the whole round"
   },
 
-  "keypadZeroZapZap": "0 ZapZap",
-  "@keypadZeroZapZap": {
-    "description": "Score keypad shortcut key, ZapZap games only: a zero for the player who called ZapZap"
-  },
-
   "keypadToggleSign": "Changer le signe",
   "@keypadToggleSign": {
     "description": "Tooltip of the score keypad's ± key"
@@ -337,6 +332,71 @@
   "keypadBackspace": "Effacer un chiffre",
   "@keypadBackspace": {
     "description": "Tooltip of the score keypad's backspace key"
+  },
+
+  "keypadShortcutTitle": "Raccourci du pavé",
+  "@keypadShortcutTitle": {
+    "description": "Game-type editor: heading of the section that sets the score keypad's extra key for this type"
+  },
+
+  "keypadShortcutKind": "Type de touche",
+  "@keypadShortcutKind": {
+    "description": "Game-type editor: dropdown label, what the keypad's extra key does (none, a value, a multiplication, an addition)"
+  },
+
+  "keypadShortcutKindValue": "Saisir une valeur",
+  "@keypadShortcutKindValue": {
+    "description": "Game-type editor, keypad shortcut: the key enters a fixed score and moves on to the next player"
+  },
+
+  "keypadShortcutKindMultiply": "Multiplier le score (positif seulement)",
+  "@keypadShortcutKindMultiply": {
+    "description": "Game-type editor, keypad shortcut: the key multiplies the score typed; a zero or negative score is left as it is"
+  },
+
+  "keypadShortcutKindAdd": "Ajouter au score",
+  "@keypadShortcutKindAdd": {
+    "description": "Game-type editor, keypad shortcut: the key adds a number to the score typed"
+  },
+
+  "keypadShortcutAmount": "Nombre",
+  "@keypadShortcutAmount": {
+    "description": "Game-type editor, keypad shortcut: the field for the value, the multiplier or the number added"
+  },
+
+  "keypadShortcutLabel": "Libellé de la touche (facultatif)",
+  "@keypadShortcutLabel": {
+    "description": "Game-type editor, keypad shortcut: the text shown on the key; left empty, the key shows the number (162, ×2, +50)"
+  },
+
+  "keypadShortcutAddRange": "Un nombre entier entre {min} et {max}, autre que 0",
+  "@keypadShortcutAddRange": {
+    "description": "Game-type editor, keypad shortcut: error under the number field of an addition when it is empty, out of range or 0 (an addition of 0 would do nothing)",
+    "placeholders": {
+      "min": {
+        "type": "int",
+        "example": "-99999"
+      },
+      "max": {
+        "type": "int",
+        "example": "99999"
+      }
+    }
+  },
+
+  "keypadShortcutAmountRange": "Un nombre entier entre {min} et {max}",
+  "@keypadShortcutAmountRange": {
+    "description": "Game-type editor, keypad shortcut: error under the number field when it is empty or out of range",
+    "placeholders": {
+      "min": {
+        "type": "int",
+        "example": "2"
+      },
+      "max": {
+        "type": "int",
+        "example": "10"
+      }
+    }
   },
 
   "appearance": "Apparence",

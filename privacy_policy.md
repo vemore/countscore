@@ -1,10 +1,10 @@
 # Privacy Policy for CountScore
 
-**Last Updated**: September 24, 2026 (v2.11)
+**Last Updated**: September 25, 2026 (v2.12)
 
 **Effective Date**: Applies to CountScore v1.1.0 and later
 
-**Previous versions**: v2.10 (September 19, 2026), v2.9 (September 19, 2026), v2.8 (September 18, 2026), v2.7 and v2.6 (September 16, 2026), v2.5 (September 14, 2026), v2.4 (September 14, 2026), v2.3 (September 13, 2026), v2.2 (September 11, 2026), v2.1 and v2.0 (September 9, 2026) and v1.0 (November 9, 2025). v1.0
+**Previous versions**: v2.11 (September 24, 2026), v2.10 (September 19, 2026), v2.9 (September 19, 2026), v2.8 (September 18, 2026), v2.7 and v2.6 (September 16, 2026), v2.5 (September 14, 2026), v2.4 (September 14, 2026), v2.3 (September 13, 2026), v2.2 (September 11, 2026), v2.1 and v2.0 (September 9, 2026) and v1.0 (November 9, 2025). v1.0
 applies to CountScore 1.0.x — the versions currently on the Play Store. See
 [Version History](#version-history).
 
@@ -167,7 +167,8 @@ you do not share never leave your device.
 For each **shared** game, and kept up to date as you play:
 
 - the game's name, its game type (name, icon, colour, elimination and game-over
-  thresholds, **any rules text you wrote for it**, and — for one of the app's own preset
+  thresholds, its score keypad shortcut — a number and, if you typed one, a short label —
+  **any rules text you wrote for it**, and — for one of the app's own preset
   types — the fixed identifier that says which preset it is, so that devices set to
   different languages agree on it), its scoring rule, its creation date and, once you
   declare the game over, the date you ended it;
@@ -409,6 +410,11 @@ changes are announced through app updates on the Google Play Store.
 
 ### Version History
 
+- **v2.12** (September 25, 2026): A game type can have a score keypad shortcut (such as
+  "×2" or "162"), set on some preset types and editable on every type, presets included. It is stored on your
+  device with the type and, for a shared game, sent with its game type: a number and, if you
+  typed one, a label of at most 12 characters. No new recipient and no new category of
+  information about you.
 - **v2.11** (September 24, 2026): The create and join dialogs now ask for your nickname in
   the group (the name the other devices see for this one), empty rather than pre-filled, and
   a device can change it later from Settings → Group (`PATCH /groups/devices/me`), which

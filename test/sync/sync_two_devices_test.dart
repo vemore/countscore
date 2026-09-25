@@ -19,6 +19,7 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:countscore/models/game.dart';
+import 'package:countscore/models/game_type.dart';
 import 'package:countscore/models/player.dart';
 import 'package:countscore/models/round.dart';
 import 'package:countscore/models/score.dart';
@@ -38,6 +39,7 @@ class _Device {
     players = DriftPlayerRepository(db);
     rounds = DriftRoundRepository(db);
     scores = DriftScoreRepository(db);
+    gameTypes = DriftGameTypeRepository(db);
   }
 
   final String label;
@@ -47,6 +49,7 @@ class _Device {
   late final DriftPlayerRepository players;
   late final DriftRoundRepository rounds;
   late final DriftScoreRepository scores;
+  late final DriftGameTypeRepository gameTypes;
   late String token;
 
   BackendClient get client => BackendClient(_url!);
@@ -129,6 +132,35 @@ void main() {
     expect((await a.sync()).failure, isNull);
     expect(await a.totals(gameId), {'Alice': 13, 'Bob': 4});
     expect((await a.rounds.getByGame(gameId)).last.comment, 'Zap à 3 !');
+  });
+
+  test("a custom type's keypad shortcut reaches the other device, and back",
+      () async {
+    final typeId = await a.gameTypes.create(GameType(
+      name: 'Belote du jeudi',
+      iconCodePoint: 0xe000,
+      cardColorValue: 0xFF795548,
+      isLowestScoreWins: false,
+      keypadShortcut: KeypadShortcut.value(162, label: 'Dedans'),
+    ));
+    final gameId = await a.games.create(
+        Game(name: 'Jeudi', isLowestScoreWins: false, gameTypeId: typeId));
+    await a.players.create(Player(gameId: gameId, name: 'Alice', orderIndex: 0));
+    await a.store.shareGame(gameId, (await a.store.membership())!.groupId);
+    expect((await a.sync()).failure, isNull);
+    expect(await a.store.pendingCount(), 0);
+    expect((await b.sync()).failure, isNull);
+
+    final onB0 = (await b.gameTypes.getAll())
+        .singleWhere((t) => t.name == 'Belote du jeudi');
+    expect(onB0.keypadShortcut, KeypadShortcut.value(162, label: 'Dedans'));
+
+    // B changes it; A sees the change.
+    await b.gameTypes.update(onB0.copyWith(keypadShortcut: KeypadShortcut.add(20)));
+    expect((await b.sync()).failure, isNull);
+    expect((await a.sync()).failure, isNull);
+    expect((await a.gameTypes.getById(typeId))!.keypadShortcut,
+        KeypadShortcut.add(20));
   });
 
   test('the same round entered on both devices is renumbered, nothing lost', () async {

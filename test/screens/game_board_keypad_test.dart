@@ -278,36 +278,154 @@ void main() {
     expect(games.getScore(ann.id!, first.id!), 10);
   });
 
-  group('the bottom-left key', () {
+  group("the game type's shortcut key", () {
+    /// A two-player round of the seeded [builtinKey] type, opened on Ann.
+    Future<void> openRoundOf(WidgetTester tester, String builtinKey) async {
+      await gameTypes.loadGameTypes();
+      final typeId = await aType(builtinKey);
+      await openBoard(tester, ['Ann', 'Bob'], typeId: typeId);
+      await openRound(tester);
+    }
+
+    String shown(WidgetTester tester) =>
+        tester.widget<Text>(find.byKey(const Key('keypad_value'))).data!;
+
+    Future<void> validate(WidgetTester tester) async {
+      await tester.tap(primary);
+      await tester.pumpAndSettle();
+    }
+
+    int? scoreOf(String name) => games.getScore(
+        playerNamed(name).id!, games.currentRounds.single.id!);
+
+    final shortcut = find.byKey(const Key('keypad_shortcut'));
+
     testWidgets('reads "0 ZapZap" for ZapZap, and enters a zero',
         (tester) async {
-      await gameTypes.loadGameTypes();
-      final zapzap = await aType('zapzap');
-      await openBoard(tester, ['Ann', 'Bob'], typeId: zapzap);
-      await openRound(tester);
+      await openRoundOf(tester, 'zapzap');
 
-      expect(find.text(l10n.keypadZeroZapZap), findsOneWidget);
-      await tapKey(tester, 'keypad_zapzap');
+      expect(find.text('0 ZapZap'), findsOneWidget);
+      await tapKey(tester, 'keypad_shortcut');
       // A zero for Ann, and on to Bob.
       expect(find.text(l10n.keypadValidateRound), findsOneWidget);
       await type(tester, 8);
-      await tester.tap(primary);
-      await tester.pumpAndSettle();
+      await validate(tester);
 
-      final round = games.currentRounds.single;
-      expect(games.getScore(playerNamed('Ann').id!, round.id!), 0);
-      expect(games.getScore(playerNamed('Bob').id!, round.id!), 8);
+      expect(scoreOf('Ann'), 0);
+      expect(scoreOf('Bob'), 8);
     });
 
-    testWidgets('is a plain 0 for Tarot', (tester) async {
+    testWidgets('Skyjo: 12 then "×2" enters 24', (tester) async {
+      await openRoundOf(tester, 'skyjo');
+
+      expect(find.text('×2'), findsOneWidget);
+      await type(tester, 12);
+      await tapKey(tester, 'keypad_shortcut');
+      expect(shown(tester), '24');
+      // An operation stays on the player: the score is still Ann's to check.
+      expect(find.text(l10n.keypadNext('Bob')), findsOneWidget);
+      await validate(tester);
+      await type(tester, 5);
+      await validate(tester);
+
+      expect(scoreOf('Ann'), 24);
+      expect(scoreOf('Bob'), 5);
+    });
+
+    testWidgets('Skyjo: "×2" leaves a zero or a negative score as it is',
+        (tester) async {
+      await openRoundOf(tester, 'skyjo');
+
+      await tapKey(tester, 'keypad_shortcut');
+      expect(shown(tester), '0');
+      await type(tester, -3);
+      await tapKey(tester, 'keypad_shortcut');
+      expect(shown(tester), '−3');
+      await validate(tester);
+      await validate(tester);
+
+      expect(scoreOf('Ann'), -3);
+    });
+
+    testWidgets('Belote: "162" enters 162 and moves on', (tester) async {
+      await openRoundOf(tester, 'belote');
+
+      expect(find.text('162'), findsOneWidget);
+      await tapKey(tester, 'keypad_shortcut');
+      expect(find.text(l10n.keypadValidateRound), findsOneWidget);
+      await validate(tester);
+
+      expect(scoreOf('Ann'), 162);
+      expect(scoreOf('Bob'), 0);
+    });
+
+    testWidgets('Belote: "162" on the last player, then a digit, starts a new '
+        'number', (tester) async {
+      await openRoundOf(tester, 'belote');
+
+      await type(tester, 40);
+      await validate(tester); // on to Bob, the last player
+      await tapKey(tester, 'keypad_shortcut');
+      expect(shown(tester), '162');
+      expect(find.text(l10n.keypadValidateRound), findsOneWidget,
+          reason: 'nobody left to move on to');
+      await type(tester, 8);
+      expect(shown(tester), '8', reason: 'not 1628');
+      await validate(tester);
+
+      expect(scoreOf('Bob'), 8);
+    });
+
+    testWidgets('Scrabble: 23 then "+50" enters 73', (tester) async {
+      await openRoundOf(tester, 'scrabble');
+
+      await type(tester, 23);
+      await tapKey(tester, 'keypad_shortcut');
+      expect(shown(tester), '73');
+      await validate(tester);
+      await validate(tester);
+
+      expect(scoreOf('Ann'), 73);
+    });
+
+    testWidgets('Rami: "100" enters 100', (tester) async {
+      await openRoundOf(tester, 'rami');
+
+      await tapKey(tester, 'keypad_shortcut');
+      await validate(tester);
+
+      expect(scoreOf('Ann'), 100);
+    });
+
+    testWidgets('Tarot: a plain 0 and no shortcut key', (tester) async {
+      await openRoundOf(tester, 'tarot');
+
+      expect(shortcut, findsNothing);
+      expect(find.byKey(const Key('keypad_digit_0')), findsOneWidget);
+      // The 0 sits bottom-left, where a shortcut would be.
+      final zero = tester.getCenter(find.byKey(const Key('keypad_digit_0')));
+      final seven = tester.getCenter(find.byKey(const Key('keypad_digit_7')));
+      expect(zero.dx, seven.dx);
+    });
+
+    testWidgets("a custom type's own shortcut and label are on the key",
+        (tester) async {
       await gameTypes.loadGameTypes();
-      final tarot = await aType('tarot');
-      await openBoard(tester, ['Ann', 'Bob'], typeId: tarot);
+      final typeId = await gameTypes.createGameType(GameType(
+        name: 'Maison',
+        iconCodePoint: Icons.casino.codePoint,
+        cardColorValue: Colors.blue.toARGB32(),
+        isLowestScoreWins: false,
+        keypadShortcut: KeypadShortcut.tryCreate(KeypadShortcutKind.add, -5,
+            label: 'Pénalité'),
+      ));
+      await openBoard(tester, ['Ann', 'Bob'], typeId: typeId);
       await openRound(tester);
 
-      expect(find.text(l10n.keypadZeroZapZap), findsNothing);
-      expect(find.byKey(const Key('keypad_zapzap')), findsNothing);
-      expect(find.byKey(const Key('keypad_digit_0')), findsOneWidget);
+      expect(find.text('Pénalité'), findsOneWidget);
+      await type(tester, 7);
+      await tapKey(tester, 'keypad_shortcut');
+      expect(shown(tester), '2');
     });
   });
 

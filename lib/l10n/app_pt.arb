@@ -107,11 +107,27 @@
 
   "keypadValidateRound": "Validar rodada",
 
-  "keypadZeroZapZap": "0 ZapZap",
-
   "keypadToggleSign": "Trocar sinal",
 
   "keypadBackspace": "Apagar um dígito",
+
+  "keypadShortcutTitle": "Atalho do teclado",
+
+  "keypadShortcutKind": "Tipo de tecla",
+
+  "keypadShortcutKindValue": "Inserir um valor",
+
+  "keypadShortcutKindMultiply": "Multiplicar a pontuação (só positiva)",
+
+  "keypadShortcutKindAdd": "Somar à pontuação",
+
+  "keypadShortcutAmount": "Número",
+
+  "keypadShortcutLabel": "Texto da tecla (opcional)",
+
+  "keypadShortcutAddRange": "Um número inteiro entre {min} e {max}, diferente de 0",
+
+  "keypadShortcutAmountRange": "Um número inteiro entre {min} e {max}",
 
   "appearance": "Aparência",
 

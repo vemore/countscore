@@ -107,11 +107,27 @@
 
   "keypadValidateRound": "تأكيد الجولة",
 
-  "keypadZeroZapZap": "0 ZapZap",
-
   "keypadToggleSign": "تغيير الإشارة",
 
   "keypadBackspace": "حذف رقم",
+
+  "keypadShortcutTitle": "اختصار لوحة الأرقام",
+
+  "keypadShortcutKind": "نوع المفتاح",
+
+  "keypadShortcutKindValue": "إدخال قيمة",
+
+  "keypadShortcutKindMultiply": "ضرب النتيجة (الموجبة فقط)",
+
+  "keypadShortcutKindAdd": "الإضافة إلى النتيجة",
+
+  "keypadShortcutAmount": "رقم",
+
+  "keypadShortcutLabel": "نص المفتاح (اختياري)",
+
+  "keypadShortcutAddRange": "عدد صحيح بين {min} و{max} غير الصفر",
+
+  "keypadShortcutAmountRange": "عدد صحيح بين {min} و{max}",
 
   "appearance": "المظهر",
 

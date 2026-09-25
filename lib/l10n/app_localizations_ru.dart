@@ -189,13 +189,42 @@ class AppLocalizationsRu extends AppLocalizations {
   String get keypadValidateRound => 'Подтвердить раунд';
 
   @override
-  String get keypadZeroZapZap => '0 ZapZap';
-
-  @override
   String get keypadToggleSign => 'Сменить знак';
 
   @override
   String get keypadBackspace => 'Стереть цифру';
+
+  @override
+  String get keypadShortcutTitle => 'Быстрая клавиша';
+
+  @override
+  String get keypadShortcutKind => 'Тип клавиши';
+
+  @override
+  String get keypadShortcutKindValue => 'Ввести значение';
+
+  @override
+  String get keypadShortcutKindMultiply =>
+      'Умножить счёт (только положительный)';
+
+  @override
+  String get keypadShortcutKindAdd => 'Прибавить к счёту';
+
+  @override
+  String get keypadShortcutAmount => 'Число';
+
+  @override
+  String get keypadShortcutLabel => 'Надпись на клавише (необязательно)';
+
+  @override
+  String keypadShortcutAddRange(int min, int max) {
+    return 'Целое число от $min до $max, кроме 0';
+  }
+
+  @override
+  String keypadShortcutAmountRange(int min, int max) {
+    return 'Целое число от $min до $max';
+  }
 
   @override
   String get appearance => 'Внешний вид';

@@ -437,12 +437,6 @@ abstract class AppLocalizations {
   /// **'Valider le tour'**
   String get keypadValidateRound;
 
-  /// Score keypad shortcut key, ZapZap games only: a zero for the player who called ZapZap
-  ///
-  /// In fr, this message translates to:
-  /// **'0 ZapZap'**
-  String get keypadZeroZapZap;
-
   /// Tooltip of the score keypad's ± key
   ///
   /// In fr, this message translates to:
@@ -454,6 +448,60 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Effacer un chiffre'**
   String get keypadBackspace;
+
+  /// Game-type editor: heading of the section that sets the score keypad's extra key for this type
+  ///
+  /// In fr, this message translates to:
+  /// **'Raccourci du pavé'**
+  String get keypadShortcutTitle;
+
+  /// Game-type editor: dropdown label, what the keypad's extra key does (none, a value, a multiplication, an addition)
+  ///
+  /// In fr, this message translates to:
+  /// **'Type de touche'**
+  String get keypadShortcutKind;
+
+  /// Game-type editor, keypad shortcut: the key enters a fixed score and moves on to the next player
+  ///
+  /// In fr, this message translates to:
+  /// **'Saisir une valeur'**
+  String get keypadShortcutKindValue;
+
+  /// Game-type editor, keypad shortcut: the key multiplies the score typed; a zero or negative score is left as it is
+  ///
+  /// In fr, this message translates to:
+  /// **'Multiplier le score (positif seulement)'**
+  String get keypadShortcutKindMultiply;
+
+  /// Game-type editor, keypad shortcut: the key adds a number to the score typed
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter au score'**
+  String get keypadShortcutKindAdd;
+
+  /// Game-type editor, keypad shortcut: the field for the value, the multiplier or the number added
+  ///
+  /// In fr, this message translates to:
+  /// **'Nombre'**
+  String get keypadShortcutAmount;
+
+  /// Game-type editor, keypad shortcut: the text shown on the key; left empty, the key shows the number (162, ×2, +50)
+  ///
+  /// In fr, this message translates to:
+  /// **'Libellé de la touche (facultatif)'**
+  String get keypadShortcutLabel;
+
+  /// Game-type editor, keypad shortcut: error under the number field of an addition when it is empty, out of range or 0 (an addition of 0 would do nothing)
+  ///
+  /// In fr, this message translates to:
+  /// **'Un nombre entier entre {min} et {max}, autre que 0'**
+  String keypadShortcutAddRange(int min, int max);
+
+  /// Game-type editor, keypad shortcut: error under the number field when it is empty or out of range
+  ///
+  /// In fr, this message translates to:
+  /// **'Un nombre entier entre {min} et {max}'**
+  String keypadShortcutAmountRange(int min, int max);
 
   /// Settings section for appearance
   ///

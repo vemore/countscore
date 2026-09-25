@@ -53,7 +53,6 @@ SAME_AS_ENGLISH_OK = {
     "gameTypeName*": ALL_LOCALES,   # Yahtzee, Qwirkle, Uno, Skyjo, Rummikub, Farkle,
                                     # Bridge, Tarot, Canasta, Wizard, Scrabble, ZapZap --
                                     # proper nouns that most locales keep as they are
-    "keypadZeroZapZap": ALL_LOCALES,  # "0 ZapZap" -- a digit and the game's name
     "gameRulesInApp": {"de"},        # "In CountScore" is the German for it too
     "ok": {"fr", "de", "pt", "ja"},  # "OK" is the loanword in all four
     "version": {"fr", "de"},         # "Version {version}"

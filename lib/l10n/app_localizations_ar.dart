@@ -189,13 +189,41 @@ class AppLocalizationsAr extends AppLocalizations {
   String get keypadValidateRound => 'تأكيد الجولة';
 
   @override
-  String get keypadZeroZapZap => '0 ZapZap';
-
-  @override
   String get keypadToggleSign => 'تغيير الإشارة';
 
   @override
   String get keypadBackspace => 'حذف رقم';
+
+  @override
+  String get keypadShortcutTitle => 'اختصار لوحة الأرقام';
+
+  @override
+  String get keypadShortcutKind => 'نوع المفتاح';
+
+  @override
+  String get keypadShortcutKindValue => 'إدخال قيمة';
+
+  @override
+  String get keypadShortcutKindMultiply => 'ضرب النتيجة (الموجبة فقط)';
+
+  @override
+  String get keypadShortcutKindAdd => 'الإضافة إلى النتيجة';
+
+  @override
+  String get keypadShortcutAmount => 'رقم';
+
+  @override
+  String get keypadShortcutLabel => 'نص المفتاح (اختياري)';
+
+  @override
+  String keypadShortcutAddRange(int min, int max) {
+    return 'عدد صحيح بين $min و$max غير الصفر';
+  }
+
+  @override
+  String keypadShortcutAmountRange(int min, int max) {
+    return 'عدد صحيح بين $min و$max';
+  }
 
   @override
   String get appearance => 'المظهر';

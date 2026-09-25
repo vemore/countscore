@@ -189,13 +189,41 @@ class AppLocalizationsJa extends AppLocalizations {
   String get keypadValidateRound => 'ラウンドを確定';
 
   @override
-  String get keypadZeroZapZap => '0 ZapZap';
-
-  @override
   String get keypadToggleSign => '符号を切り替え';
 
   @override
   String get keypadBackspace => '1桁削除';
+
+  @override
+  String get keypadShortcutTitle => 'キーパッドのショートカット';
+
+  @override
+  String get keypadShortcutKind => 'キーの種類';
+
+  @override
+  String get keypadShortcutKindValue => '値を入力';
+
+  @override
+  String get keypadShortcutKindMultiply => 'スコアを掛ける（正の値のみ）';
+
+  @override
+  String get keypadShortcutKindAdd => 'スコアに足す';
+
+  @override
+  String get keypadShortcutAmount => '数値';
+
+  @override
+  String get keypadShortcutLabel => 'キーの表示（任意）';
+
+  @override
+  String keypadShortcutAddRange(int min, int max) {
+    return '$min〜$max の整数（0 以外）';
+  }
+
+  @override
+  String keypadShortcutAmountRange(int min, int max) {
+    return '$min〜$max の整数';
+  }
 
   @override
   String get appearance => '外観';

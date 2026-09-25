@@ -2,7 +2,7 @@
 
 > Scope: the Flutter app's own structure — entry point, state, screens, models.
 > Related: [[DataLayer]] · [[SchemaV10]] · [[I18n]] · [[Web]] · [[Testing]]
-> Updated: 2026-09-24
+> Updated: 2026-09-25
 
 ## Facts
 
@@ -79,6 +79,18 @@ flagged under the switch without blocking the save. A deletion asks
 ICU plural rather than the repository's English exception. After a save that changed a
 condition on a type that has rules, the screen *offers* the rules editor — nothing is
 rewritten.
+
+The form's last section is the **keypad shortcut** (`Key('game_type_shortcut_kind')`): *None*,
+a value, a multiplication (positive scores only, which the item says), or an addition; then
+the number (a leading minus allowed) and an optional label of up to 12 **code points** — a
+formatter refuses the 13th as it is typed, the unit the model and the server count, so an
+emoji label is never accepted and then dropped — whose hint is the label the key shows
+without one. Changing the kind clears the label. The number is checked against
+`KeypadShortcut.boundsOf` — values −999999 to 999999, multipliers 2 to 10, additions −99999
+to 99999 but not 0 — and an error under the field names the range
+(`keypadShortcutAmountRange`; `keypadShortcutAddRange` for an addition, which also names
+the 0 it refuses). It is offered on every type, built-in ones included; *None*
+saves `clearKeypadShortcut`.
 
 **Player statistics.** `player_stats_screen` is a leaderboard: a row of game-type chips
 (`Key('stats_chip_all')`, then `stats_chip_<key>` for each type with a finished game, most
@@ -425,7 +437,7 @@ board's `analysisRepo` is.
 
 ### Models — `lib/models/`
 
-`game`, `game_type`, `player`, `round`, `score`, `game_analysis`, `analysis_style`. Plain classes with
+`game`, `game_type`, `keypad_shortcut`, `player`, `round`, `score`, `game_analysis`, `analysis_style`. Plain classes with
 `toMap`/`fromMap`. `player.dart` has no `gameId` since v9 — its `id` is a
 `game_players.id`. See [[SchemaV10]].
 
@@ -433,6 +445,12 @@ board's `analysisRepo` is.
 and into SharedPreferences (`analysisStyle`) and whose label is translated. It mirrors
 `PERSONAS` in `backend/app/services/analysis/personas.py`: a new voice is added in both
 places plus the ten ARB files.
+
+`keypad_shortcut.dart` is the keypad's per-type key: a closed representation — a kind
+(`value`, `multiply`, `add`), an integer amount within that kind's bounds, an optional label —
+that exists only valid. `tryCreate` refuses an amount out of bounds, `decode` returns null for
+anything that is not exactly a shortcut and never throws, so a malformed stored or pulled value
+reads as "no shortcut" and cannot break the keypad. `game_type.dart` re-exports it.
 
 `game.dart` carries `finishedAt` since v12, with `isFinished` next to `isShared`. Its
 `copyWith` takes a `clearFinishedAt` flag: `x ?? this.x` cannot express "set this back to
@@ -605,9 +623,18 @@ its own (`keypadNext` carries the line break in all ten languages), moves on; th
 label is a `FitWordsText`, so no language breaks it inside a word; on the last player the key reads "Validate round", and only then is the round
 written, in one go (`GameProvider.addRoundWithScores`, one notification) — closing the sheet
 drops it, so an abandoned round leaves no empty row. An untouched player scores 0. For
-ZapZap (`builtinKey == 'zapzap'`) the bottom-left key is "0 ZapZap", a zero that moves on;
-for every other game it is the plain 0 (per-game shortcuts are
-`wip/todo_nr/2026-09-18-keypad-has-no-per-game-shortcut.md`). From five players
+a game type with a keypad shortcut (`GameType.keypadShortcut`, schema v21) the bottom-left
+key is that shortcut (`Key('keypad_shortcut')`) and the 0 moves to the bottom of the third
+column; for every other type it is the plain 0 and that corner is empty. The board passes
+`gameType?.keypadShortcut`, nothing else. A **value** ("0 ZapZap", "162", "100") enters that
+score and moves on, as the ZapZap key always did; an **operation** applies to the score on
+display and stays on the player: "×2" doubles it (12 then ×2 is 24) and does nothing on a
+zero or a negative score — Skyjo doubles a penalty, never a bonus — and "+50" adds to it. The
+next digit after any shortcut starts a new number, as on a calculator — a value that cannot
+move on (the round's last player, a single score) included, so "162" then 8 is 8; a result
+past six digits is refused (the key does nothing). Built-in labels are digits and signs, plus the game's
+name for ZapZap, the same in every locale, so they are not ARB keys (`keypadZeroZapZap` was
+removed). From five players
 (`kKeypadPositionFrom`) the chips scroll with the current one kept in view, and the caption
 adds the position ("4/8"). A cell tap opens the same sheet on that one score, prefilled —
 the first digit replaces it — with "Save". Both paths then note the eliminations — the
@@ -660,6 +687,20 @@ the reason. That warning *is* the tree-shaking constraint showing up in the anal
 not "fix" it by hardcoding a codepoint.
 
 ## Decisions & History
+
+- **The keypad shortcut is per game type, a closed value, and a column (2026-09-24,
+  `feat/keypad-game-shortcuts`).** The ZapZap key was a `builtinKey` test in the board; the
+  entry (`wip/done/2026-09-18-keypad-has-no-per-game-shortcut.md`) decided five shortcuts from
+  the shipped rules and that a user's type may have its own. A closed shape (kind, amount,
+  label) rather than free text or an expression, so both the app and the server can check it
+  and a value from a later version degrades to a plain 0. One JSON column rather than three,
+  so the shortcut moves, syncs and is cleared as one value. `multiply` applies to a positive
+  score only because the only rule that asks for it — Skyjo's closer, doubled when not
+  strictly lowest — doubles a penalty; a zero or negative score is left alone instead of
+  being turned into a larger bonus. A value moves on (it is a whole score), an operation stays
+  (the result is still to be checked). Built-in labels are not localized: digits, "×", "+"
+  and a game's name read the same in the ten languages, as the keypad's own digits do; the
+  "0 ZapZap" label moved from the ARB key into the seed.
 
 - **The game-type editor saves with `copyWith`, and validates on the fields (2026-09-20,
   `fix/game-type-editor`).** It built a fresh `GameType` from the form, so every save wrote
@@ -875,6 +916,9 @@ not "fix" it by hardcoding a codepoint.
   validation. The ZapZap key is the only per-game shortcut for now; the others wait for a
   per-type setting, which needs a schema change. The ARB keys `addRound`, `score` and
   `enterScore` went with the dialog.
+  > **Status: Outdated** (2026-09-24) — the per-type setting landed with schema v21
+  > (`feat/keypad-game-shortcuts`): `game_types.keypad_shortcut`, five built-in shortcuts and
+  > the editor's section. See the first entry of this list.
 - **Finishing a game shows who won** (2026-09-19, `feat/game-end-screen`). The game-over
   `AlertDialog` ("continue" or "finish", then straight back to the list) and the home menu's
   "Game finished" snackbar never named the winner. Both became `GameEndScreen`, shown on
