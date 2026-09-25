@@ -67,8 +67,8 @@ def test_an_unknown_or_custom_type_gets_the_generic_block_and_invents_nothing(na
         (None, None, None),
         ("firstPlayerOver", 500, "as soon as one player's total reaches 500"),
         ("firstPlayerUnder", 0, "as soon as one player's total falls below 0"),
-        ("lastPlayerOver", 11, "once every player's total has gone above 11"),
-        ("lastPlayerUnder", 3, "once every player's total has fallen below 3"),
+        ("lastPlayerOver", 11, "when every player but one is above 11 points"),
+        ("lastPlayerUnder", 3, "when every player but one is below 3 points"),
     ],
 )
 def test_the_configuration_renders_from_the_structured_fields(
@@ -129,3 +129,17 @@ def test_unknown_conditions_mean_absent_rather_than_invalid(value, expected):
 )
 def test_game_over_conditions_normalise_case_insensitively(value, expected):
     assert normalise_game_over_condition(value) == expected
+
+
+def test_last_player_over_renders_as_last_player_standing():
+    """The survivor never crosses: the rule is 'all but one', not 'every player'."""
+    block = describe_rules(
+        "ZapZap",
+        GameRules(
+            is_lowest_score_wins=True,
+            game_over_condition_type=normalise_game_over_condition("lastPlayerOver"),
+            game_over_threshold=100,
+        ),
+    )
+    assert "- The game ends when every player but one is above 100 points." in block.splitlines()
+    assert "every player's total" not in block
