@@ -1,5 +1,7 @@
 # The keyboard reopens on the game name after closing the "Qui joue ?" sheet
 
+**Status:** done (2026-09-25) — closed by fix/new-game-keyboard-focus. `CreateGameScreen` drops the focus before opening the players sheet and the *All games* sheet (the only two sheets on the screen), so the name field is not refocused on close; two widget tests in `create_game_screen_test.dart` pin it.
+
 - **Noted:** 2026-09-25 — testing `main` (05894ee) on the Pixel
 - **Theme:** visual-refresh
 - **Area:** app

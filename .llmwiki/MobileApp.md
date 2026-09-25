@@ -184,7 +184,9 @@ player shows one colour here and on the board — with *Add a player* opening th
 playing" sheet (`player_picker_sheet.dart`); and a full-width *Start · N players* in the
 `bottomNavigationBar`, enabled from two players. The seat order written is the list's order
 (`orderIndex`). `boardBuilder` replaces the board in tests. The *Share with the group*
-switch stays, under the players, while the device is in a group.
+switch stays, under the players, while the device is in a group. Both sheets (players, *All
+games*) drop the focus before they open: a modal route gives focus back on close, and the
+name field's keyboard would come back up over the players just picked.
 
 `about_screen` reads the displayed version from `package_info_plus`
 (`PackageInfo.fromPlatform()`, held in a `static final` future) — i.e. from `pubspec.yaml`
@@ -269,7 +271,11 @@ Seventeen components shared out of the screens:
   in the dialog's own `State`, so the board's is never touched and closing the dialog stops
   it. The last duration is remembered **per game type**, SharedPreferences
   `turnTimerSeconds.<game type id>` (`turnTimerSeconds.none` for a game without a type),
-  default 60 s. No schema, no permission.
+  default 60 s. No schema, no permission. **One layout in every state** — the time, a
+  fixed-height slot for "Time's up!", start / pause as a full-width button, Reset and Close
+  side by side under it (not `AlertDialog` actions, which stack once a label no longer
+  fits); labels scale down rather than wrap, so nothing moves between two taps
+  (`wip/done/2026-09-25-the-turn-timer-dialog-changes-shape-while-it-runs.md`).
 - `group_settings_section.dart` — Settings → Group: create or join a group, show its invite
   code, leave it, and show where sync stands; usable only once a server URL is set. *New
   code* is shown to the group's owner only; *Comments and usage* opens
@@ -320,11 +326,20 @@ Seventeen components shared out of the screens:
   *Game sounds* (`SettingsProvider.gameSounds`), SharedPreferences `gameSounds`, **off by
   default**, read on every play so a board needs no provider. The platform is behind the
   `SoundPlayer` seam — `AudioplayersSoundPlayer` (audioplayers 6.8.1, MIT, one short-lived
-  low-latency player per sound) in the app, `test/support/fake_sound_player.dart` in tests;
+  player per sound) in the app, `test/support/fake_sound_player.dart` in tests;
   `GameBoardScreen.sounds` takes the instance. A failure to play is swallowed. On the web
   the browser allows sound only after a user gesture, and a score typed on the keypad is one;
   audioplayers fetches the asset from the app's own origin (`connect-src 'self'`) and plays
   it in an `<audio>` element (`default-src 'self'`), so the PWA's CSP needs no change.
+  **The sounds never take the music away** from another app: before its first player,
+  `AudioplayersSoundPlayer` sets audioplayers' global `AudioContext`
+  (`AudioplayersSoundPlayer.audioContext`) — Android `USAGE_GAME`, `CONTENT_TYPE_SONIFICATION`
+  and a `AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK` request, so background music ducks and comes back;
+  iOS the `ambient` session category, which mixes (the web has no audio context and skips it).
+  Android only gives the focus back when the player stops, so each player runs in
+  `PlayerMode.mediaPlayer`, which reports its completion — the low-latency SoundPool mode never
+  does, and so used to hold `AUDIOFOCUS_GAIN` for good — and is disposed on completion or after
+  5 s, whichever comes first.
 
 ### Utilities — `lib/utils/`
 
@@ -639,8 +654,9 @@ removed). From five players
 adds the position ("4/8"). A cell tap opens the same sheet on that one score, prefilled —
 the first digit replaces it — with "Save". Both paths then note the eliminations — the
 elimination sound once per write that puts a player out, never twice for the same player
-until a correction brings them back, and only with *Game sounds* on — and run the game-over
-check, as the score dialog they replace did. When that check ends the game by rule
+until a correction brings them back, and only with *Game sounds* on; not at all when the same
+write ends the game (`_canEndByRule`, read before the write), so the last round plays the
+victory sound alone — and run the game-over check, as the score dialog they replace did. When that check ends the game by rule
 (`_finishAndShowEnd(byRule: true)`, or the end screen held back while the keypad was open)
 the victory sound plays; a finished game reopened plays nothing, nor does *End game* by hand.
 

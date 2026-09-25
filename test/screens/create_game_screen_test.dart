@@ -288,6 +288,50 @@ void main() {
     expect(find.text('Start · 3 players'), findsOneWidget);
   });
 
+  // wip/done/2026-09-25-the-keyboard-reopens-on-the-game-name-after-picking-players.md:
+  // closing the sheet gave focus back to the name, and the keyboard covered
+  // the players just picked.
+  testWidgets('closing the player sheet leaves no text field focused',
+      (tester) async {
+    await aPreviousGame();
+    await open(tester);
+
+    await tester.tap(find.byKey(const Key('create_game_name')));
+    await tester.pumpAndSettle();
+    final focused = find.byWidgetPredicate(
+        (w) => w is EditableText && w.focusNode.hasFocus);
+    expect(focused, findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('create_add_player')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('player_chip_Lionel')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('player_picker_confirm')));
+    await tester.pumpAndSettle();
+
+    expect(seatNames(tester), ['Lionel']);
+    expect(focused, findsNothing);
+    expect(tester.testTextInput.isVisible, isFalse);
+  });
+
+  testWidgets('closing the "All games" sheet leaves no text field focused',
+      (tester) async {
+    await open(tester);
+
+    await tester.tap(find.byKey(const Key('create_game_name')));
+    await tester.pumpAndSettle();
+    final focused = find.byWidgetPredicate(
+        (w) => w is EditableText && w.focusNode.hasFocus);
+    expect(focused, findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('game_type_all')));
+    await tester.pumpAndSettle();
+    await tester.tapAt(const Offset(200, 20)); // the barrier: dismissed
+    await tester.pumpAndSettle();
+
+    expect(focused, findsNothing);
+  });
+
   testWidgets('"All games" picks a type that is not on the tiles',
       (tester) async {
     await open(tester);

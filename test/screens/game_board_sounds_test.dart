@@ -104,6 +104,40 @@ void main() {
       expect(board.sounds.played, [GameSound.victory]);
     });
 
+    testWidgets(
+        'the round that eliminates the last-but-one player and ends the game '
+        'plays the victory sound alone', (tester) async {
+      final typeId =
+          await board.aType(eliminatesOver: 100, overAt: 100, lastStanding: true);
+      await board.aGame(['Ann', 'Bob', 'Cat'], typeId: typeId);
+      await board.open(tester);
+
+      // Ann goes out: an elimination, the game goes on.
+      await board.enterRound(tester, [120, 20, 30]);
+      expect(find.byType(StandingsScreen), findsNothing);
+      expect(board.sounds.played, [GameSound.elimination]);
+
+      // Bob goes out and leaves Cat alone: the victory, and nothing on top of
+      // it (wip/done/2026-09-25-game-sounds-take-audio-focus-and-overlap-on-the-last-round.md).
+      await board.enterRound(tester, [90, 10]);
+      expect(find.byType(StandingsScreen), findsOneWidget);
+      expect(board.sounds.played, [GameSound.elimination, GameSound.victory]);
+    });
+
+    testWidgets(
+        'a score edit that eliminates a player and ends the game plays the '
+        'victory sound alone', (tester) async {
+      final typeId = await board.aType(eliminatesOver: 100, overAt: 100);
+      await board.aGame(['Ann', 'Bob'], typeId: typeId, rounds: [
+        [10, 20],
+      ]);
+      await board.open(tester);
+
+      await board.editScore(tester, 'Ann', 0, 150);
+      expect(find.byType(StandingsScreen), findsOneWidget);
+      expect(board.sounds.played, [GameSound.victory]);
+    });
+
     testWidgets('reopening a finished game plays nothing', (tester) async {
       final typeId = await board.aType(overAt: 100);
       await board.aGame(['Ann', 'Bob'], typeId: typeId, rounds: [

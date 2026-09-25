@@ -67,8 +67,10 @@ class BoardHarness {
   Future<void> close() => db.close();
 
   /// A type that puts a player out over [eliminatesOver] and/or ends the game
-  /// once a player reaches [overAt].
-  Future<int> aType({int? eliminatesOver, int? overAt}) {
+  /// once a player reaches [overAt] — or, with [lastStanding], once every
+  /// player but one is over [overAt].
+  Future<int> aType(
+      {int? eliminatesOver, int? overAt, bool lastStanding = false}) {
     return gameTypes.createGameType(GameType(
       name: 'Seuil',
       iconCodePoint: Icons.casino.codePoint,
@@ -78,7 +80,11 @@ class BoardHarness {
           eliminatesOver == null ? null : PlayerDeadConditionType.over,
       playerDeadThreshold: eliminatesOver,
       gameOverConditionType:
-          overAt == null ? null : GameOverConditionType.firstPlayerOver,
+          overAt == null
+              ? null
+              : (lastStanding
+                  ? GameOverConditionType.lastPlayerOver
+                  : GameOverConditionType.firstPlayerOver),
       gameOverThreshold: overAt,
     ));
   }

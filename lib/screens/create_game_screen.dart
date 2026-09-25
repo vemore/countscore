@@ -122,13 +122,20 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
     });
   }
 
+  /// Drops the focus before a sheet opens. A modal route gives focus back to
+  /// what held it when it closes: the name field, whose keyboard then covered
+  /// the players just picked.
+  void _unfocusBeforeSheet() => FocusManager.instance.primaryFocus?.unfocus();
+
   Future<void> _showAllTypes(List<GameType> types) async {
+    _unfocusBeforeSheet();
     final picked = await showAllGameTypesSheet(context,
         types: types, selectedId: _selectedGameTypeId);
     if (picked != null && mounted) _selectType(picked);
   }
 
   Future<void> _pickPlayers() async {
+    _unfocusBeforeSheet();
     final result = await showPlayerPickerSheet(
       context,
       knownPlayers: _knownPlayers,

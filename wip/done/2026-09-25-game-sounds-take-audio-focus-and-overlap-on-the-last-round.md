@@ -1,5 +1,7 @@
 # Game sounds take audio focus, and the final elimination and victory sounds play on top of each other
 
+**Status:** done (2026-09-25) — closed by fix/game-sounds-audio-focus. `AudioplayersSoundPlayer` sets a global audioplayers `AudioContext` (Android `USAGE_GAME` + `AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK`, iOS `ambient`) and plays in `mediaPlayer` mode, disposed on completion or after 5 s — the low-latency SoundPool mode never reports completion, so it never gave the focus back. A write that both eliminates and ends the game plays `victory` alone (`test/screens/game_board_sounds_test.dart`, a round and a score edit). The ducking itself is still to be heard on the Pixel.
+
 - **Noted:** 2026-09-25 — testing `main` (05894ee) on the Pixel with Settings → Sons de jeu on
 - **Theme:** game-types
 - **Area:** app
