@@ -123,75 +123,131 @@ class _TurnTimerDialogState extends State<TurnTimerDialog> {
     final theme = Theme.of(context);
     final editable = !_running && _remaining == _duration;
     const step = TurnTimerDialog.stepSeconds;
+    final clockStyle = theme.textTheme.displayMedium?.copyWith(
+      fontWeight: FontWeight.w800,
+      fontFeatures: const [FontFeature.tabularFigures()],
+      color: _timeUp ? theme.colorScheme.error : null,
+    );
+    // One layout for every state, so no button moves under the finger
+    // between two taps (wip/done/2026-09-25-the-turn-timer-dialog-changes-
+    // shape-while-it-runs.md): the dialog takes its full width, every label
+    // stays on one line (scaled down when too long), the clock is scaled as
+    // its widest value, and "Time's up!" has a slot of its own, empty until
+    // zero. Start / pause is one full-width button; Reset and Close share
+    // the row under it instead of AlertDialog's actions, which stack in a
+    // column the moment one label no longer fits.
     return AlertDialog(
       title: Text(l10n.turnTimer),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                key: const Key('turn_timer_less'),
-                tooltip: l10n.turnTimerLess,
-                icon: const Icon(Icons.remove),
-                onPressed: editable && _duration > step
-                    ? () => _setDuration(_duration - step)
-                    : null,
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              height: 72,
+              child: Row(
+                children: [
+                  IconButton(
+                    key: const Key('turn_timer_less'),
+                    tooltip: l10n.turnTimerLess,
+                    icon: const Icon(Icons.remove),
+                    onPressed: editable && _duration > step
+                        ? () => _setDuration(_duration - step)
+                        : null,
+                  ),
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // The widest value, invisible: it sets the scale.
+                          Visibility(
+                            visible: false,
+                            maintainSize: true,
+                            maintainAnimation: true,
+                            maintainState: true,
+                            child: Text(_clock(TurnTimerDialog.maxSeconds),
+                                style: clockStyle),
+                          ),
+                          Text(
+                            _clock(_remaining),
+                            key: const Key('turn_timer_value'),
+                            style: clockStyle,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    key: const Key('turn_timer_more'),
+                    tooltip: l10n.turnTimerMore,
+                    icon: const Icon(Icons.add),
+                    onPressed:
+                        editable && _duration < TurnTimerDialog.maxSeconds
+                            ? () => _setDuration(_duration + step)
+                            : null,
+                  ),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  _clock(_remaining),
-                  key: const Key('turn_timer_value'),
-                  style: theme.textTheme.displayMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                    color: _timeUp ? theme.colorScheme.error : null,
+            ),
+            SizedBox(
+              height: 28,
+              child: _timeUp
+                  ? Center(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          l10n.turnTimerTimeUp,
+                          key: const Key('turn_timer_time_up'),
+                          maxLines: 1,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                              color: theme.colorScheme.error,
+                              fontWeight: FontWeight.w800),
+                        ),
+                      ),
+                    )
+                  : null,
+            ),
+            const SizedBox(height: 8),
+            FilledButton(
+              key: const Key('turn_timer_start'),
+              onPressed: _running ? _pause : _start,
+              child: _oneLine(
+                  _running ? l10n.turnTimerPause : l10n.turnTimerStart),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    key: const Key('turn_timer_reset'),
+                    onPressed:
+                        _remaining == _duration && !_running ? null : _reset,
+                    child: _oneLine(l10n.turnTimerReset),
                   ),
                 ),
-              ),
-              IconButton(
-                key: const Key('turn_timer_more'),
-                tooltip: l10n.turnTimerMore,
-                icon: const Icon(Icons.add),
-                onPressed: editable && _duration < TurnTimerDialog.maxSeconds
-                    ? () => _setDuration(_duration + step)
-                    : null,
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 24,
-            child: _timeUp
-                ? Text(
-                    l10n.turnTimerTimeUp,
-                    key: const Key('turn_timer_time_up'),
-                    style: theme.textTheme.titleMedium?.copyWith(
-                        color: theme.colorScheme.error,
-                        fontWeight: FontWeight.w800),
-                  )
-                : null,
-          ),
-        ],
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextButton(
+                    key: const Key('turn_timer_close'),
+                    onPressed: () => Navigator.pop(context),
+                    child: _oneLine(l10n.close),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
-      actions: [
-        TextButton(
-          key: const Key('turn_timer_reset'),
-          onPressed: _remaining == _duration && !_running ? null : _reset,
-          child: Text(l10n.turnTimerReset),
-        ),
-        FilledButton(
-          key: const Key('turn_timer_start'),
-          onPressed: _running ? _pause : _start,
-          child: Text(_running ? l10n.turnTimerPause : l10n.turnTimerStart),
-        ),
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(l10n.close),
-        ),
-      ],
     );
   }
+
+  /// A button label kept on one line, scaled down rather than wrapped, so a
+  /// long translation never changes the button's height.
+  static Widget _oneLine(String label) => FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(label, maxLines: 1, softWrap: false),
+      );
 }

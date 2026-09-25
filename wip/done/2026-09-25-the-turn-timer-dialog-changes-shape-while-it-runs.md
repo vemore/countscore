@@ -4,6 +4,7 @@
 - **Theme:** visual-refresh
 - **Area:** app
 - **Blocks release:** no
+- **Status:** done (2026-09-25) — closed by fix/turn-timer-dialog-layout. The dialog keeps one layout: start / pause is a full-width button under the time, Reset and Close share a row under it (out of `AlertDialog.actions`), "Temps écoulé !" has a fixed 28 dp slot, the clock is scaled as its widest value and every label scales down instead of wrapping. `test/widgets/turn_timer_dialog_layout_test.dart` checks the dialog and its buttons keep the same rect stopped, running, at zero and on a longer duration, at 360 dp in fr, de and ru.
 
 Stopped, the timer dialog shows "Réinitialiser · Démarrer · Fermer" on one row. Running, the
 primary button becomes "Mettre en pause", the three actions no longer fit in one row, and the
