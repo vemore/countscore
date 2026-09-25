@@ -633,6 +633,13 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     });
   }
 
+  /// Whether a write made now that meets the game type's end condition ends
+  /// the game — and so plays the victory sound: the game is not finished and
+  /// its end screen has not been answered. Read *before* the write, since the
+  /// provider's notification runs [_maybeShowGameOver] as soon as it lands.
+  bool _canEndByRule(GameProvider gameProvider) =>
+      !_gameOverDismissed && !(gameProvider.currentGame?.isFinished ?? true);
+
   /// Whether a score keypad sheet is open over the board.
   bool _keypadOpen = false;
 
@@ -972,8 +979,12 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
       return;
     }
     if (scores == null) return;
+    final canEnd = _canEndByRule(gameProvider);
     await gameProvider.addRoundWithScores(scores);
-    _noteEliminations(gameProvider, gameType, before);
+    final someoneOut = _noteEliminations(gameProvider, gameType, before);
+    _playElimination(
+        someoneOut: someoneOut,
+        gameEnds: canEnd && _checkGameOverCondition(gameProvider, gameType));
     // Also the moment a game already past its threshold — crossed on another
     // device, or in an earlier session — gets noticed.
     await _maybeShowGameOver(gameProvider, gameType);
@@ -1013,18 +1024,21 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     await _showPendingEndScreen();
     final value = result?[player.id];
     if (value == null || !mounted) return;
+    final canEnd = _canEndByRule(gameProvider);
     await gameProvider.updateScore(player.id!, round.id!, value);
-    _noteEliminations(gameProvider, gameType, before);
+    final someoneOut = _noteEliminations(gameProvider, gameType, before);
+    _playElimination(
+        someoneOut: someoneOut,
+        gameEnds: canEnd && _checkGameOverCondition(gameProvider, gameType));
     await _maybeShowGameOver(gameProvider, gameType);
   }
 
-  /// Plays the elimination sound when a write just put a player out of the
-  /// game — once per write, however many went out with it, and never twice for
-  /// the same player — and forgets a player a correction brought back. With
-  /// "Game sounds" off (the default) nothing plays at all.
-  void _noteEliminations(
+  /// Records the players a write just put out of the game — never twice for
+  /// the same player — and forgets a player a correction brought back.
+  /// Returns whether anyone went out, for [_playElimination].
+  bool _noteEliminations(
       GameProvider gameProvider, GameType? gameType, Map<int, int> before) {
-    if (gameType == null || !mounted) return;
+    if (gameType == null || !mounted) return false;
     var someoneOut = false;
     setState(() {
       for (final e in before.entries) {
@@ -1037,7 +1051,15 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
         }
       }
     });
-    if (someoneOut) unawaited(_sounds.play(GameSound.elimination));
+    return someoneOut;
+  }
+
+  /// The elimination sound, once per write however many went out with it —
+  /// unless the same write ends the game: then the victory sound plays alone,
+  /// rather than 160 ms after the elimination and on top of it. With "Game
+  /// sounds" off (the default) nothing plays at all.
+  void _playElimination({required bool someoneOut, required bool gameEnds}) {
+    if (someoneOut && !gameEnds) unawaited(_sounds.play(GameSound.elimination));
   }
 
   void _showCommentDialog(
