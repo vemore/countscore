@@ -491,6 +491,12 @@ abstract class AppLocalizations {
   /// **'Libellé de la touche (facultatif)'**
   String get keypadShortcutLabel;
 
+  /// Game-type editor, keypad shortcut: error under the number field of an addition when it is empty, out of range or 0 (an addition of 0 would do nothing)
+  ///
+  /// In fr, this message translates to:
+  /// **'Un nombre entier entre {min} et {max}, autre que 0'**
+  String keypadShortcutAddRange(int min, int max);
+
   /// Game-type editor, keypad shortcut: error under the number field when it is empty or out of range
   ///
   /// In fr, this message translates to:

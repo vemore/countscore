@@ -385,7 +385,14 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
         : KeypadShortcut.tryCreate(kind, amount,
             label: _shortcutLabelController.text);
     if (shortcut == null) {
-      return (value: null, error: l10n.keypadShortcutAmountRange(min, max));
+      // An addition of 0 would be a key that does nothing: the message names
+      // the exclusion, since 0 lies inside the range it gives.
+      return (
+        value: null,
+        error: kind == KeypadShortcutKind.add
+            ? l10n.keypadShortcutAddRange(min, max)
+            : l10n.keypadShortcutAmountRange(min, max),
+      );
     }
     return (value: shortcut, error: null);
   }
@@ -750,12 +757,12 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
               ],
               onChanged: (value) {
                 setState(() {
+                  // A label names what the key did ("Capot" for a value):
+                  // another kind makes it wrong, so it goes with the old one.
+                  if (value != _shortcutKind) _shortcutLabelController.clear();
                   _shortcutKind = value;
                   _shortcutError = null;
-                  if (value == null) {
-                    _shortcutAmountController.clear();
-                    _shortcutLabelController.clear();
-                  }
+                  if (value == null) _shortcutAmountController.clear();
                 });
               },
             ),
@@ -783,9 +790,15 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
               TextField(
                 key: const Key('game_type_shortcut_label'),
                 controller: _shortcutLabelController,
-                maxLength: KeypadShortcut.labelMaxLength,
+                // Code points, as the model and the server count them: a
+                // character past the limit is refused as it is typed, never
+                // accepted here and dropped on save.
+                inputFormatters: [_labelCodePoints],
+                onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   labelText: l10n.keypadShortcutLabel,
+                  counterText: '${_shortcutLabelController.text.runes.length}'
+                      '/${KeypadShortcut.labelMaxLength}',
                   // What the key reads when the label is left empty: digits
                   // and a sign, the same in every locale.
                   hintText: _shortcutPreview(),
@@ -810,6 +823,15 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
     );
   }
 }
+
+/// Caps the keypad-shortcut label at [KeypadShortcut.labelMaxLength] code
+/// points, the unit the model and the server count.
+final _labelCodePoints = TextInputFormatter.withFunction(
+  (oldValue, newValue) =>
+      newValue.text.runes.length > KeypadShortcut.labelMaxLength
+          ? oldValue
+          : newValue,
+);
 
 /// A whole-number field: `keyboardType` is a keyboard *hint* — on the web build
 /// letters reach the controller unless a formatter stops them.

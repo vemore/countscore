@@ -216,6 +216,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get keypadShortcutLabel => 'キーの表示（任意）';
 
   @override
+  String keypadShortcutAddRange(int min, int max) {
+    return '$min〜$max の整数（0 以外）';
+  }
+
+  @override
   String keypadShortcutAmountRange(int min, int max) {
     return '$min〜$max の整数';
   }

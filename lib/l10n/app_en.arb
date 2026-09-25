@@ -125,6 +125,8 @@
 
   "keypadShortcutLabel": "Key label (optional)",
 
+  "keypadShortcutAddRange": "A whole number between {min} and {max}, other than 0",
+
   "keypadShortcutAmountRange": "A whole number between {min} and {max}",
 
   "appearance": "Appearance",

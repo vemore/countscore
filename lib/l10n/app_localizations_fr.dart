@@ -217,6 +217,11 @@ class AppLocalizationsFr extends AppLocalizations {
   String get keypadShortcutLabel => 'Libellé de la touche (facultatif)';
 
   @override
+  String keypadShortcutAddRange(int min, int max) {
+    return 'Un nombre entier entre $min et $max, autre que 0';
+  }
+
+  @override
   String keypadShortcutAmountRange(int min, int max) {
     return 'Un nombre entier entre $min et $max';
   }

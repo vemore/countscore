@@ -125,6 +125,8 @@
 
   "keypadShortcutLabel": "نص المفتاح (اختياري)",
 
+  "keypadShortcutAddRange": "عدد صحيح بين {min} و{max} غير الصفر",
+
   "keypadShortcutAmountRange": "عدد صحيح بين {min} و{max}",
 
   "appearance": "المظهر",

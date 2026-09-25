@@ -46,7 +46,11 @@ class KeypadShortcut {
   static const addMin = -99999;
   static const addMax = 99999;
 
-  /// The longest label, in characters: the key is a quarter of a phone's width.
+  /// The longest label, in **code points** (`String.runes`): the key is a
+  /// quarter of a phone's width. Code points everywhere — here, in the editor's
+  /// field and on the server (Python's `len`) — so the three agree on an emoji,
+  /// which `maxLength` (grapheme clusters) and `String.length` (UTF-16 units)
+  /// would each count differently.
   static const labelMaxLength = 12;
 
   /// The largest score the keypad holds (six digits, `kKeypadMaxDigits`).
@@ -73,7 +77,7 @@ class KeypadShortcut {
     final trimmed = label?.trim();
     final kept = trimmed == null ||
             trimmed.isEmpty ||
-            trimmed.length > labelMaxLength
+            trimmed.runes.length > labelMaxLength
         ? null
         : trimmed;
     return KeypadShortcut._(kind, amount, kept);

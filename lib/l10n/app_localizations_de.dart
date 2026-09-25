@@ -217,6 +217,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get keypadShortcutLabel => 'Tastenbeschriftung (optional)';
 
   @override
+  String keypadShortcutAddRange(int min, int max) {
+    return 'Eine ganze Zahl zwischen $min und $max, außer 0';
+  }
+
+  @override
   String keypadShortcutAmountRange(int min, int max) {
     return 'Eine ganze Zahl zwischen $min und $max';
   }

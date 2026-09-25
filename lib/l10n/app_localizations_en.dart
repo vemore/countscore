@@ -216,6 +216,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get keypadShortcutLabel => 'Key label (optional)';
 
   @override
+  String keypadShortcutAddRange(int min, int max) {
+    return 'A whole number between $min and $max, other than 0';
+  }
+
+  @override
   String keypadShortcutAmountRange(int min, int max) {
     return 'A whole number between $min and $max';
   }

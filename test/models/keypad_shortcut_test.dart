@@ -59,6 +59,22 @@ void main() {
     });
   });
 
+  group('label length', () {
+    test('is counted in code points, as the editor and the server count it',
+        () {
+      final twelve = '😀' * 12; // 24 UTF-16 units, 12 code points
+      expect(
+          KeypadShortcut.tryCreate(KeypadShortcutKind.value, 1, label: twelve)!
+              .label,
+          twelve);
+      expect(
+          KeypadShortcut.tryCreate(KeypadShortcutKind.value, 1,
+                  label: '😀' * 13)!
+              .label,
+          isNull);
+    });
+  });
+
   group('bounds', () {
     test('an amount out of its kind\'s bounds is refused', () {
       expect(KeypadShortcut.tryCreate(KeypadShortcutKind.multiply, 1), isNull);

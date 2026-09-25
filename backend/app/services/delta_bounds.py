@@ -74,7 +74,8 @@ def keypad_shortcut_problem(raw: str) -> str | None:
 
     The client's closed representation: a JSON object with ``kind`` (value, multiply
     or add), an integer ``amount`` within that kind's bounds, and an optional
-    ``label`` of 1 to 12 characters, nothing else. A malformed one is refused here,
+    ``label`` of 1 to 12 code points (``len``, as the app counts ``runes``), nothing
+    else. A malformed one is refused here,
     so a device never pulls one; the client reads anything else as "no shortcut"
     all the same.
     """
@@ -87,6 +88,8 @@ def keypad_shortcut_problem(raw: str) -> str | None:
     if not set(shortcut) <= {"kind", "amount", "label"}:
         return "keypad_shortcut has unknown fields"
     kind = shortcut.get("kind")
+    # A kind this server does not know is refused with the whole delta: a fourth
+    # kind needs this server deployed before any client pushes it.
     if kind not in KEYPAD_SHORTCUT_AMOUNTS:
         return "keypad_shortcut kind must be value, multiply or add"
     amount = shortcut.get("amount")

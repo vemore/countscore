@@ -359,6 +359,23 @@ void main() {
       expect(scoreOf('Bob'), 0);
     });
 
+    testWidgets('Belote: "162" on the last player, then a digit, starts a new '
+        'number', (tester) async {
+      await openRoundOf(tester, 'belote');
+
+      await type(tester, 40);
+      await validate(tester); // on to Bob, the last player
+      await tapKey(tester, 'keypad_shortcut');
+      expect(shown(tester), '162');
+      expect(find.text(l10n.keypadValidateRound), findsOneWidget,
+          reason: 'nobody left to move on to');
+      await type(tester, 8);
+      expect(shown(tester), '8', reason: 'not 1628');
+      await validate(tester);
+
+      expect(scoreOf('Bob'), 8);
+    });
+
     testWidgets('Scrabble: 23 then "+50" enters 73', (tester) async {
       await openRoundOf(tester, 'scrabble');
 

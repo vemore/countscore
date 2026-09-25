@@ -206,8 +206,10 @@ class _ScoreKeypadSheetState extends State<ScoreKeypadSheet> {
 
   /// The game type's key. A value replaces the entry and moves on, as the
   /// "0 ZapZap" key always did; an operation rewrites the score on display
-  /// (12 then ×2 is 24) and stays, and the next digit typed starts a new
-  /// number, as on a calculator. A key that does not apply — ×2 on a zero or
+  /// (12 then ×2 is 24) and stays. Either way the next digit typed on this
+  /// player starts a new number, as on a calculator — a value that cannot move
+  /// on (the round's last player, one score) is not appended to: "162" then 8
+  /// is 8, not 1628. A key that does not apply — ×2 on a zero or
   /// a negative score, a result past six digits — does nothing.
   void _shortcut() {
     final shortcut = widget.shortcut;
@@ -218,7 +220,7 @@ class _ScoreKeypadSheetState extends State<ScoreKeypadSheet> {
       _entry
         ..digits = '${result.abs()}'
         ..negative = result < 0
-        ..prefilled = !shortcut.movesOn;
+        ..prefilled = true;
     });
     if (shortcut.movesOn && widget.isRound && !_isLast) _next();
   }

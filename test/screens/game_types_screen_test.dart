@@ -673,6 +673,53 @@ void main() {
       expect(repo.updates.single.keypadShortcut, isNull);
     });
 
+    testWidgets('an addition of 0 is refused, and the message says why',
+        (tester) async {
+      final repo = await _pump(tester, count: 1, size: _editorSurface);
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+          find.byKey(const Key('game_type_name_field')), 'Maison');
+      await _chooseShortcut(tester, 'Ajouter au score');
+      await tester.enterText(
+          find.byKey(const Key('game_type_shortcut_amount')), '0');
+      await _save(tester);
+
+      expect(
+          find.text('Un nombre entier entre -99999 et 99999, autre que 0'),
+          findsOneWidget);
+      expect(repo.creations, isEmpty);
+    });
+
+    testWidgets('the label field refuses a 13th code point, emoji included',
+        (tester) async {
+      await _pump(tester, count: 1, size: _editorSurface);
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+      await _chooseShortcut(tester, 'Saisir une valeur');
+      final label = find.byKey(const Key('game_type_shortcut_label'));
+      await tester.enterText(label, '😀' * 12);
+      await tester.enterText(label, '😀' * 13);
+
+      expect(tester.widget<TextField>(label).controller!.text, '😀' * 12,
+          reason: 'refused as typed, never accepted here and dropped on save');
+    });
+
+    testWidgets('changing the kind clears the label', (tester) async {
+      await _pump(tester, count: 1, size: _editorSurface);
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+      await _chooseShortcut(tester, 'Saisir une valeur');
+      final label = find.byKey(const Key('game_type_shortcut_label'));
+      await tester.enterText(label, 'Capot');
+      await _chooseShortcut(tester, 'Ajouter au score');
+
+      expect(tester.widget<TextField>(label).controller!.text, isEmpty);
+    });
+
     testWidgets('a multiplier out of bounds, or none, is refused under its field',
         (tester) async {
       final repo = await _pump(tester, count: 1, size: _editorSurface);

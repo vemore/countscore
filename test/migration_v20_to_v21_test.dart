@@ -6,6 +6,8 @@
 // Built on the model of migration_v19_to_v20_test.dart: a current database is
 // stepped back to v20 (the column dropped), then reopened through both
 // engines' real upgrade callbacks and once more straight through `applyV21`.
+// The back-fill is local: capture is suppressed, so a group-linked row pushes
+// nothing and cannot outrank a shortcut the group already set.
 
 import 'dart:io';
 
@@ -124,10 +126,26 @@ void main() {
 
     expect(await db.getVersion(), 21);
     expectMigrated(await db.rawQuery(selectAll));
-    // The linked ZapZap is pushed with its new shortcut on the next sync.
-    final outbox = await db.query('outbox',
-        where: 'entity_type = ?', whereArgs: ['game_type']);
-    expect(outbox, isNotEmpty);
+  });
+
+  test('the back-fill of a group-linked row enqueues no outbox row, and '
+      'capture is back on afterwards', () async {
+    await writeV20File();
+
+    final db = await DatabaseService.instance.openForTesting(path);
+    addTearDown(db.close);
+
+    // The linked ZapZap got its seed locally, and nothing is queued: pushed,
+    // it would outrank a shortcut the group had already set on the type.
+    expect(await db.query('outbox'), isEmpty);
+    final flag = await db.query('sync_flags', where: 'id = 1');
+    expect(flag.single['suppress'], 0, reason: 'suppress must be restored');
+
+    // A real edit of the linked row is captured again.
+    await db.update('game_types', {'name': 'ZapZap!'},
+        where: "builtin_key = 'zapzap' AND deleted_at IS NULL");
+    expect(await db.query('outbox', where: "entity_type = 'game_type'"),
+        hasLength(1));
   });
 
   test("web: Drift's onUpgrade adds keypad_shortcut and fills the built-ins",
@@ -139,6 +157,8 @@ void main() {
 
     final rows = await db.customSelect(selectAll).get();
     expectMigrated([for (final r in rows) r.data]);
+    expect(await db.customSelect('SELECT * FROM outbox').get(), isEmpty,
+        reason: 'the seed stays local on web too');
     final version = await db.customSelect('PRAGMA user_version').getSingle();
     expect(version.data.values.single, 21);
   });

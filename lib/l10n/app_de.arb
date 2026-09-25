@@ -125,6 +125,8 @@
 
   "keypadShortcutLabel": "Tastenbeschriftung (optional)",
 
+  "keypadShortcutAddRange": "Eine ganze Zahl zwischen {min} und {max}, außer 0",
+
   "keypadShortcutAmountRange": "Eine ganze Zahl zwischen {min} und {max}",
 
   "appearance": "Erscheinungsbild",

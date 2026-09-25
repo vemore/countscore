@@ -7,6 +7,7 @@ server_seq) are at the end of test_sync_ws_integration.py.
 
 from __future__ import annotations
 
+import json
 import uuid
 from unittest.mock import AsyncMock
 
@@ -650,6 +651,7 @@ async def test_a_game_type_keypad_shortcut_makes_the_round_trip(client):
         '{"kind":"value","amount":1,"label":""}',
         '{"kind":"value","amount":1,"label":"thirteen char"}',
         '{"kind":"value","amount":1,"extra":1}',
+        '{"kind":"value","amount":1,"label":"' + "\U0001f600" * 13 + '"}',
         7,
     ],
 )
@@ -672,3 +674,25 @@ async def test_a_malformed_keypad_shortcut_is_rejected_cleanly(client, shortcut)
     [(status, reason)] = _statuses(body)
     assert status == "rejected"
     assert "keypad_shortcut" in reason
+
+
+async def test_a_keypad_shortcut_label_is_counted_in_code_points(client):
+    """Twelve emoji are twelve code points, as the app counts them: accepted."""
+    _body, headers = await _group(client)
+    label = "\U0001f600" * 12
+    body = await _push(
+        client,
+        headers,
+        _delta(
+            "game_type",
+            uuid.uuid4(),
+            1,
+            name="Skyjo",
+            icon_code_point=1,
+            card_color_value=1,
+            keypad_shortcut=json.dumps(
+                {"kind": "value", "amount": 1, "label": label}, ensure_ascii=False
+            ),
+        ),
+    )
+    assert _statuses(body) == [("applied", None)]

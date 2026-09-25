@@ -125,6 +125,8 @@
 
   "keypadShortcutLabel": "कुंजी का लेबल (वैकल्पिक)",
 
+  "keypadShortcutAddRange": "{min} और {max} के बीच 0 के अलावा एक पूर्ण संख्या",
+
   "keypadShortcutAmountRange": "{min} और {max} के बीच एक पूर्ण संख्या",
 
   "appearance": "रूप-रंग",

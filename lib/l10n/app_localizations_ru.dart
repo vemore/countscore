@@ -217,6 +217,11 @@ class AppLocalizationsRu extends AppLocalizations {
   String get keypadShortcutLabel => 'Надпись на клавише (необязательно)';
 
   @override
+  String keypadShortcutAddRange(int min, int max) {
+    return 'Целое число от $min до $max, кроме 0';
+  }
+
+  @override
   String keypadShortcutAmountRange(int min, int max) {
     return 'Целое число от $min до $max';
   }

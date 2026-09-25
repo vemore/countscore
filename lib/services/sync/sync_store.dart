@@ -67,6 +67,13 @@ const _roundCommentMax = 500;
 const _analysisContentMax = 20000;
 
 /// The push side of `game_types.keypad_shortcut`: see `case 'game_type'`.
+///
+/// A NULL is pushed as a clear, so every way a local NULL arises has to be a
+/// choice: the editor's *None*, a type seeded or created without a shortcut,
+/// or a clear pulled from the group. The two that were not — a built-in row
+/// inserted from a delta with no key, and one whose pulled value this version
+/// cannot read — get the seed instead (`_insertedKeypadShortcut`), and the v21
+/// back-fill leaves no built-in row with a seed NULL.
 Map<String, Object?> _keypadShortcutPayload(Object? raw) {
   if (raw == null) return const {'keypad_shortcut': null};
   final shortcut = KeypadShortcut.decode(raw);
@@ -77,6 +84,22 @@ Map<String, Object?> _keypadShortcutPayload(Object? raw) {
 /// model cannot read — a new row stores that null (a plain 0), an existing row
 /// keeps its own value (`_applyGameType`).
 String? _pulledKeypadShortcut(Object? raw) => KeypadShortcut.decode(raw)?.encode();
+
+/// The shortcut a game type inserted from a pulled delta gets.
+///
+/// - an explicit null is the group's own *None*, kept;
+/// - a readable value, in its canonical form;
+/// - no key at all (a device that predates v21) or a value this version cannot
+///   read: the shortcut derived from the built-in key, as `rules_slug` is
+///   derived, and NULL for a user's type. A NULL there would be pushed by the
+///   next local edit as a clear nobody chose.
+String? _insertedKeypadShortcut(Map<String, dynamic> p, String? builtinKey) {
+  if (p.containsKey('keypad_shortcut') && p['keypad_shortcut'] == null) {
+    return null;
+  }
+  return _pulledKeypadShortcut(p['keypad_shortcut']) ??
+      keypadShortcutSeeds()[builtinKey];
+}
 
 const _rank = {
   'game_type': 0,
@@ -874,7 +897,7 @@ class SyncStore {
         // so this is the only repair left for a device joining the group before
         // a healthy one has pushed the slug back.
         'rules_slug': p['rules_slug'] ?? defaultRulesSlugs[builtinKey],
-        'keypad_shortcut': _pulledKeypadShortcut(p['keypad_shortcut']),
+        'keypad_shortcut': _insertedKeypadShortcut(p, builtinKey),
         'uuid': localUuid,
         'created_at': now,
         'updated_at': now,

@@ -369,6 +369,21 @@
     "description": "Game-type editor, keypad shortcut: the text shown on the key; left empty, the key shows the number (162, ×2, +50)"
   },
 
+  "keypadShortcutAddRange": "Un nombre entier entre {min} et {max}, autre que 0",
+  "@keypadShortcutAddRange": {
+    "description": "Game-type editor, keypad shortcut: error under the number field of an addition when it is empty, out of range or 0 (an addition of 0 would do nothing)",
+    "placeholders": {
+      "min": {
+        "type": "int",
+        "example": "-99999"
+      },
+      "max": {
+        "type": "int",
+        "example": "99999"
+      }
+    }
+  },
+
   "keypadShortcutAmountRange": "Un nombre entier entre {min} et {max}",
   "@keypadShortcutAmountRange": {
     "description": "Game-type editor, keypad shortcut: error under the number field when it is empty or out of range",

@@ -125,6 +125,8 @@
 
   "keypadShortcutLabel": "Texto de la tecla (opcional)",
 
+  "keypadShortcutAddRange": "Un número entero entre {min} y {max}, distinto de 0",
+
   "keypadShortcutAmountRange": "Un número entero entre {min} y {max}",
 
   "appearance": "Apariencia",

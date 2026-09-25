@@ -125,6 +125,8 @@
 
   "keypadShortcutLabel": "Надпись на клавише (необязательно)",
 
+  "keypadShortcutAddRange": "Целое число от {min} до {max}, кроме 0",
+
   "keypadShortcutAmountRange": "Целое число от {min} до {max}",
 
   "appearance": "Внешний вид",

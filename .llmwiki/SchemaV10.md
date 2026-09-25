@@ -70,7 +70,7 @@ column from the payload altogether — was rejected because a renamed type has n
 
 TEXT, nullable. The score keypad's extra key for the type, as the compact JSON of
 `KeypadShortcut.encode()` (`lib/models/keypad_shortcut.dart`): `{"kind":"multiply","amount":2}`,
-with an optional `"label"` of up to 12 characters. `kind` is `value`, `multiply` or `add`;
+with an optional `"label"` of up to 12 code points. `kind` is `value`, `multiply` or `add`;
 `amount` is an integer within that kind's bounds (−999999..999999, 2..10, −99999..99999 but
 not 0). NULL is a plain 0 on the keypad. `GameType.fromMap` decodes it with
 `KeypadShortcut.decode`, which returns null for anything malformed, so a bad value shows no
@@ -80,9 +80,10 @@ shortcut rather than breaking the keypad.
 column and fills the live rows keyed `zapzap`, `skyjo`, `belote`, `scrabble` and `rami` from
 their seeds (`keypadShortcutSeeds()`: "0 ZapZap" value 0, ×2, 162, +50, 100), on
 `keypad_shortcut IS NULL` only. The column is new, so a NULL there was never a choice. A
-renamed type (no key) and a deleted row are left alone; `updated_at` moves and the v11
-capture trigger pushes a linked row. Fresh installs get it from the seed through `toMap()`
-(sqflite `_createDB`, Drift `createAll`).
+renamed type (no key) and a deleted row are left alone. **The fill stays local**: capture is
+suppressed around the UPDATE (`sync_flags.suppress` saved in a temp table, set to 1, restored)
+and `updated_at` does not move, so a group-linked row enqueues nothing. Fresh installs get it
+from the seed through `toMap()` (sqflite `_createDB`, Drift `createAll`).
 
 Pushed as `keypad_shortcut`, a column the server gained in `0006_game_type_keypad_shortcut`
 (String 128), where `app/services/delta_bounds.py` refuses a malformed value as a rejected
@@ -256,7 +257,7 @@ pointing at it ([[Sync]]).
 | **v18** | **`applyV16` replayed**, so a `rules_slug` emptied *after* v16 had run comes back. `applyV18` in `lib/services/sync/sync_schema.dart` is literally `applyV16`, run by both engines; no column change, no new logic. It repairs the rows the pre-1.3.1 editor wiped (`rules`, `rules_slug`, `isDefault` cleared on every save, #179): `builtin_key` survives an edit, and `applyV16` keys on it and ignores `isDefault`, so the repair was already written — only a second run was missing. `UPDATE`s only, on `rules_slug IS NULL` alone, so a written ruleset, a slug already set and a keyless (created or renamed) type are untouched, and nothing is inserted. No user action clears a slug on purpose, so replaying is safe. `rules` the bug erased is user content with no second source and is not recoverable; `isDefault` is deliberately not restored. `test/migration_v17_to_v18_test.dart`. |
 | **v19** | **`builtin_key` given back to the live rows that never got it**, then `applyV16` replayed so they get their ruleset. `applyV19` in `lib/services/sync/sync_schema.dart`, run by both engines. A keyless live row takes a key when its stored name is — ignoring ASCII case — a name of exactly one built-in type **with a ruleset** in any of the ten locales, its seed name or its pre-v14 seed name (`builtinNamesByKey`), **and no live row holds that key**; one row per key, the oldest across all of that key's names. `other` is excluded: it has no ruleset, and "Other" is what anyone calls a type of their own. `isDefault` and the scoring columns are not read, and only `builtin_key` and `rules_slug` are written. It repairs the seeded row the v14 back-fill skipped because the old editor had cleared `isDefault` (the owner's Skyjo), and a user's own row older than the built-in it names, which v14 declined to insert beside it (the owner's "6 qui prend"). A renamed built-in, and a homonym of a built-in that is still there, stay keyless. No column change; nothing is inserted. `test/migration_v18_to_v19_test.dart`. |
 | **v20** | **`lastPlayerOver` on the last-survivor built-ins that have no end** — ZapZap, Rami and 6 qui prend (the seeds with `lastPlayerOver`, `lastPlayerStandingSeeds`), which feat/last-player-standing seeded on a new database only. `applyV20` in `lib/services/drift/schema_v20.dart` (not `sync_schema.dart`, to keep the sync layer untouched), run by both engines on upgrade. A live row keyed on one of the three, with `gameOverConditionType IS NULL` and an `over` elimination, gets `lastPlayerOver` at its own `playerDeadThreshold` (the seeded one if NULL: 100, 100, 65) and a new `updated_at`. A condition the user set, a deleted row, a row with no elimination and an `under` elimination are left alone. The editor's "None" (*Aucune*), a NULL end chosen on purpose, cannot be told from one never set, so it is overwritten. Finished games of these types are **re-ranked**: `GameStanding.ranksByEliminationOrder` is true for `lastPlayerOver`, so their final standings and the statistics' places follow the elimination order, and the winner can change when everyone went out (accepted by the user, 2026-09-24). The `UPDATE` fires the v11 `game_types` capture trigger, so a row linked into a group is pushed on the next sync; the server needs no change. No column change; nothing is inserted. `test/migration_v19_to_v20_test.dart`. |
-| **v21** | **`game_types.keypad_shortcut`** (TEXT, nullable): the score keypad's per-type key, a value or an operation, as compact JSON. `applyV21` in `lib/services/sync/sync_schema.dart`, run by both engines on upgrade: adds the column, then fills the live rows keyed `zapzap`, `skyjo`, `belote`, `scrabble`, `rami` from `keypadShortcutSeeds()` where it is NULL. Additive; `UPDATE`s only, nothing inserted, deleted or renamed rows untouched. Pushed as `keypad_shortcut`; the server gained it in `0006_game_type_keypad_shortcut`. `test/migration_v20_to_v21_test.dart`. |
+| **v21** | **`game_types.keypad_shortcut`** (TEXT, nullable): the score keypad's per-type key, a value or an operation, as compact JSON. `applyV21` in `lib/services/sync/sync_schema.dart`, run by both engines on upgrade: adds the column, then fills the live rows keyed `zapzap`, `skyjo`, `belote`, `scrabble`, `rami` from `keypadShortcutSeeds()` where it is NULL, with capture suppressed so nothing is pushed. Additive; `UPDATE`s only, nothing inserted, deleted or renamed rows untouched. Pushed as `keypad_shortcut` by later edits; the server gained it in `0006_game_type_keypad_shortcut`. `test/migration_v20_to_v21_test.dart`. |
 | v10 | **Sync bookkeeping**: `group_links`, `entity_versions`, `sync_inbox`; `outbox.rejected_at` / `reject_reason`; `sync_state.device_id` / `group_name`. Additive only — `_createSyncV10Tables` is the fresh-install and the upgrade path at once. |
 
 ### The v9 migration in detail
@@ -289,16 +290,23 @@ repairs the shape before the rest of the chain runs.
 
 ## Decisions & History
 
-- **The keypad shortcut is one JSON column, back-filled once (2026-09-24, `feat/keypad-game-shortcuts`).**
+- **The keypad shortcut is one JSON column, back-filled once and locally (2026-09-24, `feat/keypad-game-shortcuts`).**
   Three columns (kind, amount, label) were the alternative; one value keeps the shortcut
-  whole through the editor, the sync's per-column last-writer-wins and a clear, and a closed
-  JSON shape is still checkable on both sides. The step lives in `sync_schema.dart`, as the
-  db-migration skill says, rather than beside `schema_v20.dart`: the column is synced, and the
-  pull request was lane C anyway (`wip/todo_nr/2026-09-24-db-migration-skill-puts-every-step-in-the-sync-layer.md`
-  is still open). Known edge: a device still on v20 that pulls a clear from a v21 device
-  ignores the unknown key; when it upgrades, `applyV21` fills its NULL and pushes the seeded
-  shortcut back over the clear. Accepted: it needs a group with mixed versions and a cleared
-  built-in shortcut, and the user can clear it again.
+  whole through the editor and a clear, and a closed JSON shape is still checkable on both
+  sides. Sync's last-writer-wins is decided per **row** (a delta's lamport against the row's
+  last writer), while the server write and the pull apply only the keys a payload carries, so
+  one column also means the shortcut can never be half of one device's value and half of
+  another's. The step lives in `sync_schema.dart`, as the db-migration skill says, rather than
+  beside `schema_v20.dart`: the column is synced, and the pull request was lane C anyway
+  (`wip/todo_nr/2026-09-24-db-migration-skill-puts-every-step-in-the-sync-layer.md` is still
+  open).
+  **The back-fill is never pushed** (independent review of #216). A first version let the
+  UPDATE fire the capture trigger. The upgrading device's lamport then outranked what it had
+  pulled, so the day a lagging member upgraded, a group's own shortcut on Belote ("Capot 250")
+  or its *None* went back to "162" for everyone. Now capture is suppressed around the fill:
+  the seed is local, and a device that upgrades late shows the seed on a group type until the
+  next change it pulls for that type, or until its own next edit of it, which pushes what it
+  shows. Deliberately accepted over pushing: the group's choice survives every upgrade.
 
 - **Existing last-survivor types get their end by migration (2026-09-24, `fix/game-ends-on-last-player`).**
   feat/last-player-standing (2026-09-20) had followed the Uno/Président rule, "no migration

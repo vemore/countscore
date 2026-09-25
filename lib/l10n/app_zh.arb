@@ -125,6 +125,8 @@
 
   "keypadShortcutLabel": "按键文字（可选）",
 
+  "keypadShortcutAddRange": "{min} 到 {max} 之间的非零整数",
+
   "keypadShortcutAmountRange": "{min} 到 {max} 之间的整数",
 
   "appearance": "外观",

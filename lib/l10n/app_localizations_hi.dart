@@ -216,6 +216,11 @@ class AppLocalizationsHi extends AppLocalizations {
   String get keypadShortcutLabel => 'कुंजी का लेबल (वैकल्पिक)';
 
   @override
+  String keypadShortcutAddRange(int min, int max) {
+    return '$min और $max के बीच 0 के अलावा एक पूर्ण संख्या';
+  }
+
+  @override
   String keypadShortcutAmountRange(int min, int max) {
     return '$min और $max के बीच एक पूर्ण संख्या';
   }

@@ -687,6 +687,31 @@ void main() {
       expect(raw.data['keypad_shortcut'], isNull);
     });
 
+    test('a built-in type pulled with no keypad_shortcut key gets the seeded '
+        'one; an explicit null stays null', () async {
+      final m = await joined();
+      // A device that has neither type yet.
+      await db.customStatement(
+          "DELETE FROM game_types WHERE builtin_key IN ('belote', 'skyjo')");
+
+      await store.applyPulled(m, [
+        // From a device that predates v21: no key at all.
+        _delta('game_type', '12121212-1212-4121-8121-121212121212', 1, 1,
+            {'name': 'Belote', 'builtin_key': 'belote'}),
+        // The group cleared Skyjo's shortcut on purpose.
+        _delta('game_type', '34343434-3434-4343-8343-343434343434', 2, 2,
+            {'name': 'Skyjo', 'builtin_key': 'skyjo', 'keypad_shortcut': null}),
+      ], 2);
+
+      final all = await gameTypes.getAll();
+      expect(all.singleWhere((t) => t.builtinKey == 'belote').keypadShortcut,
+          KeypadShortcut.value(162),
+          reason: 'a NULL here would be pushed by the next local edit as a '
+              'clear nobody chose');
+      expect(all.singleWhere((t) => t.builtinKey == 'skyjo').keypadShortcut,
+          isNull);
+    });
+
     test('a game type deleted in the group is tombstoned here too', () async {
       final m = await joined();
       const remote = '55555555-5555-4555-8555-555555555555';

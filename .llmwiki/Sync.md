@@ -114,16 +114,25 @@ reads it while the key is set. See [[SchemaV10]] and [[I18n]].
 
 - **Server**: `keypad_shortcut_problem` in `backend/app/services/delta_bounds.py` refuses
   anything but an object of `kind` (value, multiply, add), an integer `amount` within that
-  kind's bounds and an optional `label` of 1 to 12 characters, as a rejected delta whose
-  reason names `keypad_shortcut`. The log therefore never holds a malformed one.
+  kind's bounds and an optional `label` of 1 to 12 code points, as a rejected delta whose
+  reason names `keypad_shortcut`. The log therefore never holds a malformed one. The cost is
+  forward compatibility: an unknown kind rejects the **whole** delta, so a fourth kind must
+  reach the server before any client pushes it.
 - **Push** (`case 'game_type'`, `_keypadShortcutPayload`): a null is sent as null — the
   editor's *None* clears it on purpose, unlike `rules_slug` — and a valid value in its
   canonical form. A value this version cannot read (malformed, or a kind a later version
   added) is **omitted**, so the whole row is not rejected over it and the server keeps what
   it has.
 - **Pull** (`_applyGameType`): an update takes a null or a readable value, and leaves the
-  local one alone when the incoming value cannot be read; an insert stores the canonical
-  form, or NULL. An absent key changes nothing, as for every column.
+  local one alone when the incoming value cannot be read. An insert keeps an explicit null
+  (the group's *None*) and stores a readable value canonically; with **no key** (a device
+  that predates v21) or an unreadable value, a built-in type gets the shortcut derived from its
+  key (`keypadShortcutSeeds()`, as `rules_slug` is derived) and a user's type NULL. A NULL
+  there would be pushed by the next local edit as a clear nobody chose
+  (`_insertedKeypadShortcut`). An absent key on an update changes nothing, as for every
+  column.
+- **Migration**: the v21 fill of the built-in rows is not pushed; capture is suppressed
+  around it ([[SchemaV10]]).
 
 Tests: `test/sync/sync_store_test.dart`, `backend/tests/test_sync_contract.py`, and the
 round trip through a real server in `test/sync/sync_two_devices_test.dart`.

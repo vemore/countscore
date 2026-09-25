@@ -216,6 +216,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get keypadShortcutLabel => 'نص المفتاح (اختياري)';
 
   @override
+  String keypadShortcutAddRange(int min, int max) {
+    return 'عدد صحيح بين $min و$max غير الصفر';
+  }
+
+  @override
   String keypadShortcutAmountRange(int min, int max) {
     return 'عدد صحيح بين $min و$max';
   }

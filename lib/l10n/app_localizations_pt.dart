@@ -217,6 +217,11 @@ class AppLocalizationsPt extends AppLocalizations {
   String get keypadShortcutLabel => 'Texto da tecla (opcional)';
 
   @override
+  String keypadShortcutAddRange(int min, int max) {
+    return 'Um número inteiro entre $min e $max, diferente de 0';
+  }
+
+  @override
   String keypadShortcutAmountRange(int min, int max) {
     return 'Um número inteiro entre $min e $max';
   }

@@ -582,9 +582,15 @@ Map<String, String> keypadShortcutSeeds() => {
 /// [keypadShortcutSeeds] their shortcut, matched on `builtin_key` alone (never
 /// `isDefault`, see .llmwiki/SchemaV10.md). The column is new, so a NULL here
 /// was never a choice and every such row is filled; a renamed type (no key)
-/// and a deleted one are left alone. `updated_at` moves, and the UPDATE fires
-/// the v11 `game_types` capture trigger, so a row linked into a group pushes
-/// its shortcut on the next sync.
+/// and a deleted one are left alone.
+///
+/// **The seed stays local.** Capture is suppressed around the UPDATE
+/// (`sync_flags.suppress`, read, set to 1, restored — the pattern of
+/// `DriftGameTypeRepository.delete`), and `updated_at` does not move. Pushed,
+/// the upgrading device's lamport would outrank what the group already holds,
+/// so a group's own shortcut on Belote — or its *None* — would go back to
+/// "162" for everyone the day a lagging member upgrades. A device that lags
+/// therefore shows the seed until the next change it pulls for that type.
 ///
 /// Idempotent: the column is checked before it is added, and the back-fill
 /// only touches `keypad_shortcut IS NULL`. It never inserts, so a type the
@@ -597,13 +603,22 @@ Future<void> applyV21(
   if (!existing.contains('keypad_shortcut')) {
     await execute('ALTER TABLE game_types ADD COLUMN keypad_shortcut TEXT');
   }
-  final now = DateTime.now().millisecondsSinceEpoch;
+  // SqlExecutor cannot read, so the flag is saved in a temp table: this runs
+  // inside the upgrade's transaction, where suppress is normally 0, but a step
+  // must not assume it.
+  await execute('DROP TABLE IF EXISTS temp.v21_sync_flag');
+  await execute('CREATE TEMP TABLE v21_sync_flag AS '
+      'SELECT suppress FROM sync_flags WHERE id = 1');
+  await execute('INSERT OR REPLACE INTO sync_flags (id, suppress) VALUES (1, 1)');
   for (final entry in keypadShortcutSeeds().entries) {
     await execute(
-      'UPDATE game_types SET keypad_shortcut = ?, updated_at = ? '
+      'UPDATE game_types SET keypad_shortcut = ? '
       'WHERE builtin_key = ? AND deleted_at IS NULL '
       'AND keypad_shortcut IS NULL',
-      [entry.value, now, entry.key],
+      [entry.value, entry.key],
     );
   }
+  await execute('INSERT OR REPLACE INTO sync_flags (id, suppress) VALUES '
+      '(1, COALESCE((SELECT suppress FROM temp.v21_sync_flag), 0))');
+  await execute('DROP TABLE temp.v21_sync_flag');
 }

@@ -82,11 +82,14 @@ rewritten.
 
 The form's last section is the **keypad shortcut** (`Key('game_type_shortcut_kind')`): *None*,
 a value, a multiplication (positive scores only, which the item says), or an addition; then
-the number (a leading minus allowed) and an optional label of up to 12 characters, whose hint
-is the label the key shows without one. The number is checked against
+the number (a leading minus allowed) and an optional label of up to 12 **code points** — a
+formatter refuses the 13th as it is typed, the unit the model and the server count, so an
+emoji label is never accepted and then dropped — whose hint is the label the key shows
+without one. Changing the kind clears the label. The number is checked against
 `KeypadShortcut.boundsOf` — values −999999 to 999999, multipliers 2 to 10, additions −99999
 to 99999 but not 0 — and an error under the field names the range
-(`keypadShortcutAmountRange`). It is offered on every type, built-in ones included; *None*
+(`keypadShortcutAmountRange`; `keypadShortcutAddRange` for an addition, which also names
+the 0 it refuses). It is offered on every type, built-in ones included; *None*
 saves `clearKeypadShortcut`.
 
 **Player statistics.** `player_stats_screen` is a leaderboard: a row of game-type chips
@@ -627,8 +630,9 @@ column; for every other type it is the plain 0 and that corner is empty. The boa
 score and moves on, as the ZapZap key always did; an **operation** applies to the score on
 display and stays on the player: "×2" doubles it (12 then ×2 is 24) and does nothing on a
 zero or a negative score — Skyjo doubles a penalty, never a bonus — and "+50" adds to it. The
-next digit after an operation starts a new number, as on a calculator; a result past six
-digits is refused (the key does nothing). Built-in labels are digits and signs, plus the game's
+next digit after any shortcut starts a new number, as on a calculator — a value that cannot
+move on (the round's last player, a single score) included, so "162" then 8 is 8; a result
+past six digits is refused (the key does nothing). Built-in labels are digits and signs, plus the game's
 name for ZapZap, the same in every locale, so they are not ARB keys (`keypadZeroZapZap` was
 removed). From five players
 (`kKeypadPositionFrom`) the chips scroll with the current one kept in view, and the caption

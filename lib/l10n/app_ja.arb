@@ -125,6 +125,8 @@
 
   "keypadShortcutLabel": "キーの表示（任意）",
 
+  "keypadShortcutAddRange": "{min}〜{max} の整数（0 以外）",
+
   "keypadShortcutAmountRange": "{min}〜{max} の整数",
 
   "appearance": "外観",

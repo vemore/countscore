@@ -215,6 +215,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get keypadShortcutLabel => '按键文字（可选）';
 
   @override
+  String keypadShortcutAddRange(int min, int max) {
+    return '$min 到 $max 之间的非零整数';
+  }
+
+  @override
   String keypadShortcutAmountRange(int min, int max) {
     return '$min 到 $max 之间的整数';
   }

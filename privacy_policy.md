@@ -411,7 +411,7 @@ changes are announced through app updates on the Google Play Store.
 ### Version History
 
 - **v2.12** (September 25, 2026): A game type can have a score keypad shortcut (such as
-  "×2" or "162"), set on the preset types and editable on your own. It is stored on your
+  "×2" or "162"), set on some preset types and editable on every type, presets included. It is stored on your
   device with the type and, for a shared game, sent with its game type: a number and, if you
   typed one, a label of at most 12 characters. No new recipient and no new category of
   information about you.
