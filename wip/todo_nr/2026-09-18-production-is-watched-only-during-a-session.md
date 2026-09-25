@@ -27,4 +27,10 @@ a model diagnosing the failure in read-only mode.
 **Postponed (2026-09-18, refinement):** the user is still prod's only user, so the
 watcher waits. Revisit when anyone else uses the service.
 
+**Seen again (2026-09-25):** the review of the NAS deploy against standard practice
+listed it too. The companion entries on the deploy itself — wait for health, roll back on
+failure, report the running sha — are
+[[2026-09-25-deploy-does-not-verify-or-roll-back]] and
+[[2026-09-25-deployed-version-is-not-identifiable]]; the watcher can check that sha.
+
 **Open question:** Is the production host reachable from GitHub-hosted runners, and may it live in a repository secret? Does a failure open an issue or a pull request?

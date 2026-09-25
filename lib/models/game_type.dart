@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'keypad_shortcut.dart';
+
+export 'keypad_shortcut.dart';
+
 enum PlayerDeadConditionType {
   over,
   under;
@@ -76,6 +80,11 @@ class GameType {
   /// type must not lose its rules.
   final String? rulesSlug;
 
+  /// The score keypad's extra key for this type — a value, or an operation on
+  /// the score typed — or null for a plain 0. Stored and pushed as
+  /// `keypad_shortcut` (schema v21); a malformed stored value reads as null.
+  final KeypadShortcut? keypadShortcut;
+
   GameType({
     this.id,
     this.builtinKey,
@@ -90,6 +99,7 @@ class GameType {
     this.gameOverThreshold,
     this.rules,
     this.rulesSlug,
+    this.keypadShortcut,
   });
 
   // The code point comes from the database, so it cannot be a constant. This is
@@ -190,6 +200,7 @@ class GameType {
       'gameOverThreshold': gameOverThreshold,
       'rules': rules,
       'rules_slug': rulesSlug,
+      'keypad_shortcut': keypadShortcut?.encode(),
     };
   }
 
@@ -212,6 +223,7 @@ class GameType {
       gameOverThreshold: map['gameOverThreshold'] as int?,
       rules: map['rules'] as String?,
       rulesSlug: map['rules_slug'] as String?,
+      keypadShortcut: KeypadShortcut.decode(map['keypad_shortcut']),
     );
   }
 
@@ -239,6 +251,8 @@ class GameType {
     String? rules,
     String? rulesSlug,
     bool clearRules = false,
+    KeypadShortcut? keypadShortcut,
+    bool clearKeypadShortcut = false,
   }) {
     return GameType(
       id: id ?? this.id,
@@ -264,18 +278,30 @@ class GameType {
       // shipped rules is exactly that — same shape as Game.clearFinishedAt.
       rules: clearRules ? null : (rules ?? this.rules),
       rulesSlug: rulesSlug ?? this.rulesSlug,
+      keypadShortcut: clearKeypadShortcut
+          ? null
+          : (keypadShortcut ?? this.keypadShortcut),
     );
   }
 
   // Types de jeux prédéfinis
+
+  // The keypad shortcuts (schema v21) follow wip/done/2026-09-18-keypad-has-no-
+  // per-game-shortcut.md, checked against assets/rules/rules_fr.md: ZapZap
+  // "0 ZapZap", Skyjo ×2 (the closer doubled when not strictly lowest,
+  // positive scores only), Belote 162 (the defence when the taker is dedans),
+  // Scrabble +50 (seven letters), Rami 100 (nothing laid down). None for Uno,
+  // Président, Tarot and Bridge; the others wait for their rules. `applyV21`
+  // back-fills existing rows from these seeds (`keypadShortcutSeeds`).
 
   // The three types that play to a last survivor — ZapZap, Rami and 6 qui
   // prend, the only ones with a `playerDeadConditionType` — end on
   // `lastPlayerOver` at the same threshold that puts a player out
   // (feat/last-player-standing, 2026-09-20). They carried no game-over
   // condition at all before, which is why a game with one player left still
-  // offered another round. As with Uno and Président below, no migration
-  // rewrites an existing row: only a new database seeds these values.
+  // offered another round. Unlike Uno and Président below, an existing row
+  // with no end gets this one from schema v20 (`applyV20`,
+  // lib/services/drift/schema_v20.dart); a condition the user set is kept.
   static GameType zapzap() => GameType(
         builtinKey: 'zapzap',
         name: 'ZapZap',
@@ -284,6 +310,7 @@ class GameType {
         cardColorValue: Colors.amber.toARGB32(),
         isLowestScoreWins: true,
         isDefault: true,
+        keypadShortcut: KeypadShortcut.value(0, label: '0 ZapZap'),
         playerDeadConditionType: PlayerDeadConditionType.over,
         playerDeadThreshold: 100,
         gameOverConditionType: GameOverConditionType.lastPlayerOver,
@@ -318,6 +345,7 @@ class GameType {
         cardColorValue: Colors.green.toARGB32(),
         isLowestScoreWins: false,
         isDefault: true,
+        keypadShortcut: KeypadShortcut.add(50),
       );
 
   static GameType autre() => GameType(
@@ -338,6 +366,7 @@ class GameType {
         cardColorValue: Colors.blue.toARGB32(),
         isLowestScoreWins: true,
         isDefault: true,
+        keypadShortcut: KeypadShortcut.multiply(2),
         gameOverConditionType: GameOverConditionType.firstPlayerOver,
         gameOverThreshold: 100,
       );
@@ -364,6 +393,7 @@ class GameType {
         cardColorValue: const Color(0xFF8B4513).toARGB32(), // Brown color
         isLowestScoreWins: false,
         isDefault: true,
+        keypadShortcut: KeypadShortcut.value(162),
         gameOverConditionType: GameOverConditionType.firstPlayerOver,
         gameOverThreshold: 1000,
       );
@@ -396,6 +426,7 @@ class GameType {
         cardColorValue: const Color(0xFF9C27B0).toARGB32(), // Deep purple
         isLowestScoreWins: true,
         isDefault: true,
+        keypadShortcut: KeypadShortcut.value(100),
         playerDeadConditionType: PlayerDeadConditionType.over,
         playerDeadThreshold: 100,
         gameOverConditionType: GameOverConditionType.lastPlayerOver,

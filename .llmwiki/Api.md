@@ -2,7 +2,7 @@
 
 > Scope: the HTTP and WebSocket surface. Source of truth is `backend/app/routes/`.
 > Related: [[Backend]] · [[Sync]] · [[LlmProviders]] · [[Security]]
-> Updated: 2026-09-20
+> Updated: 2026-09-25
 
 ## Facts
 
@@ -13,12 +13,13 @@
 
 | Method | Path | Auth | Notes |
 |---|---|---|---|
-| POST | `` | none | Create a group + its first device. 201. IP rate limited. |
-| POST | `/join` | none | Join via `share_token`. 201. IP rate limited. |
+| POST | `` | none | Create a group + its first device. 201. IP rate limited. `device_label` is a `DeviceLabel`, as on the rename below. |
+| POST | `/join` | none | Join via `share_token`. 201. IP rate limited. `device_label` is a `DeviceLabel`, as on the rename below. |
 | GET | `/me` | device | Returns the group. **No `share_token`** — see below. Carries `owner_device_id` (null only when no device of the group is live): how the app learns whether it is the owner. |
 | PATCH | `/me/settings` | device | `comment_style` and `comment_language`: every member. `monthly_budget_cents`: **owner only** (403 otherwise, whatever else the body carries — a refused request changes nothing), and 422 when it exceeds the operator's `MAX_BUDGET_CENTS` (unset: `DEFAULT_BUDGET_CENTS`) — the owner may lower the budget, not raise it past that. |
 | GET | `/me/usage` | device | Budget consumption: `{current_month_used_cents, budget_cents, resets_at}`, US cents. `resets_at` is always in the future — the next month start, UTC: once the stored reset has passed, the read reports 0 spent and the next month start without waiting for a charge to roll it over (`budget.current_period`; `GET /me`'s `current_month_used_cents` too). Feeds Settings → Group → Comments and usage, with `GET /me` for the style and language. |
 | GET | `/me/devices` | device | The group's **active** devices, oldest first: `{"devices": [{id, label, joined_at, last_seen_at, is_owner, dormant}]}`. `dormant` is `last_seen_at` older than `GROUP_OWNER_DORMANT_DAYS` (30) — stated per device because it is meaningful on any row, read by the app on the owner's, where it opens *Claim ownership*. Revoked devices are left out; no token or hash. Feeds Settings → Group → Devices. |
+| PATCH | `/devices/me` | device | `{"label": …}`: **renames the calling device**, and nothing else: `devices.label`, a `DeviceLabel` (`app/schemas/groups.py`): trimmed, 1 to 64 code points, no control character (Unicode `Cc`) and not only format characters (`Cf`, zero-width), **422** otherwise. Create and join take the same type. No device id in the path, so a device can only ever rename itself. Returns `{id, label}`. Not a synced row: no delta, the siblings see it on their next `GET /me/devices`. **429** + `Retry-After` past `DEVICE_RENAME_RL_PER_MINUTE` / `_PER_HOUR` (5 / 30) calls per device, in-memory bucket `device_rename`. `rename_my_device`, `tests/test_groups.py`. |
 | POST | `/me/devices/{device_id}/revoke` | device | Another device: **owner only** (403 otherwise); revokes it **and rotates `share_token`**, 200 with `GroupWithShareToken` — the revoked device learnt the old token when it joined. Again on a revoked device: the current token, no new one. The caller's own id: leaving (`GroupProvider.leave`), open to every member, 204, no rotation; an owner that leaves hands the role to the earliest-joined live device (none left: `owner_device_id` null). |
 | POST | `/me/rotate-share-token` | device | **Owner only** (403 otherwise). Invalidates the old share link. Returns `share_token`. |
 | PUT | `/me/owner` | device | `{"device_id": …}`. **Owner only** (403 otherwise). Hands the owner role to a live device of the group — 404 for a revoked device or one of another group; naming itself is a no-op. Returns the group (`GroupPayload`), no `share_token`, no rotation. |
@@ -69,7 +70,10 @@ the top of `app/routes/sync.py`:
 | `integrity constraint violation` | Anything the pre-checks missed, e.g. a NOT NULL column absent on create |
 
 Bounds failures keep their prose (`value out of bounds (…)`, `comment longer than 500
-characters`, …) — see `app/services/delta_bounds.py`.
+characters`, …) — see `app/services/delta_bounds.py`. A `game_type` payload's
+`keypad_shortcut` (since `0006_game_type_keypad_shortcut`, 2026-09-24) must be the client's
+closed JSON shape, or the delta is rejected with a reason that starts `keypad_shortcut`
+(`keypad_shortcut_problem`; [[Sync]]).
 
 Device tokens are `<device id hex>.<secret>` (`app/auth.py`). `require_device` runs at most
 one argon2 verify; a client address over `AUTH_FAIL_RL_PER_MINUTE` / `_PER_HOUR` failed
@@ -113,6 +117,16 @@ even with `EXPOSE_DOCS` off, so turning them on cannot break a deploy that start
 `tests/test_pwa.py`.
 
 ## Decisions & History
+
+- **A device names itself, and can rename itself (2026-09-24).** `feat/group-nickname-and-rename`:
+  production held two live devices both called "Mon appareil", because the join and create
+  dialogs pre-filled the name and everyone left it. The dialogs now ask for a nickname first,
+  empty and required, and `PATCH /groups/devices/me` lets a device change it afterwards. The
+  path names no device on purpose: there is nothing to authorise and no way to rename a
+  sibling. It sits under `/groups/devices/me` as the wip entry specified it, beside the
+  `/me/...` routes of the caller's group. Its own per-device bucket, like `sync_push`, so a
+  rename loop cannot eat another route's quota. The `devices.label` column already existed:
+  no migration.
 
 - **A dormant owner can be replaced, by a deliberate claim (2026-09-20).** `feat/group-owner-claim`
   closed the one group failure with no way out: an owner that uninstalls sends no request, so

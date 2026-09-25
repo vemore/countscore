@@ -107,11 +107,27 @@
 
   "keypadValidateRound": "ラウンドを確定",
 
-  "keypadZeroZapZap": "0 ZapZap",
-
   "keypadToggleSign": "符号を切り替え",
 
   "keypadBackspace": "1桁削除",
+
+  "keypadShortcutTitle": "キーパッドのショートカット",
+
+  "keypadShortcutKind": "キーの種類",
+
+  "keypadShortcutKindValue": "値を入力",
+
+  "keypadShortcutKindMultiply": "スコアを掛ける（正の値のみ）",
+
+  "keypadShortcutKindAdd": "スコアに足す",
+
+  "keypadShortcutAmount": "数値",
+
+  "keypadShortcutLabel": "キーの表示（任意）",
+
+  "keypadShortcutAddRange": "{min}〜{max} の整数（0 以外）",
+
+  "keypadShortcutAmountRange": "{min}〜{max} の整数",
 
   "appearance": "外観",
 
@@ -342,9 +358,13 @@
 
   "groupNameLabel": "グループ名",
 
-  "deviceLabelLabel": "この端末の名前",
+  "groupNicknameLabel": "ニックネーム",
 
-  "deviceLabelDefault": "マイ端末",
+  "groupNicknameHint": "グループの他のメンバーに表示されます",
+
+  "groupNicknameCurrent": "ニックネーム：{nickname}",
+
+  "groupNicknameEdit": "ニックネームを変更",
 
   "shareTokenLabel": "招待コード",
 
@@ -683,5 +703,16 @@
 
   "groupErrorOwnerActive": "グループのオーナーは最近利用しています。オーナーは引き継げません。",
 
-  "groupCreatedOwnerExplain": "グループを作成しました。このデバイスがオーナーです。この役割は「デバイス」で他のデバイスに引き継げます。"
+  "groupCreatedOwnerExplain": "グループを作成しました。このデバイスがオーナーです。この役割は「デバイス」で他のデバイスに引き継げます。",
+  "boardEliminated": "脱落",
+  "soundsSection": "サウンド",
+  "gameSounds": "ゲームサウンド",
+  "gameSoundsDescription": "プレイヤーの脱落時、勝利時、タイマー終了時に音を鳴らします",
+  "turnTimer": "ターンタイマー",
+  "turnTimerLess": "時間を減らす",
+  "turnTimerMore": "時間を増やす",
+  "turnTimerStart": "スタート",
+  "turnTimerPause": "一時停止",
+  "turnTimerReset": "リセット",
+  "turnTimerTimeUp": "時間切れ！"
 }

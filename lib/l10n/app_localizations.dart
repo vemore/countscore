@@ -437,12 +437,6 @@ abstract class AppLocalizations {
   /// **'Valider le tour'**
   String get keypadValidateRound;
 
-  /// Score keypad shortcut key, ZapZap games only: a zero for the player who called ZapZap
-  ///
-  /// In fr, this message translates to:
-  /// **'0 ZapZap'**
-  String get keypadZeroZapZap;
-
   /// Tooltip of the score keypad's ± key
   ///
   /// In fr, this message translates to:
@@ -454,6 +448,60 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Effacer un chiffre'**
   String get keypadBackspace;
+
+  /// Game-type editor: heading of the section that sets the score keypad's extra key for this type
+  ///
+  /// In fr, this message translates to:
+  /// **'Raccourci du pavé'**
+  String get keypadShortcutTitle;
+
+  /// Game-type editor: dropdown label, what the keypad's extra key does (none, a value, a multiplication, an addition)
+  ///
+  /// In fr, this message translates to:
+  /// **'Type de touche'**
+  String get keypadShortcutKind;
+
+  /// Game-type editor, keypad shortcut: the key enters a fixed score and moves on to the next player
+  ///
+  /// In fr, this message translates to:
+  /// **'Saisir une valeur'**
+  String get keypadShortcutKindValue;
+
+  /// Game-type editor, keypad shortcut: the key multiplies the score typed; a zero or negative score is left as it is
+  ///
+  /// In fr, this message translates to:
+  /// **'Multiplier le score (positif seulement)'**
+  String get keypadShortcutKindMultiply;
+
+  /// Game-type editor, keypad shortcut: the key adds a number to the score typed
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter au score'**
+  String get keypadShortcutKindAdd;
+
+  /// Game-type editor, keypad shortcut: the field for the value, the multiplier or the number added
+  ///
+  /// In fr, this message translates to:
+  /// **'Nombre'**
+  String get keypadShortcutAmount;
+
+  /// Game-type editor, keypad shortcut: the text shown on the key; left empty, the key shows the number (162, ×2, +50)
+  ///
+  /// In fr, this message translates to:
+  /// **'Libellé de la touche (facultatif)'**
+  String get keypadShortcutLabel;
+
+  /// Game-type editor, keypad shortcut: error under the number field of an addition when it is empty, out of range or 0 (an addition of 0 would do nothing)
+  ///
+  /// In fr, this message translates to:
+  /// **'Un nombre entier entre {min} et {max}, autre que 0'**
+  String keypadShortcutAddRange(int min, int max);
+
+  /// Game-type editor, keypad shortcut: error under the number field when it is empty or out of range
+  ///
+  /// In fr, this message translates to:
+  /// **'Un nombre entier entre {min} et {max}'**
+  String keypadShortcutAmountRange(int min, int max);
 
   /// Settings section for appearance
   ///
@@ -1307,17 +1355,29 @@ abstract class AppLocalizations {
   /// **'Nom du groupe'**
   String get groupNameLabel;
 
-  /// Text field label: how this device is named in the group
+  /// Text field label, first field of the create and join dialogs: the name the other members of the group see for this device. Starts empty and is required
   ///
   /// In fr, this message translates to:
-  /// **'Nom de cet appareil'**
-  String get deviceLabelLabel;
+  /// **'Votre pseudo'**
+  String get groupNicknameLabel;
 
-  /// Default value of the device name field
+  /// Hint under the nickname field: who will see it
   ///
   /// In fr, this message translates to:
-  /// **'Mon appareil'**
-  String get deviceLabelDefault;
+  /// **'Les autres membres du groupe le verront'**
+  String get groupNicknameHint;
+
+  /// Settings → Group: the nickname this device goes by in the group
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre pseudo : {nickname}'**
+  String groupNicknameCurrent(String nickname);
+
+  /// Tooltip of the edit button next to the nickname, and title of the rename dialog
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier votre pseudo'**
+  String get groupNicknameEdit;
 
   /// Label of the group invite code (the share token)
   ///
@@ -2572,6 +2632,72 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Groupe créé. Cet appareil en est propriétaire ; ce rôle peut être confié à un autre dans Appareils.'**
   String get groupCreatedOwnerExplain;
+
+  /// Screen-reader label of the skull above an eliminated player's avatar on the board
+  ///
+  /// In fr, this message translates to:
+  /// **'Éliminé'**
+  String get boardEliminated;
+
+  /// Settings section heading for the game sounds switch
+  ///
+  /// In fr, this message translates to:
+  /// **'Sons'**
+  String get soundsSection;
+
+  /// Settings switch: play sounds on elimination, victory and at the end of the turn timer (off by default)
+  ///
+  /// In fr, this message translates to:
+  /// **'Sons de jeu'**
+  String get gameSounds;
+
+  /// Subtitle of the game sounds switch in Settings
+  ///
+  /// In fr, this message translates to:
+  /// **'Un son quand un joueur est éliminé, quand la partie est gagnée et à la fin du minuteur'**
+  String get gameSoundsDescription;
+
+  /// Board overflow menu item and dialog title: a countdown for each player's turn
+  ///
+  /// In fr, this message translates to:
+  /// **'Minuteur'**
+  String get turnTimer;
+
+  /// Tooltip of the button that shortens the turn timer's duration by 15 seconds
+  ///
+  /// In fr, this message translates to:
+  /// **'Moins de temps'**
+  String get turnTimerLess;
+
+  /// Tooltip of the button that lengthens the turn timer's duration by 15 seconds
+  ///
+  /// In fr, this message translates to:
+  /// **'Plus de temps'**
+  String get turnTimerMore;
+
+  /// Turn timer button: start the countdown
+  ///
+  /// In fr, this message translates to:
+  /// **'Démarrer'**
+  String get turnTimerStart;
+
+  /// Turn timer button: pause the running countdown
+  ///
+  /// In fr, this message translates to:
+  /// **'Mettre en pause'**
+  String get turnTimerPause;
+
+  /// Turn timer button: put the countdown back to the chosen duration
+  ///
+  /// In fr, this message translates to:
+  /// **'Réinitialiser'**
+  String get turnTimerReset;
+
+  /// Shown in the turn timer when the countdown reaches zero
+  ///
+  /// In fr, this message translates to:
+  /// **'Temps écoulé !'**
+  String get turnTimerTimeUp;
 }
 
 class _AppLocalizationsDelegate

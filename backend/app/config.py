@@ -79,6 +79,11 @@ class Settings(BaseSettings):
     sync_push_rl_per_minute: int = 60
     sync_push_rl_per_hour: int = 1200
 
+    # Per-device cap on PATCH /groups/devices/me. A rename is cheap, but every member's
+    # devices sheet shows the label, so a device must not be able to churn it without bound.
+    device_rename_rl_per_minute: int = 5
+    device_rename_rl_per_hour: int = 30
+
     # Concurrent /sync/stream connections one device may hold. Several tabs of the PWA
     # share a device, so more than one; a cap, so one member cannot hold hundreds.
     max_streams_per_device: int = 3

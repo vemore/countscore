@@ -2,20 +2,58 @@
 
 from __future__ import annotations
 
+import unicodedata
 import uuid
 from datetime import datetime
+from typing import Annotated
 
-from pydantic import BaseModel, Field
+from pydantic import AfterValidator, BaseModel, Field, StringConstraints
+
+
+def _visible_label(label: str) -> str:
+    """Refuse a label with a control character, or made only of format characters.
+
+    A control character (Unicode ``Cc``: a newline, a tab, an escape) has no business in a
+    name every sibling sees; a label made only of format characters (``Cf``: zero-width
+    spaces and joiners) passes the length check and still shows nothing.
+    """
+    if any(unicodedata.category(c) == "Cc" for c in label):
+        raise ValueError("the label must not contain control characters")
+    if all(unicodedata.category(c) == "Cf" for c in label):
+        raise ValueError("the label must contain a visible character")
+    return label
+
+
+# A device's name in its group, as its siblings see it, on create, join and rename alike.
+# Surrounding whitespace is dropped before the length (1 to 64 code points) is checked, so a
+# blank label is a 422 rather than an invisible name, and so is one with a control character
+# or made only of zero-width characters.
+DeviceLabel = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, min_length=1, max_length=64),
+    AfterValidator(_visible_label),
+]
 
 
 class CreateGroupRequest(BaseModel):
     name: str = Field(min_length=1, max_length=64)
-    device_label: str = Field(default="default device", min_length=1, max_length=64)
+    device_label: DeviceLabel = "default device"
 
 
 class JoinGroupRequest(BaseModel):
     share_token: uuid.UUID
-    device_label: str = Field(min_length=1, max_length=64)
+    device_label: DeviceLabel
+
+
+class RenameDeviceRequest(BaseModel):
+    label: DeviceLabel
+
+
+class RenamedDevice(BaseModel):
+    """The caller's device after a rename: its id and the label now stored."""
+
+    id: uuid.UUID
+    label: str
 
 
 class DevicePayload(BaseModel):

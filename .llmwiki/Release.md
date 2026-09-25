@@ -2,7 +2,7 @@
 
 > Scope: the Play Store configuration state. For the procedure, use the `release-android` skill.
 > Related: [[MobileApp]] · [[StoreListing]] · [[Testing]] · [[KnownLimits]] · [[Documentation]]
-> Updated: 2026-09-20
+> Updated: 2026-09-25
 
 ## Facts
 
@@ -227,21 +227,22 @@ and CI refuses a pull request whose committed file differs — never edit it by 
 
 ### Submission state
 
-**1.4.0 (8) is on production at 20 %** since 2026-09-20 (`play_publish.py publish --track
+**1.5.0 (9) is on production at 20 %** since 2026-09-25 (`play_publish.py publish --track
 production --promote --rollout 0.2 --commit`), promoted from internal after a real-device pass
-on the Pixel 9 Pro XL. It is tagged `1.4.0+8` on `60ba644` and published as a GitHub release
-from the en-US notes — the first release to follow §10's `gh release create` step, which #196
-added the same day after the 1.3.0 release had to be created by hand. Internal keeps the same
-build. 1.2.0 (5) stays listed as the completed production release beside it until the Console
-widens 1.4.0 to 100 %.
+on the Pixel 9 Pro XL. It is tagged `1.5.0+9` on the release pull request's squash commit and
+published as a GitHub release from the en-US notes. Internal keeps the same build. 1.4.0 (8),
+widened to 100 % in the Console, stays listed as the completed production release beside it
+until 1.5.0 is widened.
 
-The device pass was again an **in-place upgrade over the sideloaded 1.3.1**, not the
-clean-install plus Settings → Import of §5: the installed build carries the upload key
-(`installerPackageName=null`), so `adb install -r` works and exercises the migration chain on
-the owner's real database. The database stepped v17 → v18; every game, player and winner
-survived, and the new launcher icon is live.
+The device pass was an **in-place upgrade over the sideloaded 1.4.0**, as for 1.4.0 over
+1.3.1: the installed build carries the upload key (`installerPackageName=null`), so
+`adb install -r` works and runs the migration chain v18 → v21 on the owner's real database.
+Every game, player and winner survived; finished ZapZap games show the skull and rank by
+elimination order (v20); the turn timer opens with the duration remembered for the type. The
+keypad shortcut was not exercised on the device: it needs a new game, which would sync into
+the owner's live group.
 
-**The device pass found that the release does not close its own blocker.** `6 qui prend` still
+(1.4.0, 2026-09-20.) **The device pass found that the release does not close its own blocker.** `6 qui prend` still
 shows "Pas encore de règles" after v18. ZapZap *was* repaired, but by sync rather than by the
 migration: the PWA took v18 at 13:56 UTC, repaired its `rules_slug` and pushed it over the
 server's NULL. An export of the owner's database shows three live seeded types with **no

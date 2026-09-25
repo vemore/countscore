@@ -287,6 +287,18 @@ def render(packages: list[Package]) -> str:
         "",
         "---",
         "",
+        "## Sounds",
+        "",
+        "### Game sounds",
+        "**License:** CC0 1.0 Universal (public domain dedication)  ",
+        "**Source:** synthesised by `scripts/generate_sounds.py` in this repository, from "
+        "sine waves alone; no sample or third-party recording  ",
+        "**Files:** `assets/sounds/{elimination,victory,timer_end}.wav`  ",
+        "**Description:** the board's elimination, victory and turn-timer sounds, played "
+        "only when Settings → Game sounds is on. CC0 asks for no credit",
+        "",
+        "---",
+        "",
         "## Development Dependencies",
         "",
         "Used to build and test the app; not shipped in it.",

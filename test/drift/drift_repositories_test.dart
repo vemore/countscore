@@ -136,6 +136,31 @@ void main() {
       expect(() => gameTypeRepo.delete(gtId), throwsA(isA<Exception>()));
     });
 
+    test('hard-deleting a type clears it from the tombstoned games', () async {
+      final gtId = await gameTypeRepo.create(GameType(
+        name: 'Gone',
+        iconCodePoint: 0,
+        cardColorValue: 0,
+        isLowestScoreWins: false,
+      ));
+      final gameId = await gameRepo.create(
+        Game(name: 'G', isLowestScoreWins: false, gameTypeId: gtId),
+      );
+      // A tombstoned game: invisible, so it does not block the delete.
+      await db.customStatement(
+          'UPDATE games SET deleted_at = 1 WHERE id = ?', [gameId]);
+
+      expect(await gameTypeRepo.delete(gtId), 1);
+
+      final type = await db.customSelect('SELECT id FROM game_types WHERE id = ?',
+          variables: [Variable(gtId)]).get();
+      expect(type, isEmpty, reason: 'no group knows the type: hard delete');
+      final game = await db.customSelect('SELECT gameTypeId FROM games WHERE id = ?',
+          variables: [Variable(gameId)]).getSingle();
+      expect(game.data['gameTypeId'], isNull,
+          reason: 'no game may point at a row that is gone');
+    });
+
     test('counts the games using a type, and the finished ones', () async {
       final gtId = await gameTypeRepo.create(GameType(
         name: 'Counted',
@@ -196,6 +221,7 @@ void main() {
           reason: 'the rules_slug back-fills select on isDefault = 1');
       expect(after.builtinKey, 'zapzap');
       expect(after.playerDeadThreshold, 42);
+      expect(after.keypadShortcut, GameType.zapzap().keypadShortcut);
 
       // The guard: adding a column to `GameType` without deciding what the
       // editor does with it fails here rather than in a user's database.
@@ -215,10 +241,35 @@ void main() {
           'gameOverThreshold',
           'rules',
           'rules_slug',
+          'keypad_shortcut',
         },
         reason: 'a new column must be carried by `copyWith` in '
             'game_types_screen.dart, or deliberately left out',
       );
+    });
+
+    test('a keypad shortcut makes the round trip through create and update',
+        () async {
+      final shortcut = KeypadShortcut.tryCreate(KeypadShortcutKind.add, 50,
+          label: 'Scrabble!')!;
+      final id = await gameTypeRepo.create(GameType(
+        name: 'Maison',
+        iconCodePoint: 0,
+        cardColorValue: 0,
+        isLowestScoreWins: false,
+        keypadShortcut: shortcut,
+      ));
+      expect((await gameTypeRepo.getById(id))!.keypadShortcut, shortcut);
+
+      final created = (await gameTypeRepo.getById(id))!;
+      await gameTypeRepo.update(
+          created.copyWith(keypadShortcut: KeypadShortcut.multiply(3)));
+      expect((await gameTypeRepo.getById(id))!.keypadShortcut,
+          KeypadShortcut.multiply(3));
+
+      await gameTypeRepo.update((await gameTypeRepo.getById(id))!
+          .copyWith(clearKeypadShortcut: true));
+      expect((await gameTypeRepo.getById(id))!.keypadShortcut, isNull);
     });
 
     test('a condition cleared back to None writes real NULLs', () async {

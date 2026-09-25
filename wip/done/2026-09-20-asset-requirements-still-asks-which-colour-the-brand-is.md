@@ -1,5 +1,7 @@
 # `ASSET_REQUIREMENTS.md` still asks the reader to pick a brand colour and an icon concept
 
+**Status:** done (2026-09-24) — closed by docs/readme-and-asset-requirements. `store_listing/ASSET_REQUIREMENTS.md` cut from 645 lines to Play's image limits table and the file layout, pointing at `lib/utils/app_theme.dart`, `design/icon/` and `.llmwiki/Release.md` §Icons for everything that was a design choice.
+
 - **Noted:** 2026-09-20 — while deleting the two purple brand guides (docs/brand-guides)
 - **Theme:** docs
 - **Area:** docs

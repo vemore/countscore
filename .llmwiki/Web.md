@@ -2,7 +2,7 @@
 
 > Scope: everything specific to the PWA build.
 > Related: [[DataLayer]] · [[MobileApp]] · [[Testing]] · [[LlmProviders]] · [[KnownLimits]]
-> Updated: 2026-09-19
+> Updated: 2026-09-24
 
 ## Facts
 
@@ -154,6 +154,16 @@ keep it 5 s after the tap), so what runs before `navigator.share` must stay shor
 > fallback is off), and the text alone was shared, still with the activation. Safari's
 > activation window was not measured; if it proves shorter, pre-drawing the card when the
 > screen opens is the fallback.
+
+**Game sounds should work in the PWA, under the current CSP.** audioplayers 6.8.1's web
+side (`audioplayers_web` 5.3.0) plays an asset by first fetching
+`assets/assets/sounds/<name>.wav` from the app's own origin with `http` (allowed by
+`connect-src 'self'`), then setting that same URL as the `src` of an `HTMLAudioElement`
+(media falls under `default-src 'self'`); no `blob:` or `data:` URL is involved, so
+`_PWA_CSP` (`backend/app/main.py:38`) needs no change. Browsers refuse audio before a user
+gesture; every sound follows one (a keypad tap, the timer's Start). A browser that refuses
+anyway lands in `GameSounds.play`'s catch. This was read from the package source on
+2026-09-24, not yet heard in a browser: the setting is off by default.
 
 ### Building
 

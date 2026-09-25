@@ -107,11 +107,27 @@
 
   "keypadValidateRound": "تأكيد الجولة",
 
-  "keypadZeroZapZap": "0 ZapZap",
-
   "keypadToggleSign": "تغيير الإشارة",
 
   "keypadBackspace": "حذف رقم",
+
+  "keypadShortcutTitle": "اختصار لوحة الأرقام",
+
+  "keypadShortcutKind": "نوع المفتاح",
+
+  "keypadShortcutKindValue": "إدخال قيمة",
+
+  "keypadShortcutKindMultiply": "ضرب النتيجة (الموجبة فقط)",
+
+  "keypadShortcutKindAdd": "الإضافة إلى النتيجة",
+
+  "keypadShortcutAmount": "رقم",
+
+  "keypadShortcutLabel": "نص المفتاح (اختياري)",
+
+  "keypadShortcutAddRange": "عدد صحيح بين {min} و{max} غير الصفر",
+
+  "keypadShortcutAmountRange": "عدد صحيح بين {min} و{max}",
 
   "appearance": "المظهر",
 
@@ -342,9 +358,13 @@
 
   "groupNameLabel": "اسم المجموعة",
 
-  "deviceLabelLabel": "اسم هذا الجهاز",
+  "groupNicknameLabel": "اسمك المستعار",
 
-  "deviceLabelDefault": "جهازي",
+  "groupNicknameHint": "سيراه الأعضاء الآخرون في المجموعة",
+
+  "groupNicknameCurrent": "اسمك المستعار: {nickname}",
+
+  "groupNicknameEdit": "تغيير اسمك المستعار",
 
   "shareTokenLabel": "رمز الدعوة",
 
@@ -683,5 +703,16 @@
 
   "groupErrorOwnerActive": "ظهر مالك المجموعة مؤخرًا: لا يمكن تولّي الملكية.",
 
-  "groupCreatedOwnerExplain": "تم إنشاء المجموعة. هذا الجهاز هو مالكها؛ ويمكن تسليم هذا الدور إلى جهاز آخر من «الأجهزة»."
+  "groupCreatedOwnerExplain": "تم إنشاء المجموعة. هذا الجهاز هو مالكها؛ ويمكن تسليم هذا الدور إلى جهاز آخر من «الأجهزة».",
+  "boardEliminated": "مُقصى",
+  "soundsSection": "الأصوات",
+  "gameSounds": "أصوات اللعبة",
+  "gameSoundsDescription": "صوت عند إقصاء لاعب، وعند الفوز باللعبة، وعند انتهاء المؤقت",
+  "turnTimer": "مؤقت الدور",
+  "turnTimerLess": "وقت أقل",
+  "turnTimerMore": "وقت أكثر",
+  "turnTimerStart": "ابدأ",
+  "turnTimerPause": "إيقاف مؤقت",
+  "turnTimerReset": "إعادة ضبط",
+  "turnTimerTimeUp": "انتهى الوقت!"
 }

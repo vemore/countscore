@@ -12,6 +12,7 @@ boundary rather than deep inside a transaction.
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from app.models.player import PLAYER_NAME_MAX_LENGTH, is_valid_player_name
@@ -22,6 +23,16 @@ _SCORE_ABS_MAX = 1_000_000
 ROUND_COMMENT_MAX_LENGTH = 500
 ANALYSIS_CONTENT_MAX_LENGTH = 20_000
 GAME_TYPE_RULES_MAX_LENGTH = 8_000
+KEYPAD_SHORTCUT_MAX_LENGTH = 128
+KEYPAD_SHORTCUT_LABEL_MAX_LENGTH = 12
+
+# kind → (min, max) of ``amount``, both inclusive. Mirrors ``KeypadShortcut.boundsOf``
+# in lib/models/keypad_shortcut.dart; an ``add`` of 0 is refused on top.
+KEYPAD_SHORTCUT_AMOUNTS: dict[str, tuple[int, int]] = {
+    "value": (-999_999, 999_999),
+    "multiply": (2, 10),
+    "add": (-99_999, 99_999),
+}
 
 # entity_type → field → (min, max), both inclusive.
 NUMERIC_BOUNDS: dict[str, dict[str, tuple[int, int]]] = {
@@ -53,8 +64,49 @@ STRING_MAX_LENGTHS: dict[str, dict[str, int]] = {
         "game_over_condition_type": 32,
         "rules": GAME_TYPE_RULES_MAX_LENGTH,
         "rules_slug": 32,
+        "keypad_shortcut": KEYPAD_SHORTCUT_MAX_LENGTH,
     },
 }
+
+
+def keypad_shortcut_problem(raw: str) -> str | None:
+    """Why ``raw`` is not a keypad shortcut the app can read, or None when it is.
+
+    The client's closed representation: a JSON object with ``kind`` (value, multiply
+    or add), an integer ``amount`` within that kind's bounds, and an optional
+    ``label`` of 1 to 12 code points (``len``, as the app counts ``runes``), nothing
+    else. A malformed one is refused here,
+    so a device never pulls one; the client reads anything else as "no shortcut"
+    all the same.
+    """
+    try:
+        shortcut = json.loads(raw)
+    except ValueError:
+        return "keypad_shortcut is not JSON"
+    if not isinstance(shortcut, dict):
+        return "keypad_shortcut must be an object"
+    if not set(shortcut) <= {"kind", "amount", "label"}:
+        return "keypad_shortcut has unknown fields"
+    kind = shortcut.get("kind")
+    # A kind this server does not know is refused with the whole delta: a fourth
+    # kind needs this server deployed before any client pushes it.
+    if kind not in KEYPAD_SHORTCUT_AMOUNTS:
+        return "keypad_shortcut kind must be value, multiply or add"
+    amount = shortcut.get("amount")
+    if not isinstance(amount, int) or isinstance(amount, bool):
+        return "keypad_shortcut amount must be an integer"
+    low, high = KEYPAD_SHORTCUT_AMOUNTS[kind]
+    if not low <= amount <= high or (kind == "add" and amount == 0):
+        return f"keypad_shortcut amount out of bounds for {kind}"
+    if "label" in shortcut:
+        label = shortcut["label"]
+        if (
+            not isinstance(label, str)
+            or not label.strip()
+            or len(label) > KEYPAD_SHORTCUT_LABEL_MAX_LENGTH
+        ):
+            return "keypad_shortcut label must be 1 to 12 characters"
+    return None
 
 
 def check_payload(entity_type: str, payload: dict[str, Any]) -> str | None:
@@ -81,6 +133,13 @@ def check_payload(entity_type: str, payload: dict[str, Any]) -> str | None:
             return f"{field} must be a string"
         if len(value) > max_length:
             return f"{field} longer than {max_length} characters"
+
+    if entity_type == "game_type":
+        shortcut = payload.get("keypad_shortcut")
+        if shortcut is not None:
+            problem = keypad_shortcut_problem(shortcut)
+            if problem is not None:
+                return problem
 
     # Player names reach the LLM prompt, so they carry an allow-list on top of length.
     if entity_type == "player":

@@ -2,7 +2,7 @@
 
 > Scope: the Flutter app's own structure — entry point, state, screens, models.
 > Related: [[DataLayer]] · [[SchemaV10]] · [[I18n]] · [[Web]] · [[Testing]]
-> Updated: 2026-09-20
+> Updated: 2026-09-25
 
 ## Facts
 
@@ -36,7 +36,7 @@ whether the connected features exist; the third starts the review prompt's clock
 |---|---|
 | `game_provider.dart` | The substantial one. Repositories are constructor-injectable, defaulting to the six Drift implementations over `AppDatabase.instance`. Owns `_games`, `_currentGame`, `_currentPlayers`, `_currentRounds`, `_scores` (keyed `"playerId_roundId"`) and `_roundCounts` (game id → rounds played, one grouped query in `loadGames`, kept in step by `addRound`/`deleteRound`). Game/round/score CRUD plus stats. |
 | `game_type_provider.dart` | Game-type list CRUD, `getGameTypeById`. The 22 built-in types are rows like any other; their *displayed* name comes from `lib/utils/game_type_name.dart`, not from the row. |
-| `settings_provider.dart` | Wakelock toggle and the board's layout, `BoardView` (`lanes` or `rows`, key `boardView`, app-wide) — both SharedPreferences-backed, read by `ready` — and DB export/import. The **only** caller of `DatabaseService` for I/O. Exposes `supportsDbExportImport => !kIsWeb`. |
+| `settings_provider.dart` | Wakelock toggle, *Game sounds* (key `gameSounds`, off by default, the one `GameSounds` reads) and the board's layout, `BoardView` (`lanes` or `rows`, key `boardView`, app-wide) — all SharedPreferences-backed, read by `ready` — and DB export/import. The **only** caller of `DatabaseService` for I/O. Exposes `supportsDbExportImport => !kIsWeb`. |
 | `theme_provider.dart` | `ThemeMode` only, persisted to SharedPreferences under `themeMode` as `ThemeMode.name`. `load()` is called from `main()` before `runApp`. |
 | `group_provider.dart` | Group membership and the sync loop — create/join/leave/rotate, the device list and `revokeDevice`, `shareGame`, `syncNow`, `SyncStatus`, and a `SyncEvent` stream shown as snackbars by `_SyncEventListener` in `main.dart`. A `ChangeNotifierProxyProvider` over `BackendProvider`: runs only with a URL **and** a device token. Calls `GameProvider.refreshFromSync` after remote changes. See [[Sync]]. |
 | `backend_provider.dart` | The self-hosted backend base URL, SharedPreferences key `backendUrl`, **no default**. `check()` validates and canonicalises what the user typed; `isConfigured` gates every connected feature. `load()` is called from `main()` before `runApp`. |
@@ -79,6 +79,18 @@ flagged under the switch without blocking the save. A deletion asks
 ICU plural rather than the repository's English exception. After a save that changed a
 condition on a type that has rules, the screen *offers* the rules editor — nothing is
 rewritten.
+
+The form's last section is the **keypad shortcut** (`Key('game_type_shortcut_kind')`): *None*,
+a value, a multiplication (positive scores only, which the item says), or an addition; then
+the number (a leading minus allowed) and an optional label of up to 12 **code points** — a
+formatter refuses the 13th as it is typed, the unit the model and the server count, so an
+emoji label is never accepted and then dropped — whose hint is the label the key shows
+without one. Changing the kind clears the label. The number is checked against
+`KeypadShortcut.boundsOf` — values −999999 to 999999, multipliers 2 to 10, additions −99999
+to 99999 but not 0 — and an error under the field names the range
+(`keypadShortcutAmountRange`; `keypadShortcutAddRange` for an addition, which also names
+the 0 it refuses). It is offered on every type, built-in ones included; *None*
+saves `clearKeypadShortcut`.
 
 **Player statistics.** `player_stats_screen` is a leaderboard: a row of game-type chips
 (`Key('stats_chip_all')`, then `stats_chip_<key>` for each type with a finished game, most
@@ -172,7 +184,9 @@ player shows one colour here and on the board — with *Add a player* opening th
 playing" sheet (`player_picker_sheet.dart`); and a full-width *Start · N players* in the
 `bottomNavigationBar`, enabled from two players. The seat order written is the list's order
 (`orderIndex`). `boardBuilder` replaces the board in tests. The *Share with the group*
-switch stays, under the players, while the device is in a group.
+switch stays, under the players, while the device is in a group. Both sheets (players, *All
+games*) drop the focus before they open: a modal route gives focus back on close, and the
+name field's keyboard would come back up over the players just picked.
 
 `about_screen` reads the displayed version from `package_info_plus`
 (`PackageInfo.fromPlatform()`, held in a `static final` future) — i.e. from `pubspec.yaml`
@@ -183,12 +197,14 @@ prompt below.
 
 ### Widgets — `lib/widgets/`
 
-Sixteen components shared out of the screens:
+Seventeen components shared out of the screens:
 
 - `board_lanes.dart` — the board's default layout ([below](#the-board)): `BoardData` (what
   both layouts draw from: players in seat order, rounds, a `GameStanding`, colours, the
   elimination tests, the tap callbacks), `BoardLanes`, and the pieces the rows share —
-  `BoardScoreText` (a zero on an amber pill, `·` for no score), `BoardCrown`, `boardTint`.
+  `BoardScoreText` (a zero on an amber pill, `·` for no score), `BoardCrown`, `BoardSkull`
+  (drawn by a `CustomPainter`: Material Icons has no skull), `boardMark` (which of the two
+  sits above an avatar), `boardTint`.
 - `board_rows.dart` — `BoardRows`, the one-row-per-player layout.
 - `game_ranking.dart` — the ranking the `StandingsScreen` draws, open or finished
   ([below](#the-standings-screen)): `GameRanking.of` (the current game best first, its ranks,
@@ -249,6 +265,17 @@ Sixteen components shared out of the screens:
   2 dice; the count is not remembered. Nothing stored, nothing sent. The six count chips are
   a `Row` in a `FittedBox`, not a `Wrap`, and the dialog takes a 16 dp `insetPadding`: they
   stay on one line (see *Decisions & History*).
+- `turn_timer_dialog.dart` — the board's overflow-menu **Turn timer**, next to **Roll dice**:
+  − and + by 15 s (15 s to 10 min), start / pause, reset; at zero "Time's up!" in the error
+  colour, a heavy haptic and `GameSound.timerEnd`. The countdown is a 1 s `Timer.periodic`
+  in the dialog's own `State`, so the board's is never touched and closing the dialog stops
+  it. The last duration is remembered **per game type**, SharedPreferences
+  `turnTimerSeconds.<game type id>` (`turnTimerSeconds.none` for a game without a type),
+  default 60 s. No schema, no permission. **One layout in every state** — the time, a
+  fixed-height slot for "Time's up!", start / pause as a full-width button, Reset and Close
+  side by side under it (not `AlertDialog` actions, which stack once a label no longer
+  fits); labels scale down rather than wrap, so nothing moves between two taps
+  (`wip/done/2026-09-25-the-turn-timer-dialog-changes-shape-while-it-runs.md`).
 - `group_settings_section.dart` — Settings → Group: create or join a group, show its invite
   code, leave it, and show where sync stands; usable only once a server URL is set. *New
   code* is shown to the group's owner only; *Comments and usage* opens
@@ -293,6 +320,26 @@ Sixteen components shared out of the screens:
   answered "Continue playing", on this device only (SharedPreferences
   `gameOverDismissed.<game uuid>`; not synced, no schema). A deleted game leaves its key
   behind — one boolean, never read again.
+- `game_sounds.dart` — `GameSounds` and its `GameSounds.instance`: the elimination, victory
+  and turn-timer sounds (`GameSound`), bundled under `assets/sounds/` (WAV, synthesised by
+  `scripts/generate_sounds.py`, CC0). One setting governs all three: Settings → Sounds →
+  *Game sounds* (`SettingsProvider.gameSounds`), SharedPreferences `gameSounds`, **off by
+  default**, read on every play so a board needs no provider. The platform is behind the
+  `SoundPlayer` seam — `AudioplayersSoundPlayer` (audioplayers 6.8.1, MIT, one short-lived
+  player per sound) in the app, `test/support/fake_sound_player.dart` in tests;
+  `GameBoardScreen.sounds` takes the instance. A failure to play is swallowed. On the web
+  the browser allows sound only after a user gesture, and a score typed on the keypad is one;
+  audioplayers fetches the asset from the app's own origin (`connect-src 'self'`) and plays
+  it in an `<audio>` element (`default-src 'self'`), so the PWA's CSP needs no change.
+  **The sounds never take the music away** from another app: before its first player,
+  `AudioplayersSoundPlayer` sets audioplayers' global `AudioContext`
+  (`AudioplayersSoundPlayer.audioContext`) — Android `USAGE_GAME`, `CONTENT_TYPE_SONIFICATION`
+  and a `AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK` request, so background music ducks and comes back;
+  iOS the `ambient` session category, which mixes (the web has no audio context and skips it).
+  Android only gives the focus back when the player stops, so each player runs in
+  `PlayerMode.mediaPlayer`, which reports its completion — the low-latency SoundPool mode never
+  does, and so used to hold `AUDIOFOCUS_GAIN` for good — and is disposed on completion or after
+  5 s, whichever comes first.
 
 ### Utilities — `lib/utils/`
 
@@ -405,7 +452,7 @@ board's `analysisRepo` is.
 
 ### Models — `lib/models/`
 
-`game`, `game_type`, `player`, `round`, `score`, `game_analysis`, `analysis_style`. Plain classes with
+`game`, `game_type`, `keypad_shortcut`, `player`, `round`, `score`, `game_analysis`, `analysis_style`. Plain classes with
 `toMap`/`fromMap`. `player.dart` has no `gameId` since v9 — its `id` is a
 `game_players.id`. See [[SchemaV10]].
 
@@ -413,6 +460,12 @@ board's `analysisRepo` is.
 and into SharedPreferences (`analysisStyle`) and whose label is translated. It mirrors
 `PERSONAS` in `backend/app/services/analysis/personas.py`: a new voice is added in both
 places plus the ten ARB files.
+
+`keypad_shortcut.dart` is the keypad's per-type key: a closed representation — a kind
+(`value`, `multiply`, `add`), an integer amount within that kind's bounds, an optional label —
+that exists only valid. `tryCreate` refuses an amount out of bounds, `decode` returns null for
+anything that is not exactly a shortcut and never throws, so a malformed stored or pulled value
+reads as "no shortcut" and cannot break the keypad. `game_type.dart` re-exports it.
 
 `game.dart` carries `finishedAt` since v12, with `isFinished` next to `isShared`. Its
 `copyWith` takes a `clearFinishedAt` flag: `x ?? this.x` cannot express "set this back to
@@ -427,19 +480,33 @@ Finishing opens the standings (below); reopening is confirmed by a snackbar whos
 `undoSnackBar`; it expires after 6 s). The entry is
 offered on a game that has at least one round or is already
 finished — a game with no round was never played, which is why the list needs
-`GameProvider.roundCountOf`. Nothing is locked: a finished game still takes rounds and score
-edits.
+`GameProvider.roundCountOf`. While the game is finished the board's round button
+(`board_add_round`) is disabled; **Reopen** or **Continue playing** brings it back. Score
+edits stay open, to correct a mistake.
 
 `_GameBoardScreenState._maybeShowGameOver` finishes the game and opens its standings after
 a score edit, after a round is added and after one is deleted — every mutation that can move
-a total onto or past the game type's threshold — and once on the board's first build, for an open
-game already past it. `_gameOverDismissed` keeps it to one crossing and re-arms as soon as
+a total onto or past the game type's threshold — whenever the provider brings the open game new
+totals or a new finished state (`_checkGameOverOnTotals`, a `GameProvider` listener: a group
+sync pull reloads the game through `refreshFromSync`, so a round typed on another device ends
+the game on this board too), and once on the board's first build. `_gameOverDismissed` keeps it to one crossing and re-arms as soon as
 the condition is false again. Raised by the rule, the screen offers **Continue playing**,
 which pops back to the board, reopens the game and is written to `GameOverDismissals`, keyed
 by `Game.uuid`, and read back when the board opens, so leaving the board does not re-ask;
 the stored answer is removed as soon as the condition is false. The back button leaves the
 game finished. A finished game is never raised again; its standings stay one tap away
 behind the app bar's single leaderboard button (`board_standings`, `_openStandings`).
+A game the check finds **finished and past its threshold** — ended here, on another device or
+by hand — is recorded as answered, in `_gameOverDismissed` and in `GameOverDismissals`, as
+"Continue playing" is: a reopen, typed here or pulled from a device that chose to keep
+playing, is never undone by this board re-ending the game on the next round. A crossing
+this board did not end is not its to re-end.
+
+While a score keypad sheet is open (`_keypadOpen`) the rule finishes the game without
+pushing the end screen over the sheet; it opens when the sheet closes
+(`_endScreenPending`, `_showPendingEndScreen`). "Round N" re-reads `isFinished` when its
+sheet returns and drops the round if the game ended meanwhile, by the rule or by a pull; a
+score edit is still written.
 
 #### The standings screen
 
@@ -537,7 +604,10 @@ the rank sort (`BoardData.byRank`, the standing's own `rankedPlayers`), the plac
 ribbon's order key on `GameStanding.hasScores`, so a tied round still reads `#1` for every
 player. A total within 20 points of the type's
 `playerDeadThreshold` turns orange; an eliminated player's lane is dimmed and the name struck
-through; a zero sits on an amber pill, whatever the game type.
+through, with a skull (`BoardSkull`, `board_eliminated_skull`, label `boardEliminated`)
+in the crown's place above the avatar — in lanes and rows alike, and in place of the crown
+on a leader who is out; a type without elimination never shows one. A zero sits on an amber
+pill, whatever the game type.
 
 Widths come from a `LayoutBuilder`, not from a breakpoint: up to 8 players
 (`kBoardMaxFittingLanes`) the lanes share the width and never scroll; beyond, a lane keeps
@@ -568,13 +638,27 @@ its own (`keypadNext` carries the line break in all ten languages), moves on; th
 label is a `FitWordsText`, so no language breaks it inside a word; on the last player the key reads "Validate round", and only then is the round
 written, in one go (`GameProvider.addRoundWithScores`, one notification) — closing the sheet
 drops it, so an abandoned round leaves no empty row. An untouched player scores 0. For
-ZapZap (`builtinKey == 'zapzap'`) the bottom-left key is "0 ZapZap", a zero that moves on;
-for every other game it is the plain 0 (per-game shortcuts are
-`wip/todo_nr/2026-09-18-keypad-has-no-per-game-shortcut.md`). From five players
+a game type with a keypad shortcut (`GameType.keypadShortcut`, schema v21) the bottom-left
+key is that shortcut (`Key('keypad_shortcut')`) and the 0 moves to the bottom of the third
+column; for every other type it is the plain 0 and that corner is empty. The board passes
+`gameType?.keypadShortcut`, nothing else. A **value** ("0 ZapZap", "162", "100") enters that
+score and moves on, as the ZapZap key always did; an **operation** applies to the score on
+display and stays on the player: "×2" doubles it (12 then ×2 is 24) and does nothing on a
+zero or a negative score — Skyjo doubles a penalty, never a bonus — and "+50" adds to it. The
+next digit after any shortcut starts a new number, as on a calculator — a value that cannot
+move on (the round's last player, a single score) included, so "162" then 8 is 8; a result
+past six digits is refused (the key does nothing). Built-in labels are digits and signs, plus the game's
+name for ZapZap, the same in every locale, so they are not ARB keys (`keypadZeroZapZap` was
+removed). From five players
 (`kKeypadPositionFrom`) the chips scroll with the current one kept in view, and the caption
 adds the position ("4/8"). A cell tap opens the same sheet on that one score, prefilled —
-the first digit replaces it — with "Save". Both paths play the elimination alert and then
-run the game-over check, as the score dialog they replace did.
+the first digit replaces it — with "Save". Both paths then note the eliminations — the
+elimination sound once per write that puts a player out, never twice for the same player
+until a correction brings them back, and only with *Game sounds* on; not at all when the same
+write ends the game (`_canEndByRule`, read before the write), so the last round plays the
+victory sound alone — and run the game-over check, as the score dialog they replace did. When that check ends the game by rule
+(`_finishAndShowEnd(byRule: true)`, or the end screen held back while the keypad was open)
+the victory sound plays; a finished game reopened plays nothing, nor does *End game* by hand.
 
 ### Toolchain
 
@@ -619,6 +703,20 @@ the reason. That warning *is* the tree-shaking constraint showing up in the anal
 not "fix" it by hardcoding a codepoint.
 
 ## Decisions & History
+
+- **The keypad shortcut is per game type, a closed value, and a column (2026-09-24,
+  `feat/keypad-game-shortcuts`).** The ZapZap key was a `builtinKey` test in the board; the
+  entry (`wip/done/2026-09-18-keypad-has-no-per-game-shortcut.md`) decided five shortcuts from
+  the shipped rules and that a user's type may have its own. A closed shape (kind, amount,
+  label) rather than free text or an expression, so both the app and the server can check it
+  and a value from a later version degrades to a plain 0. One JSON column rather than three,
+  so the shortcut moves, syncs and is cleared as one value. `multiply` applies to a positive
+  score only because the only rule that asks for it — Skyjo's closer, doubled when not
+  strictly lowest — doubles a penalty; a zero or negative score is left alone instead of
+  being turned into a larger bonus. A value moves on (it is a whole score), an operation stays
+  (the result is still to be checked). Built-in labels are not localized: digits, "×", "+"
+  and a game's name read the same in the ten languages, as the keypad's own digits do; the
+  "0 ZapZap" label moved from the ARB key into the seed.
 
 - **The game-type editor saves with `copyWith`, and validates on the fields (2026-09-20,
   `fix/game-type-editor`).** It built a fresh `GameType` from the form, so every save wrote
@@ -701,6 +799,13 @@ not "fix" it by hardcoding a codepoint.
   `test/l10n/game_over_labels_test.dart`, `test/drift/last_player_standing_seed_test.dart`,
   `test/migration_last_player_standing_test.dart`.
   (`wip/done/2026-09-20-the-last-player-standing-condition-is-mislabelled-misimplemented-and-unset.md`)
+  > **Status: Outdated** (2026-09-24) — superseded by schema v20 (`fix/game-ends-on-last-player`):
+  > `applyV20` gives `lastPlayerOver` to existing ZapZap, Rami and 6 qui prend rows that have
+  > an `over` elimination and no end, at their own elimination threshold. A NULL end left
+  > older groups with games that never ended by themselves. The user accepted that finished
+  > games of these types are re-ranked by elimination order ([[SchemaV10]]).
+  > `test/migration_last_player_standing_test.dart` is gone, replaced by
+  > `test/migration_v19_to_v20_test.dart`.
 
 - **`firstPlayerOver` means "reaches" (2026-09-19).** The game-over test moved from the
   board into `GameType.isGameOver` and `firstPlayerOver` became `>=`: the box rules its
@@ -755,6 +860,19 @@ not "fix" it by hardcoding a codepoint.
 - **Who starts? is the first of three table helpers** (2026-09-18) — the dice roller and
   the turn timer follow, one pull request each, so a bad idea is cheap to drop
   (`wip/done/2026-09-16-no-dice-timer-first-player-helpers.md`).
+- **The turn timer, the game sounds and the skull shipped together** (2026-09-24,
+  feat/board-skull-sounds-timer). The timer remembers its last duration per game type in
+  SharedPreferences, keyed on the type's id, not in the schema (refinement 4, 2026-09-18). The
+  sounds and the timer share one setting and one player, off by default; with it off, the
+  unconditional `SystemSound.alert` the elimination used to play is gone too — it did
+  nothing on most Android devices and on the web, and could not be turned off. The sounds
+  are synthesised by a script in the repository rather than downloaded, so their provenance
+  and CC0 dedication need no third party; audioplayers because it covers Android and the web
+  with one API and adds no permission (its Android manifest declares none). The skull is
+  painted, since the pinned Material Icons font has none and a bundled SVG would have needed
+  a package (`wip/done/2026-09-18-no-turn-timer-on-the-board.md`,
+  `wip/done/2026-09-23-no-optional-sound-on-elimination-and-victory.md`,
+  `wip/done/2026-09-23-eliminated-players-have-no-skull-on-the-board.md`).
 - **The dice roller is d6 only** (2026-09-19) — the refinement dropped a kind selector
   (d4 … d20) as clutter for the games CountScore scores; 1–6 dice cover Yahtzee (5) and
   Farkle (6). A die shows its numeral rather than pips, which reads the same in every
@@ -814,6 +932,9 @@ not "fix" it by hardcoding a codepoint.
   validation. The ZapZap key is the only per-game shortcut for now; the others wait for a
   per-type setting, which needs a schema change. The ARB keys `addRound`, `score` and
   `enterScore` went with the dialog.
+  > **Status: Outdated** (2026-09-24) — the per-type setting landed with schema v21
+  > (`feat/keypad-game-shortcuts`): `game_types.keypad_shortcut`, five built-in shortcuts and
+  > the editor's section. See the first entry of this list.
 - **Finishing a game shows who won** (2026-09-19, `feat/game-end-screen`). The game-over
   `AlertDialog` ("continue" or "finish", then straight back to the list) and the home menu's
   "Game finished" snackbar never named the winner. Both became `GameEndScreen`, shown on

@@ -2,7 +2,7 @@
 
 > Scope: the offline-first sharing protocol — server and Flutter client.
 > Related: [[Api]] · [[SchemaV10]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-09-22
+> Updated: 2026-09-25
 
 ## Facts
 
@@ -58,7 +58,7 @@ field**, ordered lexicographically by `(client_lamport, origin_device_id)`.
    back as a stable reason code rather than a driver error — codes in [[Api]].
 7. The log stores the payload's known client columns only; that is what other devices pull.
 
-Synced entities: `player`, `game_type` (with `rules` and `rules_slug` since v13, `builtin_key` since v14), `game`,
+Synced entities: `player`, `game_type` (with `rules` and `rules_slug` since v13, `builtin_key` since v14, `keypad_shortcut` since v21), `game`,
 `game_player`, `round` (with `comment`), `score`, `game_analysis`. `game_player` still has
 no uuid and is hard-deleted.
 
@@ -107,6 +107,36 @@ reads it while the key is set. See [[SchemaV10]] and [[I18n]].
 - **Idempotence**: the server deduplicates on `(origin_device_id, client_lamport)`. A
   network retry of the same delta is a no-op.
 
+### The keypad shortcut travels only well formed (since 2026-09-24)
+
+`game_types.keypad_shortcut` (schema v21, [[SchemaV10]]) is the compact JSON of a
+`KeypadShortcut` (`lib/models/keypad_shortcut.dart`). Both ends check its shape:
+
+- **Server**: `keypad_shortcut_problem` in `backend/app/services/delta_bounds.py` refuses
+  anything but an object of `kind` (value, multiply, add), an integer `amount` within that
+  kind's bounds and an optional `label` of 1 to 12 code points, as a rejected delta whose
+  reason names `keypad_shortcut`. The log therefore never holds a malformed one. The cost is
+  forward compatibility: an unknown kind rejects the **whole** delta, so a fourth kind must
+  reach the server before any client pushes it.
+- **Push** (`case 'game_type'`, `_keypadShortcutPayload`): a null is sent as null — the
+  editor's *None* clears it on purpose, unlike `rules_slug` — and a valid value in its
+  canonical form. A value this version cannot read (malformed, or a kind a later version
+  added) is **omitted**, so the whole row is not rejected over it and the server keeps what
+  it has.
+- **Pull** (`_applyGameType`): an update takes a null or a readable value, and leaves the
+  local one alone when the incoming value cannot be read. An insert keeps an explicit null
+  (the group's *None*) and stores a readable value canonically; with **no key** (a device
+  that predates v21) or an unreadable value, a built-in type gets the shortcut derived from its
+  key (`keypadShortcutSeeds()`, as `rules_slug` is derived) and a user's type NULL. A NULL
+  there would be pushed by the next local edit as a clear nobody chose
+  (`_insertedKeypadShortcut`). An absent key on an update changes nothing, as for every
+  column.
+- **Migration**: the v21 fill of the built-in rows is not pushed; capture is suppressed
+  around it ([[SchemaV10]]).
+
+Tests: `test/sync/sync_store_test.dart`, `backend/tests/test_sync_contract.py`, and the
+round trip through a real server in `test/sync/sync_two_devices_test.dart`.
+
 ### A wiped `rules_slug` does not travel (since 2026-09-20)
 
 `rules_slug` is the one game-type column whose **null is not a value**. Nothing in the app
@@ -150,6 +180,14 @@ pushes are superseded for good. No test covers the v19 path through sync; the ow
 rows were in no group in the 2026-09-19 backup.
 `wip/todo_nr/2026-09-22-a-rekeyed-type-linked-by-name-can-stop-syncing.md`.
 
+The v20 step (2026-09-24) relies on the same trigger: the `lastPlayerOver` condition it
+writes on a linked ZapZap, Rami or 6 qui prend with no end is pushed on the next sync, so a
+group's row gets its end from the first device that upgrades, with no server change. On the
+receiving side, a pull that changes the open game's totals reloads it through
+`GameProvider.refreshFromSync`, and the board runs its game-over check on the new totals
+(`_checkGameOverOnTotals`, [[MobileApp]]): a round typed on one device ends the game on
+another whose board is open.
+
 ### The client (since 2026-09-13)
 
 Sync runs only while a server URL is configured **and** the device holds a device token —
@@ -183,6 +221,21 @@ keeps the actions, as before. `GroupProvider.revokeDevice` stores the rotated `s
 the section shows the new invite code at once. The revoked device learns of it on its next
 request: a 401, shown as `SyncStatus.unauthorized` (its open stream closes with 1008 at the
 next push to the group or the next idle heartbeat, whichever comes first — see *WebSocket*). Its local copies of the games stay where they are.
+
+**The nickname.** A device's name in the group (`devices.label`) is what its siblings see in
+the devices list. The create and join dialogs ask for it first (`group_nickname_field`,
+`groupNicknameLabel` with the `groupNicknameHint` helper), empty, and OK stays disabled until
+every field holds a non-blank value; the values go out trimmed. Settings → Group shows it
+(`groupNicknameCurrent`) with an edit button (`group_nickname_edit`) that reuses the same field
+and calls `GroupProvider.renameDevice`, i.e. `PATCH /groups/devices/me`. The provider holds the
+label in memory only: set on create and join, from the rename's answer and from this device's
+row whenever the devices list loads, unless a rename completed while that list was in flight
+(a counter bumped by each rename). After a restart `refreshDeviceLabel` reads the list on
+start and resume, after each successful sync while the label is still unknown, and when the
+section opens, so an offline start does not leave it unknown. The dialog fields stop at 64
+**code points**, as the server counts (`maxLength` would count grapheme clusters); an
+unchanged nickname sends nothing; a 422 on rename shows the generic server error, since no
+existing string says "invalid name". A rename changes no synced row.
 
 **Comment settings and usage.** Settings → Group → *Comments and usage*
 (`group_settings_screen.dart`) shows the group's `comment_style` and `comment_language` from
@@ -224,7 +277,12 @@ type's delete is** (since 2026-09-20). Game types carry no `group_id` — they r
 through `group_links` — so `DriftGameTypeRepository.delete` tombstones a type that has a
 link and hard-deletes one the group never saw (`_isLinked`,
 `lib/repositories/drift/drift_repositories.dart`); the capture trigger, which tests the same
-link, turns the stamp into a `delete` delta with an empty payload.
+link, turns the stamp into a `delete` delta with an empty payload. Tombstoned games keep their
+`gameTypeId` when the type is tombstoned (the row stays, and rewriting them would enqueue a
+second `delete` for each); only the hard delete clears it first, with capture suppressed,
+since no foreign key is enforced on `gameTypeId`: Drift declares none, and on native, where the
+sqflite schema declares `ON DELETE SET NULL` (`database_service.dart`), `PRAGMA foreign_keys` is
+off (since 2026-09-24).
 
 | Server answer | Client does |
 |---|---|

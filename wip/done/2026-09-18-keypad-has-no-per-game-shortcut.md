@@ -1,5 +1,12 @@
 # The score keypad has a shortcut key for ZapZap only
 
+**Status:** done (2026-09-25) — closed by feat/keypad-game-shortcuts. A game type carries a
+`KeypadShortcut` (value, multiply or add, a number, an optional label) in
+`game_types.keypad_shortcut` (schema v21, server `0006_game_type_keypad_shortcut`), synced and
+validated on both sides; the five decided shortcuts are seeded and back-filled, the editor sets
+it on any type, and the keypad shows it bottom-left. ×2 applies to the score typed, positive
+scores only.
+
 - **Noted:** 2026-09-18 — deciding the keypad of the visual refresh
 - **Theme:** visual-refresh
 - **Area:** app

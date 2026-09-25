@@ -314,7 +314,8 @@ class GameProvider with ChangeNotifier {
   /// so a finish → reopen → finish cycle counts once and an undone finish not
   /// at all.
   ///
-  /// Nothing is locked: a finished game still accepts rounds and score edits.
+  /// Nothing is locked here: the board disables its round button while the
+  /// game is finished; score edits stay open.
   Future<bool> setGameFinished(int gameId, bool finished) async {
     final game = await _gameRepo.getById(gameId);
     if (game == null) return false;

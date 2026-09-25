@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import '../services/database_service.dart';
+import '../services/game_sounds.dart';
 
 /// How the game board lays out its scores: one lane (a column) per player,
 /// or one row per player.
@@ -18,6 +19,13 @@ class SettingsProvider with ChangeNotifier {
   BoardView _boardView = BoardView.lanes;
 
   bool get keepScreenAwake => _keepScreenAwake;
+
+  bool _gameSounds = false;
+
+  /// "Game sounds": elimination, victory and the turn timer's end. Off by
+  /// default. Stored where [GameSounds] reads it on every play, so a board
+  /// needs no provider to honour it.
+  bool get gameSounds => _gameSounds;
 
   /// The board's layout, the same for every game: the last one chosen.
   BoardView get boardView => _boardView;
@@ -35,6 +43,7 @@ class SettingsProvider with ChangeNotifier {
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     _keepScreenAwake = prefs.getBool('keepScreenAwake') ?? false;
+    _gameSounds = prefs.getBool(GameSounds.enabledKey) ?? false;
     final storedView = prefs.getString(boardViewKey);
     _boardView = BoardView.values
             .where((v) => v.name == storedView)
@@ -52,6 +61,13 @@ class SettingsProvider with ChangeNotifier {
     await prefs.setBool('keepScreenAwake', _keepScreenAwake);
     await _applyWakeLock();
     notifyListeners();
+  }
+
+  Future<void> setGameSounds(bool enabled) async {
+    if (enabled == _gameSounds) return;
+    _gameSounds = enabled;
+    notifyListeners();
+    await GameSounds.setEnabled(enabled);
   }
 
   Future<void> setBoardView(BoardView view) async {

@@ -22,6 +22,7 @@ import 'package:countscore/providers/settings_provider.dart';
 import 'package:countscore/providers/theme_provider.dart';
 import 'package:countscore/screens/settings_screen.dart';
 import 'package:countscore/services/drift/database.dart';
+import 'package:countscore/services/game_sounds.dart';
 import 'package:countscore/services/sync/sync_credentials.dart';
 
 /// The PWA's settings: everything but the database export and import.
@@ -119,7 +120,7 @@ void main() {
       await _pump(tester, web: true);
       await _scrollToEnd(tester);
 
-      final last = tester.getRect(find.byKey(const Key('keep_screen_awake')));
+      final last = tester.getRect(find.byKey(const Key('game_sounds')));
       expect(last.bottom, lessThanOrEqualTo(860 - _bottomInset));
     });
 
@@ -153,6 +154,39 @@ void main() {
         matching: find.byType(ListTile),
       ));
       expect(last.bottom, lessThanOrEqualTo(860 - _bottomInset));
+    });
+  });
+
+  // wip/done/2026-09-23-no-optional-sound-on-elimination-and-victory.md
+  group('"Game sounds"', () {
+    testWidgets('sits under "Sounds", off by default, and turns on and off',
+        (tester) async {
+      final settings = await _pump(tester, web: false);
+      final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+      final gameSounds = find.byKey(const Key('game_sounds'));
+      await tester.scrollUntilVisible(gameSounds, 200,
+          scrollable: find.byType(Scrollable).first);
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.gameSounds), findsOneWidget);
+      _expectRowUnder(tester, l10n.soundsSection, gameSounds);
+      expect(settings.gameSounds, isFalse);
+      expect(tester.widget<SwitchListTile>(gameSounds).value, isFalse);
+      expect(await tester.runAsync(GameSounds.isEnabled), isFalse);
+
+      await tester.tap(gameSounds);
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 50)));
+      await tester.pumpAndSettle();
+      expect(settings.gameSounds, isTrue);
+      expect(tester.widget<SwitchListTile>(gameSounds).value, isTrue);
+      expect(await tester.runAsync(GameSounds.isEnabled), isTrue);
+
+      await tester.tap(gameSounds);
+      await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 50)));
+      await tester.pumpAndSettle();
+      expect(await tester.runAsync(GameSounds.isEnabled), isFalse);
     });
   });
 }

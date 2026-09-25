@@ -107,11 +107,27 @@
 
   "keypadValidateRound": "Validate round",
 
-  "keypadZeroZapZap": "0 ZapZap",
-
   "keypadToggleSign": "Change sign",
 
   "keypadBackspace": "Delete a digit",
+
+  "keypadShortcutTitle": "Keypad shortcut",
+
+  "keypadShortcutKind": "Key type",
+
+  "keypadShortcutKindValue": "Enter a value",
+
+  "keypadShortcutKindMultiply": "Multiply the score (positive only)",
+
+  "keypadShortcutKindAdd": "Add to the score",
+
+  "keypadShortcutAmount": "Number",
+
+  "keypadShortcutLabel": "Key label (optional)",
+
+  "keypadShortcutAddRange": "A whole number between {min} and {max}, other than 0",
+
+  "keypadShortcutAmountRange": "A whole number between {min} and {max}",
 
   "appearance": "Appearance",
 
@@ -415,9 +431,13 @@
 
   "groupNameLabel": "Group name",
 
-  "deviceLabelLabel": "Name of this device",
+  "groupNicknameLabel": "Your nickname",
 
-  "deviceLabelDefault": "My device",
+  "groupNicknameHint": "The others in the group will see it",
+
+  "groupNicknameCurrent": "Your nickname: {nickname}",
+
+  "groupNicknameEdit": "Change your nickname",
 
   "shareTokenLabel": "Invite code",
 
@@ -756,5 +776,16 @@
 
   "groupErrorOwnerActive": "The group's owner has been seen recently: ownership cannot be claimed.",
 
-  "groupCreatedOwnerExplain": "Group created. This device owns it; the role can be handed over to another one in Devices."
+  "groupCreatedOwnerExplain": "Group created. This device owns it; the role can be handed over to another one in Devices.",
+  "boardEliminated": "Eliminated",
+  "soundsSection": "Sounds",
+  "gameSounds": "Game sounds",
+  "gameSoundsDescription": "A sound when a player is eliminated, when the game is won and when the timer ends",
+  "turnTimer": "Turn timer",
+  "turnTimerLess": "Less time",
+  "turnTimerMore": "More time",
+  "turnTimerStart": "Start",
+  "turnTimerPause": "Pause",
+  "turnTimerReset": "Reset",
+  "turnTimerTimeUp": "Time's up!"
 }

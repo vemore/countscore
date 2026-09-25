@@ -189,13 +189,42 @@ class AppLocalizationsDe extends AppLocalizations {
   String get keypadValidateRound => 'Runde bestätigen';
 
   @override
-  String get keypadZeroZapZap => '0 ZapZap';
-
-  @override
   String get keypadToggleSign => 'Vorzeichen wechseln';
 
   @override
   String get keypadBackspace => 'Ziffer löschen';
+
+  @override
+  String get keypadShortcutTitle => 'Tastenkürzel im Ziffernblock';
+
+  @override
+  String get keypadShortcutKind => 'Tastentyp';
+
+  @override
+  String get keypadShortcutKindValue => 'Wert eingeben';
+
+  @override
+  String get keypadShortcutKindMultiply =>
+      'Punktzahl multiplizieren (nur positiv)';
+
+  @override
+  String get keypadShortcutKindAdd => 'Zur Punktzahl addieren';
+
+  @override
+  String get keypadShortcutAmount => 'Zahl';
+
+  @override
+  String get keypadShortcutLabel => 'Tastenbeschriftung (optional)';
+
+  @override
+  String keypadShortcutAddRange(int min, int max) {
+    return 'Eine ganze Zahl zwischen $min und $max, außer 0';
+  }
+
+  @override
+  String keypadShortcutAmountRange(int min, int max) {
+    return 'Eine ganze Zahl zwischen $min und $max';
+  }
 
   @override
   String get appearance => 'Erscheinungsbild';
@@ -683,10 +712,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get groupNameLabel => 'Gruppenname';
 
   @override
-  String get deviceLabelLabel => 'Name dieses Geräts';
+  String get groupNicknameLabel => 'Dein Spitzname';
 
   @override
-  String get deviceLabelDefault => 'Mein Gerät';
+  String get groupNicknameHint => 'Die anderen Gruppenmitglieder sehen ihn';
+
+  @override
+  String groupNicknameCurrent(String nickname) {
+    return 'Dein Spitzname: $nickname';
+  }
+
+  @override
+  String get groupNicknameEdit => 'Spitznamen ändern';
 
   @override
   String get shareTokenLabel => 'Einladungscode';
@@ -1550,4 +1587,38 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get groupCreatedOwnerExplain =>
       'Gruppe erstellt. Dieses Gerät ist ihr Eigentümer; diese Rolle kann unter „Geräte“ an ein anderes übergeben werden.';
+
+  @override
+  String get boardEliminated => 'Ausgeschieden';
+
+  @override
+  String get soundsSection => 'Töne';
+
+  @override
+  String get gameSounds => 'Spielgeräusche';
+
+  @override
+  String get gameSoundsDescription =>
+      'Ein Ton, wenn ein Spieler ausscheidet, wenn das Spiel gewonnen ist und wenn der Timer abläuft';
+
+  @override
+  String get turnTimer => 'Zugtimer';
+
+  @override
+  String get turnTimerLess => 'Weniger Zeit';
+
+  @override
+  String get turnTimerMore => 'Mehr Zeit';
+
+  @override
+  String get turnTimerStart => 'Starten';
+
+  @override
+  String get turnTimerPause => 'Anhalten';
+
+  @override
+  String get turnTimerReset => 'Zurücksetzen';
+
+  @override
+  String get turnTimerTimeUp => 'Die Zeit ist um!';
 }

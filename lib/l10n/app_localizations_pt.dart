@@ -189,13 +189,42 @@ class AppLocalizationsPt extends AppLocalizations {
   String get keypadValidateRound => 'Validar rodada';
 
   @override
-  String get keypadZeroZapZap => '0 ZapZap';
-
-  @override
   String get keypadToggleSign => 'Trocar sinal';
 
   @override
   String get keypadBackspace => 'Apagar um dígito';
+
+  @override
+  String get keypadShortcutTitle => 'Atalho do teclado';
+
+  @override
+  String get keypadShortcutKind => 'Tipo de tecla';
+
+  @override
+  String get keypadShortcutKindValue => 'Inserir um valor';
+
+  @override
+  String get keypadShortcutKindMultiply =>
+      'Multiplicar a pontuação (só positiva)';
+
+  @override
+  String get keypadShortcutKindAdd => 'Somar à pontuação';
+
+  @override
+  String get keypadShortcutAmount => 'Número';
+
+  @override
+  String get keypadShortcutLabel => 'Texto da tecla (opcional)';
+
+  @override
+  String keypadShortcutAddRange(int min, int max) {
+    return 'Um número inteiro entre $min e $max, diferente de 0';
+  }
+
+  @override
+  String keypadShortcutAmountRange(int min, int max) {
+    return 'Um número inteiro entre $min e $max';
+  }
 
   @override
   String get appearance => 'Aparência';
@@ -684,10 +713,18 @@ class AppLocalizationsPt extends AppLocalizations {
   String get groupNameLabel => 'Nome do grupo';
 
   @override
-  String get deviceLabelLabel => 'Nome deste dispositivo';
+  String get groupNicknameLabel => 'Seu apelido';
 
   @override
-  String get deviceLabelDefault => 'O meu dispositivo';
+  String get groupNicknameHint => 'Os outros membros do grupo vão vê-lo';
+
+  @override
+  String groupNicknameCurrent(String nickname) {
+    return 'Seu apelido: $nickname';
+  }
+
+  @override
+  String get groupNicknameEdit => 'Alterar seu apelido';
 
   @override
   String get shareTokenLabel => 'Código de convite';
@@ -1548,4 +1585,38 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get groupCreatedOwnerExplain =>
       'Grupo criado. Este dispositivo é o proprietário; esse papel pode ser passado para outro em Dispositivos.';
+
+  @override
+  String get boardEliminated => 'Eliminado';
+
+  @override
+  String get soundsSection => 'Sons';
+
+  @override
+  String get gameSounds => 'Sons do jogo';
+
+  @override
+  String get gameSoundsDescription =>
+      'Um som quando um jogador é eliminado, quando a partida é ganha e quando o cronômetro termina';
+
+  @override
+  String get turnTimer => 'Cronômetro de turno';
+
+  @override
+  String get turnTimerLess => 'Menos tempo';
+
+  @override
+  String get turnTimerMore => 'Mais tempo';
+
+  @override
+  String get turnTimerStart => 'Iniciar';
+
+  @override
+  String get turnTimerPause => 'Pausar';
+
+  @override
+  String get turnTimerReset => 'Redefinir';
+
+  @override
+  String get turnTimerTimeUp => 'Acabou o tempo!';
 }

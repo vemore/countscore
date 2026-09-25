@@ -189,13 +189,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get keypadValidateRound => 'Validate round';
 
   @override
-  String get keypadZeroZapZap => '0 ZapZap';
-
-  @override
   String get keypadToggleSign => 'Change sign';
 
   @override
   String get keypadBackspace => 'Delete a digit';
+
+  @override
+  String get keypadShortcutTitle => 'Keypad shortcut';
+
+  @override
+  String get keypadShortcutKind => 'Key type';
+
+  @override
+  String get keypadShortcutKindValue => 'Enter a value';
+
+  @override
+  String get keypadShortcutKindMultiply => 'Multiply the score (positive only)';
+
+  @override
+  String get keypadShortcutKindAdd => 'Add to the score';
+
+  @override
+  String get keypadShortcutAmount => 'Number';
+
+  @override
+  String get keypadShortcutLabel => 'Key label (optional)';
+
+  @override
+  String keypadShortcutAddRange(int min, int max) {
+    return 'A whole number between $min and $max, other than 0';
+  }
+
+  @override
+  String keypadShortcutAmountRange(int min, int max) {
+    return 'A whole number between $min and $max';
+  }
 
   @override
   String get appearance => 'Appearance';
@@ -682,10 +710,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupNameLabel => 'Group name';
 
   @override
-  String get deviceLabelLabel => 'Name of this device';
+  String get groupNicknameLabel => 'Your nickname';
 
   @override
-  String get deviceLabelDefault => 'My device';
+  String get groupNicknameHint => 'The others in the group will see it';
+
+  @override
+  String groupNicknameCurrent(String nickname) {
+    return 'Your nickname: $nickname';
+  }
+
+  @override
+  String get groupNicknameEdit => 'Change your nickname';
 
   @override
   String get shareTokenLabel => 'Invite code';
@@ -1549,4 +1585,38 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get groupCreatedOwnerExplain =>
       'Group created. This device owns it; the role can be handed over to another one in Devices.';
+
+  @override
+  String get boardEliminated => 'Eliminated';
+
+  @override
+  String get soundsSection => 'Sounds';
+
+  @override
+  String get gameSounds => 'Game sounds';
+
+  @override
+  String get gameSoundsDescription =>
+      'A sound when a player is eliminated, when the game is won and when the timer ends';
+
+  @override
+  String get turnTimer => 'Turn timer';
+
+  @override
+  String get turnTimerLess => 'Less time';
+
+  @override
+  String get turnTimerMore => 'More time';
+
+  @override
+  String get turnTimerStart => 'Start';
+
+  @override
+  String get turnTimerPause => 'Pause';
+
+  @override
+  String get turnTimerReset => 'Reset';
+
+  @override
+  String get turnTimerTimeUp => 'Time\'s up!';
 }

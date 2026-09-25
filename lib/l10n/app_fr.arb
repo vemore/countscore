@@ -324,11 +324,6 @@
     "description": "Score keypad key, on the round's last player: writes the whole round"
   },
 
-  "keypadZeroZapZap": "0 ZapZap",
-  "@keypadZeroZapZap": {
-    "description": "Score keypad shortcut key, ZapZap games only: a zero for the player who called ZapZap"
-  },
-
   "keypadToggleSign": "Changer le signe",
   "@keypadToggleSign": {
     "description": "Tooltip of the score keypad's ± key"
@@ -337,6 +332,71 @@
   "keypadBackspace": "Effacer un chiffre",
   "@keypadBackspace": {
     "description": "Tooltip of the score keypad's backspace key"
+  },
+
+  "keypadShortcutTitle": "Raccourci du pavé",
+  "@keypadShortcutTitle": {
+    "description": "Game-type editor: heading of the section that sets the score keypad's extra key for this type"
+  },
+
+  "keypadShortcutKind": "Type de touche",
+  "@keypadShortcutKind": {
+    "description": "Game-type editor: dropdown label, what the keypad's extra key does (none, a value, a multiplication, an addition)"
+  },
+
+  "keypadShortcutKindValue": "Saisir une valeur",
+  "@keypadShortcutKindValue": {
+    "description": "Game-type editor, keypad shortcut: the key enters a fixed score and moves on to the next player"
+  },
+
+  "keypadShortcutKindMultiply": "Multiplier le score (positif seulement)",
+  "@keypadShortcutKindMultiply": {
+    "description": "Game-type editor, keypad shortcut: the key multiplies the score typed; a zero or negative score is left as it is"
+  },
+
+  "keypadShortcutKindAdd": "Ajouter au score",
+  "@keypadShortcutKindAdd": {
+    "description": "Game-type editor, keypad shortcut: the key adds a number to the score typed"
+  },
+
+  "keypadShortcutAmount": "Nombre",
+  "@keypadShortcutAmount": {
+    "description": "Game-type editor, keypad shortcut: the field for the value, the multiplier or the number added"
+  },
+
+  "keypadShortcutLabel": "Libellé de la touche (facultatif)",
+  "@keypadShortcutLabel": {
+    "description": "Game-type editor, keypad shortcut: the text shown on the key; left empty, the key shows the number (162, ×2, +50)"
+  },
+
+  "keypadShortcutAddRange": "Un nombre entier entre {min} et {max}, autre que 0",
+  "@keypadShortcutAddRange": {
+    "description": "Game-type editor, keypad shortcut: error under the number field of an addition when it is empty, out of range or 0 (an addition of 0 would do nothing)",
+    "placeholders": {
+      "min": {
+        "type": "int",
+        "example": "-99999"
+      },
+      "max": {
+        "type": "int",
+        "example": "99999"
+      }
+    }
+  },
+
+  "keypadShortcutAmountRange": "Un nombre entier entre {min} et {max}",
+  "@keypadShortcutAmountRange": {
+    "description": "Game-type editor, keypad shortcut: error under the number field when it is empty or out of range",
+    "placeholders": {
+      "min": {
+        "type": "int",
+        "example": "2"
+      },
+      "max": {
+        "type": "int",
+        "example": "10"
+      }
+    }
   },
 
   "appearance": "Apparence",
@@ -1102,14 +1162,30 @@
     "description": "Text field label: name of the group being created"
   },
 
-  "deviceLabelLabel": "Nom de cet appareil",
-  "@deviceLabelLabel": {
-    "description": "Text field label: how this device is named in the group"
+  "groupNicknameLabel": "Votre pseudo",
+  "@groupNicknameLabel": {
+    "description": "Text field label, first field of the create and join dialogs: the name the other members of the group see for this device. Starts empty and is required"
   },
 
-  "deviceLabelDefault": "Mon appareil",
-  "@deviceLabelDefault": {
-    "description": "Default value of the device name field"
+  "groupNicknameHint": "Les autres membres du groupe le verront",
+  "@groupNicknameHint": {
+    "description": "Hint under the nickname field: who will see it"
+  },
+
+  "groupNicknameCurrent": "Votre pseudo : {nickname}",
+  "@groupNicknameCurrent": {
+    "description": "Settings → Group: the nickname this device goes by in the group",
+    "placeholders": {
+      "nickname": {
+        "type": "String",
+        "example": "Alice"
+      }
+    }
+  },
+
+  "groupNicknameEdit": "Modifier votre pseudo",
+  "@groupNicknameEdit": {
+    "description": "Tooltip of the edit button next to the nickname, and title of the rename dialog"
   },
 
   "shareTokenLabel": "Code d'invitation",
@@ -2497,5 +2573,49 @@
   "groupCreatedOwnerExplain": "Groupe créé. Cet appareil en est propriétaire ; ce rôle peut être confié à un autre dans Appareils.",
   "@groupCreatedOwnerExplain": {
     "description": "Snackbar shown after a group is created: the owner role lives on this device and can be handed over"
+  },
+  "boardEliminated": "Éliminé",
+  "@boardEliminated": {
+    "description": "Screen-reader label of the skull above an eliminated player's avatar on the board"
+  },
+  "soundsSection": "Sons",
+  "@soundsSection": {
+    "description": "Settings section heading for the game sounds switch"
+  },
+  "gameSounds": "Sons de jeu",
+  "@gameSounds": {
+    "description": "Settings switch: play sounds on elimination, victory and at the end of the turn timer (off by default)"
+  },
+  "gameSoundsDescription": "Un son quand un joueur est éliminé, quand la partie est gagnée et à la fin du minuteur",
+  "@gameSoundsDescription": {
+    "description": "Subtitle of the game sounds switch in Settings"
+  },
+  "turnTimer": "Minuteur",
+  "@turnTimer": {
+    "description": "Board overflow menu item and dialog title: a countdown for each player's turn"
+  },
+  "turnTimerLess": "Moins de temps",
+  "@turnTimerLess": {
+    "description": "Tooltip of the button that shortens the turn timer's duration by 15 seconds"
+  },
+  "turnTimerMore": "Plus de temps",
+  "@turnTimerMore": {
+    "description": "Tooltip of the button that lengthens the turn timer's duration by 15 seconds"
+  },
+  "turnTimerStart": "Démarrer",
+  "@turnTimerStart": {
+    "description": "Turn timer button: start the countdown"
+  },
+  "turnTimerPause": "Mettre en pause",
+  "@turnTimerPause": {
+    "description": "Turn timer button: pause the running countdown"
+  },
+  "turnTimerReset": "Réinitialiser",
+  "@turnTimerReset": {
+    "description": "Turn timer button: put the countdown back to the chosen duration"
+  },
+  "turnTimerTimeUp": "Temps écoulé !",
+  "@turnTimerTimeUp": {
+    "description": "Shown in the turn timer when the countdown reaches zero"
   }
 }

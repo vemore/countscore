@@ -189,13 +189,41 @@ class AppLocalizationsJa extends AppLocalizations {
   String get keypadValidateRound => 'ラウンドを確定';
 
   @override
-  String get keypadZeroZapZap => '0 ZapZap';
-
-  @override
   String get keypadToggleSign => '符号を切り替え';
 
   @override
   String get keypadBackspace => '1桁削除';
+
+  @override
+  String get keypadShortcutTitle => 'キーパッドのショートカット';
+
+  @override
+  String get keypadShortcutKind => 'キーの種類';
+
+  @override
+  String get keypadShortcutKindValue => '値を入力';
+
+  @override
+  String get keypadShortcutKindMultiply => 'スコアを掛ける（正の値のみ）';
+
+  @override
+  String get keypadShortcutKindAdd => 'スコアに足す';
+
+  @override
+  String get keypadShortcutAmount => '数値';
+
+  @override
+  String get keypadShortcutLabel => 'キーの表示（任意）';
+
+  @override
+  String keypadShortcutAddRange(int min, int max) {
+    return '$min〜$max の整数（0 以外）';
+  }
+
+  @override
+  String keypadShortcutAmountRange(int min, int max) {
+    return '$min〜$max の整数';
+  }
 
   @override
   String get appearance => '外観';
@@ -672,10 +700,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get groupNameLabel => 'グループ名';
 
   @override
-  String get deviceLabelLabel => 'この端末の名前';
+  String get groupNicknameLabel => 'ニックネーム';
 
   @override
-  String get deviceLabelDefault => 'マイ端末';
+  String get groupNicknameHint => 'グループの他のメンバーに表示されます';
+
+  @override
+  String groupNicknameCurrent(String nickname) {
+    return 'ニックネーム：$nickname';
+  }
+
+  @override
+  String get groupNicknameEdit => 'ニックネームを変更';
 
   @override
   String get shareTokenLabel => '招待コード';
@@ -1507,4 +1543,37 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get groupCreatedOwnerExplain =>
       'グループを作成しました。このデバイスがオーナーです。この役割は「デバイス」で他のデバイスに引き継げます。';
+
+  @override
+  String get boardEliminated => '脱落';
+
+  @override
+  String get soundsSection => 'サウンド';
+
+  @override
+  String get gameSounds => 'ゲームサウンド';
+
+  @override
+  String get gameSoundsDescription => 'プレイヤーの脱落時、勝利時、タイマー終了時に音を鳴らします';
+
+  @override
+  String get turnTimer => 'ターンタイマー';
+
+  @override
+  String get turnTimerLess => '時間を減らす';
+
+  @override
+  String get turnTimerMore => '時間を増やす';
+
+  @override
+  String get turnTimerStart => 'スタート';
+
+  @override
+  String get turnTimerPause => '一時停止';
+
+  @override
+  String get turnTimerReset => 'リセット';
+
+  @override
+  String get turnTimerTimeUp => '時間切れ！';
 }

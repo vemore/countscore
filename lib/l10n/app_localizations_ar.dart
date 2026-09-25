@@ -189,13 +189,41 @@ class AppLocalizationsAr extends AppLocalizations {
   String get keypadValidateRound => 'تأكيد الجولة';
 
   @override
-  String get keypadZeroZapZap => '0 ZapZap';
-
-  @override
   String get keypadToggleSign => 'تغيير الإشارة';
 
   @override
   String get keypadBackspace => 'حذف رقم';
+
+  @override
+  String get keypadShortcutTitle => 'اختصار لوحة الأرقام';
+
+  @override
+  String get keypadShortcutKind => 'نوع المفتاح';
+
+  @override
+  String get keypadShortcutKindValue => 'إدخال قيمة';
+
+  @override
+  String get keypadShortcutKindMultiply => 'ضرب النتيجة (الموجبة فقط)';
+
+  @override
+  String get keypadShortcutKindAdd => 'الإضافة إلى النتيجة';
+
+  @override
+  String get keypadShortcutAmount => 'رقم';
+
+  @override
+  String get keypadShortcutLabel => 'نص المفتاح (اختياري)';
+
+  @override
+  String keypadShortcutAddRange(int min, int max) {
+    return 'عدد صحيح بين $min و$max غير الصفر';
+  }
+
+  @override
+  String keypadShortcutAmountRange(int min, int max) {
+    return 'عدد صحيح بين $min و$max';
+  }
 
   @override
   String get appearance => 'المظهر';
@@ -686,10 +714,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get groupNameLabel => 'اسم المجموعة';
 
   @override
-  String get deviceLabelLabel => 'اسم هذا الجهاز';
+  String get groupNicknameLabel => 'اسمك المستعار';
 
   @override
-  String get deviceLabelDefault => 'جهازي';
+  String get groupNicknameHint => 'سيراه الأعضاء الآخرون في المجموعة';
+
+  @override
+  String groupNicknameCurrent(String nickname) {
+    return 'اسمك المستعار: $nickname';
+  }
+
+  @override
+  String get groupNicknameEdit => 'تغيير اسمك المستعار';
 
   @override
   String get shareTokenLabel => 'رمز الدعوة';
@@ -1605,4 +1641,38 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get groupCreatedOwnerExplain =>
       'تم إنشاء المجموعة. هذا الجهاز هو مالكها؛ ويمكن تسليم هذا الدور إلى جهاز آخر من «الأجهزة».';
+
+  @override
+  String get boardEliminated => 'مُقصى';
+
+  @override
+  String get soundsSection => 'الأصوات';
+
+  @override
+  String get gameSounds => 'أصوات اللعبة';
+
+  @override
+  String get gameSoundsDescription =>
+      'صوت عند إقصاء لاعب، وعند الفوز باللعبة، وعند انتهاء المؤقت';
+
+  @override
+  String get turnTimer => 'مؤقت الدور';
+
+  @override
+  String get turnTimerLess => 'وقت أقل';
+
+  @override
+  String get turnTimerMore => 'وقت أكثر';
+
+  @override
+  String get turnTimerStart => 'ابدأ';
+
+  @override
+  String get turnTimerPause => 'إيقاف مؤقت';
+
+  @override
+  String get turnTimerReset => 'إعادة ضبط';
+
+  @override
+  String get turnTimerTimeUp => 'انتهى الوقت!';
 }

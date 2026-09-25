@@ -10,6 +10,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:countscore/l10n/app_localizations.dart';
+import 'package:countscore/models/game_type.dart';
 import 'package:countscore/models/player.dart';
 import 'package:countscore/utils/player_colors.dart';
 import 'package:countscore/widgets/score_keypad_sheet.dart';
@@ -51,7 +52,6 @@ void main() {
                     colors: colours,
                     totalsBefore: const {},
                     roundNumber: 1,
-                    isZapZap: false,
                     roundScores: const {1: 3, 2: 5, 3: 8},
                     playerId: 2,
                   )
@@ -61,7 +61,7 @@ void main() {
                     colors: colours,
                     totalsBefore: const {},
                     roundNumber: 1,
-                    isZapZap: true,
+                    shortcut: GameType.zapzap().keypadShortcut,
                   ),
             child: const Text('open'),
           ),

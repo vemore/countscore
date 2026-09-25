@@ -4,6 +4,7 @@ import '../../models/game_type.dart';
 import '../sync/sync_schema.dart';
 import '../uuid.dart';
 import 'connection/connection.dart' as conn;
+import 'schema_v20.dart';
 import 'tables.dart';
 
 part 'database.g.dart';
@@ -31,7 +32,7 @@ class AppDatabase extends _$AppDatabase {
   static final AppDatabase instance = AppDatabase();
 
   @override
-  int get schemaVersion => 19;
+  int get schemaVersion => 21;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -84,6 +85,12 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 19) {
             await applyV19(customStatement);
+          }
+          if (from < 20) {
+            await applyV20(customStatement);
+          }
+          if (from < 21) {
+            await applyV21(customStatement, _columnsOf);
           }
         },
       );

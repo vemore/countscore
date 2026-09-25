@@ -9,6 +9,7 @@ import '../models/player.dart';
 import '../models/game_analysis.dart';
 import '../models/round.dart';
 import '../models/score.dart';
+import 'drift/schema_v20.dart';
 import 'sync/sync_schema.dart';
 
 class DatabaseService {
@@ -19,7 +20,7 @@ class DatabaseService {
 
   /// Must equal `AppDatabase.schemaVersion`: Drift adopts the file this chain
   /// produced and never migrates it itself.
-  static const schemaVersion = 19;
+  static const schemaVersion = 21;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -93,6 +94,7 @@ class DatabaseService {
         gameOverThreshold INTEGER,
         rules TEXT,
         rules_slug TEXT,
+        keypad_shortcut TEXT,
         uuid TEXT NOT NULL UNIQUE,
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL,
@@ -527,6 +529,14 @@ class DatabaseService {
 
     if (oldVersion < 19) {
       await applyV19(db.execute);
+    }
+
+    if (oldVersion < 20) {
+      await applyV20(db.execute);
+    }
+
+    if (oldVersion < 21) {
+      await applyV21(db.execute, (t) => _columnsOf(db, t));
     }
   }
 

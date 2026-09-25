@@ -107,11 +107,27 @@
 
   "keypadValidateRound": "राउंड पक्का करें",
 
-  "keypadZeroZapZap": "0 ZapZap",
-
   "keypadToggleSign": "चिह्न बदलें",
 
   "keypadBackspace": "एक अंक मिटाएँ",
+
+  "keypadShortcutTitle": "कीपैड शॉर्टकट",
+
+  "keypadShortcutKind": "कुंजी का प्रकार",
+
+  "keypadShortcutKindValue": "मान दर्ज करें",
+
+  "keypadShortcutKindMultiply": "स्कोर गुणा करें (केवल धनात्मक)",
+
+  "keypadShortcutKindAdd": "स्कोर में जोड़ें",
+
+  "keypadShortcutAmount": "संख्या",
+
+  "keypadShortcutLabel": "कुंजी का लेबल (वैकल्पिक)",
+
+  "keypadShortcutAddRange": "{min} और {max} के बीच 0 के अलावा एक पूर्ण संख्या",
+
+  "keypadShortcutAmountRange": "{min} और {max} के बीच एक पूर्ण संख्या",
 
   "appearance": "रूप-रंग",
 
@@ -342,9 +358,13 @@
 
   "groupNameLabel": "समूह का नाम",
 
-  "deviceLabelLabel": "इस उपकरण का नाम",
+  "groupNicknameLabel": "आपका उपनाम",
 
-  "deviceLabelDefault": "मेरा उपकरण",
+  "groupNicknameHint": "समूह के बाकी सदस्य इसे देखेंगे",
+
+  "groupNicknameCurrent": "आपका उपनाम: {nickname}",
+
+  "groupNicknameEdit": "अपना उपनाम बदलें",
 
   "shareTokenLabel": "आमंत्रण कोड",
 
@@ -683,5 +703,16 @@
 
   "groupErrorOwnerActive": "समूह का स्वामी हाल ही में सक्रिय था: स्वामित्व नहीं लिया जा सकता।",
 
-  "groupCreatedOwnerExplain": "समूह बन गया। यह डिवाइस इसका स्वामी है; यह भूमिका “डिवाइस” में किसी दूसरे को सौंपी जा सकती है।"
+  "groupCreatedOwnerExplain": "समूह बन गया। यह डिवाइस इसका स्वामी है; यह भूमिका “डिवाइस” में किसी दूसरे को सौंपी जा सकती है।",
+  "boardEliminated": "बाहर",
+  "soundsSection": "ध्वनियाँ",
+  "gameSounds": "खेल की ध्वनियाँ",
+  "gameSoundsDescription": "जब कोई खिलाड़ी बाहर हो, जब खेल जीता जाए और जब टाइमर खत्म हो, तब एक ध्वनि",
+  "turnTimer": "बारी का टाइमर",
+  "turnTimerLess": "कम समय",
+  "turnTimerMore": "अधिक समय",
+  "turnTimerStart": "शुरू करें",
+  "turnTimerPause": "रोकें",
+  "turnTimerReset": "रीसेट करें",
+  "turnTimerTimeUp": "समय समाप्त!"
 }

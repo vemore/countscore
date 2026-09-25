@@ -2,7 +2,7 @@
 
 Complete guide for filling out the Data Safety section in Google Play Console for CountScore.
 
-**Last Updated**: September 19, 2026
+**Last Updated**: September 25, 2026
 **Applies to**: CountScore v1.1.0 and later
 **Privacy Policy**: `privacy_policy.md`, published at
 https://vemore.github.io/countscore/privacy-policy.html
@@ -82,7 +82,7 @@ for new games while the device is in a group, per game otherwise) is uploaded wi
 | Entity | Content |
 |---|---|
 | `game` | Name, game type, scoring rule, start date |
-| `game_type` | Name, built-in identifier, icon, colour, elimination / game-over rules, **free-text rules you wrote** |
+| `game_type` | Name, built-in identifier, icon, colour, elimination / game-over rules, keypad shortcut (a number and an optional short label), **free-text rules you wrote** |
 | `player` | **Player name**, colour |
 | `round` | Number, **free-text comment** |
 | `score` | Score value |
@@ -101,6 +101,20 @@ outside the group: the device name is already declared above under App activity,
 server already stored both dates. The recipients are the devices of the group the user chose
 to join — the same audience that already receives the shared games — so the answers below are
 unchanged.
+
+**Nickname in the group (September 24, 2026).** The create and join dialogs now ask for a
+nickname (the same **device name** field, first, empty and required instead of pre-filled),
+and Settings → Group lets a device change it (`PATCH /groups/devices/me`, `{label}`). The
+server replaces the stored device name; it goes to the same self-hosted server and the same
+group members as before. No new data type and no new recipient: the answers below are
+unchanged.
+
+**Keypad shortcut (September 25, 2026).** A shared game type now also carries its score
+keypad shortcut (`keypad_shortcut`: a kind among three fixed values, a number and, if the user
+typed one, a label of at most 12 characters). It is a game-type setting, covered by
+*game-type settings* under App activity below; the label is user-typed text of the same kind
+as the game-type name already sent. Same self-hosted server, same group members: no new data
+type and no new recipient, and the answers below are unchanged.
 
 **Comment settings and usage (September 19, 2026).** Settings → Group → *Comments and usage*
 sends the group's comment style (one of three fixed values) and language code with

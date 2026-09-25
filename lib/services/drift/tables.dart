@@ -27,6 +27,8 @@ class GameTypes extends Table {
       integer().named('gameOverThreshold').nullable()();
   TextColumn get rules => text().nullable()();
   TextColumn get rulesSlug => text().named('rules_slug').nullable()();
+  TextColumn get keypadShortcut =>
+      text().named('keypad_shortcut').nullable()();
   TextColumn get uuid => text()();
   IntColumn get createdAt => integer().named('created_at')();
   IntColumn get updatedAt => integer().named('updated_at')();

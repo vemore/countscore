@@ -188,13 +188,41 @@ class AppLocalizationsZh extends AppLocalizations {
   String get keypadValidateRound => '确认本轮';
 
   @override
-  String get keypadZeroZapZap => '0 ZapZap';
-
-  @override
   String get keypadToggleSign => '切换正负号';
 
   @override
   String get keypadBackspace => '删除一位数字';
+
+  @override
+  String get keypadShortcutTitle => '键盘快捷键';
+
+  @override
+  String get keypadShortcutKind => '按键类型';
+
+  @override
+  String get keypadShortcutKindValue => '输入数值';
+
+  @override
+  String get keypadShortcutKindMultiply => '分数乘以倍数（仅正分）';
+
+  @override
+  String get keypadShortcutKindAdd => '加到分数上';
+
+  @override
+  String get keypadShortcutAmount => '数字';
+
+  @override
+  String get keypadShortcutLabel => '按键文字（可选）';
+
+  @override
+  String keypadShortcutAddRange(int min, int max) {
+    return '$min 到 $max 之间的非零整数';
+  }
+
+  @override
+  String keypadShortcutAmountRange(int min, int max) {
+    return '$min 到 $max 之间的整数';
+  }
 
   @override
   String get appearance => '外观';
@@ -665,10 +693,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get groupNameLabel => '群组名称';
 
   @override
-  String get deviceLabelLabel => '本设备名称';
+  String get groupNicknameLabel => '你的昵称';
 
   @override
-  String get deviceLabelDefault => '我的设备';
+  String get groupNicknameHint => '群组中的其他成员会看到它';
+
+  @override
+  String groupNicknameCurrent(String nickname) {
+    return '你的昵称：$nickname';
+  }
+
+  @override
+  String get groupNicknameEdit => '修改昵称';
 
   @override
   String get shareTokenLabel => '邀请码';
@@ -1492,4 +1528,37 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get groupCreatedOwnerExplain => '群组已创建。本设备是其所有者；可在“设备”中将该角色移交给其他设备。';
+
+  @override
+  String get boardEliminated => '已淘汰';
+
+  @override
+  String get soundsSection => '声音';
+
+  @override
+  String get gameSounds => '游戏音效';
+
+  @override
+  String get gameSoundsDescription => '玩家被淘汰、赢得游戏和计时结束时播放声音';
+
+  @override
+  String get turnTimer => '回合计时器';
+
+  @override
+  String get turnTimerLess => '减少时间';
+
+  @override
+  String get turnTimerMore => '增加时间';
+
+  @override
+  String get turnTimerStart => '开始';
+
+  @override
+  String get turnTimerPause => '暂停';
+
+  @override
+  String get turnTimerReset => '重置';
+
+  @override
+  String get turnTimerTimeUp => '时间到！';
 }

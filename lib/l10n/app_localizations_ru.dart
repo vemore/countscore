@@ -189,13 +189,42 @@ class AppLocalizationsRu extends AppLocalizations {
   String get keypadValidateRound => 'Подтвердить раунд';
 
   @override
-  String get keypadZeroZapZap => '0 ZapZap';
-
-  @override
   String get keypadToggleSign => 'Сменить знак';
 
   @override
   String get keypadBackspace => 'Стереть цифру';
+
+  @override
+  String get keypadShortcutTitle => 'Быстрая клавиша';
+
+  @override
+  String get keypadShortcutKind => 'Тип клавиши';
+
+  @override
+  String get keypadShortcutKindValue => 'Ввести значение';
+
+  @override
+  String get keypadShortcutKindMultiply =>
+      'Умножить счёт (только положительный)';
+
+  @override
+  String get keypadShortcutKindAdd => 'Прибавить к счёту';
+
+  @override
+  String get keypadShortcutAmount => 'Число';
+
+  @override
+  String get keypadShortcutLabel => 'Надпись на клавише (необязательно)';
+
+  @override
+  String keypadShortcutAddRange(int min, int max) {
+    return 'Целое число от $min до $max, кроме 0';
+  }
+
+  @override
+  String keypadShortcutAmountRange(int min, int max) {
+    return 'Целое число от $min до $max';
+  }
 
   @override
   String get appearance => 'Внешний вид';
@@ -687,10 +716,18 @@ class AppLocalizationsRu extends AppLocalizations {
   String get groupNameLabel => 'Название группы';
 
   @override
-  String get deviceLabelLabel => 'Имя этого устройства';
+  String get groupNicknameLabel => 'Ваш псевдоним';
 
   @override
-  String get deviceLabelDefault => 'Моё устройство';
+  String get groupNicknameHint => 'Его увидят другие участники группы';
+
+  @override
+  String groupNicknameCurrent(String nickname) {
+    return 'Ваш псевдоним: $nickname';
+  }
+
+  @override
+  String get groupNicknameEdit => 'Изменить псевдоним';
 
   @override
   String get shareTokenLabel => 'Код приглашения';
@@ -1584,4 +1621,38 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get groupCreatedOwnerExplain =>
       'Группа создана. Это устройство — её владелец; роль можно передать другому в разделе «Устройства».';
+
+  @override
+  String get boardEliminated => 'Выбыл';
+
+  @override
+  String get soundsSection => 'Звуки';
+
+  @override
+  String get gameSounds => 'Игровые звуки';
+
+  @override
+  String get gameSoundsDescription =>
+      'Звук, когда игрок выбывает, когда партия выиграна и когда таймер истекает';
+
+  @override
+  String get turnTimer => 'Таймер хода';
+
+  @override
+  String get turnTimerLess => 'Меньше времени';
+
+  @override
+  String get turnTimerMore => 'Больше времени';
+
+  @override
+  String get turnTimerStart => 'Старт';
+
+  @override
+  String get turnTimerPause => 'Пауза';
+
+  @override
+  String get turnTimerReset => 'Сбросить';
+
+  @override
+  String get turnTimerTimeUp => 'Время вышло!';
 }

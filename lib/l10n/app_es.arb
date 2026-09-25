@@ -107,11 +107,27 @@
 
   "keypadValidateRound": "Validar ronda",
 
-  "keypadZeroZapZap": "0 ZapZap",
-
   "keypadToggleSign": "Cambiar signo",
 
   "keypadBackspace": "Borrar un dígito",
+
+  "keypadShortcutTitle": "Atajo del teclado",
+
+  "keypadShortcutKind": "Tipo de tecla",
+
+  "keypadShortcutKindValue": "Introducir un valor",
+
+  "keypadShortcutKindMultiply": "Multiplicar la puntuación (solo positiva)",
+
+  "keypadShortcutKindAdd": "Sumar a la puntuación",
+
+  "keypadShortcutAmount": "Número",
+
+  "keypadShortcutLabel": "Texto de la tecla (opcional)",
+
+  "keypadShortcutAddRange": "Un número entero entre {min} y {max}, distinto de 0",
+
+  "keypadShortcutAmountRange": "Un número entero entre {min} y {max}",
 
   "appearance": "Apariencia",
 
@@ -342,9 +358,13 @@
 
   "groupNameLabel": "Nombre del grupo",
 
-  "deviceLabelLabel": "Nombre de este dispositivo",
+  "groupNicknameLabel": "Tu apodo",
 
-  "deviceLabelDefault": "Mi dispositivo",
+  "groupNicknameHint": "Los demás miembros del grupo lo verán",
+
+  "groupNicknameCurrent": "Tu apodo: {nickname}",
+
+  "groupNicknameEdit": "Cambiar tu apodo",
 
   "shareTokenLabel": "Código de invitación",
 
@@ -683,5 +703,16 @@
 
   "groupErrorOwnerActive": "El propietario del grupo ha dado señales hace poco: no se puede asumir la propiedad.",
 
-  "groupCreatedOwnerExplain": "Grupo creado. Este dispositivo es su propietario; el rol puede cederse a otro en Dispositivos."
+  "groupCreatedOwnerExplain": "Grupo creado. Este dispositivo es su propietario; el rol puede cederse a otro en Dispositivos.",
+  "boardEliminated": "Eliminado",
+  "soundsSection": "Sonidos",
+  "gameSounds": "Sonidos del juego",
+  "gameSoundsDescription": "Un sonido cuando un jugador queda eliminado, cuando se gana la partida y al terminar el temporizador",
+  "turnTimer": "Temporizador de turno",
+  "turnTimerLess": "Menos tiempo",
+  "turnTimerMore": "Más tiempo",
+  "turnTimerStart": "Iniciar",
+  "turnTimerPause": "Pausar",
+  "turnTimerReset": "Reiniciar",
+  "turnTimerTimeUp": "¡Se acabó el tiempo!"
 }

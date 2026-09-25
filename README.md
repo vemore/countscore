@@ -25,8 +25,12 @@ at your own server in Settings → Server if you want the connected features.
   or your own, gets that summary. Any of it can be
   rewritten: your table's own rules replace the shipped text and travel with your group.
 - **Scoring grid**: one coloured lane per player — avatar, big total, place, a crown on the
-  leader — or one row per player at the tap of a button (remembered for every game); rounds,
+  leader, a skull on a player a game type with elimination has put out — or one row per player at the tap of a button (remembered for every game); rounds,
   live ranking and per-player statistics.
+- **A keypad for scores**, with a shortcut key per game type: "0 ZapZap", Skyjo's "×2" on the
+  score typed, Belote's "162", Scrabble's "+50", Rami's "100" — and one of your choosing (a
+  value, a multiplication or an addition, with its own label) on any type in the game-type
+  editor.
 - **An explicit end**: any game that has been played can be declared over from the board or
   the game list, which marks it in the history and opens the standings on their result: the
   winner, a podium of the top three with their totals, every player in the list under it in
@@ -47,6 +51,12 @@ at your own server in Settings → Server if you want the connected features.
   ranks by the total.
 - **Who starts?**: the score table's menu draws one of the game's players at random.
 - **Roll dice**: the score table's menu rolls 1 to 6 six-sided dice and shows each die and the total.
+- **Turn timer**: the score table's menu counts down from 15 seconds to 10 minutes, with
+  pause and reset, and says so at zero; each game type reopens it on its own last duration.
+- **Game sounds** (Settings → Sounds, off by default): a sound when a player is eliminated,
+  when a game type's rule ends the game, and when the turn timer reaches zero. The three
+  sounds are bundled in the app (CC0, made by `scripts/generate_sounds.py`); nothing is
+  fetched, and no permission is needed.
 - **Play again**: from the standings or a finished game in the history, one tap starts
   the next game with the same type and the same players in the same order.
 - **Share a result**: the standings and the analysis share them as a
@@ -110,7 +120,7 @@ at your own server in Settings → Server if you want the connected features.
 | Legacy migrator | `sqflite` ^2.4.3 — runs the migration chain on an existing database up to the current schema version, then Drift takes over |
 | UI | `flex_color_picker` ^4.0.0, `flutter_markdown_plus` |
 | Group sync | `web_socket_channel` ^3.0.3 (change signal), `flutter_secure_storage` ^11.1.1 (device token), `crypto` ^3.0.7 (name-based uuids) |
-| Utilities | `intl`, `http`, `url_launcher` (report email, Play listing), `share_plus` (share a result), `in_app_review` ^2.0.12 (Play review sheet), `package_info_plus` (version), `wakelock_plus`, `shared_preferences`, `path_provider`, `file_picker` |
+| Utilities | `intl`, `http`, `url_launcher` (report email, Play listing), `share_plus` (share a result), `in_app_review` ^2.0.12 (Play review sheet), `package_info_plus` (version), `audioplayers` ^6.8.1 (game sounds), `wakelock_plus`, `shared_preferences`, `path_provider`, `file_picker` |
 
 Data access goes through the repository interfaces in `lib/repositories/`; screens never
 touch the database directly.
@@ -260,11 +270,12 @@ your own, and your data stays on it. It exposes:
 | `/comments/*` | LLM game commentary, including the game analysis |
 | `$PWA_BASE_PATH/` | Optional: the web app itself, same origin as the API (off unless `PWA_BASE_PATH` is set) |
 
-**Current state, stated plainly:** the server side of groups and sync is implemented and
-tested, but **the Flutter client for it has not been written yet**. The app is therefore
-local-only today, and the single live app↔backend call is the game analysis — which
-itself only happens once you have configured a server. See [wip/](wip/README.md) and
-`.llmwiki/Architecture.md`.
+Once a server is configured in Settings → Server, the app is a client of every surface
+above except the web app itself: the game analysis goes to `/comments/*` for a game played
+alone, and to the group's comment endpoint for a game shared with a group; creating or
+joining a group (Settings → Group) turns on `/groups/*`, and a group's games then sync
+through `/sync/push`, `/sync/pull` and the change stream (`lib/services/sync/`). With no
+server configured, none of these calls is made. See `.llmwiki/Architecture.md`.
 
 The app accepts an `https://` URL for any host, and an `http://` URL only for a private or
 loopback address (`192.168.x.x`, `10.x.x.x`, `172.16–31.x.x`, `localhost`, `*.local`), so a
@@ -410,7 +421,7 @@ we receive it only if you press send.
 games you share — their name, type, player names and colours, round comments, scores,
 whether and when you ended them, and analysis — are uploaded to **your** server, which **stores** them with a log of every change,
 and downloaded by the group's other devices. Each device of the group also sees the others'
-names and when they were last seen, so a lost phone can be recognised and removed. The
+names (the nickname each one chose, which it can change in Settings → Group) and when they were last seen, so a lost phone can be recognised and removed. The
 group's comment style and language, if a member changes them (Settings → Group → Comments and
 usage), are stored there too, with the analyses generated for shared games. Anyone with
 the group's invite code can join, so share it only with the people you mean to. Games you do not share never leave the device.

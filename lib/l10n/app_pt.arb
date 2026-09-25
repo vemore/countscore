@@ -107,11 +107,27 @@
 
   "keypadValidateRound": "Validar rodada",
 
-  "keypadZeroZapZap": "0 ZapZap",
-
   "keypadToggleSign": "Trocar sinal",
 
   "keypadBackspace": "Apagar um dígito",
+
+  "keypadShortcutTitle": "Atalho do teclado",
+
+  "keypadShortcutKind": "Tipo de tecla",
+
+  "keypadShortcutKindValue": "Inserir um valor",
+
+  "keypadShortcutKindMultiply": "Multiplicar a pontuação (só positiva)",
+
+  "keypadShortcutKindAdd": "Somar à pontuação",
+
+  "keypadShortcutAmount": "Número",
+
+  "keypadShortcutLabel": "Texto da tecla (opcional)",
+
+  "keypadShortcutAddRange": "Um número inteiro entre {min} e {max}, diferente de 0",
+
+  "keypadShortcutAmountRange": "Um número inteiro entre {min} e {max}",
 
   "appearance": "Aparência",
 
@@ -342,9 +358,13 @@
 
   "groupNameLabel": "Nome do grupo",
 
-  "deviceLabelLabel": "Nome deste dispositivo",
+  "groupNicknameLabel": "Seu apelido",
 
-  "deviceLabelDefault": "O meu dispositivo",
+  "groupNicknameHint": "Os outros membros do grupo vão vê-lo",
+
+  "groupNicknameCurrent": "Seu apelido: {nickname}",
+
+  "groupNicknameEdit": "Alterar seu apelido",
 
   "shareTokenLabel": "Código de convite",
 
@@ -683,5 +703,16 @@
 
   "groupErrorOwnerActive": "O proprietário do grupo deu sinal recentemente: não é possível assumir a propriedade.",
 
-  "groupCreatedOwnerExplain": "Grupo criado. Este dispositivo é o proprietário; esse papel pode ser passado para outro em Dispositivos."
+  "groupCreatedOwnerExplain": "Grupo criado. Este dispositivo é o proprietário; esse papel pode ser passado para outro em Dispositivos.",
+  "boardEliminated": "Eliminado",
+  "soundsSection": "Sons",
+  "gameSounds": "Sons do jogo",
+  "gameSoundsDescription": "Um som quando um jogador é eliminado, quando a partida é ganha e quando o cronômetro termina",
+  "turnTimer": "Cronômetro de turno",
+  "turnTimerLess": "Menos tempo",
+  "turnTimerMore": "Mais tempo",
+  "turnTimerStart": "Iniciar",
+  "turnTimerPause": "Pausar",
+  "turnTimerReset": "Redefinir",
+  "turnTimerTimeUp": "Acabou o tempo!"
 }

@@ -189,13 +189,41 @@ class AppLocalizationsHi extends AppLocalizations {
   String get keypadValidateRound => 'राउंड पक्का करें';
 
   @override
-  String get keypadZeroZapZap => '0 ZapZap';
-
-  @override
   String get keypadToggleSign => 'चिह्न बदलें';
 
   @override
   String get keypadBackspace => 'एक अंक मिटाएँ';
+
+  @override
+  String get keypadShortcutTitle => 'कीपैड शॉर्टकट';
+
+  @override
+  String get keypadShortcutKind => 'कुंजी का प्रकार';
+
+  @override
+  String get keypadShortcutKindValue => 'मान दर्ज करें';
+
+  @override
+  String get keypadShortcutKindMultiply => 'स्कोर गुणा करें (केवल धनात्मक)';
+
+  @override
+  String get keypadShortcutKindAdd => 'स्कोर में जोड़ें';
+
+  @override
+  String get keypadShortcutAmount => 'संख्या';
+
+  @override
+  String get keypadShortcutLabel => 'कुंजी का लेबल (वैकल्पिक)';
+
+  @override
+  String keypadShortcutAddRange(int min, int max) {
+    return '$min और $max के बीच 0 के अलावा एक पूर्ण संख्या';
+  }
+
+  @override
+  String keypadShortcutAmountRange(int min, int max) {
+    return '$min और $max के बीच एक पूर्ण संख्या';
+  }
 
   @override
   String get appearance => 'रूप-रंग';
@@ -684,10 +712,18 @@ class AppLocalizationsHi extends AppLocalizations {
   String get groupNameLabel => 'समूह का नाम';
 
   @override
-  String get deviceLabelLabel => 'इस उपकरण का नाम';
+  String get groupNicknameLabel => 'आपका उपनाम';
 
   @override
-  String get deviceLabelDefault => 'मेरा उपकरण';
+  String get groupNicknameHint => 'समूह के बाकी सदस्य इसे देखेंगे';
+
+  @override
+  String groupNicknameCurrent(String nickname) {
+    return 'आपका उपनाम: $nickname';
+  }
+
+  @override
+  String get groupNicknameEdit => 'अपना उपनाम बदलें';
 
   @override
   String get shareTokenLabel => 'आमंत्रण कोड';
@@ -1547,4 +1583,38 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get groupCreatedOwnerExplain =>
       'समूह बन गया। यह डिवाइस इसका स्वामी है; यह भूमिका “डिवाइस” में किसी दूसरे को सौंपी जा सकती है।';
+
+  @override
+  String get boardEliminated => 'बाहर';
+
+  @override
+  String get soundsSection => 'ध्वनियाँ';
+
+  @override
+  String get gameSounds => 'खेल की ध्वनियाँ';
+
+  @override
+  String get gameSoundsDescription =>
+      'जब कोई खिलाड़ी बाहर हो, जब खेल जीता जाए और जब टाइमर खत्म हो, तब एक ध्वनि';
+
+  @override
+  String get turnTimer => 'बारी का टाइमर';
+
+  @override
+  String get turnTimerLess => 'कम समय';
+
+  @override
+  String get turnTimerMore => 'अधिक समय';
+
+  @override
+  String get turnTimerStart => 'शुरू करें';
+
+  @override
+  String get turnTimerPause => 'रोकें';
+
+  @override
+  String get turnTimerReset => 'रीसेट करें';
+
+  @override
+  String get turnTimerTimeUp => 'समय समाप्त!';
 }

@@ -107,11 +107,27 @@
 
   "keypadValidateRound": "Подтвердить раунд",
 
-  "keypadZeroZapZap": "0 ZapZap",
-
   "keypadToggleSign": "Сменить знак",
 
   "keypadBackspace": "Стереть цифру",
+
+  "keypadShortcutTitle": "Быстрая клавиша",
+
+  "keypadShortcutKind": "Тип клавиши",
+
+  "keypadShortcutKindValue": "Ввести значение",
+
+  "keypadShortcutKindMultiply": "Умножить счёт (только положительный)",
+
+  "keypadShortcutKindAdd": "Прибавить к счёту",
+
+  "keypadShortcutAmount": "Число",
+
+  "keypadShortcutLabel": "Надпись на клавише (необязательно)",
+
+  "keypadShortcutAddRange": "Целое число от {min} до {max}, кроме 0",
+
+  "keypadShortcutAmountRange": "Целое число от {min} до {max}",
 
   "appearance": "Внешний вид",
 
@@ -342,9 +358,13 @@
 
   "groupNameLabel": "Название группы",
 
-  "deviceLabelLabel": "Имя этого устройства",
+  "groupNicknameLabel": "Ваш псевдоним",
 
-  "deviceLabelDefault": "Моё устройство",
+  "groupNicknameHint": "Его увидят другие участники группы",
+
+  "groupNicknameCurrent": "Ваш псевдоним: {nickname}",
+
+  "groupNicknameEdit": "Изменить псевдоним",
 
   "shareTokenLabel": "Код приглашения",
 
@@ -683,5 +703,16 @@
 
   "groupErrorOwnerActive": "Владелец группы недавно выходил на связь: стать владельцем нельзя.",
 
-  "groupCreatedOwnerExplain": "Группа создана. Это устройство — её владелец; роль можно передать другому в разделе «Устройства»."
+  "groupCreatedOwnerExplain": "Группа создана. Это устройство — её владелец; роль можно передать другому в разделе «Устройства».",
+  "boardEliminated": "Выбыл",
+  "soundsSection": "Звуки",
+  "gameSounds": "Игровые звуки",
+  "gameSoundsDescription": "Звук, когда игрок выбывает, когда партия выиграна и когда таймер истекает",
+  "turnTimer": "Таймер хода",
+  "turnTimerLess": "Меньше времени",
+  "turnTimerMore": "Больше времени",
+  "turnTimerStart": "Старт",
+  "turnTimerPause": "Пауза",
+  "turnTimerReset": "Сбросить",
+  "turnTimerTimeUp": "Время вышло!"
 }

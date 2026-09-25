@@ -187,6 +187,54 @@ void main() {
       expect(ops['game_type'], 'delete');
     });
 
+    test('tombstoning a game type leaves its deleted games\' gameTypeId alone', () async {
+      final m = await joined();
+      final typeId = await sharedTypeFreedOfGames(m);
+      final before = await db
+          .customSelect('SELECT id, gameTypeId FROM games WHERE deleted_at IS NOT NULL')
+          .get();
+      expect(before.map((r) => r.data['gameTypeId']), [typeId],
+          reason: 'the shared game was tombstoned, still pointing at the type');
+      await db.customStatement('DELETE FROM outbox');
+
+      await gameTypes.delete(typeId);
+
+      final after = await db
+          .customSelect('SELECT id, gameTypeId FROM games WHERE deleted_at IS NOT NULL')
+          .get();
+      expect(after.map((r) => r.data), before.map((r) => r.data),
+          reason: 'the type row stays, so the history keeps pointing at it');
+      final pending = await outbox();
+      expect(pending.map((r) => '${r['entity_type']}:${r['op']}'), ['game_type:delete'],
+          reason: 'no second delete delta for a game already deleted');
+    });
+
+    test('hard-deleting an unlinked type enqueues nothing for its shared tombstoned game',
+        () async {
+      final m = await joined();
+      final g = await localGame();
+      await store.shareGame(g.game, m.groupId);
+      await games.delete(g.game); // tombstoned, before any push
+      // A type the group has no link for, as when `_link` finds its identity taken.
+      await db.customStatement(
+          "DELETE FROM group_links WHERE entity_type = 'game_type'");
+      const typeId = 1;
+      final before = await outbox();
+
+      expect(await gameTypes.delete(typeId), 1);
+
+      final gone = await db.customSelect('SELECT id FROM game_types WHERE id = ?',
+          variables: [Variable(typeId)]).get();
+      expect(gone, isEmpty, reason: 'no link: hard delete');
+      final game = await db.customSelect('SELECT gameTypeId FROM games WHERE id = ?',
+          variables: [Variable(g.game)]).getSingle();
+      expect(game.data['gameTypeId'], isNull);
+      expect((await outbox()).map((r) => r['id']), before.map((r) => r['id']),
+          reason: 'no second game delete for a game already deleted');
+      final flag = await db.customSelect('SELECT suppress FROM sync_flags WHERE id = 1').getSingle();
+      expect(flag.data['suppress'], 0, reason: 'capture is back on');
+    });
+
     test('a tombstoned built-in key is free again under the v15 index', () async {
       final m = await joined();
       final typeId = await sharedTypeFreedOfGames(m);
@@ -359,6 +407,40 @@ void main() {
           reason: 'rules is cleared on purpose (Restore the default), so its '
               'null still travels');
       expect(wiped['rules'], isNull);
+    });
+    test('a game type pushes its keypad shortcut; an unreadable one is omitted',
+        () async {
+      final m = await joined();
+      const typeId = 1; // ZapZap, seeded with "0 ZapZap"
+      final g = await localGame();
+      await store.shareGame(g.game, m.groupId);
+
+      Future<Map<String, dynamic>> pushedTypePayload() async {
+        final deltas = await store.preparePush((await store.membership())!);
+        final type = deltas.firstWhere((d) => d.entityType == 'game_type');
+        for (final d in deltas) {
+          await store.markSent(d, m.deviceId);
+        }
+        return type.payload;
+      }
+
+      expect((await pushedTypePayload())['keypad_shortcut'],
+          KeypadShortcut.value(0, label: '0 ZapZap').encode());
+
+      await db.customStatement(
+          'UPDATE game_types SET keypad_shortcut = NULL WHERE id = ?', [typeId]);
+      final cleared = await pushedTypePayload();
+      expect(cleared.containsKey('keypad_shortcut'), isTrue,
+          reason: 'the user clears a shortcut on purpose: the null travels');
+      expect(cleared['keypad_shortcut'], isNull);
+
+      await db.customStatement(
+          "UPDATE game_types SET keypad_shortcut = '{\"kind\":\"divide\",\"amount\":2}' "
+          'WHERE id = ?',
+          [typeId]);
+      expect((await pushedTypePayload()).containsKey('keypad_shortcut'), isFalse,
+          reason: 'a value this version cannot read would get the whole row '
+              'rejected, and must not overwrite what the group holds');
     });
   });
 
@@ -547,6 +629,87 @@ void main() {
           .getSingle();
       expect(row.data['rules_slug'], isNull,
           reason: 'nothing to derive without a builtin key');
+    });
+
+    test('a pulled keypad shortcut replaces, a null clears, an unreadable one '
+        'leaves the local one', () async {
+      final m = await joined();
+      final typeId = await sharedTypeFreedOfGames(m);
+      final remote = await remoteTypeUuid(typeId);
+      Future<KeypadShortcut?> local() async =>
+          (await gameTypes.getById(typeId))!.keypadShortcut;
+
+      await store.applyPulled(m, [
+        _delta('game_type', remote, 99, 99,
+            {'name': 'ZapZap', 'keypad_shortcut': '{"kind":"add","amount":25}'}),
+      ], 99);
+      expect(await local(), KeypadShortcut.add(25));
+
+      await store.applyPulled(m, [
+        _delta('game_type', remote, 100, 100,
+            {'name': 'ZapZap', 'keypad_shortcut': '{"kind":"divide","amount":2}'}),
+      ], 100);
+      expect(await local(), KeypadShortcut.add(25),
+          reason: 'what this version cannot read does not clear what it has');
+
+      await store.applyPulled(m, [
+        _delta('game_type', remote, 101, 101, {'name': 'ZapZap', 'keypad_shortcut': null}),
+      ], 101);
+      expect(await local(), isNull);
+
+      await store.applyPulled(m, [
+        _delta('game_type', remote, 102, 102, {'name': 'ZapZap'}),
+      ], 102);
+      expect(await local(), isNull, reason: 'an absent key changes nothing');
+    });
+
+    test('a custom type pulled with a shortcut lands with it; a malformed one '
+        'lands as none', () async {
+      final m = await joined();
+      await store.applyPulled(m, [
+        _delta('game_type', '88888888-8888-4888-8888-888888888888', 1, 1, {
+          'name': 'Belote maison',
+          'keypad_shortcut': '{"kind":"value","amount":162,"label":"Dedans"}',
+        }),
+        _delta('game_type', '99999999-9999-4999-8999-999999999999', 2, 2, {
+          'name': 'Cassé',
+          'keypad_shortcut': '{"kind":"multiply","amount":1000}',
+        }),
+      ], 2);
+
+      final all = await gameTypes.getAll();
+      expect(all.singleWhere((t) => t.name == 'Belote maison').keypadShortcut,
+          KeypadShortcut.value(162, label: 'Dedans'));
+      expect(all.singleWhere((t) => t.name == 'Cassé').keypadShortcut, isNull);
+      final raw = await db
+          .customSelect("SELECT keypad_shortcut FROM game_types WHERE name = 'Cassé'")
+          .getSingle();
+      expect(raw.data['keypad_shortcut'], isNull);
+    });
+
+    test('a built-in type pulled with no keypad_shortcut key gets the seeded '
+        'one; an explicit null stays null', () async {
+      final m = await joined();
+      // A device that has neither type yet.
+      await db.customStatement(
+          "DELETE FROM game_types WHERE builtin_key IN ('belote', 'skyjo')");
+
+      await store.applyPulled(m, [
+        // From a device that predates v21: no key at all.
+        _delta('game_type', '12121212-1212-4121-8121-121212121212', 1, 1,
+            {'name': 'Belote', 'builtin_key': 'belote'}),
+        // The group cleared Skyjo's shortcut on purpose.
+        _delta('game_type', '34343434-3434-4343-8343-343434343434', 2, 2,
+            {'name': 'Skyjo', 'builtin_key': 'skyjo', 'keypad_shortcut': null}),
+      ], 2);
+
+      final all = await gameTypes.getAll();
+      expect(all.singleWhere((t) => t.builtinKey == 'belote').keypadShortcut,
+          KeypadShortcut.value(162),
+          reason: 'a NULL here would be pushed by the next local edit as a '
+              'clear nobody chose');
+      expect(all.singleWhere((t) => t.builtinKey == 'skyjo').keypadShortcut,
+          isNull);
     });
 
     test('a game type deleted in the group is tombstoned here too', () async {

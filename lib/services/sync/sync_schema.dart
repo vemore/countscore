@@ -299,11 +299,18 @@ Future<void> applyV14(
     );
   }
 
+  // The seed is written against the table as it is at v14, not as the model
+  // describes it: a column a later step adds (`keypad_shortcut`, v21) is not
+  // there yet, and one key too many fails the whole open. See
+  // `DatabaseService._gameTypeRow`.
+  final columnsNow = await columnsOf('game_types');
   final now = DateTime.now().millisecondsSinceEpoch;
   for (final type in GameType.defaultGameTypes()) {
     final key = type.builtinKey;
     if (key == null || GameType.seededNamesBeforeV14.containsKey(key)) continue;
-    final values = Map<String, Object?>.from(type.toMap())..remove('id');
+    final values = Map<String, Object?>.from(type.toMap())
+      ..remove('id')
+      ..removeWhere((column, _) => !columnsNow.contains(column));
     values['uuid'] = newUuid();
     values['created_at'] = now;
     values['updated_at'] = now;
@@ -556,4 +563,62 @@ Future<void> applyV19(SqlExecutor execute) async {
     );
   }
   await applyV16(execute);
+}
+
+/// The built-in types seeded with a keypad shortcut, keyed on `builtin_key`,
+/// with the stored (encoded) shortcut: ZapZap, Skyjo, Belote, Scrabble and
+/// Rami (`GameType.zapzap` and the others).
+Map<String, String> keypadShortcutSeeds() => {
+      for (final type in GameType.defaultGameTypes())
+        if (type.keypadShortcut case final shortcut?)
+          type.builtinKey!: shortcut.encode(),
+    };
+
+/// Schema v21, shared by both engines: `game_types.keypad_shortcut`, the score
+/// keypad's per-type key — a value, or an operation on the score typed
+/// (`lib/models/keypad_shortcut.dart`). TEXT, nullable: null is a plain 0.
+///
+/// Adds the column, then gives the live built-in rows of
+/// [keypadShortcutSeeds] their shortcut, matched on `builtin_key` alone (never
+/// `isDefault`, see .llmwiki/SchemaV10.md). The column is new, so a NULL here
+/// was never a choice and every such row is filled; a renamed type (no key)
+/// and a deleted one are left alone.
+///
+/// **The seed stays local.** Capture is suppressed around the UPDATE
+/// (`sync_flags.suppress`, read, set to 1, restored — the pattern of
+/// `DriftGameTypeRepository.delete`), and `updated_at` does not move. Pushed,
+/// the upgrading device's lamport would outrank what the group already holds,
+/// so a group's own shortcut on Belote — or its *None* — would go back to
+/// "162" for everyone the day a lagging member upgrades. A device that lags
+/// therefore shows the seed until the next change it pulls for that type.
+///
+/// Idempotent: the column is checked before it is added, and the back-fill
+/// only touches `keypad_shortcut IS NULL`. It never inserts, so a type the
+/// user deleted is not resurrected.
+Future<void> applyV21(
+  SqlExecutor execute,
+  Future<Set<String>> Function(String table) columnsOf,
+) async {
+  final existing = await columnsOf('game_types');
+  if (!existing.contains('keypad_shortcut')) {
+    await execute('ALTER TABLE game_types ADD COLUMN keypad_shortcut TEXT');
+  }
+  // SqlExecutor cannot read, so the flag is saved in a temp table: this runs
+  // inside the upgrade's transaction, where suppress is normally 0, but a step
+  // must not assume it.
+  await execute('DROP TABLE IF EXISTS temp.v21_sync_flag');
+  await execute('CREATE TEMP TABLE v21_sync_flag AS '
+      'SELECT suppress FROM sync_flags WHERE id = 1');
+  await execute('INSERT OR REPLACE INTO sync_flags (id, suppress) VALUES (1, 1)');
+  for (final entry in keypadShortcutSeeds().entries) {
+    await execute(
+      'UPDATE game_types SET keypad_shortcut = ? '
+      'WHERE builtin_key = ? AND deleted_at IS NULL '
+      'AND keypad_shortcut IS NULL',
+      [entry.value, entry.key],
+    );
+  }
+  await execute('INSERT OR REPLACE INTO sync_flags (id, suppress) VALUES '
+      '(1, COALESCE((SELECT suppress FROM temp.v21_sync_flag), 0))');
+  await execute('DROP TABLE temp.v21_sync_flag');
 }
