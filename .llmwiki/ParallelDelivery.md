@@ -4,7 +4,7 @@
 > request per theme, the execution lane a change's risk puts it in, serial squash merges,
 > deploy after each merge, and `wip/` work tracking.
 > Procedure: the `ship-parallel` skill. Related: [[Hooks]] · [[Deployment]] · [[Release]]
-> Updated: 2026-09-20
+> Updated: 2026-09-25
 
 ## Facts
 
@@ -122,6 +122,20 @@ Work tracking: `wip/README.md`. What enters `wip/todo/` is decided by a refineme
 entries, and an entry needs to be *ready* (still true, one pull request, acceptance criteria,
 unblocked, themed) to be promoted. What a merge deploys, and how: `ship-parallel` §4 — the Play
 Store is never part of the loop (`release-android`, on request).
+
+### A session that cannot reach the deploy host
+
+Only a session on the author's network can deploy: the deploy goes over ssh to the NAS and
+pushes to its plain-HTTP registry ([[Deployment]]), and the target lives in the untracked
+`backend/scripts/deploy.env`, present in the main checkout only. A cloud session has neither,
+yet can merge on GitHub as well as any. So `ship-parallel` §1.5 probes, at planning time and
+read-only, what §4 will need — `deploy.env` readable, `ssh -o BatchMode=yes` to `$NAS_SSH`,
+an HTTP answer from `$REGISTRY/v2/` — printing a verdict and never the host, and the plan
+opens with "this session cannot deploy" when any of them fails. A merge whose deploy cannot
+run is reported **merged, not deployed**, in §4 and in §6's report, and lands in one
+`wip/todo/<date>-merged-not-deployed.md` entry listing each squash sha with what it needs
+(backend with its Alembic revision, backend without, PWA). The next session that can reach the
+NAS sees it at `ship-parallel` §0 and deploys `main`, which covers every sha listed at once.
 
 ## Decisions & History
 
@@ -253,3 +267,13 @@ Store is never part of the loop (`release-android`, on request).
   four-device group the owner actually uses held a ZapZap row with `builtin_key='zapzap'` and
   `rules_slug` NULL. Six CI checks were green on #192 throughout — which is the concrete answer
   to "why not just trust the checks". The repair became `fix/rules-slug-payload`.
+- **A merge that cannot be deployed says so (2026-09-25).** The run that squash-merged
+  #212–#216 was a cloud session with no route to the NAS: `backend-deploy` and `web-deploy`
+  could not run, the loop ended as if it had succeeded, and production kept a backend from
+  2026-09-20 until a device test found `PATCH /groups/devices/me` answering `404`
+  (`wip/` entry `2026-09-25-production-backend-lacks-the-device-rename-endpoint`). The user
+  asked for the step to be impossible to skip silently rather than for cloud sessions to stop
+  merging: a reachability probe at planning time, so the user knows before the go-ahead, and
+  "merged, not deployed" plus one `wip/todo/` entry naming the shas, so the next local session
+  deploys them. The probe reuses the deploy's own routes (ssh, the registry) rather than
+  `PUBLIC_URL`, because the public API answers from anywhere and proves nothing about the NAS.

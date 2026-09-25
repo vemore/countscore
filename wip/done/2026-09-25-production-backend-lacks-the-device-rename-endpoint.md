@@ -1,5 +1,17 @@
 # Production runs a backend from before #214: renaming a device fails with "Erreur du serveur"
 
+**Status:** done (2026-09-25) — closed by docs/ship-parallel-deploy-reachability. Deployed from a
+local session: backend `576187c` with Alembic `0005_group_owner -> 0006_game_type_keypad_shortcut`
+(pre-migration dump taken), then `4105561` (#219); PWA `576187c`, `ee078c9`, `2bbf586`. Checked
+in production: `/health` ok on gemini-2.5-flash, `POST /comments/game-analysis` 200, `alembic
+current` = 0006, the running image's `groups.py` carries `PATCH /devices/me`, `GET /groups/me`
+401 without a token, the PWA serves build `b005eebd201c5fb3` and an open tab took it through the
+*Reload* prompt. The unauthenticated `PATCH` probe itself was not sent (the session's permission
+classifier refused a write to production). Renaming the Pixel from Settings is for the user to
+confirm on the device. The process fix — probe at planning time, "merged, not deployed", one
+`wip/todo/` entry — is `ship-parallel` §1.5/§4/§6 in this pull request; its probe answered
+`deploy: reachable` from the main checkout.
+
 - **Noted:** 2026-09-25 — testing `main` (05894ee) on the Pixel
 - **Theme:** deploy-safety
 - **Area:** backend
@@ -21,7 +33,8 @@ a cloud session, which cannot reach the NAS: the deploy step could not run, and 
 so. Make that step impossible to skip silently — `ship-parallel` checks at planning time
 whether this session can reach the deploy host, and when it cannot, the merge step reports
 "merged, not deployed" and files (or updates) a `wip/todo/` entry naming the undeployed shas,
-so the next local session deploys them.
+so the next local session deploys them. The process fix is carried by
+`docs/ship-parallel-deploy-reachability` (`ship-parallel` §1.5, §4, §6; `ParallelDelivery.md`).
 
 **Acceptance:**
 - `PATCH /groups/devices/me` on production answers 401 without a token, not 404.
