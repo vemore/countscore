@@ -20,6 +20,8 @@ behind each choice: `.llmwiki/ParallelDelivery.md`.
   A worktree whose pull request is still open is work in flight — resume it rather than
   starting the same theme twice. Debris from a finished loop: `scripts/cleanup_local.sh`
   (§6) before planning anything new, so the next listing shows only live work.
+- An open `wip/todo/*-merged-not-deployed.md` entry holds merges an earlier session could not
+  deploy (§4): when §1.5 finds the deploy host reachable, deploy `main` and close it first.
 
 ## 1. Plan the pull requests
 
@@ -53,9 +55,26 @@ behind each choice: `.llmwiki/ParallelDelivery.md`.
      they are what the independent reviewer judges the tests against.
    - In doubt, take the stricter lane: raising a lane costs one review, missing one costs a
      production fix.
-5. Present the plan in **one** `AskUserQuestion` — for each pull request: branch name, entries,
+5. **Check that this session can deploy.** A cloud session has no route to the NAS and no
+   `deploy.env` (untracked, in the main checkout only), so §4 cannot run there. Read-only,
+   over the two routes `deploy_nas.sh` and `deploy_web.sh` take — ssh to the NAS, plain
+   HTTP to the registry — and printing no host:
+   ```bash
+   ( f=backend/scripts/deploy.env
+     [ -r "$f" ] || { echo "deploy: no $f in this checkout"; exit 1; }
+     set -a; . "$f"; set +a
+     ssh -o BatchMode=yes -o ConnectTimeout=5 "$NAS_SSH" true >/dev/null 2>&1 \
+       || { echo "deploy: NAS unreachable over ssh"; exit 1; }
+     curl -s -o /dev/null -m 5 "http://$REGISTRY/v2/" \
+       || { echo "deploy: registry unreachable"; exit 1; }
+     echo "deploy: reachable" )
+   ```
+   Anything but `deploy: reachable` goes **into the plan, as its first line**: "this session
+   cannot deploy — merges will land *merged, not deployed* (§4)". The user then chooses
+   between merging anyway and leaving the green pull requests for a local session.
+6. Present the plan in **one** `AskUserQuestion` — for each pull request: branch name, entries,
    **its lane and, for B and C, the acceptance criteria**, likely files, wave, merge order —
-   and wait for the answer. The user's go-ahead covers the whole loop below, merges and deploys
+   and, from step 5, whether this session can deploy; then wait for the answer. The user's go-ahead covers the whole loop below, merges and deploys
    included; it does **not** stand in for lane C's go-ahead in §3, which is asked again once
    the diff and the review findings exist.
 
@@ -210,6 +229,21 @@ Then smoke-test production: `/health`, the PWA loads, and the path the pull requ
 driven for real (Playwright on the PWA, `flutter-device-test` for the Android app when only
 a device shows it). Record what you checked.
 
+**When the deploy cannot run** — §1.5 said so, or the deploy skill cannot reach the NAS or the
+registry — the merge is **merged, not deployed**, never a silent success (#212–#216 sat
+undeployed for days that way: `ParallelDelivery.md` § Decisions). A deploy that ran and broke
+production is not this case: that is §5's rollback.
+- Say "merged, not deployed" for that pull request, then and in §6.
+- File **one** entry for the loop, `wip/todo/<date>-merged-not-deployed.md` (Theme
+  `deploy-safety`, Blocks release: yes), or add to the one already open: one line per squash
+  sha, with its pull request and what it needs, from the table above — **backend with
+  Alembic** (name the revision: `git diff --name-only <sha>^ <sha> -- backend/alembic/versions`),
+  **backend, no Alembic**, **PWA**. Its fix: deploy `origin/main`, backend first, then web —
+  one deploy covers every sha listed — smoke-test each listed pull request's path, and close
+  the entry naming the deployed sha.
+- The entry reaches `main` through its own `docs/` pull request, merged after the last one of
+  the loop (it touches only `wip/`: nothing to deploy).
+
 ## 5. Follow-up fixes
 
 A problem found after the deploy is a **new** pull request, never a commit on the merged
@@ -234,8 +268,10 @@ and one local branch per merged pull request.
   merged head are real: say so in the report, never force them away. A pull request closed
   without merging is the user's call.
 - `git worktree list` and `git branch -vv` must then show only `main` and work in flight.
-- Report to the user: each pull request (URL, merged or not), each deploy and its smoke test,
-  the entries created on the way, and what is left (`scripts/wip.sh list`).
+- Report to the user: each pull request (URL, merged or not), each deploy and its smoke test
+  — or, for each merge §4 could not deploy, **"merged, not deployed"** with its sha and the
+  `merged-not-deployed` entry — the entries created on the way, and what is left
+  (`scripts/wip.sh list`).
 - And an **Android** line — how far the Play Store lags production: the last release tag
   (`git describe --tags --abbrev=0 origin/main`), the commits since
   (`git rev-list --count <tag>..origin/main`), and the open `wip/todo/` entries

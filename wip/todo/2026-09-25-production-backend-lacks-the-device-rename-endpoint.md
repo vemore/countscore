@@ -21,7 +21,8 @@ a cloud session, which cannot reach the NAS: the deploy step could not run, and 
 so. Make that step impossible to skip silently — `ship-parallel` checks at planning time
 whether this session can reach the deploy host, and when it cannot, the merge step reports
 "merged, not deployed" and files (or updates) a `wip/todo/` entry naming the undeployed shas,
-so the next local session deploys them.
+so the next local session deploys them. The process fix is carried by
+`docs/ship-parallel-deploy-reachability` (`ship-parallel` §1.5, §4, §6; `ParallelDelivery.md`).
 
 **Acceptance:**
 - `PATCH /groups/devices/me` on production answers 401 without a token, not 404.
