@@ -184,7 +184,9 @@ player shows one colour here and on the board — with *Add a player* opening th
 playing" sheet (`player_picker_sheet.dart`); and a full-width *Start · N players* in the
 `bottomNavigationBar`, enabled from two players. The seat order written is the list's order
 (`orderIndex`). `boardBuilder` replaces the board in tests. The *Share with the group*
-switch stays, under the players, while the device is in a group.
+switch stays, under the players, while the device is in a group. Both sheets (players, *All
+games*) drop the focus before they open: a modal route gives focus back on close, and the
+name field's keyboard would come back up over the players just picked.
 
 `about_screen` reads the displayed version from `package_info_plus`
 (`PackageInfo.fromPlatform()`, held in a `static final` future) — i.e. from `pubspec.yaml`
