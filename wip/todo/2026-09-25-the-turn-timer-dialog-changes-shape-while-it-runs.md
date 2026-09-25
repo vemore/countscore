@@ -19,3 +19,6 @@ fixed-height slot for "Temps écoulé !".
 **Acceptance:**
 - A widget test at 360 dp wide in `fr`, `de` and `ru` finds the dialog the same size when
   stopped, running and at zero.
+
+**Promoted (2026-09-25):** by the user, for the next release: it touches what that release
+ships (sounds, turn timer, new-game flow, the last-player-standing rule).
