@@ -271,7 +271,11 @@ Seventeen components shared out of the screens:
   in the dialog's own `State`, so the board's is never touched and closing the dialog stops
   it. The last duration is remembered **per game type**, SharedPreferences
   `turnTimerSeconds.<game type id>` (`turnTimerSeconds.none` for a game without a type),
-  default 60 s. No schema, no permission.
+  default 60 s. No schema, no permission. **One layout in every state** — the time, a
+  fixed-height slot for "Time's up!", start / pause as a full-width button, Reset and Close
+  side by side under it (not `AlertDialog` actions, which stack once a label no longer
+  fits); labels scale down rather than wrap, so nothing moves between two taps
+  (`wip/done/2026-09-25-the-turn-timer-dialog-changes-shape-while-it-runs.md`).
 - `group_settings_section.dart` — Settings → Group: create or join a group, show its invite
   code, leave it, and show where sync stands; usable only once a server URL is set. *New
   code* is shown to the group's owner only; *Comments and usage* opens
