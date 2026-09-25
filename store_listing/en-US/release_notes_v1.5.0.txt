@@ -1,0 +1,11 @@
+CountScore 1.5.0
+
+• Game sounds, off by default: elimination, victory, and they lower your music.
+• A turn timer in the board menu.
+• A skull marks eliminated players.
+• Each game type can have its own keypad key: ×2 for Skyjo, 162 for Belote…
+• Groups: pick a nickname when you join, and rename your device.
+• Last-player-standing games now end reliably.
+• Smaller fixes.
+
+Online features stay off until you enter your server.
