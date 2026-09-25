@@ -1,5 +1,7 @@
 # The analysis prompt describes `lastPlayerOver` with its old meaning
 
+**Status:** done (2026-09-25) — closed by fix/analysis-last-player-standing. `_GAME_OVER["lastPlayerOver"]` and `["lastPlayerUnder"]` (`backend/app/services/analysis/game_rules.py`) now read "The game ends when every player but one is above/below {threshold} points.", the wording of `gameRulesEndLastOver` / `gameRulesEndLastUnder`; the two `firstPlayer*` keys are untouched. `backend/tests/test_analysis_game_rules.py` renders both, and a dedicated test asserts the exact line for `lastPlayerOver`/100 on a ZapZap. No wiki page quoted the old wording.
+
 - **Noted:** 2026-09-24 — independent review of #213 (fix/game-ends-on-last-player), point 7
 - **Theme:** game-types
 - **Area:** backend
