@@ -29,6 +29,17 @@ check scripts, and a script that replays them with `claude -p` (restricted `--al
 in throwaway worktrees and prints pass or fail per case. Run it after changing `CLAUDE.md`,
 `.claude/**` or `.llmwiki/**`, and in the pruning pass (`release-android` §3b).
 
+**State of the art** (web search, 2026-09-26): Anthropic's `skill-creator` now writes evals
+for a skill — test prompts with expected outcomes — runs benchmarks, blind A/B comparisons
+and trigger tuning, in isolated workspaces, and it is installed here. Practice beyond one
+skill is the harness proposed above: `claude -p` headless against the project, then a check
+script or a judge. Use the `skill-creator` format for the per-skill cases rather than a
+home-made one, and keep `evals/` for the cross-cutting cases (`CLAUDE.md`, hooks, the wip
+rule). With [[2026-09-26-agents-run-on-one-model-whatever-the-task]], run each case on the
+model its rating picks: that is what says a simple task is safe on Sonnet.
+Sources: [Anthropic, improving skill-creator](https://claude.com/blog/improving-skill-creator-test-measure-and-refine-agent-skills),
+[Dik Rana, agent evals for a Claude Code setup](https://dikrana.dev/blog/claude-code-agent-evals/).
+
 **Acceptance:**
 - `evals/` holds at least five cases from `wip/done/`, each a prompt and a check script.
 - One local command runs them all and prints pass or fail per case; no secret and no workflow is added.
