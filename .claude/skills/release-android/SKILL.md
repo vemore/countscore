@@ -84,6 +84,10 @@ origin/main`):
    the release branch, and never a reason to hold the release.
 4. Lint the wiki (`.llmwiki/Documentation.md`, "Wiki lint"); its findings join the same
    proposal.
+5. Run the agent evals (`.llmwiki/AgentEvals.md`): `evals/run.sh` on `origin/main`, then
+   `evals/run.sh --ref HEAD` on the pruning branch once its removals are committed. A case
+   that passes before and fails after is evidence the removed rule was carrying weight; the
+   verdicts join the same proposal.
 
 ## 4. Policy gate — before building
 

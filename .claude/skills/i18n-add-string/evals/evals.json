@@ -1,0 +1,20 @@
+{
+  "skill_name": "i18n-add-string",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add a localized message named `roundsPlayed` that says how many rounds a game has had: \"1 round played\", \"5 rounds played\". It will be used by the statistics screen later, so do not wire it to a screen yet.",
+      "expected_output": "A new ICU plural message `roundsPlayed` in all ten ARB files, translated, with its @roundsPlayed metadata (an int placeholder) in the French template, the localizations regenerated, and one conventional commit. Source: wip/done/2026-09-19-default-game-name-is-hardcoded-french.md (an ICU message with a count, added through this skill) and wip/done/2026-09-16-game-over-strings-untranslated.md.",
+      "files": [],
+      "expectations": [
+        "`roundsPlayed` exists in all ten lib/l10n/app_*.arb files",
+        "Every one of the ten values is an ICU plural (`{…, plural, …}`), not a hand-rolled singular/plural pair",
+        "app_fr.arb (the template) carries `@roundsPlayed` with an int placeholder",
+        "`python3 .claude/hooks/arb_keys.py --keys` and `--values` both exit 0",
+        "lib/l10n/app_localizations.dart declares `roundsPlayed` (flutter gen-l10n was run)",
+        "No `== 1 ?` plural logic was added to a hand-written Dart file",
+        "The work is committed with a conventional subject and the tree is clean"
+      ]
+    }
+  ]
+}

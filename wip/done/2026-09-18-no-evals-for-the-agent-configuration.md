@@ -1,5 +1,7 @@
 # Nothing checks that agents still work well after CLAUDE.md, a skill or a hook changes
 
+**Status:** done (2026-09-26) — closed by feat/agent-evals. `evals/run.sh` replays five cross-cutting cases (`evals/cases/`) and two skill cases (skill-creator `evals.json` in `i18n-add-string` and `db-migration`) with `claude -p`, a closed tool list and no push path, each in a throwaway worktree, and prints pass or fail per case; `evals/selftest.sh` proves every check against a right and a wrong hand-made outcome at no cost. When to run them: `.llmwiki/AgentEvals.md`; `release-android` §3b step 5 runs them. Not done: running each case on the model its rating picks waits for [[2026-09-26-agents-run-on-one-model-whatever-the-task]] (`--model` is there for it).
+
 - **Noted:** 2026-09-18 — comparing the project's SDLC with Anthropic's "The AI-native SDLC
   playbook" (claude.com/blog/the-ai-native-sdlc-playbook)
 - **Theme:** process-evals

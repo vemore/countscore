@@ -163,3 +163,6 @@ backend/scripts/deploy.env
 
 # /brag launch-video runs: render, composition and audio assets, regenerated on demand
 brag-output/
+
+# Agent eval run logs (evals/run.sh)
+/evals/runs/

@@ -252,6 +252,7 @@ countscore/
 ├── store_listing/       # Play Store assets and the listing text, in 10 locales
 ├── docs/                # Published by GitHub Pages — the privacy policy Play links to
 ├── scripts/             # Keystore, screenshots, privacy page, PWA deploy, web binaries, CI freshness, self-tests
+├── evals/              # Agent evals: past tasks replayed with `claude -p`, script-checked
 ├── .llmwiki/            # Durable project knowledge — start at INDEX.md
 └── pubspec.yaml
 ```
