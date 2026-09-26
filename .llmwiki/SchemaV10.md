@@ -2,7 +2,7 @@
 
 > Scope: the mobile database — tables, the global-player model, the migration chain.
 > Related: [[DataLayer]] · [[Sync]] · [[MobileApp]] · [[Testing]]
-> Updated: 2026-09-25
+> Updated: 2026-09-26
 
 This page was `SchemaV9` until v10 landed on 2026-09-13; links were renamed with it.
 v11 followed the same day, v12, v13 and v14 on 2026-09-16, v15 on 2026-09-18, v16 on
@@ -50,7 +50,7 @@ because `name` is user-editable — a renamed type must not lose its rules.
 Both push as `rules` and `rules_slug`, columns the server gained in
 `0003_game_type_rules`. Bounds in `backend/app/services/delta_bounds.py`: 8 000 and 32.
 The client clips to the same lengths (`sync_store.dart`, `_gameTypeRulesMax`).
-`defaultRulesSlugs` in `sync_schema.dart` maps each `builtin_key` to its slug; the seed
+`defaultRulesSlugs` in `schema_steps.dart` maps each `builtin_key` to its slug; the seed
 factories in `lib/models/game_type.dart` carry the same slugs
 (`test/migration_v15_to_v16_test.dart` holds the two and `GameRulesCatalog.slugs` together).
 The v13 back-fill ran before `builtin_key` existed and matched the nine pre-v14 seeded
@@ -76,7 +76,7 @@ not 0). NULL is a plain 0 on the keypad. `GameType.fromMap` decodes it with
 `KeypadShortcut.decode`, which returns null for anything malformed, so a bad value shows no
 shortcut rather than breaking the keypad.
 
-`applyV21` in `lib/services/sync/sync_schema.dart`, run by both engines on upgrade, adds the
+`applyV21` in `lib/services/schema_steps.dart`, run by both engines on upgrade, adds the
 column and fills the live rows keyed `zapzap`, `skyjo`, `belote`, `scrabble` and `rami` from
 their seeds (`keypadShortcutSeeds()`: "0 ZapZap" value 0, ×2, 162, +50, 100), on
 `keypad_shortcut IS NULL` only. The column is new, so a NULL there was never a choice. A
@@ -118,7 +118,7 @@ locales hold different names for one type, and last-writer-wins on that column i
 Renaming a built-in type in `lib/screens/game_types_screen.dart` **clears the key**, which
 is what makes the chosen name stick.
 
-`applyV14` in `lib/services/sync/sync_schema.dart`, run by both engines, does three things:
+`applyV14` in `lib/services/schema_steps.dart`, run by both engines, does three things:
 
 1. adds the column;
 2. **back-fills every seeded row**, matched by the literal name it was seeded with *and* by
@@ -164,7 +164,7 @@ seed"**, and nothing more. **Nothing in the app reads it, and nothing new may.**
 | Where | What it does |
 |---|---|
 | `GameType.defaultGameTypes()`, both `_insertDefaultGameTypes` | writes 1 on every seeded row |
-| `applyV13`, `applyV14` step 2 (`sync_schema.dart`) | two past back-fills select on `isDefault = 1` |
+| `applyV13`, `applyV14` step 2 (`schema_steps.dart`) | two past back-fills select on `isDefault = 1` |
 | `sync_store.dart` `case 'game_type'` | pushed as `is_default`; the server stores it (`backend/app/models/game.py`) |
 | `sync_store.dart` `_applyGameType` | a **received** row is inserted with `isDefault: 0` — the pushed value is dropped |
 
@@ -195,7 +195,7 @@ live copy of a built-in type is refused whatever name it carries; a deleted copy
 block a live one; a type the user made has no key and is never constrained, so it may share
 its name with a deleted type or with anything else.
 
-`applyV15` in `lib/services/sync/sync_schema.dart` is the upgrade step of both engines *and*
+`applyV15` in `lib/services/schema_steps.dart` is the upgrade step of both engines *and*
 part of both fresh installs (`DatabaseService._createDB`, Drift `onCreate`), run before the
 seed. Before creating the index it clears the key of any surplus live row holding a key an
 older live row already holds — the row, its games and its settings stay; it only shows its
@@ -222,9 +222,10 @@ holds that key — a row linked by name before its remote became a built-in. Tes
 Drift's `onUpgrade` is **not** a no-op any more. Native still never reaches it — sqflite has
 migrated the file first — but a browser keeps its database across PWA releases, and the PWA
 has been in production at v9 since 2026-09-13. `onUpgrade` runs `applySyncV10` for
-`from < 10`, the v11 statements for `from < 11`, `applyV12` for `from < 12`, `applyV13`
-for `from < 13`, `applyV14` for `from < 14` and `applyV15` for `from < 15`: the same SQL sqflite runs, from `sync_schema.dart`. Covered by
-`test/drift/web_upgrade_test.dart`.
+`from < 10`, the v11 statements for `from < 11`, then each `applyVN` for `from < N`, from
+`applyV12` to `applyV21`: the same SQL sqflite runs, from `sync_schema.dart` (v10, v11) and
+`schema_steps.dart` (v12 on). Covered by `test/drift/web_upgrade_test.dart` and the
+`test/migration_v*_test.dart` files, which run both engines' upgrade callbacks.
 
 ### Tombstones (since v10)
 
@@ -248,16 +249,16 @@ pointing at it ([[Sync]]).
 | v8 | `game_analyses` recreated to add the sync columns missing from the Bedrock prototype. |
 | v9 | Global players. |
 | **v11** | **Change capture**: `sync_flags` (one row, `suppress`), `trg_sync_*` capture triggers on games, game_players, rounds, scores, game_analyses (insert/update when `group_id` is set) and on players, game_types (update when linked), and `*_inherit` triggers that give a row inserted under a shared parent its `group_id`. SQL in `lib/services/sync/sync_schema.dart`, shared by both engines. |
-| **v13** | **`game_types.rules` / `game_types.rules_slug`** (both TEXT, nullable): the rules a group wrote for a type, and the shipped ruleset it falls back to. `applyV13` in `lib/services/sync/sync_schema.dart`, run by both engines. Additive, plus a back-fill that maps the ten seeded names to their slug — `UPDATE`s only, so a type the user deleted is not resurrected and a renamed one keeps a NULL slug. |
-| **v12** | **`games.finishedAt`** (ISO-8601 TEXT, nullable): an explicit end for every game, not only the three types that carry a threshold. `applyV12` in `lib/services/sync/sync_schema.dart`, run by both engines. Additive only. |
-| **v14** | **`game_types.builtin_key`** (TEXT, nullable): the stable identity *and* the source of the displayed name of a built-in type, plus the twelve types the seed was missing. `applyV14` in `lib/services/sync/sync_schema.dart`, run by both engines. Additive; back-fills, never resurrects. |
-| **v15** | **Unique index on live built-in game types** (`builtin_key`, live rows only). `applyV15` in `lib/services/sync/sync_schema.dart`, run by both engines on upgrade and on a fresh install. Clears a surplus key rather than failing; deletes nothing. |
-| **v16** | **Rulesets for the twelve types of v14**: `rules_slug` back-filled by `builtin_key`, where it is still NULL. `applyV16` in `lib/services/sync/sync_schema.dart`, run by both engines. No column change; `UPDATE`s only, so nothing deleted comes back, a slug already set is kept and a renamed type (no key) is left alone. `test/migration_v15_to_v16_test.dart`. |
-| **v17** | **Keyless copies of the built-in types soft-deleted** — the ones the pre-#153 PWA reload bug seeded again and v15 stripped of their key. `applyV17` in `lib/services/sync/sync_schema.dart`, run by both engines on upgrade only (a fresh install has none). A row goes only if it is live, keyless, group-less, holds no `rules`, a live built-in row has the same stored name and the same scoring fields (`isLowestScoreWins`, the dead and game-over conditions and thresholds, NULL-safe), and no game, live or deleted, points at it. `deleted_at` + `updated_at`, not a `DELETE`, so sync sees a tombstone; a copy with a game is the user's and is kept. No column change. `test/migration_v16_to_v17_test.dart`. |
-| **v18** | **`applyV16` replayed**, so a `rules_slug` emptied *after* v16 had run comes back. `applyV18` in `lib/services/sync/sync_schema.dart` is literally `applyV16`, run by both engines; no column change, no new logic. It repairs the rows the pre-1.3.1 editor wiped (`rules`, `rules_slug`, `isDefault` cleared on every save, #179): `builtin_key` survives an edit, and `applyV16` keys on it and ignores `isDefault`, so the repair was already written — only a second run was missing. `UPDATE`s only, on `rules_slug IS NULL` alone, so a written ruleset, a slug already set and a keyless (created or renamed) type are untouched, and nothing is inserted. No user action clears a slug on purpose, so replaying is safe. `rules` the bug erased is user content with no second source and is not recoverable; `isDefault` is deliberately not restored. `test/migration_v17_to_v18_test.dart`. |
-| **v19** | **`builtin_key` given back to the live rows that never got it**, then `applyV16` replayed so they get their ruleset. `applyV19` in `lib/services/sync/sync_schema.dart`, run by both engines. A keyless live row takes a key when its stored name is — ignoring ASCII case — a name of exactly one built-in type **with a ruleset** in any of the ten locales, its seed name or its pre-v14 seed name (`builtinNamesByKey`), **and no live row holds that key**; one row per key, the oldest across all of that key's names. `other` is excluded: it has no ruleset, and "Other" is what anyone calls a type of their own. `isDefault` and the scoring columns are not read, and only `builtin_key` and `rules_slug` are written. It repairs the seeded row the v14 back-fill skipped because the old editor had cleared `isDefault` (the owner's Skyjo), and a user's own row older than the built-in it names, which v14 declined to insert beside it (the owner's "6 qui prend"). A renamed built-in, and a homonym of a built-in that is still there, stay keyless. No column change; nothing is inserted. `test/migration_v18_to_v19_test.dart`. |
-| **v20** | **`lastPlayerOver` on the last-survivor built-ins that have no end** — ZapZap, Rami and 6 qui prend (the seeds with `lastPlayerOver`, `lastPlayerStandingSeeds`), which feat/last-player-standing seeded on a new database only. `applyV20` in `lib/services/drift/schema_v20.dart` (not `sync_schema.dart`, to keep the sync layer untouched), run by both engines on upgrade. A live row keyed on one of the three, with `gameOverConditionType IS NULL` and an `over` elimination, gets `lastPlayerOver` at its own `playerDeadThreshold` (the seeded one if NULL: 100, 100, 65) and a new `updated_at`. A condition the user set, a deleted row, a row with no elimination and an `under` elimination are left alone. The editor's "None" (*Aucune*), a NULL end chosen on purpose, cannot be told from one never set, so it is overwritten. Finished games of these types are **re-ranked**: `GameStanding.ranksByEliminationOrder` is true for `lastPlayerOver`, so their final standings and the statistics' places follow the elimination order, and the winner can change when everyone went out (accepted by the user, 2026-09-24). The `UPDATE` fires the v11 `game_types` capture trigger, so a row linked into a group is pushed on the next sync; the server needs no change. No column change; nothing is inserted. `test/migration_v19_to_v20_test.dart`. |
-| **v21** | **`game_types.keypad_shortcut`** (TEXT, nullable): the score keypad's per-type key, a value or an operation, as compact JSON. `applyV21` in `lib/services/sync/sync_schema.dart`, run by both engines on upgrade: adds the column, then fills the live rows keyed `zapzap`, `skyjo`, `belote`, `scrabble`, `rami` from `keypadShortcutSeeds()` where it is NULL, with capture suppressed so nothing is pushed. Additive; `UPDATE`s only, nothing inserted, deleted or renamed rows untouched. Pushed as `keypad_shortcut` by later edits; the server gained it in `0006_game_type_keypad_shortcut`. `test/migration_v20_to_v21_test.dart`. |
+| **v13** | **`game_types.rules` / `game_types.rules_slug`** (both TEXT, nullable): the rules a group wrote for a type, and the shipped ruleset it falls back to. `applyV13` in `lib/services/schema_steps.dart`, run by both engines. Additive, plus a back-fill that maps the ten seeded names to their slug — `UPDATE`s only, so a type the user deleted is not resurrected and a renamed one keeps a NULL slug. |
+| **v12** | **`games.finishedAt`** (ISO-8601 TEXT, nullable): an explicit end for every game, not only the three types that carry a threshold. `applyV12` in `lib/services/schema_steps.dart`, run by both engines. Additive only. |
+| **v14** | **`game_types.builtin_key`** (TEXT, nullable): the stable identity *and* the source of the displayed name of a built-in type, plus the twelve types the seed was missing. `applyV14` in `lib/services/schema_steps.dart`, run by both engines. Additive; back-fills, never resurrects. |
+| **v15** | **Unique index on live built-in game types** (`builtin_key`, live rows only). `applyV15` in `lib/services/schema_steps.dart`, run by both engines on upgrade and on a fresh install. Clears a surplus key rather than failing; deletes nothing. |
+| **v16** | **Rulesets for the twelve types of v14**: `rules_slug` back-filled by `builtin_key`, where it is still NULL. `applyV16` in `lib/services/schema_steps.dart`, run by both engines. No column change; `UPDATE`s only, so nothing deleted comes back, a slug already set is kept and a renamed type (no key) is left alone. `test/migration_v15_to_v16_test.dart`. |
+| **v17** | **Keyless copies of the built-in types soft-deleted** — the ones the pre-#153 PWA reload bug seeded again and v15 stripped of their key. `applyV17` in `lib/services/schema_steps.dart`, run by both engines on upgrade only (a fresh install has none). A row goes only if it is live, keyless, group-less, holds no `rules`, a live built-in row has the same stored name and the same scoring fields (`isLowestScoreWins`, the dead and game-over conditions and thresholds, NULL-safe), and no game, live or deleted, points at it. `deleted_at` + `updated_at`, not a `DELETE`, so sync sees a tombstone; a copy with a game is the user's and is kept. No column change. `test/migration_v16_to_v17_test.dart`. |
+| **v18** | **`applyV16` replayed**, so a `rules_slug` emptied *after* v16 had run comes back. `applyV18` in `lib/services/schema_steps.dart` is literally `applyV16`, run by both engines; no column change, no new logic. It repairs the rows the pre-1.3.1 editor wiped (`rules`, `rules_slug`, `isDefault` cleared on every save, #179): `builtin_key` survives an edit, and `applyV16` keys on it and ignores `isDefault`, so the repair was already written — only a second run was missing. `UPDATE`s only, on `rules_slug IS NULL` alone, so a written ruleset, a slug already set and a keyless (created or renamed) type are untouched, and nothing is inserted. No user action clears a slug on purpose, so replaying is safe. `rules` the bug erased is user content with no second source and is not recoverable; `isDefault` is deliberately not restored. `test/migration_v17_to_v18_test.dart`. |
+| **v19** | **`builtin_key` given back to the live rows that never got it**, then `applyV16` replayed so they get their ruleset. `applyV19` in `lib/services/schema_steps.dart`, run by both engines. A keyless live row takes a key when its stored name is — ignoring ASCII case — a name of exactly one built-in type **with a ruleset** in any of the ten locales, its seed name or its pre-v14 seed name (`builtinNamesByKey`), **and no live row holds that key**; one row per key, the oldest across all of that key's names. `other` is excluded: it has no ruleset, and "Other" is what anyone calls a type of their own. `isDefault` and the scoring columns are not read, and only `builtin_key` and `rules_slug` are written. It repairs the seeded row the v14 back-fill skipped because the old editor had cleared `isDefault` (the owner's Skyjo), and a user's own row older than the built-in it names, which v14 declined to insert beside it (the owner's "6 qui prend"). A renamed built-in, and a homonym of a built-in that is still there, stay keyless. No column change; nothing is inserted. `test/migration_v18_to_v19_test.dart`. |
+| **v20** | **`lastPlayerOver` on the last-survivor built-ins that have no end** — ZapZap, Rami and 6 qui prend (the seeds with `lastPlayerOver`, `lastPlayerStandingSeeds`), which feat/last-player-standing seeded on a new database only. `applyV20` in `lib/services/schema_steps.dart`, run by both engines on upgrade. A live row keyed on one of the three, with `gameOverConditionType IS NULL` and an `over` elimination, gets `lastPlayerOver` at its own `playerDeadThreshold` (the seeded one if NULL: 100, 100, 65) and a new `updated_at`. A condition the user set, a deleted row, a row with no elimination and an `under` elimination are left alone. The editor's "None" (*Aucune*), a NULL end chosen on purpose, cannot be told from one never set, so it is overwritten. Finished games of these types are **re-ranked**: `GameStanding.ranksByEliminationOrder` is true for `lastPlayerOver`, so their final standings and the statistics' places follow the elimination order, and the winner can change when everyone went out (accepted by the user, 2026-09-24). The `UPDATE` fires the v11 `game_types` capture trigger, so a row linked into a group is pushed on the next sync; the server needs no change. No column change; nothing is inserted. `test/migration_v19_to_v20_test.dart`. |
+| **v21** | **`game_types.keypad_shortcut`** (TEXT, nullable): the score keypad's per-type key, a value or an operation, as compact JSON. `applyV21` in `lib/services/schema_steps.dart`, run by both engines on upgrade: adds the column, then fills the live rows keyed `zapzap`, `skyjo`, `belote`, `scrabble`, `rami` from `keypadShortcutSeeds()` where it is NULL, with capture suppressed so nothing is pushed. Additive; `UPDATE`s only, nothing inserted, deleted or renamed rows untouched. Pushed as `keypad_shortcut` by later edits; the server gained it in `0006_game_type_keypad_shortcut`. `test/migration_v20_to_v21_test.dart`. |
 | v10 | **Sync bookkeeping**: `group_links`, `entity_versions`, `sync_inbox`; `outbox.rejected_at` / `reject_reason`; `sync_state.device_id` / `group_name`. Additive only — `_createSyncV10Tables` is the fresh-install and the upgrade path at once. |
 
 ### The v9 migration in detail
@@ -289,6 +290,18 @@ Added in `b340c98`. Some installs recorded version 8 while still carrying pre-v6
 repairs the shape before the rest of the chain runs.
 
 ## Decisions & History
+
+- **The shared schema steps live outside the sync layer (2026-09-26, `refactor/schema-steps-out-of-sync`).**
+  `applyV12` to `applyV21` moved verbatim from `lib/services/sync/sync_schema.dart`, and
+  `applyV20` from `lib/services/drift/schema_v20.dart`, into one engine-neutral
+  `lib/services/schema_steps.dart`, which the db-migration skill now names for every new
+  step. The skill used to send each step to `sync_schema.dart`, and any change under
+  `lib/services/sync/` is lane C: a data-only step (v20) either raised its pull request's lane
+  or went to a file of its own, splitting the chain across two files. `sync_schema.dart` keeps
+  only the sync bookkeeping, `applySyncV10` and the v11 triggers. Several steps still have
+  sync effects (v20 fires the capture trigger, v21 raises `sync_flags.suppress`), which the
+  lane rule does not yet see outside `lib/services/sync/`
+  (`wip/todo_nr/2026-09-26-sync-effects-outside-lane-c-paths.md`).
 
 - **The keypad shortcut is one JSON column, back-filled once and locally (2026-09-24, `feat/keypad-game-shortcuts`).**
   Three columns (kind, amount, label) were the alternative; one value keeps the shortcut

@@ -37,8 +37,8 @@ Load this file first. Then read only the pages your task touches.
 | Page | Summary | Updated |
 |---|---|---|
 | [[MobileApp]] | `lib/` layout, providers, screens, widgets, services and `utils/`, the dynamic-icon constraint | 2026-09-25 |
-| [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-09-20 |
-| [[SchemaV10]] | Schema v21: the twelve tables, `builtin_key` and its unique index, sync bookkeeping and triggers, tombstones, the migration chain and its repair steps | 2026-09-25 |
+| [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-09-26 |
+| [[SchemaV10]] | Schema v21: the twelve tables, `builtin_key` and its unique index, sync bookkeeping and triggers, tombstones, the migration chain and its repair steps | 2026-09-26 |
 | [[I18n]] | 10 languages × 430 keys, French template, English fallback, localized built-in names and their sort key, the ARB checks, rules as assets | 2026-09-25 |
 | [[Web]] | PWA: sqlite3.wasm on IndexedDB and its flush, committed binaries, `kIsWeb` guards, the CSP, self-hosted fonts, the service worker, GitHub Pages | 2026-09-24 |
 
@@ -59,10 +59,10 @@ Load this file first. Then read only the pages your task touches.
 | [[AgentEvals]] | `evals/run.sh`: past tasks replayed with `claude -p` in throwaway worktrees, script-checked; when to run them, skill-creator cases per skill | 2026-09-26 |
 | [[Hooks]] | What Claude Code refuses mechanically, why each rule left CLAUDE.md, recovering from a stale branch | 2026-09-19 |
 | [[Documentation]] | Which documents a change implicates (wiki, README, the three privacy documents), the wiki lint pass, the CLAUDE.md budget | 2026-09-26 |
-| [[ParallelDelivery]] | Protection on main, worktrees, cleanup, one PR per theme, serial squash merges, refinement, lanes A–D, the reviewer, "merged, not deployed" | 2026-09-25 |
+| [[ParallelDelivery]] | Protection on main, worktrees, cleanup, one PR per theme, serial squash merges, refinement, lanes A–D, the reviewer, "merged, not deployed", delivery and cost metrics | 2026-09-26 |
 | [[Security]] | Defended surfaces (the group owner among them), and the security debt that is knowingly open | 2026-09-24 |
-| [[Testing]] | Unit, Drift, migration, e2e web and device, backend pytest; CI jobs and `scope`, and the extra gates (alembic, audit, binaries, privacy page) | 2026-09-25 |
-| [[Release]] | Play signing, publishing through the Play API, target API, 2026 policy constraints, cadence, the pruning pass | 2026-09-25 |
+| [[Testing]] | Unit, Drift, migration, e2e web and device, backend pytest; CI jobs and `scope`, and the extra gates (alembic, audit, binaries, privacy page) | 2026-09-26 |
+| [[Release]] | Play signing, publishing through the Play API, target API, 2026 policy constraints, cadence, the pruning pass | 2026-09-26 |
 | [[StoreListing]] | The 10 store locales and their keywords, category and tags, generated icon, feature graphic and screenshots, text limits, acquisition baseline | 2026-09-20 |
 
 ## Procedures live in skills, not here

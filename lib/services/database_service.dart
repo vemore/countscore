@@ -9,7 +9,7 @@ import '../models/player.dart';
 import '../models/game_analysis.dart';
 import '../models/round.dart';
 import '../models/score.dart';
-import 'drift/schema_v20.dart';
+import 'schema_steps.dart';
 import 'sync/sync_schema.dart';
 
 class DatabaseService {

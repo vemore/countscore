@@ -63,6 +63,11 @@ jobs:
       - name: sqlite3 download retry self-test
         run: scripts/retry_sqlite3_hash_selftest.sh
 
+      # The delivery metrics the pruning pass compares against its baseline: a throwaway
+      # repository with a known answer and a stubbed gh. Needs only git and awk.
+      - name: Delivery metrics self-test
+        run: scripts/delivery_metrics_selftest.sh
+
       # On main, on the weekly run and on a manual run every flag is true: main
       # keeps a complete verification record. On a pull request the flags come
       # from the files it changes.
@@ -173,6 +178,12 @@ jobs:
       - name: Privacy page tests
         working-directory: .
         run: uv run --no-project --with pytest pytest -v scripts/test_build_privacy_page.py
+
+      # scripts/agent_metrics.py reads the local Claude Code transcripts; its tests build a
+      # synthetic projects directory under tmp_path, and check no content reaches the output.
+      - name: Agent metrics tests
+        working-directory: .
+        run: uv run --no-project --with pytest pytest -v scripts/test_agent_metrics.py
 
       - name: Privacy page matches privacy_policy.md, and Last Updated moved
         working-directory: .
