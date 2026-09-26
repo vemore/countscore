@@ -31,6 +31,17 @@ Considered: OpenTelemetry export (`CLAUDE_CODE_ENABLE_TELEMETRY`) needs a collec
 [[2026-09-18-no-measure-of-whether-process-changes-help]], which measures the outcome — this
 measures the cost; the pruning pass reads both.
 
+**State of the art** (web search, 2026-09-26): two routes. Claude Code exports OpenTelemetry
+metrics, events and — in beta — traces covering subagent dispatch
+(`CLAUDE_CODE_ENABLE_TELEMETRY=1`, `OTEL_*`), to a collector such as SigNoz or Dash0: the
+richest data, but a service to run. `ccusage` reads the same local transcripts as proposed
+here, and gives per-day, per-session and per-model totals, without attribution to a skill, a
+file or a hook. Reading the transcripts keeps us at no new service; if the attribution proves
+too coarse, OTel traces are the next step. `/cost` gives one session's figure by hand.
+Sources: [Claude Code docs, costs](https://code.claude.com/docs/en/costs),
+[SigNoz, Claude Code monitoring](https://signoz.io/docs/claude-code-monitoring/),
+[Bindplane, per-session cost](https://bindplane.com/blog/claude-code-opentelemetry-per-session-cost-and-token-tracking).
+
 **Acceptance:**
 - `scripts/agent_metrics.py --since 2026-09-01 --by <axis>` prints the ten biggest consumers in tokens and in active time, for each axis.
 - A first baseline and its top findings are recorded in `.llmwiki/ParallelDelivery.md`.

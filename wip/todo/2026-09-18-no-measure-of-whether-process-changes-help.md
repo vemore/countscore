@@ -20,6 +20,15 @@ same files; share of pull requests green on their first CI run; merged size dist
 `release-android` §3b pruning pass can compare before and after. Keep it to the few numbers
 the pass will actually read.
 
+**State of the art** (web search, 2026-09-26): DORA added a fifth metric in 2025, **rework
+rate** — the share of deployments that fix a problem users hit — next to change failure
+rate, because AI-assisted teams ship more and break more (2025 DORA report: +98 % merged
+pull requests per developer, +242.7 % incidents per pull request). The "fix within 48 h
+touching the same files" above is our rework rate; name it so, and report deployment
+frequency and change failure rate from the same git and `gh` data.
+Sources: [DX, DORA metrics](https://getdx.com/blog/dora-metrics/),
+[Plandek, DORA in the age of AI](https://plandek.com/blog/how-to-measure-dora-metrics-in-the-age-of-ai-2026).
+
 **Acceptance:**
 - `scripts/delivery_metrics.sh [since]` prints the `fix:` share, fixes within 48 h touching the same files, the first-run-green share, the size distribution (excluding generated files and tests), and entry ages per `wip/` folder.
 - It reproduces about 29/112 `fix:` commits for 2026-09-09..2026-09-18.
