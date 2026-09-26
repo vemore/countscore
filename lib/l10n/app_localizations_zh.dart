@@ -1561,4 +1561,85 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get turnTimerTimeUp => '时间到！';
+
+  @override
+  String get configShareOpen => '通过 QR 码分享';
+
+  @override
+  String get configShareTitle => '分享此配置';
+
+  @override
+  String get configShareExplainServer => '用另一部手机扫描此 QR 码，可用相同的服务器进行设置。';
+
+  @override
+  String configShareExplainGroup(String name) {
+    return '用另一部手机扫描此 QR 码，可用相同的服务器进行设置并加入群组 $name。它包含群组的邀请码：只向想要加入群组的人分享。';
+  }
+
+  @override
+  String get configShareWebAppLabel => '网页应用地址';
+
+  @override
+  String get configShareWebAppHelper =>
+      '你的服务器提供 CountScore 网页应用的地址，例如 https://countscore.example.com/countscore。此 QR 码会打开该页面。';
+
+  @override
+  String get configShareWebAppNeeded => '输入网页应用地址以显示 QR 码。';
+
+  @override
+  String get configShareQrLabel => '配置链接的 QR 码';
+
+  @override
+  String get configShareCopyLink => '复制链接';
+
+  @override
+  String get configShareLinkCopied => '链接已复制';
+
+  @override
+  String get configShareTooLong => '此链接太长，无法放入 QR 码。请改用“复制链接”。';
+
+  @override
+  String get replaceConfigTitle => '替换配置？';
+
+  @override
+  String replaceConfigCurrent(String value) {
+    return '当前：$value';
+  }
+
+  @override
+  String replaceConfigNew(String value) {
+    return '新：$value';
+  }
+
+  @override
+  String replaceConfigInvite(String code) {
+    return '邀请码 $code';
+  }
+
+  @override
+  String replaceConfigLeavesGroup(String name) {
+    return '本设备将退出群组 $name。游戏将保留在本设备上。';
+  }
+
+  @override
+  String get replaceConfigConfirm => '替换';
+
+  @override
+  String replaceConfigUnsynced(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 项更改尚未到达群组。如果现在退出，群组将无法收到它们。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get replaceConfigLeaveAnyway => '仍然退出';
+
+  @override
+  String get replaceConfigDone => '配置已替换';
+
+  @override
+  String get replaceConfigUnchanged => '此设备已使用此配置';
 }

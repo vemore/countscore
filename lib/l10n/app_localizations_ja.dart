@@ -1576,4 +1576,87 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get turnTimerTimeUp => '時間切れ！';
+
+  @override
+  String get configShareOpen => 'QR コードで共有';
+
+  @override
+  String get configShareTitle => 'この設定を共有';
+
+  @override
+  String get configShareExplainServer =>
+      'このコードを別のスマートフォンでスキャンして、同じサーバーを設定できます。';
+
+  @override
+  String configShareExplainGroup(String name) {
+    return 'このコードを別のスマートフォンでスキャンして、同じサーバーを設定し、グループ $name に参加できます。グループの招待コードが含まれているので、グループに入れたい人にだけ見せてください。';
+  }
+
+  @override
+  String get configShareWebAppLabel => 'Web アプリアドレス';
+
+  @override
+  String get configShareWebAppHelper =>
+      'CountScore Web アプリがホストされているアドレスです（例：https://countscore.example.com/countscore）。QR コードはこのページを開きます。';
+
+  @override
+  String get configShareWebAppNeeded => 'Web アプリアドレスを入力するとコードが表示されます。';
+
+  @override
+  String get configShareQrLabel => '設定リンクの QR コード';
+
+  @override
+  String get configShareCopyLink => 'リンクをコピー';
+
+  @override
+  String get configShareLinkCopied => 'リンクをコピーしました';
+
+  @override
+  String get configShareTooLong =>
+      'このリンクは長すぎて QR コードに収まりません。代わりに「リンクをコピー」を使ってください。';
+
+  @override
+  String get replaceConfigTitle => '設定を置き換えますか？';
+
+  @override
+  String replaceConfigCurrent(String value) {
+    return '現在：$value';
+  }
+
+  @override
+  String replaceConfigNew(String value) {
+    return '新規：$value';
+  }
+
+  @override
+  String replaceConfigInvite(String code) {
+    return '招待コード $code';
+  }
+
+  @override
+  String replaceConfigLeavesGroup(String name) {
+    return 'このデバイスはグループ $name を退出します。ゲームはこのデバイスに残ります。';
+  }
+
+  @override
+  String get replaceConfigConfirm => '置き換え';
+
+  @override
+  String replaceConfigUnsynced(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'このデバイスの$count件の変更がまだグループに到達していません。今離脱するとグループはこれらを受け取りません。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get replaceConfigLeaveAnyway => 'それでも退出';
+
+  @override
+  String get replaceConfigDone => '設定を置き換えました';
+
+  @override
+  String get replaceConfigUnchanged => 'このデバイスは既にこの設定を使用しています';
 }

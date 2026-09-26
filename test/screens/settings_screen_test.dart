@@ -80,10 +80,16 @@ Future<SettingsProvider> _pump(WidgetTester tester, {required bool web}) async {
   return settings;
 }
 
-/// Scrolls Settings to its end.
+/// Scrolls Settings to its end. The list lays its rows out lazily, so one drag
+/// can stop at an estimated end that the rows it then builds push further down:
+/// drag until the end holds still.
 Future<void> _scrollToEnd(WidgetTester tester) async {
-  await tester.drag(find.byType(ListView), const Offset(0, -5000));
-  await tester.pumpAndSettle();
+  final position = tester.state<ScrollableState>(find.byType(Scrollable).first).position;
+  for (var i = 0; i < 5; i++) {
+    await tester.drag(find.byType(ListView), const Offset(0, -5000));
+    await tester.pumpAndSettle();
+    if (position.pixels >= position.maxScrollExtent) break;
+  }
 }
 
 /// The row drawn right under [heading], in reading order: the heading must not

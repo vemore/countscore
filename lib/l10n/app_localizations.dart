@@ -2698,6 +2698,132 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Temps écoulé !'**
   String get turnTimerTimeUp;
+
+  /// Button in Settings (Server and Group sections) that opens a sheet with a QR code carrying this device's server and group invite code
+  ///
+  /// In fr, this message translates to:
+  /// **'Partager par QR code'**
+  String get configShareOpen;
+
+  /// Title of the sheet showing the configuration QR code
+  ///
+  /// In fr, this message translates to:
+  /// **'Partager cette configuration'**
+  String get configShareTitle;
+
+  /// Explanation under the QR code sheet title when this device is not in a group: the code carries the server only
+  ///
+  /// In fr, this message translates to:
+  /// **'Scannez ce code avec un autre téléphone pour le configurer avec le même serveur.'**
+  String get configShareExplainServer;
+
+  /// Explanation under the QR code sheet title when this device is in a group: the code carries the server and the group's invite code, which lets anyone join
+  ///
+  /// In fr, this message translates to:
+  /// **'Scannez ce code avec un autre téléphone pour le configurer avec le même serveur et rejoindre le groupe {name}. Il contient le code d\'invitation du groupe : ne le montrez qu\'aux personnes que vous voulez dans le groupe.'**
+  String configShareExplainGroup(String name);
+
+  /// Label of the field in the QR code sheet where the user enters the address of the CountScore web app (PWA) their server serves
+  ///
+  /// In fr, this message translates to:
+  /// **'Adresse de l\'application web'**
+  String get configShareWebAppLabel;
+
+  /// Helper text under the web app address field in the QR code sheet. Keep the example URL as it is.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'adresse où votre serveur sert l\'application web CountScore, par exemple https://countscore.example.com/countscore. Le code ouvre cette page.'**
+  String get configShareWebAppHelper;
+
+  /// Shown in the QR code sheet in place of the code while no valid web app address is set
+  ///
+  /// In fr, this message translates to:
+  /// **'Saisissez l\'adresse de l\'application web pour afficher le code.'**
+  String get configShareWebAppNeeded;
+
+  /// Accessibility label of the QR code image, read by screen readers
+  ///
+  /// In fr, this message translates to:
+  /// **'QR code du lien de configuration'**
+  String get configShareQrLabel;
+
+  /// Button in the QR code sheet that copies the link the QR code carries
+  ///
+  /// In fr, this message translates to:
+  /// **'Copier le lien'**
+  String get configShareCopyLink;
+
+  /// Snackbar after the configuration link was copied to the clipboard
+  ///
+  /// In fr, this message translates to:
+  /// **'Lien copié'**
+  String get configShareLinkCopied;
+
+  /// Shown in the QR code sheet in place of the code when the configuration link is too long to fit in a QR code (addresses far longer than usual); the copy link button stays available
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce lien est trop long pour tenir dans un QR code. Utilisez « Copier le lien ».'**
+  String get configShareTooLong;
+
+  /// Title of the dialog shown when a shared configuration (server and group) is opened on this device, asking before replacing the current one
+  ///
+  /// In fr, this message translates to:
+  /// **'Remplacer la configuration ?'**
+  String get replaceConfigTitle;
+
+  /// In the replace configuration dialog, the value this device uses today (a server address, a group name, or 'None')
+  ///
+  /// In fr, this message translates to:
+  /// **'Actuel : {value}'**
+  String replaceConfigCurrent(String value);
+
+  /// In the replace configuration dialog, the value the shared configuration brings (a server address, an invite code, or 'None')
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau : {value}'**
+  String replaceConfigNew(String value);
+
+  /// In the replace configuration dialog, the new group, known only by its invite code at this point. Shown after 'New: '
+  ///
+  /// In fr, this message translates to:
+  /// **'code d\'invitation {code}'**
+  String replaceConfigInvite(String code);
+
+  /// Warning in the replace configuration dialog when accepting makes this device leave its current group
+  ///
+  /// In fr, this message translates to:
+  /// **'Cet appareil va quitter le groupe {name}. Ses parties restent sur cet appareil.'**
+  String replaceConfigLeavesGroup(String name);
+
+  /// Confirm button of the replace configuration dialog
+  ///
+  /// In fr, this message translates to:
+  /// **'Remplacer'**
+  String get replaceConfigConfirm;
+
+  /// Second confirmation before replacing the configuration makes this device leave a group while it still has changes not synced to the server; leaving discards them from the sync queue
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{1 modification de cet appareil n\'a pas encore atteint le groupe. Si vous partez maintenant, le groupe ne la recevra jamais.} other{{count} modifications de cet appareil n\'ont pas encore atteint le groupe. Si vous partez maintenant, le groupe ne les recevra jamais.}}'**
+  String replaceConfigUnsynced(int count);
+
+  /// Button of the unsynced changes warning that leaves the group regardless
+  ///
+  /// In fr, this message translates to:
+  /// **'Quitter quand même'**
+  String get replaceConfigLeaveAnyway;
+
+  /// Snackbar after the shared configuration replaced this device's server and group
+  ///
+  /// In fr, this message translates to:
+  /// **'Configuration remplacée'**
+  String get replaceConfigDone;
+
+  /// Snackbar when an opened shared configuration is the one this device already uses, so there is nothing to replace
+  ///
+  /// In fr, this message translates to:
+  /// **'Cet appareil utilise déjà cette configuration'**
+  String get replaceConfigUnchanged;
 }
 
 class _AppLocalizationsDelegate

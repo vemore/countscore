@@ -2,7 +2,7 @@
 
 > Scope: what is defended, and what is knowingly open.
 > Related: [[Backend]] · [[Api]] · [[LlmProviders]] · [[Deployment]] · [[KnownLimits]]
-> Updated: 2026-09-24
+> Updated: 2026-09-26
 
 ## Facts
 
@@ -12,7 +12,7 @@
 |---|---|
 | Device token on the client | `flutter_secure_storage`: Android Keystore; on web, encrypted in localStorage. Never in the database, SharedPreferences or an export (`lib/services/sync/sync_credentials.dart`). |
 | `device_token` | `<device id hex>.<secret>`, 128 bits of secret. Stored argon2-hashed server-side; one verify per request, failures capped per IP. |
-| `share_token` | uuid4, rotatable. Unused once a device has joined. Shown in Settings → Group so it can be passed on; kept in secure storage on the device. |
+| `share_token` | uuid4, rotatable. Unused once a device has joined. Shown in Settings → Group so it can be passed on, and in the configuration QR code, where it travels only in the URL fragment, never sent to the server ([[ConfigShare]]); kept in secure storage on the device. |
 | `ANTHROPIC_API_KEY`, AWS keys | Environment only, never logged, never bundled in the APK. |
 | TLS | Synology Web Station, integrated Let's Encrypt. |
 | Prompt injection | 5 layers — see [[LlmProviders]]. |

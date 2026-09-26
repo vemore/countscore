@@ -714,5 +714,27 @@
   "turnTimerStart": "Starten",
   "turnTimerPause": "Anhalten",
   "turnTimerReset": "Zurücksetzen",
-  "turnTimerTimeUp": "Die Zeit ist um!"
+  "turnTimerTimeUp": "Die Zeit ist um!",
+
+  "configShareOpen": "Per QR-Code teilen",
+  "configShareTitle": "Diese Konfiguration teilen",
+  "configShareExplainServer": "Scanniere diesen Code mit einem anderen Telefon, um ihn mit demselben Server zu konfigurieren.",
+  "configShareExplainGroup": "Scanniere diesen Code mit einem anderen Telefon, um ihn mit demselben Server zu konfigurieren und der Gruppe {name} beizutreten. Er enthält den Einladungscode der Gruppe: Zeige ihn nur den Personen, die du in der Gruppe haben möchtest.",
+  "configShareWebAppLabel": "Adresse der Web-App",
+  "configShareWebAppHelper": "Die Adresse, unter der dein Server die CountScore-Web-App bereitstellt, zum Beispiel https://countscore.example.com/countscore. Der Code öffnet diese Seite.",
+  "configShareWebAppNeeded": "Gib die Adresse der Web-App ein, um den Code anzuzeigen.",
+  "configShareQrLabel": "QR-Code des Konfigurationslinks",
+  "configShareCopyLink": "Link kopieren",
+  "configShareLinkCopied": "Link kopiert",
+  "replaceConfigTitle": "Konfiguration ersetzen?",
+  "replaceConfigCurrent": "Aktuell: {value}",
+  "replaceConfigNew": "Neu: {value}",
+  "replaceConfigInvite": "Einladungscode {code}",
+  "replaceConfigLeavesGroup": "Dieses Gerät verlässt die Gruppe {name}. Die Spiele bleiben auf diesem Gerät.",
+  "replaceConfigConfirm": "Ersetzen",
+  "replaceConfigUnsynced": "{count, plural, =1{1 Änderung auf diesem Gerät hat die Gruppe noch nicht erreicht. Wenn du jetzt gehst, wird die Gruppe sie nie erhalten.} other{{count} Änderungen auf diesem Gerät haben die Gruppe noch nicht erreicht. Wenn du jetzt gehst, wird die Gruppe sie nie erhalten.}}",
+  "replaceConfigLeaveAnyway": "Trotzdem verlassen",
+  "replaceConfigDone": "Konfiguration ersetzt",
+  "replaceConfigUnchanged": "Dieses Gerät verwendet bereits diese Konfiguration",
+  "configShareTooLong": "Dieser Link ist zu lang für einen QR-Code. Verwende stattdessen „Link kopieren“."
 }

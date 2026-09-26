@@ -2,7 +2,7 @@
 
 > Scope: the Flutter app's own structure — entry point, state, screens, models.
 > Related: [[DataLayer]] · [[Schema]] · [[I18n]] · [[Web]] · [[Testing]]
-> Updated: 2026-09-25
+> Updated: 2026-09-26
 
 ## Facts
 
@@ -280,6 +280,10 @@ Seventeen components shared out of the screens:
   code, leave it, and show where sync stands; usable only once a server URL is set. *New
   code* is shown to the group's owner only; *Comments and usage* opens
   `group_settings_screen`.
+- `config_share_sheet.dart` — Settings → Server (and Group) → *Share by QR code*: the QR of
+  the configuration link, drawn locally with the `qr` package, and the web app address it
+  needs; `replace_config_dialog.dart` — `showReplaceConfigDialog`, the shared "replace the
+  configuration?" question a scanned link opens. Both in [[ConfigShare]].
 - `group_devices_sheet.dart` — Settings → Group → Devices: the group's devices, this one and
   the owner marked; the owner alone gets revoke and *Make owner* on the others ([[Sync]]).
 - `pwa_update_listener.dart` — `PwaUpdateListener`, wrapped around every screen by
@@ -353,6 +357,7 @@ swatches, each at least `kGameTypeColorMinContrast` = 3.0 against both themes' s
 their tinted cards, checked in `test/utils/game_type_appearance_test.dart`); the seeded
 `cardColorValue`s are deliberately left outside it, and a type already coloured otherwise
 keeps its colour as an extra swatch —
+`config_link.dart` — the configuration link's encoder and parser ([[ConfigShare]]) —
 `game_result_share.dart`, `widget_image.dart` and `undo_snack_bar.dart` — `undoSnackBar`, the one snackbar that
 offers an action back: `persist: false` and `kUndoSnackBarDuration` (6 s), so the Undo
 goes away on its own instead of staying up until dismissed, Flutter's default for a

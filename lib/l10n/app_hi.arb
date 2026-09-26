@@ -714,5 +714,27 @@
   "turnTimerStart": "शुरू करें",
   "turnTimerPause": "रोकें",
   "turnTimerReset": "रीसेट करें",
-  "turnTimerTimeUp": "समय समाप्त!"
+  "turnTimerTimeUp": "समय समाप्त!",
+
+  "configShareOpen": "QR कोड से साझा करें",
+  "configShareTitle": "इस कॉन्फ़िगरेशन को साझा करें",
+  "configShareExplainServer": "इस कोड को किसी अन्य फोन से स्कैन करके उसे उसी सर्वर से कॉन्फ़िगर करें।",
+  "configShareExplainGroup": "इस कोड को किसी अन्य फोन से स्कैन करके उसे उसी सर्वर से कॉन्फ़िगर करें और समूह {name} में शामिल हों। इसमें समूह का आमंत्रण कोड है: इसे केवल उन्हीं को दिखाएँ जिन्हें आप समूह में चाहते हैं।",
+  "configShareWebAppLabel": "वेब ऐप का पता",
+  "configShareWebAppHelper": "वह पता जहाँ आपका सर्वर CountScore वेब ऐप को सेवा देता है, उदाहरण के लिए https://countscore.example.com/countscore। कोड इस पृष्ठ को खोलता है।",
+  "configShareWebAppNeeded": "कोड दिखाने के लिए वेब ऐप का पता दर्ज करें।",
+  "configShareQrLabel": "कॉन्फ़िगरेशन लिंक का QR कोड",
+  "configShareCopyLink": "लिंक कॉपी करें",
+  "configShareLinkCopied": "लिंक कॉपी हो गया",
+  "replaceConfigTitle": "कॉन्फ़िगरेशन बदलें?",
+  "replaceConfigCurrent": "वर्तमान: {value}",
+  "replaceConfigNew": "नया: {value}",
+  "replaceConfigInvite": "आमंत्रण कोड {code}",
+  "replaceConfigLeavesGroup": "यह डिवाइस समूह {name} छोड़ेगा। इसके खेल इसी डिवाइस पर रहेंगे।",
+  "replaceConfigConfirm": "बदलें",
+  "replaceConfigUnsynced": "{count, plural, =1{इस डिवाइस का 1 बदलाव अभी समूह तक नहीं पहुँचा है। अगर आप अब चले जाएँ, तो समूह को यह कभी नहीं मिलेगा।} other{इस डिवाइस के {count} बदलाव अभी समूह तक नहीं पहुँचे हैं। अगर आप अब चले जाएँ, तो समूह को ये कभी नहीं मिलेंगे।}}",
+  "replaceConfigLeaveAnyway": "वैसे भी चले जाएँ",
+  "replaceConfigDone": "कॉन्फ़िगरेशन बदल दिया गया",
+  "replaceConfigUnchanged": "यह डिवाइस पहले से ही इस कॉन्फ़िगरेशन का उपयोग कर रहा है",
+  "configShareTooLong": "यह लिंक QR कोड में आने के लिए बहुत लंबा है। इसके बजाय \"लिंक कॉपी करें\" का उपयोग करें।"
 }

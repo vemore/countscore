@@ -1,5 +1,7 @@
 # The server and group configuration cannot be shared by QR code
 
+**Status:** done (2026-09-26) — closed by feat/config-share-qr. Settings → Server and Settings → Group show a QR of `<web app address>/#/join?s=…&g=…` (`lib/widgets/config_share_sheet.dart`, `qr` package, drawn locally), built and read by `lib/utils/config_link.dart` (both link shapes), and `showReplaceConfigDialog` (`lib/widgets/replace_config_dialog.dart`) replaces server and group through `GroupProvider`: it joins the new group before leaving anything (a refused join changes nothing), keeps the same group behind a newer code, and warns before a group with unsynced changes, counted at that moment, is left. The app cannot learn `PWA_BASE_PATH`, so the sheet asks for the web app address once (the PWA's own address in the PWA): `.llmwiki/ConfigShare.md`.
+
 - **Noted:** 2026-09-23 — user request
 - **Theme:** groups-v2
 - **Area:** app

@@ -714,5 +714,27 @@
   "turnTimerStart": "Iniciar",
   "turnTimerPause": "Pausar",
   "turnTimerReset": "Reiniciar",
-  "turnTimerTimeUp": "¡Se acabó el tiempo!"
+  "turnTimerTimeUp": "¡Se acabó el tiempo!",
+
+  "configShareOpen": "Compartir por código QR",
+  "configShareTitle": "Compartir esta configuración",
+  "configShareExplainServer": "Escanea este código con otro teléfono para configurarlo con el mismo servidor.",
+  "configShareExplainGroup": "Escanea este código con otro teléfono para configurarlo con el mismo servidor y unirse al grupo {name}. Contiene el código de invitación del grupo: muéstraselo solo a las personas que deseas que se unan al grupo.",
+  "configShareWebAppLabel": "Dirección de la aplicación web",
+  "configShareWebAppHelper": "La dirección donde tu servidor sirve la aplicación web CountScore, por ejemplo https://countscore.example.com/countscore. El código abre esta página.",
+  "configShareWebAppNeeded": "Introduce la dirección de la aplicación web para mostrar el código.",
+  "configShareQrLabel": "Código QR del enlace de configuración",
+  "configShareCopyLink": "Copiar enlace",
+  "configShareLinkCopied": "Enlace copiado",
+  "replaceConfigTitle": "¿Reemplazar la configuración?",
+  "replaceConfigCurrent": "Actual: {value}",
+  "replaceConfigNew": "Nuevo: {value}",
+  "replaceConfigInvite": "código de invitación {code}",
+  "replaceConfigLeavesGroup": "Este dispositivo saldrá del grupo {name}. Sus partidas se quedarán en este dispositivo.",
+  "replaceConfigConfirm": "Reemplazar",
+  "replaceConfigUnsynced": "{count, plural, =1{1 cambio de este dispositivo aún no ha alcanzado el grupo. Si te vas ahora, el grupo nunca lo recibirá.} other{{count} cambios de este dispositivo aún no han alcanzado el grupo. Si te vas ahora, el grupo nunca los recibirá.}}",
+  "replaceConfigLeaveAnyway": "Salir de todas formas",
+  "replaceConfigDone": "Configuración reemplazada",
+  "replaceConfigUnchanged": "Este dispositivo ya utiliza esta configuración",
+  "configShareTooLong": "Este enlace es demasiado largo para caber en un código QR. Usa «Copiar enlace»."
 }

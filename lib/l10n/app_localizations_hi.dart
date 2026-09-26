@@ -1617,4 +1617,91 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get turnTimerTimeUp => 'समय समाप्त!';
+
+  @override
+  String get configShareOpen => 'QR कोड से साझा करें';
+
+  @override
+  String get configShareTitle => 'इस कॉन्फ़िगरेशन को साझा करें';
+
+  @override
+  String get configShareExplainServer =>
+      'इस कोड को किसी अन्य फोन से स्कैन करके उसे उसी सर्वर से कॉन्फ़िगर करें।';
+
+  @override
+  String configShareExplainGroup(String name) {
+    return 'इस कोड को किसी अन्य फोन से स्कैन करके उसे उसी सर्वर से कॉन्फ़िगर करें और समूह $name में शामिल हों। इसमें समूह का आमंत्रण कोड है: इसे केवल उन्हीं को दिखाएँ जिन्हें आप समूह में चाहते हैं।';
+  }
+
+  @override
+  String get configShareWebAppLabel => 'वेब ऐप का पता';
+
+  @override
+  String get configShareWebAppHelper =>
+      'वह पता जहाँ आपका सर्वर CountScore वेब ऐप को सेवा देता है, उदाहरण के लिए https://countscore.example.com/countscore। कोड इस पृष्ठ को खोलता है।';
+
+  @override
+  String get configShareWebAppNeeded =>
+      'कोड दिखाने के लिए वेब ऐप का पता दर्ज करें।';
+
+  @override
+  String get configShareQrLabel => 'कॉन्फ़िगरेशन लिंक का QR कोड';
+
+  @override
+  String get configShareCopyLink => 'लिंक कॉपी करें';
+
+  @override
+  String get configShareLinkCopied => 'लिंक कॉपी हो गया';
+
+  @override
+  String get configShareTooLong =>
+      'यह लिंक QR कोड में आने के लिए बहुत लंबा है। इसके बजाय \"लिंक कॉपी करें\" का उपयोग करें।';
+
+  @override
+  String get replaceConfigTitle => 'कॉन्फ़िगरेशन बदलें?';
+
+  @override
+  String replaceConfigCurrent(String value) {
+    return 'वर्तमान: $value';
+  }
+
+  @override
+  String replaceConfigNew(String value) {
+    return 'नया: $value';
+  }
+
+  @override
+  String replaceConfigInvite(String code) {
+    return 'आमंत्रण कोड $code';
+  }
+
+  @override
+  String replaceConfigLeavesGroup(String name) {
+    return 'यह डिवाइस समूह $name छोड़ेगा। इसके खेल इसी डिवाइस पर रहेंगे।';
+  }
+
+  @override
+  String get replaceConfigConfirm => 'बदलें';
+
+  @override
+  String replaceConfigUnsynced(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'इस डिवाइस के $count बदलाव अभी समूह तक नहीं पहुँचे हैं। अगर आप अब चले जाएँ, तो समूह को ये कभी नहीं मिलेंगे।',
+      one: 'इस डिवाइस का 1 बदलाव अभी समूह तक नहीं पहुँचा है। अगर आप अब चले जाएँ, तो समूह को यह कभी नहीं मिलेगा।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get replaceConfigLeaveAnyway => 'वैसे भी चले जाएँ';
+
+  @override
+  String get replaceConfigDone => 'कॉन्फ़िगरेशन बदल दिया गया';
+
+  @override
+  String get replaceConfigUnchanged =>
+      'यह डिवाइस पहले से ही इस कॉन्फ़िगरेशन का उपयोग कर रहा है';
 }

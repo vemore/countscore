@@ -7,6 +7,7 @@ import '../providers/group_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/theme_provider.dart';
 import '../utils/insets.dart';
+import '../widgets/config_share_sheet.dart';
 import '../widgets/group_settings_section.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -17,12 +18,30 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  late final BackendProvider _backend = context.read<BackendProvider>();
+  late String? _shownUrl = _backend.baseUrl;
   late final TextEditingController _backendUrlController =
-      TextEditingController(text: context.read<BackendProvider>().baseUrl ?? '');
+      TextEditingController(text: _shownUrl ?? '');
   bool _testingConnection = false;
 
   @override
+  void initState() {
+    super.initState();
+    _backend.addListener(_backendChanged);
+  }
+
+  /// A server replaced from elsewhere — a shared configuration opened while
+  /// Settings is on the stack — shows in the field; typing alone never moves it.
+  void _backendChanged() {
+    final url = _backend.baseUrl;
+    if (url == _shownUrl) return;
+    _shownUrl = url;
+    _backendUrlController.text = url ?? '';
+  }
+
+  @override
   void dispose() {
+    _backend.removeListener(_backendChanged);
     _backendUrlController.dispose();
     super.dispose();
   }
@@ -212,6 +231,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 }
                               : null,
                           child: Text(l10n.clear),
+                        ),
+                        TextButton.icon(
+                          key: const Key('config_share_open'),
+                          icon: const Icon(Icons.qr_code_2),
+                          label: Text(l10n.configShareOpen),
+                          onPressed: backend.isConfigured && !_testingConnection
+                              ? () => ConfigShareSheet.show(context)
+                              : null,
                         ),
                       ],
                     ),

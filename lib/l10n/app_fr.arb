@@ -2617,5 +2617,145 @@
   "turnTimerTimeUp": "Temps écoulé !",
   "@turnTimerTimeUp": {
     "description": "Shown in the turn timer when the countdown reaches zero"
+  },
+
+  "configShareOpen": "Partager par QR code",
+  "@configShareOpen": {
+    "description": "Button in Settings (Server and Group sections) that opens a sheet with a QR code carrying this device's server and group invite code"
+  },
+
+  "configShareTitle": "Partager cette configuration",
+  "@configShareTitle": {
+    "description": "Title of the sheet showing the configuration QR code"
+  },
+
+  "configShareExplainServer": "Scannez ce code avec un autre téléphone pour le configurer avec le même serveur.",
+  "@configShareExplainServer": {
+    "description": "Explanation under the QR code sheet title when this device is not in a group: the code carries the server only"
+  },
+
+  "configShareExplainGroup": "Scannez ce code avec un autre téléphone pour le configurer avec le même serveur et rejoindre le groupe {name}. Il contient le code d'invitation du groupe : ne le montrez qu'aux personnes que vous voulez dans le groupe.",
+  "@configShareExplainGroup": {
+    "description": "Explanation under the QR code sheet title when this device is in a group: the code carries the server and the group's invite code, which lets anyone join",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Family"
+      }
+    }
+  },
+
+  "configShareWebAppLabel": "Adresse de l'application web",
+  "@configShareWebAppLabel": {
+    "description": "Label of the field in the QR code sheet where the user enters the address of the CountScore web app (PWA) their server serves"
+  },
+
+  "configShareWebAppHelper": "L'adresse où votre serveur sert l'application web CountScore, par exemple https://countscore.example.com/countscore. Le code ouvre cette page.",
+  "@configShareWebAppHelper": {
+    "description": "Helper text under the web app address field in the QR code sheet. Keep the example URL as it is."
+  },
+
+  "configShareWebAppNeeded": "Saisissez l'adresse de l'application web pour afficher le code.",
+  "@configShareWebAppNeeded": {
+    "description": "Shown in the QR code sheet in place of the code while no valid web app address is set"
+  },
+
+  "configShareQrLabel": "QR code du lien de configuration",
+  "@configShareQrLabel": {
+    "description": "Accessibility label of the QR code image, read by screen readers"
+  },
+
+  "configShareCopyLink": "Copier le lien",
+  "@configShareCopyLink": {
+    "description": "Button in the QR code sheet that copies the link the QR code carries"
+  },
+
+  "configShareLinkCopied": "Lien copié",
+  "@configShareLinkCopied": {
+    "description": "Snackbar after the configuration link was copied to the clipboard"
+  },
+  "configShareTooLong": "Ce lien est trop long pour tenir dans un QR code. Utilisez « Copier le lien ».",
+  "@configShareTooLong": {
+    "description": "Shown in the QR code sheet in place of the code when the configuration link is too long to fit in a QR code (addresses far longer than usual); the copy link button stays available"
+  },
+
+  "replaceConfigTitle": "Remplacer la configuration ?",
+  "@replaceConfigTitle": {
+    "description": "Title of the dialog shown when a shared configuration (server and group) is opened on this device, asking before replacing the current one"
+  },
+
+  "replaceConfigCurrent": "Actuel : {value}",
+  "@replaceConfigCurrent": {
+    "description": "In the replace configuration dialog, the value this device uses today (a server address, a group name, or 'None')",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "https://countscore.example.com"
+      }
+    }
+  },
+
+  "replaceConfigNew": "Nouveau : {value}",
+  "@replaceConfigNew": {
+    "description": "In the replace configuration dialog, the value the shared configuration brings (a server address, an invite code, or 'None')",
+    "placeholders": {
+      "value": {
+        "type": "String",
+        "example": "https://countscore.example.com"
+      }
+    }
+  },
+
+  "replaceConfigInvite": "code d'invitation {code}",
+  "@replaceConfigInvite": {
+    "description": "In the replace configuration dialog, the new group, known only by its invite code at this point. Shown after 'New: '",
+    "placeholders": {
+      "code": {
+        "type": "String",
+        "example": "22222222-2222-4222-8222-222222222222"
+      }
+    }
+  },
+
+  "replaceConfigLeavesGroup": "Cet appareil va quitter le groupe {name}. Ses parties restent sur cet appareil.",
+  "@replaceConfigLeavesGroup": {
+    "description": "Warning in the replace configuration dialog when accepting makes this device leave its current group",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Family"
+      }
+    }
+  },
+
+  "replaceConfigConfirm": "Remplacer",
+  "@replaceConfigConfirm": {
+    "description": "Confirm button of the replace configuration dialog"
+  },
+
+  "replaceConfigUnsynced": "{count, plural, =1{1 modification de cet appareil n'a pas encore atteint le groupe. Si vous partez maintenant, le groupe ne la recevra jamais.} other{{count} modifications de cet appareil n'ont pas encore atteint le groupe. Si vous partez maintenant, le groupe ne les recevra jamais.}}",
+  "@replaceConfigUnsynced": {
+    "description": "Second confirmation before replacing the configuration makes this device leave a group while it still has changes not synced to the server; leaving discards them from the sync queue",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+
+  "replaceConfigLeaveAnyway": "Quitter quand même",
+  "@replaceConfigLeaveAnyway": {
+    "description": "Button of the unsynced changes warning that leaves the group regardless"
+  },
+
+  "replaceConfigDone": "Configuration remplacée",
+  "@replaceConfigDone": {
+    "description": "Snackbar after the shared configuration replaced this device's server and group"
+  },
+
+  "replaceConfigUnchanged": "Cet appareil utilise déjà cette configuration",
+  "@replaceConfigUnchanged": {
+    "description": "Snackbar when an opened shared configuration is the one this device already uses, so there is nothing to replace"
   }
 }

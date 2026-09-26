@@ -1655,4 +1655,96 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get turnTimerTimeUp => 'Время вышло!';
+
+  @override
+  String get configShareOpen => 'Поделиться QR-кодом';
+
+  @override
+  String get configShareTitle => 'Поделиться этой конфигурацией';
+
+  @override
+  String get configShareExplainServer =>
+      'Отсканируйте этот код на другом телефоне, чтобы настроить его на том же сервере.';
+
+  @override
+  String configShareExplainGroup(String name) {
+    return 'Отсканируйте этот код на другом телефоне, чтобы настроить его на том же сервере и присоединиться к группе $name. Он содержит код приглашения группы: показывайте его только тем, кого вы хотите в группе.';
+  }
+
+  @override
+  String get configShareWebAppLabel => 'Адрес веб-приложения';
+
+  @override
+  String get configShareWebAppHelper =>
+      'Адрес, по которому ваш сервер обслуживает веб-приложение CountScore, например https://countscore.example.com/countscore. Код открывает эту страницу.';
+
+  @override
+  String get configShareWebAppNeeded =>
+      'Введите адрес веб-приложения, чтобы отобразить код.';
+
+  @override
+  String get configShareQrLabel => 'QR-код ссылки конфигурации';
+
+  @override
+  String get configShareCopyLink => 'Скопировать ссылку';
+
+  @override
+  String get configShareLinkCopied => 'Ссылка скопирована';
+
+  @override
+  String get configShareTooLong =>
+      'Эта ссылка слишком длинная для QR-кода. Используйте «Скопировать ссылку».';
+
+  @override
+  String get replaceConfigTitle => 'Заменить конфигурацию?';
+
+  @override
+  String replaceConfigCurrent(String value) {
+    return 'Текущее значение: $value';
+  }
+
+  @override
+  String replaceConfigNew(String value) {
+    return 'Новое значение: $value';
+  }
+
+  @override
+  String replaceConfigInvite(String code) {
+    return 'код приглашения $code';
+  }
+
+  @override
+  String replaceConfigLeavesGroup(String name) {
+    return 'Это устройство покинет группу $name. Его партии останутся на устройстве.';
+  }
+
+  @override
+  String get replaceConfigConfirm => 'Заменить';
+
+  @override
+  String replaceConfigUnsynced(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count изменения этого устройства ещё не достигли группы. Если вы выйдете сейчас, группа их никогда не получит.',
+      many:
+          '$count изменений этого устройства ещё не достигли группы. Если вы выйдете сейчас, группа их никогда не получит.',
+      few:
+          '$count изменения этого устройства ещё не достигли группы. Если вы выйдете сейчас, группа их никогда не получит.',
+      one:
+          '$count изменение этого устройства ещё не достигло группы. Если вы выйдете сейчас, группа его никогда не получит.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get replaceConfigLeaveAnyway => 'Выйти всё равно';
+
+  @override
+  String get replaceConfigDone => 'Конфигурация заменена';
+
+  @override
+  String get replaceConfigUnchanged =>
+      'Это устройство уже использует эту конфигурацию';
 }

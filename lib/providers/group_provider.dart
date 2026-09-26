@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 
 import '../services/backend_client.dart';
+import 'backend_provider.dart';
 import '../services/drift/database.dart';
 import '../services/sync/sync_credentials.dart';
 import '../services/sync/sync_engine.dart';
@@ -41,6 +42,25 @@ enum GroupActionError {
 
   /// The owner role cannot be claimed: that device has been seen recently (409).
   ownerActive,
+}
+
+/// A registration with a group that [GroupProvider.prepareJoin] made, not yet
+/// this device's membership. Built by [GroupProvider.prepareJoin]; public for tests.
+class JoinCandidate {
+  JoinCandidate({
+    required this.baseUrl,
+    required this.membership,
+    required this.label,
+    required this.sameGroup,
+  });
+
+  /// The server the device registered with.
+  final String baseUrl;
+  final GroupMembership membership;
+  final String label;
+
+  /// The group this device is already in.
+  final bool sameGroup;
 }
 
 class GroupActionException implements Exception {
@@ -170,10 +190,15 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     required String label,
   }) async {
     if (_baseUrl == null) throw GroupActionException(GroupActionError.unreachable);
-    if (_membership != null) await leave();
-    final GroupMembership m;
+    // The server first: a refused create or join leaves the current group as it was.
+    final m = await _register(call);
+    await _adopt(m, owner: owner, label: label);
+  }
+
+  /// Runs a create or join call, mapping its failures. Changes nothing here.
+  static Future<GroupMembership> _register(Future<GroupMembership> Function() call) async {
     try {
-      m = await call();
+      return await call();
     } on BackendException catch (e) {
       throw GroupActionException(switch (e.statusCode) {
         404 || 422 => GroupActionError.unknownShareToken,
@@ -183,6 +208,19 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     } catch (_) {
       throw GroupActionException(GroupActionError.unreachable);
     }
+  }
+
+  /// Makes [m] this device's membership, on [baseUrl] when given. The current
+  /// group, if any, is left first: revoked on the server it was registered with,
+  /// since [_baseUrl] still names it at that point.
+  Future<void> _adopt(
+    GroupMembership m, {
+    required bool owner,
+    required String label,
+    String? baseUrl,
+  }) async {
+    if (_membership != null) await leave();
+    if (baseUrl != null) await _switchServer(baseUrl);
     await _credentials.save(deviceToken: m.deviceToken, shareToken: m.shareToken);
     await _store.join(m);
     _deviceToken = m.deviceToken;
@@ -191,6 +229,104 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     _deviceLabel = label;
     _membership = await _store.membership();
     await _restart();
+  }
+
+  // ── Joining from a shared configuration ───────────────────────────────────
+
+  /// Step one of joining from a shared configuration, possibly on another server:
+  /// registers this device with the group [shareToken] names on [baseUrl], and
+  /// changes nothing else. Throws [GroupActionException] when the server refuses
+  /// or cannot be reached; the current server and group are then untouched.
+  ///
+  /// The result goes to [completeJoin], or is dropped with [cancelJoin].
+  /// [JoinCandidate.sameGroup] says whether it is the group this device is
+  /// already in, behind a newer invite code.
+  Future<JoinCandidate> prepareJoin(String baseUrl, String shareToken, String deviceLabel) async {
+    final label = deviceLabel.trim();
+    final m = await _register(() => BackendClient(baseUrl, httpClient: httpClient)
+        .joinGroup(shareToken.trim(), label));
+    final current = _membership;
+    return JoinCandidate(
+      baseUrl: baseUrl,
+      membership: m,
+      label: label,
+      sameGroup: isJoined &&
+          current != null &&
+          m.groupId == current.groupId &&
+          await _currentTokenAccepted(baseUrl),
+    );
+  }
+
+  /// Whether the server still accepts this device's own token: a device the
+  /// owner revoked is in "the same group" by id only, and must take the new
+  /// registration rather than keep a token that is refused. Asked with
+  /// `GET /groups/me`; a 401 or 403 is a no, and so is a status already
+  /// [SyncStatus.unauthorized]. Anything else (the server answered the join a
+  /// moment ago) keeps the current registration.
+  Future<bool> _currentTokenAccepted(String baseUrl) async {
+    final token = _deviceToken;
+    if (token == null || _status == SyncStatus.unauthorized) return false;
+    try {
+      await BackendClient(baseUrl, httpClient: httpClient).groupOwner(token);
+      return true;
+    } on BackendException catch (e) {
+      return e.statusCode != 401 && e.statusCode != 403;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  /// Moves sync to [baseUrl] and stores it as the configured server at once, in
+  /// the same step as the membership that needs it: a kill between the two would
+  /// otherwise leave the old URL on disk with the new group's credentials.
+  /// [BackendProvider] learns it from the caller ([BackendProvider.setBaseUrl]).
+  Future<void> _switchServer(String baseUrl) async {
+    _baseUrl = baseUrl;
+    await BackendProvider.persist(baseUrl);
+  }
+
+  /// Step two: makes [c] this device's group. For [JoinCandidate.sameGroup] the
+  /// membership is kept (nothing is left, no row is unshared), the registration
+  /// [prepareJoin] made is withdrawn, and the newer invite code is stored.
+  /// Otherwise the current group is left, then [c] adopted, syncing with [c]'s server.
+  Future<void> completeJoin(JoinCandidate c) async {
+    if (c.sameGroup && _membership?.groupId == c.membership.groupId) {
+      await cancelJoin(c);
+      _shareToken = c.membership.shareToken;
+      await _credentials.saveShareToken(c.membership.shareToken);
+      // A group id is unique to its server: another URL is another way to it.
+      if (c.baseUrl != _baseUrl) {
+        await _switchServer(c.baseUrl);
+        await _restart();
+      }
+      notifyListeners();
+      return;
+    }
+    await _adopt(c.membership, owner: false, label: c.label, baseUrl: c.baseUrl);
+  }
+
+  /// Withdraws the registration [prepareJoin] made, when the user backs out or it
+  /// turns out to be this device's group already. Best effort: an unreachable
+  /// server keeps a device record nobody uses.
+  Future<void> cancelJoin(JoinCandidate c) async {
+    try {
+      await BackendClient(c.baseUrl, httpClient: httpClient)
+          .revokeDevice(c.membership.deviceToken, c.membership.deviceId);
+    } catch (_) {
+      // Offline: the record stays on the server, unused.
+    }
+  }
+
+  /// The changes still waiting to reach the group, counted now. [pendingChanges]
+  /// is only recounted at the end of a sync pass; this refreshes it as well.
+  Future<int> countPending() async {
+    if (_membership == null) return 0;
+    final n = await _store.pendingCount();
+    if (n != _pending) {
+      _pending = n;
+      notifyListeners();
+    }
+    return n;
   }
 
   /// Asks the server who owns the group. Silent on failure: the last answer stands.

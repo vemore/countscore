@@ -55,6 +55,13 @@ class BackendProvider with ChangeNotifier {
   Future<void> setBaseUrl(String url) async {
     _baseUrl = url;
     notifyListeners();
+    await persist(url);
+  }
+
+  /// Stores [url] as the configured server without touching a live provider:
+  /// for [GroupProvider], which moves to another server together with the group
+  /// it joins there, so the two reach the disk in one step.
+  static Future<void> persist(String url) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_prefsKey, url);
   }
