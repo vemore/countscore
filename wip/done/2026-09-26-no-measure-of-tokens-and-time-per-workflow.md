@@ -1,5 +1,7 @@
 # Nothing measures the tokens and the time each workflow costs
 
+**Status:** done (2026-09-26) — closed by feat/delivery-and-agent-metrics. `scripts/agent_metrics.py` reads the local transcripts (stdlib, one streamed pass, about 8 s for 638 MB) and prints the ten biggest consumers in tokens, raw and price-weighted, and in active time, per session, branch, skill, agent, tool, file and hook; the baseline is in `.llmwiki/ParallelDelivery.md` § Measuring delivery, and `release-android` §3b reads it. The CI job durations went to [[2026-09-26-ci-job-durations-are-not-measured]].
+
 - **Noted:** 2026-09-26 — comparing `.llmwiki/` with Karpathy's LLM Wiki pattern; the user
   asked for a way to find the big consumers and the bottlenecks of the system
 - **Theme:** process-evals

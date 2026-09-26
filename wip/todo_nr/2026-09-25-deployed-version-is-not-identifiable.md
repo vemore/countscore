@@ -23,6 +23,16 @@ build identity reported by the service.
 `GIT_SHA` build arg into an env var that `/health` reports next to `version`. Stop pushing
 `:latest`, or keep it only for the dev compose file.
 
+**State of the art** (web search, 2026-09-26): production images should carry immutable
+tags — ideally pinned further by digest — never `:latest`, since a mutable tag only means
+"the last thing pushed"; a running build should trace back to its commit, commonly a git-sha
+tag reported by the service itself. The fix matches this — sha tag read back at `/health`,
+`:latest` retired from the prod compose file — and departs only by tagging on the sha rather
+than also pinning the pulled digest, acceptable here because the registry is local and
+single-writer, unlike a shared public registry where a tag can be silently reassigned.
+Sources: [Docker blog, tags and labels](https://www.docker.com/blog/docker-best-practices-using-tags-and-labels-to-manage-docker-image-sprawl/),
+[Smartinary, why you should use immutable Docker tags](https://www.smartinary.com/blog/why-you-should-use-immutable-docker-tags/).
+
 **Acceptance:**
 - `grep latest backend/docker-compose.prod.yml` finds nothing.
 - `curl $PUBLIC_URL/health` reports the short sha `deploy_nas.sh` just built.

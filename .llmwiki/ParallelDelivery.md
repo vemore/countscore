@@ -166,6 +166,47 @@ run is reported **merged, not deployed**, in §4 and in §6's report, and lands 
 (backend with its Alembic revision, backend without, PWA). The next session that can reach the
 NAS sees it at `ship-parallel` §0 and deploys `main`, which covers every sha listed at once.
 
+### Measuring delivery and its cost
+
+Two local scripts, no tracking of their own; each documents its definitions in its header.
+`scripts/delivery_metrics.sh [since [until]]` — outcomes from git and `gh`: `fix:` share,
+**rework rate** (a change followed within 48 h by a `fix:` on one of its files, the §3.1
+exclusion list applied), deployments and **change failure rate** (derived from the §4 paths),
+first-run-green share, size per change, `wip/` ages. `scripts/agent_metrics.py` — cost, from
+the transcripts in `~/.claude/projects/<encoded repo path>/`: tokens raw and weighted by price
+class, and active time, per session, branch, skill, agent, tool, file and hook; it prints
+names only, never content. `ship-parallel` §6 prints the first; the `release-android` §3b
+pruning pass reads both against this baseline.
+
+Baseline, measured 2026-09-26 on `origin/main` at `28a5f16` (until exclusive):
+
+| Window | Changes | `fix:` | Rework | Deploys | CFR | 1st-run green | Size p50 / p90 / max |
+|---|---|---|---|---|---|---|---|
+| 2026-09-09..09-18 | 118 | 30 (25.4 %) | 33.9 % | 58 | 48.3 % | 96.5 % | 18 / 480 / 2818 |
+| 2026-09-18..09-27 | 142 | 35 (24.6 %) | 30.3 % | 67 | 50.7 % | 96.5 % | 21 / 450 / 1436 |
+
+The hand count of 29/112 `fix:` commits was taken on the morning of 2026-09-18; the script's
+30/118 closes the window at midnight. `wip/` on 2026-09-26: `todo` 7 open (max 8 d),
+`todo_nr` 27 (median 3 d, max 13 d); entries closed since 2026-09-01: 174, median age at close
+0 d, max 9 d.
+
+Cost, `--since 2026-09-01` (98 sessions, 15 498 model calls, 638 MB of transcripts):
+2.4 G tokens raw, 336 M weighted; 110.8 h of agent time active, 103 h waiting on the user.
+- **Cache reads are 69 % of the weighted cost**, cache writes 21 %, output 10 %: what costs is
+  context carried turn after turn, not what is read once. The main (orchestrator) agent holds
+  64 % of it, subagents 36 % (`general-purpose` 33 %, `Explore` 2 %).
+- **By skill:** `ship-parallel` 14.5 %, `web-deploy` 9.3 %, `i18n-add-string` 6.4 %,
+  `flutter-device-test` 4.2 %; 57 % runs under no skill.
+- **Files read are cheap:** the top repository file (`assets/rules/rules_fr.md`) is 1.4 % of
+  the tool-attributed input; `.llmwiki/INDEX.md` 0.9 %. Large tool outputs spilled to temporary
+  files are the biggest reads (37 %).
+- **Time:** waiting on CI (`gh pr checks --watch`) is 16.7 % of tool time, `sleep` 11.5 %;
+  `git commit`, which carries the pre-commit gates, 0.6 % (18 min over 125 commits). Hooks
+  that print something total 15 min; the silent `guard-bash.sh` passes leave no record.
+- **Where rework lands** (2026-09-01..09-27): `.github/workflows/ci.yml` and
+  `scripts/hooks_selftest.sh` (12 each), then the schema and sync layer
+  (`lib/services/drift/database.dart`, `database_service.dart`, `sync_schema.dart`).
+
 ## Decisions & History
 
 - **Parallel delivery adopted (2026-09-14).** The user wanted several entries worked at once:
@@ -306,6 +347,15 @@ NAS sees it at `ship-parallel` §0 and deploys `main`, which covers every sha li
   "merged, not deployed" plus one `wip/todo/` entry naming the shas, so the next local session
   deploys them. The probe reuses the deploy's own routes (ssh, the registry) rather than
   `PUBLIC_URL`, because the public API answers from anywhere and proves nothing about the NAS.
+- **Delivery and its cost are measured, not recalled (2026-09-26).** The process was tuned on
+  anecdote — one hand count of `fix:` commits — and nothing said which workflow the tokens and
+  hours went to. Both scripts read data that already exists (git, `gh`, the local transcripts)
+  rather than adding tracking: OpenTelemetry export needs a collector running, and `ccusage`
+  totals per session without attributing anything to a skill, a file or a hook. Rework rate is
+  the 2025 DORA fifth metric, next to change failure rate. "Same files" and size share the
+  §3.1 exclusion list, because `wip/` and the wiki are touched by nearly every change and would
+  make every fix look like rework. The transcripts never enter the repository; the baseline
+  holds numbers only.
 - **Model routing by a rating made at planning time (2026-09-26).** The user asked that complex
   tasks go to Opus at high effort and clear, simple ones to Sonnet; the one routing rule in
   force — bulk translations on Haiku, one agent per locale, the French master by the

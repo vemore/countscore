@@ -65,7 +65,7 @@ Hygiene before prioritisation: what goes away is cleared first, so it is never r
 
 ## 4. Definition of ready
 
-An entry is ready when all five hold:
+An entry is ready when all six hold:
 
 1. **Still true.** The problem exists in today's code, and the evidence proves it.
 2. **One pull request.** The `**Fix:**` is concrete and fits one reviewable pull request
@@ -75,6 +75,13 @@ An entry is ready when all five hold:
    (`wip/README.md` § An entry). Draft them in the proposal; the user validates them.
 4. **Unblocked.** No decision waits on the user, and no open entry has to land first.
 5. **Themed.** The `Theme` reuses an existing tag (`scripts/wip.sh themes all`).
+6. **Grounded, if the subject is common.** An entry on a problem others have already solved —
+   not specific to CountScore (backups, deploy ordering, migrations, service workers, sync
+   conflicts, CI metrics, …) — carries a `**State of the art:**` section (`wip/README.md`).
+   Missing it on a common-subject entry is *needs detail*, not ready: the refinement pass
+   runs the search itself (`WebSearch`/`WebFetch`) and writes the section — current practice,
+   sources, the date consulted, and where the proposed fix departs from it and why — rather
+   than asking the user for it.
 
 Ready is required for **promotion**, not for writing an entry: a new entry stays twenty lines
 of evidence and a fix.

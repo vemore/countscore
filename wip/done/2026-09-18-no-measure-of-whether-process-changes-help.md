@@ -1,5 +1,7 @@
 # No measure says whether a change to the process made delivery better
 
+**Status:** done (2026-09-26) — closed by feat/delivery-and-agent-metrics. `scripts/delivery_metrics.sh [since [until]]` prints the `fix:` share, the rework rate, deployments and change failure rate, first-run-green, size per change and `wip/` ages — 30/118 `fix:` for 2026-09-09..2026-09-18, the hand count of 29/112 having been taken that morning; the baseline is in `.llmwiki/ParallelDelivery.md` § Measuring delivery, and `ship-parallel` §6 prints it.
+
 - **Noted:** 2026-09-18 — comparing the project's SDLC with Anthropic's "The AI-native SDLC
   playbook" (claude.com/blog/the-ai-native-sdlc-playbook)
 - **Theme:** process-evals
