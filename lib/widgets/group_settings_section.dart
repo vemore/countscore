@@ -7,6 +7,7 @@ import '../l10n/app_localizations.dart';
 import '../providers/backend_provider.dart';
 import '../providers/group_provider.dart';
 import '../screens/group_settings_screen.dart';
+import 'config_share_sheet.dart';
 import 'group_devices_sheet.dart';
 
 /// The message shown for a failed group action.
@@ -263,6 +264,13 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
                   await Clipboard.setData(ClipboardData(text: group.shareToken!));
                   if (mounted) _snack(l10n.shareTokenCopied);
                 },
+              ),
+            if (group.shareToken != null)
+              TextButton.icon(
+                key: const Key('group_share_qr'),
+                icon: const Icon(Icons.qr_code_2),
+                label: Text(l10n.configShareOpen),
+                onPressed: () => ConfigShareSheet.show(context),
               ),
             TextButton.icon(
               key: const Key('group_devices'),

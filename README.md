@@ -89,6 +89,8 @@ at your own server in Settings → Server if you want the connected features.
   catch up on reconnect, and players with the same name are merged. New games are shared by
   default while you are in a group; games you do not share stay on the device. A lost or sold
   phone can be removed from the group's device list, which also replaces the invite code.
+  Settings shows a QR code carrying the server address and, in a group, its invite code, to
+  set up another device the same way.
   Any member can set the style and language of the group's comments and see how much of its
   monthly AI budget has been spent: a shared game's analysis is written in the group's
   language — and its style, unless you picked a voice — and counts against that budget.
@@ -118,7 +120,7 @@ at your own server in Settings → Server if you want the connected features.
 | — on Android | native SQLite via FFI |
 | — on web | `sqlite3.wasm` persisted in IndexedDB |
 | Legacy migrator | `sqflite` ^2.4.3 — runs the migration chain on an existing database up to the current schema version, then Drift takes over |
-| UI | `flex_color_picker` ^4.0.0, `flutter_markdown_plus` |
+| UI | `flex_color_picker` ^4.0.0, `flutter_markdown_plus`, `qr` ^4.0.0 (the configuration QR code, drawn on the device) |
 | Group sync | `web_socket_channel` ^3.0.3 (change signal), `flutter_secure_storage` ^11.1.1 (device token), `crypto` ^3.0.7 (name-based uuids) |
 | Utilities | `intl`, `http`, `url_launcher` (report email, Play listing), `share_plus` (share a result), `in_app_review` ^2.0.12 (Play review sheet), `package_info_plus` (version), `audioplayers` ^6.8.1 (game sounds), `wakelock_plus`, `shared_preferences`, `path_provider`, `file_picker` |
 
@@ -425,7 +427,10 @@ and downloaded by the group's other devices. Each device of the group also sees 
 names (the nickname each one chose, which it can change in Settings → Group) and when they were last seen, so a lost phone can be recognised and removed. The
 group's comment style and language, if a member changes them (Settings → Group → Comments and
 usage), are stored there too, with the analyses generated for shared games. Anyone with
-the group's invite code can join, so share it only with the people you mean to. Games you do not share never leave the device.
+the group's invite code can join, so share it only with the people you mean to — the QR
+code in Settings carries it too. That QR is drawn on the device, and its link keeps the
+server address and the invite code after the `#`, which a browser never sends to any server.
+Games you do not share never leave the device.
 Leaving the group keeps your copies as local games; it does not remove them from the server,
 whose operator — you — deletes them there.
 

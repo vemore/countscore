@@ -714,5 +714,26 @@
   "turnTimerStart": "Старт",
   "turnTimerPause": "Пауза",
   "turnTimerReset": "Сбросить",
-  "turnTimerTimeUp": "Время вышло!"
+  "turnTimerTimeUp": "Время вышло!",
+
+  "configShareOpen": "Поделиться QR-кодом",
+  "configShareTitle": "Поделиться этой конфигурацией",
+  "configShareExplainServer": "Отсканируйте этот код на другом телефоне, чтобы настроить его на том же сервере.",
+  "configShareExplainGroup": "Отсканируйте этот код на другом телефоне, чтобы настроить его на том же сервере и присоединиться к группе {name}. Он содержит код приглашения группы: показывайте его только тем, кого вы хотите в группе.",
+  "configShareWebAppLabel": "Адрес веб-приложения",
+  "configShareWebAppHelper": "Адрес, по которому ваш сервер обслуживает веб-приложение CountScore, например https://countscore.example.com/countscore. Код открывает эту страницу.",
+  "configShareWebAppNeeded": "Введите адрес веб-приложения, чтобы отобразить код.",
+  "configShareQrLabel": "QR-код ссылки конфигурации",
+  "configShareCopyLink": "Скопировать ссылку",
+  "configShareLinkCopied": "Ссылка скопирована",
+  "replaceConfigTitle": "Заменить конфигурацию?",
+  "replaceConfigCurrent": "Текущее значение: {value}",
+  "replaceConfigNew": "Новое значение: {value}",
+  "replaceConfigInvite": "код приглашения {code}",
+  "replaceConfigLeavesGroup": "Это устройство покинет группу {name}. Его партии останутся на устройстве.",
+  "replaceConfigConfirm": "Заменить",
+  "replaceConfigUnsynced": "{count, plural, one{{count} изменение этого устройства ещё не достигло группы. Если вы выйдете сейчас, группа его никогда не получит.} few{{count} изменения этого устройства ещё не достигли группы. Если вы выйдете сейчас, группа их никогда не получит.} many{{count} изменений этого устройства ещё не достигли группы. Если вы выйдете сейчас, группа их никогда не получит.} other{{count} изменения этого устройства ещё не достигли группы. Если вы выйдете сейчас, группа их никогда не получит.}}",
+  "replaceConfigLeaveAnyway": "Выйти всё равно",
+  "replaceConfigDone": "Конфигурация заменена",
+  "replaceConfigUnchanged": "Это устройство уже использует эту конфигурацию"
 }

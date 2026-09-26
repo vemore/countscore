@@ -1623,4 +1623,87 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get turnTimerTimeUp => 'Temps écoulé !';
+
+  @override
+  String get configShareOpen => 'Partager par QR code';
+
+  @override
+  String get configShareTitle => 'Partager cette configuration';
+
+  @override
+  String get configShareExplainServer =>
+      'Scannez ce code avec un autre téléphone pour le configurer avec le même serveur.';
+
+  @override
+  String configShareExplainGroup(String name) {
+    return 'Scannez ce code avec un autre téléphone pour le configurer avec le même serveur et rejoindre le groupe $name. Il contient le code d\'invitation du groupe : ne le montrez qu\'aux personnes que vous voulez dans le groupe.';
+  }
+
+  @override
+  String get configShareWebAppLabel => 'Adresse de l\'application web';
+
+  @override
+  String get configShareWebAppHelper =>
+      'L\'adresse où votre serveur sert l\'application web CountScore, par exemple https://countscore.example.com/countscore. Le code ouvre cette page.';
+
+  @override
+  String get configShareWebAppNeeded =>
+      'Saisissez l\'adresse de l\'application web pour afficher le code.';
+
+  @override
+  String get configShareQrLabel => 'QR code du lien de configuration';
+
+  @override
+  String get configShareCopyLink => 'Copier le lien';
+
+  @override
+  String get configShareLinkCopied => 'Lien copié';
+
+  @override
+  String get replaceConfigTitle => 'Remplacer la configuration ?';
+
+  @override
+  String replaceConfigCurrent(String value) {
+    return 'Actuel : $value';
+  }
+
+  @override
+  String replaceConfigNew(String value) {
+    return 'Nouveau : $value';
+  }
+
+  @override
+  String replaceConfigInvite(String code) {
+    return 'code d\'invitation $code';
+  }
+
+  @override
+  String replaceConfigLeavesGroup(String name) {
+    return 'Cet appareil va quitter le groupe $name. Ses parties restent sur cet appareil.';
+  }
+
+  @override
+  String get replaceConfigConfirm => 'Remplacer';
+
+  @override
+  String replaceConfigUnsynced(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count modifications de cet appareil n\'ont pas encore atteint le groupe. Si vous partez maintenant, le groupe ne les recevra jamais.',
+      one: '1 modification de cet appareil n\'a pas encore atteint le groupe. Si vous partez maintenant, le groupe ne la recevra jamais.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get replaceConfigLeaveAnyway => 'Quitter quand même';
+
+  @override
+  String get replaceConfigDone => 'Configuration remplacée';
+
+  @override
+  String get replaceConfigUnchanged =>
+      'Cet appareil utilise déjà cette configuration';
 }

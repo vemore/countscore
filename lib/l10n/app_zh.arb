@@ -714,5 +714,26 @@
   "turnTimerStart": "开始",
   "turnTimerPause": "暂停",
   "turnTimerReset": "重置",
-  "turnTimerTimeUp": "时间到！"
+  "turnTimerTimeUp": "时间到！",
+
+  "configShareOpen": "通过 QR 码分享",
+  "configShareTitle": "分享此配置",
+  "configShareExplainServer": "用另一部手机扫描此 QR 码，可用相同的服务器进行设置。",
+  "configShareExplainGroup": "用另一部手机扫描此 QR 码，可用相同的服务器进行设置并加入群组 {name}。它包含群组的邀请码：只向想要加入群组的人分享。",
+  "configShareWebAppLabel": "网页应用地址",
+  "configShareWebAppHelper": "你的服务器提供 CountScore 网页应用的地址，例如 https://countscore.example.com/countscore。此 QR 码会打开该页面。",
+  "configShareWebAppNeeded": "输入网页应用地址以显示 QR 码。",
+  "configShareQrLabel": "配置链接的 QR 码",
+  "configShareCopyLink": "复制链接",
+  "configShareLinkCopied": "链接已复制",
+  "replaceConfigTitle": "替换配置？",
+  "replaceConfigCurrent": "当前：{value}",
+  "replaceConfigNew": "新：{value}",
+  "replaceConfigInvite": "邀请码 {code}",
+  "replaceConfigLeavesGroup": "本设备将退出群组 {name}。游戏将保留在本设备上。",
+  "replaceConfigConfirm": "替换",
+  "replaceConfigUnsynced": "{count, plural, other{{count} 项更改尚未到达群组。如果现在退出，群组将无法收到它们。}}",
+  "replaceConfigLeaveAnyway": "仍然退出",
+  "replaceConfigDone": "配置已替换",
+  "replaceConfigUnchanged": "此设备已使用此配置"
 }

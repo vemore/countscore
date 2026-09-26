@@ -60,6 +60,7 @@ dependencies:
   in_app_review: ^2.0.12
   share_plus: ^13.3.0
   audioplayers: ^6.8.1
+  qr: ^4.0.0
 
 dev_dependencies:
   flutter_test:

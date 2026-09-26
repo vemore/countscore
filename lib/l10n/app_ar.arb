@@ -714,5 +714,26 @@
   "turnTimerStart": "ابدأ",
   "turnTimerPause": "إيقاف مؤقت",
   "turnTimerReset": "إعادة ضبط",
-  "turnTimerTimeUp": "انتهى الوقت!"
+  "turnTimerTimeUp": "انتهى الوقت!",
+
+  "configShareOpen": "مشاركة عبر رمز QR",
+  "configShareTitle": "مشاركة هذه الإعدادات",
+  "configShareExplainServer": "امسح هذا الرمز بهاتف آخر لإعداده بنفس الخادم.",
+  "configShareExplainGroup": "امسح هذا الرمز بهاتف آخر لإعداده بنفس الخادم والانضمام إلى المجموعة {name}. يحمل رمز دعوة المجموعة: لا تعرضه إلا للأشخاص الذين تريدهم في المجموعة.",
+  "configShareWebAppLabel": "عنوان تطبيق الويب",
+  "configShareWebAppHelper": "العنوان الذي يخدم فيه خادمك تطبيق ويب CountScore، مثل https://countscore.example.com/countscore. يفتح الرمز هذه الصفحة.",
+  "configShareWebAppNeeded": "أدخل عنوان تطبيق الويب لعرض الرمز.",
+  "configShareQrLabel": "رمز QR لرابط الإعدادات",
+  "configShareCopyLink": "نسخ الرابط",
+  "configShareLinkCopied": "تم نسخ الرابط",
+  "replaceConfigTitle": "استبدال الإعدادات؟",
+  "replaceConfigCurrent": "الحالي: {value}",
+  "replaceConfigNew": "الجديد: {value}",
+  "replaceConfigInvite": "رمز الدعوة {code}",
+  "replaceConfigLeavesGroup": "سيترك هذا الجهاز المجموعة {name}. تبقى الألعاب على هذا الجهاز.",
+  "replaceConfigConfirm": "استبدال",
+  "replaceConfigUnsynced": "{count, plural, zero{لا تغييرات على هذا الجهاز لم تصل المجموعة بعد.} one{تغيير واحد على هذا الجهاز لم يصل المجموعة بعد. إذا تركت الآن، لن تستقبله المجموعة أبدًا.} two{تغييران على هذا الجهاز لم يصلا المجموعة بعد. إذا تركت الآن، لن تستقبلهما المجموعة أبدًا.} few{{count} تغييرات على هذا الجهاز لم تصل المجموعة بعد. إذا تركت الآن، لن تستقبلها المجموعة أبدًا.} many{{count} تغييرًا على هذا الجهاز لم تصل المجموعة بعد. إذا تركت الآن، لن تستقبله المجموعة أبدًا.} other{{count} تغيير على هذا الجهاز لم يصل المجموعة بعد. إذا تركت الآن، لن تستقبله المجموعة أبدًا.}}",
+  "replaceConfigLeaveAnyway": "المغادرة على أي حال",
+  "replaceConfigDone": "تم استبدال الإعدادات",
+  "replaceConfigUnchanged": "هذا الجهاز يستخدم بالفعل هذه الإعدادات"
 }

@@ -2,7 +2,7 @@
 
 > Scope: the offline-first sharing protocol — server and Flutter client.
 > Related: [[Api]] · [[Schema]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-09-25
+> Updated: 2026-09-26
 
 ## Facts
 
@@ -202,6 +202,10 @@ turns every shared row back into a local one and empties `outbox`, `group_links`
 for good, game types among them: a game-type tombstone no game points at is deleted, or it
 would hold its `builtin_key` reserved against the seed for ever. Clearing the server URL
 while in a group asks, then leaves.
+
+**Sharing the configuration by QR code (since 2026-09-26).** Settings shows a QR code carrying
+the server and the invite code, and a scanned one opens a "replace the configuration?" dialog
+that leaves and joins through `GroupProvider`: [[ConfigShare]].
 
 **Removing another device.** Settings → Group → *Devices* (`group_devices_sheet.dart`) lists
 `GET /groups/me/devices`, marks the owner, and — on the owner only — offers a revoke and a

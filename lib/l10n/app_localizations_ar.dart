@@ -1675,4 +1675,91 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get turnTimerTimeUp => 'انتهى الوقت!';
+
+  @override
+  String get configShareOpen => 'مشاركة عبر رمز QR';
+
+  @override
+  String get configShareTitle => 'مشاركة هذه الإعدادات';
+
+  @override
+  String get configShareExplainServer =>
+      'امسح هذا الرمز بهاتف آخر لإعداده بنفس الخادم.';
+
+  @override
+  String configShareExplainGroup(String name) {
+    return 'امسح هذا الرمز بهاتف آخر لإعداده بنفس الخادم والانضمام إلى المجموعة $name. يحمل رمز دعوة المجموعة: لا تعرضه إلا للأشخاص الذين تريدهم في المجموعة.';
+  }
+
+  @override
+  String get configShareWebAppLabel => 'عنوان تطبيق الويب';
+
+  @override
+  String get configShareWebAppHelper =>
+      'العنوان الذي يخدم فيه خادمك تطبيق ويب CountScore، مثل https://countscore.example.com/countscore. يفتح الرمز هذه الصفحة.';
+
+  @override
+  String get configShareWebAppNeeded => 'أدخل عنوان تطبيق الويب لعرض الرمز.';
+
+  @override
+  String get configShareQrLabel => 'رمز QR لرابط الإعدادات';
+
+  @override
+  String get configShareCopyLink => 'نسخ الرابط';
+
+  @override
+  String get configShareLinkCopied => 'تم نسخ الرابط';
+
+  @override
+  String get replaceConfigTitle => 'استبدال الإعدادات؟';
+
+  @override
+  String replaceConfigCurrent(String value) {
+    return 'الحالي: $value';
+  }
+
+  @override
+  String replaceConfigNew(String value) {
+    return 'الجديد: $value';
+  }
+
+  @override
+  String replaceConfigInvite(String code) {
+    return 'رمز الدعوة $code';
+  }
+
+  @override
+  String replaceConfigLeavesGroup(String name) {
+    return 'سيترك هذا الجهاز المجموعة $name. تبقى الألعاب على هذا الجهاز.';
+  }
+
+  @override
+  String get replaceConfigConfirm => 'استبدال';
+
+  @override
+  String replaceConfigUnsynced(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count تغيير على هذا الجهاز لم يصل المجموعة بعد. إذا تركت الآن، لن تستقبله المجموعة أبدًا.',
+      many:
+          '$count تغييرًا على هذا الجهاز لم تصل المجموعة بعد. إذا تركت الآن، لن تستقبله المجموعة أبدًا.',
+      few:
+          '$count تغييرات على هذا الجهاز لم تصل المجموعة بعد. إذا تركت الآن، لن تستقبلها المجموعة أبدًا.',
+      two: 'تغييران على هذا الجهاز لم يصلا المجموعة بعد. إذا تركت الآن، لن تستقبلهما المجموعة أبدًا.',
+      one: 'تغيير واحد على هذا الجهاز لم يصل المجموعة بعد. إذا تركت الآن، لن تستقبله المجموعة أبدًا.',
+      zero: 'لا تغييرات على هذا الجهاز لم تصل المجموعة بعد.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get replaceConfigLeaveAnyway => 'المغادرة على أي حال';
+
+  @override
+  String get replaceConfigDone => 'تم استبدال الإعدادات';
+
+  @override
+  String get replaceConfigUnchanged => 'هذا الجهاز يستخدم بالفعل هذه الإعدادات';
 }

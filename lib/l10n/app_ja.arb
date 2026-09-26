@@ -714,5 +714,26 @@
   "turnTimerStart": "スタート",
   "turnTimerPause": "一時停止",
   "turnTimerReset": "リセット",
-  "turnTimerTimeUp": "時間切れ！"
+  "turnTimerTimeUp": "時間切れ！",
+
+  "configShareOpen": "QR コードで共有",
+  "configShareTitle": "この設定を共有",
+  "configShareExplainServer": "このコードを別のスマートフォンでスキャンして、同じサーバーを設定できます。",
+  "configShareExplainGroup": "このコードを別のスマートフォンでスキャンして、同じサーバーを設定し、グループ {name} に参加できます。グループの招待コードが含まれているので、グループに入れたい人にだけ見せてください。",
+  "configShareWebAppLabel": "Web アプリアドレス",
+  "configShareWebAppHelper": "CountScore Web アプリがホストされているアドレスです（例：https://countscore.example.com/countscore）。QR コードはこのページを開きます。",
+  "configShareWebAppNeeded": "Web アプリアドレスを入力するとコードが表示されます。",
+  "configShareQrLabel": "設定リンクの QR コード",
+  "configShareCopyLink": "リンクをコピー",
+  "configShareLinkCopied": "リンクをコピーしました",
+  "replaceConfigTitle": "設定を置き換えますか？",
+  "replaceConfigCurrent": "現在：{value}",
+  "replaceConfigNew": "新規：{value}",
+  "replaceConfigInvite": "招待コード {code}",
+  "replaceConfigLeavesGroup": "このデバイスはグループ {name} を退出します。ゲームはこのデバイスに残ります。",
+  "replaceConfigConfirm": "置き換え",
+  "replaceConfigUnsynced": "{count, plural, other{このデバイスの{count}件の変更がまだグループに到達していません。今離脱するとグループはこれらを受け取りません。}}",
+  "replaceConfigLeaveAnyway": "それでも退出",
+  "replaceConfigDone": "設定を置き換えました",
+  "replaceConfigUnchanged": "このデバイスは既にこの設定を使用しています"
 }
