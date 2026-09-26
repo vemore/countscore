@@ -3,12 +3,14 @@ import 'package:intl/intl.dart';
 import '../l10n/app_localizations.dart';
 import '../models/game_type.dart';
 import '../widgets/game_ranking.dart';
+import 'config_link.dart' show configLinkAndroidPackage;
 
 /// The app's Play Store listing, built from the application id
-/// (`android/app/build.gradle.kts`). Plain on purpose: no `referrer`, no
-/// `utm_*` — the shared text carries no tracking parameter.
+/// ([configLinkAndroidPackage], the one place Dart writes it). Plain on
+/// purpose: no `referrer`, no `utm_*` — the shared text carries no tracking
+/// parameter.
 const kPlayStoreUrl =
-    'https://play.google.com/store/apps/details?id=com.vemore.countscore';
+    'https://play.google.com/store/apps/details?id=$configLinkAndroidPackage';
 
 /// The file name the standings' PNG (`ResultShareCard`) is shared under.
 const kShareImageName = 'countscore-result.png';

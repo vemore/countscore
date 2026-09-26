@@ -1,6 +1,6 @@
 # The app opens no `countscore://join` link, so a scanned QR cannot reach it
 
-**Status:** done (2026-09-26) — closed by feat/config-share-join-link. `MainActivity` declares a `countscore://join` VIEW/BROWSABLE filter (custom scheme, no `autoVerify`), `app_links` delivers the link to `JoinLinkInbox`, and `JoinLinkListener` opens `showReplaceConfigDialog` once `GroupProvider.loaded`; the PWA's hand-over is `encodeAndroidIntentLink`. Covered by `test/widgets/join_link_listener_test.dart` and `test/utils/config_link_test.dart`; the one device run is deferred to a local session.
+**Status:** done (2026-09-26) — closed by feat/config-share-join-link. `MainActivity` declares a `countscore://join` VIEW/BROWSABLE filter (custom scheme, no `autoVerify`), `app_links` delivers the link to `JoinLinkInbox`, and `JoinLinkListener` opens `showReplaceConfigDialog` once `GroupProvider.loaded`; the PWA's hand-over is `encodeAndroidIntentLink`. Covered by `test/widgets/join_link_listener_test.dart` and `test/utils/config_link_test.dart`; the one device run is deferred to a local session. After the system kills the app in the background and the user returns with Back, the recreated activity redelivers its original intent and the dialog asks again (nothing changes unconfirmed); documented, not filtered.
 
 - **Noted:** 2026-09-24 — refinement, split out of [[2026-09-23-server-and-group-config-cannot-be-shared-by-qr-code]]
 - **Theme:** groups-v2

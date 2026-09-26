@@ -1,6 +1,6 @@
 # The PWA has no `/join` route, so a QR scanned off Android lands nowhere
 
-**Status:** done (2026-09-26) — closed by feat/config-share-join-link. `main()` takes the `#/join?…` route out of the address bar and history before `runApp` (`takeJoinRouteFromLocation`), a `#/join` pushed while the PWA runs is answered by `JoinLinkInbox` ahead of the Navigator, and `JoinLinkListener` opens the replace dialog, or nothing for a malformed link; in an Android browser it first offers the app (`intent://`, Play listing fallback). The access-log check (no `/join`, no invite code) belongs to the post-deploy smoke test.
+**Status:** done (2026-09-26) — closed by feat/config-share-join-link. `main()` takes the `#/join?…` route out of the address bar and history before `runApp` (`takeJoinRouteFromLocation`), a `#/join` reached while the PWA runs is stripped from its history entry (`watchJoinRoutesInLocation`) and answered by `JoinLinkInbox` ahead of the Navigator, which resets the engine route to `/`, and `JoinLinkListener` opens the replace dialog, or nothing for a malformed link; in an Android browser it first offers the app (`intent://`, Play listing fallback). The access-log check (no `/join`, no invite code) belongs to the post-deploy smoke test.
 
 - **Noted:** 2026-09-24 — refinement, split out of [[2026-09-23-server-and-group-config-cannot-be-shared-by-qr-code]]
 - **Theme:** groups-v2

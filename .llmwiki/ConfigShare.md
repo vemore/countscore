@@ -112,8 +112,11 @@ after `GroupProvider.loaded` (the stored membership read by the provider's first
 `updateBackend`): on a cold start the dialog would otherwise show no current group. A link
 that does not parse (`parseReceivedConfigLink`: `parseConfigRoute` for a bare `/join?…`
 route, `parseConfigLink` otherwise) opens nothing; the home screen stays. The inbox holds
-links until the listener attaches and hands each over once, so a rebuild or a resume replays
-nothing.
+links until the listener attaches and hands each delivery over once, so no rebuild or resume
+of the running app replays one. One case does, on Android: after the system kills the app in
+the background and the user returns with Back (not from the recents screen), Android
+recreates the activity from the intent that first opened it, `app_links` delivers it again,
+and the dialog asks again. Nothing changes unless the user confirms.
 
 - **The PWA, `#/join?s=…&g=…`.** `takeJoinRouteFromLocation`
   (`lib/services/join_link_location_web.dart`) reads the hash before `runApp` and, when its
@@ -121,9 +124,20 @@ nothing.
   entry to the PWA's root with `history.replaceState`: Flutter's history then starts on `/`,
   no entry keeps the invite code, and a reload or a back cannot open it again. A `#/join`
   reached while the PWA runs (the address edited, or an installed PWA navigated to a link
-  that differs from its address by the hash) arrives as a route push: the inbox, a
-  `WidgetsBindingObserver` registered before `runApp`, answers it ahead of `WidgetsApp`,
-  which would look for a named route and throw.
+  that differs from its address by the hash) adds a history entry of its own, which
+  Flutter's single-entry history records as its current route and steps back off
+  (`go(-1)`), leaving it as a *forward* entry, then pushes the route. Three things handle it:
+  `watchJoinRoutesInLocation`, a `popstate` listener registered before `runApp` (so ahead of
+  Flutter's), rewrites that entry to a bare `#/join` and keeps the full route
+  (`takeStrippedJoinRoute`), so neither Forward nor the tab's history holds the code; the
+  inbox, a `WidgetsBindingObserver` registered before `runApp`, answers the push ahead of
+  `WidgetsApp` (which would look for a named route and throw), taking the kept route for a
+  bare `/join`, once; and it reports `/` to the engine (`SystemNavigator.routeInformationUpdated`,
+  `replace: true`), which resets the single-entry history's route and entry, since that
+  history re-creates its entry at its last route on a back to its origin, where a reload
+  would open the link again. Engine code read: `SingleEntryBrowserHistory` in the Flutter
+  web SDK's `engine/navigation/history.dart`. The browser's own list of visited pages
+  still records the address as opened, as for any link.
 - **An Android browser.** The PWA asks first (`joinLinkHandOverMessage`): *Open in the app*
   navigates to `encodeAndroidIntentLink` —
   `intent://join?s=…&g=…#Intent;scheme=countscore;package=com.vemore.countscore;S.browser_fallback_url=<Play listing>;end`,
@@ -135,15 +149,17 @@ nothing.
   `MainActivity` for scheme `countscore`, host `join` — a custom scheme, no `https` host, no
   `autoVerify` — and `app_links` (`AppLinks().stringLinkStream`), which delivers the launch
   intent once, then each new intent (`launchMode="singleTop"`), and ignores a relaunch from
-  the recents screen (`FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY`). Flutter's own deep linking is
+  the recents screen (`FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY`), but not an activity the
+  system recreates after killing the process (above). Flutter's own deep linking is
   off (`flutter_deeplinking_enabled` false in the manifest): it would push the link as a
   Navigator route as well.
 
 Nothing is fetched to open a link: the intent goes browser → app on the device, and the
 dialog's first request is the join the user confirms. The merged manifest gains no
 permission from `app_links` (its own manifest is empty). Tests:
-`test/widgets/join_link_listener_test.dart`, `test/utils/config_link_test.dart`; the one
-device run of the Android path is still to be made in a local session.
+`test/widgets/join_link_listener_test.dart`, `test/utils/config_link_test.dart`. Not covered
+by them: the `popstate` listener and `history.replaceState` (browser only), and the one
+device run of the Android path, both still to be made in a local session.
 
 ## Decisions & History
 
@@ -196,6 +212,20 @@ device run of the Android path is still to be made in a local session.
   a back would bring the invite code back to the address bar; rewriting the entry before the
   engine reads it leaves nothing behind. Reading the route from Flutter
   (`defaultRouteName`) and cleaning up afterwards was the alternative.
+- **A link reached while the PWA runs is stripped and the engine reset (2026-09-26, review
+  of #237).** The first version handled only the cold start: a `#/join` pushed later stayed
+  as a forward entry holding the invite code (Forward replayed the dialog), and the engine
+  kept it as its route, so a back to the origin put it back in the address bar, where a
+  reload reopened it. Reporting `/` alone (the reviewer's suggestion) resets the route but
+  cannot drop the forward entry: the single-entry history only ever replaces its own entry,
+  and only a push truncates forward ones. So the entry itself is rewritten on the same
+  `popstate`, before the engine's asynchronous step back leaves it. Pushing a clean entry of
+  our own was rejected: a second Flutter entry makes a later Back push the home route again.
+- **The Android activity recreated after a process kill replays the link (2026-09-26,
+  review of #237).** Android rebuilds it from its original `VIEW` intent, without the recents
+  flag, and `app_links` delivers that intent again. Filtering it needs Kotlin (the saved
+  instance state) that only a device can run; the dialog asks again and changes nothing
+  unconfirmed, so it is documented rather than filtered.
 - **The unsynced count is read when the question is asked (2026-09-26).** `pendingChanges` is
   the count at the end of the last sync pass: 0 on a cold start, which is exactly how a link
   opens the app, and stale for the second a write waits for its debounced sync.

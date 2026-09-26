@@ -1,11 +1,12 @@
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../utils/config_link.dart';
 
 /// Every configuration link this app receives, held until the home screen reads
-/// it ([JoinLinkListener]) and handed over exactly once:
+/// it ([JoinLinkListener]) and handed over once per delivery:
 ///
 /// - on the web, the `#/join?…` route the page was opened on ([initialRoute],
 ///   taken out of the address bar before `runApp`), then any `#/join` route
@@ -13,17 +14,27 @@ import '../utils/config_link.dart';
 ///   navigated to a link that differs from its address by the hash alone): as a
 ///   [WidgetsBindingObserver] registered before `runApp`, it answers those route
 ///   pushes before `WidgetsApp` does, which would look for a named route and
-///   fail;
+///   fail. Such a push then resets the engine's route to `/` (see
+///   [didPushRouteInformation]);
 /// - on Android, `countscore://join?…` intents ([listenTo] on `app_links`'
 ///   stream, which delivers the launch intent once, then each new intent, and
 ///   skips a relaunch from the recents screen).
 ///
 /// Links received before a reader is attached wait for it, so a cold start
-/// loses none; a link is never replayed, so no rebuild or resume opens it again.
+/// loses none, and the inbox never replays one: no rebuild or resume of the
+/// running app opens a link again. One case does, on Android: when the system
+/// has killed the app in the background and the user comes back to it with
+/// Back (not from the recents screen), Android recreates the activity from the
+/// intent that first opened it, `app_links` delivers that intent again, and the
+/// dialog asks again. Nothing changes unless the user confirms.
 class JoinLinkInbox with WidgetsBindingObserver {
-  JoinLinkInbox({String? initialRoute}) {
+  JoinLinkInbox({String? initialRoute, this.takeStrippedRoute}) {
     if (initialRoute != null) add(initialRoute);
   }
+
+  /// The full route the page's address held before it was stripped to a bare
+  /// `#/join` (`takeStrippedJoinRoute`, web only).
+  final String? Function()? takeStrippedRoute;
 
   final _waiting = <String>[];
   void Function(String link)? _reader;
@@ -55,11 +66,21 @@ class JoinLinkInbox with WidgetsBindingObserver {
   /// Adds every link [links] brings.
   StreamSubscription<String> listenTo(Stream<String> links) => links.listen(add);
 
+  /// A `#/join` pushed while the PWA runs. The route is taken — the full one
+  /// kept when the address was stripped to a bare `#/join`, else the one pushed
+  /// — and the engine is told the app is on `/` again: Flutter web's
+  /// single-entry history keeps the last route it was pushed and puts it back
+  /// in the address bar, in a new entry, the next time it rebuilds its entry
+  /// (a back to its origin), where a reload would open the link again.
   @override
   Future<bool> didPushRouteInformation(RouteInformation routeInformation) async {
     final route = routeInformation.uri.toString();
     if (!isConfigLinkRoute(route)) return false;
-    add(route);
+    // Always taken, so a copy kept while the full route was pushed anyway
+    // cannot come back with a later bare `/join` (Forward).
+    final stripped = takeStrippedRoute?.call();
+    add(route == configLinkRoute && stripped != null ? stripped : route);
+    unawaited(SystemNavigator.routeInformationUpdated(uri: Uri.parse('/'), replace: true));
     return true;
   }
 }

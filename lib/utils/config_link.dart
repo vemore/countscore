@@ -81,8 +81,9 @@ String _query(ConfigLink config) => [
       if (config.invite != null) '$_inviteParam=${Uri.encodeQueryComponent(config.invite!)}',
     ].join('&');
 
-/// The Android application id, which an `intent://` link names so that only
-/// this app answers it (`android/app/build.gradle.kts`).
+/// The Android application id (`android/app/build.gradle.kts`), written once in
+/// Dart: an `intent://` link names it so that only this app answers it, and the
+/// Play listing URL (`kPlayStoreUrl`) is built from it.
 const configLinkAndroidPackage = 'com.vemore.countscore';
 
 /// The PWA's hand-over to the Android app, for an Android browser:

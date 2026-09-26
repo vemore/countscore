@@ -240,6 +240,90 @@ void main() {
       expect(_replaceDialog, findsOneWidget);
     });
 
+    testWidgets('a #/join pushed while the PWA runs resets the engine route to /', (tester) async {
+      // Flutter web's single-entry history keeps the last pushed route and puts it
+      // back in the address bar on its next entry rebuild: it must read `/` again.
+      final reported = <MethodCall>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.navigation,
+        (call) async {
+          reported.add(call);
+          return null;
+        },
+      );
+      // flutter test answers this channel with a stub of its own; put it back, or
+      // the next test's route updates would wait for a reply forever.
+      addTearDown(() => tester.binding.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.navigation, (_) async => null));
+      final inbox = JoinLinkInbox();
+      tester.binding.addObserver(inbox);
+      addTearDown(() => tester.binding.removeObserver(inbox));
+      await _pump(tester, inbox);
+      reported.clear();
+
+      await _pushRoute(tester, _route);
+
+      expect(_replaceDialog, findsOneWidget);
+      final updates = reported.where((c) => c.method == 'routeInformationUpdated').toList();
+      expect(updates, isNotEmpty);
+      expect(updates.last.arguments, containsPair('uri', '/'));
+      expect(updates.last.arguments, containsPair('replace', true));
+      for (final call in reported) {
+        expect(call.arguments.toString(), isNot(contains(_invite)),
+            reason: 'nothing reported to the engine carries the invite code');
+      }
+    });
+
+    testWidgets('an address stripped to a bare #/join opens the kept route, once', (tester) async {
+      // The web listener rewrote the entry to `#/join` and kept the full route;
+      // Flutter then pushes the bare one. A later bare push (Forward) finds nothing.
+      String? kept = _route;
+      String? take() {
+        final route = kept;
+        kept = null;
+        return route;
+      }
+
+      final inbox = JoinLinkInbox(takeStrippedRoute: take);
+      tester.binding.addObserver(inbox);
+      addTearDown(() => tester.binding.removeObserver(inbox));
+      await _pump(tester, inbox);
+
+      await _pushRoute(tester, '/join');
+      expect(_replaceDialog, findsOneWidget);
+      expect(_text(tester, 'replace_config_group_new'), 'New: invite code $_invite');
+      await tester.tap(find.byKey(const Key('replace_config_cancel')));
+      await tester.pumpAndSettle();
+
+      await _pushRoute(tester, '/join');
+      expect(tester.takeException(), isNull);
+      expect(_anyDialog, findsNothing);
+    });
+
+    testWidgets('a kept route is dropped when the full route was pushed anyway', (tester) async {
+      // Flutter's listener ran first and pushed the full route itself: the kept copy
+      // must not come back with a later bare `/join`.
+      String? kept = _route;
+      String? take() {
+        final route = kept;
+        kept = null;
+        return route;
+      }
+
+      final inbox = JoinLinkInbox(takeStrippedRoute: take);
+      tester.binding.addObserver(inbox);
+      addTearDown(() => tester.binding.removeObserver(inbox));
+      await _pump(tester, inbox);
+
+      await _pushRoute(tester, _route);
+      expect(_replaceDialog, findsOneWidget);
+      await tester.tap(find.byKey(const Key('replace_config_cancel')));
+      await tester.pumpAndSettle();
+
+      await _pushRoute(tester, '/join');
+      expect(_anyDialog, findsNothing);
+    });
+
     testWidgets('another route pushed is left to the Navigator', (tester) async {
       final inbox = JoinLinkInbox();
       expect(await inbox.didPushRouteInformation(RouteInformation(uri: Uri.parse('/'))), isFalse);

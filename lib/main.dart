@@ -24,11 +24,18 @@ import 'widgets/pwa_update_listener.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // A scanned configuration QR, before anything else: on the web its `#/join?…`
-  // route leaves the address bar before Flutter's history reads it, and the
-  // inbox answers later `#/join` pushes ahead of WidgetsApp (registered first).
-  // On Android, app_links delivers `countscore://join?…` — the launch intent,
-  // then each new one. The home screen opens what arrives (JoinLinkListener).
-  final joinLinks = JoinLinkInbox(initialRoute: takeJoinRouteFromLocation());
+  // route leaves the address bar before Flutter's history reads it, a later
+  // `#/join?…` is stripped from its history entry by a listener registered
+  // ahead of Flutter's, and the inbox answers the `#/join` pushes ahead of
+  // WidgetsApp (registered first). On Android, app_links delivers
+  // `countscore://join?…`: the launch intent, then each new one, and the launch
+  // intent again when the system recreates a killed activity (JoinLinkInbox).
+  // The home screen opens what arrives (JoinLinkListener).
+  final joinLinks = JoinLinkInbox(
+    initialRoute: takeJoinRouteFromLocation(),
+    takeStrippedRoute: takeStrippedJoinRoute,
+  );
+  watchJoinRoutesInLocation();
   WidgetsBinding.instance.addObserver(joinLinks);
   if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
     joinLinks.listenTo(AppLinks().stringLinkStream);
