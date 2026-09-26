@@ -301,7 +301,7 @@ class GameType {
   // condition at all before, which is why a game with one player left still
   // offered another round. Unlike Uno and Président below, an existing row
   // with no end gets this one from schema v20 (`applyV20`,
-  // lib/services/drift/schema_v20.dart); a condition the user set is kept.
+  // lib/services/schema_steps.dart); a condition the user set is kept.
   static GameType zapzap() => GameType(
         builtinKey: 'zapzap',
         name: 'ZapZap',

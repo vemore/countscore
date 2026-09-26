@@ -20,6 +20,17 @@ healthcheck is healthy and exits non-zero otherwise.
 automatically and exit non-zero. Automatic rollback applies only when no migration ran;
 otherwise stop and point at `backend-deploy` §5.
 
+**State of the art** (web search, 2026-09-26): `docker compose up --wait` blocks until every
+service with a healthcheck reports healthy and exits non-zero otherwise; tools such as
+`docker-rollout` run the new and old containers side by side and roll back automatically if
+the new one never turns healthy, giving a genuinely zero-downtime update. We depart from
+that zero-downtime form: the fix here stops at wait + health check + redeploying the
+previous tag on failure, accepting a brief restart gap rather than running both containers
+at once — proportionate for a single self-hosted backend where outages are cheap (project
+memory: sole user of prod).
+Sources: [Docker Compose reference, `--wait`](https://docs.docker.com/reference/compose-file/services/),
+[docker-rollout, zero-downtime deployment for Docker Compose](https://github.com/wowu/docker-rollout).
+
 **Acceptance:**
 - `deploy_nas.sh` has no `sleep` and calls `up` with `--wait`.
 - An image whose `/health` fails makes the script exit non-zero and leaves the previous image

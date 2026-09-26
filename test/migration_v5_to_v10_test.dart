@@ -16,7 +16,7 @@ import 'package:countscore/models/score.dart';
 import 'package:countscore/repositories/drift/drift_repositories.dart';
 import 'package:countscore/services/database_service.dart';
 import 'package:countscore/services/drift/database.dart';
-import 'package:countscore/services/sync/sync_schema.dart';
+import 'package:countscore/services/schema_steps.dart';
 
 /// `_createDB` as of tag `1.0.1+3`, verbatim DDL, minus the default game types
 /// (inserted by the test so their ids are known).

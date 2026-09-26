@@ -16,7 +16,7 @@ import 'package:countscore/models/game_type.dart';
 import 'package:countscore/services/database_service.dart';
 import 'package:countscore/services/drift/database.dart';
 import 'package:countscore/services/game_rules_catalog.dart';
-import 'package:countscore/services/sync/sync_schema.dart';
+import 'package:countscore/services/schema_steps.dart';
 
 /// The twelve types v14 inserted without a ruleset.
 const _longTail = [
