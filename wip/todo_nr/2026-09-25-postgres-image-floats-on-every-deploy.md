@@ -18,6 +18,15 @@ optionally with its digest), limit `pull` to the images the deploy built
 `dependabot.yml` so upgrades arrive as reviewed pull requests. Keep the backup image's
 `pg_dump` major equal to the server's.
 
+**State of the art** (web search, 2026-09-26): current practice pins a production image to
+an exact minor version — ideally its digest too — rather than a floating major tag, and lets
+Dependabot or Renovate propose the bump as a reviewed pull request instead of it arriving
+silently on the next `pull`. The fix matches this directly — pin to a minor/Alpine release,
+add the `docker` ecosystem to `dependabot.yml` — and already names the digest as the
+optional stronger form the state of the art treats as most secure, so there is no departure.
+Sources: [Tomoda Hinata, safely updating Docker base images with Dependabot](https://tomodahinata.com/en/blog/dependabot-docker-base-image-digest-pinning-updates-guide),
+[OneUptime, pinning package versions for reproducible builds](https://oneuptime.com/blog/post/2026-02-08-how-to-pin-package-versions-in-dockerfiles-for-reproducible-builds/view).
+
 **Acceptance:**
 - `docker-compose.prod.yml` names no floating Postgres tag.
 - `dependabot.yml` covers the backend Dockerfiles and compose file.
