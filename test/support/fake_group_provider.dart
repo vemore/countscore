@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/native.dart';
 
 import 'package:countscore/providers/group_provider.dart';
@@ -63,6 +65,17 @@ class FakeGroupProvider extends GroupProvider {
 
   @override
   Future<void> updateBackend(String? baseUrl) async => calls.add('backend $baseUrl');
+
+  /// Completed by [markLoaded], or at once unless the test holds it back
+  /// ([holdLoad]) to play a cold start whose membership is still being read.
+  Completer<void>? _load;
+
+  void holdLoad() => _load = Completer<void>();
+
+  void markLoaded() => _load?.complete();
+
+  @override
+  Future<void> get loaded => _load?.future ?? Future<void>.value();
 
   @override
   Future<void> refreshDeviceLabel() async {}

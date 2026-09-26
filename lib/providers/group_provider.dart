@@ -160,12 +160,25 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     _baseUrl = baseUrl;
     if (!_loaded) {
       _loaded = true;
-      _membership = await _store.membership();
-      _deviceToken = await _credentials.deviceToken();
-      _shareToken = await _credentials.shareToken();
+      try {
+        _membership = await _store.membership();
+        _deviceToken = await _credentials.deviceToken();
+        _shareToken = await _credentials.shareToken();
+      } finally {
+        _ready.complete();
+      }
     }
     await _restart();
   }
+
+  final _ready = Completer<void>();
+
+  /// Completes once the membership stored on this device has been read — by the
+  /// first [updateBackend], which the provider tree makes when it creates this
+  /// provider. Until then [isJoined] reads false for a device that is in a
+  /// group: a configuration link opened on a cold start waits for it
+  /// (`JoinLinkListener`).
+  Future<void> get loaded => _ready.future;
 
   BackendClient _client() => BackendClient(_baseUrl!, httpClient: httpClient);
 

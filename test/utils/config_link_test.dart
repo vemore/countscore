@@ -143,6 +143,79 @@ void main() {
     });
   });
 
+  group('encodeAndroidIntentLink', () {
+    const playListing = 'https://play.google.com/store/apps/details?id=com.vemore.countscore';
+
+    test('carries the payload as a query before #Intent, and the Play listing as fallback', () {
+      const config = ConfigLink(server: 'https://api.example.org/cs', invite: _invite);
+      final link = encodeAndroidIntentLink(config, fallbackUrl: playListing);
+      expect(
+        link,
+        'intent://join?s=https%3A%2F%2Fapi.example.org%2Fcs&g=$_invite'
+        '#Intent;scheme=countscore;package=com.vemore.countscore;'
+        'S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.vemore.countscore;end',
+      );
+      // One `#`, the intent's own: the payload is entirely before it.
+      final hash = link.indexOf('#');
+      expect(link.indexOf('#', hash + 1), -1);
+      expect(link.substring(0, hash), 'intent://join?s=https%3A%2F%2Fapi.example.org%2Fcs&g=$_invite');
+      final extras = link.substring(hash + 1).split(';');
+      expect(extras.first, 'Intent');
+      expect(extras.last, 'end');
+      final fallback = extras.firstWhere((e) => e.startsWith('S.browser_fallback_url='));
+      expect(Uri.decodeComponent(fallback.split('=').skip(1).join('=')), playListing);
+      expect(fallback, isNot(contains(_invite)), reason: 'the fallback page gets no payload');
+    });
+
+    test('opens the countscore:// link the app reads back', () {
+      for (final config in const [
+        ConfigLink(server: _server, invite: _invite),
+        ConfigLink(server: 'http://192.168.1.50:8000'),
+      ]) {
+        final link = encodeAndroidIntentLink(config, fallbackUrl: playListing);
+        // What the browser hands the app: the intent's scheme on its host and query.
+        final data = 'countscore://${link.substring('intent://'.length, link.indexOf('#'))}';
+        expect(data, encodeAppConfigLink(config));
+        expect(parseConfigLink(data), config);
+      }
+    });
+  });
+
+  group('the PWA hash route', () {
+    test('parseConfigRoute reads what follows # in the QR link', () {
+      const config = ConfigLink(server: _server, invite: _invite);
+      final route = Uri.parse(encodeConfigLink(_base, config)).fragment;
+      expect(route, startsWith('/join?'));
+      expect(parseConfigRoute(route), config);
+      expect(parseConfigRoute('/join?s=$_server'), const ConfigLink(server: _server));
+    });
+
+    test('parseConfigRoute refuses a route with no query, a malformed one, or another', () {
+      for (final route in const [
+        '/join',
+        '/join?',
+        '/join?g=$_invite',
+        '/join?s=ftp%3A%2F%2Fexample.com',
+        '/join?s=%E0%A4%A',
+        '/join?s=$_server&g=two words',
+        '/home?s=$_server',
+        '//evil.example.com/join?s=$_server',
+        'https://scores.example.com/join?s=$_server',
+      ]) {
+        expect(parseConfigRoute(route), isNull, reason: route);
+      }
+    });
+
+    test('isConfigLinkRoute is the join route, well-formed or not', () {
+      for (final route in const ['/join', '/join?', '/join?s=%zz', '/join?s=$_server&g=$_invite']) {
+        expect(isConfigLinkRoute(route), isTrue, reason: route);
+      }
+      for (final route in const ['/', '', '/joined', '/join/x', '/home?s=/join', 'join']) {
+        expect(isConfigLinkRoute(route), isFalse, reason: route);
+      }
+    });
+  });
+
   group('pwaBaseFromUri', () {
     test('reads the PWA root from the page address', () {
       expect(pwaBaseFromUri(Uri.parse('https://scores.example.com/countscore/#/')), _base);

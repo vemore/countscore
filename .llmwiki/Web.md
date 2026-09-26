@@ -2,7 +2,7 @@
 
 > Scope: everything specific to the PWA build.
 > Related: [[DataLayer]] · [[MobileApp]] · [[Testing]] · [[LlmProviders]] · [[KnownLimits]]
-> Updated: 2026-09-24
+> Updated: 2026-09-26
 
 ## Facts
 
@@ -119,6 +119,10 @@ in `connection.dart`:
   pads its bottom with `withBottomInset` plus 16, so the last row clears the gesture
   bar (`test/screens/settings_screen_test.dart`).
 - `lib/services/review_prompt.dart` — no Play review sheet in a browser.
+- `lib/main.dart` — a configuration QR's `#/join?…` route is read out of the address bar
+  before `runApp` (`lib/services/join_link_location_web.dart`, `dart:js_interop`; the
+  native stub reads nothing), and in an Android browser the PWA offers the app before its
+  replace dialog (`offerAppHandOver`). [[ConfigShare]] *What opens a link*.
 
 **Keep screen awake works in the PWA.** wakelock_plus 1.8.0's web plugin injects
 `assets/packages/wakelock_plus/assets/no_sleep.js` as a same-origin `<script>` (allowed by

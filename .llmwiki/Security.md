@@ -13,6 +13,7 @@
 | Device token on the client | `flutter_secure_storage`: Android Keystore; on web, encrypted in localStorage. Never in the database, SharedPreferences or an export (`lib/services/sync/sync_credentials.dart`). |
 | `device_token` | `<device id hex>.<secret>`, 128 bits of secret. Stored argon2-hashed server-side; one verify per request, failures capped per IP. |
 | `share_token` | uuid4, rotatable. Unused once a device has joined. Shown in Settings → Group so it can be passed on, and in the configuration QR code, where it travels only in the URL fragment, never sent to the server ([[ConfigShare]]); kept in secure storage on the device. |
+| Configuration links | Any page or app may fire `countscore://join?…` at the Android app or send a browser to the PWA's `#/join?…`: the link only opens the replace dialog, which names the current and the new server and group, and nothing is sent or changed before the user confirms; a server `BackendProvider.check` refuses or a malformed invite code opens nothing. Custom scheme only, no App Links host. The PWA drops the route from its address and history once read. [[ConfigShare]] *What opens a link*. |
 | `ANTHROPIC_API_KEY`, AWS keys | Environment only, never logged, never bundled in the APK. |
 | TLS | Synology Web Station, integrated Let's Encrypt. |
 | Prompt injection | 5 layers — see [[LlmProviders]]. |

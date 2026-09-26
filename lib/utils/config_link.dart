@@ -9,7 +9,8 @@ import '../providers/backend_provider.dart';
 ///   after `#`, which a browser never sends: the server and its logs see
 ///   `GET <PWA_BASE_PATH>/` and nothing else, and the invite code is a credential.
 /// - `countscore://join?s=<server>&g=<invite>` — the hand-over from that page to
-///   the Android app, device-local.
+///   the Android app, device-local; the page asks the browser for it with
+///   [encodeAndroidIntentLink].
 class ConfigLink {
   const ConfigLink({required this.server, this.invite});
 
@@ -80,6 +81,32 @@ String _query(ConfigLink config) => [
       if (config.invite != null) '$_inviteParam=${Uri.encodeQueryComponent(config.invite!)}',
     ].join('&');
 
+/// The Android application id, which an `intent://` link names so that only
+/// this app answers it (`android/app/build.gradle.kts`).
+const configLinkAndroidPackage = 'com.vemore.countscore';
+
+/// The PWA's hand-over to the Android app, for an Android browser:
+/// `intent://join?s=<server>&g=<invite>#Intent;scheme=countscore;package=…;S.browser_fallback_url=…;end`.
+///
+/// The browser turns it into `countscore://join?s=…&g=…` ([encodeAppConfigLink])
+/// and hands that to the app on the device: nothing is requested from any
+/// server. The `#` of an intent URI belongs to `#Intent;…;end`, so the payload is
+/// the query before it. When the app is not installed the browser loads
+/// [fallbackUrl] instead (the Play listing), which carries none of it.
+String encodeAndroidIntentLink(ConfigLink config, {required String fallbackUrl}) =>
+    'intent://${configLinkRoute.substring(1)}?${_query(config)}'
+    '#Intent;scheme=$configLinkScheme;package=$configLinkAndroidPackage;'
+    'S.browser_fallback_url=${Uri.encodeComponent(fallbackUrl)};end';
+
+/// Whether [route], a hash route as the PWA sees it (what follows `#`), is the
+/// join route, well-formed or not: `/join`, with or without a query. Such a
+/// route is consumed whatever it carries, so a malformed one opens the home
+/// screen and nothing else.
+bool isConfigLinkRoute(String route) {
+  final end = route.indexOf(RegExp(r'[?#]'));
+  return (end < 0 ? route : route.substring(0, end)) == configLinkRoute;
+}
+
 /// Reads a configuration link in either shape (see [ConfigLink]). Null when it is
 /// neither, when its server is not one [BackendProvider.check] accepts, or when
 /// its invite code is malformed. An empty `g` reads as no group.
@@ -87,7 +114,6 @@ String _query(ConfigLink config) => [
 /// On an `https://` link only what follows `#` counts: a `s` or `g` in a query
 /// before it — which the server would have seen — is ignored.
 ConfigLink? parseConfigLink(String raw) {
-  final Map<String, String> params;
   try {
     final uri = Uri.parse(raw.trim());
     final scheme = uri.scheme.toLowerCase();
@@ -97,24 +123,36 @@ ConfigLink? parseConfigLink(String raw) {
           uri.hasFragment) {
         return null;
       }
-      params = uri.queryParameters;
-    } else if (scheme == 'https' || scheme == 'http') {
-      if (!uri.hasFragment) return null;
-      final route = Uri.parse(uri.fragment);
-      if (route.hasScheme || route.hasAuthority || route.path != configLinkRoute) {
-        return null;
-      }
-      params = route.queryParameters;
-    } else {
-      return null;
+      return _fromParams(uri.queryParameters);
     }
+    if (scheme == 'https' || scheme == 'http') {
+      return uri.hasFragment ? parseConfigRoute(uri.fragment) : null;
+    }
+    return null;
   } on FormatException {
     return null;
   } on ArgumentError {
     // A malformed percent-escape in the query.
     return null;
   }
+}
 
+/// Reads the PWA's hash route alone, `/join?s=<server>&g=<invite>`: what follows
+/// `#` in the QR's link, which is also the route Flutter web reports for it.
+/// Null on the same grounds as [parseConfigLink], and for any other route.
+ConfigLink? parseConfigRoute(String route) {
+  try {
+    final uri = Uri.parse(route.trim());
+    if (uri.hasScheme || uri.hasAuthority || uri.path != configLinkRoute) return null;
+    return _fromParams(uri.queryParameters);
+  } on FormatException {
+    return null;
+  } on ArgumentError {
+    return null;
+  }
+}
+
+ConfigLink? _fromParams(Map<String, String> params) {
   final server = BackendProvider.check(params[_serverParam] ?? '').url;
   if (server == null) return null;
   final invite = params[_inviteParam]?.trim() ?? '';

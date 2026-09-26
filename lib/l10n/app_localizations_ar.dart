@@ -1766,4 +1766,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get replaceConfigUnchanged => 'هذا الجهاز يستخدم بالفعل هذه الإعدادات';
+
+  @override
+  String get joinLinkHandOverMessage =>
+      'يمكن فتح هذا الرابط في تطبيق CountScore لنظام Android. إذا لم يكن التطبيق مثبتاً، يُفتح متجر Play بدلاً منه.';
+
+  @override
+  String get joinLinkOpenInApp => 'فتح في التطبيق';
+
+  @override
+  String get joinLinkContinueHere => 'المتابعة في المتصفح';
 }

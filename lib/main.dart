@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:app_links/app_links.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -11,13 +13,26 @@ import 'providers/group_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/home_screen.dart';
+import 'services/join_link_inbox.dart';
+import 'services/join_link_location.dart';
 import 'services/review_prompt.dart';
 import 'services/sync/sync_engine.dart';
 import 'utils/app_theme.dart';
+import 'widgets/join_link_listener.dart';
 import 'widgets/pwa_update_listener.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // A scanned configuration QR, before anything else: on the web its `#/join?…`
+  // route leaves the address bar before Flutter's history reads it, and the
+  // inbox answers later `#/join` pushes ahead of WidgetsApp (registered first).
+  // On Android, app_links delivers `countscore://join?…` — the launch intent,
+  // then each new one. The home screen opens what arrives (JoinLinkListener).
+  final joinLinks = JoinLinkInbox(initialRoute: takeJoinRouteFromLocation());
+  WidgetsBinding.instance.addObserver(joinLinks);
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    joinLinks.listenTo(AppLinks().stringLinkStream);
+  }
   registerFontLicenses();
   // Read the theme before the first frame so a dark-mode user never sees a
   // light flash on cold start.
@@ -28,7 +43,11 @@ void main() async {
   // Starts the "installed for at least a week" clock. Cheap: it writes only on
   // the very first launch, and preferences are already in memory by now.
   await ReviewPromptService.instance.recordFirstLaunch();
-  runApp(MyApp(initialThemeMode: themeMode, initialBackendUrl: backendUrl));
+  runApp(MyApp(
+    initialThemeMode: themeMode,
+    initialBackendUrl: backendUrl,
+    joinLinks: joinLinks,
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -36,10 +55,14 @@ class MyApp extends StatelessWidget {
     super.key,
     required this.initialThemeMode,
     this.initialBackendUrl,
+    this.joinLinks,
   });
 
   final ThemeMode initialThemeMode;
   final String? initialBackendUrl;
+
+  /// The configuration links received; none are opened without it.
+  final JoinLinkInbox? joinLinks;
 
   /// Sync conflicts are reported wherever the user happens to be, not only on
   /// the screen that caused them.
@@ -109,7 +132,15 @@ class MyApp extends StatelessWidget {
             themeMode: themeProvider.themeMode,
             theme: buildAppTheme(Brightness.light),
             darkTheme: buildAppTheme(Brightness.dark),
-            home: const HomeScreen(),
+            home: joinLinks == null
+                ? const HomeScreen()
+                : JoinLinkListener(
+                    inbox: joinLinks!,
+                    // The PWA in an Android browser offers the app first.
+                    offerAppHandOver: kIsWeb && defaultTargetPlatform == TargetPlatform.android,
+                    openInApp: openLinkInPlace,
+                    child: const HomeScreen(),
+                  ),
           );
         },
       ),

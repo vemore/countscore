@@ -2757,5 +2757,20 @@
   "replaceConfigUnchanged": "Cet appareil utilise déjà cette configuration",
   "@replaceConfigUnchanged": {
     "description": "Snackbar when an opened shared configuration is the one this device already uses, so there is nothing to replace"
+  },
+
+  "joinLinkHandOverMessage": "Ce lien peut s'ouvrir dans l'application Android CountScore. Si elle n'est pas installée, le Play Store s'ouvre à sa place.",
+  "@joinLinkHandOverMessage": {
+    "description": "Web app on an Android browser, opened from a shared configuration QR code: offers to continue in the installed Android app instead, before the replace-configuration dialog. Shown with the buttons joinLinkOpenInApp and joinLinkContinueHere"
+  },
+
+  "joinLinkOpenInApp": "Ouvrir dans l'application",
+  "@joinLinkOpenInApp": {
+    "description": "Button: hand the shared configuration link over to the CountScore Android app (or its Play Store page when it is not installed)"
+  },
+
+  "joinLinkContinueHere": "Continuer dans le navigateur",
+  "@joinLinkContinueHere": {
+    "description": "Button: stay in the web app and show the replace-configuration dialog here"
   }
 }

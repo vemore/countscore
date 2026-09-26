@@ -9,7 +9,7 @@ CountScore uses the following open-source packages. We are grateful to their aut
 
 ## Summary
 
-The 25 direct dependencies the app ships with are under: BSD-2-Clause (1), BSD-3-Clause (17), MIT (7). Every licence below is permissive; none is copyleft, and there is no licence conflict. The one bundled font, Nunito, is under the **SIL Open Font License 1.1**, which allows bundling it in any application and asks only that the licence travel with it; the web version also serves its fallback fonts (Noto, OFL 1.1; Roboto, Apache 2.0) itself. The one non-open-source item is the Google Play Core review binary that `in_app_review` links on Android — see its note below.
+The 26 direct dependencies the app ships with are under: Apache-2.0 (1), BSD-2-Clause (1), BSD-3-Clause (17), MIT (7). Every licence below is permissive; none is copyleft, and there is no licence conflict. The one bundled font, Nunito, is under the **SIL Open Font License 1.1**, which allows bundling it in any application and asks only that the licence travel with it; the web version also serves its fallback fonts (Noto, OFL 1.1; Roboto, Apache 2.0) itself. The one non-open-source item is the Google Play Core review binary that `in_app_review` links on Android — see its note below.
 
 Only direct dependencies are listed; their versions, and every transitive package, are in `pubspec.lock`. The app's licence page (About → Licenses, Flutter's `showLicensePage`) shows the full text of every package compiled into it, transitive ones included.
 
@@ -143,6 +143,11 @@ Only direct dependencies are listed; their versions, and every transitive packag
 **Copyright:** Copyright 2014, the Dart QR project authors. All rights reserved.  
 **Repository:** https://github.com/kevmoo/qr.dart
 
+### app_links
+**License:** Apache-2.0  
+**Copyright:** not stated in the package's LICENSE  
+**Repository:** https://github.com/llfbandit/app_links
+
 ---
 
 ## Fonts
@@ -222,6 +227,25 @@ Used to build and test the app; not shipped in it.
 ---
 
 ## License Texts
+
+### Apache-2.0
+
+```
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+The full text ships in each such package's LICENSE, and the app shows it on
+its licence page (About → Licenses).
+```
 
 ### BSD-2-Clause
 
@@ -307,3 +331,4 @@ All of these licences require:
 1. **Copyright notice retention**: keep copyright notices in source code
 2. **License text inclusion**: include the licence text when redistributing
 3. **No endorsement** (BSD-3-Clause): the copyright holders' names may not be used to promote the app without permission
+4. **Notices and changes** (Apache-2.0): keep any NOTICE file the package ships, and state changes made to its files; no trademark rights are granted

@@ -808,5 +808,8 @@
   "replaceConfigUnsynced": "{count, plural, =1{1 change on this device has not reached the group yet. If you leave now, the group will never receive it.} other{{count} changes on this device have not reached the group yet. If you leave now, the group will never receive them.}}",
   "replaceConfigLeaveAnyway": "Leave anyway",
   "replaceConfigDone": "Configuration replaced",
-  "replaceConfigUnchanged": "This device already uses this configuration"
+  "replaceConfigUnchanged": "This device already uses this configuration",
+  "joinLinkHandOverMessage": "This link can open in the CountScore Android app. If the app is not installed, the Play Store opens instead.",
+  "joinLinkOpenInApp": "Open in the app",
+  "joinLinkContinueHere": "Continue in the browser"
 }

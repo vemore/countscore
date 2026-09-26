@@ -1704,4 +1704,14 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get replaceConfigUnchanged =>
       'यह डिवाइस पहले से ही इस कॉन्फ़िगरेशन का उपयोग कर रहा है';
+
+  @override
+  String get joinLinkHandOverMessage =>
+      'यह लिंक CountScore Android ऐप में खुल सकता है। अगर ऐप इंस्टॉल नहीं है, तो उसकी जगह Play Store खुलेगा।';
+
+  @override
+  String get joinLinkOpenInApp => 'ऐप में खोलें';
+
+  @override
+  String get joinLinkContinueHere => 'ब्राउज़र में जारी रखें';
 }

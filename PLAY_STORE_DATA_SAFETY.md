@@ -2,7 +2,7 @@
 
 Complete guide for filling out the Data Safety section in Google Play Console for CountScore.
 
-**Last Updated**: September 25, 2026
+**Last Updated**: September 26, 2026
 **Applies to**: CountScore v1.1.0 and later
 **Privacy Policy**: `privacy_policy.md`, published at
 https://vemore.github.io/countscore/privacy-policy.html
@@ -122,6 +122,18 @@ sends the group's comment style (one of three fixed values) and language code wi
 month's AI spending from `GET /groups/me/usage`. These are app settings chosen from fixed
 lists, not information about the user, and the server already stored them with the group; the
 recipient is the same self-hosted server. The answers below are unchanged.
+
+### Opening a configuration link (September 26, 2026)
+
+A configuration QR code (Settings → Server or Group) holds a link to the web app the user's
+own server hosts, with the server address and the group's invite code after the `#`, which a
+browser does not send. In an Android browser that page offers to continue in the app, through
+an `intent://` link the browser resolves on the phone into `countscore://join?…`; the app
+declares an intent filter for that scheme (`app_links`, whose manifest adds no permission)
+and opens a dialog that changes nothing until the user confirms. Nothing is sent to open it;
+confirming is the group join already declared below, to the server the user chose. When the
+app is not installed, the browser opens the plain Play listing, which carries none of the
+link. The answers are unchanged.
 
 ### Sharing a game result (September 19, 2026)
 

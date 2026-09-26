@@ -103,9 +103,47 @@ is left. Tests: `test/widgets/replace_config_dialog_test.dart` (on
 
 ### What opens a link
 
-Nothing yet. The PWA's `#/join` route is `wip/todo/2026-09-24-the-pwa-has-no-join-route.md`,
-the Android `countscore://join` filter `wip/todo/2026-09-24-the-app-opens-no-countscore-join-link.md`;
-both call `parseConfigLink` and `showReplaceConfigDialog`.
+Whatever the camera opens, the link lands in one `JoinLinkInbox`
+(`lib/services/join_link_inbox.dart`), created in `main()` before anything else, and
+`JoinLinkListener` (`lib/widgets/join_link_listener.dart`), wrapped around `HomeScreen` (the
+route that stays at the bottom of the stack), opens each link it holds as
+`showReplaceConfigDialog`, over whatever screen shows. Links are taken one at a time, each
+after `GroupProvider.loaded` (the stored membership read by the provider's first
+`updateBackend`): on a cold start the dialog would otherwise show no current group. A link
+that does not parse (`parseReceivedConfigLink`: `parseConfigRoute` for a bare `/join?…`
+route, `parseConfigLink` otherwise) opens nothing; the home screen stays. The inbox holds
+links until the listener attaches and hands each over once, so a rebuild or a resume replays
+nothing.
+
+- **The PWA, `#/join?s=…&g=…`.** `takeJoinRouteFromLocation`
+  (`lib/services/join_link_location_web.dart`) reads the hash before `runApp` and, when its
+  path is `/join` (`isConfigLinkRoute`, well-formed or not), rewrites the current history
+  entry to the PWA's root with `history.replaceState`: Flutter's history then starts on `/`,
+  no entry keeps the invite code, and a reload or a back cannot open it again. A `#/join`
+  reached while the PWA runs (the address edited, or an installed PWA navigated to a link
+  that differs from its address by the hash) arrives as a route push: the inbox, a
+  `WidgetsBindingObserver` registered before `runApp`, answers it ahead of `WidgetsApp`,
+  which would look for a named route and throw.
+- **An Android browser.** The PWA asks first (`joinLinkHandOverMessage`): *Open in the app*
+  navigates to `encodeAndroidIntentLink` —
+  `intent://join?s=…&g=…#Intent;scheme=countscore;package=com.vemore.countscore;S.browser_fallback_url=<Play listing>;end`,
+  the payload a query before `#Intent` — which opens the app, or the Play listing
+  (`kPlayStoreUrl`, which carries no payload) when it is not installed; *Continue in the
+  browser* shows the replace dialog in the PWA. `offerAppHandOver` is
+  `kIsWeb && defaultTargetPlatform == TargetPlatform.android`.
+- **The Android app, `countscore://join?s=…&g=…`.** A `VIEW`/`BROWSABLE` intent filter on
+  `MainActivity` for scheme `countscore`, host `join` — a custom scheme, no `https` host, no
+  `autoVerify` — and `app_links` (`AppLinks().stringLinkStream`), which delivers the launch
+  intent once, then each new intent (`launchMode="singleTop"`), and ignores a relaunch from
+  the recents screen (`FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY`). Flutter's own deep linking is
+  off (`flutter_deeplinking_enabled` false in the manifest): it would push the link as a
+  Navigator route as well.
+
+Nothing is fetched to open a link: the intent goes browser → app on the device, and the
+dialog's first request is the join the user confirms. The merged manifest gains no
+permission from `app_links` (its own manifest is empty). Tests:
+`test/widgets/join_link_listener_test.dart`, `test/utils/config_link_test.dart`; the one
+device run of the Android path is still to be made in a local session.
 
 ## Decisions & History
 
@@ -140,6 +178,24 @@ both call `parseConfigLink` and `showReplaceConfigDialog`.
   it (`BackendProvider.persist`) between leaving and saving the new credentials, so no restart
   can pair the new group's token with the old URL. Storing the URL with the membership and
   reconciling on load was the alternative: more state, for the same guarantee.
+- **`app_links`, not Flutter's own deep linking nor a channel of ours (2026-09-26,
+  `feat/config-share-join-link`).** Flutter's deep linking (on by default since 3.27) turns
+  `countscore://join?…` into the route `/?…` — the host lost, the query decoded — and pushes
+  it into a Navigator that has no such route. A `MethodChannel` in `MainActivity` would have
+  been some forty lines of Kotlin nobody can run outside a device. `app_links` 7.2.1:
+  Apache-2.0, verified publisher cow-level.ovh, 160/160 pub points, published 2026-07; an
+  empty Android manifest (no permission); it skips a relaunch from the recents screen, which
+  a channel of ours would have had to learn. Its Linux half pulls `gtk` (MPL-2.0), which no
+  Android or web build compiles.
+- **The PWA offers the app; it never redirects (2026-09-26).** An automatic redirect to
+  `intent://` would trap whoever chose the PWA on Android, and an Android browser leaves for
+  an app only from a user gesture, which a page that takes seconds to load no longer has.
+  So a question with two answers, the replace dialog one tap away in the PWA.
+- **The web link is taken out of the address before `runApp` (2026-09-26).** Flutter web's
+  single-entry history keeps the URL it started on in an "origin" entry below its own, where
+  a back would bring the invite code back to the address bar; rewriting the entry before the
+  engine reads it leaves nothing behind. Reading the route from Flutter
+  (`defaultRouteName`) and cleaning up afterwards was the alternative.
 - **The unsynced count is read when the question is asked (2026-09-26).** `pendingChanges` is
   the count at the end of the last sync pass: 0 on a cold start, which is exactly how a link
   opens the app, and stale for the second a write waits for its debounced sync.

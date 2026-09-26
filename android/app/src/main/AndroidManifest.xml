@@ -33,6 +33,24 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- A scanned configuration QR, handed over by the PWA on an Android
+                 browser: countscore://join?s=<server>&g=<invite> (lib/utils/config_link.dart,
+                 read through app_links by lib/services/join_link_inbox.dart).
+                 A custom scheme only: no https host and no autoVerify, since the
+                 app ships with no host at all (CLAUDE.md). Nothing is fetched to
+                 open it; .llmwiki/ConfigShare.md. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="countscore" android:host="join"/>
+            </intent-filter>
+            <!-- app_links delivers the link; Flutter's own deep linking (on by
+                 default since 3.27) would also push it as a Navigator route the
+                 app does not have. -->
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="false"/>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

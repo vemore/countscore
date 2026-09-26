@@ -28,6 +28,15 @@ _spec.loader.exec_module(tpl)
 MIT = "Copyright (c) 2021 Jane Doe\n\n" + tpl.LICENSE_TEXTS["MIT"]
 BSD3 = "Copyright 2013 The Flutter Authors\n\n" + tpl.LICENSE_TEXTS["BSD-3-Clause"]
 BSD2 = "Copyright (c) 2019, Someone\n\n" + tpl.LICENSE_TEXTS["BSD-2-Clause"]
+# The shape app_links ships: the bare template, CRLF, its appendix's placeholder unfilled.
+APACHE2 = (
+    "                                 Apache License\r\n"
+    "                           Version 2.0, January 2004\r\n"
+    "                        http://www.apache.org/licenses/\r\n\r\n"
+    "   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\r\n\r\n"
+    "   2. Grant of Copyright License. Subject to the terms and conditions of\r\n\r\n"
+    "   Copyright [yyyy] [name of copyright owner]\r\n"
+)
 
 PUBSPEC = """name: app
 dependencies:
@@ -92,7 +101,8 @@ def test_reads_direct_dependencies_with_sdk_and_dev_flags() -> None:
 
 
 @pytest.mark.parametrize(
-    ("text", "spdx"), [(MIT, "MIT"), (BSD3, "BSD-3-Clause"), (BSD2, "BSD-2-Clause")]
+    ("text", "spdx"),
+    [(MIT, "MIT"), (BSD3, "BSD-3-Clause"), (BSD2, "BSD-2-Clause"), (APACHE2, "Apache-2.0")],
 )
 def test_classifies_the_known_licences(text: str, spdx: str) -> None:
     assert tpl.classify_license(text) == spdx
@@ -106,6 +116,8 @@ def test_an_unknown_licence_is_an_error_not_a_guess() -> None:
 def test_copyright_line_skips_the_licence_body() -> None:
     assert tpl.copyright_line(BSD3) == "Copyright 2013 The Flutter Authors"
     assert tpl.copyright_line(tpl.LICENSE_TEXTS["MIT"]).startswith("not stated")
+    # The Apache template's appendix placeholder is not a copyright line.
+    assert tpl.copyright_line(APACHE2).startswith("not stated")
 
 
 def test_generates_every_direct_dependency(tmp_path: Path) -> None:
