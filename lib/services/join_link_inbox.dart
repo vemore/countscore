@@ -18,15 +18,14 @@ import '../utils/config_link.dart';
 ///   [didPushRouteInformation]);
 /// - on Android, `countscore://join?…` intents ([listenTo] on `app_links`'
 ///   stream, which delivers the launch intent once, then each new intent, and
-///   skips a relaunch from the recents screen).
+///   skips a relaunch from the recents screen; `MainActivity` drops the link of
+///   an activity restored after process death).
 ///
 /// Links received before a reader is attached wait for it, so a cold start
 /// loses none, and the inbox never replays one: no rebuild or resume of the
-/// running app opens a link again. One case does, on Android: when the system
-/// has killed the app in the background and the user comes back to it with
-/// Back (not from the recents screen), Android recreates the activity from the
-/// intent that first opened it, `app_links` delivers that intent again, and the
-/// dialog asks again. Nothing changes unless the user confirms.
+/// running app opens a link again. An Android activity the system recreates
+/// after killing the app gets the intent that first opened it back; it is
+/// `MainActivity`, not the inbox, that drops that one (`savedInstanceState`).
 class JoinLinkInbox with WidgetsBindingObserver {
   JoinLinkInbox({String? initialRoute, this.takeStrippedRoute}) {
     if (initialRoute != null) add(initialRoute);

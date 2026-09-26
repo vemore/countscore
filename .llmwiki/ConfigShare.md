@@ -113,10 +113,8 @@ after `GroupProvider.loaded` (the stored membership read by the provider's first
 that does not parse (`parseReceivedConfigLink`: `parseConfigRoute` for a bare `/join?…`
 route, `parseConfigLink` otherwise) opens nothing; the home screen stays. The inbox holds
 links until the listener attaches and hands each delivery over once, so no rebuild or resume
-of the running app replays one. One case does, on Android: after the system kills the app in
-the background and the user returns with Back (not from the recents screen), Android
-recreates the activity from the intent that first opened it, `app_links` delivers it again,
-and the dialog asks again. Nothing changes unless the user confirms.
+of the running app replays one; an Android activity the system recreates after killing the
+app is `MainActivity`'s to filter (below).
 
 - **The PWA, `#/join?s=…&g=…`.** `takeJoinRouteFromLocation`
   (`lib/services/join_link_location_web.dart`) reads the hash before `runApp` and, when its
@@ -149,17 +147,21 @@ and the dialog asks again. Nothing changes unless the user confirms.
   `MainActivity` for scheme `countscore`, host `join` — a custom scheme, no `https` host, no
   `autoVerify` — and `app_links` (`AppLinks().stringLinkStream`), which delivers the launch
   intent once, then each new intent (`launchMode="singleTop"`), and ignores a relaunch from
-  the recents screen (`FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY`), but not an activity the
-  system recreates after killing the process (above). Flutter's own deep linking is
+  the recents screen (`FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY`). That flag is *not* set when the
+  activity is restored after process death — reopened from recents, it gets its original
+  `VIEW` intent back (seen on the Pixel, 2026-09-26) — so `MainActivity.onCreate` drops the
+  intent's data when `savedInstanceState` is non-null: a restored activity has already handled
+  its link. Flutter's own deep linking is
   off (`flutter_deeplinking_enabled` false in the manifest): it would push the link as a
   Navigator route as well.
 
 Nothing is fetched to open a link: the intent goes browser → app on the device, and the
 dialog's first request is the join the user confirms. The merged manifest gains no
 permission from `app_links` (its own manifest is empty). Tests:
-`test/widgets/join_link_listener_test.dart`, `test/utils/config_link_test.dart`. Not covered
-by them: the `popstate` listener and `history.replaceState` (browser only), and the one
-device run of the Android path, both still to be made in a local session.
+`test/widgets/join_link_listener_test.dart`, `test/utils/config_link_test.dart`. The Android
+path was run on the Pixel on 2026-09-26: cold, warm, and restored from recents after process
+death. Not covered by any of them: the `popstate` listener and `history.replaceState`, which
+only a browser runs.
 
 ## Decisions & History
 
@@ -201,7 +203,8 @@ device run of the Android path, both still to be made in a local session.
   been some forty lines of Kotlin nobody can run outside a device. `app_links` 7.2.1:
   Apache-2.0, verified publisher cow-level.ovh, 160/160 pub points, published 2026-07; an
   empty Android manifest (no permission); it skips a relaunch from the recents screen, which
-  a channel of ours would have had to learn. Its Linux half pulls `gtk` (MPL-2.0), which no
+  a channel of ours would have had to learn — though not a restore after process death, which
+  `MainActivity` handles (above). Its Linux half pulls `gtk` (MPL-2.0), which no
   Android or web build compiles.
 - **The PWA offers the app; it never redirects (2026-09-26).** An automatic redirect to
   `intent://` would trap whoever chose the PWA on Android, and an Android browser leaves for
@@ -221,11 +224,12 @@ device run of the Android path, both still to be made in a local session.
   and only a push truncates forward ones. So the entry itself is rewritten on the same
   `popstate`, before the engine's asynchronous step back leaves it. Pushing a clean entry of
   our own was rejected: a second Flutter entry makes a later Back push the home route again.
-- **The Android activity recreated after a process kill replays the link (2026-09-26,
-  review of #237).** Android rebuilds it from its original `VIEW` intent, without the recents
-  flag, and `app_links` delivers that intent again. Filtering it needs Kotlin (the saved
-  instance state) that only a device can run; the dialog asks again and changes nothing
-  unconfirmed, so it is documented rather than filtered.
+- **The review asked to document the restored-activity replay; the device run filtered it
+  (2026-09-26, review of #237).** Android rebuilds an activity killed in the background from
+  its original `VIEW` intent, without the recents flag, and `app_links` delivered it again.
+  The review asked for no Kotlin that could not be run where it was written; the Pixel run
+  that found it could run it, so `MainActivity` drops a restored activity's intent data
+  (`savedInstanceState` non-null) and the dialog does not come back.
 - **The unsynced count is read when the question is asked (2026-09-26).** `pendingChanges` is
   the count at the end of the last sync pass: 0 on a cold start, which is exactly how a link
   opens the app, and stale for the second a write waits for its debounced sync.

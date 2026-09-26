@@ -28,8 +28,8 @@ void main() async {
   // `#/join?…` is stripped from its history entry by a listener registered
   // ahead of Flutter's, and the inbox answers the `#/join` pushes ahead of
   // WidgetsApp (registered first). On Android, app_links delivers
-  // `countscore://join?…`: the launch intent, then each new one, and the launch
-  // intent again when the system recreates a killed activity (JoinLinkInbox).
+  // `countscore://join?…`: the launch intent, then each new one (MainActivity
+  // drops the launch intent of an activity restored after process death).
   // The home screen opens what arrives (JoinLinkListener).
   final joinLinks = JoinLinkInbox(
     initialRoute: takeJoinRouteFromLocation(),
