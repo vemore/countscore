@@ -44,6 +44,32 @@ Translate genuinely for each locale — do not leave English placeholders in `ar
 `ja`, `ru` or `zh`. For Arabic, remember the UI is RTL; avoid strings that assume
 left-to-right ordering.
 
+### 1b. Bulk translation — Haiku, one agent per locale
+
+A handful of short strings you translate yourself. **Bulk** — many keys, or long-form text
+such as a rules page — is split (the *bulk* rating, `.llmwiki/ParallelDelivery.md`
+§ Model routing):
+
+1. **The orchestrator — the top-level session — writes the French master** (`app_fr.arb`, or the French asset, and
+   the English one when the wording matters) — never a Haiku agent: it is the reference
+   every locale is checked against.
+2. **It launches one agent per remaining locale, all in one message**: `subagent_type:
+   "general-purpose"`, `model: "haiku"`, no `isolation` — each edits **only its own file**
+   in the worktree, by absolute path, and does not commit.
+3. Every agent gets **the same guardrails**: keys, placeholder names, ICU syntax and
+   structural markers copied byte for byte; that locale's plural categories (§3); proper
+   nouns, game names and trademarks left as the master has them; numbers and formulas
+   unchanged; Markdown structure kept.
+4. **It reviews what comes back on form** — keys (`arb_keys.py`), markers, numbers, proper
+   nouns, plural categories — then commits once.
+
+The orchestrator, because a subagent has no `Agent` tool and cannot fan out, and because the
+commit hook refuses an ARB key missing from any of the ten files, so nothing commits between
+the master and the locales. An implementing agent (`ship-parallel`) that meets bulk
+translation stops before its commit, says which locales are left, and the orchestrator
+finishes them in that worktree (`ship-parallel` §2). Launched from the main checkout, the
+Haiku agents stand on `main`, where the `SubagentStop` hook stays quiet (`.llmwiki/Hooks.md`).
+
 ### 2. Placeholders
 
 ```json

@@ -64,7 +64,7 @@ push and merge shapes — and what the hooks do *not* cover: `.llmwiki/Hooks.md`
   reach the NAS says "merged, not deployed" and files a `wip/todo/` entry), smoke-test; a
   later problem is a new pull request. Play Store only on request, `release-android`. `.llmwiki/ParallelDelivery.md`.
 - **Several tasks at once are several pull requests, in parallel** — one per theme, one
-  agent and worktree each: the `ship-parallel` skill.
+  agent and worktree each, on the model its rating picks: the `ship-parallel` skill.
 - **Leave the local environment clean**: the main checkout back on a fast-forwarded `main`,
   then `scripts/cleanup_local.sh` and `--apply` once no agent is working; report what it
   keeps. `.llmwiki/ParallelDelivery.md`.

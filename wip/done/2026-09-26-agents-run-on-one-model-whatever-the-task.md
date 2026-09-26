@@ -5,6 +5,7 @@
 - **Theme:** tooling
 - **Area:** tooling
 - **Blocks release:** no
+- **Status:** done (2026-09-26) — closed by feat/model-routing. `ship-parallel` §1 rates each pull request complex, simple or bulk next to its lane and names the rating in the plan; §2 launches `subagent_type` `implementer-complex` (`model: opus`, `effort: high`) or `implementer-simple` (`model: sonnet`) from `.claude/agents/`, and the orchestrator fans bulk units out to Haiku (a subagent has no `Agent` tool). The Haiku-per-locale rule moved from user memory into `i18n-add-string` §1b; the rule, its criteria and the check against the metrics entry are in `.llmwiki/ParallelDelivery.md` § Model routing.
 
 `ship-parallel` §1 plans each pull request — theme, lane A–D, files, wave — but says nothing
 of the model: every implementing agent inherits the orchestrator's model and effort. A string
