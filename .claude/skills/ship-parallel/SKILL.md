@@ -272,6 +272,10 @@ and one local branch per merged pull request.
   — or, for each merge §4 could not deploy, **"merged, not deployed"** with its sha and the
   `merged-not-deployed` entry — the entries created on the way, and what is left
   (`scripts/wip.sh list`).
+- And the **delivery metrics** since the last release tag: `scripts/delivery_metrics.sh`,
+  pasted as printed. Name any figure worse than the baseline in `.llmwiki/ParallelDelivery.md`
+  § Measuring delivery (rework rate, change failure rate, first-run-green); do not act on it
+  here — the `release-android` §3b pruning pass does.
 - And an **Android** line — how far the Play Store lags production: the last release tag
   (`git describe --tags --abbrev=0 origin/main`), the commits since
   (`git rev-list --count <tag>..origin/main`), and the open `wip/todo/` entries

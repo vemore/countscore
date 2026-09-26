@@ -2,7 +2,7 @@
 
 > Scope: the Play Store configuration state. For the procedure, use the `release-android` skill.
 > Related: [[MobileApp]] · [[StoreListing]] · [[Testing]] · [[KnownLimits]] · [[Documentation]]
-> Updated: 2026-09-25
+> Updated: 2026-09-26
 
 ## Facts
 
@@ -97,7 +97,8 @@ tag on `1614707` (the older scheme) was never pushed and is not part of the sche
 
 Decided 2026-09-14: the merge-and-deploy loop ships the backend and the PWA after every pull
 request, the Android app only on request, so the gap is made visible rather than automatic.
-`ship-parallel` §6 reports the last tag, the commits on `main` since, and the open `wip/todo/`
+`ship-parallel` §6 reports the last tag, the commits on `main` since, the delivery metrics
+(`scripts/delivery_metrics.sh`, [[ParallelDelivery]]) and the open `wip/todo/`
 entries; once `wip/todo/` is empty, that report proposes a `release-android` run. The
 release itself still happens only when the user asks. Each run begins with a pruning pass on
 the process (`release-android` §3b).

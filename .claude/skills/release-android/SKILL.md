@@ -84,6 +84,13 @@ origin/main`):
    the release branch, and never a reason to hold the release.
 4. Lint the wiki (`.llmwiki/Documentation.md`, "Wiki lint"); its findings join the same
    proposal.
+5. Read the outcome and the cost next to the rule-by-rule evidence, against the baseline in
+   `.llmwiki/ParallelDelivery.md` § Measuring delivery: `scripts/delivery_metrics.sh <tag
+   date>` (rework rate, change failure rate, first-run-green, size) and
+   `scripts/agent_metrics.py --since <tag date>` (the ten biggest consumers per axis, tokens
+   and active time). A rule whose cost shows and whose outcome did not move is a candidate
+   for removal; a figure that got worse since a rule was added is evidence against it. Record
+   the new figures in that section, numbers only — never a transcript line.
 
 ## 4. Policy gate — before building
 

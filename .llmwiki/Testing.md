@@ -2,7 +2,7 @@
 
 > Scope: what is tested, how to run it, and the traps.
 > Related: [[MobileApp]] · [[DataLayer]] · [[SchemaV10]] · [[Backend]] · [[Web]] · [[KnownLimits]]
-> Updated: 2026-09-25
+> Updated: 2026-09-26
 
 ## Facts
 
@@ -257,8 +257,8 @@ toolchain table in [[MobileApp]] must move together.
 
 | Job | Steps |
 |---|---|
-| `scope` | `scripts/ci_scope_selftest.sh` → `scripts/retry_sqlite3_hash_selftest.sh` → `gh api repos/{owner}/{repo}/pulls/<n>/files` (`.filename` **and** `.previous_filename`) → `scripts/ci_scope.sh` → five `name=true\|false` flags into `$GITHUB_OUTPUT` |
-| `backend` | `postgres:17-alpine` service → checkout at depth 2 → privacy page tests (`scripts/test_build_privacy_page.py`) → pandoc **3.6.4** (release archive, checksum-pinned) → `scripts/build_privacy_page.py --check --base HEAD^1` → `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` → `play_publish.py` tests (`.claude/skills/release-android/scripts/`, fake Google service) → `fonts-roboto-unhinted` → `scripts/test_compose_screenshots.py` → `compose_screenshots.py --check` → `alembic upgrade head` → `downgrade base` → `upgrade head` → `check` (a migration round trip) → `uv export` + `pip-audit` |
+| `scope` | `scripts/ci_scope_selftest.sh` → `scripts/retry_sqlite3_hash_selftest.sh` → `scripts/delivery_metrics_selftest.sh` → `gh api repos/{owner}/{repo}/pulls/<n>/files` (`.filename` **and** `.previous_filename`) → `scripts/ci_scope.sh` → five `name=true\|false` flags into `$GITHUB_OUTPUT` |
+| `backend` | `postgres:17-alpine` service → checkout at depth 2 → privacy page tests (`scripts/test_build_privacy_page.py`) → agent metrics tests (`scripts/test_agent_metrics.py`) → pandoc **3.6.4** (release archive, checksum-pinned) → `scripts/build_privacy_page.py --check --base HEAD^1` → `uv sync --locked --extra dev` → `ruff check .` → `ruff format --check .` → `mypy` → `pytest -v` → `play_publish.py` tests (`.claude/skills/release-android/scripts/`, fake Google service) → `fonts-roboto-unhinted` → `scripts/test_compose_screenshots.py` → `compose_screenshots.py --check` → `alembic upgrade head` → `downgrade base` → `upgrade head` → `check` (a migration round trip) → `uv export` + `pip-audit` |
 | `image` | `docker build backend` → runs as non-root, no compiler, no dev dependencies, read-only code → `docker build -f backend/Dockerfile.backup backend` → `age --version`, `pg_dump --version` (17) → `countscore-backup --once` with no recipient must exit non-zero → `docker compose config --quiet` on both compose files, failing on any warning |
 | `app` | `scripts/hooks_selftest.sh` → `scripts/check_web_build_selftest.sh` → `osv-scanner` on `pubspec.lock` → `pub get` → sqlite3 native-library cache (below) → `scripts/web_binaries.sh --check` (and `--fetch` on the weekly run only) → `scripts/test_third_party_licenses.py` → `scripts/third_party_licenses.py --check` → `dart run build_runner build` → `analyze` → `test` (through `scripts/retry_sqlite3_hash.sh`) → fallback-font cache → `scripts/build_web.sh` → `scripts/check_web_build.sh build/web` |
 | `android` | `pub get` → sqlite3 native-library cache → `dart run build_runner build` → `build apk --debug` (through `scripts/retry_sqlite3_hash.sh`) |

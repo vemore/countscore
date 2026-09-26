@@ -58,10 +58,10 @@ Load this file first. Then read only the pages your task touches.
 | [[Deployment]] | Synology NAS, Web Station TLS, `deploy_nas.sh`, `deploy_web.sh`, the Pages copy of the PWA, environment | 2026-09-24 |
 | [[Hooks]] | What Claude Code refuses mechanically, why each rule left CLAUDE.md, recovering from a stale branch | 2026-09-19 |
 | [[Documentation]] | Which documents a change implicates (wiki, README, the three privacy documents), the wiki lint pass, the CLAUDE.md budget | 2026-09-26 |
-| [[ParallelDelivery]] | Protection on main, worktrees, cleanup, one PR per theme, serial squash merges, refinement, lanes A–D, the reviewer, "merged, not deployed" | 2026-09-25 |
+| [[ParallelDelivery]] | Protection on main, worktrees, cleanup, one PR per theme, serial squash merges, refinement, lanes A–D, the reviewer, "merged, not deployed", delivery and cost metrics | 2026-09-26 |
 | [[Security]] | Defended surfaces (the group owner among them), and the security debt that is knowingly open | 2026-09-24 |
-| [[Testing]] | Unit, Drift, migration, e2e web and device, backend pytest; CI jobs and `scope`, and the extra gates (alembic, audit, binaries, privacy page) | 2026-09-25 |
-| [[Release]] | Play signing, publishing through the Play API, target API, 2026 policy constraints, cadence, the pruning pass | 2026-09-25 |
+| [[Testing]] | Unit, Drift, migration, e2e web and device, backend pytest; CI jobs and `scope`, and the extra gates (alembic, audit, binaries, privacy page) | 2026-09-26 |
+| [[Release]] | Play signing, publishing through the Play API, target API, 2026 policy constraints, cadence, the pruning pass | 2026-09-26 |
 | [[StoreListing]] | The 10 store locales and their keywords, category and tags, generated icon, feature graphic and screenshots, text limits, acquisition baseline | 2026-09-20 |
 
 ## Procedures live in skills, not here
