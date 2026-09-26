@@ -19,6 +19,15 @@ added later). One deploy covers every sha listed. Then smoke-test each pull requ
   then shows a QR whose link is `<web app address>/#/join?s=…&g=…`; *Copy link* turns into
   *Link copied*.
 
+Not listed on purpose: [vemore/countscore#237](https://github.com/vemore/countscore/pull/237)
+(the `countscore://join` deep link and the PWA `#/join` route), green but left open for the
+user to merge from the local session after the device run: open `countscore://join?s=…&g=…`
+cold and warm (`adb shell am start -a android.intent.action.VIEW -d '…'`), try the
+`intent://` hand-over from Chrome with and without the app, and check that the dialog
+reappearing after the system recreates the activity still needs confirmation. Once it is
+merged, add its sha above (PWA), and after the deploy check the backend access log shows only
+`GET <PWA_BASE_PATH>/` for a scanned link, with no `/join` and no invite code.
+
 Close this entry naming the deployed sha.
 
 **Acceptance:**
