@@ -55,6 +55,20 @@ behind each choice: `.llmwiki/ParallelDelivery.md`.
      they are what the independent reviewer judges the tests against.
    - In doubt, take the stricter lane: raising a lane costs one review, missing one costs a
      production fix.
+
+   **And rate it complex, simple or bulk** — the lane rates the risk to production, the
+   rating the difficulty, and it picks the model §2 launches (why: `ParallelDelivery.md`
+   § Model routing):
+   - **complex** → `implementer-complex` (Opus, effort high): a design choice is still open,
+     several subsystems move together, the root cause is unknown, or the lane is B or C.
+   - **simple** → `implementer-simple` (Sonnet): the entry's fix is explicit and local, and
+     its acceptance is mechanical (a string, a rename, a documented one-file change).
+   - **bulk** → Haiku, one agent per unit, in parallel: many independent, mechanical,
+     well-specified units — the nine locales of a translation, a sweep over files. The
+     pull request is rated simple or complex for the rest of its work; the units are
+     **yours** to fan out (§2) — a subagent has no `Agent` tool — and so is a translation's
+     French master (`i18n-add-string` §1b).
+   - In doubt, complex: an under-rated change costs a rework, an over-rated one only tokens.
 5. **Check that this session can deploy.** A cloud session has no route to the NAS and no
    `deploy.env` (untracked, in the main checkout only), so §4 cannot run there. Read-only,
    over the two routes `deploy_nas.sh` and `deploy_web.sh` take — ssh to the NAS, plain
@@ -73,7 +87,8 @@ behind each choice: `.llmwiki/ParallelDelivery.md`.
    cannot deploy — merges will land *merged, not deployed* (§4)". The user then chooses
    between merging anyway and leaving the green pull requests for a local session.
 6. Present the plan in **one** `AskUserQuestion` — for each pull request: branch name, entries,
-   **its lane and, for B and C, the acceptance criteria**, likely files, wave, merge order —
+   **its lane and, for B and C, the acceptance criteria**, **its rating** (complex, simple,
+   and bulk units if any), likely files, wave, merge order —
    and, from step 5, whether this session can deploy; then wait for the answer. The user's go-ahead covers the whole loop below, merges and deploys
    included; it does **not** stand in for lane C's go-ahead in §3, which is asked again once
    the diff and the review findings exist.
@@ -83,10 +98,25 @@ each worktree costs a `pub get` and a `build_runner`.
 
 ## 2. Launch one agent per pull request
 
-All agents of a wave in **one message**, each with `isolation: "worktree"` and
-`run_in_background` left to the default. The tool creates the worktree under
-`.claude/worktrees/<name>` on a branch `worktree-<name>`; the agent moves to a proper branch
-first. Fill in this prompt — do not shorten the rules part:
+All agents of a wave in **one message**, each with `isolation: "worktree"`, `run_in_background`
+left to the default, and the **`subagent_type` its §1 rating picks**: `implementer-complex` or
+`implementer-simple` (`.claude/agents/`). Pass no `model`: a per-call `model` overrides the
+definition's, and effort comes only from the definition. If the session does not list the
+two definitions (a session started before `.claude/agents/` first existed needs a restart),
+launch `general-purpose` with `model: "opus"` or `"sonnet"` instead, and say so in the report.
+The tool creates the worktree under `.claude/worktrees/<name>` on a branch `worktree-<name>`;
+the agent moves to a proper branch first.
+
+**Bulk units** (§1) are launched by you, never by an implementer: add to its prompt that it
+stops **before its first commit** and reports what is left; then write the master (a
+translation's French) in its worktree and launch one `general-purpose` agent per unit with
+`model: "haiku"`, all in one message, **no** `isolation`, each given the worktree's absolute
+path, the one file it owns, the same guardrails as the others, and no commit. Review what
+comes back on form, then `SendMessage` the implementer to commit and carry on (for
+translations: `i18n-add-string` §1b). A pull request that is nothing but bulk you hold
+yourself, in a worktree of your own.
+
+Fill in this prompt — do not shorten the rules part:
 
 ```text
 You implement one pull request of CountScore, in the git worktree you start in.

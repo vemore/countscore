@@ -1,10 +1,10 @@
 # ParallelDelivery
 
 > Scope: how several changes are built at once and reach production — worktrees, one pull
-> request per theme, the execution lane a change's risk puts it in, serial squash merges,
-> deploy after each merge, and `wip/` work tracking.
+> request per theme, the execution lane a change's risk puts it in, the model its difficulty
+> picks, serial squash merges, deploy after each merge, and `wip/` work tracking.
 > Procedure: the `ship-parallel` skill. Related: [[Hooks]] · [[Deployment]] · [[Release]]
-> Updated: 2026-09-25
+> Updated: 2026-09-26
 
 ## Facts
 
@@ -114,6 +114,35 @@ criteria, and these four rules, which a generic reviewer does not know:
 
 Every finding goes to the user before the merge, whatever its severity, with what the
 orchestrator intends to do about it.
+
+### Model routing — the rating picks the model
+
+The lane rates the **risk to production**; a second rating, made at the same moment
+(`ship-parallel` §1) and shown in the same plan, rates the **difficulty**, and picks the model
+the implementing agent runs on. Without it every agent inherits the orchestrator's model and
+effort, and a string rename costs what a sync-contract change costs.
+
+| Rating | When | Launched as (`ship-parallel` §2) |
+|---|---|---|
+| **complex** | A design choice is open, several subsystems move together, the root cause is unknown, or the lane is B or C. **In doubt, complex** | `subagent_type: "implementer-complex"` — `.claude/agents/implementer-complex.md`, `model: opus`, `effort: high` |
+| **simple** | The entry's fix is explicit and local, and its acceptance is mechanical | `subagent_type: "implementer-simple"` — `.claude/agents/implementer-simple.md`, `model: sonnet`, effort inherited |
+| **bulk** | Many independent, mechanical, well-specified units — the nine locales of a translation, a sweep over files | One `general-purpose` agent per unit, `model: "haiku"`, in parallel, launched by the orchestrator; the master (a translation's French) is the orchestrator's (`i18n-add-string` §1b) |
+
+- **Effort needs a definition.** The `Agent` tool takes a per-call `model`, but `effort` comes
+  only from an agent definition's frontmatter — hence the two files. A per-call `model` also
+  overrides the definition's, so §2 passes none with them.
+- **Bulk is the orchestrator's, not an implementer's**: a subagent has no `Agent` tool, and the
+  commit hook refuses an ARB key missing from any locale, so nothing can commit between the
+  master and the units. An implementer whose pull request has bulk units stops before its
+  first commit; the orchestrator finishes them in its worktree and resumes it.
+- **Loading.** Claude Code watches `.claude/agents/` and picks up an edited definition
+  without a restart, but a session started before the directory first existed does not see
+  it; §2 then falls back to `general-purpose` with `model: "opus"` or `"sonnet"` (no effort).
+- The hooks key on the working directory, never on the agent type: `SubagentStop`
+  ([[Hooks]]) judges the two implementers exactly as it judged `general-purpose` ones.
+- **To be checked against measurements**: the split is a judgement until the token and time
+  metrics exist (`wip/` entry `2026-09-26-no-measure-of-tokens-and-time-per-workflow`) — cost
+  and rework per rating, then move the thresholds or the models.
 
 ### Work tracking, and what a merge deploys
 
@@ -277,3 +306,15 @@ NAS sees it at `ship-parallel` §0 and deploys `main`, which covers every sha li
   "merged, not deployed" plus one `wip/todo/` entry naming the shas, so the next local session
   deploys them. The probe reuses the deploy's own routes (ssh, the registry) rather than
   `PUBLIC_URL`, because the public API answers from anywhere and proves nothing about the NAS.
+- **Model routing by a rating made at planning time (2026-09-26).** The user asked that complex
+  tasks go to Opus at high effort and clear, simple ones to Sonnet; the one routing rule in
+  force — bulk translations on Haiku, one agent per locale, the French master by the
+  orchestrator, adopted for the rules pages on 2026-09-16 — lived only in the user's private
+  memory. Routing by task envelope is current practice (Haiku for volume, Sonnet for execution,
+  Opus for judgement; Claude Code's own `opusplan` alias splits plan and implementation the
+  same way). This project departs in one point: the orchestrator rates each pull request at
+  planning time and shows the rating to the user, rather than letting a router infer it per
+  call — the rating is reviewable, and it is made where the lane already is. Two project
+  agent definitions rather than a per-call `model`, because effort can only be set in a
+  definition. "In doubt, complex", like "in doubt, the stricter lane": a rework costs more
+  than the tokens. Unmeasured for now, hence the check against the metrics entry above.
