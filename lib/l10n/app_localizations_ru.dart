@@ -1747,4 +1747,14 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get replaceConfigUnchanged =>
       'Это устройство уже использует эту конфигурацию';
+
+  @override
+  String get joinLinkHandOverMessage =>
+      'Эта ссылка может открыться в приложении CountScore для Android. Если приложение не установлено, вместо него откроется Play Маркет.';
+
+  @override
+  String get joinLinkOpenInApp => 'Открыть в приложении';
+
+  @override
+  String get joinLinkContinueHere => 'Продолжить в браузере';
 }

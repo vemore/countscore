@@ -736,5 +736,8 @@
   "replaceConfigLeaveAnyway": "المغادرة على أي حال",
   "replaceConfigDone": "تم استبدال الإعدادات",
   "replaceConfigUnchanged": "هذا الجهاز يستخدم بالفعل هذه الإعدادات",
-  "configShareTooLong": "هذا الرابط أطول من أن يتسع في رمز QR. استخدم «نسخ الرابط» بدلاً من ذلك."
+  "configShareTooLong": "هذا الرابط أطول من أن يتسع في رمز QR. استخدم «نسخ الرابط» بدلاً من ذلك.",
+  "joinLinkHandOverMessage": "يمكن فتح هذا الرابط في تطبيق CountScore لنظام Android. إذا لم يكن التطبيق مثبتاً، يُفتح متجر Play بدلاً منه.",
+  "joinLinkOpenInApp": "فتح في التطبيق",
+  "joinLinkContinueHere": "المتابعة في المتصفح"
 }

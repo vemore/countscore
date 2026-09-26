@@ -22,11 +22,15 @@ Material 3, seed colour `Colors.deepPurple`.
 > dark, the bundled Nunito font. `main()` also calls `registerFontLicenses()`.
 
 10 `supportedLocales` with a
-`localeResolutionCallback` falling back to `en`. Home is `HomeScreen`.
+`localeResolutionCallback` falling back to `en`. Home is `HomeScreen`, inside
+`JoinLinkListener`, which opens a scanned configuration link ([[ConfigShare]] *What opens a
+link*).
 There is no DI container. `main()` is `async` and calls
-`WidgetsFlutterBinding.ensureInitialized()`, then awaits three things before `runApp`, in
+`WidgetsFlutterBinding.ensureInitialized()`, then creates the `JoinLinkInbox` (the web's
+`#/join` route taken from the address, the inbox registered as a binding observer, and on
+Android `app_links`' stream), then awaits three things before `runApp`, in
 this order: `ThemeProvider.load()`, `BackendProvider.load()`, and
-`ReviewPromptService.instance.recordFirstLaunch()` (`lib/main.dart:27`). The first two
+`ReviewPromptService.instance.recordFirstLaunch()` (`lib/main.dart`). The first two
 results are handed to `MyApp`, so the first frame is already themed and already knows
 whether the connected features exist; the third starts the review prompt's clock (below).
 
@@ -38,7 +42,7 @@ whether the connected features exist; the third starts the review prompt's clock
 | `game_type_provider.dart` | Game-type list CRUD, `getGameTypeById`. The 22 built-in types are rows like any other; their *displayed* name comes from `lib/utils/game_type_name.dart`, not from the row. |
 | `settings_provider.dart` | Wakelock toggle, *Game sounds* (key `gameSounds`, off by default, the one `GameSounds` reads) and the board's layout, `BoardView` (`lanes` or `rows`, key `boardView`, app-wide) — all SharedPreferences-backed, read by `ready` — and DB export/import. The **only** caller of `DatabaseService` for I/O. Exposes `supportsDbExportImport => !kIsWeb`. |
 | `theme_provider.dart` | `ThemeMode` only, persisted to SharedPreferences under `themeMode` as `ThemeMode.name`. `load()` is called from `main()` before `runApp`. |
-| `group_provider.dart` | Group membership and the sync loop — create/join/leave/rotate, the device list and `revokeDevice`, `shareGame`, `syncNow`, `SyncStatus`, and a `SyncEvent` stream shown as snackbars by `_SyncEventListener` in `main.dart`. A `ChangeNotifierProxyProvider` over `BackendProvider`: runs only with a URL **and** a device token. Calls `GameProvider.refreshFromSync` after remote changes. See [[Sync]]. |
+| `group_provider.dart` | Group membership and the sync loop — create/join/leave/rotate, the device list and `revokeDevice`, `shareGame`, `syncNow`, `SyncStatus`, and a `SyncEvent` stream shown as snackbars by `_SyncEventListener` in `main.dart`. A `ChangeNotifierProxyProvider` over `BackendProvider`: runs only with a URL **and** a device token. Its stored membership is read by the first `updateBackend`, which the proxy makes on creation; `loaded` completes then, and until it does `isJoined` reads false. Calls `GameProvider.refreshFromSync` after remote changes. See [[Sync]]. |
 | `backend_provider.dart` | The self-hosted backend base URL, SharedPreferences key `backendUrl`, **no default**. `check()` validates and canonicalises what the user typed; `isConfigured` gates every connected feature. `load()` is called from `main()` before `runApp`. |
 
 ### Screens — `lib/screens/`

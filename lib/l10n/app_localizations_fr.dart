@@ -1710,4 +1710,14 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get replaceConfigUnchanged =>
       'Cet appareil utilise déjà cette configuration';
+
+  @override
+  String get joinLinkHandOverMessage =>
+      'Ce lien peut s\'ouvrir dans l\'application Android CountScore. Si elle n\'est pas installée, le Play Store s\'ouvre à sa place.';
+
+  @override
+  String get joinLinkOpenInApp => 'Ouvrir dans l\'application';
+
+  @override
+  String get joinLinkContinueHere => 'Continuer dans le navigateur';
 }

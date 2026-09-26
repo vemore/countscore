@@ -735,5 +735,8 @@
   "replaceConfigLeaveAnyway": "Sair assim mesmo",
   "replaceConfigDone": "Configuração substituída",
   "replaceConfigUnchanged": "Este dispositivo já usa esta configuração",
-  "configShareTooLong": "Esta ligação é demasiado longa para caber num QR code. Use «Copiar ligação»."
+  "configShareTooLong": "Esta ligação é demasiado longa para caber num QR code. Use «Copiar ligação».",
+  "joinLinkHandOverMessage": "Esta ligação pode abrir na aplicação CountScore para Android. Se a aplicação não estiver instalada, abre a Play Store.",
+  "joinLinkOpenInApp": "Abrir na aplicação",
+  "joinLinkContinueHere": "Continuar no navegador"
 }

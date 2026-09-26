@@ -736,5 +736,8 @@
   "replaceConfigLeaveAnyway": "वैसे भी चले जाएँ",
   "replaceConfigDone": "कॉन्फ़िगरेशन बदल दिया गया",
   "replaceConfigUnchanged": "यह डिवाइस पहले से ही इस कॉन्फ़िगरेशन का उपयोग कर रहा है",
-  "configShareTooLong": "यह लिंक QR कोड में आने के लिए बहुत लंबा है। इसके बजाय \"लिंक कॉपी करें\" का उपयोग करें।"
+  "configShareTooLong": "यह लिंक QR कोड में आने के लिए बहुत लंबा है। इसके बजाय \"लिंक कॉपी करें\" का उपयोग करें।",
+  "joinLinkHandOverMessage": "यह लिंक CountScore Android ऐप में खुल सकता है। अगर ऐप इंस्टॉल नहीं है, तो उसकी जगह Play Store खुलेगा।",
+  "joinLinkOpenInApp": "ऐप में खोलें",
+  "joinLinkContinueHere": "ब्राउज़र में जारी रखें"
 }

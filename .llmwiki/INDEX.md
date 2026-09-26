@@ -39,9 +39,9 @@ Load this file first. Then read only the pages your task touches.
 | [[MobileApp]] | `lib/` layout, providers, screens, widgets, services and `utils/`, the dynamic-icon constraint | 2026-09-26 |
 | [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-09-26 |
 | [[Schema]] | Schema v21: the twelve tables, `builtin_key` and its unique index, sync bookkeeping and triggers, tombstones, the migration chain and its repair steps | 2026-09-26 |
-| [[ConfigShare]] | The configuration QR: the `#/join` link and its parser, the PWA base it needs, the replace dialog and its unsynced warning | 2026-09-26 |
+| [[ConfigShare]] | The configuration QR: the `#/join` link and its parser, the PWA base, the replace dialog, what opens a link (PWA route, Android deep link) | 2026-09-26 |
 | [[I18n]] | 10 languages × 451 keys, French template, English fallback, localized built-in names and their sort key, the ARB checks, rules as assets | 2026-09-26 |
-| [[Web]] | PWA: sqlite3.wasm on IndexedDB and its flush, committed binaries, `kIsWeb` guards, the CSP, self-hosted fonts, the service worker, GitHub Pages | 2026-09-24 |
+| [[Web]] | PWA: sqlite3.wasm on IndexedDB and its flush, committed binaries, `kIsWeb` guards, the CSP, self-hosted fonts, the service worker, GitHub Pages | 2026-09-26 |
 
 ## Backend (FastAPI)
 

@@ -3,6 +3,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
+import '../utils/game_result_share.dart' show kPlayStoreUrl;
 import '../utils/insets.dart';
 
 class AboutScreen extends StatelessWidget {
@@ -16,9 +17,7 @@ class AboutScreen extends StatelessWidget {
   /// The app's own public listing. Opening it is the only honest way to offer
   /// a "rate this app" button: the Play in-app review sheet cannot be summoned
   /// on demand, and pretending otherwise would promise what the API refuses.
-  static final Uri _playListing = Uri.parse(
-    'https://play.google.com/store/apps/details?id=com.vemore.countscore',
-  );
+  static final Uri _playListing = Uri.parse(kPlayStoreUrl);
 
   @override
   Widget build(BuildContext context) {

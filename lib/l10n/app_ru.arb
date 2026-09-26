@@ -736,5 +736,8 @@
   "replaceConfigLeaveAnyway": "Выйти всё равно",
   "replaceConfigDone": "Конфигурация заменена",
   "replaceConfigUnchanged": "Это устройство уже использует эту конфигурацию",
-  "configShareTooLong": "Эта ссылка слишком длинная для QR-кода. Используйте «Скопировать ссылку»."
+  "configShareTooLong": "Эта ссылка слишком длинная для QR-кода. Используйте «Скопировать ссылку».",
+  "joinLinkHandOverMessage": "Эта ссылка может открыться в приложении CountScore для Android. Если приложение не установлено, вместо него откроется Play Маркет.",
+  "joinLinkOpenInApp": "Открыть в приложении",
+  "joinLinkContinueHere": "Продолжить в браузере"
 }

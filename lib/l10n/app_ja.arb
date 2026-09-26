@@ -736,5 +736,8 @@
   "replaceConfigLeaveAnyway": "それでも退出",
   "replaceConfigDone": "設定を置き換えました",
   "replaceConfigUnchanged": "このデバイスは既にこの設定を使用しています",
-  "configShareTooLong": "このリンクは長すぎて QR コードに収まりません。代わりに「リンクをコピー」を使ってください。"
+  "configShareTooLong": "このリンクは長すぎて QR コードに収まりません。代わりに「リンクをコピー」を使ってください。",
+  "joinLinkHandOverMessage": "このリンクは Android 版 CountScore アプリで開けます。アプリがインストールされていない場合は、代わりに Play ストアが開きます。",
+  "joinLinkOpenInApp": "アプリで開く",
+  "joinLinkContinueHere": "ブラウザで続ける"
 }

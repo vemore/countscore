@@ -1642,4 +1642,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get replaceConfigUnchanged => '此设备已使用此配置';
+
+  @override
+  String get joinLinkHandOverMessage =>
+      '此链接可以在 CountScore Android 应用中打开。如果未安装该应用，则会改为打开 Play 商店。';
+
+  @override
+  String get joinLinkOpenInApp => '在应用中打开';
+
+  @override
+  String get joinLinkContinueHere => '在浏览器中继续';
 }

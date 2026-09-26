@@ -61,6 +61,7 @@ dependencies:
   share_plus: ^13.3.0
   audioplayers: ^6.8.1
   qr: ^4.0.0
+  app_links: ^7.2.1
 
 dev_dependencies:
   flutter_test:

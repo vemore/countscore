@@ -2824,6 +2824,24 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Cet appareil utilise déjà cette configuration'**
   String get replaceConfigUnchanged;
+
+  /// Web app on an Android browser, opened from a shared configuration QR code: offers to continue in the installed Android app instead, before the replace-configuration dialog. Shown with the buttons joinLinkOpenInApp and joinLinkContinueHere
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce lien peut s\'ouvrir dans l\'application Android CountScore. Si elle n\'est pas installée, le Play Store s\'ouvre à sa place.'**
+  String get joinLinkHandOverMessage;
+
+  /// Button: hand the shared configuration link over to the CountScore Android app (or its Play Store page when it is not installed)
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouvrir dans l\'application'**
+  String get joinLinkOpenInApp;
+
+  /// Button: stay in the web app and show the replace-configuration dialog here
+  ///
+  /// In fr, this message translates to:
+  /// **'Continuer dans le navigateur'**
+  String get joinLinkContinueHere;
 }
 
 class _AppLocalizationsDelegate
