@@ -1,5 +1,5 @@
 import 'package:countscore/models/game_type.dart';
-import 'package:countscore/services/sync/sync_schema.dart';
+import 'package:countscore/services/schema_steps.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 

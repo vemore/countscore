@@ -1,5 +1,10 @@
 # The db-migration skill puts every schema step in the sync layer, which raises its lane
 
+**Status:** done (2026-09-26) — closed by refactor/schema-steps-out-of-sync. Every shared step,
+`applyV12` to `applyV21` with `applyV20` from the deleted `lib/services/drift/schema_v20.dart`,
+moved verbatim to `lib/services/schema_steps.dart`; `sync_schema.dart` keeps `applySyncV10` and
+the v11 triggers, and the db-migration skill names the new file.
+
 - **Noted:** 2026-09-24 — while writing schema v20 on fix/game-ends-on-last-player
 - **Theme:** tooling
 - **Area:** tooling

@@ -4,7 +4,7 @@ import '../../models/game_type.dart';
 import '../sync/sync_schema.dart';
 import '../uuid.dart';
 import 'connection/connection.dart' as conn;
-import 'schema_v20.dart';
+import '../schema_steps.dart';
 import 'tables.dart';
 
 part 'database.g.dart';

@@ -22,10 +22,13 @@ the time Drift opens the file, sqflite has already migrated it.
 **Web does reach it.** A browser keeps its database between PWA releases, and the PWA has
 been in production since 2026-09-13, so Drift's `onUpgrade` is the *only* thing that
 migrates a returning web user. Skipping it ships a PWA that never gets your change. It is
-not a mirrored chain, though — write the step **once**, in
-`lib/services/sync/sync_schema.dart`, as a function taking `execute` and `columnsOf`, and
-call it from both `DatabaseService._upgradeDB` and `AppDatabase.onUpgrade`. `applySyncV10`
-and `applyV12` are the two examples; the `columnsOf` guard is what makes replaying safe.
+not a mirrored chain, though — write the step **once**, as `applyVN` in
+`lib/services/schema_steps.dart`, a function taking an `execute` (`SqlExecutor`) and, when it
+adds a column, `columnsOf`; then call it from both `DatabaseService._upgradeDB` and
+`AppDatabase.onUpgrade`. `applyV12` and `applyV21` are the examples; the `columnsOf` guard
+is what makes replaying safe. Every step goes there, synced column or not —
+`lib/services/sync/sync_schema.dart` holds only the sync bookkeeping (v10 tables, v11
+capture triggers) and is not where a new step goes.
 
 On web there is no legacy file at all for a *fresh* install, so Drift's `onCreate` builds
 the current version directly. **Every schema change must be made in all three places —
