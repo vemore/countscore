@@ -283,7 +283,7 @@ code because it was already on internal, and the publish path always re-uploaded
 already held (`wip/done/2026-09-20-play-publish-cannot-promote.md`).
 
 It ships eleven `wip/` entries, the release-blocking one being the game-type editor writing
-`rules`, `rules_slug` and `isDefault` to NULL on every save ([[SchemaV10]]). Also: elimination
+`rules`, `rules_slug` and `isDefault` to NULL on every save ([[Schema]]). Also: elimination
 games rank by elimination order when finished, `lastPlayerOver` does what its description
 always claimed and is seeded on the three elimination types, the ranking and end screens became
 one `StandingsScreen`, and a dormant group owner can be replaced by a deliberate claim

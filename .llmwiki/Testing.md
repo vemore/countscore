@@ -1,7 +1,7 @@
 # Testing
 
 > Scope: what is tested, how to run it, and the traps.
-> Related: [[MobileApp]] · [[DataLayer]] · [[SchemaV10]] · [[Backend]] · [[Web]] · [[KnownLimits]]
+> Related: [[MobileApp]] · [[DataLayer]] · [[Schema]] · [[Backend]] · [[Web]] · [[KnownLimits]]
 > Updated: 2026-09-26
 
 ## Facts

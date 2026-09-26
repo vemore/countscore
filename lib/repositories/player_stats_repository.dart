@@ -3,7 +3,7 @@ import '../models/player_stats.dart';
 /// Aggregated player statistics across games.
 ///
 /// Players are known by their global `players` row since v9, never by a name
-/// alone (.llmwiki/SchemaV10.md).
+/// alone (.llmwiki/Schema.md).
 abstract class PlayerStatsRepository {
   /// Every live, finished game (`finishedAt` set) with at least one score, and
   /// each player's final total, most recent first. The leaderboard and the

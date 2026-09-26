@@ -65,17 +65,26 @@ The wiki is kept current by each change (the ingest rules in `INDEX.md`), and ch
 whole in the pruning pass before each release (`release-android` §3b, [[Release]]). The pass
 proposes; the fixes are their own pull request.
 
-Mechanical — by hand until a script does it (wip entry `the-wiki-has-no-lint-script`):
+Mechanical, run by `scripts/wiki_lint.sh` — a report, not a gate: it lists each finding
+with its page and exits non-zero on the real wiki today (six pages over budget, dozens of
+status blocks never folded back), so only its self-test (`scripts/wiki_lint_selftest.sh`)
+runs in CI, not the script itself ([[Testing]]):
 
-- **Dead references:** a backticked repository path that no longer exists, a `file:line` past
-  the end of the file.
-- **Orphans and gaps:** a page no other page links to and `INDEX.md` does not list; a
-  dangling `[[Link]]` named by several pages is a page to write.
-- **Dates:** an `INDEX.md` row whose date differs from its page's `Updated:`; a page whose
-  `Updated:` is older than the last commit to the sources it cites.
-- **Budgets:** an index row over 25 words, a page over 400 lines.
-- **Old status blocks:** a `Status: Outdated` block older than the last release — rewrite the
-  fact it sits under and move the why to `## Decisions & History`.
+- **Dead references:** a backticked repository path that no longer exists.
+- **Dangling links:** a `[[Link]]` naming a page `.llmwiki/<Name>.md` does not have.
+- **Dates:** an `INDEX.md` row whose date differs from its page's `Updated:` line.
+- **Budgets:** a page over 400 lines.
+- **Old status blocks:** every `Status: Outdated` block, unfiltered — whether one is actually
+  older than the last release, and rewriting the fact it sits under and moving the why to
+  `## Decisions & History`, still wants a person.
+
+Mechanical, still by hand:
+
+- A `file:line` reference past the end of the file.
+- **Orphans:** a page no other page links to and `INDEX.md` does not list; a dangling
+  `[[Link]]` named by several pages is a page to write, not just a finding to clear.
+- A page whose `Updated:` is older than the last commit to the sources it cites.
+- An `INDEX.md` row over the 25-word budget.
 
 Judgement:
 
@@ -105,3 +114,12 @@ Judgement:
   adopted: a `log.md` (`git log -- .llmwiki` and each page's history already give the
   timeline), a search engine (twenty pages, the index and `grep` suffice), YAML frontmatter
   (nothing queries it).
+- **The mechanical half of the lint pass became a script (2026-09-26, `feat/wiki-lint`).**
+  `scripts/wiki_lint.sh` covers dead backticked paths (sharing `scripts/lib/dead_paths.sh`
+  with `scripts/wip.sh` `refine`), dangling `[[links]]`, the page-size and `Status: Outdated`
+  findings, and `INDEX.md` date drift — the checks above marked mechanical. It stays out of
+  CI as a gate: the real wiki fails it today, and gating a pull request on a backlog it did
+  not create would block unrelated work, so only its self-test runs. Not automated: a
+  `file:line` past the end of a file, orphan pages, `Updated:` against the git history of what
+  a page cites, and the 25-word row budget — closer to judgement than the rest, or not yet
+  worth the code.

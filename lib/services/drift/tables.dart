@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 
 // Drift tables mirroring the sqflite v9 schema EXACTLY (column names use the
 // existing mixed casing via `.named()` so Drift can open a database created /
-// migrated by the legacy sqflite layer). See .llmwiki/SchemaV10.md.
+// migrated by the legacy sqflite layer). See .llmwiki/Schema.md.
 
 @DataClassName('GameTypeRow')
 class GameTypes extends Table {

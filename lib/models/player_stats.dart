@@ -9,7 +9,7 @@ import 'game_standing.dart';
 /// `PlayerStatsRepository.getFinishedGameResults` reads. Only
 /// finished games (`finishedAt` set) with at least one score count, and a
 /// player is known by the uuid of their global `players` row — the key stats
-/// have had since v9 (.llmwiki/SchemaV10.md).
+/// have had since v9 (.llmwiki/Schema.md).
 
 /// A game-type filter value meaning "every game type".
 const String? kAllGameTypes = null;

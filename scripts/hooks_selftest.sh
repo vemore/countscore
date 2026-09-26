@@ -745,8 +745,9 @@ echo "== wip refine flags =========================================="
 # punctuation: a missed open-question is silence the pass has no other way to notice
 # (wip/done/2026-09-20-refine-flags-miss-a-heading-written-any-other-way.md).
 WIPT="$SANDBOX/wiptree"
-mkdir -p "$WIPT/scripts" "$WIPT/wip/todo"
+mkdir -p "$WIPT/scripts/lib" "$WIPT/wip/todo"
 cp "$ROOT/scripts/wip.sh" "$WIPT/scripts/"
+cp "$ROOT/scripts/lib/dead_paths.sh" "$WIPT/scripts/lib/"
 refine_flags() {  # description, expected flags, entry body
     rm -f "$WIPT/wip/todo/"*.md
     printf -- '# t\n\n- **Noted:** 2026-09-20\n- **Theme:** t\n- **Area:** tooling\n- **Blocks release:** no\n\n%b\n' "$3" \

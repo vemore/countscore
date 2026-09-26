@@ -1,7 +1,7 @@
 # Mobile App
 
 > Scope: the Flutter app's own structure — entry point, state, screens, models.
-> Related: [[DataLayer]] · [[SchemaV10]] · [[I18n]] · [[Web]] · [[Testing]]
+> Related: [[DataLayer]] · [[Schema]] · [[I18n]] · [[Web]] · [[Testing]]
 > Updated: 2026-09-25
 
 ## Facts
@@ -64,7 +64,7 @@ confirmation alone counts every game, open ones too, from `getPlayerGameCounts`)
 errors). What it saves is `existingGameType.copyWith(...)`, never a fresh `GameType`:
 `DriftGameTypeRepository.update` writes every column of `toMap()`, so a column the form does
 not show — `rules`, `rulesSlug`, `isDefault` — would otherwise be written NULL by an edit of
-the colour ([[SchemaV10]]). Clearing a condition back to *None* goes through
+the colour ([[Schema]]). Clearing a condition back to *None* goes through
 `clearPlayerDeadCondition` / `clearGameOverCondition`, since `x ?? this.x` cannot express a
 null. Validation is on the fields, never in a snackbar: `ScaffoldMessenger.of` reaches the
 app's messenger, which draws *behind* the modal barrier. A threshold is required as soon as
@@ -454,7 +454,7 @@ board's `analysisRepo` is.
 
 `game`, `game_type`, `keypad_shortcut`, `player`, `round`, `score`, `game_analysis`, `analysis_style`. Plain classes with
 `toMap`/`fromMap`. `player.dart` has no `gameId` since v9 — its `id` is a
-`game_players.id`. See [[SchemaV10]].
+`game_players.id`. See [[Schema]].
 
 `analysis_style.dart` is an enum whose `id` is an ASCII string that travels to the backend
 and into SharedPreferences (`analysisStyle`) and whose label is translated. It mirrors
@@ -722,7 +722,7 @@ not "fix" it by hardcoding a codepoint.
   `fix/game-type-editor`).** It built a fresh `GameType` from the form, so every save wrote
   `rules`, `rulesSlug` and `isDefault` as NULL / 0 — a colour change silently destroyed a
   shipped ruleset, the text a user had written, and the flag every future back-fill selects
-  on ([[SchemaV10]]). Five findings of one review closed together because they are one
+  on ([[Schema]]). Five findings of one review closed together because they are one
   dialog: the data loss, three leaked controllers and an unvalidated form, a condition
   saved without a threshold (which every reader then treats as *no condition*), an English
   `Exception:` shown under "error during export" when a used type is deleted, and a win
@@ -803,7 +803,7 @@ not "fix" it by hardcoding a codepoint.
   > `applyV20` gives `lastPlayerOver` to existing ZapZap, Rami and 6 qui prend rows that have
   > an `over` elimination and no end, at their own elimination threshold. A NULL end left
   > older groups with games that never ended by themselves. The user accepted that finished
-  > games of these types are re-ranked by elimination order ([[SchemaV10]]).
+  > games of these types are re-ranked by elimination order ([[Schema]]).
   > `test/migration_last_player_standing_test.dart` is gone, replaced by
   > `test/migration_v19_to_v20_test.dart`.
 

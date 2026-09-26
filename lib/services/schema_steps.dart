@@ -5,7 +5,7 @@
 /// the two from drifting apart. Each step is idempotent, so it can replay on a
 /// database that already has part of it. A new shared step goes here — not in
 /// `lib/services/sync/sync_schema.dart`, which keeps only the sync bookkeeping
-/// (v10, v11). See .llmwiki/SchemaV10.md and the db-migration skill.
+/// (v10, v11). See .llmwiki/Schema.md and the db-migration skill.
 library;
 
 import '../l10n/app_localizations.dart';
@@ -121,7 +121,7 @@ Future<void> applyV13(
 ///
 /// It carries the displayed name as well (`lib/utils/game_type_name.dart`), so
 /// the stored `name` of a built-in row stops mattering and two devices in
-/// different locales converge on one row. See .llmwiki/SchemaV10.md.
+/// different locales converge on one row. See .llmwiki/Schema.md.
 ///
 /// Three steps, all idempotent so the step can replay:
 ///
@@ -335,7 +335,7 @@ Future<void> applyV17(SqlExecutor execute) async {
 /// `rules` that the bug erased is user content with no second source and
 /// cannot be restored. `isDefault` is deliberately not restored either:
 /// `builtin_key` is the only test for a built-in type and nothing reads
-/// `isDefault`. See .llmwiki/SchemaV10.md.
+/// `isDefault`. See .llmwiki/Schema.md.
 Future<void> applyV18(SqlExecutor execute) => applyV16(execute);
 
 /// Every name each built-in type with a ruleset is known by: its name in each
@@ -410,7 +410,7 @@ Map<String, Set<String>> builtinNamesByKey() {
 /// player out at 66, now 65), and a user who moved a threshold still plays the
 /// same game, with the same rules. Nothing but `builtin_key` and `rules_slug`
 /// is written: the scoring, the colours and a ruleset the user wrote stay.
-/// `isDefault` is not restored, as in [applyV18]. See .llmwiki/SchemaV10.md.
+/// `isDefault` is not restored, as in [applyV18]. See .llmwiki/Schema.md.
 ///
 /// Idempotent: a keyed row is never selected again, and it never inserts, so a
 /// type the user deleted is not resurrected.
@@ -508,7 +508,7 @@ Map<String, String> keypadShortcutSeeds() => {
 ///
 /// Adds the column, then gives the live built-in rows of
 /// [keypadShortcutSeeds] their shortcut, matched on `builtin_key` alone (never
-/// `isDefault`, see .llmwiki/SchemaV10.md). The column is new, so a NULL here
+/// `isDefault`, see .llmwiki/Schema.md). The column is new, so a NULL here
 /// was never a choice and every such row is filled; a renamed type (no key)
 /// and a deleted one are left alone.
 ///

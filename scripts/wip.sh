@@ -17,6 +17,7 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WIP="$ROOT/wip"
+source "$ROOT/scripts/lib/dead_paths.sh"
 
 cmd="${1:-list}"
 case "$cmd" in list|themes|check|refine) shift || true ;; *) cmd=list ;; esac
@@ -106,11 +107,7 @@ case "$cmd" in
             section "$path" 'open questions?|questions? ouvertes?' && flags="$flags open-question"
             [ "$idle" != new ] && [ "$idle" -gt 60 ] && flags="$flags stale"
             # Repository paths quoted in backticks that no longer exist.
-            dead=$(grep -oE '`(lib|backend|scripts|test|integration_test|web|android|\.claude|\.llmwiki|\.github|store_listing|tool)/[^` :]*`' "$path" \
-                | tr -d '`' | sed 's/[.,;)]*$//' | sort -u | while read -r p; do
-                    case "$p" in *'*'*|*'<'*|*'{'*) continue ;; esac
-                    [ -e "$ROOT/$p" ] || echo "$p"
-                done | tr '\n' ' ')
+            dead=$(dead_repo_paths "$ROOT" "$path" | tr '\n' ' ')
             [ -n "$dead" ] && flags="$flags dead-path:[${dead% }]"
             # Links to entries that are already closed.
             closed=$(grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]+' "$path" | sort -u | while read -r slug; do

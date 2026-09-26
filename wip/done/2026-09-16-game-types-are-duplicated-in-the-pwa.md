@@ -33,7 +33,7 @@ equivalent, so nothing stops a duplicate appearing or persisting.
 seeding bug from stale data in one browser. If seeding is sound, this is cleanup: a one-off
 de-duplication that keeps the lowest `id` per `(name, group_id)` among `isDefault = 1` rows
 and repoints any `games.gameTypeId` at the survivor — with the same care as the v9 player
-merge (`.llmwiki/SchemaV10.md`). A `UNIQUE` index on live default rows would stop it
+merge (`.llmwiki/Schema.md`). A `UNIQUE` index on live default rows would stop it
 recurring, but it must not fire on the user's own types, which may legitimately share a
 name with a deleted one.
 

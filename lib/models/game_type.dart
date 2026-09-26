@@ -44,7 +44,7 @@ class GameType {
   /// `lib/utils/game_type_name.dart`. [name] is only read for rows whose
   /// [builtinKey] is null, which is what makes the stored name of a built-in
   /// type inconsequential — two devices in different locales store different
-  /// names for the same type and still converge. See .llmwiki/SchemaV10.md.
+  /// names for the same type and still converge. See .llmwiki/Schema.md.
   final String? builtinKey;
 
   /// The seeded, untranslated name. For a built-in type this is a fallback only;
@@ -63,7 +63,7 @@ class GameType {
   /// query or screen may use. The two back-fills that still select on it
   /// (`applyV13`, `applyV14`) are past steps, and the pre-1.3.1 editor cleared
   /// it on every save, which is precisely why they could not repair the rows
-  /// `applyV18` repairs. See .llmwiki/SchemaV10.md.
+  /// `applyV18` repairs. See .llmwiki/Schema.md.
   final bool isDefault;
   final PlayerDeadConditionType? playerDeadConditionType;
   final int? playerDeadThreshold;

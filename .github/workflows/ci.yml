@@ -68,6 +68,13 @@ jobs:
       - name: Delivery metrics self-test
         run: scripts/delivery_metrics_selftest.sh
 
+      # scripts/wiki_lint.sh is a report, not a gate — it exits non-zero on the real wiki
+      # today (six pages over the 400-line budget, dozens of unfolded Status: Outdated
+      # blocks), which is expected and not this job's job to fix. Only its self-test, on a
+      # throwaway fixture with a known answer, runs here.
+      - name: Wiki lint self-test
+        run: scripts/wiki_lint_selftest.sh
+
       # On main, on the weekly run and on a manual run every flag is true: main
       # keeps a complete verification record. On a pull request the flags come
       # from the files it changes.

@@ -6,8 +6,9 @@ description: Change the CountScore database schema — add a table, add a column
 # Changing the CountScore schema
 
 The mobile schema is **v21** and lives in two engines at once. The server schema is separate
-and moves with it. Read `.llmwiki/SchemaV10.md` and `.llmwiki/DataLayer.md` before starting —
-the page keeps its v10 name and documents every version since.
+and moves with it. Read `.llmwiki/Schema.md` and `.llmwiki/DataLayer.md` before starting —
+the page name carries no version number, precisely so it never drifts from the one it
+documents.
 
 ## The trap
 
@@ -115,5 +116,4 @@ grep -n "schemaVersion = " lib/services/database_service.dart
   lose data is not shippable — see the two-release strategy in `.llmwiki/DataLayer.md`.
 - `group_id IS NULL` means a local, unsynced row. Every new table must tolerate NULL.
 - Local key is `INTEGER AUTOINCREMENT`; the UUID is the logical key for sync.
-- Update `.llmwiki/SchemaV10.md` (rename the page if the version changes) and its
-  `Updated:` date in the same commit.
+- Update `.llmwiki/Schema.md` and its `Updated:` date in the same commit.

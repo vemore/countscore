@@ -1,13 +1,14 @@
-# Schema v10
+# Schema
 
 > Scope: the mobile database — tables, the global-player model, the migration chain.
 > Related: [[DataLayer]] · [[Sync]] · [[MobileApp]] · [[Testing]]
 > Updated: 2026-09-26
 
-This page was `SchemaV9` until v10 landed on 2026-09-13; links were renamed with it.
-v11 followed the same day, v12, v13 and v14 on 2026-09-16, v15 on 2026-09-18, v16 on
-2026-09-19, v17 and v18 on 2026-09-20, v19 on 2026-09-22, v20 and v21 on 2026-09-24; all
-are described here too.
+This page was `SchemaV9`, then `SchemaV10` (2026-09-13); each rename after a version
+bump left the name a step behind (v11 the same day, v12–v14 on 2026-09-16, v15 on
+2026-09-18, v16 on 2026-09-19, v17–v18 on 2026-09-20, v19 on 2026-09-22, v20–v21 on
+2026-09-24). Renamed to `Schema` (2026-09-26, `feat/wiki-lint`) so the name never
+drifts from the version again; every version to date is still described here.
 
 ## Facts
 
@@ -290,6 +291,12 @@ Added in `b340c98`. Some installs recorded version 8 while still carrying pre-v6
 repairs the shape before the rest of the chain runs.
 
 ## Decisions & History
+
+- **Renamed `SchemaV10` → `Schema` (2026-09-26, `feat/wiki-lint`).** The page had already
+  drifted from its name once (describing v21 while called `SchemaV10`) and every version
+  bump risked a rename fifteen files depended on; `wip/todo/2026-09-26-the-wiki-has-no-lint-script.md`
+  flagged it as one of the wiki's mechanical lint findings. A version-free name never goes
+  stale, so no future schema bump needs a rename or a dangling `[[SchemaVN]]` link.
 
 - **The shared schema steps live outside the sync layer (2026-09-26, `refactor/schema-steps-out-of-sync`).**
   `applyV12` to `applyV21` moved verbatim from `lib/services/sync/sync_schema.dart`, and
