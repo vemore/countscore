@@ -11,7 +11,7 @@ then the invite code in Settings → Group (`lib/screens/settings_screen.dart`,
 carries both, readable by any phone's QR reader.
 
 The QR holds a plain HTTPS link on the user's own backend host (the PWA it already serves
-under `PWA_BASE_PATH`), e.g. `https://<host><PWA_BASE_PATH>/join#s=<server>&g=<invite>`.
+under `PWA_BASE_PATH`), e.g. `https://<host><PWA_BASE_PATH>/#/join?s=<server>&g=<invite>`.
 That page decides where to go:
 - **Android, app installed** → open the app on a deep link that carries the configuration.
 - **Android, app not installed** → the Play Store listing.
@@ -37,6 +37,14 @@ are [[2026-09-24-the-app-opens-no-countscore-join-link]] and
 with no group: it then carries the server alone. The invite code does not expire: the current
 code goes in as it is, no backend change.
 
+**Decided (2026-09-26, refinement):** everything goes in the fragment. The backend serves the
+PWA with `StaticFiles(html=True)` (`backend/app/main.py:77`) and Flutter web routes by hash, so
+a `<base>/join#…` path would 404. The link is `https://<host><PWA_BASE_PATH>/#/join?s=<server>&g=<invite>`:
+the path the server sees is the PWA root, and the route, the server and the invite all sit
+after `#`, which the browser never sends. No backend change. All three entries are promoted;
+`ship-parallel` delivers this one (a) first, then (b) and (c) together in one pull request (same
+parser, same dialog).
+
 **Fix (part a):** a "Share configuration" QR sheet in Settings (a QR package, e.g.
 `qr_flutter`, through the dependency review), the link's encoder and parser in one Dart
 file, and the shared "replace configuration?" dialog, which joins through `GroupProvider` and
@@ -45,6 +53,6 @@ rendered locally.
 
 **Acceptance:**
 - Settings shows a QR whose decoded payload round-trips (unit test: encode → parse → same server and invite), with and without a group.
-- The invite code is in the fragment, never in the path or the query (unit test on the encoder).
+- The link has the form `<base>/#/join?s=…&g=…`: the server and the invite code are only after `#`, never in the path or in a query before `#` (unit test on the encoder).
 - The replace dialog shows the old and new values; cancelling leaves the settings untouched (widget test).
 - Leaving a group with unsynced rows through the dialog warns first (widget test with a fake `GroupProvider`).
