@@ -25,8 +25,9 @@ migrates a returning web user. Skipping it ships a PWA that never gets your chan
 not a mirrored chain, though — write the step **once**, as `applyVN` in
 `lib/services/schema_steps.dart`, a function taking an `execute` (`SqlExecutor`) and, when it
 adds a column, `columnsOf`; then call it from both `DatabaseService._upgradeDB` and
-`AppDatabase.onUpgrade`. `applyV12` and `applyV21` are the examples; the `columnsOf` guard
-is what makes replaying safe. Every step goes there, synced column or not —
+`AppDatabase.onUpgrade`. `applyV21` (a column plus a back-fill: `SqlExecutor` and
+`columnsOf`) and `applyV20` (a data-only step: `SqlExecutor` alone) are the examples; the
+`columnsOf` guard is what makes replaying safe. Every step goes there, synced column or not —
 `lib/services/sync/sync_schema.dart` holds only the sync bookkeeping (v10 tables, v11
 capture triggers) and is not where a new step goes.
 

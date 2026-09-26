@@ -77,6 +77,7 @@ scope "the analysis options" "app sync"            analysis_options.yaml
 scope "the privacy policy"   "backend"             privacy_policy.md
 scope "the privacy page"     "backend"             docs/privacy-policy.html
 scope "the licence list"     "app"                 THIRD_PARTY_LICENSES.md
+scope "the db-migration skill" "app"               .claude/skills/db-migration/SKILL.md
 scope "a composed screenshot" "backend"            store_listing/fr-FR/screenshots/phone/01_main_screen.png
 scope "a locale raw capture" "backend"             store_listing/ja-JP/raw/04_podium.png
 scope "an LTR raw capture"   "backend"             store_listing/en-US/raw/01_main_screen.png

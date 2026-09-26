@@ -1,10 +1,10 @@
 import 'package:drift/drift.dart';
 
 import '../../models/game_type.dart';
+import '../schema_steps.dart';
 import '../sync/sync_schema.dart';
 import '../uuid.dart';
 import 'connection/connection.dart' as conn;
-import '../schema_steps.dart';
 import 'tables.dart';
 
 part 'database.g.dart';

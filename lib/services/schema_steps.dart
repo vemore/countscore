@@ -13,7 +13,6 @@ import '../models/game_type.dart';
 import '../utils/game_type_name.dart';
 import 'uuid.dart';
 
-
 /// Runs one statement, with optional positional arguments. `Database.execute`
 /// (sqflite) and `AppDatabase.customStatement` (Drift) both fit.
 typedef SqlExecutor = Future<void> Function(String sql, [List<Object?> args]);

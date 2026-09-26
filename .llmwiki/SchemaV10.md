@@ -222,9 +222,10 @@ holds that key — a row linked by name before its remote became a built-in. Tes
 Drift's `onUpgrade` is **not** a no-op any more. Native still never reaches it — sqflite has
 migrated the file first — but a browser keeps its database across PWA releases, and the PWA
 has been in production at v9 since 2026-09-13. `onUpgrade` runs `applySyncV10` for
-`from < 10`, the v11 statements for `from < 11`, `applyV12` for `from < 12`, `applyV13`
-for `from < 13`, `applyV14` for `from < 14` and `applyV15` for `from < 15`: the same SQL sqflite runs, from `sync_schema.dart` (v10, v11) and `schema_steps.dart` (v12 on). Covered by
-`test/drift/web_upgrade_test.dart`.
+`from < 10`, the v11 statements for `from < 11`, then each `applyVN` for `from < N`, from
+`applyV12` to `applyV21`: the same SQL sqflite runs, from `sync_schema.dart` (v10, v11) and
+`schema_steps.dart` (v12 on). Covered by `test/drift/web_upgrade_test.dart` and the
+`test/migration_v*_test.dart` files, which run both engines' upgrade callbacks.
 
 ### Tombstones (since v10)
 
@@ -290,15 +291,28 @@ repairs the shape before the rest of the chain runs.
 
 ## Decisions & History
 
+- **The shared schema steps live outside the sync layer (2026-09-26, `refactor/schema-steps-out-of-sync`).**
+  `applyV12` to `applyV21` moved verbatim from `lib/services/sync/sync_schema.dart`, and
+  `applyV20` from `lib/services/drift/schema_v20.dart`, into one engine-neutral
+  `lib/services/schema_steps.dart`, which the db-migration skill now names for every new
+  step. The skill used to send each step to `sync_schema.dart`, and any change under
+  `lib/services/sync/` is lane C: a data-only step (v20) either raised its pull request's lane
+  or went to a file of its own, splitting the chain across two files. `sync_schema.dart` keeps
+  only the sync bookkeeping, `applySyncV10` and the v11 triggers. Several steps still have
+  sync effects (v20 fires the capture trigger, v21 raises `sync_flags.suppress`), which the
+  lane rule does not yet see outside `lib/services/sync/`
+  (`wip/todo_nr/2026-09-26-sync-effects-outside-lane-c-paths.md`).
+
 - **The keypad shortcut is one JSON column, back-filled once and locally (2026-09-24, `feat/keypad-game-shortcuts`).**
   Three columns (kind, amount, label) were the alternative; one value keeps the shortcut
   whole through the editor and a clear, and a closed JSON shape is still checkable on both
   sides. Sync's last-writer-wins is decided per **row** (a delta's lamport against the row's
   last writer), while the server write and the pull apply only the keys a payload carries, so
   one column also means the shortcut can never be half of one device's value and half of
-  another's. Every shared step from v12 on, this one included, now lives in
-  `lib/services/schema_steps.dart`, outside the sync layer (refactor/schema-steps-out-of-sync,
-  2026-09-26); `sync_schema.dart` keeps only the v10 and v11 sync bookkeeping.
+  another's. The step lives in `sync_schema.dart`, as the db-migration skill says, rather than
+  beside `schema_v20.dart`: the column is synced, and the pull request was lane C anyway
+  (`wip/todo_nr/2026-09-24-db-migration-skill-puts-every-step-in-the-sync-layer.md` is still
+  open).
   **The back-fill is never pushed** (independent review of #216). A first version let the
   UPDATE fire the capture trigger. The upgrading device's lamport then outranked what it had
   pulled, so the day a lagging member upgraded, a group's own shortcut on Belote ("Capot 250")
