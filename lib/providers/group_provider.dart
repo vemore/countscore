@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 
 import '../services/backend_client.dart';
+import 'backend_provider.dart';
 import '../services/drift/database.dart';
 import '../services/sync/sync_credentials.dart';
 import '../services/sync/sync_engine.dart';
@@ -219,7 +220,7 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     String? baseUrl,
   }) async {
     if (_membership != null) await leave();
-    if (baseUrl != null) _baseUrl = baseUrl;
+    if (baseUrl != null) await _switchServer(baseUrl);
     await _credentials.save(deviceToken: m.deviceToken, shareToken: m.shareToken);
     await _store.join(m);
     _deviceToken = m.deviceToken;
@@ -249,8 +250,39 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
       baseUrl: baseUrl,
       membership: m,
       label: label,
-      sameGroup: current != null && m.groupId == current.groupId,
+      sameGroup: isJoined &&
+          current != null &&
+          m.groupId == current.groupId &&
+          await _currentTokenAccepted(baseUrl),
     );
+  }
+
+  /// Whether the server still accepts this device's own token: a device the
+  /// owner revoked is in "the same group" by id only, and must take the new
+  /// registration rather than keep a token that is refused. Asked with
+  /// `GET /groups/me`; a 401 or 403 is a no, and so is a status already
+  /// [SyncStatus.unauthorized]. Anything else (the server answered the join a
+  /// moment ago) keeps the current registration.
+  Future<bool> _currentTokenAccepted(String baseUrl) async {
+    final token = _deviceToken;
+    if (token == null || _status == SyncStatus.unauthorized) return false;
+    try {
+      await BackendClient(baseUrl, httpClient: httpClient).groupOwner(token);
+      return true;
+    } on BackendException catch (e) {
+      return e.statusCode != 401 && e.statusCode != 403;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  /// Moves sync to [baseUrl] and stores it as the configured server at once, in
+  /// the same step as the membership that needs it: a kill between the two would
+  /// otherwise leave the old URL on disk with the new group's credentials.
+  /// [BackendProvider] learns it from the caller ([BackendProvider.setBaseUrl]).
+  Future<void> _switchServer(String baseUrl) async {
+    _baseUrl = baseUrl;
+    await BackendProvider.persist(baseUrl);
   }
 
   /// Step two: makes [c] this device's group. For [JoinCandidate.sameGroup] the
@@ -264,7 +296,7 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
       await _credentials.saveShareToken(c.membership.shareToken);
       // A group id is unique to its server: another URL is another way to it.
       if (c.baseUrl != _baseUrl) {
-        _baseUrl = c.baseUrl;
+        await _switchServer(c.baseUrl);
         await _restart();
       }
       notifyListeners();

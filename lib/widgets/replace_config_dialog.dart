@@ -128,10 +128,12 @@ Future<ReplaceConfigResult> showReplaceConfigDialog(
     await group.cancelJoin(candidate);
     return ReplaceConfigResult.cancelled;
   }
-  // Leaves the current group on its own server, then syncs with the new one.
+  // Leaves the current group on its own server, then syncs with the new one; the
+  // new URL reaches the disk with the membership (GroupProvider), and the live
+  // BackendProvider right after.
   await group.completeJoin(candidate);
   if (plan.changesServer) await backend.setBaseUrl(server);
-  if (candidate.sameGroup) {
+  if (candidate.sameGroup && !plan.changesServer) {
     snack(l10n.replaceConfigUnchanged);
     return ReplaceConfigResult.unchanged;
   }

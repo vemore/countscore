@@ -66,16 +66,32 @@ server, group, credentials and outbox stay exactly as they were. Once the server
 accepted:
 
 - **The same group** (its id is this device's group id, i.e. the same group behind a newer
-  invite code): `completeJoin` keeps the membership, withdraws the registration the join made
-  (a self-revoke with its own token, which the server answers 204 without rotating the code),
-  and stores the newer code. Nothing is left, no row unshared, no warning (`unchanged`).
+  invite code) **and this device's own token still accepted**: `completeJoin` keeps the
+  membership, withdraws the registration the join made (a self-revoke with its own token, which
+  the server answers 204 without rotating the code), and stores the newer code. Nothing is left,
+  no row unshared, no warning (`unchanged`, or `applied` when the URL it is reached by changed).
+  "Still accepted" is asked of the server (`GET /groups/me` with the current token, 401/403 is
+  a no) unless sync already reads `unauthorized`, and needs a token at all (`isJoined`): a
+  device the owner revoked, or one whose secure storage was lost in a restore, is in the group
+  by id only, so it takes the new registration through the path below.
 - **Another group**: before the current one is left, a second question when the first did not
   already say so (same server) or when changes are waiting to reach it. The count is read then,
   from the outbox (`GroupProvider.countPending`), not from `pendingChanges`, which is only
   recounted at the end of a sync pass and reads 0 on a cold start from a link. *Cancel* there
   withdraws the new registration (`cancelJoin`). Then `completeJoin` leaves the current group
-  (revoked on its own server, outbox emptied, [[Sync]] *Joining*), adopts the new membership,
-  syncs with the new server, and `BackendProvider.setBaseUrl` stores it.
+  (revoked on its own server, outbox emptied, [[Sync]] *Joining*), stores the new server URL
+  (`BackendProvider.persist`, SharedPreferences `backendUrl`) before the new credentials, adopts
+  the new membership and syncs with the new server; the dialog then tells the live
+  `BackendProvider` (`setBaseUrl`).
+
+**Killed half-way.** Between `prepareJoin` and `completeJoin` (the second question is open, or
+the app dies): nothing changed on the device, and the new server keeps an unused device record
+under the chosen nickname. It shows in that group's devices list, where the owner can revoke
+it; and if the owner leaves, `_earliest_live_device` may hand it the owner role, which a live
+member takes back with *Claim ownership* once it has been dormant. Inside `completeJoin`: the old
+group is left first, then the URL, then the credentials reach the disk, so a restart finds
+either no group on the old or new server (join again) or the new group on its own server; never
+the new group's token under the old URL.
 
 A link carrying a server alone, another one, leaves the group (a group cannot follow its
 server) after the same question, then sets the server. Settings follows a server replaced
@@ -114,6 +130,16 @@ both call `parseConfigLink` and `showReplaceConfigDialog`.
   server, so the same id under another URL is the same group reached another way. The first
   draft of #236 left, then switched server, then joined; its review found that a join refused
   after the leave left the device revoked and in no group, its unsynced changes gone.
+- **Same group means same id and a token that still works (2026-09-26).** Comparing ids alone
+  kept a revoked device on its refused token and withdrew the fresh one the owner's QR had
+  just given it: locked out, told "already uses this configuration". One authenticated
+  `GET /groups/me` settles it. Swapping the new device id and token into the kept rows was
+  the alternative; it was not taken because the sync state (lamport, last seq) belongs to the
+  old device, and the plain leave-and-adopt path is already tested.
+- **The server URL is stored by the join, not after it (2026-09-26).** `GroupProvider` writes
+  it (`BackendProvider.persist`) between leaving and saving the new credentials, so no restart
+  can pair the new group's token with the old URL. Storing the URL with the membership and
+  reconciling on load was the alternative: more state, for the same guarantee.
 - **The unsynced count is read when the question is asked (2026-09-26).** `pendingChanges` is
   the count at the end of the last sync pass: 0 on a cold start, which is exactly how a link
   opens the app, and stale for the second a write waits for its debounced sync.

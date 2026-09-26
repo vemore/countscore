@@ -6,6 +6,7 @@
 
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:countscore/providers/group_provider.dart';
 import 'package:countscore/services/drift/database.dart';
@@ -22,6 +23,7 @@ void main() {
   late GroupProvider group;
 
   setUp(() async {
+    SharedPreferences.setMockInitialValues({'backendUrl': oldServer});
     db = AppDatabase.forTesting(NativeDatabase.memory());
     credentials = MemorySyncCredentials();
     servers = GroupServers();
@@ -111,6 +113,95 @@ void main() {
     final revoke = servers.seen.singleWhere((r) => r.url.path.endsWith('/revoke'));
     expect(revoke.url.path, '/groups/me/devices/$newDeviceId/revoke');
     expect(revoke.headers['Authorization'], 'Bearer $newDeviceToken');
+  });
+
+  test('a revoked device given a fresh code takes the new registration', () async {
+    // The owner revoked this phone (and the invite rotated with it), then shared
+    // a fresh QR for the same group.
+    servers
+      ..joinGroupId = oldGroupId
+      ..revokedTokens.add(oldDeviceToken);
+
+    final c = await group.prepareJoin(oldServer, 'fresh-code', 'Tablet');
+    expect(c.sameGroup, isFalse, reason: 'same id, but its token is refused');
+    await group.completeJoin(c);
+    await idle(group);
+
+    expect(group.isJoined, isTrue);
+    expect(group.groupId, oldGroupId);
+    expect(await credentials.deviceToken(), newDeviceToken, reason: 'the new token is kept');
+    expect(group.deviceId, newDeviceId);
+    expect(group.shareToken, 'fresh-code');
+    expect(
+      servers.seen.where((r) =>
+          r.url.path.endsWith('/revoke') &&
+          r.headers['Authorization'] == 'Bearer $newDeviceToken'),
+      isEmpty,
+      reason: 'the working registration is never withdrawn',
+    );
+    expect(group.status, isNot(SyncStatus.unauthorized));
+  });
+
+  test('a device already known to be refused skips the check and takes the new registration',
+      () async {
+    servers
+      ..joinGroupId = oldGroupId
+      ..revokedTokens.add(oldDeviceToken);
+    await group.syncNow();
+    expect(group.status, SyncStatus.unauthorized);
+    servers.seen.clear();
+
+    final c = await group.prepareJoin(oldServer, 'fresh-code', 'Tablet');
+    expect(c.sameGroup, isFalse);
+    expect(servers.seen.where((r) => r.url.path == '/groups/me'), isEmpty);
+  });
+
+  test('a membership whose token was lost takes the new registration', () async {
+    // A restore brought back the database (sync_state) but not the secure storage.
+    final restored = GroupProvider(
+      db: db,
+      credentials: MemorySyncCredentials(),
+      httpClient: servers.client,
+      enableStream: false,
+      pollInterval: const Duration(hours: 1),
+    );
+    addTearDown(restored.dispose);
+    await restored.updateBackend(oldServer);
+    expect(restored.isJoined, isFalse);
+    servers.joinGroupId = oldGroupId;
+
+    final c = await restored.prepareJoin(oldServer, 'fresh-code', 'Tablet');
+    expect(c.sameGroup, isFalse);
+    await restored.completeJoin(c);
+    await idle(restored);
+
+    expect(restored.isJoined, isTrue);
+    expect(restored.groupId, oldGroupId);
+    expect(restored.deviceId, newDeviceId);
+  });
+
+  test('another server reaches the disk with the membership, not after it', () async {
+    final c = await group.prepareJoin(newServer, newInvite, 'Tablet');
+    await group.completeJoin(c);
+    await idle(group);
+
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('backendUrl'), newServer,
+        reason: 'stored by the join itself, before any BackendProvider call');
+    expect(await credentials.deviceToken(), newDeviceToken);
+  });
+
+  test('the same group under another URL keeps the membership and stores the URL', () async {
+    servers.joinGroupId = oldGroupId;
+    const otherUrl = 'https://new.example.com';
+
+    final c = await group.prepareJoin(otherUrl, 'rotated-code', 'Tablet');
+    expect(c.sameGroup, isTrue);
+    await group.completeJoin(c);
+    await idle(group);
+
+    expect(await credentials.deviceToken(), oldDeviceToken);
+    expect((await SharedPreferences.getInstance()).getString('backendUrl'), otherUrl);
   });
 
   test('cancelJoin withdraws the new registration and keeps the old group', () async {

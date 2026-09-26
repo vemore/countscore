@@ -34,12 +34,19 @@ class GroupServers {
   /// The status `POST /groups` answers.
   int createStatus = 200;
 
+  /// Device tokens the server refuses (401): devices the owner revoked.
+  final revokedTokens = <String>{};
+
   bool _joinedOnce = false;
 
   MockClient get client => MockClient((request) async {
         seen.add(request);
         http.Response json(Object body, [int status = 200]) =>
             http.Response.bytes(utf8.encode(jsonEncode(body)), status);
+        final bearer = request.headers['Authorization']?.replaceFirst('Bearer ', '');
+        if (bearer != null && revokedTokens.contains(bearer)) {
+          return json({'detail': 'revoked'}, 401);
+        }
         switch (request.url.path) {
           case '/groups/join':
             final share = jsonDecode(request.body)['share_token'] as String;

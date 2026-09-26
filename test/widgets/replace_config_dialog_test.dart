@@ -284,6 +284,23 @@ void main() {
     expect(find.text('This device already uses this configuration'), findsOneWidget);
   });
 
+  testWidgets('the same group under another server URL says the configuration changed',
+      (tester) async {
+    final h = await _pump(
+      tester,
+      const ConfigLink(server: _newServer, invite: 'rotated-code'),
+      group: FakeGroupProvider(joined: true, pending: 4, joinGroupId: 'group-old'),
+    );
+    await _confirm(tester, nickname: 'Tablet');
+
+    expect(_leaveQuestion, findsNothing);
+    expect(h.calls, ['prepare rotated-code on $_newServer as Tablet', 'keep']);
+    expect(h.result, ReplaceConfigResult.applied);
+    expect(h.backend.baseUrl, _newServer);
+    expect(find.text('Configuration replaced'), findsOneWidget);
+    expect(find.text('This device already uses this configuration'), findsNothing);
+  });
+
   group('leaving a group with unsynced rows', () {
     testWidgets('warns first, with the count read now; cancelling changes nothing',
         (tester) async {
