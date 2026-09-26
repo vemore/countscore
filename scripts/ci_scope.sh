@@ -51,8 +51,14 @@ while IFS= read -r path; do
         store_listing/*/screenshots/*|store_listing/*/raw/*|store_listing/*/screenshot_captions.txt|scripts/compose_screenshots.py|scripts/test_compose_screenshots.py)
             backend=true ;;
 
-        # Documentation and store assets. Checked 2026-09-16: no Dart test and no
-        # pytest reads a .md, .llmwiki/, wip/, docs/ or store_listing/ file --
+        # The db-migration skill: test/schema_steps_location_test.dart reads it to
+        # check it names lib/services/schema_steps.dart as the home of a new schema
+        # step. Before the documentation rule, which would otherwise swallow it.
+        .claude/skills/db-migration/SKILL.md) app=true ;;
+
+        # Documentation and store assets. Checked 2026-09-16, and again 2026-09-26:
+        # apart from the db-migration skill above, no Dart test and no pytest
+        # reads a .md, .llmwiki/, wip/, docs/ or store_listing/ file --
         # test_play_publish.py builds its own store_listing/ fixture under
         # tmp_path. A case glob's `*` crosses `/`, so `*.md` is `**/*.md`:
         # backend/README.md and .claude/skills/*/SKILL.md are documentation, and

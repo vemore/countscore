@@ -2,7 +2,7 @@
 
 > Scope: what is tested, how to run it, and the traps.
 > Related: [[MobileApp]] · [[DataLayer]] · [[SchemaV10]] · [[Backend]] · [[Web]] · [[KnownLimits]]
-> Updated: 2026-09-25
+> Updated: 2026-09-26
 
 ## Facts
 
@@ -274,6 +274,7 @@ wins, per path:
 |---|---|
 | `privacy_policy.md`, `docs/privacy-policy.html` | `backend` (the privacy page check) |
 | `THIRD_PARTY_LICENSES.md` | `app` (the licence list check) |
+| `.claude/skills/db-migration/SKILL.md` | `app` (`test/schema_steps_location_test.dart` reads it) |
 | `store_listing/*/screenshots/*`, `store_listing/*/raw/*`, `store_listing/*/screenshot_captions.txt`, `scripts/compose_screenshots.py`, `scripts/test_compose_screenshots.py` | `backend` (the composer's tests and `--check`) |
 | `*.md`, `.llmwiki/`, `wip/`, `docs/`, `store_listing/`, `LICENSE` | *none* |
 | `backend/` | `backend`, `image`, `sync` |
@@ -284,7 +285,7 @@ wins, per path:
 | **anything else** — `.github/`, `.claude/` outside its `.md` files, `scripts/`, `ios/`, a root config, an unclassified path | **all five** |
 
 A `case` glob's `*` crosses `/`, so `*.md` is `**/*.md`: `backend/README.md` and a skill's
-`SKILL.md` are documentation, and nothing outside that line is. `android` is in the
+`SKILL.md` are documentation (the db-migration skill excepted, above), and nothing outside that line is. `android` is in the
 dependency rule — a package can bring a Gradle plugin, Kotlin or a build hook — but not in
 the Dart rule (2026-09-19, below): on a pull request a Dart-only change does not build the
 APK, and on `main` and the weekly run every flag is forced true, which
