@@ -16,7 +16,8 @@ import '../utils/config_link.dart';
 ///   fail;
 /// - on Android, `countscore://join?…` intents ([listenTo] on `app_links`'
 ///   stream, which delivers the launch intent once, then each new intent, and
-///   skips a relaunch from the recents screen).
+///   skips a relaunch from the recents screen; `MainActivity` drops the link of
+///   an activity restored after process death).
 ///
 /// Links received before a reader is attached wait for it, so a cold start
 /// loses none; a link is never replayed, so no rebuild or resume opens it again.

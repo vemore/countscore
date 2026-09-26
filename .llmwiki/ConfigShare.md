@@ -135,7 +135,11 @@ nothing.
   `MainActivity` for scheme `countscore`, host `join` — a custom scheme, no `https` host, no
   `autoVerify` — and `app_links` (`AppLinks().stringLinkStream`), which delivers the launch
   intent once, then each new intent (`launchMode="singleTop"`), and ignores a relaunch from
-  the recents screen (`FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY`). Flutter's own deep linking is
+  the recents screen (`FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY`). That flag is *not* set when the
+  activity is restored after process death — reopened from recents, it gets its original
+  `VIEW` intent back (seen on the Pixel, 2026-09-26) — so `MainActivity.onCreate` drops the
+  intent's data when `savedInstanceState` is non-null: a restored activity has already handled
+  its link. Flutter's own deep linking is
   off (`flutter_deeplinking_enabled` false in the manifest): it would push the link as a
   Navigator route as well.
 
@@ -185,7 +189,8 @@ device run of the Android path is still to be made in a local session.
   been some forty lines of Kotlin nobody can run outside a device. `app_links` 7.2.1:
   Apache-2.0, verified publisher cow-level.ovh, 160/160 pub points, published 2026-07; an
   empty Android manifest (no permission); it skips a relaunch from the recents screen, which
-  a channel of ours would have had to learn. Its Linux half pulls `gtk` (MPL-2.0), which no
+  a channel of ours would have had to learn — though not a restore after process death, which
+  `MainActivity` handles (above). Its Linux half pulls `gtk` (MPL-2.0), which no
   Android or web build compiles.
 - **The PWA offers the app; it never redirects (2026-09-26).** An automatic redirect to
   `intent://` would trap whoever chose the PWA on Android, and an Android browser leaves for
