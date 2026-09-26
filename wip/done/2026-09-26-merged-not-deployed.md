@@ -1,5 +1,7 @@
 # Merges from the 2026-09-26 QR loop are on main but not deployed
 
+**Status:** done (2026-09-26) — deployed `febe420` (PWA build `1503a0f43f54da1f`), which covers `5fe1f03` (#236) and `febe420` (#237, merged from the local session after the Pixel run found and fixed a restored activity replaying its launch link). `a07daed…` was published at `30a81e4` first for #236 alone. Smoke tests in production: `/health` ok; #236's QR sheet in the PWA starts from the app's own address and *Copy link* turns into *Link copied*; #237's `#/join?s=…&g=SMOKEZ9Q7` opened cold shows the replace dialog, the address bar is back to `/app/` before the dialog, Cancel leaves the settings untouched. The backend access-log check could not run as written: HTTP access logs are off by design (`uvicorn.access` at WARNING, `.llmwiki/Deployment.md`). Instead, the page's Resource Timing showed 16 same-origin requests, none carrying the code or the server; only the navigation entry holds the fragment, which a browser never sends.
+
 - **Noted:** 2026-09-26 — ship-parallel run on the QR configuration share, from a cloud session with no route to the NAS and no `backend/scripts/deploy.env`
 - **Theme:** deploy-safety
 - **Area:** web
