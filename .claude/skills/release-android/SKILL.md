@@ -82,6 +82,8 @@ origin/main`):
 3. Propose removing or merging those with no evidence, and check `wc -l CLAUDE.md` against
    its budget. The proposal is its own pull request, decided by the user — never folded into
    the release branch, and never a reason to hold the release.
+4. Lint the wiki (`.llmwiki/Documentation.md`, "Wiki lint"); its findings join the same
+   proposal.
 
 ## 4. Policy gate — before building
 

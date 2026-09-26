@@ -1,10 +1,10 @@
 # Documentation
 
 > Scope: which documents a change implicates — the wiki (conventions in `INDEX.md`),
-> `README.md`, the three privacy documents — and the `CLAUDE.md` budget. No hook enforces
+> `README.md`, the three privacy documents — the wiki lint pass, and the `CLAUDE.md` budget. No hook enforces
 > these: they need judgement ([[Hooks]]).
 > Related: [[Hooks]] · [[Release]] · [[Security]] · [[ParallelDelivery]]
-> Updated: 2026-09-19
+> Updated: 2026-09-26
 
 ## Facts
 
@@ -59,6 +59,31 @@ and each workflow rule as one short statement with a pointer. Anything past the 
 to the page that owns it. The rules themselves are pruned before each release
 (`release-android` §3b, [[Release]]).
 
+### Wiki lint
+
+The wiki is kept current by each change (the ingest rules in `INDEX.md`), and checked as a
+whole in the pruning pass before each release (`release-android` §3b, [[Release]]). The pass
+proposes; the fixes are their own pull request.
+
+Mechanical — by hand until a script does it (wip entry `the-wiki-has-no-lint-script`):
+
+- **Dead references:** a backticked repository path that no longer exists, a `file:line` past
+  the end of the file.
+- **Orphans and gaps:** a page no other page links to and `INDEX.md` does not list; a
+  dangling `[[Link]]` named by several pages is a page to write.
+- **Dates:** an `INDEX.md` row whose date differs from its page's `Updated:`; a page whose
+  `Updated:` is older than the last commit to the sources it cites.
+- **Budgets:** an index row over 25 words, a page over 400 lines.
+- **Old status blocks:** a `Status: Outdated` block older than the last release — rewrite the
+  fact it sits under and move the why to `## Decisions & History`.
+
+Judgement:
+
+- **Contradictions:** the same fact stated differently on two pages — keep it on its owner,
+  link from the other.
+- **Rebuilt answers:** a synthesis a pull request body or a `wip/done/` entry carries that no
+  page does.
+
 ## Decisions & History
 
 - **The README table (2026-09-09).** `README.md` drifted for ten months because no rule said
@@ -73,3 +98,10 @@ to the page that owns it. The rules themselves are pruned before each release
   capped `CLAUDE.md` at 120 lines (it was 204): details moved to the page that owns them —
   this page took the README table and the privacy rule. The periodic pruning pass decided the
   same day is recorded in [[Release]].
+- **Karpathy's LLM Wiki pattern (2026-09-26).** Compared with the idea file
+  (gist.github.com/karpathy/442a6bf555914893e9891c11519de94f): its *ingest* became "changing
+  a fact is an ingest" and "one owner per fact", its *query* "answers compound", its *lint*
+  the section above; the index got its one-line budget back — every session reads it. Not
+  adopted: a `log.md` (`git log -- .llmwiki` and each page's history already give the
+  timeline), a search engine (twenty pages, the index and `grep` suffice), YAML frontmatter
+  (nothing queries it).

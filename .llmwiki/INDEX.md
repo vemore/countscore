@@ -13,7 +13,16 @@ Load this file first. Then read only the pages your task touches.
 - A fact that turns out to be wrong gets a status block directly under it rather than a
   silent rewrite:
   `> **Status: Outdated** (YYYY-MM-DD) — what changed, and what now holds.`
-- When you change a durable fact, update the page **and** its `Updated:` date.
+- **One owner per fact.** A fact lives on one page; other pages link to it, never restate it.
+- **Changing a fact is an ingest.** `grep -rn` the old value across `.llmwiki/` and fix every
+  page it falsifies, in the same change, each with its `Updated:` date and its row below.
+- **Answers compound.** A synthesis the next task would otherwise rebuild — a root cause, a
+  comparison, a measured figure — goes into the page that owns the topic in the same pull
+  request, not only into the chat or the pull request body.
+- Two pages that disagree and cannot be settled now: `> **Status: Contradicted** (YYYY-MM-DD)
+  — see [[Other]]` on both, and a `wip/` entry.
+- **Budgets:** a row below is one line of 25 words at most; a page stays under 400 lines —
+  past it, split by sub-topic and leave a pointer. The lint pass: [[Documentation]].
 - Do not paste code into pages. Point at the file and the line.
 
 ## Overview
@@ -27,11 +36,11 @@ Load this file first. Then read only the pages your task touches.
 
 | Page | Summary | Updated |
 |---|---|---|
-| [[MobileApp]] | `lib/` layout, providers, screens (the game-type editor among them), widgets, services (the review prompt), `utils/`, the dynamic-icon constraint | 2026-09-25 |
+| [[MobileApp]] | `lib/` layout, providers, screens, widgets, services and `utils/`, the dynamic-icon constraint | 2026-09-25 |
 | [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-09-20 |
-| [[SchemaV10]] | Schema v21: the twelve tables, `rules`/`rules_slug` (21 rulesets, keyed on `builtin_key`), `builtin_key` and its live-unique index, what `isDefault` does and does not mean, sync bookkeeping and capture triggers, tombstones, the migration chain, the v17 dedupe of keyless built-in copies, the v18 replay that restores a wiped slug, the v19 step that gives a lost `builtin_key` back, the v20 step that gives the last-survivor types their end, and the v21 `keypad_shortcut` column | 2026-09-25 |
-| [[I18n]] | 10 languages × 430 keys, French template, English fallback; built-in game-type names are localized and sorted by a per-name key (pinyin in zh); the key *and* value checks; long-form rules are assets, not ARB; store locales differ | 2026-09-25 |
-| [[Web]] | PWA specifics: sqlite3.wasm, IndexedDB (not OPFS) and the flush that makes it survive a reload, committed binaries and the check that gates them, `kIsWeb` guards, the wake lock, sharing and game sounds under the CSP, base href, the self-hosted CanvasKit and fallback fonts (no Google request), the service worker (offline after one visit, a reload offered after a deploy), the GitHub Pages workflow and its CORS consequences | 2026-09-24 |
+| [[SchemaV10]] | Schema v21: the twelve tables, `builtin_key` and its unique index, sync bookkeeping and triggers, tombstones, the migration chain and its repair steps | 2026-09-25 |
+| [[I18n]] | 10 languages × 430 keys, French template, English fallback, localized built-in names and their sort key, the ARB checks, rules as assets | 2026-09-25 |
+| [[Web]] | PWA: sqlite3.wasm on IndexedDB and its flush, committed binaries, `kIsWeb` guards, the CSP, self-hosted fonts, the service worker, GitHub Pages | 2026-09-24 |
 
 ## Backend (FastAPI)
 
@@ -48,15 +57,15 @@ Load this file first. Then read only the pages your task touches.
 |---|---|---|
 | [[Deployment]] | Synology NAS, Web Station TLS, `deploy_nas.sh`, `deploy_web.sh`, the Pages copy of the PWA, environment | 2026-09-24 |
 | [[Hooks]] | What Claude Code refuses mechanically, why each rule left CLAUDE.md, recovering from a stale branch | 2026-09-19 |
-| [[Documentation]] | Which documents a change implicates: wiki, README table, the three privacy documents, why a share sheet is not a data flow; the CLAUDE.md budget | 2026-09-19 |
-| [[ParallelDelivery]] | Protection on main, worktrees, local cleanup, why one PR per theme and serial squash merges (`wip/` format: `wip/README.md`), the refinement pass that feeds `wip/todo/`, the execution lanes A–D and the independent reviewer's calibration, the deploy-reachability probe and "merged, not deployed" | 2026-09-25 |
+| [[Documentation]] | Which documents a change implicates (wiki, README, the three privacy documents), the wiki lint pass, the CLAUDE.md budget | 2026-09-26 |
+| [[ParallelDelivery]] | Protection on main, worktrees, cleanup, one PR per theme, serial squash merges, refinement, lanes A–D, the reviewer, "merged, not deployed" | 2026-09-25 |
 | [[Security]] | Defended surfaces (the group owner among them), and the security debt that is knowingly open | 2026-09-24 |
-| [[Testing]] | Unit, Drift, migration, e2e web and device; backend pytest, release tooling; CI jobs and how `scope` picks them, `alembic check`, dependency audit, the `web/` binary gate, the privacy page check and the monthly lock refresh | 2026-09-25 |
-| [[Release]] | Play Store signing state, publishing through the Play API, target API, 2026 Play policy constraints, release cadence and pruning pass | 2026-09-25 |
-| [[StoreListing]] | The 10 store locales, the keyword per market, category and tags, the generated assets (icon and teal feature graphic) and the per-locale composed screenshots, Play's text limits, and the 2026-09-16 acquisition baseline | 2026-09-20 |
+| [[Testing]] | Unit, Drift, migration, e2e web and device, backend pytest; CI jobs and `scope`, and the extra gates (alembic, audit, binaries, privacy page) | 2026-09-25 |
+| [[Release]] | Play signing, publishing through the Play API, target API, 2026 policy constraints, cadence, the pruning pass | 2026-09-25 |
+| [[StoreListing]] | The 10 store locales and their keywords, category and tags, generated icon, feature graphic and screenshots, text limits, acquisition baseline | 2026-09-20 |
 
 ## Procedures live in skills, not here
 
 These pages describe *what is*. For *how to do*, use the skills in `.claude/skills/`:
 `i18n-add-string`, `db-migration`, `release-android`, `backend-deploy`, `web-deploy`,
-`flutter-device-test`, `ship-parallel`.
+`flutter-device-test`, `ship-parallel`, `wip-refine`.
