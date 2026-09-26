@@ -29,6 +29,12 @@ the fix, twenty lines or so.
 
 **Fix:** <the proposed change.>
 
+**State of the art:** <only when the subject is common — not specific to CountScore, e.g.
+backups, deploy ordering, migrations, service workers, sync conflicts, CI metrics. A web
+search for current practice, with sources and the date consulted, and where the proposed
+fix departs from it and why. Skip this section for an entry that is purely about this
+codebase.>
+
 **Acceptance:** <optional when written; required to be promoted to todo/ —
 2 to 5 statements a test or a command can check.>
 

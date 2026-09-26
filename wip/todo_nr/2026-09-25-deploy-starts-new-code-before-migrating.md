@@ -21,6 +21,17 @@ the app — and keep each revision backward compatible with the code still runni
 A failed dump or upgrade stops before the swap, leaving the old container serving. Write the
 expand/contract rule into the `db-migration` skill and `.llmwiki/Deployment.md`.
 
+**State of the art** (web search, 2026-09-26): the expand/contract pattern is the standard
+answer — add new structure first (expand), deploy code that tolerates both old and new
+schema, then remove the old structure later (contract) — always migrating before the new
+code serves traffic, and keeping each revision backward compatible with the release still
+running. The fix here matches the order (migrate in a one-off container, then swap) but
+folds expand and contract into the same single-service deploy rather than separate releases,
+the accepted simplification for one backend with a single deployed version rather than a
+rolling multi-instance rollout.
+Sources: [Reliable Penguin, expand/contract in practice](https://blogs.reliablepenguin.com/2025/11/16/database-migrations-without-drama-expand-contract-in-practice),
+[Tim Wellhausen, Expand and Contract](https://www.tim-wellhausen.de/papers/ExpandAndContract/ExpandAndContract.html).
+
 **Acceptance:**
 - In `deploy_nas.sh`, `alembic upgrade head` runs before any `docker compose up -d`.
 - A deploy whose upgrade fails leaves the previous `api` container running (checked by

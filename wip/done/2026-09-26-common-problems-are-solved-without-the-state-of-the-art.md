@@ -1,5 +1,9 @@
 # Entries on common problems are designed without looking at the state of the art
 
+- **Status:** done (2026-09-26) — closed by docs/state-of-the-art-in-entries. `wip/README.md`
+  template now shows the `**State of the art:**` section; `wip-refine` §4 lists it in the
+  definition of ready as its own check (6); the six open `backend-hardening` / `dependencies`
+  / `deploy-safety` entries in `wip/todo_nr/` each got the section with 2026-09-26 sources.
 - **Noted:** 2026-09-26 — the user asked that an entry on a common subject get a web search
   on the state of the art and current best practice
 - **Theme:** tooling
