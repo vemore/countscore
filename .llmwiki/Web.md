@@ -98,7 +98,7 @@ builds schema v9 directly. See [[DataLayer]].
 
 > **Status: Outdated** (2026-09-13) — `onCreate` builds the current schema (v11), and a
 > browser that already holds a database from an earlier PWA release upgrades through Drift's
-> `onUpgrade`. See [[SchemaV10]].
+> `onUpgrade`. See [[Schema]].
 
 Group sync works in the PWA as on Android: `flutter_secure_storage` keeps the device token
 encrypted in localStorage, and the stream is `ws(s)://` on the configured server, allowed by

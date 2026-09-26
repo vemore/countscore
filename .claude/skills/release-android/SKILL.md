@@ -82,8 +82,9 @@ origin/main`):
 3. Propose removing or merging those with no evidence, and check `wc -l CLAUDE.md` against
    its budget. The proposal is its own pull request, decided by the user — never folded into
    the release branch, and never a reason to hold the release.
-4. Lint the wiki (`.llmwiki/Documentation.md`, "Wiki lint"); its findings join the same
-   proposal.
+4. Lint the wiki: `scripts/wiki_lint.sh` (mechanical checks; `.llmwiki/Documentation.md`,
+   "Wiki lint" for what it does not cover). Its findings, and the ones left to do by hand,
+   join the same proposal.
 5. Read the outcome and the cost next to the rule-by-rule evidence, against the baseline in
    `.llmwiki/ParallelDelivery.md` § Measuring delivery: `scripts/delivery_metrics.sh <tag
    date>` (rework rate, change failure rate, first-run-green, size) and

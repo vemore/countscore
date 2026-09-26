@@ -75,7 +75,7 @@ class DatabaseService {
     const textType = 'TEXT NOT NULL';
     const intType = 'INTEGER NOT NULL';
 
-    // Schema v6 — sync-ready (see .llmwiki/SchemaV10.md)
+    // Schema v6 — sync-ready (see .llmwiki/Schema.md)
     // Every entity has: uuid (logical key for sync), created_at, updated_at,
     // deleted_at (soft delete), group_id (NULL = local-only, non-NULL = shared).
 
@@ -123,7 +123,7 @@ class DatabaseService {
 
     // Schema v9 — players are GLOBAL (unique per (group_id, name)); a separate
     // `game_players` join carries the per-game membership (order, color). See
-    // .llmwiki/SchemaV10.md. `game_players.id` is the per-game key that
+    // .llmwiki/Schema.md. `game_players.id` is the per-game key that
     // `scores` references (preserved across the v8→v9 migration).
     await db.execute('''
       CREATE TABLE players (
@@ -540,7 +540,7 @@ class DatabaseService {
     }
   }
 
-  /// v8 → v9 migration: global player identity (see .llmwiki/SchemaV10.md).
+  /// v8 → v9 migration: global player identity (see .llmwiki/Schema.md).
   ///
   /// Before: `players` is per-game (`players.gameId`), and `scores.playerId`
   /// references those per-game rows. Cross-game stats merge every human sharing
@@ -728,7 +728,7 @@ class DatabaseService {
   /// - We do NOT drop any existing column. Worst case the new columns are
   ///   unused.
   /// - The full normalization of players (global per group, see
-  ///   .llmwiki/SchemaV10.md) is deferred to a future migration v8 because it
+  ///   .llmwiki/Schema.md) is deferred to a future migration v8 because it
   ///   requires actual groups to scope into; doing it here would force every
   ///   existing user into a transient state.
   Future<void> _upgradeV5toV6(Database db) async {

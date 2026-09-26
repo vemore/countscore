@@ -1,6 +1,6 @@
 # Les `rules_slug` effacés par l'ancien éditeur ne sont jamais restaurés, alors qu'une reprise existe déjà
 
-**Status:** done (2026-09-20) — closed by fix/rules-slug-restore. Le schéma passe en **v18** (`lib/services/drift/database.dart`, `lib/services/database_service.dart`) et le pas v18, `applyV18` (`lib/services/sync/sync_schema.dart`), **est** `applyV16` : aucune logique nouvelle, seulement la deuxième exécution qui manquait. Les deux moteurs le lancent (chaîne sqflite sur natif, `onUpgrade` de Drift sur web). Le sort d'`isDefault` est tranché et écrit : colonne **historique**, que rien ne lit et sur laquelle plus aucune migration, requête ou écran ne branche — `builtin_key` est la seule identité d'un type intégré. Elle n'est ni supprimée (réécrire `game_types` chez tout le monde pour rien) ni retirée de la charge utile (changement de contrat sans bénéfice), et v18 ne la restaure pas. Documenté dans [[SchemaV10]] (section `game_types.isDefault`, ligne v18 de l'historique, deux décisions), dans [[Sync]] et sur le champ lui-même (`lib/models/game_type.dart`). `test/migration_v17_to_v18_test.dart` couvre les quatre critères. Le `rules` écrit à la main que le bug a effacé reste irrécupérable : c'est du contenu utilisateur sans seconde source. La question de la charge utile `rules_slug` n'a pas eu à être ouverte : le pas v18 tient sans y toucher.
+**Status:** done (2026-09-20) — closed by fix/rules-slug-restore. Le schéma passe en **v18** (`lib/services/drift/database.dart`, `lib/services/database_service.dart`) et le pas v18, `applyV18` (`lib/services/sync/sync_schema.dart`), **est** `applyV16` : aucune logique nouvelle, seulement la deuxième exécution qui manquait. Les deux moteurs le lancent (chaîne sqflite sur natif, `onUpgrade` de Drift sur web). Le sort d'`isDefault` est tranché et écrit : colonne **historique**, que rien ne lit et sur laquelle plus aucune migration, requête ou écran ne branche — `builtin_key` est la seule identité d'un type intégré. Elle n'est ni supprimée (réécrire `game_types` chez tout le monde pour rien) ni retirée de la charge utile (changement de contrat sans bénéfice), et v18 ne la restaure pas. Documenté dans [[Schema]] (section `game_types.isDefault`, ligne v18 de l'historique, deux décisions), dans [[Sync]] et sur le champ lui-même (`lib/models/game_type.dart`). `test/migration_v17_to_v18_test.dart` couvre les quatre critères. Le `rules` écrit à la main que le bug a effacé reste irrécupérable : c'est du contenu utilisateur sans seconde source. La question de la charge utile `rules_slug` n'a pas eu à être ouverte : le pas v18 tient sans y toucher.
 
 - **Noted:** 2026-09-20 — test sur appareil de 1.3.1+7, ZapZap et 6 qui prend affichent « Pas encore de règles » sur le Pixel du propriétaire
 - **Theme:** game-types
@@ -66,7 +66,7 @@ existe — c'est `builtin_key` qui le fait, et lui seul.
    vide `rules_slug` volontairement — *Restaurer la valeur par défaut*
    (`game_rules_screen.dart:83-89`) vide `rules`, pas le slug. Rejouer est donc sûr.
 2. **Trancher le sort d'`isDefault`.** Soit on lui donne un sens tenable et on le documente
-   dans [[SchemaV10]], soit on le retire du modèle et de la charge de synchronisation. Ne pas
+   dans [[Schema]], soit on le retire du modèle et de la charge de synchronisation. Ne pas
    laisser une colonne que le code écrit, envoie, jette à la réception, et dont une entrée a
    déduit à tort qu'une perte était irréparable.
 
@@ -77,7 +77,7 @@ existe — c'est `builtin_key` qui le fait, et lui seul.
 - Une ligne sans `builtin_key` (type créé ou renommé par l'utilisateur) reste intacte.
 - Un `rules` écrit à la main n'est pas touché — seul le slug est rempli.
 - Un test de migration v17 → v18 couvre les trois cas, à côté de `test/migration_v16_to_v17_test.dart`.
-- Le sort d'`isDefault` est écrit quelque part : soit son sens dans [[SchemaV10]], soit sa
+- Le sort d'`isDefault` est écrit quelque part : soit son sens dans [[Schema]], soit sa
   suppression.
 
 **Décidé (2026-09-20, refinement) :** la question de la charge utile se tranche en

@@ -1,5 +1,14 @@
 # The wiki has no lint script
 
+**Status:** done (2026-09-26) — closed by feat/wiki-lint. `scripts/wiki_lint.sh` covers the
+mechanical checks (dead backticked paths via the new shared `scripts/lib/dead_paths.sh`,
+dangling `[[links]]`, the page-size and `Status: Outdated` findings, and `INDEX.md` date
+drift), self-tested by `scripts/wiki_lint_selftest.sh` and wired into CI next to the other
+self-tests; it is a report, not a gate, since the real wiki fails it today. `release-android`
+§3b runs it. `SchemaV10` was renamed to `Schema` and every reference updated (15 files).
+Splitting the six over-budget pages and folding the status blocks is
+[[2026-09-26-wiki-pages-over-budget-and-old-status-blocks]].
+
 - **Noted:** 2026-09-26 — comparing `.llmwiki/` with Karpathy's LLM Wiki pattern
 - **Theme:** docs
 - **Area:** tooling
@@ -9,7 +18,7 @@
 §3b. Its mechanical half is script work: `scripts/wip.sh` `refine` already finds dead
 backticked paths, but only in `wip/` entries. What a first pass would find today:
 - Six pages over the 400-line budget of `INDEX.md`: `MobileApp.md` 1060, `Testing.md` 627,
-  `Web.md` 489, `Release.md` 481, `Sync.md` 461, `SchemaV10.md` 439 — a task that needs one
+  `Web.md` 489, `Release.md` 481, `Sync.md` 461, `Schema.md` 439 — a task that needs one
   fact loads the whole page.
 - `SchemaV10.md` describes schema v21; its name is referenced from 15 files.
 - 75 `Status: Outdated` blocks (13 in `Release.md`, 11 in `Security.md`), never folded back.

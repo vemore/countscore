@@ -1,14 +1,14 @@
 # Sync
 
 > Scope: the offline-first sharing protocol — server and Flutter client.
-> Related: [[Api]] · [[SchemaV10]] · [[Backend]] · [[KnownLimits]]
+> Related: [[Api]] · [[Schema]] · [[Backend]] · [[KnownLimits]]
 > Updated: 2026-09-25
 
 ## Facts
 
 **Status: the backend is complete and tested. There is no client.** `sync_service.dart` and
 `backend_client.dart` do not exist on disk, and nothing in `lib/` writes to `outbox`. The
-schema is ready and waiting — see [[SchemaV10]].
+schema is ready and waiting — see [[Schema]].
 
 > **Status: Outdated** (2026-09-13) — the client exists: `lib/services/sync/` and
 > `lib/providers/group_provider.dart`, described under **The client** below.
@@ -88,13 +88,13 @@ different languages hold "Autre" and "その他" for one and the same type. Thre
   (`sync_engine.dart`, `test/sync/sync_engine_resolve_test.dart`).
 
 Last-writer-wins on `game_types.name` is therefore harmless for a built-in row — nothing
-reads it while the key is set. See [[SchemaV10]] and [[I18n]].
+reads it while the key is set. See [[Schema]] and [[I18n]].
 
 > **`is_default` is pushed but never applied.** The payload carries it
 > (`sync_store.dart`, `case 'game_type'`) and the server stores it, but `_applyGameType`
 > inserts every received row with `isDefault: 0`, so the value never round-trips and a
 > built-in type acquired from a group has always carried 0. It is a historical column that
-> nothing reads; `builtin_key` is the identity. [[SchemaV10]] settles it, and no back-fill
+> nothing reads; `builtin_key` is the identity. [[Schema]] settles it, and no back-fill
 > written since v14 keys on it — which is what let the v18 step repair the `rules_slug` the
 > pre-1.3.1 editor wiped, NULLs it had already pushed to the group included.
 
@@ -109,7 +109,7 @@ reads it while the key is set. See [[SchemaV10]] and [[I18n]].
 
 ### The keypad shortcut travels only well formed (since 2026-09-24)
 
-`game_types.keypad_shortcut` (schema v21, [[SchemaV10]]) is the compact JSON of a
+`game_types.keypad_shortcut` (schema v21, [[Schema]]) is the compact JSON of a
 `KeypadShortcut` (`lib/models/keypad_shortcut.dart`). Both ends check its shape:
 
 - **Server**: `keypad_shortcut_problem` in `backend/app/services/delta_bounds.py` refuses
@@ -132,7 +132,7 @@ reads it while the key is set. See [[SchemaV10]] and [[I18n]].
   (`_insertedKeypadShortcut`). An absent key on an update changes nothing, as for every
   column.
 - **Migration**: the v21 fill of the built-in rows is not pushed; capture is suppressed
-  around it ([[SchemaV10]]).
+  around it ([[Schema]]).
 
 Tests: `test/sync/sync_store_test.dart`, `backend/tests/test_sync_contract.py`, and the
 round trip through a real server in `test/sync/sync_two_devices_test.dart`.
@@ -163,7 +163,7 @@ only thing carrying its rules between devices.
 > **Rejected: dropping `rules_slug` from the payload** and deriving it on receipt. It would
 > make the corruption non-contagious in one line, but it is a contract change between
 > devices, and it costs a renamed type its rules — exactly the case the column exists for
-> ([[SchemaV10]]). Weighed twice now, in
+> ([[Schema]]). Weighed twice now, in
 > `wip/2026-09-20-wiped-rules-slug-is-never-restored` and in
 > `wip/2026-09-20-a-null-rules-slug-travels-and-undoes-the-v18-repair`.
 
@@ -171,7 +171,7 @@ Healing the group needs nothing more: the v18 `UPDATE` on a linked row fires the
 trigger, so a repaired device pushes its restored slug and overwrites the null the server
 holds. `test/sync/sync_store_test.dart` covers the five cases.
 
-The v19 step does the same with a `builtin_key` it gives back ([[SchemaV10]]): a linked row
+The v19 step does the same with a `builtin_key` it gives back ([[Schema]]): a linked row
 pushes its new key and slug. Where the group already holds a live row with that key the
 server answers `builtin_key_taken`, and the client supersedes the delta and pulls — which
 relinks the local row only if the group's keyed row had **not** been pulled yet. If it had

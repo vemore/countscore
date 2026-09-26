@@ -7,7 +7,7 @@
 
 `INDEX.md` caps a page at 400 lines so that a task loads only what it needs. Over it on
 2026-09-26: `MobileApp.md` 1060, `Testing.md` 627, `Web.md` 489, `Release.md` 481, `Sync.md`
-461, `SchemaV10.md` 439. And 75 `Status: Outdated` blocks sit under facts they contradict
+461, `Schema.md` 439. And 75 `Status: Outdated` blocks sit under facts they contradict
 (13 in `Release.md`, 11 in `Security.md`, 8 each in `Web.md` and `Sync.md`).
 
 **Fix:** split the pages by sub-topic, most-read first — the order comes from

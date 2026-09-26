@@ -2,7 +2,7 @@
 ///
 /// sqflite (`DatabaseService`) runs these on native installs and upgrades; Drift
 /// (`AppDatabase` `onCreate` and `onUpgrade`) runs them on web. Keeping one list is what stops the
-/// two from drifting apart. See .llmwiki/SchemaV10.md (v11 section) and
+/// two from drifting apart. See .llmwiki/Schema.md (v11 section) and
 /// .llmwiki/Sync.md.
 ///
 /// How it works: every write to a row that belongs to a group — or to a player or
