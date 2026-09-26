@@ -1,0 +1,18 @@
+{
+  "skill_name": "db-migration",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Players should be able to carry a free-text note. Add a nullable text column `notes` to the `players` table, with the migration that brings an existing database to it. No screen reads or writes it yet.",
+      "expected_output": "The schema version bumped by one in both engines (the sqflite chain's DatabaseService.schemaVersion and Drift's AppDatabase.schemaVersion, kept equal), the column declared on the Drift Players table, a migration step for existing files, a new migration test for the step, one conventional commit. Source: wip/done/2026-09-18-keypad-has-no-per-game-shortcut.md (v20 to v21: one nullable column, its step and test/migration_v20_to_v21_test.dart).",
+      "files": [],
+      "expectations": [
+        "`DatabaseService.schemaVersion` in lib/services/database_service.dart is the previous version plus one",
+        "`AppDatabase.schemaVersion` in lib/services/drift/database.dart equals it",
+        "The Drift `Players` table in lib/services/drift/tables.dart declares a nullable `notes` text column",
+        "A new test file under test/ covers the migration to the new version",
+        "The work is committed with a conventional subject and the tree is clean"
+      ]
+    }
+  ]
+}

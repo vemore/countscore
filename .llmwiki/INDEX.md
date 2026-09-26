@@ -56,6 +56,7 @@ Load this file first. Then read only the pages your task touches.
 | Page | Summary | Updated |
 |---|---|---|
 | [[Deployment]] | Synology NAS, Web Station TLS, `deploy_nas.sh`, `deploy_web.sh`, the Pages copy of the PWA, environment | 2026-09-24 |
+| [[AgentEvals]] | `evals/run.sh`: past tasks replayed with `claude -p` in throwaway worktrees, script-checked; when to run them, skill-creator cases per skill | 2026-09-26 |
 | [[Hooks]] | What Claude Code refuses mechanically, why each rule left CLAUDE.md, recovering from a stale branch | 2026-09-19 |
 | [[Documentation]] | Which documents a change implicates (wiki, README, the three privacy documents), the wiki lint pass, the CLAUDE.md budget | 2026-09-26 |
 | [[ParallelDelivery]] | Protection on main, worktrees, cleanup, one PR per theme, serial squash merges, refinement, lanes A–D, the reviewer, "merged, not deployed", delivery and cost metrics | 2026-09-26 |
