@@ -5,6 +5,7 @@ import 'package:drift/drift.dart';
 import '../../models/keypad_shortcut.dart';
 import '../backend_client.dart';
 import '../drift/database.dart';
+import '../schema_steps.dart';
 import '../uuid.dart';
 import 'sync_ids.dart';
 import 'sync_schema.dart';

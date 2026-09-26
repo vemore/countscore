@@ -19,7 +19,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:countscore/l10n/app_localizations.dart';
 import 'package:countscore/services/database_service.dart';
 import 'package:countscore/services/drift/database.dart';
-import 'package:countscore/services/sync/sync_schema.dart';
+import 'package:countscore/services/schema_steps.dart';
 
 void main() {
   sqfliteFfiInit();

@@ -2,7 +2,7 @@
 
 > Scope: how the app reaches SQLite — Drift, the sqflite bootstrap, repositories, codegen.
 > Related: [[SchemaV10]] · [[MobileApp]] · [[Web]] · [[Testing]] · [[Sync]]
-> Updated: 2026-09-20
+> Updated: 2026-09-26
 
 ## Facts
 
@@ -106,7 +106,8 @@ See [[Web]].
 
   > **Status: Outdated** (2026-09-13) — true for native, wrong for web: a browser that ran
   > the v9 PWA upgrades through Drift alone. `onUpgrade` now replays the post-v9 steps from
-  > the SQL shared with sqflite (`lib/services/sync/sync_schema.dart`). Not a mirrored chain:
+  > the SQL shared with sqflite (`lib/services/sync/sync_schema.dart` for v10 and v11,
+  > `lib/services/schema_steps.dart` from v12). Not a mirrored chain:
   > only steps after v9, one source for both engines. See [[SchemaV10]].
  Maintaining the same
   migration twice, once per engine, would guarantee the two drift apart. sqflite is the
