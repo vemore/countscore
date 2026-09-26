@@ -735,5 +735,6 @@
   "replaceConfigUnsynced": "{count, plural, other{このデバイスの{count}件の変更がまだグループに到達していません。今離脱するとグループはこれらを受け取りません。}}",
   "replaceConfigLeaveAnyway": "それでも退出",
   "replaceConfigDone": "設定を置き換えました",
-  "replaceConfigUnchanged": "このデバイスは既にこの設定を使用しています"
+  "replaceConfigUnchanged": "このデバイスは既にこの設定を使用しています",
+  "configShareTooLong": "このリンクは長すぎて QR コードに収まりません。代わりに「リンクをコピー」を使ってください。"
 }

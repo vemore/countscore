@@ -9,6 +9,7 @@ import '../l10n/app_localizations.dart';
 import '../providers/backend_provider.dart';
 import '../providers/group_provider.dart';
 import '../utils/config_link.dart';
+import 'replace_config_dialog.dart' show currentGroupLabel;
 
 /// Settings → *Share by QR code*: a QR code carrying this device's server and,
 /// when it is in a group, the group's invite code, as the link
@@ -49,6 +50,10 @@ class _ConfigShareSheetState extends State<ConfigShareSheet> {
   String? _base;
   String? _baseError;
 
+  /// The link last copied, so the button can say so on the sheet itself: a
+  /// snackbar would go to the Settings page under the sheet, out of sight.
+  String? _copied;
+
   @override
   void initState() {
     super.initState();
@@ -65,8 +70,10 @@ class _ConfigShareSheetState extends State<ConfigShareSheet> {
     if (!mounted) return;
     final initial = normalizePwaBase(stored ?? '') ?? widget.runningPwaBase;
     setState(() {
-      _base = initial;
-      _baseController.text = initial ?? '';
+      // A slow read must not undo what the user did meanwhile: a saved address
+      // stands, and so does text already typed.
+      _base ??= initial;
+      if (_baseController.text.isEmpty) _baseController.text = initial ?? '';
     });
   }
 
@@ -126,7 +133,7 @@ class _ConfigShareSheetState extends State<ConfigShareSheet> {
             else
               Text(invite == null
                   ? l10n.configShareExplainServer
-                  : l10n.configShareExplainGroup(group.groupName ?? '')),
+                  : l10n.configShareExplainGroup(currentGroupLabel(l10n, group))),
             const SizedBox(height: 16),
             if (link != null) ...[
               Center(
@@ -134,17 +141,19 @@ class _ConfigShareSheetState extends State<ConfigShareSheet> {
                   key: const Key('config_share_qr'),
                   data: link,
                   semanticLabel: l10n.configShareQrLabel,
+                  tooLongText: l10n.configShareTooLong,
                 ),
               ),
               Center(
                 child: TextButton.icon(
                   key: const Key('config_share_copy'),
-                  icon: const Icon(Icons.copy),
-                  label: Text(l10n.configShareCopyLink),
+                  icon: Icon(_copied == link ? Icons.check : Icons.copy),
+                  label: Text(_copied == link
+                      ? l10n.configShareLinkCopied
+                      : l10n.configShareCopyLink),
                   onPressed: () async {
-                    final messenger = ScaffoldMessenger.of(context);
                     await Clipboard.setData(ClipboardData(text: link));
-                    messenger.showSnackBar(SnackBar(content: Text(l10n.configShareLinkCopied)));
+                    if (mounted) setState(() => _copied = link);
                   },
                 ),
               ),
@@ -181,23 +190,67 @@ class _ConfigShareSheetState extends State<ConfigShareSheet> {
 
 /// A QR code of [data], black on white whatever the theme — a dark-on-light code
 /// with its quiet zone is what every reader expects — at medium error correction.
-class ConfigQrCode extends StatelessWidget {
-  const ConfigQrCode({super.key, required this.data, this.size = 240, this.semanticLabel});
+///
+/// Encoded once per [data], not on every build: the sheet rebuilds with each
+/// keystroke and each sync status change. Data past a version-40 code's capacity
+/// shows [tooLongText] instead of throwing.
+class ConfigQrCode extends StatefulWidget {
+  const ConfigQrCode({
+    super.key,
+    required this.data,
+    required this.tooLongText,
+    this.size = 240,
+    this.semanticLabel,
+  });
 
   /// The text the code carries.
   final String data;
+
+  /// Shown in place of the code when [data] does not fit in one.
+  final String tooLongText;
   final double size;
   final String? semanticLabel;
 
   @override
+  State<ConfigQrCode> createState() => _ConfigQrCodeState();
+}
+
+class _ConfigQrCodeState extends State<ConfigQrCode> {
+  /// Null when the data does not fit.
+  QrImage? _image;
+
+  @override
+  void initState() {
+    super.initState();
+    _encode();
+  }
+
+  @override
+  void didUpdateWidget(ConfigQrCode old) {
+    super.didUpdateWidget(old);
+    if (old.data != widget.data) _encode();
+  }
+
+  void _encode() {
+    try {
+      _image = QrImage(QrCode(payload: QrPayload.fromString(widget.data)));
+    } on InputTooLongException {
+      _image = null;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final image = QrImage(QrCode(payload: QrPayload.fromString(data)));
+    final image = _image;
+    if (image == null) {
+      return Text(widget.tooLongText, key: const Key('config_share_too_long'));
+    }
     return Semantics(
-      label: semanticLabel,
+      label: widget.semanticLabel,
       image: true,
       child: SizedBox.square(
-        dimension: size,
-        child: CustomPaint(painter: _QrPainter(data, image)),
+        dimension: widget.size,
+        child: CustomPaint(painter: _QrPainter(widget.data, image)),
       ),
     );
   }

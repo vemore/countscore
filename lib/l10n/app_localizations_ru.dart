@@ -1692,6 +1692,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get configShareLinkCopied => 'Ссылка скопирована';
 
   @override
+  String get configShareTooLong =>
+      'Эта ссылка слишком длинная для QR-кода. Используйте «Скопировать ссылку».';
+
+  @override
   String get replaceConfigTitle => 'Заменить конфигурацию?';
 
   @override

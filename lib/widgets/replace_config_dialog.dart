@@ -1,26 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../providers/backend_provider.dart';
 import '../providers/group_provider.dart';
 import '../utils/config_link.dart';
-import 'group_settings_section.dart' show groupActionErrorText;
+import 'group_settings_section.dart'
+    show groupActionErrorText, groupFieldFormatter, groupFieldMaxLength;
 
 /// What [showReplaceConfigDialog] did.
 enum ReplaceConfigResult {
   /// The user said no, at either question, or the link was not valid. Nothing changed.
   cancelled,
 
-  /// This device already uses that server and that group. Nothing asked, nothing changed.
+  /// This device already uses that server and that group, possibly behind an
+  /// older invite code (then the newer one is stored). Nothing else changed.
   unchanged,
 
   /// The server and the group are the link's now.
   applied,
 
-  /// The server is the link's, but joining its group failed; the snackbar says why,
-  /// and Settings → Group can try again.
+  /// The link's group refused this device or could not be reached. Nothing
+  /// changed; the snackbar says why.
   joinFailed,
 }
 
@@ -28,14 +29,15 @@ enum ReplaceConfigResult {
 /// content of a shared configuration link ([parseConfigLink]), showing the
 /// current and the new values. Nothing changes unless the user confirms.
 ///
-/// Joining goes through [GroupProvider.joinGroup], so it asks for this device's
-/// nickname like Settings → Group does, and inherits the sync behaviour. When the
-/// change leaves a group — another server, or another group — and that group
-/// still holds changes this device has not synced ([GroupProvider.pendingChanges]),
-/// a second question warns that leaving discards them.
-///
-/// The server is left replaced when joining fails: it is valid, and the group can
-/// be joined again from Settings. The outcome is also shown as a snackbar.
+/// A group is joined **before** anything is left ([GroupProvider.prepareJoin]):
+/// when the join fails (an old invite code, a rate limit, no network) the current
+/// server and group stay exactly as they were. Once the server has accepted the
+/// device, the link's group may turn out to be the one this device is already in
+/// (same group, newer code): then nothing is left at all. Otherwise, before the
+/// current group is left, a second question comes when the first did not say so
+/// or when changes are still waiting to reach that group, counted at that moment
+/// ([GroupProvider.countPending]); backing out there withdraws the new
+/// registration ([GroupProvider.cancelJoin]).
 Future<ReplaceConfigResult> showReplaceConfigDialog(
   BuildContext context,
   ConfigLink config,
@@ -53,7 +55,7 @@ Future<ReplaceConfigResult> showReplaceConfigDialog(
   }
   final plan = ReplaceConfigPlan(
     currentServer: backend.baseUrl,
-    currentGroup: group.isJoined ? group.groupName ?? '' : null,
+    currentGroup: group.isJoined ? currentGroupLabel(l10n, group) : null,
     currentInvite: group.isJoined ? group.shareToken : null,
     newServer: server,
     newInvite: config.invite,
@@ -69,16 +71,24 @@ Future<ReplaceConfigResult> showReplaceConfigDialog(
   );
   if (nickname == null || !context.mounted) return ReplaceConfigResult.cancelled;
 
-  final pending = group.pendingChanges;
-  if (plan.leavesGroup && pending > 0) {
-    final leave = await showDialog<bool>(
+  /// Asks before the current group is left; true to go on.
+  Future<bool> mayLeave() async {
+    final pending = await group.countPending();
+    if (pending == 0 && plan.announcesLeaving) return true;
+    if (!context.mounted) return false;
+    final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.confirmation),
-        content: Text(l10n.replaceConfigUnsynced(pending), key: const Key('replace_config_unsynced')),
+        content: Text(
+          pending > 0
+              ? l10n.replaceConfigUnsynced(pending)
+              : l10n.replaceConfigLeavesGroup(plan.currentGroup!),
+          key: const Key('replace_config_leave_question'),
+        ),
         actions: [
           TextButton(
-            key: const Key('replace_config_unsynced_cancel'),
+            key: const Key('replace_config_leave_cancel'),
             onPressed: () => Navigator.pop(context, false),
             child: Text(l10n.cancel),
           ),
@@ -86,36 +96,60 @@ Future<ReplaceConfigResult> showReplaceConfigDialog(
             key: const Key('replace_config_leave_anyway'),
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
-            child: Text(l10n.replaceConfigLeaveAnyway),
+            child: Text(pending > 0 ? l10n.replaceConfigLeaveAnyway : l10n.groupLeave),
           ),
         ],
       ),
     );
-    if (leave != true) return ReplaceConfigResult.cancelled;
+    return ok == true;
   }
 
-  // Leave first, while the group's own server is still the configured one, so
-  // the device is revoked where it was registered.
-  if (plan.leavesGroup) await group.leave();
-  if (plan.changesServer) {
-    await backend.setBaseUrl(server);
-    // The proxy provider hands the URL over on its next rebuild; joining needs
-    // it now. A second call with the same URL returns at once.
-    await group.updateBackend(server);
-  }
-  if (plan.joinsGroup) {
-    try {
-      await group.joinGroup(config.invite!, nickname);
-    } on GroupActionException catch (e) {
-      snack(groupActionErrorText(l10n, e));
-      return ReplaceConfigResult.joinFailed;
+  if (!plan.joinsGroup) {
+    // A server alone, another one: a group on the old server cannot follow.
+    if (group.isJoined) {
+      if (!await mayLeave()) return ReplaceConfigResult.cancelled;
+      await group.leave();
     }
+    await backend.setBaseUrl(server);
+    // The proxy provider hands the URL over on its next rebuild; now is sooner.
+    await group.updateBackend(server);
+    snack(l10n.replaceConfigDone);
+    return ReplaceConfigResult.applied;
+  }
+
+  final JoinCandidate candidate;
+  try {
+    candidate = await group.prepareJoin(server, config.invite!, nickname);
+  } on GroupActionException catch (e) {
+    snack(groupActionErrorText(l10n, e));
+    return ReplaceConfigResult.joinFailed;
+  }
+  if (!candidate.sameGroup && group.isJoined && !await mayLeave()) {
+    await group.cancelJoin(candidate);
+    return ReplaceConfigResult.cancelled;
+  }
+  // Leaves the current group on its own server, then syncs with the new one.
+  await group.completeJoin(candidate);
+  if (plan.changesServer) await backend.setBaseUrl(server);
+  if (candidate.sameGroup) {
+    snack(l10n.replaceConfigUnchanged);
+    return ReplaceConfigResult.unchanged;
   }
   snack(l10n.replaceConfigDone);
   return ReplaceConfigResult.applied;
 }
 
-/// What replacing the current configuration with a link's would change.
+/// How the current group is named on screen: its name, or its invite code when
+/// the name is not known (a membership recorded before names were kept).
+String currentGroupLabel(AppLocalizations l10n, GroupProvider group) {
+  final name = group.groupName?.trim() ?? '';
+  if (name.isNotEmpty) return name;
+  final code = group.shareToken;
+  return code == null ? l10n.groupSection : l10n.replaceConfigInvite(code);
+}
+
+/// What replacing the current configuration with a link's would change, as far
+/// as it can be known before asking the server.
 @immutable
 class ReplaceConfigPlan {
   const ReplaceConfigPlan({
@@ -128,7 +162,8 @@ class ReplaceConfigPlan {
 
   final String? currentServer;
 
-  /// The current group's name; null when this device is in no group.
+  /// The current group, as [currentGroupLabel] names it; null when this device
+  /// is in no group.
   final String? currentGroup;
   final String? currentInvite;
   final String newServer;
@@ -138,21 +173,23 @@ class ReplaceConfigPlan {
 
   bool get changesServer => newServer != currentServer;
 
-  /// A group is joined: the link has one, and it is not the one this device is
-  /// already in on this same server.
+  /// A group is joined: the link has one, and not the very code this device
+  /// already holds on this server. It may still turn out to be this device's
+  /// group behind a newer code; only the server can tell.
   bool get joinsGroup =>
       newInvite != null && (changesServer || currentGroup == null || newInvite != currentInvite);
 
-  /// The current group is left: its server goes, or another group replaces it.
-  bool get leavesGroup => currentGroup != null && (changesServer || joinsGroup);
+  /// The first question already says the current group is left: another server
+  /// cannot hold it. On the same server only the join's answer tells.
+  bool get announcesLeaving => currentGroup != null && changesServer;
 
   bool get changesAnything => changesServer || joinsGroup;
 }
 
 /// The question itself: current and new server, current and new group, a warning
-/// when the current group is left, and the nickname field when a group is joined.
-/// Pops the trimmed nickname (empty when none is needed) on *Replace*, null on
-/// *Cancel*. Public for the join route and the Android deep link, which build on it.
+/// when the current group is certainly left, and the nickname field when a group
+/// is joined. Pops the trimmed nickname (empty when none is needed) on *Replace*,
+/// null on *Cancel*. Public for the join route and the Android deep link.
 class ReplaceConfigDialog extends StatefulWidget {
   const ReplaceConfigDialog({super.key, required this.plan});
 
@@ -161,9 +198,6 @@ class ReplaceConfigDialog extends StatefulWidget {
   @override
   State<ReplaceConfigDialog> createState() => _ReplaceConfigDialogState();
 }
-
-/// The server's limit on a device label, in code points (as in Settings → Group).
-const _maxLabel = 64;
 
 class _ReplaceConfigDialogState extends State<ReplaceConfigDialog> {
   final _nickname = TextEditingController();
@@ -187,9 +221,9 @@ class _ReplaceConfigDialogState extends State<ReplaceConfigDialog> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final plan = widget.plan;
-    final newGroup = plan.newInvite != null && plan.joinsGroup
+    final newGroup = plan.joinsGroup
         ? l10n.replaceConfigInvite(plan.newInvite!)
-        : plan.leavesGroup || plan.currentGroup == null
+        : plan.announcesLeaving || plan.currentGroup == null
             ? l10n.none
             : plan.currentGroup!;
 
@@ -214,7 +248,7 @@ class _ReplaceConfigDialogState extends State<ReplaceConfigDialog> {
           children: [
             values(l10n.serverSection, plan.currentServer ?? l10n.none, plan.newServer, 'server'),
             values(l10n.groupSection, plan.currentGroup ?? l10n.none, newGroup, 'group'),
-            if (plan.leavesGroup)
+            if (plan.announcesLeaving)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Text(
@@ -228,15 +262,13 @@ class _ReplaceConfigDialogState extends State<ReplaceConfigDialog> {
                 key: const Key('replace_config_nickname'),
                 controller: _nickname,
                 autofocus: true,
-                inputFormatters: [
-                  TextInputFormatter.withFunction((oldValue, newValue) =>
-                      newValue.text.runes.length > _maxLabel ? oldValue : newValue),
-                ],
+                // The server counts code points, as in Settings → Group.
+                inputFormatters: [groupFieldFormatter],
                 decoration: InputDecoration(
                   labelText: l10n.groupNicknameLabel,
                   helperText: l10n.groupNicknameHint,
                   helperMaxLines: 2,
-                  counterText: '${_nickname.text.runes.length}/$_maxLabel',
+                  counterText: '${_nickname.text.runes.length}/$groupFieldMaxLength',
                   border: const OutlineInputBorder(),
                 ),
               ),

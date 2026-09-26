@@ -6,17 +6,24 @@ import 'package:countscore/services/sync/sync_credentials.dart';
 
 /// A [GroupProvider] whose membership is whatever the test says, with no server
 /// behind it. Records the calls that change membership or the server in [calls].
+///
+/// [pending] is the cached [pendingChanges] (recounted only after a sync pass in
+/// the real provider); [storedPending] is what [countPending] finds in the
+/// outbox right now. [joinGroupId] is the group an invite code resolves to.
 class FakeGroupProvider extends GroupProvider {
   FakeGroupProvider({
     bool joined = false,
     String name = 'Famille',
     String token = 'old-invite',
     int pending = 0,
+    int? storedPending,
+    String joinGroupId = 'group-new',
     GroupActionException? joinError,
   }) : this._(AppDatabase.forTesting(NativeDatabase.memory()), joined, name, token, pending,
-            joinError);
+            storedPending ?? pending, joinGroupId, joinError);
 
-  FakeGroupProvider._(this._db, this.joined, this.name, this.token, this.pending, this.joinError)
+  FakeGroupProvider._(this._db, this.joined, this.name, this.token, this.pending,
+      this.storedPending, this.joinGroupId, this.joinError)
       : super(
           db: _db,
           credentials: MemorySyncCredentials(),
@@ -30,8 +37,11 @@ class FakeGroupProvider extends GroupProvider {
   String name;
   String token;
   int pending;
+  int storedPending;
+  String joinGroupId;
+  String currentGroupId = 'group-old';
 
-  /// Thrown by [joinGroup] when set.
+  /// Thrown by [prepareJoin] when set.
   GroupActionException? joinError;
 
   final calls = <String>[];
@@ -49,6 +59,9 @@ class FakeGroupProvider extends GroupProvider {
   int get pendingChanges => joined ? pending : 0;
 
   @override
+  Future<int> countPending() async => joined ? storedPending : 0;
+
+  @override
   Future<void> updateBackend(String? baseUrl) async => calls.add('backend $baseUrl');
 
   @override
@@ -62,14 +75,41 @@ class FakeGroupProvider extends GroupProvider {
   }
 
   @override
-  Future<void> joinGroup(String shareToken, String deviceLabel) async {
-    calls.add('join $shareToken as $deviceLabel');
+  Future<JoinCandidate> prepareJoin(String baseUrl, String shareToken, String deviceLabel) async {
+    calls.add('prepare $shareToken on $baseUrl as ${deviceLabel.trim()}');
     if (joinError != null) throw joinError!;
-    joined = true;
-    token = shareToken;
-    name = 'Joined';
+    return JoinCandidate(
+      baseUrl: baseUrl,
+      membership: (
+        groupId: joinGroupId,
+        groupName: 'Joined',
+        shareToken: shareToken,
+        deviceId: 'device-new',
+        deviceToken: 'token-new',
+      ),
+      label: deviceLabel.trim(),
+      sameGroup: joined && joinGroupId == currentGroupId,
+    );
+  }
+
+  @override
+  Future<void> completeJoin(JoinCandidate c) async {
+    if (c.sameGroup) {
+      calls.add('keep');
+      token = c.membership.shareToken;
+    } else {
+      if (joined) await leave();
+      calls.add('adopt ${c.membership.groupId} on ${c.baseUrl}');
+      joined = true;
+      token = c.membership.shareToken;
+      name = c.membership.groupName;
+      currentGroupId = c.membership.groupId;
+    }
     notifyListeners();
   }
+
+  @override
+  Future<void> cancelJoin(JoinCandidate c) async => calls.add('cancel');
 
   @override
   void dispose() {

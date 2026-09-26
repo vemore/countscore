@@ -798,6 +798,7 @@
   "configShareQrLabel": "QR code of the configuration link",
   "configShareCopyLink": "Copy link",
   "configShareLinkCopied": "Link copied",
+  "configShareTooLong": "This link is too long to fit in a QR code. Use \"Copy link\" instead.",
   "replaceConfigTitle": "Replace the configuration?",
   "replaceConfigCurrent": "Now: {value}",
   "replaceConfigNew": "New: {value}",

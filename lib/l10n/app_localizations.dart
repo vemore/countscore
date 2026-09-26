@@ -2759,6 +2759,12 @@ abstract class AppLocalizations {
   /// **'Lien copié'**
   String get configShareLinkCopied;
 
+  /// Shown in the QR code sheet in place of the code when the configuration link is too long to fit in a QR code (addresses far longer than usual); the copy link button stays available
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce lien est trop long pour tenir dans un QR code. Utilisez « Copier le lien ».'**
+  String get configShareTooLong;
+
   /// Title of the dialog shown when a shared configuration (server and group) is opened on this device, asking before replacing the current one
   ///
   /// In fr, this message translates to:

@@ -1612,6 +1612,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get configShareLinkCopied => 'リンクをコピーしました';
 
   @override
+  String get configShareTooLong =>
+      'このリンクは長すぎて QR コードに収まりません。代わりに「リンクをコピー」を使ってください。';
+
+  @override
   String get replaceConfigTitle => '設定を置き換えますか？';
 
   @override

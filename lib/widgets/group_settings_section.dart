@@ -327,11 +327,13 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
 }
 
 
-/// The server's limit on a device label and a group name, in code points.
-const _maxLength = 64;
+/// The server's limit on a device label and a group name, in code points. Shared
+/// with the replace-configuration dialog's nickname field.
+const groupFieldMaxLength = 64;
 
-final _maxCodePoints = TextInputFormatter.withFunction(
-  (oldValue, newValue) => newValue.text.runes.length > _maxLength ? oldValue : newValue,
+/// Stops a field at [groupFieldMaxLength] code points, as the server counts.
+final groupFieldFormatter = TextInputFormatter.withFunction(
+  (oldValue, newValue) => newValue.text.runes.length > groupFieldMaxLength ? oldValue : newValue,
 );
 
 /// One field of [_TextFieldsDialog]. [hint] shows inside the empty field,
@@ -390,11 +392,11 @@ class _TextFieldsDialogState extends State<_TextFieldsDialog> {
               autofocus: i == 0,
               // The server counts code points, where `maxLength` counts grapheme
               // clusters: an emoji sequence would pass here and fail there.
-              inputFormatters: [_maxCodePoints],
+              inputFormatters: [groupFieldFormatter],
               decoration: InputDecoration(
                 labelText: widget.fields[i].label,
                 hintText: widget.fields[i].hint,
-                counterText: '${_controllers[i].text.runes.length}/$_maxLength',
+                counterText: '${_controllers[i].text.runes.length}/$groupFieldMaxLength',
                 helperText: widget.fields[i].helper,
                 helperMaxLines: 2,
                 border: const OutlineInputBorder(),

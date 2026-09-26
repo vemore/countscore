@@ -1596,6 +1596,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get configShareLinkCopied => '链接已复制';
 
   @override
+  String get configShareTooLong => '此链接太长，无法放入 QR 码。请改用“复制链接”。';
+
+  @override
   String get replaceConfigTitle => '替换配置？';
 
   @override

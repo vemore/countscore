@@ -1656,6 +1656,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get configShareLinkCopied => 'Ligação copiada';
 
   @override
+  String get configShareTooLong =>
+      'Esta ligação é demasiado longa para caber num QR code. Use «Copiar ligação».';
+
+  @override
   String get replaceConfigTitle => 'Substituir a configuração?';
 
   @override

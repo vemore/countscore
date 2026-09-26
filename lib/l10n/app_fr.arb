@@ -2674,6 +2674,10 @@
   "@configShareLinkCopied": {
     "description": "Snackbar after the configuration link was copied to the clipboard"
   },
+  "configShareTooLong": "Ce lien est trop long pour tenir dans un QR code. Utilisez « Copier le lien ».",
+  "@configShareTooLong": {
+    "description": "Shown in the QR code sheet in place of the code when the configuration link is too long to fit in a QR code (addresses far longer than usual); the copy link button stays available"
+  },
 
   "replaceConfigTitle": "Remplacer la configuration ?",
   "@replaceConfigTitle": {

@@ -4,6 +4,7 @@
 // is in a group, the group's invite code.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -158,6 +159,49 @@ void main() {
       matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
     );
     expect(tester.widget<ButtonStyleButton>(button).onPressed, isNull);
+  });
+
+  testWidgets('"Copy link" says it is done on the sheet itself, not under it', (tester) async {
+    SharedPreferences.setMockInitialValues({ConfigShareSheet.prefsKey: _base});
+    await _openFromSettings(tester, FakeGroupProvider(joined: true, token: _invite));
+    String? copied;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform,
+        (call) async {
+      if (call.method == 'Clipboard.setData') {
+        copied = (call.arguments as Map)['text'] as String;
+      }
+      return null;
+    });
+    addTearDown(() => tester.binding.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, null));
+
+    await tester.tap(find.byKey(const Key('config_share_copy')));
+    await tester.pumpAndSettle();
+
+    expect(copied, _qrData(tester));
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('config_share_copy')),
+        matching: find.text('Link copied'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.byType(SnackBar), findsNothing, reason: 'it would sit under the sheet');
+  });
+
+  testWidgets('a link too long for any QR code shows a message instead of throwing',
+      (tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: Scaffold(body: ConfigQrCode(data: '', tooLongText: 'too long')),
+    ));
+    expect(find.byType(CustomPaint), findsWidgets);
+
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(body: ConfigQrCode(data: 'x' * 4000, tooLongText: 'too long')),
+    ));
+    expect(tester.takeException(), isNull);
+    expect(find.byKey(const Key('config_share_too_long')), findsOneWidget);
+    expect(find.text('too long'), findsOneWidget);
   });
 
   testWidgets('Settings shows a server replaced from elsewhere', (tester) async {

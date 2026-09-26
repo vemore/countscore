@@ -735,5 +735,6 @@
   "replaceConfigUnsynced": "{count, plural, other{{count} 项更改尚未到达群组。如果现在退出，群组将无法收到它们。}}",
   "replaceConfigLeaveAnyway": "仍然退出",
   "replaceConfigDone": "配置已替换",
-  "replaceConfigUnchanged": "此设备已使用此配置"
+  "replaceConfigUnchanged": "此设备已使用此配置",
+  "configShareTooLong": "此链接太长，无法放入 QR 码。请改用“复制链接”。"
 }

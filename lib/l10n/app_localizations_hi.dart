@@ -1654,6 +1654,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get configShareLinkCopied => 'लिंक कॉपी हो गया';
 
   @override
+  String get configShareTooLong =>
+      'यह लिंक QR कोड में आने के लिए बहुत लंबा है। इसके बजाय \"लिंक कॉपी करें\" का उपयोग करें।';
+
+  @override
   String get replaceConfigTitle => 'कॉन्फ़िगरेशन बदलें?';
 
   @override

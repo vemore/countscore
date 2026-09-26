@@ -735,5 +735,6 @@
   "replaceConfigUnsynced": "{count, plural, =1{1 Änderung auf diesem Gerät hat die Gruppe noch nicht erreicht. Wenn du jetzt gehst, wird die Gruppe sie nie erhalten.} other{{count} Änderungen auf diesem Gerät haben die Gruppe noch nicht erreicht. Wenn du jetzt gehst, wird die Gruppe sie nie erhalten.}}",
   "replaceConfigLeaveAnyway": "Trotzdem verlassen",
   "replaceConfigDone": "Konfiguration ersetzt",
-  "replaceConfigUnchanged": "Dieses Gerät verwendet bereits diese Konfiguration"
+  "replaceConfigUnchanged": "Dieses Gerät verwendet bereits diese Konfiguration",
+  "configShareTooLong": "Dieser Link ist zu lang für einen QR-Code. Verwende stattdessen „Link kopieren“."
 }

@@ -40,7 +40,11 @@ in Settings → Group while in a group (`group_share_qr`) opens `ConfigShareShee
 (`ConfigQrCode`, key `config_share_qr`), a *Copy link* button, and the web app address field.
 The QR is drawn on the device by a `CustomPainter` from the `qr` package's module matrix,
 black on white in both themes with the standard 4-module quiet zone, medium error
-correction. Nothing is sent to show it: no new outbound data flow. Tests:
+correction. It is encoded once per link, not per build (the sheet rebuilds on every keystroke
+and sync status change); a link past a version-40 code's capacity shows `configShareTooLong`
+instead. *Copy link* confirms on its own button (`configShareLinkCopied`): a snackbar would
+land on the Settings page under the sheet. A stored address read late never overwrites one
+the user has typed or saved meanwhile. Nothing is sent to show it: no new outbound data flow. Tests:
 `test/widgets/config_share_sheet_test.dart` (the QR's data parses back to the server and the
 invite code, with and without a group).
 
@@ -48,20 +52,38 @@ invite code, with and without a group).
 
 `showReplaceConfigDialog(context, ConfigLink)` is what a scanned link opens; it returns a
 `ReplaceConfigResult`. It asks nothing when the device already has that server and that
-group (`replaceConfigUnchanged`). Otherwise `ReplaceConfigDialog` shows the current and new
-server and group (`ReplaceConfigPlan`: the new group is known only by its invite code), says
-when the current group will be left, and asks for the nickname when a group is joined — the
-same 64-code-point field as Settings → Group ([[Sync]], *The nickname*). *Cancel* changes
-nothing.
+invite code (`replaceConfigUnchanged`). Otherwise `ReplaceConfigDialog` shows the current and
+new server and group (`ReplaceConfigPlan`: the new group is known only by its invite code, and
+a current group whose name is not known is shown by its own code, `currentGroupLabel`), says
+the current group will be left when the server changes, and asks for the nickname when a group
+is joined, with the Settings → Group field's limit (`groupFieldFormatter`, 64 code points;
+[[Sync]], *The nickname*). *Cancel* changes nothing.
 
-On *Replace*, when a group is left while `GroupProvider.pendingChanges` is above 0, a second
-question warns that those changes will never reach the group: leaving empties `outbox`
-([[Sync]], *Joining*). Then, in this order: `GroupProvider.leave` (revoked on the old
-server), `BackendProvider.setBaseUrl` and `GroupProvider.updateBackend` (the proxy provider
-would only hand the URL over on its next rebuild), `GroupProvider.joinGroup`. A failed join
-keeps the new server and shows the join error as a snackbar; Settings → Group can try again.
-Settings follows a server replaced this way: its URL field listens to `BackendProvider`.
-Tests: `test/widgets/replace_config_dialog_test.dart`, on `test/support/fake_group_provider.dart`.
+**A group is joined before anything is left.** On *Replace*, `GroupProvider.prepareJoin`
+registers the device with the link's group on the link's server and changes nothing else; a
+refusal (a replaced invite code, 429, no network) is shown as the join error and the current
+server, group, credentials and outbox stay exactly as they were. Once the server has
+accepted:
+
+- **The same group** (its id is this device's group id, i.e. the same group behind a newer
+  invite code): `completeJoin` keeps the membership, withdraws the registration the join made
+  (a self-revoke with its own token, which the server answers 204 without rotating the code),
+  and stores the newer code. Nothing is left, no row unshared, no warning (`unchanged`).
+- **Another group**: before the current one is left, a second question when the first did not
+  already say so (same server) or when changes are waiting to reach it. The count is read then,
+  from the outbox (`GroupProvider.countPending`), not from `pendingChanges`, which is only
+  recounted at the end of a sync pass and reads 0 on a cold start from a link. *Cancel* there
+  withdraws the new registration (`cancelJoin`). Then `completeJoin` leaves the current group
+  (revoked on its own server, outbox emptied, [[Sync]] *Joining*), adopts the new membership,
+  syncs with the new server, and `BackendProvider.setBaseUrl` stores it.
+
+A link carrying a server alone, another one, leaves the group (a group cannot follow its
+server) after the same question, then sets the server. Settings follows a server replaced
+this way: its URL field listens to `BackendProvider`. `GroupProvider.createGroup` and
+`joinGroup` from Settings follow the same rule: the server call first, then any current group
+is left. Tests: `test/widgets/replace_config_dialog_test.dart` (on
+`test/support/fake_group_provider.dart`, and once on the real provider),
+`test/providers/group_provider_join_test.dart` (on `test/support/group_servers.dart`).
 
 ### What opens a link
 
@@ -83,7 +105,15 @@ both call `parseConfigLink` and `showReplaceConfigDialog`.
 - **`qr`, not `qr_flutter` (2026-09-26).** `qr_flutter` 4.1.0 is from 2023-05 and pins
   `qr` ^3; `qr` itself (BSD-3-Clause, kevmoo.com, 4.0.0 of 2026-05, pure Dart, one dependency:
   `meta`) is maintained, and painting its module matrix takes one `CustomPainter`.
-- **The replace dialog leaves, then switches server, then joins (2026-09-26).** Leaving first
-  revokes the device on the server it registered with; joining goes through `joinGroup`, so it
-  inherits the sync bookkeeping. `leave` empties the outbox, so a group with unsynced changes
-  is only left after a second, explicit question.
+- **Join first, leave only once the new group has accepted the device (2026-09-26).** The only
+  order in which a failure loses nothing: until the server says yes, nothing on the device has
+  changed. The cost is a registration to withdraw when the user then backs out at the unsynced
+  warning, or when the group turns out to be this device's own: a self-revoke, which the server
+  answers without rotating the code. The same group is recognised by its id in the join's
+  answer, not by comparing invite codes, which a rotation changes; a group id is unique to its
+  server, so the same id under another URL is the same group reached another way. The first
+  draft of #236 left, then switched server, then joined; its review found that a join refused
+  after the leave left the device revoked and in no group, its unsynced changes gone.
+- **The unsynced count is read when the question is asked (2026-09-26).** `pendingChanges` is
+  the count at the end of the last sync pass: 0 on a cold start, which is exactly how a link
+  opens the app, and stale for the second a write waits for its debounced sync.

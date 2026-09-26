@@ -1711,6 +1711,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get configShareLinkCopied => 'تم نسخ الرابط';
 
   @override
+  String get configShareTooLong =>
+      'هذا الرابط أطول من أن يتسع في رمز QR. استخدم «نسخ الرابط» بدلاً من ذلك.';
+
+  @override
   String get replaceConfigTitle => 'استبدال الإعدادات؟';
 
   @override
