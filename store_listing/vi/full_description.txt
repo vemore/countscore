@@ -1,0 +1,53 @@
+CountScore là ứng dụng ghi điểm và đếm điểm cho các trò chơi bài và trò chơi bàn cờ của bạn. Dù bạn chơi gì, ứng dụng này sẽ ghi điểm cho bạn.
+
+Nó thay thế tờ giấy ghi điểm: thêm người chơi, nhập điểm từng vòng, điểm cộng dồn và xếp hạng tự động cập nhật.
+
+CÁC TRÒ CHƠI HOẠT ĐỘNG VỚI NÓ
+
+CountScore không phải là ứng dụng chính thức của bất kỳ ai — nó là tờ ghi điểm cho những trò chơi bạn đã có.
+
+Nó hoạt động cho Skyjo, Uno, Belote, Coinche, Tarot, Rami và Phe Chủ. Cũng làm tương tự cho Scrabble, Bridge, Yahtzee, Phase 10, Flip 7, Mille Bornes, Rummikub, 6 nimmt!, Qwirkle, Farkle hay ZapZap. Ngoài ra hoạt động tốt với Tiến lên và Phỏm.
+
+Nếu trò chơi của bạn không có trong danh sách, bạn có thể tạo kiểu trò chơi riêng trong vài giây: tên, màu sắc, biểu tượng, và quyết định điểm cao hay thấp hơn sẽ thắng. Bất kỳ trò chơi nào chơi bằng điểm đều phù hợp.
+
+TỜ GHI ĐIỂM THEO LUẬT CỦA BẠN
+
+Điểm cao hay thấp hơn thắng — bạn quyết định, cho mỗi loại trò chơi. Nhập điểm dương hoặc âm, sửa lỗi trên bất kỳ vòng nào, và bảng điểm tự động tính toán lại. Đặt ngưỡng và CountScore sẽ báo khi nào một người chơi bị loại hoặc trò chơi kết thúc, giống như Skyjo kết thúc ở 100 hay Belote ở 1000.
+
+NGƯỜI CHƠI VÀ THỐNG KÊ
+
+Người chơi được chia sẻ trên tất cả trò chơi, thống kê của họ theo dõi từ một buổi tối này sang buổi tối khác: số trò chơi chơi được, số lần thắng, tỉ lệ thắng, và chi tiết theo loại trò chơi. Không cần đăng ký — một người chơi là tên và màu sắc.
+
+LỊCH SỬ TRÌNH DIỄN ĐẦY ĐỦ
+
+Mỗi trò chơi hoàn thành giữ lại tờ ghi điểm đầy đủ. Mở lại để xem ai đã ghi bao nhiêu điểm ở vòng nào, và giải quyết "ai đã thắng lần trước?" từ tờ ghi điểm thay vì từ trí nhớ.
+
+KHÔNG CẦN KẾT NỐI ĐỂ GHI ĐIỂM
+
+Trò chơi của bạn sống trong cơ sở dữ liệu trên điện thoại. Ghi điểm, thêm người chơi, đọc thống kê và duyệt lịch sử đều hoạt động ở chế độ máy bay — trong vườn, trên tàu, ở bãi cắm trại, trong cabin không sóng.
+
+HOÀN HẢO CHO
+
+Buổi chơi trò chơi gia đình, giải đấu bài, câu lạc bộ trò chơi bàn cờ, hoạt động trường học và kỳ nghỉ hè, hoặc một buổi tối dài với bạn bè. Nếu nó được chơi bằng điểm, CountScore sẽ ghi.
+
+NÂNG CAO: MÁY CHỦ CỦA RIÊNG BẠN (TÙY CHỌN)
+
+Hai tính năng vượt ra ngoài thiết bị, và cả hai đều cần một máy chủ bạn tự lưu trữ từ mã nguồn mở trong kho lưu trữ. CountScore không có địa chỉ nào, nên chúng ở tắt cho đến khi bạn nhập một địa chỉ trong Cài đặt → Máy chủ.
+
+- Chia sẻ nhóm: tạo một nhóm hoặc tham gia một nhóm bằng mã mời, và các trò chơi bạn chọn chia sẻ sẽ xuất hiện trên những điện thoại khác của nhóm. Điểm nhập ngoại tuyến sẽ bắt kịp khi kết nối trở lại. Trò chơi bạn không chia sẻ ở lại trên thiết bị của bạn.
+- Phân tích AI: một bình luận viết về bất kỳ trò chơi hoàn thành nào, trong một trong chín giọng nói và bằng ngôn ngữ của bạn. Điểm của trò chơi đó, tên người chơi và bình luận vòng được gửi đến máy chủ của bạn, nơi mô hình AI viết nó. Nó chỉ chạy khi bạn nhấn nút, và "Báo cáo bình luận này" đánh dấu một bình luận xấu bằng email.
+
+QUYỀN RIÊNG TƯ, ĐƯỢC TRÌNH BÀY RÕ RÀNG
+
+Không tài khoản, không quảng cáo, không phân tích, không theo dõi. Thẻ An toàn Dữ liệu Play liệt kê ba loại dữ liệu, vì vậy đây là những gì chúng thực sự là: tên người chơi và nội dung trò chơi chỉ di chuyển khi bạn yêu cầu phân tích hoặc chia sẻ trò chơi với nhóm của bạn, và "ID thiết bị" là mã token ngẫu nhiên do máy chủ của bạn phát hành khi bạn tham gia một nhóm — không phải định danh phần cứng, không phải định danh quảng cáo, không liên kết với bất kỳ danh tính nào. Không có cấu hình máy chủ và ứng dụng không thực hiện bất kỳ yêu cầu mạng nào cả. Chính sách đầy đủ được liên kết trên trang này, và CountScore là mã nguồn mở theo giấy phép MIT, vì vậy mọi từ của điều này có thể được kiểm tra trong mã.
+
+HOÀN TOÀN MIỄN PHÍ
+
+Không quảng cáo, không mua trong ứng dụng, không đăng ký, không mở khóa có tính phí.
+
+HỖ TRỢ
+
+Email: scribio.ai@gmail.com
+Mã nguồn: github.com/vemore/countscore
+
+Yêu cầu Android 7.0 hoặc cao hơn.

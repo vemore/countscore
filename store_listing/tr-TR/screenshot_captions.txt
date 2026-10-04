@@ -1,0 +1,12 @@
+# Captions of the store screenshots, one per raw capture in
+# raw/ next to this file — `<capture stem>: <caption>`.
+# Translated from the validated fr-FR captions. Composed by scripts/compose_screenshots.py
+# into screenshots/phone/ next to this file.
+01_main_screen: Tüm oyunların bir bakışta
+02_player_management: Oyuncuların, her oyun akşamında
+03_game_types: Favori oyunlar, puan tutmaya hazır
+04_podium: Podyum, son turdan hemen sonra
+05_game_board: Toplamlar otomatik toplanır
+06_customization: Oyun yok mu? Oluştur
+07_score_entry: Tur tur puanları gir
+08_statistics: Oyunlar, kazanmalar, kazanma oranı

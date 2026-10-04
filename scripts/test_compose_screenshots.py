@@ -219,8 +219,36 @@ def test_the_shared_raw_set_is_gone() -> None:
 def test_the_committed_raw_sets_match_their_captions() -> None:
     """A locale's raw/ set and its captions name the same captures, or compose would refuse."""
     for locale in cs.listing_locales(REPO):
+        if locale in cs.AWAITING_CAPTURES:
+            continue
         stems = [p.stem for p in cs.raw_captures(REPO, locale)]
         cs.read_captions(REPO / "store_listing" / locale / cs.CAPTIONS_FILE, stems)
+
+
+def test_a_locale_awaiting_its_capture_has_none_yet() -> None:
+    """The list is for locales with text and no raw/ set; it empties as the captures land."""
+    locales = set(cs.listing_locales(REPO))
+    assert cs.AWAITING_CAPTURES <= locales
+    for locale in cs.AWAITING_CAPTURES:
+        assert not list(cs.raw_dir(REPO, locale).glob("*.png")), (
+            f"{locale} has a raw set: remove it from AWAITING_CAPTURES"
+        )
+        assert not (REPO / "store_listing" / locale / cs.OUT_DIR).exists(), locale
+
+
+def test_check_tolerates_exactly_the_awaiting_locales(
+    repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    raw = repo / "store_listing" / "fr-FR" / cs.LOCALE_RAW_DIR
+    shutil.rmtree(raw)
+    with pytest.raises(cs.ComposeError):
+        cs.check(repo, ["fr-FR"])  # a locale that is not listed is still refused
+    monkeypatch.setattr(cs, "AWAITING_CAPTURES", frozenset({"fr-FR"}))
+    assert cs.check(repo, ["fr-FR"]) == []
+    _raw(raw, ("01_a",), (250, 240, 255, 255))  # the capture lands: the entry must go
+    assert any(
+        "remove it from AWAITING_CAPTURES" in problem for problem in cs.check(repo, ["fr-FR"])
+    )
 
 
 def test_a_pixel_9_pro_xl_capture_loses_its_bars_and_nothing_else() -> None:
@@ -241,3 +269,24 @@ def test_a_pixel_9_pro_xl_capture_loses_its_bars_and_nothing_else() -> None:
 def test_an_unmeasured_capture_size_is_refused() -> None:
     with pytest.raises(cs.ComposeError, match="1344x2992"):
         cs.system_bars((1344, 2992))
+
+
+@pytest.mark.parametrize("locale", ["ko-KR", "th", "bn-BD", "ur"])
+def test_a_script_added_in_2026_10_has_its_font_and_its_shaping(locale: str) -> None:
+    """Each new script names a Bold face, and resolves it where fonts-noto-core/-cjk are installed."""
+    assert locale in cs.FONTS
+    try:
+        assert cs.find_font(locale).is_file()
+    except cs.ComposeError:
+        # The CI runner has no Noto fonts (only Roboto, from the Flutter SDK): the lookup is
+        # exercised on a machine that composes screenshots, the configuration below everywhere.
+        pass
+    if locale in ("th", "bn-BD", "ur"):
+        assert locale in cs.SHAPED_LOCALES
+    assert (locale in cs.RTL_LOCALES) == (locale == "ur")
+
+
+def test_korean_uses_the_korean_face_of_the_cjk_collection() -> None:
+    """The .ttc order is JP, KR, SC, TC, HK: index 1 is Korean, 2 stays Simplified Chinese."""
+    assert cs.FONT_INDEX["ko-KR"] == 1
+    assert cs.FONT_INDEX["zh-CN"] == 2

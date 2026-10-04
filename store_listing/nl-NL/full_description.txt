@@ -1,0 +1,53 @@
+CountScore is een puntenteller voor uw kaartspelen en bordspelen. Wat u ook speelt: telt CountScore de punten.
+
+Het vervangt het papieren scoreblok: voeg spelers toe, voer punten ronde voor ronde in, en totalen en rangschikking werken automatisch bij.
+
+SPELEN WAARVOOR HET WERKT
+
+CountScore is niet de officiële app van iemand — het is een scoreboekhoudster voor spelen die u al bezit.
+
+Het werkt voor Skyjo, Uno, Belote, Coinche, Tarot, Rami en President. Voor Scrabble, Bridge, Yahtzee, Phase 10 en Flip 7. Voor bordspelen als Mille Bornes, Rummikub, 6 nimmt!, Qwirkle, Farkle, ZapZap, Klaverjassen, Jokeren en Boerenbridge.
+
+Ontbreekt uw spel? Maak het in seconden: naam, kleur, icoon, en of hoog of laag wint. Alles dat om punten wordt gespeeld, past erin.
+
+EEN SCOREBLOK DAT UW REGELS VOLGT
+
+U beslist: hoog of laag wint, per spelsoort. Voer plusminuspunten in, corrigeer elke ronde, het scorebord herberekent. Stel een drempel in: CountScore meldt wie uit is of wanneer het voorbij is, als Skyjo op 100 of Belote op 1000.
+
+SPELERS EN STATISTIEKEN
+
+Spelers gelden in alle spelen, hun statistieken volgen hen van avond tot avond: gespeelde en gewonnen spelen, winstpercentage, uitsplitsing per soort. Geen account nodig — een speler is naam en kleur.
+
+VOLLEDIGE SPELGESCHIEDENIS
+
+Elk afgewerkt spel behoudt zijn scorekaart. Open het opnieuw: wie markeerde wat in welke ronde. Los "wie won vorige keer?" op met het scoreblok.
+
+GEEN VERBINDING VOOR PUNTEN
+
+Uw spelen staan op de telefoon. Tellen, spelers toevoegen, statistieken en geschiedenis werken in vliegmodus — in tuin, trein, kampeerplaats, hut zonder signaal.
+
+PERFECT VOOR
+
+Spellenavonden, kaarttoernooien, bordspelclubs, school- en vakantieactiviteiten. Alles wat om punten wordt gespeeld.
+
+GEAVANCEERD: UW EIGEN SERVER (OPTIONEEL)
+
+Twee functies gaan voorbij het apparaat en vereisen een server u zelf host vanuit de open-sourcecode in de repository. CountScore wordt zonder adres geleverd: ze blijven uit tot u één invoert in Instellingen → Server.
+
+- Groepsdeling: een groep maken of joinen met uitnodigingscode. Gedeelde spelen verschijnen op andere telefoons van de groep. Offline scores worden gesynchroniseerd. Niet-gedeelde spelen blijven op uw apparaat.
+- AI-analyse: geschreven commentaar op elk spel, in negen stemmen en uw taal. Scores, spelernamen en opmerkingen gaan naar uw server, die een AI-model vraagt het te schrijven. Alleen op knoptik, "Dit commentaar melden" e-mailt slechts commentaar.
+
+PRIVACY, DUIDELIJK UITGESPROKEN
+
+Geen account, geen advertenties, geen analyses, geen tracking. Play Data Safety noemt drie soorten gegevens; hier zijn zij werkelijk: spelernamen en inhoud reizen alleen bij analyse of groepsdeling. "Apparaat-ID" is een willekeurig token uw server geeft bij groepstoetrede — niet hardware, niet reclame, aan geen identiteit gekoppeld. Geen server: geen netwerkaanvraag. Het beleid is gekoppeld; CountScore is MIT-licentie open source, alles controleerbaar in code.
+
+VOLLEDIG GRATIS
+
+Geen advertenties, geen aankopen, geen abonnement.
+
+ONDERSTEUNING
+
+E-mail: scribio.ai@gmail.com
+Broncode: github.com/vemore/countscore
+
+Vereist Android 7.0 of hoger.

@@ -1,0 +1,12 @@
+# Captions of the store screenshots, one per raw capture in
+# raw/ next to this file — `<capture stem>: <caption>`.
+# Translated from the validated fr-FR captions. Composed by scripts/compose_screenshots.py
+# into screenshots/phone/ next to this file.
+01_main_screen: আপনার সব গেম, এক নজরে
+02_player_management: আপনার খেলোয়াড়, এক রাত থেকে পরবর্তী রাত
+03_game_types: আপনার প্রিয় গেম, স্কোরের জন্য প্রস্তুত
+04_podium: শেষ রাউন্ডের পর, বিজয়ীদের পোডিয়াম
+05_game_board: মোট নিজেই যোগ হয়
+06_customization: আপনার গেম নেই? নিজেই তৈরি করুন
+07_score_entry: প্রতিটি রাউন্ডে পয়েন্ট দিন
+08_statistics: গেম, জয়, জয়ের হার: আপনার পরিসংখ্যান

@@ -1,0 +1,12 @@
+# Captions of the store screenshots, one per raw capture in
+# raw/ next to this file — `<capture stem>: <caption>`.
+# Translated from the validated fr-FR captions. Composed by scripts/compose_screenshots.py
+# into screenshots/phone/ next to this file.
+01_main_screen: Al uw spelen in één oogopslag
+02_player_management: Uw spelers, van avond tot avond
+03_game_types: Uw favoriete spelen, klaar om te scoren
+04_podium: Het podium, meteen na de laatste ronde
+05_game_board: Totalen tellen zichzelf op
+06_customization: Spel niet in de lijst? Maak het aan
+07_score_entry: Voer punten ronde voor ronde in
+08_statistics: Spelen, wins, winstpercentage: uw stats

@@ -1,0 +1,12 @@
+# Captions of the store screenshots, one per raw capture in
+# raw/ next to this file — `<capture stem>: <caption>`.
+# Translated from the validated en-US captions. Composed by scripts/compose_screenshots.py
+# into screenshots/phone/ next to this file.
+01_main_screen: 모든 게임을 한 눈에
+02_player_management: 게임 밤마다 함께하는 플레이어
+03_game_types: 좋아하는 게임들을 점수 계산 준비
+04_podium: 마지막 라운드 직후 우승자 표시
+05_game_board: 점수가 자동으로 합산됨
+06_customization: 원하는 게임 없으면 직접 만들기
+07_score_entry: 라운드마다 점수 입력
+08_statistics: 게임, 승리, 승률: 나의 통계

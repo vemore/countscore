@@ -1,0 +1,12 @@
+# Captions of the store screenshots, one per raw capture in
+# raw/ next to this file — `<capture stem>: <caption>`.
+# Translated from the validated fr-FR captions. Composed by scripts/compose_screenshots.py
+# into screenshots/phone/ next to this file.
+01_main_screen: Wszystkie twoje partie na jeden rzut oka
+02_player_management: Twoi gracze, z jednego wieczoru na drugi
+03_game_types: Twoje ulubione gry, gotowe do liczenia
+04_podium: Podium zaraz po ostatniej rundzie
+05_game_board: Sumy liczą się automatycznie
+06_customization: Brak twojej gry? Stwórz ją
+07_score_entry: Wpisuj punkty rundę za rundą
+08_statistics: Partie, zwycięstwa, procent: twoja statystyka

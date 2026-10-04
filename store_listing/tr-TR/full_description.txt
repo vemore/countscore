@@ -1,0 +1,53 @@
+CountScore, kart oyunları ve masa oyunları için bir skor tutucu ve puan sayacıdır. Oynuyorsan, skor tutar.
+
+Kâğıt puan tablosunun yerini alır: oyuncularını ekle, tur tur puanları gir ve çalışan toplamlar ile sıralama otomatik olarak güncellenir.
+
+UYUMLU OYUNLAR
+
+CountScore, hiç kimsenin resmi uygulaması değildir — zaten sahip olduğun oyunlar için kullandığın bir puan tablolarıdır.
+
+Skyjo, Uno, Belote, Coinche, Tarot, Rami ve President oyunlarında çalışır. Scrabble, Bridge, Yahtzee, Phase 10 ve Flip 7 oyunlarında çalışır. Kart oyunu akşamında Mille Bornes, Rummikub, 6 nimmt!, Qwirkle, Farkle ve ZapZap için aynı işi yapar. Okey, Batak, Kral gibi popüler oyunlar için de mükemmeldir.
+
+Oyunun bu listede yoksa, birkaç saniye içinde kendi oyun türünü oluştur: bir ad, bir renk, bir ikon ve en yüksek veya en düşük puanın kazanıp kazanmadığını belirle. Puanlar için oynanan her şey uyar.
+
+KURALLARINIZA UYAN BİR PUAN TABLOSU
+
+En yüksek veya en düşük puan kazanır — bunu oyun türü başına karar ver. Pozitif veya negatif puanları gir, herhangi bir turu düzelt ve puan tablosu kendini yeniden hesaplar. Bir eşik belirle ve CountScore bir oyuncunun elenmesini veya oyunun bittiğini söyler, tıpkı Skyjo 100'de bittiği gibi.
+
+OYUNCULAR VE İSTATİSTİKLER
+
+Oyuncular tüm oyunlarda paylaşılır ve istatistikleri bir akşamdan diğerine onları takip eder: oynanan oyunlar, kazanılan oyunlar, kazanma oranı ve oyun türü başına dökümü. Kaydolmaya gerek yok — oyuncu bir ad ve bir renktir.
+
+AÇIK OYUN GEÇMIŞI
+
+Her biten oyun tam puan tablosunu tutar. Bir kez daha aç ve kimlerin ne zaman hangi turu işaretlediğini gör, sonra puan tablosu yerine bellekten "geçen sefer kim kazandı?" sorusunu çöz.
+
+PUANLARI İŞARETLEMEK İÇİN BAĞLANTI YÖK
+
+Oyunların tümü telefonda bir veritabanında yaşar. Puanları sayma, oyuncu ekleme, istatistik okuma ve geçmişe göz atma — hepsi uçak modunda çalışır — bahçede, trende, kamp yerinde, sinyal olmayan bir kulübede.
+
+MÜKEMMEL OLAN
+
+Aile oyun akşamları, kart turnuvaları, masa oyunu kulüpleri, okul ve tatil etkinlikleri ya da arkadaşlarla uzun bir akşam. Puanlar için oynanıyorsa, CountScore onları sayar.
+
+İLERİ DÜZEY: KENDİN SERVERİ (İSTEĞE BAĞLI)
+
+İki özellik cihazın ötesine uzanır ve her ikisi de açık kaynaklı depodaki koddan kendinin barındırdığı bir sunucuya ihtiyaç duyar. CountScore hiçbir adres ile gelmez, bu yüzden Ayarlar → Sunucu'da bir adres yazana kadar kapalı kalır.
+
+- Grup Paylaşımı: bir grup oluştur veya bir davet kodu ile katıl ve paylaştığın oyunlar grubun diğer telefonlarında görünür. Çevrimdışıda giren puanlar bağlantı geri geldiğinde eşitlenir. Paylaşmadığın oyunlar cihazda kalır.
+- Yapay Zeka Analizi: biten her oyun için dokuz sesden birinde ve kendi dilin de yazılı bir yorum. Bu oyunun puanları, oyuncu adları ve tur yorumları sunucuna gönderilir ve bir yapay zeka modeli tarafından yazılır. Butona dokunmadan hiçbir şey gönderilmez ve "Bu Yorumu Bildir" kötü bir tanesini e-posta ile bayraklandırır.
+
+GİZLİLİK, AÇIKÇA BELİRTİLDİ
+
+Hesap yok, reklam yok, analitik yok, izleme yok. Play Veri Güvenliği kartı üç veri türünü listeler, işte gerçekten nelerdir: oyuncu adları ve oyun içeriği sadece analiz istediğinde veya oyunu grubunla paylaştığında gözönüne alınır ve "cihaz kimliği" kendi sunucunun gruba katıldığında verdiği rastgele bir jetondur — bir donanım tanımlayıcısı değil, bir reklam tanımlayıcısı değil, hiçbir kimlikle bağlantılı değil. Sunucu yapılandırılmamışsa uygulama hiç ağ isteği yapamamış. CountScore MIT lisansı altında açık kaynaktır, bu yüzden her kelime kodda kontrol edilebilir.
+
+TAMAMEN ÜCRETSİZ
+
+Reklam yok, uygulama içi satın alma yok, abonelik yok, ücretli kilit açma yok.
+
+DESTEK
+
+E-posta: scribio.ai@gmail.com
+Kaynak kod: github.com/vemore/countscore
+
+Android 7.0 veya üstünü gerektirir.
