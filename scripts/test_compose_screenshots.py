@@ -219,36 +219,8 @@ def test_the_shared_raw_set_is_gone() -> None:
 def test_the_committed_raw_sets_match_their_captions() -> None:
     """A locale's raw/ set and its captions name the same captures, or compose would refuse."""
     for locale in cs.listing_locales(REPO):
-        if locale in cs.AWAITING_CAPTURES:
-            continue
         stems = [p.stem for p in cs.raw_captures(REPO, locale)]
         cs.read_captions(REPO / "store_listing" / locale / cs.CAPTIONS_FILE, stems)
-
-
-def test_a_locale_awaiting_its_capture_has_none_yet() -> None:
-    """The list is for locales with text and no raw/ set; it empties as the captures land."""
-    locales = set(cs.listing_locales(REPO))
-    assert cs.AWAITING_CAPTURES <= locales
-    for locale in cs.AWAITING_CAPTURES:
-        assert not list(cs.raw_dir(REPO, locale).glob("*.png")), (
-            f"{locale} has a raw set: remove it from AWAITING_CAPTURES"
-        )
-        assert not (REPO / "store_listing" / locale / cs.OUT_DIR).exists(), locale
-
-
-def test_check_tolerates_exactly_the_awaiting_locales(
-    repo: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    raw = repo / "store_listing" / "fr-FR" / cs.LOCALE_RAW_DIR
-    shutil.rmtree(raw)
-    with pytest.raises(cs.ComposeError):
-        cs.check(repo, ["fr-FR"])  # a locale that is not listed is still refused
-    monkeypatch.setattr(cs, "AWAITING_CAPTURES", frozenset({"fr-FR"}))
-    assert cs.check(repo, ["fr-FR"]) == []
-    _raw(raw, ("01_a",), (250, 240, 255, 255))  # the capture lands: the entry must go
-    assert any(
-        "remove it from AWAITING_CAPTURES" in problem for problem in cs.check(repo, ["fr-FR"])
-    )
 
 
 def test_a_pixel_9_pro_xl_capture_loses_its_bars_and_nothing_else() -> None:

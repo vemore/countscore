@@ -133,17 +133,33 @@ Adding a language to `lib/l10n/` does not add a store locale, and the reverse is
 **Release notes stay in `en-US` and `fr-FR` only** — the 18 other locales deliberately have no
 `release_notes_*.txt`.
 
-**Awaiting captures.** The ten locales of 2026-10-04 have `title.txt`, the two descriptions,
-`screenshot_captions.txt` and `video.txt`, but no `raw/` set and so no `screenshots/phone/`:
-the capture needs the app to ship the language first, then the Pixel
-(`scripts/capture_screenshots.sh <locale>`). `AWAITING_CAPTURES` in
-`scripts/compose_screenshots.py` names them; `--check` tolerates exactly those locales' missing
-set and fails once one has a `raw/` directory but is still listed, so whoever takes the captures
-empties the set. `play_publish.py --graphics` refuses a locale without `screenshots/phone/`,
-which is what keeps them from going out half-done. Fonts: Korean from the CJK collection's
-second face (`FONT_INDEX`), Noto Sans Thai and Bengali, Noto Naskh Arabic for Urdu (Nastaliq
-is too tall for the band), all shaped through libraqm; Urdu is RTL; Thai breaks a caption at
-the `|` the caption itself carries.
+**The ten locales of 2026-10-04 are captured and composed, and not published.** Each has
+`title.txt`, the two descriptions, `screenshot_captions.txt`, `video.txt`, a `raw/` set of eight
+captures and the composed `screenshots/phone/`; `--check` exits 0 over the twenty. Fonts: Korean
+from the CJK collection's second face (`FONT_INDEX`), Noto Sans Thai and Bengali, Noto Naskh
+Arabic for Urdu (Nastaliq is too tall for the band), all shaped through libraqm; Urdu is RTL;
+Thai breaks a caption at the `|` the caption itself carries.
+
+**How the 80 captures were taken (2026-10-04).** On a profile build, the demo database imported
+through Settings → Import, **driven entirely over `adb`**, one locale in about two minutes:
+`cmd locale set-app-locales`, a `force-stop` + launch between screens (so a stray back never
+leaves the app), then taps. Four things are not obvious:
+- The captions' screens are reached the same way in every locale, so the taps are coordinates
+  on the 1008×2244 screen (hamburger 63,212; stats icon 951,212; the new-game button 762,2032),
+  **mirrored in `x` for Urdu** — except the keypad, which does not mirror.
+- What changes with the language is *where* a row sits: Kubb's position in the type list follows
+  the translated sort order, and in some locales it lies **under the floating "New type"
+  button**, where a tap opens the New type dialog instead. The row and its menu are found by
+  `uiautomator dump` (Kubb's text, then the second `MenuItem`), and accepted only when clear of
+  the button.
+- Players are picked by name in the "Who's playing?" sheet (names are never translated; the
+  chip's description is `Initials\nName`), in the order Emma, Sofia, Léo, Maya.
+- The phone locks while an APK builds (a black capture, not an error), the shared `adb` server
+  can be restarted by another session (reconnect before every command), and the wireless
+  heads-up notification can cover the first screen after a reconnect.
+Each locale's eight captures were read on a contact sheet before composing; two real defects
+came out of it and were fixed in the app, not in the picture (the statistics column headers of
+`id` and `vi` ran into each other).
 
 > **Published on 2026-09-16.** `play_publish.py listing --commit` pushed the ten locales
 > live in one edit (`edits.validate OK`, `committed: store listing for ar, de-DE, en-US,
