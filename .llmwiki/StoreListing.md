@@ -119,12 +119,13 @@ allowed), rendered by the `/brag` plugin into the ignored `brag-output/`: the te
 lanes, the keypad with its "0 ZapZap" key, the end-screen podium and the analysis voices,
 rebuilt in HTML from the widgets rather than captured.
 
-### Store locales (20 committed, 10 published since 2026-09-16)
+### Store locales (20, all published since 2026-10-04)
 
-Published: `ar` · `de-DE` · `en-US` · `es-ES` · `fr-FR` · `hi-IN` · `ja-JP` · `pt-BR` · `ru-RU` · `zh-CN`.
+Published 2026-09-16: `ar` · `de-DE` · `en-US` · `es-ES` · `fr-FR` · `hi-IN` · `ja-JP` · `pt-BR` · `ru-RU` · `zh-CN`.
 
-Committed on 2026-10-04, **not published**: `id` · `tr-TR` · `it-IT` · `ko-KR` · `vi` · `th` ·
-`pl-PL` · `bn-BD` · `ur` · `nl-NL` — text only, see *Awaiting captures* below.
+Published 2026-10-04 with 1.6.0 (10), text and screenshots in the same edit as the production
+promotion: `id` · `tr-TR` · `it-IT` · `ko-KR` · `vi` · `th` · `pl-PL` · `bn-BD` · `ur` · `nl-NL`.
+`play_publish.py status` lists all twenty.
 
 They match the app's 20 languages ([[I18n]]) but **are not the same identifiers**: the app has
 `fr`, Play wants `fr-FR`; the app has `pt`, Play wants `pt-BR`; Arabic is `ar` on both sides.
@@ -133,7 +134,7 @@ Adding a language to `lib/l10n/` does not add a store locale, and the reverse is
 **Release notes stay in `en-US` and `fr-FR` only** — the 18 other locales deliberately have no
 `release_notes_*.txt`.
 
-**The ten locales of 2026-10-04 are captured and composed, and not published.** Each has
+**The ten locales of 2026-10-04 are captured, composed and published.** Each has
 `title.txt`, the two descriptions, `screenshot_captions.txt`, `video.txt`, a `raw/` set of eight
 captures and the composed `screenshots/phone/`; `--check` exits 0 over the twenty. Fonts: Korean
 from the CJK collection's second face (`FONT_INDEX`), Noto Sans Thai and Bengali, Noto Naskh
@@ -387,7 +388,7 @@ store:
   Written by Haiku from the `en-US` text and checked on form only — limits, facts, the Data
   Safety wording, no backend URL — never read by a native speaker; the French was the only
   one the author validated. Pok Deng, Teen Patti and the like were left out: games of chance are
-  a policy topic this app has no reason to touch. Nothing is published until the captures exist.
+  a policy topic this app has no reason to touch. The captures existed on the same day and the twenty went live with 1.6.0 (10).
 - **Ten store locales, two locales of release notes (2026-09-16).** The app was translated
   into 10 languages while the listing existed in 2, so 8 markets could not match a search at
   all — Play indexes the listing, not the app's ARB files. Release notes were left bilingual

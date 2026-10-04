@@ -63,8 +63,8 @@ Load this file first. Then read only the pages your task touches.
 | [[ParallelDelivery]] | Protection on main, worktrees, cleanup, one PR per theme, serial squash merges, refinement, lanes A–D, model routing, the reviewer, "merged, not deployed", metrics | 2026-09-26 |
 | [[Security]] | Defended surfaces (the group owner among them), and the security debt that is knowingly open | 2026-09-26 |
 | [[Testing]] | Unit, Drift, migration, e2e web and device, backend pytest; CI jobs and `scope`, and the extra gates (alembic, audit, binaries, privacy page) | 2026-09-26 |
-| [[Release]] | Play signing, publishing through the Play API, target API, 2026 policy constraints, cadence, the pruning pass | 2026-09-26 |
-| [[StoreListing]] | The 10 store locales and their keywords, category and tags, generated icon, feature graphic and screenshots, text limits, acquisition baseline | 2026-09-20 |
+| [[Release]] | Play signing, publishing through the Play API, target API, 2026 policy constraints, cadence, the pruning pass | 2026-10-04 |
+| [[StoreListing]] | The 20 store locales and their keywords, category and tags, generated icon, feature graphic and screenshots, text limits, acquisition baseline | 2026-10-04 |
 
 ## Procedures live in skills, not here
 
