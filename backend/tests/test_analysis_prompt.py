@@ -1,6 +1,6 @@
-"""The composed system prompt: nine voices, ten languages, one editorial contract.
+"""The composed system prompt: nine voices, twenty languages, one editorial contract.
 
-Every case here is pure string building — no HTTP, no LLM — so the whole nine-by-ten matrix
+Every case here is pure string building — no HTTP, no LLM — so the whole nine-by-twenty matrix
 costs milliseconds.
 """
 
@@ -55,10 +55,10 @@ ALL_PROMPTS = {
 }
 
 
-def test_the_matrix_is_the_nine_voices_by_the_ten_languages():
+def test_the_matrix_is_the_nine_voices_by_the_twenty_languages():
     assert len(PERSONAS) == 9
-    assert len(LANGUAGES) == 10
-    assert len(ALL_PROMPTS) == 90
+    assert len(LANGUAGES) == 20
+    assert len(ALL_PROMPTS) == 180
 
 
 @pytest.mark.parametrize("persona", PERSONA_KEYS)
@@ -78,6 +78,15 @@ def test_the_language_directive_is_sandwiched(code):
     assert prompt.rstrip().endswith(LANGUAGES[code].directive)
 
 
+@pytest.mark.parametrize("code", sorted(LANGUAGES))
+def test_every_directive_is_written_in_its_own_language(code):
+    """A directive left in English would make the sandwich ask for English twice."""
+    english = LANGUAGES["en"].directive
+    if code != "en":
+        assert LANGUAGES[code].directive != english
+    assert LANGUAGES[code].directive.strip()
+
+
 @pytest.mark.parametrize(
     ("tag", "expected"),
     [
@@ -86,6 +95,16 @@ def test_the_language_directive_is_sandwiched(code):
         ("fr_FR", "fr"),
         ("pt-BR", "pt"),
         ("zh-Hant-TW", "zh"),
+        ("id-ID", "id"),
+        ("tr-TR", "tr"),
+        ("it-IT", "it"),
+        ("ko_KR", "ko"),
+        ("vi", "vi"),
+        ("th-TH", "th"),
+        ("pl-PL", "pl"),
+        ("bn-BD", "bn"),
+        ("ur-PK", "ur"),
+        ("nl-BE", "nl"),
         ("  en  ", "en"),
         ("kl", "en"),
         ("", "en"),

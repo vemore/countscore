@@ -2,7 +2,7 @@
 
 > Scope: both LLM paths — Claude for short comments, a pluggable provider for the game
 > analysis. Related: [[Api]] · [[Backend]] · [[Security]] · [[MobileApp]] · [[Deployment]]
-> Updated: 2026-09-19
+> Updated: 2026-10-04
 
 ## Facts
 
@@ -288,7 +288,7 @@ the email from their own mail app — so this is not an outbound data flow.
   created with no access to a feature whose payload was already generic. Three things were
   wrong at once and they were fixed in one change because they touch the same files: one
   game type, one voice, one language. What each decision cost:
-  - **Nine voices, written in English once.** Nine personas × ten languages would be ninety
+  - **Nine voices, written in English once.** Nine personas × twenty languages would be a hundred and eighty
     prose blocks to maintain and to re-audit against the "names no real person" rule. The
     output language is a parameter instead, and the persona blocks never move.
   - **The editorial contract replaced the ZapZap output format.** The old prompt asked for

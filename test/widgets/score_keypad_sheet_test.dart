@@ -17,7 +17,10 @@ import 'package:countscore/widgets/score_keypad_sheet.dart';
 
 import '../support/label_lines.dart';
 
-const _locales = ['ar', 'de', 'en', 'es', 'fr', 'hi', 'ja', 'pt', 'ru', 'zh'];
+const _locales = [
+  'ar', 'de', 'en', 'es', 'fr', 'hi', 'ja', 'pt', 'ru', 'zh', //
+  'bn', 'id', 'it', 'ko', 'nl', 'pl', 'th', 'tr', 'ur', 'vi',
+];
 
 final _players = [
   for (final (i, name) in ['Lionel', 'Laurent', 'Sofia'].indexed)

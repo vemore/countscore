@@ -1,0 +1,912 @@
+{
+  "@@locale": "pl",
+
+  "appTitle": "CountScore",
+
+  "homeTitle": "Strona główna",
+
+  "playersListTitle": "Lista graczy",
+
+  "gameTypesTitle": "Rodzaje gier",
+
+  "settingsTitle": "Ustawienia",
+
+  "aboutTitle": "O aplikacji",
+
+  "newGame": "Nowa gra",
+
+  "noGames": "Brak gier",
+
+  "noGamesOfThisType": "Brak gier tego typu",
+
+  "createFirstGame": "Utwórz swoją pierwszą grę",
+
+  "newWithSamePlayers": "Nowa z tymi samymi graczami",
+
+  "playAgain": "Graj jeszcze raz",
+
+  "rename": "Zmień nazwę",
+
+  "delete": "Usuń",
+
+  "confirmDeletion": "Potwierdź usunięcie",
+
+  "confirmDeleteGame": "Czy naprawdę chcesz usunąć grę \"{name}\"?",
+
+  "cancel": "Anuluj",
+
+  "renameGame": "Zmień nazwę gry",
+
+  "gameName": "Nazwa gry",
+
+  "save": "Zapisz",
+
+  "allGames": "Wszystkie gry",
+
+  "filterGames": "Filtruj gry",
+
+  "applyFilter": "Zastosuj",
+
+  "resetFilter": "Resetuj",
+
+  "selectGameType": "Wybierz rodzaj gry",
+
+  "gameType": "Rodzaj gry",
+
+  "loadingGameTypes": "Ładowanie rodzajów gier...",
+
+  "lowestScoreWins": "Najniższy wynik wygrywa",
+
+  "highestScoreWins": "Najwyższy wynik wygrywa",
+
+  "players": "Gracze",
+
+  "add": "Dodaj",
+
+  "pleaseEnterName": "Proszę wpisz nazwę",
+
+  "clear": "Wyczyść",
+
+  "remove": "Usuń",
+
+  "game": "Gra",
+
+  "editGame": "Edytuj grę",
+
+  "editGameDialogTitle": "Edytuj grę",
+
+  "removePlayer": "Usuń gracza",
+
+  "addPlayerToGame": "Dodaj gracza",
+
+  "warningRemovePlayer": "Ostrzeżenie! Usunięcie tego gracza spowoduje skasowanie wszystkich jego wyników z tej gry. Ta czynność jest nieodwracalna.",
+
+  "confirmRemovePlayer": "Czy naprawdę chcesz usunąć {playerName} z tej gry?",
+
+  "playerRemoved": "Gracz usunięty z gry",
+
+  "deleteLastRound": "Usuń ostatnią rundę",
+
+  "confirm": "Potwierdź",
+
+  "confirmDeleteLastRound": "Usunąć ostatnią rundę?",
+
+  "noPlayersInGame": "Brak graczy w tej grze",
+
+  "round": "Runda",
+
+  "boardRoundButton": "Runda {round}",
+
+  "keypadCaption": "{player} · runda {round}",
+
+  "keypadCaptionWithPosition": "{player} · runda {round} · {position}/{count}",
+
+  "keypadTotalAfter": "razem po: {total}",
+
+  "keypadNext": "Następny\n{player}",
+
+  "keypadValidateRound": "Zatwierdź rundę",
+
+  "keypadToggleSign": "Zmień znak",
+
+  "keypadBackspace": "Usuń cyfrę",
+
+  "keypadShortcutTitle": "Skrót klawiatury",
+
+  "keypadShortcutKind": "Typ klawisza",
+
+  "keypadShortcutKindValue": "Wpisz wartość",
+
+  "keypadShortcutKindMultiply": "Pomnóż wynik (tylko dodatni)",
+
+  "keypadShortcutKindAdd": "Dodaj do wyniku",
+
+  "keypadShortcutAmount": "Liczba",
+
+  "keypadShortcutLabel": "Etykieta klawisza (opcjonalnie)",
+
+  "keypadShortcutAddRange": "Liczba całkowita między {min} a {max}, inna niż 0",
+
+  "keypadShortcutAmountRange": "Liczba całkowita między {min} a {max}",
+
+  "appearance": "Wygląd",
+
+  "light": "Jasny",
+
+  "dark": "Ciemny",
+
+  "system": "System",
+
+  "screen": "Ekran",
+
+  "keepScreenAwake": "Utrzymaj ekran aktywny",
+
+  "keepScreenAwakeDescription": "Zapobiega usypianiu ekranu podczas gry",
+
+  "backup": "Kopia zapasowa",
+
+  "exportDatabase": "Eksportuj bazę danych",
+
+  "exportDatabaseDescription": "Zapisz wszystkie swoje gry do pliku",
+
+  "databaseExportedTo": "Baza danych wyeksportowana do:",
+
+  "errorDuringExport": "Błąd podczas eksportu:",
+
+  "importDatabase": "Importuj bazę danych",
+
+  "importDatabaseDescription": "Przywróć swoje gry z pliku kopii zapasowej",
+
+  "confirmation": "Potwierdzenie",
+
+  "importWarning": "Importowanie zastąpi wszystkie bieżące dane. Automatyczna kopia zapasowa zostanie utworzona przed importem.\n\nCzy chcesz kontynuować?",
+
+  "import": "Importuj",
+
+  "databaseImportedSuccessfully": "Baza danych zaimportowana pomyślnie",
+
+  "importSuccessful": "Import pomyślny",
+
+  "importSuccessMessage": "Baza danych została zaimportowana pomyślnie.\n\nAplikacja zostanie teraz zamknięta. Proszę otwórz ją ponownie, aby zobaczyć nowe dane.",
+
+  "ok": "OK",
+
+  "errorDuringImport": "Błąd podczas importu:",
+
+  "noPlayers": "Brak graczy",
+
+  "playersAppearMessage": "Gracze pojawią się tutaj, gdy\nutworzyłeś gry",
+
+  "gamesCount": "{count, plural, one{{count} gra} few{{count} gry} many{{count} gier} other{{count} gier}}",
+
+  "winsCount": "{count, plural, one{{count} zwycięstwo} few{{count} zwycięstwa} many{{count} zwycięstw} other{{count} zwycięstw}}",
+
+  "changeColor": "Zmień kolor",
+
+  "renamePlayer": "Zmień nazwę gracza",
+
+  "newName": "Nowa nazwa",
+
+  "playerRenamedTo": "Gracz zmienił nazwę na \"{name}\"",
+
+  "deletePlayer": "Usuń gracza",
+
+  "confirmDeletePlayer": "Czy naprawdę chcesz usunąć \"{name}\"?\n\nTen gracz będzie usunięty ze wszystkich {count} gry(gier).",
+
+  "playerDeleted": "Gracz \"{name}\" usunięty",
+
+  "chooseColor": "Wybierz kolor",
+
+  "noGameTypes": "Brak rodzajów gier",
+
+  "edit": "Edytuj",
+
+  "newType": "Nowy typ",
+
+  "editType": "Edytuj typ",
+
+  "newGameType": "Nowy rodzaj gry",
+
+  "gameTypeName": "Nazwa rodzaju gry",
+
+  "icon": "Ikona:",
+
+  "color": "Kolor:",
+
+  "chooseIcon": "Wybierz ikonę",
+
+  "nameIsRequired": "Nazwa jest wymagana",
+
+  "create": "Utwórz",
+
+  "ranking": "Ranking",
+
+  "noCurrentGame": "Brak bieżącej gry",
+
+  "noScoresRecorded": "Brak zarejestrowanych wyników",
+
+  "playerStatistics": "Statystyki graczy",
+
+  "noStatisticsAvailable": "Brak dostępnych statystyk",
+
+  "gamesPlayed": "Rozegrane gry",
+
+  "wins": "Zwycięstwa",
+
+  "winRate": "Procent zwycięstw",
+
+  "byGameType": "Wg rodzaju gry",
+
+  "rate": "Wskaźnik",
+
+  "version": "Wersja {version}",
+
+  "appDescription": "Aplikacja do zarządzania wynikami dla sesji gier autorstwa Vincenta Moreaua",
+
+  "features": "Funkcje",
+
+  "featureDifferentGameTypes": "Różne rodzaje gier",
+
+  "featurePlayerManagement": "Zarządzanie graczami",
+
+  "featureDetailedStatistics": "Szczegółowe statystyki",
+
+  "featureCustomization": "Dostosowanie",
+
+  "featureDarkLightTheme": "Motyw ciemny/jasny",
+
+  "featureGroupSharing": "Udostępnianie grupowe",
+
+  "featureGameAnalysis": "Analiza gry AI",
+
+  "rateApp": "Oceń CountScore",
+
+  "search": "Szukaj",
+
+  "newPlayerName": "Nazwa nowego gracza",
+
+  "noPlayersFound": "Nie znaleziono graczy",
+
+  "close": "Zamknij",
+
+  "playerEliminationCondition": "Warunek eliminacji gracza",
+
+  "gameOverCondition": "Warunek końca gry",
+
+  "none": "Brak",
+
+  "overThreshold": "Ponad próg",
+
+  "underThreshold": "Poniżej progu",
+
+  "firstPlayerOver": "Pierwszy gracz, który osiągnie",
+
+  "firstPlayerUnder": "Pierwszy gracz poniżej",
+
+  "lastPlayerOver": "Ostatni gracz w grze (inni ponad)",
+
+  "lastPlayerUnder": "Ostatni gracz w grze (inni poniżej)",
+
+  "threshold": "Próg",
+
+  "conditionType": "Typ warunku",
+
+  "continuePlay": "Kontynuuj grę",
+
+  "gameEndWinner": "{name} wygrywa",
+
+  "gameEndTie": "Remis: {names}",
+
+  "gameEndRounds": "{count, plural, one{{count} runda} few{{count} rundy} many{{count} rund} other{{count} rund}}",
+
+  "gameEndLowestWins": "najniższy wynik wygrywa",
+
+  "gameEndHighestWins": "najwyższy wynik wygrywa",
+
+  "gameEndAnalysis": "Analiza",
+
+  "gameEndResults": "Wyniki",
+
+  "rankingEliminationNote": "Ranking wg kolejności eliminacji: kto wychodzi później, jest wyżej, niezależnie od sum.",
+
+  "endGame": "Zakończ grę",
+
+  "reopenGame": "Wznów grę",
+
+  "gameFinished": "Zakończona",
+
+  "undo": "Cofnij",
+
+  "gameReopened": "Gra wznowiona",
+
+  "comment": "Komentarz",
+
+  "enterComment": "Wpisz komentarz",
+
+  "analyzeGame": "Analizuj grę",
+
+  "analysisTitle": "Analiza gry",
+
+  "analysisStyle": "Styl analizy",
+
+  "analysisStyleProfessor": "Profesor",
+
+  "analysisStyleCommentator": "Komentator sportowy",
+
+  "analysisStyleDocumentary": "Dokument przyrodniczy",
+
+  "analysisStyleNoir": "Detektyw",
+
+  "analysisStyleBard": "Bard",
+
+  "analysisStyleCoach": "Trener",
+
+  "analysisStyleConsultant": "Konsultant",
+
+  "analysisStyleAstrologer": "Astrolog",
+
+  "analysisStyleRealityTv": "Reality show",
+
+  "generatingAnalysis": "Generowanie analizy…",
+
+  "generateAnalysis": "Generuj analizę",
+
+  "regenerateAnalysis": "Wygeneruj ponownie analizę",
+
+  "deleteAnalysis": "Usuń analizę",
+
+  "confirmRegenerateAnalysis": "Wygenerować ponownie? Bieżąca analiza zostanie zastąpiona.",
+
+  "confirmDeleteAnalysis": "Usunąć analizę dla tej gry?",
+
+  "analysisError": "Nie udało się wygenerować analizy",
+
+  "analysisErrorStatus": "Nie udało się wygenerować analizy (HTTP {status})",
+
+  "analysisErrorUnavailable": "Serwer analizy jest tymczasowo niedostępny. Spróbuj ponownie później.",
+
+  "analysisErrorGroupBudget": "Twoja grupa zużyła budżet analiz na ten miesiąc. Odnawia się na początku następnego miesiąca.",
+
+  "analysisStyleGroupDefault": "Nie wybrano stylu: ta udostępniana gra jest analizowana w stylu i języku grupy.",
+
+  "retry": "Spróbuj ponownie",
+
+  "analysisGeneratedAt": "Wygenerowano {date}",
+
+  "serverSection": "Serwer",
+
+  "backendUrlLabel": "Adres URL serwera",
+
+  "backendUrlHint": "https://countscore.example.com",
+
+  "backendUrlDescription": "Funkcje połączone wymagają serwera CountScore. Zainstaluj jeden z folderu backend/ i wpisz jego adres tutaj. Bez serwera żadne dane nie opuszczają tego urządzenia.",
+
+  "backendNotConfigured": "Serwer nie skonfigurowany",
+
+  "backendUrlInvalid": "Nieprawidłowy adres. Wpisz pełny adres URL, na przykład https://countscore.example.com",
+
+  "backendUrlInsecure": "http:// jest akceptowany tylko w sieci lokalnej. Używaj https:// dla serwera publicznego.",
+
+  "testConnection": "Testuj połączenie",
+
+  "connectionOk": "Serwer odpowiada",
+
+  "connectionFailed": "Serwer nie odpowiada",
+
+  "serverUrlSaved": "Serwer zapisany",
+
+  "analysisRequiresBackend": "Ta analiza wymaga serwera. Skonfiguruj jeden w ustawieniach.",
+
+  "openSettings": "Otwórz ustawienia",
+
+  "serverUrlCleared": "Serwer wyczyszczony",
+
+  "groupSection": "Grupa",
+
+  "groupDescription": "Udostępniaj gry innym urządzeniom w grupie. Udostępniane gry, ich gracze, wyniki, komentarze i analizy są wysyłane na twój serwer; inne gry pozostają na tym urządzeniu.",
+
+  "groupNeedsServer": "Najpierw skonfiguruj serwer powyżej.",
+
+  "groupCreate": "Utwórz grupę",
+
+  "groupJoin": "Dołącz do grupy",
+
+  "groupNameLabel": "Nazwa grupy",
+
+  "groupNicknameLabel": "Twój pseudonim",
+
+  "groupNicknameHint": "Inni członkowie grupy będą to widzieć",
+
+  "groupNicknameCurrent": "Twój pseudonim: {nickname}",
+
+  "groupNicknameEdit": "Zmień swój pseudonim",
+
+  "shareTokenLabel": "Kod zaproszenia",
+
+  "shareTokenHint": "Wklej kod przesłany przez członka grupy",
+
+  "groupCurrent": "Grupa: {name}",
+
+  "shareTokenExplain": "Wyślij ten kod do urządzeń, które mają dołączyć do grupy. Każdy, kto go ma, może dołączyć.",
+
+  "shareTokenCopy": "Skopiuj kod",
+
+  "shareTokenCopied": "Kod skopiowany",
+
+  "shareTokenRotate": "Nowy kod",
+
+  "shareTokenRotateConfirm": "Stary kod nie pozwoli już nikomu dołączyć. Urządzenia już w grupie nie są dotknięte.",
+
+  "groupLeave": "Opuść grupę",
+
+  "groupLeaveConfirm": "To urządzenie opuszcza grupę. Udostępniane gry pozostają na tym urządzeniu, ale nie będą już synchronizowane.",
+
+  "groupLeft": "Grupa opuszczona",
+
+  "groupJoined": "Grupa dołączona",
+
+  "clearServerLeavesGroup": "Wyczyszczenie serwera powoduje opuszczenie grupy. Udostępniane gry pozostają na tym urządzeniu.",
+
+  "syncNow": "Synchronizuj teraz",
+
+  "syncStatusIdle": "Zsynchronizowano o {time}",
+
+  "syncStatusSyncing": "Synchronizowanie…",
+
+  "syncStatusOffline": "Serwer niedostępny — zmiany będą wysłane później",
+
+  "syncStatusUnauthorized": "Serwer nie akceptuje już tego urządzenia. Opuść grupę, a następnie dołącz ją ponownie.",
+
+  "syncStatusError": "Błąd serwera podczas synchronizacji",
+
+  "syncPending": "{count, plural, one{{count} zmiana oczekująca} few{{count} zmiany oczekujące} many{{count} zmian oczekujących} other{{count} zmian oczekujących}}",
+
+  "syncRejected": "{count, plural, one{{count} zmiana odrzucona przez serwer} few{{count} zmiany odrzucone przez serwer} many{{count} zmian odrzuconych przez serwer} other{{count} zmian odrzuconych przez serwer}}",
+
+  "groupErrorUnknownToken": "Kod zaproszenia nieznany lub zastąpiony",
+
+  "groupErrorRateLimited": "Zbyt wiele prób. Spróbuj ponownie za minutę.",
+
+  "groupErrorUnreachable": "Serwer niedostępny",
+
+  "groupErrorServer": "Błąd serwera",
+
+  "shareWithGroup": "Udostępnij grupie",
+
+  "shareWithGroupSubtitle": "Urządzenia w grupie {name} będą widać i edytować tę grę",
+
+  "shareGameConfirm": "Gra, jej gracze, wyniki i komentarze będą wysłane do {name}. Udostępniania nie można cofnąć.",
+
+  "gameSharedDone": "Gra udostępniona grupie",
+
+  "gameSharedBadge": "Udostępniana gra",
+
+  "invalidPlayerNamesForSync": "Te nazwy nie mogą być udostępniane: {names}. Używaj liter, cyfr, spacji, łączników, apostrofów lub kropek (maksymalnie 32 znaki).",
+
+  "roundRenumbered": "Ta runda została już wpisana na innym urządzeniu, więc stała się rundą {number}.",
+
+  "gameDeletedElsewhere": "Gra \"{name}\" została usunięta na innym urządzeniu",
+
+  "groupDevices": "Urządzenia",
+
+  "groupDevicesExplain": "Zagubiony lub sprzedany telefon można usunąć z grupy tutaj.",
+
+  "groupDeviceThisOne": "To urządzenie",
+
+  "groupDeviceLastSeen": "Ostatnio widziane {date}",
+
+  "groupDeviceRevoke": "Usuń",
+
+  "groupDeviceRevokeConfirm": "Usunąć \"{label}\" z grupy? Nie będzie już synchronizować. Kod zaproszenia również się zmieni: członkowie zachowają dostęp, ale będziesz musiał udostępnić nowy kod, aby zaprosić kogokolwiek.",
+
+  "groupDeviceRevoked": "Urządzenie \"{label}\" zostało usunięte. Kod zaproszenia się zmienił.",
+
+  "reportCommentary": "Zgłoś ten komentarz",
+
+  "reportCommentarySubject": "CountScore — zgłoszenie komentarza AI",
+
+  "reportCommentaryBody": "Co jest nie tak z tym komentarzem wygenerowanym przez AI?\n\n\n---\nOdniesienie: {reference}\nKomentarz:\n{commentary}",
+
+  "reportCommentaryNoMailApp": "Nie znaleziono aplikacji poczty e-mail. Napisz do {email}, aby zgłosić ten komentarz.",
+
+  "gameRulesTitle": "Zasady gry",
+
+  "gameRulesInApp": "W CountScore",
+
+  "gameRulesSection": "Zasady",
+
+  "gameRulesNoElimination": "Brak eliminacji podczas gry",
+
+  "gameRulesEliminationOver": "Gracz jest eliminowany powyżej {threshold} punktów",
+
+  "gameRulesEliminationUnder": "Gracz jest eliminowany poniżej {threshold} punktów",
+
+  "gameRulesEndFirstOver": "Gra kończy się, gdy gracz osiągnie {threshold} punktów",
+
+  "gameRulesEndFirstUnder": "Gra kończy się, gdy gracz spadnie poniżej {threshold} punktów",
+
+  "gameRulesEndLastOver": "Gra kończy się, gdy wszyscy oprócz jednego gracza przekroczą {threshold} punktów",
+
+  "gameRulesEndLastUnder": "Gra kończy się, gdy wszyscy oprócz jednego gracza spadną poniżej {threshold} punktów",
+
+  "gameRulesNoEnd": "Brak automatycznego końca: decydujesz, kiedy gra się skończy",
+
+  "gameRulesEmptyTitle": "Brak jeszcze zasad",
+
+  "gameRulesEmptyHint": "Zapisz, jak twój stół liczy punkty — wszyscy będą mieć tę samą wersję.",
+
+  "gameRulesWrite": "Napisz zasady",
+
+  "gameRulesEditTitle": "Edytuj zasady",
+
+  "gameRulesEditorHint": "Zasady twojego stołu. Obsługiwany jest Markdown.",
+
+  "gameRulesFromGroup": "Zasady twojej grupy",
+
+  "gameRulesRestoreDefault": "Przywróć oryginalne zasady",
+
+  "gameRulesSaved": "Zasady zapisane",
+
+  "gameRulesRestored": "Oryginalne zasady przywrócone",
+
+  "gameRulesDisclaimer": "Streszczenie napisane dla CountScore na podstawie zasad powszechnie granych. Nazwy gier należą do ich właścicieli i są używane wyłącznie w celach opisowych.",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameZapzapSortKey": "ZapZap",
+
+  "gameTypeNameUno": "Uno",
+
+  "gameTypeNameUnoSortKey": "Uno",
+
+  "gameTypeNameScrabble": "Scrabble",
+
+  "gameTypeNameScrabbleSortKey": "Scrabble",
+
+  "gameTypeNameOther": "Inne",
+
+  "gameTypeNameOtherSortKey": "Inne",
+
+  "gameTypeNameSkyjo": "Skyjo",
+
+  "gameTypeNameSkyjoSortKey": "Skyjo",
+
+  "gameTypeNamePresident": "President",
+
+  "gameTypeNamePresidentSortKey": "President",
+
+  "gameTypeNameBelote": "Belote",
+
+  "gameTypeNameBeloteSortKey": "Belote",
+
+  "gameTypeNameTarot": "Tarot",
+
+  "gameTypeNameTarotSortKey": "Tarot",
+
+  "gameTypeNameBridge": "Bridge",
+
+  "gameTypeNameBridgeSortKey": "Bridge",
+
+  "gameTypeNameRami": "Rummy",
+
+  "gameTypeNameRamiSortKey": "Rummy",
+
+  "gameTypeNameCoinche": "Coinche",
+
+  "gameTypeNameCoincheSortKey": "Coinche",
+
+  "gameTypeNameYahtzee": "Yahtzee",
+
+  "gameTypeNameYahtzeeSortKey": "Yahtzee",
+
+  "gameTypeNamePhase10": "Phase 10",
+
+  "gameTypeNamePhase10SortKey": "Phase 10"
+,
+
+  "gameTypeNameFlip7": "Flip 7",
+
+  "gameTypeNameFlip7SortKey": "Flip 7",
+
+  "gameTypeNameMilleBornes": "Mille Bornes",
+
+  "gameTypeNameMilleBornesSortKey": "Mille Bornes",
+
+  "gameTypeNameRummikub": "Rummikub",
+
+  "gameTypeNameRummikubSortKey": "Rummikub",
+
+  "gameTypeNameSixNimmt": "Take 6",
+
+  "gameTypeNameSixNimmtSortKey": "Take 6",
+
+  "gameTypeNameQwirkle": "Qwirkle",
+
+  "gameTypeNameQwirkleSortKey": "Qwirkle",
+
+  "gameTypeNameFarkle": "Farkle",
+
+  "gameTypeNameFarkleSortKey": "Farkle",
+
+  "gameTypeNameCanasta": "Canasta",
+
+  "gameTypeNameCanastaSortKey": "Canasta",
+
+  "gameTypeNameWizard": "Wizard",
+
+  "gameTypeNameWizardSortKey": "Wizard",
+
+  "gameTypeNameTriomino": "Triomino",
+
+  "gameTypeNameTriominoSortKey": "Triomino",
+
+  "groupDeviceOwner": "Właściciel",
+
+  "groupDeviceMakeOwner": "Ustaw jako właściciela",
+
+  "groupDeviceMakeOwnerConfirm": "Oddać grupę \"{label}\"? To urządzenie nie będzie już mogło usuwać urządzenia ani zmieniać kodu zaproszenia.",
+
+  "groupDeviceOwnerChanged": "Urządzenie \"{label}\" teraz jest właścicielem grupy.",
+
+  "groupDevicesExplainMember": "Tylko właściciel grupy może usunąć urządzenie lub zmienić kod zaproszenia.",
+
+  "groupErrorNotOwner": "Tylko właściciel grupy może to zrobić",
+
+  "whoStarts": "Kto zaczyna?",
+
+  "whoStartsAgain": "Losuj ponownie",
+
+  "diceRoller": "Rzuć kostką",
+
+  "diceCount": "Liczba kostek",
+
+  "diceRollAgain": "Rzuć ponownie",
+
+  "diceTotal": "Razem: {total}",
+
+  "resumeGame": "Wznów",
+
+  "recentGames": "Ostatnie",
+
+  "gameInProgress": "W trakcie",
+
+  "roundNumber": "runda {number}",
+
+  "gameLeader": "{name} prowadzi · {score}",
+
+  "gameWonBy": "Wygrał {name}",
+
+  "boardRank": "{rank, plural, one{#{rank}} other{#{rank}}}",
+
+  "boardViewRows": "Jeden wiersz na gracza",
+
+  "boardViewLanes": "Jedna kolumna na gracza",
+
+  "boardSeatOrder": "Kolejność miejsc",
+
+  "boardRoundShort": "R{number}",
+
+  "boardPlayer": "Gracz",
+
+  "boardTotal": "Razem",
+
+  "boardLeader": "Prowadzący",
+
+  "groupSettingsTitle": "Komentarze i użycie",
+
+  "groupSettingsDescription": "Styl i język komentarzy, które serwer pisze dla gier grupy. Każdy członek może je zmienić.",
+
+  "groupCommentStyle": "Styl komentarza",
+
+  "groupCommentStyleNarrative": "Narracyjny",
+
+  "groupCommentStyleHumorous": "Humorystyczny",
+
+  "groupCommentStyleAnalytical": "Analityczny",
+
+  "groupCommentLanguage": "Język komentarza",
+
+  "groupSettingsSaved": "Ustawienia grupy zapisane",
+
+  "groupUsageTitle": "Użycie LLM w tym miesiącu",
+
+  "groupUsageAmount": "{used} wydane z {budget}",
+
+  "groupUsageResets": "Odnawia się {date}",
+
+  "statsBestWinRate": "Najlepszy procent zwycięstw",
+
+  "statsWinsOutOfGames": "{wins, plural, =0{Brak zwycięstw z {games}} one{{wins} zwycięstwo z {games}} other{{wins} zwycięstw z {games}}}",
+
+  "statsColumnPlayer": "Gracz",
+
+  "statsColumnGames": "Gry",
+
+  "statsUnranked": "{count, plural, one{{count} gra · jeszcze nie ranking} other{{count} gry · jeszcze nie ranking}}",
+
+  "statsLeaderboardFooter": "{count, plural, one{Uszeregowany z {count} ukończonej gry. Dotknij gracza, aby zobaczyć jego kartę.} other{Uszeregowany z {count} ukończonych gier. Dotknij gracza, aby zobaczyć jego kartę.}}",
+
+  "statsGamesLabel": "{count, plural, one{gra} other{gry}}",
+
+  "statsWinsLabel": "{count, plural, one{zwycięstwo} other{zwycięstwa}}",
+
+  "statsAverageRank": "średnie miejsce",
+
+  "statsRankChartTitle": "{count, plural, one{Miejsce, ostatnia gra} other{Miejsce, ostatnie {count} gier}}",
+
+  "statsTrendImproving": "poprawa",
+
+  "statsTrendDeclining": "spadek",
+
+  "statsTrendSteady": "stabilny",
+
+  "statsRankOrdinal": "{rank, select, 1{1.} 2{2.} 3{3.} other{{rank}.}}",
+
+  "statsWinStreak": "{count, plural, =0{Brak zwycięskiej serii} one{Seria: {count} zwycięstwo} other{Seria: {count} zwycięstw}}",
+
+  "statsRecord": "Najlepiej: {total}",
+
+  "statsOnGameType": "Na {gameType}",
+
+  "statsAverageTotal": "Średni wynik końcowy",
+
+  "statsBestTotal": "Najlepszy wynik końcowy",
+
+  "statsMostBeaten": "Najczęściej pokonywany przeciwnik",
+
+  "statsOpenPlayerCard": "otwórz kartę gracza",
+
+  "shareResult": "Udostępnij wynik",
+
+  "shareAnalysis": "Udostępnij analizę",
+
+  "shareResultSubject": "Wynik: {gameName}",
+
+  "shareResultTitle": "Gra z {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} punkt} other{{points} punktów}}",
+
+  "shareResultFooter": "Wyniki śledzone za pomocą {appName}: {url}",
+
+  "shareFailed": "Udostępnianie nie mogło być otwarte",
+
+  "newGameNameLabel": "Nazwa",
+
+  "newGameGameLabel": "Gra",
+
+  "newGameAllGames": "Wszystkie gry ({count})",
+
+  "newGamePlayersLabel": "Gracze · kolejność miejsc",
+
+  "newGameDragToReorder": "przeciągnij, aby zmienić kolejność",
+
+  "newGameDealer": "rozdaje",
+
+  "newGameAddPlayer": "Dodaj gracza",
+
+  "newGameStart": "{count, plural, =0{Rozpocznij} =1{Rozpocznij · 1 gracz} other{Rozpocznij · {count} graczy}}",
+
+  "whoIsPlayingTitle": "Kto gra?",
+
+  "whoIsPlayingSearchHint": "Nazwa lub nowy gracz",
+
+  "whoIsPlayingFrequent": "Często gra z tobą",
+
+  "whoIsPlayingSameAs": "Ci sami gracze co \"{gameName}\"",
+
+  "whoIsPlayingCreate": "Utwórz \"{name}\"",
+
+  "whoIsPlayingConfirm": "{count, plural, =0{Gotowe} =1{Dodaj 1 gracza} other{Dodaj {count} graczy}}",
+
+  "defaultGameName": "Gra {number}",
+
+  "pwaUpdateReady": "Nowa wersja CountScore jest gotowa",
+
+  "pwaUpdateReload": "Załaduj ponownie",
+
+  "thresholdIsRequired": "Próg jest wymagany dla tego warunku",
+
+  "thresholdTooLarge": "Próg nie może być większy niż {max}",
+
+  "deletionImpossible": "Usunięcie niemożliwe",
+
+  "gameTypeInUse": "{count, plural, one{1 gra używa tego typu: nie można go usunąć.} other{{count} gier używa tego typu: nie można go usunąć.}}",
+
+  "confirmDeleteGameType": "Czy naprawdę chcesz usunąć rodzaj gry \"{name}\"?",
+
+  "winDirectionChangeTitle": "Odwrócić, kto wygrywa?",
+
+  "winDirectionChangeWarning": "{count, plural, one{1 ukończona gra tego typu będzie miała odwróconą kolejność: jej zwycięzca staje się ostatni.} other{{count} ukończone gry tego typu będą miały odwróconą kolejność: ich zwycięzcy stają się ostatni.}}",
+
+  "winDirectionContradiction": "Warunek końca gry nagradza przeciwieństwo wybranego zwycięzcy. Domowa reguła może chcieć dokładnie tego.",
+
+  "rulesOutOfDateTitle": "Zaktualizować zasady?",
+
+  "rulesOutOfDateMessage": "Zasady tego typu nadal opisują stary warunek.",
+
+  "later": "Później",
+
+  "currentIcon": "Bieżąca ikona",
+
+  "currentColor": "Bieżący kolor",
+
+  "groupDeviceClaimOwner": "Przejmij własność",
+
+  "groupDeviceClaimOwnerConfirm": "Urządzenie \"{label}\" jest właścicielem grupy, ale nie było widać od długiego czasu. Przejąć własność na tym urządzeniu?",
+
+  "groupDeviceOwnerClaimed": "To urządzenie jest teraz właścicielem grupy.",
+
+  "groupErrorOwnerActive": "Właściciel grupy był niedawno widzany: nie można przejąć własności.",
+
+  "groupCreatedOwnerExplain": "Grupa utworzona. To urządzenie jest jej właścicielem; rola może być przekazana innej w Urządzenia.",
+
+  "boardEliminated": "Wyeliminowany",
+
+  "soundsSection": "Dźwięki",
+
+  "gameSounds": "Dźwięki gry",
+
+  "gameSoundsDescription": "Dźwięk, gdy gracz jest wyeliminowany, gdy gra jest wygrywana i gdy czasomierz się kończy",
+
+  "turnTimer": "Czasomierz rundy",
+
+  "turnTimerLess": "Mniej czasu",
+
+  "turnTimerMore": "Więcej czasu",
+
+  "turnTimerStart": "Rozpocznij",
+
+  "turnTimerPause": "Pauza",
+
+  "turnTimerReset": "Reset",
+
+  "turnTimerTimeUp": "Koniec czasu!",
+
+  "configShareOpen": "Udostępnij kod QR",
+
+  "configShareTitle": "Udostępnij tę konfigurację",
+
+  "configShareExplainServer": "Zeskanuj ten kod innym telefonem, aby skonfigurować go z tym samym serwerem.",
+
+  "configShareExplainGroup": "Zeskanuj ten kod innym telefonem, aby skonfigurować go z tym samym serwerem i dołączyć do grupy {name}. Zawiera kod zaproszenia grupy: pokaż go tylko osobom, które chcesz w grupie.",
+
+  "configShareWebAppLabel": "Adres aplikacji internetowej",
+
+  "configShareWebAppHelper": "Gdzie twój serwer obsługuje aplikację internetową CountScore, na przykład https://countscore.example.com/countscore. Kod otwiera tę stronę.",
+
+  "configShareWebAppNeeded": "Wpisz adres aplikacji internetowej, aby pokazać kod.",
+
+  "configShareQrLabel": "Kod QR konfiguracji linku",
+
+  "configShareCopyLink": "Skopiuj link",
+
+  "configShareLinkCopied": "Link skopiowany",
+
+  "configShareTooLong": "Ten link jest za długi, aby zmieścić się w kodzie QR. Zamiast tego użyj \"Skopiuj link\".",
+
+  "replaceConfigTitle": "Zastąpić konfigurację?",
+
+  "replaceConfigCurrent": "Teraz: {value}",
+
+  "replaceConfigNew": "Nowe: {value}",
+
+  "replaceConfigInvite": "kod zaproszenia {code}",
+
+  "replaceConfigLeavesGroup": "To urządzenie opuści grupę {name}. Jego gry pozostają na tym urządzeniu.",
+
+  "replaceConfigConfirm": "Zastąp",
+
+  "replaceConfigUnsynced": "{count, plural, =1{1 zmiana na tym urządzeniu nie dotarła jeszcze do grupy. Jeśli teraz opuścisz, grupa nigdy jej nie otrzyma.} other{{count} zmian na tym urządzeniu nie dotarły jeszcze do grupy. Jeśli teraz opuścisz, grupa nigdy ich nie otrzyma.}}",
+
+  "replaceConfigLeaveAnyway": "Opuść mimo to",
+
+  "replaceConfigDone": "Konfiguracja zastąpiona",
+
+  "replaceConfigUnchanged": "To urządzenie już używa tej konfiguracji",
+
+  "joinLinkHandOverMessage": "Ten link może się otworzyć w aplikacji CountScore Android. Jeśli aplikacja nie jest zainstalowana, zamiast tego otworzy się Play Store.",
+
+  "joinLinkOpenInApp": "Otwórz w aplikacji",
+
+  "joinLinkContinueHere": "Kontynuuj w przeglądarce"
+}

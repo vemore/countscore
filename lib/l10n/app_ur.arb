@@ -1,0 +1,997 @@
+{
+  "@@locale": "ur",
+
+  "appTitle": "CountScore",
+
+  "homeTitle": "ہوم",
+
+  "playersListTitle": "کھلاڑیوں کی فہرست",
+
+  "gameTypesTitle": "گیم کی اقسام",
+
+  "settingsTitle": "ترتیبات",
+
+  "aboutTitle": "کے بارے میں",
+
+  "newGame": "نیا گیم",
+
+  "noGames": "کوئی گیم نہیں",
+
+  "noGamesOfThisType": "اس قسم کا کوئی گیم نہیں",
+
+  "createFirstGame": "اپنا پہلا گیم بنائیں",
+
+  "newWithSamePlayers": "ایک جیسے کھلاڑیوں کے ساتھ نیا",
+
+  "playAgain": "دوبارہ کھیلیں",
+
+  "rename": "دوبارہ نام دیں",
+
+  "delete": "حذف کریں",
+
+  "confirmDeletion": "حذف کی تصدیق کریں",
+
+  "confirmDeleteGame": "کیا آپ واقعی \"{name}\" گیم حذف کرنا چاہتے ہیں؟",
+
+  "cancel": "منسوخ کریں",
+
+  "renameGame": "گیم کا نام تبدیل کریں",
+
+  "gameName": "گیم کا نام",
+
+  "save": "محفوظ کریں",
+
+  "allGames": "تمام گیمز",
+
+  "filterGames": "گیمز کو فلٹر کریں",
+
+  "applyFilter": "لاگو کریں",
+
+  "resetFilter": "دوبارہ سیٹ کریں",
+
+  "selectGameType": "گیم کی قسم منتخب کریں",
+
+  "gameType": "گیم کی قسم",
+
+  "loadingGameTypes": "گیم کی اقسام لوڈ ہو رہی ہیں...",
+
+  "lowestScoreWins": "سب سے کم اسکور جیتتا ہے",
+
+  "highestScoreWins": "سب سے زیادہ اسکور جیتتا ہے",
+
+  "players": "کھلاڑی",
+
+  "add": "شامل کریں",
+
+  "pleaseEnterName": "براہ کرم نام درج کریں",
+
+  "clear": "صاف کریں",
+
+  "remove": "ہٹائیں",
+
+  "game": "گیم",
+
+  "editGame": "گیم میں ترمیم کریں",
+
+  "editGameDialogTitle": "گیم میں ترمیم کریں",
+
+  "removePlayer": "کھلاڑی کو ہٹائیں",
+
+  "addPlayerToGame": "کھلاڑی شامل کریں",
+
+  "warningRemovePlayer": "انتباہ! اس کھلاڑی کو ہٹانے سے اس گیم میں ان کے تمام اسکورز حذف ہو جائیں گے۔ یہ کارروائی واپس نہیں کی جا سکتی۔",
+
+  "confirmRemovePlayer": "کیا آپ واقعی {playerName} کو اس گیم سے ہٹانا چاہتے ہیں؟",
+
+  "playerRemoved": "کھلاڑی گیم سے ہٹایا گیا",
+
+  "deleteLastRound": "آخری راؤنڈ حذف کریں",
+
+  "confirm": "تصدیق کریں",
+
+  "confirmDeleteLastRound": "آخری راؤنڈ حذف کریں؟",
+
+  "noPlayersInGame": "اس گیم میں کوئی کھلاڑی نہیں",
+
+  "round": "راؤنڈ",
+
+  "boardRoundButton": "راؤنڈ {round}",
+
+  "keypadCaption": "{player} · راؤنڈ {round}",
+
+  "keypadCaptionWithPosition": "{player} · راؤنڈ {round} · {position}/{count}",
+
+  "keypadTotalAfter": "کل ہے: {total}",
+
+  "keypadNext": "اگلا\n{player}",
+
+  "keypadValidateRound": "راؤنڈ تصدیق کریں",
+
+  "keypadToggleSign": "علامت تبدیل کریں",
+
+  "keypadBackspace": "ایک عدد حذف کریں",
+
+  "keypadShortcutTitle": "کی شارٹ کٹ",
+
+  "keypadShortcutKind": "کی کی قسم",
+
+  "keypadShortcutKindValue": "ایک قیمت درج کریں",
+
+  "keypadShortcutKindMultiply": "اسکور کو ضرب دیں (صرف مثبت)",
+
+  "keypadShortcutKindAdd": "اسکور میں شامل کریں",
+
+  "keypadShortcutAmount": "نمبر",
+
+  "keypadShortcutLabel": "کی کا لیبل (اختیاری)"
+,
+
+  "keypadShortcutAddRange": "{min} اور {max} کے درمیان ایک مکمل نمبر، 0 کے علاوہ",
+
+  "keypadShortcutAmountRange": "{min} اور {max} کے درمیان ایک مکمل نمبر",
+
+  "appearance": "شکل و صورت",
+
+  "light": "روشن",
+
+  "dark": "سیاہ",
+
+  "system": "سسٹم",
+
+  "screen": "اسکرین",
+
+  "keepScreenAwake": "اسکرین کو جاگتا رکھیں",
+
+  "keepScreenAwakeDescription": "گیم کے دوران اسکرین کو سونے سے روکتا ہے",
+
+  "backup": "بیک اپ",
+
+  "exportDatabase": "ڈیٹا بیس برآمد کریں",
+
+  "exportDatabaseDescription": "اپنے تمام گیمز کو ایک فائل میں محفوظ کریں",
+
+  "databaseExportedTo": "ڈیٹا بیس کو برآمد کیا گیا:",
+
+  "errorDuringExport": "برآمدگی کے دوران خرابی:",
+
+  "importDatabase": "ڈیٹا بیس درآمد کریں",
+
+  "importDatabaseDescription": "بیک اپ فائل سے اپنے گیمز بحال کریں",
+
+  "confirmation": "تصدیق",
+
+  "importWarning": "درآمد سے آپ کی تمام موجودہ ڈیٹا کی جگہ لے لی جائے گی۔ درآمد سے پہلے خودکار بیک اپ بنایا جائے گا۔\n\nکیا آپ جاری رکھنا چاہتے ہیں؟",
+
+  "import": "درآمد کریں",
+
+  "databaseImportedSuccessfully": "ڈیٹا بیس کامیابی سے درآمد ہوا",
+
+  "importSuccessful": "درآمد کامیاب",
+
+  "importSuccessMessage": "ڈیٹا بیس کامیابی سے درآمد ہو گیا۔\n\nایپلیکیشن اب بند ہو جائے گی۔ نئی ڈیٹا دیکھنے کے لیے اسے دوبارہ کھولیں۔",
+
+  "ok": "ٹھیک ہے",
+
+  "errorDuringImport": "درآمد کے دوران خرابی:",
+
+  "noPlayers": "کوئی کھلاڑی نہیں",
+
+  "playersAppearMessage": "کھلاڑی یہاں ظاہر ہوں گے جب آپ\nگیمز بنائیں گے",
+
+  "gamesCount": "{count, plural, =0{0 گیمز} =1{1 گیم} other{{count} گیمز}}",
+
+  "winsCount": "{count, plural, =0{0 جیتیں} =1{1 جیت} other{{count} جیتیں}}",
+
+  "changeColor": "رنگ تبدیل کریں",
+
+  "renamePlayer": "کھلاڑی کا نام تبدیل کریں",
+
+  "newName": "نیا نام",
+
+  "playerRenamedTo": "کھلاڑی کا نام \"{name}\" میں تبدیل ہو گیا",
+
+  "deletePlayer": "کھلاڑی کو حذف کریں",
+
+  "confirmDeletePlayer": "کیا آپ واقعی \"{name}\" کو حذف کرنا چاہتے ہیں؟\n\nیہ کھلاڑی تمام {count} گیم(ز) سے ہٹایا جائے گا۔",
+
+  "playerDeleted": "کھلاڑی \"{name}\" حذف ہو گیا",
+
+  "chooseColor": "رنگ منتخب کریں",
+
+  "noGameTypes": "گیم کی کوئی قسم نہیں",
+
+  "edit": "ترمیم کریں",
+
+  "newType": "نئی قسم",
+
+  "editType": "قسم میں ترمیم کریں",
+
+  "newGameType": "نئی گیم کی قسم",
+
+  "gameTypeName": "گیم کی قسم کا نام",
+
+  "icon": "آئیکن:",
+
+  "color": "رنگ:",
+
+  "chooseIcon": "آئیکن منتخب کریں",
+
+  "nameIsRequired": "نام ضروری ہے",
+
+  "create": "بنائیں",
+
+  "ranking": "درجہ بندی",
+
+  "noCurrentGame": "کوئی موجودہ گیم نہیں",
+
+  "noScoresRecorded": "کوئی اسکور ریکارڈ نہیں ہوا",
+
+  "playerStatistics": "کھلاڑی کی شماریات",
+
+  "noStatisticsAvailable": "کوئی شماریات دستیاب نہیں",
+
+  "gamesPlayed": "گیمز کھیلے گئے",
+
+  "wins": "جیتیں",
+
+  "winRate": "جیت کی شرح",
+
+  "byGameType": "گیم کی قسم کے لحاظ سے",
+
+  "rate": "شرح",
+
+  "version": "ورژن {version}",
+
+  "appDescription": "Vincent Moreau کی طرف سے اپنے گیم سیشن کے لیے اسکور مینجمنٹ ایپلیکیشن",
+
+  "features": "خصوصیات",
+
+  "featureDifferentGameTypes": "مختلف گیم کی اقسام",
+
+  "featurePlayerManagement": "کھلاڑی کا انتظام",
+
+  "featureDetailedStatistics": "تفصیلی شماریات",
+
+  "featureCustomization": "اپنی مرضی سے بنانا",
+
+  "featureDarkLightTheme": "سیاہ/روشن تھیم",
+
+  "featureGroupSharing": "گروپ کا اشتراک",
+
+  "featureGameAnalysis": "AI گیم تجزیہ",
+
+  "rateApp": "CountScore کو ریٹ کریں",
+
+  "search": "تلاش",
+
+  "newPlayerName": "نیا کھلاڑی کا نام",
+
+  "noPlayersFound": "کوئی کھلاڑی نہیں ملا",
+
+  "close": "بند کریں",
+
+  "playerEliminationCondition": "کھلاڑی کی ختم کرنے کی شرط",
+
+  "gameOverCondition": "گیم ختم کرنے کی شرط",
+
+  "none": "کوئی نہیں",
+
+  "noGameTypes": "گیم کی کوئی قسم نہیں",
+
+  "edit": "ترمیم کریں",
+
+  "newType": "نئی قسم",
+
+  "editType": "قسم میں ترمیم کریں",
+
+  "newGameType": "نئی گیم کی قسم",
+
+  "gameTypeName": "گیم کی قسم کا نام",
+
+  "icon": "آئیکن:",
+
+  "color": "رنگ:",
+
+  "chooseIcon": "آئیکن منتخب کریں",
+
+  "nameIsRequired": "نام ضروری ہے",
+
+  "create": "بنائیں",
+
+  "ranking": "درجہ بندی",
+
+  "noCurrentGame": "کوئی موجودہ گیم نہیں",
+
+  "noScoresRecorded": "کوئی اسکور ریکارڈ نہیں ہوا",
+
+  "playerStatistics": "کھلاڑی کی شماریات",
+
+  "noStatisticsAvailable": "کوئی شماریات دستیاب نہیں",
+
+  "gamesPlayed": "گیمز کھیلے گئے",
+
+  "wins": "جیتیں",
+
+  "winRate": "جیت کی شرح",
+
+  "byGameType": "گیم کی قسم کے لحاظ سے",
+
+  "rate": "شرح",
+
+  "version": "ورژن {version}",
+
+  "appDescription": "Vincent Moreau کی طرف سے اپنے گیم سیشن کے لیے اسکور مینجمنٹ ایپلیکیشن",
+
+  "features": "خصوصیات",
+
+  "featureDifferentGameTypes": "مختلف گیم کی اقسام",
+
+  "featurePlayerManagement": "کھلاڑی کا انتظام",
+
+  "featureDetailedStatistics": "تفصیلی شماریات",
+
+  "featureCustomization": "اپنی مرضی سے بنانا",
+
+  "featureDarkLightTheme": "سیاہ/روشن تھیم",
+
+  "featureGroupSharing": "گروپ کا اشتراک",
+
+  "featureGameAnalysis": "AI گیم تجزیہ",
+
+  "rateApp": "CountScore کو ریٹ کریں",
+
+  "search": "تلاش",
+
+  "newPlayerName": "نیا کھلاڑی کا نام",
+
+  "noPlayersFound": "کوئی کھلاڑی نہیں ملا",
+
+  "close": "بند کریں",
+
+  "playerEliminationCondition": "کھلاڑی کی ختم کرنے کی شرط",
+
+  "gameOverCondition": "گیم ختم کرنے کی شرط",
+
+  "none": "کوئی نہیں"
+,
+
+  "overThreshold": "حد سے زیادہ",
+
+  "underThreshold": "حد سے کم",
+
+  "firstPlayerOver": "پہلا کھلاڑی جو پہنچے",
+
+  "firstPlayerUnder": "پہلا کھلاڑی نیچے",
+
+  "lastPlayerOver": "آخری کھلاڑی باقی (دوسرے حد سے زیادہ)",
+
+  "lastPlayerUnder": "آخری کھلاڑی باقی (دوسرے حد سے کم)",
+
+  "threshold": "حد",
+
+  "conditionType": "شرط کی قسم",
+
+  "continuePlay": "کھیل جاری رکھیں",
+
+  "gameEndWinner": "{name} جیتے",
+
+  "gameEndTie": "برابری: {names}",
+
+  "gameEndRounds": "{count, plural, one{{count} راؤنڈ} other{{count} راؤنڈز}}",
+
+  "gameEndLowestWins": "سب سے کم اسکور جیتے",
+
+  "gameEndHighestWins": "سب سے زیادہ اسکور جیتے",
+
+  "gameEndAnalysis": "تجزیہ",
+
+  "gameEndResults": "نتائج",
+
+  "rankingEliminationNote": "ختم کرنے کی ترتیب کے لحاظ سے درجہ بندی: جو بعد میں نکلے وہ آگے درجہ بندی میں آتے ہیں، نقصان سے قطع نظر۔",
+
+  "endGame": "گیم ختم کریں",
+
+  "reopenGame": "گیم دوبارہ کھولیں",
+
+  "gameFinished": "مکمل",
+
+  "undo": "کالعدم کریں",
+
+  "gameReopened": "گیم دوبارہ کھولا گیا",
+
+  "comment": "تبصرہ",
+
+  "enterComment": "تبصرہ درج کریں",
+
+  "analyzeGame": "گیم کا تجزیہ کریں",
+
+  "analysisTitle": "گیم کا تجزیہ",
+
+  "analysisStyle": "تجزیہ کا انداز",
+
+  "analysisStyleProfessor": "پروفیسر",
+
+  "analysisStyleCommentator": "کھیل کی تبصریت",
+
+  "analysisStyleDocumentary": "جنگلی دستاویز",
+
+  "analysisStyleNoir": "جاسوس",
+
+  "analysisStyleBard": "شاعر",
+
+  "analysisStyleCoach": "کوچ",
+
+  "analysisStyleConsultant": "مشیر",
+
+  "analysisStyleAstrologer": "ماہر نجوم",
+
+  "analysisStyleRealityTv": "حقیقت کے شو",
+
+  "generatingAnalysis": "تجزیہ تیار ہو رہا ہے…",
+
+  "generateAnalysis": "تجزیہ تیار کریں",
+
+  "regenerateAnalysis": "تجزیہ دوبارہ تیار کریں",
+
+  "deleteAnalysis": "تجزیہ حذف کریں",
+
+  "confirmRegenerateAnalysis": "دوبارہ تیار کریں؟ موجودہ تجزیہ کی جگہ لے لی جائے گی۔",
+
+  "confirmDeleteAnalysis": "اس گیم کے لیے تجزیہ حذف کریں؟",
+
+  "analysisError": "تجزیہ تیار کرنے میں ناکامی",
+
+  "analysisErrorStatus": "تجزیہ تیار کرنے میں ناکامی (HTTP {status})",
+
+  "analysisErrorUnavailable": "تجزیہ سرور عارضی طور پر دستیاب نہیں ہے۔ بعد میں دوبارہ کوشش کریں۔",
+
+  "analysisErrorGroupBudget": "آپ کے گروپ نے اس ماہ کا تجزیہ بجٹ استعمال کر لیا ہے۔ یہ اگلے مہینے کی شروعات میں نئے سرے سے شروع ہوتا ہے۔",
+
+  "analysisStyleGroupDefault": "کوئی انداز منتخب نہیں: یہ مشترکہ گیم گروپ کے انداز اور زبان میں تجزیہ ہے۔",
+
+  "retry": "دوبارہ کوشش کریں"
+,
+
+  "analysisGeneratedAt": "{date} پر تیار کیا گیا",
+
+  "serverSection": "سرور",
+
+  "backendUrlLabel": "سرور کا URL",
+
+  "backendUrlHint": "https://countscore.example.com",
+
+  "backendUrlDescription": "منسلک خصوصیات کو CountScore سرور کی ضرورت ہے۔ backend/ فولڈر سے ایک انسٹال کریں اور یہاں اس کا پتہ درج کریں۔ کوئی سرور نہ ہونے سے، کوئی ڈیٹا اس ڈیوائس سے باہر نہیں جاتا۔",
+
+  "backendNotConfigured": "کوئی سرور کنفیگ نہیں ہے",
+
+  "backendUrlInvalid": "غلط پتہ۔ مکمل URL درج کریں، مثال کے طور پر https://countscore.example.com",
+
+  "backendUrlInsecure": "http:// صرف لوکل نیٹ ورک پر قبول ہے۔ عوامی سرور کے لیے https:// استعمال کریں۔",
+
+  "testConnection": "کنکشن ٹیسٹ کریں",
+
+  "connectionOk": "سرور جواب دے رہا ہے",
+
+  "connectionFailed": "سرور جواب نہیں دے رہا",
+
+  "serverUrlSaved": "سرور محفوظ کیا گیا",
+
+  "analysisRequiresBackend": "یہ تجزیہ سرور کی ضرورت ہے۔ ترتیبات میں ایک کنفیگ کریں۔",
+
+  "openSettings": "ترتیبات کھولیں",
+
+  "serverUrlCleared": "سرور صاف کیا گیا",
+
+  "groupSection": "گروپ",
+
+  "groupDescription": "اپنے گروپ میں دوسری ڈیوائسز کے ساتھ گیمز کا اشتراک کریں۔ مشترکہ گیمز، ان کے کھلاڑی، اسکورز، تبصرے اور تجزیے آپ کے سرور پر بھیجے جاتے ہیں؛ دوسری گیمز اس ڈیوائس پر رہتے ہیں۔",
+
+  "groupNeedsServer": "پہلے اوپر سرور سیٹ اپ کریں۔",
+
+  "groupCreate": "گروپ بنائیں",
+
+  "groupJoin": "گروپ میں شامل ہوں",
+
+  "groupNameLabel": "گروپ کا نام",
+
+  "groupNicknameLabel": "آپ کا نام",
+
+  "groupNicknameHint": "گروپ میں دوسرے اسے دیکھیں گے",
+
+  "groupNicknameCurrent": "آپ کا نام: {nickname}",
+
+  "groupNicknameEdit": "اپنا نام تبدیل کریں",
+
+  "shareTokenLabel": "مدعو ضابطہ",
+
+  "shareTokenHint": "گروپ کے کسی رکن نے جو ضابطہ بھیجا ہے اسے پیسٹ کریں",
+
+  "groupCurrent": "گروپ: {name}",
+
+  "shareTokenExplain": "یہ ضابطہ ان ڈیوائسز کو بھیجیں جو گروپ میں شامل ہونا چاہیں۔ جس کے پاس یہ ہے وہ شامل ہو سکتا ہے۔",
+
+  "shareTokenCopy": "ضابطہ کاپی کریں",
+
+  "shareTokenCopied": "ضابطہ کاپی کیا گیا",
+
+  "shareTokenRotate": "نیا ضابطہ",
+
+  "shareTokenRotateConfirm": "پرانا ضابطہ اب کسی کو گروپ میں شامل نہیں ہونے دے گا۔ گروپ میں پہلے سے موجود ڈیوائسز متاثر نہیں ہوں گی۔",
+
+  "groupLeave": "گروپ چھوڑیں",
+
+  "groupLeaveConfirm": "یہ ڈیوائس گروپ چھوڑتی ہے۔ مشترکہ گیمز اس ڈیوائس پر رہتے ہیں لیکن اب سنک نہیں ہوں گے۔",
+
+  "groupLeft": "گروپ چھوڑ دیا گیا",
+
+  "groupJoined": "گروپ میں شامل ہو گئے"
+,
+
+  "clearServerLeavesGroup": "سرور صاف کرنے سے گروپ چھوڑ دیا جاتا ہے۔ مشترکہ گیمز اس ڈیوائس پر رہتے ہیں۔",
+
+  "syncNow": "اب سنک کریں",
+
+  "syncStatusIdle": "{time} پر سنک کیا گیا",
+
+  "syncStatusSyncing": "سنک ہو رہا ہے…",
+
+  "syncStatusOffline": "سرور قابل رسائی نہیں ہے — تبدیلیاں بعد میں بھیجی جائیں گی",
+
+  "syncStatusUnauthorized": "سرور اب اس ڈیوائس کو قبول نہیں کرتا۔ گروپ چھوڑیں، پھر دوبارہ شامل ہوں۔",
+
+  "syncStatusError": "سنک کے دوران سرور میں خرابی",
+
+  "syncPending": "{count, plural, =1{1 تبدیلی انتظار میں ہے} other{{count} تبدیلیاں انتظار میں ہیں}}",
+
+  "syncRejected": "{count, plural, =1{سرور نے 1 تبدیلی مسترد کی} other{سرور نے {count} تبدیلیاں مسترد کیں}}",
+
+  "groupErrorUnknownToken": "نامعلوم یا متبدل مدعو ضابطہ",
+
+  "groupErrorRateLimited": "بہت زیادہ کوششیں۔ ایک منٹ میں دوبارہ کوشش کریں۔",
+
+  "groupErrorUnreachable": "سرور قابل رسائی نہیں",
+
+  "groupErrorServer": "سرور کی خرابی",
+
+  "shareWithGroup": "گروپ کے ساتھ شیئر کریں",
+
+  "shareWithGroupSubtitle": "{name} میں ڈیوائسز یہ گیم دیکھیں گے اور ترمیم کریں گے",
+
+  "shareGameConfirm": "گیم، اس کے کھلاڑی، اسکورز اور تبصرے {name} کو بھیجے جائیں گے۔ شیئرنگ کو کالعدم نہیں کیا جا سکتا۔",
+
+  "gameSharedDone": "گیم گروپ کے ساتھ شیئر کیا گیا",
+
+  "gameSharedBadge": "مشترکہ گیم",
+
+  "invalidPlayerNamesForSync": "یہ ناموں کا اشتراک نہیں کیا جا سکتا: {names}۔ حروف، ہندسے، خالی جگہیں، ہائفن، اپوسٹرافیں یا نقطے استعمال کریں (زیادہ سے زیادہ 32 حروف)۔",
+
+  "roundRenumbered": "یہ راؤنڈ پہلے سے دوسری ڈیوائس پر درج تھا، اس لیے یہ راؤنڈ {number} بن گیا۔",
+
+  "gameDeletedElsewhere": "\"{name}\" دوسری ڈیوائس پر حذف کیا گیا",
+
+  "groupDevices": "ڈیوائسز",
+
+  "groupDevicesExplain": "کھوئی ہوئی یا بیچی گئی ڈیوائس کو یہاں گروپ سے ہٹایا جا سکتا ہے۔",
+
+  "groupDeviceThisOne": "یہ ڈیوائس",
+
+  "groupDeviceLastSeen": "{date} کو آخری بار دیکھی گئی",
+
+  "groupDeviceRevoke": "ہٹائیں",
+
+  "groupDeviceRevokeConfirm": "کیا \"{label}\" کو گروپ سے ہٹانا ہے؟ یہ اب سنک نہیں ہوگا۔ مدعو ضابطہ بھی تبدیل ہو جائے گا: اراکین اپنی رسائی برقرار رکھتے ہیں، لیکن آپ کو کسی کو مدعو کرنے کے لیے نیا ضابطہ شیئر کرنا ہوگا۔",
+
+  "groupDeviceRevoked": "\"{label}\" کو ہٹایا گیا۔ مدعو ضابطہ بدل گیا ہے۔",
+
+  "reportCommentary": "یہ تبصرہ رپورٹ کریں",
+
+  "reportCommentarySubject": "CountScore — AI تبصرہ رپورٹ",
+
+  "reportCommentaryBody": "اس AI تیار شدہ تبصرے میں کیا غلط ہے؟\n\n\n---\nحوالہ: {reference}\nتبصرہ:\n{commentary}",
+
+  "reportCommentaryNoMailApp": "کوئی ای میل ایپ نہیں ملی۔ اس تبصرے کی رپورٹ کرنے کے لیے {email} کو لکھیں۔"
+,
+
+  "gameRulesTitle": "گیم کے اصول",
+
+  "gameRulesInApp": "CountScore میں",
+
+  "gameRulesSection": "اصول",
+
+  "gameRulesNoElimination": "کھیل کے دوران کوئی ختم نہیں",
+
+  "gameRulesEliminationOver": "ایک کھلاڑی {threshold} نکات سے اوپر ختم کر دیا جاتا ہے",
+
+  "gameRulesEliminationUnder": "ایک کھلاڑی {threshold} نکات سے نیچے ختم کر دیا جاتا ہے",
+
+  "gameRulesEndFirstOver": "گیم فوری طور پر ختم ہوتی ہے جب کوئی کھلاڑی {threshold} نکات تک پہنچتا ہے",
+
+  "gameRulesEndFirstUnder": "گیم فوری طور پر ختم ہوتی ہے جب کوئی کھلاڑی {threshold} نکات سے نیچے آتا ہے",
+
+  "gameRulesEndLastOver": "گیم ختم ہوتا ہے جب سوائے ایک کھلاڑی کے سب {threshold} نکات سے اوپر ہوں",
+
+  "gameRulesEndLastUnder": "گیم ختم ہوتا ہے جب سوائے ایک کھلاڑی کے سب {threshold} نکات سے نیچے ہوں",
+
+  "gameRulesNoEnd": "کوئی خودکار اختتام نہیں: آپ طے کریں کہ گیم کب ختم ہے",
+
+  "gameRulesEmptyTitle": "ابھی کوئی اصول نہیں",
+
+  "gameRulesEmptyHint": "اپنی میز کے نکات کا حساب لگانے کا طریقہ لکھیں — سب کے پاس ایک جیسا ورژن ہوگا۔",
+
+  "gameRulesWrite": "اصول لکھیں",
+
+  "gameRulesEditTitle": "اصول میں ترمیم کریں",
+
+  "gameRulesEditorHint": "آپ کی میز کے اصول۔ Markdown تھام ہے۔",
+
+  "gameRulesFromGroup": "آپ کے گروپ کے اصول",
+
+  "gameRulesRestoreDefault": "اصل اصول بحال کریں",
+
+  "gameRulesSaved": "اصول محفوظ کیے گئے",
+
+  "gameRulesRestored": "اصل اصول بحال کیے گئے",
+
+  "gameRulesDisclaimer": "CountScore کے لیے لکھا گیا خلاصہ جیسے وہ عام طور پر کھیلے جاتے ہیں۔ گیم کے نام ان کے متعلقہ مالکان کے ہیں اور صرف وضاحتی طور پر استعمال کیے جاتے ہیں۔",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameZapzapSortKey": "ZapZap",
+
+  "gameTypeNameUno": "Uno",
+
+  "gameTypeNameUnoSortKey": "Uno",
+
+  "gameTypeNameScrabble": "Scrabble",
+
+  "gameTypeNameScrabbleSortKey": "Scrabble",
+
+  "gameTypeNameOther": "دوسرا",
+
+  "gameTypeNameOtherSortKey": "دوسرا",
+
+  "gameTypeNameSkyjo": "Skyjo",
+
+  "gameTypeNameSkyjoSortKey": "Skyjo",
+
+  "gameTypeNamePresident": "President",
+
+  "gameTypeNamePresidentSortKey": "President",
+
+  "gameTypeNameBelote": "Belote",
+
+  "gameTypeNameBeloteSortKey": "Belote",
+
+  "gameTypeNameTarot": "Tarot",
+
+  "gameTypeNameTarotSortKey": "Tarot",
+
+  "gameTypeNameBridge": "Bridge",
+
+  "gameTypeNameBridgeSortKey": "Bridge",
+
+  "gameTypeNameRami": "Rummy",
+
+  "gameTypeNameRamiSortKey": "Rummy",
+
+  "gameTypeNameCoinche": "Coinche",
+
+  "gameTypeNameCoincheSortKey": "Coinche",
+
+  "gameTypeNameYahtzee": "Yahtzee",
+
+  "gameTypeNameYahtzeeSortKey": "Yahtzee",
+
+  "gameTypeNamePhase10": "Phase 10",
+
+  "gameTypeNamePhase10SortKey": "Phase 10",
+
+  "gameTypeNameFlip7": "Flip 7",
+
+  "gameTypeNameFlip7SortKey": "Flip 7",
+
+  "gameTypeNameMilleBornes": "Mille Bornes",
+
+  "gameTypeNameMilleBornesSortKey": "Mille Bornes",
+
+  "gameTypeNameRummikub": "Rummikub",
+
+  "gameTypeNameRummikubSortKey": "Rummikub",
+
+  "gameTypeNameSixNimmt": "Take 6",
+
+  "gameTypeNameSixNimmtSortKey": "Take 6",
+
+  "gameTypeNameQwirkle": "Qwirkle",
+
+  "gameTypeNameQwirkleSortKey": "Qwirkle",
+
+  "gameTypeNameFarkle": "Farkle",
+
+  "gameTypeNameFarkleSortKey": "Farkle",
+
+  "gameTypeNameCanasta": "Canasta",
+
+  "gameTypeNameCanastaSortKey": "Canasta",
+
+  "gameTypeNameWizard": "Wizard",
+
+  "gameTypeNameWizardSortKey": "Wizard",
+
+  "gameTypeNameTriomino": "Triomino",
+
+  "gameTypeNameTriominoSortKey": "Triomino"
+,
+
+  "groupDeviceOwner": "مالک",
+
+  "groupDeviceMakeOwner": "مالک بنائیں",
+
+  "groupDeviceMakeOwnerConfirm": "کیا \"{label}\" کو گروپ سونپنا ہے؟ یہ ڈیوائس اب ڈیوائسز کو ہٹانے یا مدعو ضابطہ تبدیل کرنے کے قابل نہیں ہوگی۔",
+
+  "groupDeviceOwnerChanged": "\"{label}\" اب گروپ کا مالک ہے۔",
+
+  "groupDevicesExplainMember": "صرف گروپ کا مالک ڈیوائس کو ہٹا سکتا ہے یا مدعو ضابطہ تبدیل کر سکتا ہے۔",
+
+  "groupErrorNotOwner": "صرف گروپ کا مالک یہ کر سکتا ہے",
+
+  "whoStarts": "کون شروع کرتا ہے؟",
+
+  "whoStartsAgain": "دوبارہ ڈرا کریں",
+
+  "diceRoller": "ڈائس رول کریں",
+
+  "diceCount": "ڈائس کی تعداد",
+
+  "diceRollAgain": "دوبارہ رول کریں",
+
+  "diceTotal": "کل: {total}",
+
+  "resumeGame": "دوبارہ شروع کریں",
+
+  "recentGames": "حالیہ",
+
+  "gameInProgress": "جاری ہے",
+
+  "roundNumber": "راؤنڈ {number}",
+
+  "gameLeader": "{name} آگے ہے · {score}",
+
+  "gameWonBy": "{name} نے جیتا",
+
+  "boardRank": "{rank, plural, one{#{rank}} other{#{rank}}}",
+
+  "boardViewRows": "ہر کھلاڑی کے لیے ایک قطار",
+
+  "boardViewLanes": "ہر کھلاڑی کے لیے ایک کالم",
+
+  "boardSeatOrder": "بیٹھنے کی ترتیب",
+
+  "boardRoundShort": "R{number}",
+
+  "boardPlayer": "کھلاڑی",
+
+  "boardTotal": "کل",
+
+  "boardLeader": "آگے ہے",
+
+  "groupSettingsTitle": "تبصرے اور استعمال",
+
+  "groupSettingsDescription": "انداز اور زبان گروپ کے گیمز کے لیے سرور لکھتا ہے۔ کوئی بھی رکن اسے تبدیل کر سکتا ہے۔",
+
+  "groupCommentStyle": "تبصرے کا انداز",
+
+  "groupCommentStyleNarrative": "کہانی",
+
+  "groupCommentStyleHumorous": "مزاحیہ",
+
+  "groupCommentStyleAnalytical": "تجزیاتی",
+
+  "groupCommentLanguage": "تبصرے کی زبان",
+
+  "groupSettingsSaved": "گروپ کی ترتیبات محفوظ کی گئیں",
+
+  "groupUsageTitle": "اس ماہ LLM کا استعمال",
+
+  "groupUsageAmount": "{budget} میں سے {used} خرچ کیا گیا",
+
+  "groupUsageResets": "{date} پر دوبارہ سیٹ ہوتا ہے",
+
+  "statsBestWinRate": "بہترین جیت کی شرح",
+
+  "statsWinsOutOfGames": "{wins, plural, =0{{games} میں سے کوئی جیت نہیں} one{{wins} جیت {games} میں سے} other{{wins} جیتیں {games} میں سے}}",
+
+  "statsColumnPlayer": "کھلاڑی",
+
+  "statsColumnGames": "گیمز",
+
+  "statsUnranked": "{count, plural, one{ایک گیم · ابھی درجہ بندی نہیں} other{{count} گیمز · ابھی درجہ بندی نہیں}}",
+
+  "statsLeaderboardFooter": "{count, plural, one{{count} مکمل گیم سے درجہ بندی۔ کھلاڑی کو دیکھنے کے لیے تھپتھپائیں۔} other{{count} مکمل گیمز سے درجہ بندی۔ کھلاڑی کو دیکھنے کے لیے تھپتھپائیں۔}}",
+
+  "statsGamesLabel": "{count, plural, one{گیم} other{گیمز}}",
+
+  "statsWinsLabel": "{count, plural, one{جیت} other{جیتیں}}",
+
+  "statsAverageRank": "اوسط جگہ",
+
+  "statsRankChartTitle": "{count, plural, one{جگہ، آخری گیم} other{جگہ، آخری {count} گیمز}}"
+,
+
+  "statsTrendImproving": "بہتری",
+
+  "statsTrendDeclining": "خطرناک حال میں",
+
+  "statsTrendSteady": "مستحکم",
+
+  "statsRankOrdinal": "{rank, select, 1{پہلا} 2{دوسرا} 3{تیسرا} 4{چوتھا} other{{rank}واں}}",
+
+  "statsWinStreak": "{count, plural, =0{کوئی جیت کی سلسلہ نہیں} one{سلسلہ: {count} جیت} other{سلسلہ: {count} جیتیں}}",
+
+  "statsRecord": "بہترین: {total}",
+
+  "statsOnGameType": "{gameType} پر",
+
+  "statsAverageTotal": "اوسط حتمی کل",
+
+  "statsBestTotal": "بہترین حتمی کل",
+
+  "statsMostBeaten": "سب سے زیادہ شکست کھا ہوا مخالف",
+
+  "statsOpenPlayerCard": "کھلاڑی کا کارڈ کھولیں",
+
+  "shareResult": "نتیجہ شیئر کریں",
+
+  "shareAnalysis": "تجزیہ شیئر کریں",
+
+  "shareResultSubject": "نتیجہ: {gameName}",
+
+  "shareResultTitle": "{date} کا گیم",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} نکہ} other{{points} نکات}}",
+
+  "shareResultFooter": "اسکورز {appName} کے ساتھ رکھے گئے: {url}",
+
+  "shareFailed": "شیئرنگ کھول نہیں سکا",
+
+  "newGameNameLabel": "نام",
+
+  "newGameGameLabel": "گیم",
+
+  "newGameAllGames": "تمام گیمز ({count})",
+
+  "newGamePlayersLabel": "کھلاڑی · بیٹھنے کی ترتیب",
+
+  "newGameDragToReorder": "دوبارہ ترتیب دینے کے لیے گھسیٹیں",
+
+  "newGameDealer": "ڈیل کرتے ہیں",
+
+  "newGameAddPlayer": "کھلاڑی شامل کریں",
+
+  "newGameStart": "{count, plural, =0{شروع کریں} =1{شروع کریں · 1 کھلاڑی} other{شروع کریں · {count} کھلاڑی}}",
+
+  "whoIsPlayingTitle": "کون کھیل رہے ہیں؟",
+
+  "whoIsPlayingSearchHint": "نام، یا ایک نیا کھلاڑی",
+
+  "whoIsPlayingFrequent": "اکثر آپ کے ساتھ کھیلتے ہیں",
+
+  "whoIsPlayingSameAs": "\"{gameName}\" کے جیسے ہی کھلاڑی",
+
+  "whoIsPlayingCreate": "\"{name}\" بنائیں",
+
+  "whoIsPlayingConfirm": "{count, plural, =0{مکمل} =1{1 کھلاڑی شامل کریں} other{{count} کھلاڑی شامل کریں}}",
+
+  "defaultGameName": "گیم {number}",
+
+  "pwaUpdateReady": "CountScore کا ایک نیا ورژن تیار ہے",
+
+  "pwaUpdateReload": "دوبارہ لوڈ کریں",
+
+  "thresholdIsRequired": "اس شرط کے لیے حد ضروری ہے",
+
+  "thresholdTooLarge": "حد {max} سے زیادہ نہیں ہو سکتی",
+
+  "deletionImpossible": "حذف کرنا ممکن نہیں",
+
+  "gameTypeInUse": "{count, plural, one{1 گیم اس قسم کا استعمال کرتی ہے: اسے حذف نہیں کیا جا سکتا۔} other{{count} گیمز اس قسم کا استعمال کرتی ہیں: انہیں حذف نہیں کیا جا سکتا۔}}",
+
+  "confirmDeleteGameType": "کیا آپ واقعی \"{name}\" گیم کی قسم حذف کرنا چاہتے ہیں؟",
+
+  "winDirectionChangeTitle": "جیتنے والے کو الٹایا جائے؟",
+
+  "winDirectionChangeWarning": "{count, plural, one{اس قسم کی 1 مکمل گیم کی درجہ بندی الٹ دی جائے گی: اس کا جیتنے والا آخری بن جائے گا۔} other{اس قسم کی {count} مکمل گیمز کی درجہ بندی الٹ دی جائے گی: ان کے جیتنے والے آخری بن جائیں گے۔}}",
+
+  "winDirectionContradiction": "گیم ختم کرنے کی شرط منتخب جیتنے والے کے برعکس انعام دیتی ہے۔ گھر کا اصول بالکل یہی چاہے۔",
+
+  "rulesOutOfDateTitle": "اصول اپڈیٹ کریں؟",
+
+  "rulesOutOfDateMessage": "اس قسم کے اصول ابھی پرانی شرط کی وضاحت کرتے ہیں۔",
+
+  "later": "بعد میں",
+
+  "currentIcon": "موجودہ آئیکن",
+
+  "currentColor": "موجودہ رنگ",
+
+  "groupDeviceClaimOwner": "مالک ہونے کا دعویٰ کریں",
+
+  "groupDeviceClaimOwnerConfirm": "\"{label}\" گروپ کا مالک ہے لیکن کافی عرصے سے نہیں دیکھی گئی۔ اس ڈیوائس پر مالک ہونے کا دعویٰ کریں؟",
+
+  "groupDeviceOwnerClaimed": "یہ ڈیوائس اب گروپ کا مالک ہے۔",
+
+  "groupErrorOwnerActive": "گروپ کے مالک کو حالیہ میں دیکھا گیا: مالک ہونے کا دعویٰ نہیں کیا جا سکتا۔",
+
+  "groupCreatedOwnerExplain": "گروپ بنایا گیا۔ یہ ڈیوائس اس کی مالک ہے؛ یہ کردار ڈیوائسز میں دوسری کو سونپا جا سکتا ہے۔"
+,
+
+  "boardEliminated": "ختم",
+
+  "soundsSection": "آوازیں",
+
+  "gameSounds": "گیم کی آوازیں",
+
+  "gameSoundsDescription": "ایک آواز جب کھلاڑی ختم ہو، جب گیم جیتی جائے اور جب ٹائمر ختم ہو",
+
+  "turnTimer": "موڑ ٹائمر",
+
+  "turnTimerLess": "کم وقت",
+
+  "turnTimerMore": "زیادہ وقت",
+
+  "turnTimerStart": "شروع کریں",
+
+  "turnTimerPause": "روکیں",
+
+  "turnTimerReset": "دوبارہ سیٹ کریں",
+
+  "turnTimerTimeUp": "وقت ختم!",
+
+  "configShareOpen": "QR کوڈ کے ذریعے شیئر کریں",
+
+  "configShareTitle": "یہ ترتیب شیئر کریں",
+
+  "configShareExplainServer": "اس کوڈ کو دوسری ڈیوائس کے ساتھ اسکین کریں تاکہ اسے ایک جیسے سرور کے ساتھ سیٹ کریں۔",
+
+  "configShareExplainGroup": "اس کوڈ کو دوسری ڈیوائس کے ساتھ اسکین کریں تاکہ اسے ایک جیسے سرور کے ساتھ سیٹ کریں اور گروپ {name} میں شامل ہوں۔ یہ گروپ کا مدعو ضابطہ رکھتا ہے: اسے صرف ان لوگوں کو دکھائیں جو آپ گروپ میں چاہتے ہیں۔",
+
+  "configShareWebAppLabel": "ویب ایپ کا پتہ",
+
+  "configShareWebAppHelper": "جہاں آپ کا سرور CountScore ویب ایپ پیش کرتا ہے، جیسے https://countscore.example.com/countscore۔ کوڈ یہ صفحہ کھولتا ہے۔",
+
+  "configShareWebAppNeeded": "کوڈ دکھانے کے لیے ویب ایپ کا پتہ درج کریں۔",
+
+  "configShareQrLabel": "ترتیب کے لنک کا QR کوڈ",
+
+  "configShareCopyLink": "لنک کاپی کریں",
+
+  "configShareLinkCopied": "لنک کاپی کیا گیا",
+
+  "configShareTooLong": "یہ لنک QR کوڈ میں فٹ ہونے کے لیے بہت لمبا ہے۔ اس کی بجائے \"لنک کاپی کریں\" استعمال کریں۔",
+
+  "replaceConfigTitle": "ترتیب کی جگہ لے لیے؟",
+
+  "replaceConfigCurrent": "اب: {value}",
+
+  "replaceConfigNew": "نیا: {value}",
+
+  "replaceConfigInvite": "مدعو ضابطہ {code}",
+
+  "replaceConfigLeavesGroup": "یہ ڈیوائس گروپ {name} چھوڑ دے گی۔ اس کے گیمز اس ڈیوائس پر رہتے ہیں۔",
+
+  "replaceConfigConfirm": "جگہ لے لیں",
+
+  "replaceConfigUnsynced": "{count, plural, =1{اس ڈیوائس پر 1 تبدیلی ابھی گروپ تک نہیں پہنچی۔ اگر آپ اب چھوڑتے ہیں، تو گروپ اسے کبھی وصول نہیں کرے گا۔} other{اس ڈیوائس پر {count} تبدیلیاں ابھی گروپ تک نہیں پہنچیں۔ اگر آپ اب چھوڑتے ہیں، تو گروپ انہیں کبھی وصول نہیں کرے گا۔}}",
+
+  "replaceConfigLeaveAnyway": "ویسے بھی چھوڑیں",
+
+  "replaceConfigDone": "ترتیب تبدیل کی گئی",
+
+  "replaceConfigUnchanged": "یہ ڈیوائس پہلے سے یہ ترتیب استعمال کرتی ہے",
+
+  "joinLinkHandOverMessage": "یہ لنک CountScore Android ایپ میں کھول سکتا ہے۔ اگر ایپ انسٹال نہیں ہے، تو Play Store کھلتا ہے۔",
+
+  "joinLinkOpenInApp": "ایپ میں کھولیں",
+
+  "joinLinkContinueHere": "براؤزر میں جاری رکھیں"
+}
