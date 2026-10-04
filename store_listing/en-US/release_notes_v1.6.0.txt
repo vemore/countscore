@@ -1,0 +1,8 @@
+CountScore 1.6.0
+
+• Ten new languages: Indonesian, Turkish, Italian, Korean, Vietnamese, Thai, Polish, Bengali, Urdu and Dutch. 20 in all, with game rules and the AI analysis.
+• Share your server and group in one scan: a QR code that opens straight into the app.
+• Negative scores now read -25, not 25-, in Arabic and Urdu.
+• Smaller fixes.
+
+Online features stay off until you enter your server.

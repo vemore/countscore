@@ -1,0 +1,8 @@
+CountScore 1.6.0
+
+• Dix nouvelles langues : indonésien, turc, italien, coréen, vietnamien, thaï, polonais, bengali, ourdou et néerlandais. 20 au total, avec les règles des jeux et l'analyse IA.
+• Partagez votre serveur et votre groupe d'un scan : un QR code qui s'ouvre directement dans l'app.
+• Les scores négatifs se lisent -25, et non 25-, en arabe et en ourdou.
+• Petites corrections.
+
+Les fonctions en ligne restent inactives sans serveur.
