@@ -124,6 +124,16 @@ class MyApp extends StatelessWidget {
               Locale('ru', ''), // Russian
               Locale('ja', ''), // Japanese
               Locale('de', ''), // German
+              Locale('id', ''), // Indonesian
+              Locale('tr', ''), // Turkish
+              Locale('it', ''), // Italian
+              Locale('ko', ''), // Korean
+              Locale('vi', ''), // Vietnamese
+              Locale('th', ''), // Thai
+              Locale('pl', ''), // Polish
+              Locale('bn', ''), // Bengali
+              Locale('ur', ''), // Urdu
+              Locale('nl', ''), // Dutch
             ],
             localeResolutionCallback: (locale, supportedLocales) {
               if (locale == null) {

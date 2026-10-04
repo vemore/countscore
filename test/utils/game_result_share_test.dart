@@ -130,7 +130,9 @@ void main() {
       expect(text, contains('CountScore'), reason: '$locale');
       expect(text, contains(kPlayStoreUrl), reason: '$locale');
       expect(text, contains('Bob'), reason: '$locale');
-      expect(text, contains('2026'), reason: '$locale');
+      // `intl` writes Bengali dates in Bengali digits, which is what a Bengali reader expects.
+      final year = locale.languageCode == 'bn' ? '২০২৬' : '2026';
+      expect(text, contains(year), reason: '$locale');
     }
   });
 }

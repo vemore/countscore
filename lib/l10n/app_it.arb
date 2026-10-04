@@ -1,0 +1,777 @@
+{
+  "@@locale": "it",
+
+  "appTitle": "CountScore",
+
+  "homeTitle": "Home",
+
+  "playersListTitle": "Lista Giocatori",
+
+  "gameTypesTitle": "Tipi di Gioco",
+
+  "settingsTitle": "Impostazioni",
+
+  "aboutTitle": "Info",
+
+  "newGame": "Nuova Partita",
+
+  "noGames": "Nessuna partita",
+
+  "noGamesOfThisType": "Nessuna partita di questo tipo",
+
+  "createFirstGame": "Crea la tua prima partita",
+
+  "newWithSamePlayers": "Nuova con gli stessi giocatori",
+
+  "playAgain": "Gioca di nuovo",
+
+  "rename": "Rinomina",
+
+  "delete": "Elimina",
+
+  "confirmDeletion": "Conferma eliminazione",
+
+  "confirmDeleteGame": "Vuoi davvero eliminare la partita \"{name}\"?",
+
+  "cancel": "Annulla",
+
+  "renameGame": "Rinomina partita",
+
+  "gameName": "Nome partita",
+
+  "save": "Salva",
+
+  "allGames": "Tutte le partite",
+
+  "filterGames": "Filtra partite",
+
+  "applyFilter": "Applica",
+
+  "resetFilter": "Reimposta",
+
+  "selectGameType": "Seleziona un tipo di gioco",
+
+  "gameType": "Tipo di gioco",
+
+  "loadingGameTypes": "Caricamento tipi di gioco...",
+
+  "lowestScoreWins": "Vince il punteggio più basso",
+
+  "highestScoreWins": "Vince il punteggio più alto",
+
+  "players": "Giocatori",
+
+  "add": "Aggiungi",
+
+  "pleaseEnterName": "Per favore, inserisci un nome",
+
+  "clear": "Cancella",
+
+  "remove": "Rimuovi",
+
+  "game": "Partita",
+
+  "editGame": "Modifica partita",
+
+  "editGameDialogTitle": "Modifica partita",
+
+  "removePlayer": "Rimuovi giocatore",
+
+  "addPlayerToGame": "Aggiungi giocatore",
+
+  "warningRemovePlayer": "Attenzione! La rimozione di questo giocatore eliminerà tutti i suoi punteggi da questa partita. Questa azione è irreversibile.",
+
+  "confirmRemovePlayer": "Vuoi davvero rimuovere {playerName} da questa partita?",
+
+  "playerRemoved": "Giocatore rimosso dalla partita",
+
+  "deleteLastRound": "Elimina ultimo round",
+
+  "confirm": "Conferma",
+
+  "confirmDeleteLastRound": "Eliminare l'ultimo round?",
+
+  "noPlayersInGame": "Nessun giocatore in questa partita",
+
+  "round": "Round",
+
+  "boardRoundButton": "Round {round}",
+
+  "keypadCaption": "{player} · round {round}",
+
+  "keypadCaptionWithPosition": "{player} · round {round} · {position}/{count}",
+
+  "keypadTotalAfter": "totale dopo: {total}",
+
+  "keypadNext": "Successivo\n{player}",
+
+  "keypadValidateRound": "Convalida round",
+
+  "keypadToggleSign": "Cambia segno",
+
+  "keypadBackspace": "Elimina una cifra",
+
+  "keypadShortcutTitle": "Scorciatoia tastierino",
+
+  "keypadShortcutKind": "Tipo di tasto",
+
+  "keypadShortcutKindValue": "Inserisci un valore",
+
+  "keypadShortcutKindMultiply": "Moltiplica il punteggio (solo positivo)",
+
+  "keypadShortcutKindAdd": "Aggiungi al punteggio",
+
+  "keypadShortcutAmount": "Numero",
+
+  "keypadShortcutLabel": "Etichetta tasto (opzionale)",
+
+  "keypadShortcutAddRange": "Un numero intero tra {min} e {max}, diverso da 0",
+
+  "keypadShortcutAmountRange": "Un numero intero tra {min} e {max}",
+
+  "appearance": "Aspetto",
+
+  "light": "Chiaro",
+
+  "dark": "Scuro",
+
+  "system": "Sistema",
+
+  "screen": "Schermo",
+
+  "keepScreenAwake": "Mantieni schermo attivo",
+
+  "keepScreenAwakeDescription": "Evita che lo schermo si spenga durante una partita",
+
+  "backup": "Backup",
+
+  "exportDatabase": "Esporta database",
+
+  "exportDatabaseDescription": "Salva tutte le tue partite in un file",
+
+  "databaseExportedTo": "Database esportato in:",
+
+  "errorDuringExport": "Errore durante l'esportazione:",
+
+  "importDatabase": "Importa database",
+
+  "importDatabaseDescription": "Ripristina le tue partite da un file di backup",
+
+  "confirmation": "Conferma",
+
+  "importWarning": "L'importazione sostituirà tutti i tuoi dati attuali. Un backup automatico verrà creato prima dell'importazione.\n\nVuoi continuare?",
+
+  "import": "Importa",
+
+  "databaseImportedSuccessfully": "Database importato con successo",
+
+  "importSuccessful": "Importazione riuscita",
+
+  "importSuccessMessage": "Il database è stato importato con successo.\n\nL'applicazione ora si chiuderà. Per favore, riaprila per vedere i nuovi dati.",
+
+  "ok": "OK",
+
+  "errorDuringImport": "Errore durante l'importazione:",
+
+  "noPlayers": "Nessun giocatore",
+
+  "playersAppearMessage": "I giocatori appariranno qui una volta\nche avrai creato partite",
+
+  "gamesCount": "{count, plural, =0{0 partite} =1{1 partita} other{{count} partite}}",
+
+  "winsCount": "{count, plural, =0{0 vittorie} =1{1 vittoria} other{{count} vittorie}}",
+
+  "changeColor": "Cambia colore",
+
+  "renamePlayer": "Rinomina giocatore",
+
+  "newName": "Nuovo nome",
+
+  "playerRenamedTo": "Giocatore rinominato a \"{name}\"",
+
+  "deletePlayer": "Elimina giocatore",
+
+  "confirmDeletePlayer": "Vuoi davvero eliminare \"{name}\"?\n\nQuesto giocatore verrà rimosso da tutte le {count} partita/e.",
+
+  "playerDeleted": "Giocatore \"{name}\" eliminato",
+
+  "chooseColor": "Scegli un colore",
+
+  "noGameTypes": "Nessun tipo di gioco",
+
+  "edit": "Modifica",
+
+  "newType": "Nuovo tipo",
+
+  "editType": "Modifica tipo",
+
+  "newGameType": "Nuovo tipo di gioco",
+
+  "gameTypeName": "Nome tipo di gioco",
+
+  "icon": "Icona:",
+
+  "color": "Colore:",
+
+  "chooseIcon": "Scegli un'icona",
+
+  "nameIsRequired": "Il nome è obbligatorio",
+
+  "create": "Crea",
+
+  "ranking": "Classifica",
+
+  "noCurrentGame": "Nessuna partita in corso",
+
+  "noScoresRecorded": "Nessun punteggio registrato",
+
+  "playerStatistics": "Statistiche Giocatore",
+
+  "noStatisticsAvailable": "Nessuna statistica disponibile",
+
+  "gamesPlayed": "Partite giocate",
+
+  "wins": "Vittorie",
+
+  "winRate": "Percentuale vittorie",
+
+  "byGameType": "Per tipo di gioco",
+
+  "rate": "Valuta",
+
+  "version": "Versione {version}",
+
+  "appDescription": "Applicazione di gestione punteggi per le tue sessioni di gioco di Vincent Moreau",
+
+  "features": "Caratteristiche",
+
+  "featureDifferentGameTypes": "Diversi tipi di gioco",
+
+  "featurePlayerManagement": "Gestione giocatori",
+
+  "featureDetailedStatistics": "Statistiche dettagliate",
+
+  "featureCustomization": "Personalizzazione",
+
+  "featureDarkLightTheme": "Tema scuro/chiaro",
+
+  "featureGroupSharing": "Condivisione di gruppo",
+
+  "featureGameAnalysis": "Analisi del gioco con IA",
+
+  "rateApp": "Valuta CountScore",
+
+  "search": "Cerca",
+
+  "newPlayerName": "Nome nuovo giocatore",
+
+  "noPlayersFound": "Nessun giocatore trovato",
+
+  "close": "Chiudi",
+
+  "playerEliminationCondition": "Condizione di Eliminazione Giocatore",
+
+  "gameOverCondition": "Condizione di Fine Partita",
+
+  "none": "Nessuno",
+
+  "overThreshold": "Sopra la soglia",
+
+  "underThreshold": "Sotto la soglia",
+
+  "firstPlayerOver": "Primo a raggiungere",
+
+  "firstPlayerUnder": "Primo sotto",
+
+  "lastPlayerOver": "Ultimo giocatore in piedi (altri sopra)",
+
+  "lastPlayerUnder": "Ultimo giocatore in piedi (altri sotto)",
+
+  "threshold": "Soglia",
+
+  "conditionType": "Tipo di Condizione",
+
+  "continuePlay": "Continua a Giocare",
+
+  "gameEndWinner": "{name} vince",
+
+  "gameEndTie": "Pareggio: {names}",
+
+  "gameEndRounds": "{count, plural, one{{count} round} other{{count} round}}",
+
+  "gameEndLowestWins": "il punteggio più basso vince",
+
+  "gameEndHighestWins": "il punteggio più alto vince",
+
+  "gameEndAnalysis": "Analisi",
+
+  "gameEndResults": "Risultati",
+
+  "rankingEliminationNote": "Classificato per ordine di eliminazione: chi esce più tardi ha un ranking migliore, indipendentemente dai totali.",
+
+  "endGame": "Termina Partita",
+  "reopenGame": "Riapri partita",
+  "gameFinished": "Terminata",
+  "undo": "Annulla",
+  "gameReopened": "Partita riaperta",
+
+  "comment": "Commento",
+
+  "enterComment": "Inserisci un commento",
+
+  "analyzeGame": "Analizza partita",
+
+  "analysisTitle": "Analisi partita",
+
+  "analysisStyle": "Stile di analisi",
+
+  "analysisStyleProfessor": "Il professore",
+
+  "analysisStyleCommentator": "Il commentatore sportivo",
+
+  "analysisStyleDocumentary": "Il documentario naturalistico",
+
+  "analysisStyleNoir": "Il detective",
+
+  "analysisStyleBard": "Il bardo",
+
+  "analysisStyleCoach": "L'allenatore",
+
+  "analysisStyleConsultant": "Il consulente",
+
+  "analysisStyleAstrologer": "L'astrologo",
+
+  "analysisStyleRealityTv": "Lo spettacolo reality",
+
+  "generatingAnalysis": "Generazione analisi…",
+
+  "generateAnalysis": "Genera analisi",
+
+  "regenerateAnalysis": "Rigenera analisi",
+
+  "deleteAnalysis": "Elimina analisi",
+
+  "confirmRegenerateAnalysis": "Rigenerare? L'analisi attuale sarà sostituita.",
+
+  "confirmDeleteAnalysis": "Eliminare l'analisi per questa partita?",
+
+  "analysisError": "Errore nella generazione dell'analisi",
+
+  "analysisErrorStatus": "Errore nella generazione dell'analisi (HTTP {status})",
+  "analysisErrorUnavailable": "Il server di analisi è temporaneamente non disponibile. Riprova più tardi.",
+  "analysisErrorGroupBudget": "Il tuo gruppo ha esaurito il budget di analisi per questo mese. Si rinnova all'inizio del mese prossimo.",
+  "analysisStyleGroupDefault": "Nessuno stile scelto: questa partita condivisa viene analizzata nello stile e nella lingua del gruppo.",
+
+  "retry": "Riprova",
+
+  "analysisGeneratedAt": "Generato il {date}",
+
+  "serverSection": "Server",
+  "backendUrlLabel": "URL Server",
+  "backendUrlHint": "https://countscore.example.com",
+  "backendUrlDescription": "Le funzioni connesse hanno bisogno di un server CountScore. Installa uno dalla cartella backend/ e inserisci il suo indirizzo qui. Senza un server, nessun dato lascia questo dispositivo.",
+  "backendNotConfigured": "Nessun server configurato",
+  "backendUrlInvalid": "Indirizzo non valido. Inserisci un URL completo, ad esempio https://countscore.example.com",
+  "backendUrlInsecure": "http:// è accettato solo su una rete locale. Usa https:// per un server pubblico.",
+  "testConnection": "Testa connessione",
+  "connectionOk": "Il server sta rispondendo",
+  "connectionFailed": "Il server non sta rispondendo",
+  "serverUrlSaved": "Server salvato",
+  "analysisRequiresBackend": "Questa analisi ha bisogno di un server. Configurane uno nelle impostazioni.",
+  "openSettings": "Apri impostazioni",
+  "serverUrlCleared": "Server cancellato",
+
+  "groupSection": "Gruppo",
+
+  "groupDescription": "Condividi partite con gli altri dispositivi del tuo gruppo. Le partite condivise, i loro giocatori, punteggi, commenti e analisi vengono inviati al tuo server; le altre partite rimangono su questo dispositivo.",
+
+  "groupNeedsServer": "Configura prima un server.",
+
+  "groupCreate": "Crea un gruppo",
+
+  "groupJoin": "Unisciti a un gruppo",
+
+  "groupNameLabel": "Nome del gruppo",
+
+  "groupNicknameLabel": "Il tuo nickname",
+
+  "groupNicknameHint": "Gli altri nel gruppo lo vedranno",
+
+  "groupNicknameCurrent": "Il tuo nickname: {nickname}",
+
+  "groupNicknameEdit": "Cambia il tuo nickname",
+
+  "shareTokenLabel": "Codice invito",
+
+  "shareTokenHint": "Incolla il codice che un membro del gruppo ti ha inviato",
+
+  "groupCurrent": "Gruppo: {name}",
+
+  "shareTokenExplain": "Invia questo codice ai dispositivi che dovrebbero unirsi al gruppo. Chiunque lo abbia può unirsi.",
+
+  "shareTokenCopy": "Copia codice",
+
+  "shareTokenCopied": "Codice copiato",
+
+  "shareTokenRotate": "Nuovo codice",
+
+  "shareTokenRotateConfirm": "Il codice vecchio non permetterà più a nessuno di unirsi. I dispositivi già nel gruppo non sono interessati.",
+
+  "groupLeave": "Lascia il gruppo",
+
+  "groupLeaveConfirm": "Questo dispositivo lascia il gruppo. Le partite condivise rimangono su questo dispositivo ma non si sincronizzeranno più.",
+
+  "groupLeft": "Hai lasciato il gruppo",
+
+  "groupJoined": "Sei entrato nel gruppo",
+
+  "clearServerLeavesGroup": "Cancellare il server fa abbandonare il gruppo. Le partite condivise rimangono su questo dispositivo.",
+
+  "syncNow": "Sincronizza ora",
+
+  "syncStatusIdle": "Sincronizzato a {time}",
+
+  "syncStatusSyncing": "Sincronizzazione…",
+
+  "syncStatusOffline": "Server non raggiungibile — le modifiche verranno inviate in seguito",
+
+  "syncStatusUnauthorized": "Il server non accetta più questo dispositivo. Lascia il gruppo e rientravi di nuovo.",
+
+  "syncStatusError": "Errore del server durante la sincronizzazione",
+
+  "syncPending": "{count, plural, =1{1 modifica in sospeso} other{{count} modifiche in sospeso}}",
+
+  "syncRejected": "{count, plural, =1{1 modifica rifiutata dal server} other{{count} modifiche rifiutate dal server}}",
+
+  "groupErrorUnknownToken": "Codice invito sconosciuto o sostituito",
+
+  "groupErrorRateLimited": "Troppi tentativi. Riprova tra un minuto.",
+
+  "groupErrorUnreachable": "Server non raggiungibile",
+
+  "groupErrorServer": "Errore del server",
+
+  "shareWithGroup": "Condividi con il gruppo",
+
+  "shareWithGroupSubtitle": "I dispositivi in {name} vedranno e modificheranno questa partita",
+
+  "shareGameConfirm": "La partita, i suoi giocatori, punteggi e commenti verranno inviati a {name}. La condivisione non può essere annullata.",
+
+  "gameSharedDone": "Partita condivisa con il gruppo",
+
+  "gameSharedBadge": "Partita condivisa",
+
+  "invalidPlayerNamesForSync": "Questi nomi non possono essere condivisi: {names}. Usa lettere, cifre, spazi, trattini, apostrofi o punti (32 caratteri al massimo).",
+
+  "roundRenumbered": "Questo round era già stato inserito su un altro dispositivo, quindi è diventato il round {number}.",
+
+  "gameDeletedElsewhere": "\"{name}\" è stata eliminata su un altro dispositivo",
+  "groupDevices": "Dispositivi",
+  "groupDevicesExplain": "Un telefono perso o venduto può essere rimosso dal gruppo qui.",
+  "groupDeviceThisOne": "Questo dispositivo",
+  "groupDeviceLastSeen": "Visto l'ultima volta {date}",
+  "groupDeviceRevoke": "Rimuovi",
+  "groupDeviceRevokeConfirm": "Rimuovere \"{label}\" dal gruppo? Non si sincronizzerà più. Il codice invito cambia anche: i membri mantengono l'accesso, ma dovrai condividere il nuovo codice per invitare qualcuno.",
+  "groupDeviceRevoked": "\"{label}\" è stata rimossa. Il codice invito è cambiato.",
+
+  "reportCommentary": "Segnala questo commento",
+
+  "reportCommentarySubject": "CountScore — segnalazione commento IA",
+
+  "reportCommentaryBody": "Cos'è che non va in questo commento generato dall'IA?\n\n\n---\nRiferimento: {reference}\nCommento:\n{commentary}",
+
+  "reportCommentaryNoMailApp": "Nessuna app email trovata. Scrivi a {email} per segnalare questo commento.",
+
+  "gameRulesTitle": "Regole del gioco",
+  "gameRulesInApp": "In CountScore",
+  "gameRulesSection": "Le regole",
+  "gameRulesNoElimination": "Nessuna eliminazione durante il gioco",
+  "gameRulesEliminationOver": "Un giocatore viene eliminato sopra {threshold} punti",
+  "gameRulesEliminationUnder": "Un giocatore viene eliminato sotto {threshold} punti",
+  "gameRulesEndFirstOver": "La partita finisce non appena un giocatore raggiunge {threshold} punti",
+  "gameRulesEndFirstUnder": "La partita finisce non appena un giocatore scende sotto {threshold} punti",
+  "gameRulesEndLastOver": "La partita finisce quando tutti i giocatori tranne uno sono sopra {threshold} punti",
+  "gameRulesEndLastUnder": "La partita finisce quando tutti i giocatori tranne uno sono sotto {threshold} punti",
+  "gameRulesNoEnd": "Nessuna fine automatica: decidi tu quando la partita è finita",
+  "gameRulesEmptyTitle": "Nessuna regola ancora",
+  "gameRulesEmptyHint": "Scrivi come il tuo tavolo conta i punti — tutti avranno la stessa versione.",
+  "gameRulesWrite": "Scrivi le regole",
+  "gameRulesEditTitle": "Modifica le regole",
+  "gameRulesEditorHint": "Le regole del tuo tavolo. Markdown è supportato.",
+  "gameRulesFromGroup": "Le regole del tuo gruppo",
+  "gameRulesRestoreDefault": "Ripristina le regole originali",
+  "gameRulesSaved": "Regole salvate",
+  "gameRulesRestored": "Regole originali ripristinate",
+  "gameRulesDisclaimer": "Riepilogo scritto per CountScore dalle regole come comunemente giocate. I nomi dei giochi appartengono ai rispettivi proprietari e sono usati solo in senso descrittivo.",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameZapzapSortKey": "ZapZap",
+
+  "gameTypeNameUno": "Uno",
+
+  "gameTypeNameUnoSortKey": "Uno",
+
+  "gameTypeNameScrabble": "Scrabble",
+
+  "gameTypeNameScrabbleSortKey": "Scrabble",
+
+  "gameTypeNameOther": "Altro",
+
+  "gameTypeNameOtherSortKey": "Altro",
+
+  "gameTypeNameSkyjo": "Skyjo",
+
+  "gameTypeNameSkyjoSortKey": "Skyjo",
+
+  "gameTypeNamePresident": "President",
+
+  "gameTypeNamePresidentSortKey": "President",
+
+  "gameTypeNameBelote": "Belote",
+
+  "gameTypeNameBeloteSortKey": "Belote",
+
+  "gameTypeNameTarot": "Tarot",
+
+  "gameTypeNameTarotSortKey": "Tarot",
+
+  "gameTypeNameBridge": "Bridge",
+
+  "gameTypeNameBridgeSortKey": "Bridge",
+
+  "gameTypeNameRami": "Rummy",
+
+  "gameTypeNameRamiSortKey": "Rummy",
+
+  "gameTypeNameCoinche": "Coinche",
+
+  "gameTypeNameCoincheSortKey": "Coinche",
+
+  "gameTypeNameYahtzee": "Yahtzee",
+
+  "gameTypeNameYahtzeeSortKey": "Yahtzee",
+
+  "gameTypeNamePhase10": "Phase 10",
+
+  "gameTypeNamePhase10SortKey": "Phase 10",
+
+  "gameTypeNameFlip7": "Flip 7",
+
+  "gameTypeNameFlip7SortKey": "Flip 7",
+
+  "gameTypeNameMilleBornes": "Mille Bornes",
+
+  "gameTypeNameMilleBornesSortKey": "Mille Bornes",
+
+  "gameTypeNameRummikub": "Rummikub",
+
+  "gameTypeNameRummikubSortKey": "Rummikub",
+
+  "gameTypeNameSixNimmt": "Take 6",
+
+  "gameTypeNameSixNimmtSortKey": "Take 6",
+
+  "gameTypeNameQwirkle": "Qwirkle",
+
+  "gameTypeNameQwirkleSortKey": "Qwirkle",
+
+  "gameTypeNameFarkle": "Farkle",
+
+  "gameTypeNameFarkleSortKey": "Farkle",
+
+  "gameTypeNameCanasta": "Canasta",
+
+  "gameTypeNameCanastaSortKey": "Canasta",
+
+  "gameTypeNameWizard": "Wizard",
+
+  "gameTypeNameWizardSortKey": "Wizard",
+
+  "gameTypeNameTriomino": "Triomino",
+
+  "gameTypeNameTriominoSortKey": "Triomino",
+
+  "groupDeviceOwner": "Proprietario",
+
+  "groupDeviceMakeOwner": "Rendi proprietario",
+
+  "groupDeviceMakeOwnerConfirm": "Passare il gruppo a \"{label}\"? Questo dispositivo non sarà più in grado di rimuovere dispositivi o cambiare il codice di invito.",
+
+  "groupDeviceOwnerChanged": "\"{label}\" ora è proprietario del gruppo.",
+
+  "groupDevicesExplainMember": "Solo il proprietario del gruppo può rimuovere un dispositivo o cambiare il codice di invito.",
+
+  "groupErrorNotOwner": "Solo il proprietario del gruppo può farlo",
+  "whoStarts": "Chi inizia?",
+  "whoStartsAgain": "Estrai di nuovo",
+  "diceRoller": "Lancia i dadi",
+  "diceCount": "Numero di dadi",
+  "diceRollAgain": "Lancia di nuovo",
+  "diceTotal": "Totale: {total}",
+  "resumeGame": "Riprendi",
+  "recentGames": "Recenti",
+  "gameInProgress": "In corso",
+  "roundNumber": "round {number}",
+  "gameLeader": "{name} in testa · {score}",
+  "gameWonBy": "Vinta da {name}",
+  "boardRank": "{rank, plural, one{#{rank}} other{#{rank}}}",
+  "boardViewRows": "Una riga per giocatore",
+  "boardViewLanes": "Una colonna per giocatore",
+  "boardSeatOrder": "Ordine dei posti",
+  "boardRoundShort": "R{number}",
+  "boardPlayer": "Giocatore",
+  "boardTotal": "Totale",
+  "boardLeader": "In testa",
+  "groupSettingsTitle": "Commenti e utilizzo",
+  "groupSettingsDescription": "Lo stile e la lingua dei commenti che il server scrive per le partite del gruppo. Qualsiasi membro può cambiarli.",
+  "groupCommentStyle": "Stile commento",
+  "groupCommentStyleNarrative": "Narrativo",
+  "groupCommentStyleHumorous": "Umoristico",
+  "groupCommentStyleAnalytical": "Analitico",
+  "groupCommentLanguage": "Lingua commento",
+  "groupSettingsSaved": "Impostazioni del gruppo salvate",
+  "groupUsageTitle": "Utilizzo IA questo mese",
+  "groupUsageAmount": "{used} speso su {budget}",
+  "groupUsageResets": "Si reimposta il {date}",
+  "statsBestWinRate": "Miglior percentuale di vittorie",
+  "statsWinsOutOfGames": "{wins, plural, =0{Nessuna vittoria su {games}} one{{wins} vittoria su {games}} other{{wins} vittorie su {games}}}",
+  "statsColumnPlayer": "Giocatore",
+  "statsColumnGames": "Partite",
+  "statsUnranked": "{count, plural, one{{count} partita · non ancora classificata} other{{count} partite · non ancora classificate}}",
+  "statsLeaderboardFooter": "{count, plural, one{Classificato da {count} partita terminata. Tocca un giocatore per vedere la sua carta.} other{Classificato da {count} partite terminate. Tocca un giocatore per vedere la sua carta.}}",
+  "statsGamesLabel": "{count, plural, one{partita} other{partite}}",
+  "statsWinsLabel": "{count, plural, one{vittoria} other{vittorie}}",
+  "statsAverageRank": "posizionamento medio",
+  "statsRankChartTitle": "{count, plural, one{Posizione, ultima partita} other{Posizione, ultime {count} partite}}",
+  "statsTrendImproving": "in miglioramento",
+  "statsTrendDeclining": "in calo",
+  "statsTrendSteady": "stabile",
+  "statsRankOrdinal": "{rank, select, 1{1º} 2{2º} 3{3º} other{{rank}º}}",
+  "statsWinStreak": "{count, plural, =0{Nessuna serie di vittorie} one{Serie: {count} vittoria} other{Serie: {count} vittorie}}",
+  "statsRecord": "Miglior: {total}",
+  "statsOnGameType": "Su {gameType}",
+  "statsAverageTotal": "Totale finale medio",
+  "statsBestTotal": "Miglior totale finale",
+  "statsMostBeaten": "Avversario più sconfitto",
+  "statsOpenPlayerCard": "apri la carta del giocatore",
+
+  "shareResult": "Condividi il risultato",
+
+  "shareAnalysis": "Condividi l'analisi",
+
+  "shareResultSubject": "Risultato: {gameName}",
+
+  "shareResultTitle": "Partita del {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} punto} other{{points} punti}}",
+
+  "shareResultFooter": "Punteggi mantenuti con {appName}: {url}",
+
+  "shareFailed": "La condivisione non ha potuto essere aperta",
+
+  "newGameNameLabel": "Nome",
+
+  "newGameGameLabel": "Gioco",
+
+  "newGameAllGames": "Tutte le partite ({count})",
+
+  "newGamePlayersLabel": "Giocatori · ordine dei posti",
+
+  "newGameDragToReorder": "trascina per riordinare",
+
+  "newGameDealer": "distribuisce",
+
+  "newGameAddPlayer": "Aggiungi un giocatore",
+
+  "newGameStart": "{count, plural, =0{Inizia} =1{Inizia · 1 giocatore} other{Inizia · {count} giocatori}}",
+
+  "whoIsPlayingTitle": "Chi sta giocando?",
+
+  "whoIsPlayingSearchHint": "Nome, o un nuovo giocatore",
+
+  "whoIsPlayingFrequent": "Spesso gioca con te",
+
+  "whoIsPlayingSameAs": "Stessi giocatori di \"{gameName}\"",
+
+  "whoIsPlayingCreate": "Crea \"{name}\"",
+
+  "whoIsPlayingConfirm": "{count, plural, =0{Fatto} =1{Aggiungi 1 giocatore} other{Aggiungi {count} giocatori}}",
+
+  "defaultGameName": "Partita {number}",
+
+  "pwaUpdateReady": "Una nuova versione di CountScore è pronta",
+
+  "pwaUpdateReload": "Ricarica",
+
+  "thresholdIsRequired": "Una soglia è richiesta per questa condizione",
+
+  "thresholdTooLarge": "La soglia non può essere sopra {max}",
+
+  "deletionImpossible": "Eliminazione impossibile",
+
+  "gameTypeInUse": "{count, plural, one{1 partita usa questo tipo: non può essere eliminata.} other{{count} partite usano questo tipo: non possono essere eliminate.}}",
+
+  "confirmDeleteGameType": "Vuoi davvero eliminare il tipo di gioco \"{name}\"?",
+
+  "winDirectionChangeTitle": "Invertire chi vince?",
+
+  "winDirectionChangeWarning": "{count, plural, one{1 partita terminata di questo tipo avrà la sua classifica invertita: il suo vincitore diventa l'ultimo.} other{{count} partite terminate di questo tipo avranno le loro classifiche invertite: i loro vincitori diventano gli ultimi.}}",
+
+  "winDirectionContradiction": "La condizione di fine partita premia l'opposto del vincitore scelto. Una regola della casa potrebbe volerlo esattamente così.",
+
+  "rulesOutOfDateTitle": "Aggiornare le regole?",
+
+  "rulesOutOfDateMessage": "Le regole di questo tipo descrivono ancora la vecchia condizione.",
+
+  "later": "Dopo",
+
+  "currentIcon": "Icona corrente",
+
+  "currentColor": "Colore corrente",
+
+  "groupDeviceClaimOwner": "Rivendica la proprietà",
+
+  "groupDeviceClaimOwnerConfirm": "\"{label}\" è proprietario del gruppo ma non è stata vista da molto tempo. Acquisire la proprietà su questo dispositivo?",
+
+  "groupDeviceOwnerClaimed": "Questo dispositivo ora possiede il gruppo.",
+
+  "groupErrorOwnerActive": "Il proprietario del gruppo è stato visto di recente: la proprietà non può essere reclamata.",
+
+  "groupCreatedOwnerExplain": "Gruppo creato. Questo dispositivo lo possiede; il ruolo può essere affidato a un altro in Dispositivi.",
+  "boardEliminated": "Eliminato",
+  "soundsSection": "Suoni",
+  "gameSounds": "Suoni partita",
+  "gameSoundsDescription": "Un suono quando un giocatore viene eliminato, quando la partita viene vinta e quando il timer scade",
+  "turnTimer": "Timer turno",
+  "turnTimerLess": "Meno tempo",
+  "turnTimerMore": "Più tempo",
+  "turnTimerStart": "Inizia",
+  "turnTimerPause": "Pausa",
+  "turnTimerReset": "Reimposta",
+  "turnTimerTimeUp": "Tempo scaduto!",
+  "configShareOpen": "Condividi tramite codice QR",
+  "configShareTitle": "Condividi questa configurazione",
+  "configShareExplainServer": "Scansiona questo codice con un altro telefono per configurarlo con lo stesso server.",
+  "configShareExplainGroup": "Scansiona questo codice con un altro telefono per configurarlo con lo stesso server e unirti al gruppo {name}. Contiene il codice invito del gruppo: mostralo solo alle persone che vuoi nel gruppo.",
+  "configShareWebAppLabel": "Indirizzo app web",
+  "configShareWebAppHelper": "Dove il tuo server serve l'app web CountScore, come https://countscore.example.com/countscore. Il codice apre questa pagina.",
+  "configShareWebAppNeeded": "Inserisci l'indirizzo dell'app web per mostrare il codice.",
+  "configShareQrLabel": "Codice QR del collegamento di configurazione",
+  "configShareCopyLink": "Copia collegamento",
+  "configShareLinkCopied": "Collegamento copiato",
+  "configShareTooLong": "Questo collegamento è troppo lungo per stare in un codice QR. Usa \"Copia collegamento\" invece.",
+  "replaceConfigTitle": "Sostituire la configurazione?",
+  "replaceConfigCurrent": "Ora: {value}",
+  "replaceConfigNew": "Nuovo: {value}",
+  "replaceConfigInvite": "codice invito {code}",
+  "replaceConfigLeavesGroup": "Questo dispositivo abbandonerà il gruppo {name}. Le sue partite rimangono su questo dispositivo.",
+  "replaceConfigConfirm": "Sostituisci",
+  "replaceConfigUnsynced": "{count, plural, =1{1 modifica su questo dispositivo non ha ancora raggiunto il gruppo. Se te ne vai ora, il gruppo non la riceverà mai.} other{{count} modifiche su questo dispositivo non hanno ancora raggiunto il gruppo. Se te ne vai ora, il gruppo non le riceverà mai.}}",
+  "replaceConfigLeaveAnyway": "Lascia comunque",
+  "replaceConfigDone": "Configurazione sostituita",
+  "replaceConfigUnchanged": "Questo dispositivo utilizza già questa configurazione",
+  "joinLinkHandOverMessage": "Questo collegamento può aprirsi nell'app Android di CountScore. Se l'app non è installata, il Play Store si apre invece.",
+  "joinLinkOpenInApp": "Apri nell'app",
+  "joinLinkContinueHere": "Continua nel browser"
+}

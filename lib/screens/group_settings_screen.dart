@@ -21,7 +21,7 @@ class GroupSettingsScreen extends StatefulWidget {
   /// The comment styles `PATCH /groups/me/settings` accepts.
   static const styles = ['narrative', 'humorous', 'analytical'];
 
-  /// The comment languages offered: the app's own ten, by their endonym — the
+  /// The comment languages offered: the app's own twenty, by their endonym — the
   /// name a speaker recognises whatever the interface language, so deliberately
   /// not translated.
   static const languages = {
@@ -35,6 +35,16 @@ class GroupSettingsScreen extends StatefulWidget {
     'ja': '日本語',
     'hi': 'हिन्दी',
     'ar': 'العربية',
+    'id': 'Bahasa Indonesia',
+    'tr': 'Türkçe',
+    'it': 'Italiano',
+    'ko': '한국어',
+    'vi': 'Tiếng Việt',
+    'th': 'ไทย',
+    'pl': 'Polski',
+    'bn': 'বাংলা',
+    'ur': 'اردو',
+    'nl': 'Nederlands',
   };
 
   @override

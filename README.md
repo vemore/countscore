@@ -21,7 +21,7 @@ at your own server in Settings → Server if you want the connected features.
 - **Flexible scoring**: lowest-wins and highest-wins, per game type.
 - **Rules for the game you are playing** — reachable from the score table and from the
   game-type list. Every pre-configured type but *Other* ships a ruleset — 21 of them,
-  translated into all ten languages — next to a summary of how CountScore scores that type — and every type, shipped
+  translated into all twenty languages — next to a summary of how CountScore scores that type — and every type, shipped
   or your own, gets that summary. Any of it can be
   rewritten: your table's own rules replace the shipped text and travel with your group.
 - **Scoring grid**: one coloured lane per player — avatar, big total, place, a crown on the
@@ -71,8 +71,9 @@ at your own server in Settings → Server if you want the connected features.
   current win streak, the best and average final totals, the opponent most often beaten.
   Every place counted here is the place the game's own standings show, elimination order
   included.
-- **10 languages**, fully translated: English, French, Spanish, German, Portuguese (BR),
-  Russian, Chinese (Simplified), Japanese, Hindi and Arabic — Arabic including RTL layout.
+- **20 languages**, fully translated: English, French, Spanish, German, Portuguese (BR),
+  Russian, Chinese (Simplified), Japanese, Hindi, Arabic, Indonesian, Turkish, Italian,
+  Korean, Vietnamese, Thai, Polish, Bengali, Urdu and Dutch — Arabic and Urdu including RTL layout.
 - **Offline-first**: everything works with no network. Data lives on the device.
 - **AI game analysis** (optional, network, off until you configure a server): a one-page
   LLM commentary on any finished game, whatever its type, in **one of nine voices** — the
@@ -247,7 +248,7 @@ countscore/
 │   ├── repositories/    # Data-access interfaces + their Drift implementations
 │   ├── services/        # Drift database, sqflite bootstrap migrator, backend client, sync/
 │   ├── utils/           # Cross-cutting helpers (system inset compensation)
-│   ├── l10n/            # ARB files (10 languages) + generated localizations
+│   ├── l10n/            # ARB files (20 languages) + generated localizations
 │   └── main.dart
 ├── backend/             # FastAPI service (groups, sync, LLM commentary)
 ├── web/                 # PWA shell + sqlite3.wasm and drift_worker.js (tracked on purpose)

@@ -26,7 +26,7 @@ not in `web/`, because everything under `web/` is published with the build).
 
 ## Non-negotiables
 
-1. **Never hardcode a user-facing string.** Always `AppLocalizations` — 10 languages are
+1. **Never hardcode a user-facing string.** Always `AppLocalizations` — 20 languages are
    kept in sync. Never hand-roll a plural; use ICU forms. Use the `i18n-add-string` skill.
 2. **A fresh clone does not compile until code is generated.** `*.g.dart` is gitignored:
    run `dart run build_runner build` first. No hook checks this one — a generated file that

@@ -1,12 +1,13 @@
-"""The ten output languages, and how a client's locale tag resolves to one.
+"""The twenty output languages, and how a client's locale tag resolves to one.
 
-The app is localised into ten languages (.llmwiki/I18n.md) but the analysis used to
+The app is localised into twenty languages (.llmwiki/I18n.md) but the analysis used to
 answer in French whatever the phone was set to. The persona blocks stay in English and
 the output language is this parameter, so adding a language costs one row here.
 
 ``directive`` is the only prose written *in* the target language. ``builder.py`` emits it
 twice — right after the role line and as the very last line of the system prompt —
-because sandwiching it measurably improves compliance for ar, hi, ja and zh.
+because sandwiching it measurably improves compliance for ar, hi, ja and zh (and, by the
+same reasoning, bn, ko, th and ur).
 """
 
 from __future__ import annotations
@@ -32,6 +33,16 @@ LANGUAGES: dict[str, Language] = {
     "pt": Language("pt", "Portuguese", "Responda inteiramente em português."),
     "ru": Language("ru", "Russian", "Отвечай полностью на русском языке."),
     "zh": Language("zh", "Chinese", "请全部用简体中文回答。"),
+    "id": Language("id", "Indonesian", "Jawab sepenuhnya dalam bahasa Indonesia."),
+    "tr": Language("tr", "Turkish", "Tamamen Türkçe yanıt ver."),
+    "it": Language("it", "Italian", "Rispondi interamente in italiano."),
+    "ko": Language("ko", "Korean", "전부 한국어로 답하세요."),
+    "vi": Language("vi", "Vietnamese", "Hãy trả lời hoàn toàn bằng tiếng Việt."),
+    "th": Language("th", "Thai", "ตอบเป็นภาษาไทยทั้งหมด"),
+    "pl": Language("pl", "Polish", "Odpowiadaj w całości po polsku."),
+    "bn": Language("bn", "Bengali", "সম্পূর্ণভাবে বাংলায় উত্তর দিন।"),
+    "ur": Language("ur", "Urdu", "مکمل طور پر اردو میں جواب دیں۔"),
+    "nl": Language("nl", "Dutch", "Antwoord volledig in het Nederlands."),
 }
 
 # English, because it is what an unsupported locale falls back to in the app too

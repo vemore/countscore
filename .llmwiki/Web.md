@@ -2,7 +2,7 @@
 
 > Scope: everything specific to the PWA build.
 > Related: [[DataLayer]] · [[MobileApp]] · [[Testing]] · [[LlmProviders]] · [[KnownLimits]]
-> Updated: 2026-09-26
+> Updated: 2026-10-04
 
 ## Facts
 
@@ -208,7 +208,7 @@ and its wasm) from `www.gstatic.com/flutter-canvaskit/<engine>/`, and fonts from
 `fonts.gstatic.com/s/` — the engine's default fallback **Roboto on every start** (it is
 downloaded unless a font family named `Roboto` is bundled), then a Noto font for each glyph no
 registered font has. With Nunito as the only bundled face, that is every Chinese, Japanese,
-Arabic and Devanagari string of the ten languages, most symbols, and any emoji a player types
+Arabic, Devanagari, Bengali, Thai, Hangul and Urdu string of the twenty languages, most symbols, and any emoji a player types
 in a name. Since 2026-09-19 none of it leaves the serving host:
 
 - **CanvasKit** — `--no-web-resources-cdn` copies `canvaskit/` into the build and writes
