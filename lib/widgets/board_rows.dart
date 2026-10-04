@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/player.dart';
+import '../utils/score_text.dart';
 import 'board_lanes.dart';
 import 'player_avatars.dart';
 
@@ -327,7 +328,7 @@ class _TotalCell extends StatelessWidget {
       child: FittedBox(
         fit: BoxFit.scaleDown,
         child: Text(
-          '$total',
+          scoreText(total),
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w800,

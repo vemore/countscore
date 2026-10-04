@@ -9,6 +9,7 @@ import '../models/game_standing.dart';
 import '../models/player.dart';
 import '../models/round.dart';
 import '../utils/app_theme.dart';
+import '../utils/score_text.dart';
 import 'player_avatars.dart';
 
 /// Up to this many players, the lanes share the width and never scroll.
@@ -125,7 +126,7 @@ class BoardScoreText extends StatelessWidget {
               fontSize: fontSize, color: theme.colorScheme.outline, height: 1));
     }
     final text = Text(
-      '$score',
+      scoreText(score!),
       maxLines: 1,
       style: TextStyle(
         fontSize: fontSize,
@@ -589,7 +590,7 @@ class _LaneHeader extends StatelessWidget {
           height: 28,
           child: FittedBox(
             fit: BoxFit.scaleDown,
-            child: Text('$total',
+            child: Text(scoreText(total),
                 style: TextStyle(
                     fontSize: 21,
                     fontWeight: FontWeight.w800,
@@ -612,7 +613,7 @@ class _LaneHeader extends StatelessWidget {
           height: 40,
           child: FittedBox(
             fit: BoxFit.scaleDown,
-            child: Text('$total',
+            child: Text(scoreText(total),
                 style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.w800,
@@ -685,7 +686,7 @@ class _RankingRibbon extends StatelessWidget {
                     style: const TextStyle(
                         fontSize: 14, fontWeight: FontWeight.w800)),
                 const SizedBox(width: 6),
-                Text('$total',
+                Text(scoreText(total),
                     style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,

@@ -1,5 +1,7 @@
 # A negative score reads "25-" in Urdu
 
+**Status:** done (2026-10-04) — closed by fix/rtl-negative-scores: `scoreText`/`keypadScoreText` isolate a negative on the board, podium, list, keypad, Resume card and player card; tests in `negative_score_rtl_test.dart` and `standings_screen_test.dart`. The ur/ar Play screenshots are retaken in a later commit of the same pull request, which is not merged before.
+
 - **Noted:** 2026-10-04 — reading the Urdu Play screenshots (results screen, ranking rows)
 - **Theme:** i18n
 - **Area:** app

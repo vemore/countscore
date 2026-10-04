@@ -176,7 +176,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String keypadTotalAfter(int total) {
+  String keypadTotalAfter(String total) {
     return 'total después: $total';
   }
 
@@ -1181,7 +1181,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String gameLeader(String name, int score) {
+  String gameLeader(String name, String score) {
     return '$name va en cabeza · $score';
   }
 
@@ -1370,7 +1370,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String statsRecord(int total) {
+  String statsRecord(String total) {
     return 'Récord: $total';
   }
 

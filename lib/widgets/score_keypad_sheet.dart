@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../models/keypad_shortcut.dart';
 import '../models/player.dart';
 import '../utils/app_theme.dart';
+import '../utils/score_text.dart';
 import 'fit_words_text.dart';
 import 'player_avatars.dart';
 
@@ -248,7 +249,7 @@ class _ScoreKeypadSheetState extends State<ScoreKeypadSheet> {
   }
 
   String _display(_Entry e) =>
-      '${e.negative ? '−' : ''}${e.digits.isEmpty ? '0' : e.digits}';
+      keypadScoreText(negative: e.negative, digits: e.digits);
 
   @override
   Widget build(BuildContext context) {
@@ -312,7 +313,7 @@ class _ScoreKeypadSheetState extends State<ScoreKeypadSheet> {
                               fontSize: 15, color: scheme.onSurfaceVariant)),
                       const SizedBox(height: 4),
                       Text(
-                        l10n.keypadTotalAfter(total),
+                        l10n.keypadTotalAfter(scoreText(total)),
                         key: const Key('keypad_total_after'),
                         textAlign: TextAlign.end,
                         style: TextStyle(

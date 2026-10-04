@@ -8,6 +8,7 @@ import '../providers/game_provider.dart';
 import '../utils/app_theme.dart';
 import '../utils/game_type_name.dart';
 import '../utils/player_colors.dart';
+import '../utils/score_text.dart';
 import 'board_lanes.dart';
 import 'player_avatars.dart';
 
@@ -261,7 +262,7 @@ class _Step extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 child: Text(
-                  '$total',
+                  scoreText(total),
                   style: TextStyle(
                     fontSize: first ? 32 : 24,
                     fontWeight: FontWeight.w800,
@@ -344,7 +345,7 @@ class _RankRow extends StatelessWidget {
                 ),
               ),
               Text(
-                '$total',
+                scoreText(total),
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w800,
                   color: _totalColour(context, ranking, total,

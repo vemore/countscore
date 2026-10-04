@@ -21,6 +21,7 @@ import 'package:countscore/providers/group_provider.dart';
 import 'package:countscore/repositories/drift/drift_repositories.dart';
 import 'package:countscore/repositories/game_analysis_repository.dart';
 import 'package:countscore/screens/game_board_screen.dart';
+import 'package:countscore/utils/score_text.dart';
 import 'package:countscore/services/drift/database.dart';
 
 /// The board asks on open whether this game has a stored analysis; nothing in
@@ -201,11 +202,11 @@ void main() {
     ]);
     await openRound(tester);
     await type(tester, 12);
-    expect(find.text(l10n.keypadTotalAfter(62)), findsOneWidget);
+    expect(find.text(l10n.keypadTotalAfter(scoreText(62))), findsOneWidget);
     await tapKey(tester, 'keypad_backspace');
-    expect(find.text(l10n.keypadTotalAfter(51)), findsOneWidget);
+    expect(find.text(l10n.keypadTotalAfter(scoreText(51))), findsOneWidget);
     await tapKey(tester, 'keypad_sign');
-    expect(find.text(l10n.keypadTotalAfter(49)), findsOneWidget);
+    expect(find.text(l10n.keypadTotalAfter(scoreText(49))), findsOneWidget);
   });
 
   testWidgets('closing the sheet halfway leaves the round count unchanged',
@@ -243,12 +244,12 @@ void main() {
     expect(sheet, findsOneWidget);
     expect(find.byType(TextField), findsNothing);
     expect(find.text(l10n.save), findsOneWidget);
-    expect(find.text(l10n.keypadTotalAfter(15)), findsOneWidget,
+    expect(find.text(l10n.keypadTotalAfter(scoreText(15))), findsOneWidget,
         reason: 'the score being edited is already counted once');
 
     // The first digit replaces the value that was there.
     await type(tester, 30);
-    expect(find.text(l10n.keypadTotalAfter(35)), findsOneWidget);
+    expect(find.text(l10n.keypadTotalAfter(scoreText(35))), findsOneWidget);
     await tester.tap(primary);
     await tester.pumpAndSettle();
 
@@ -340,7 +341,7 @@ void main() {
       expect(shown(tester), '0');
       await type(tester, -3);
       await tapKey(tester, 'keypad_shortcut');
-      expect(shown(tester), '−3');
+      expect(shown(tester), keypadScoreText(negative: true, digits: '3'));
       await validate(tester);
       await validate(tester);
 

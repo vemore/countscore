@@ -302,7 +302,7 @@
     "description": "Score keypad: the player's total once the typed score is added",
     "placeholders": {
       "total": {
-        "type": "int",
+        "type": "String",
         "example": "62"
       }
     }
@@ -1965,7 +1965,7 @@
         "example": "Thibaut"
       },
       "score": {
-        "type": "int",
+        "type": "String",
         "example": "31"
       }
     }
@@ -2228,7 +2228,7 @@
     "description": "Player card chip: the best final total on this game type",
     "placeholders": {
       "total": {
-        "type": "int",
+        "type": "String",
         "example": "34"
       }
     }

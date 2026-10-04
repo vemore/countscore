@@ -8,6 +8,7 @@ import '../models/player_stats.dart';
 import '../utils/app_theme.dart';
 import '../utils/insets.dart';
 import '../utils/player_colors.dart';
+import '../utils/score_text.dart';
 import '../widgets/player_avatars.dart';
 
 /// One player's card, on the game-type filter chosen on the leaderboard:
@@ -213,7 +214,7 @@ class _PlayerCardScreenState extends State<PlayerCardScreen> {
                       if (stats.bestTotal != null)
                         _Pill(
                           key: const Key('card_record'),
-                          text: l10n.statsRecord(stats.bestTotal!),
+                          text: l10n.statsRecord(scoreText(stats.bestTotal!)),
                           background: theme.colorScheme.primary
                               .withValues(alpha: 0.12),
                           foreground: theme.colorScheme.primary,
@@ -257,7 +258,7 @@ class _PlayerCardScreenState extends State<PlayerCardScreen> {
                   _Row(
                     label: l10n.statsBestTotal,
                     child: Text(
-                      '${stats.bestTotal}',
+                      scoreText(stats.bestTotal!),
                       key: const Key('card_best_total'),
                       style: _rowValueStyle,
                     ),
