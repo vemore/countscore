@@ -1,0 +1,12 @@
+# Captions of the store screenshots, one per raw capture in
+# raw/ next to this file — `<capture stem>: <caption>`.
+# Translated from the validated fr-FR captions. Composed by scripts/compose_screenshots.py
+# into screenshots/phone/ next to this file.
+01_main_screen: เกมของคุณทั้งหมดอย่างรวดเร็ว
+02_player_management: ผู้เล่นของคุณ|จากเกมหนึ่งไปเกมถัดไป
+03_game_types: เกมโปรดของคุณพร้อมนับ
+04_podium: โพเดียมหลังรอบสุดท้าย
+05_game_board: ยอดรวมเพิ่มอัตโนมัติ
+06_customization: เกมไม่อยู่? สร้างมัน
+07_score_entry: ป้อนคะแนนในแต่ละรอบ
+08_statistics: เกมชนะอัตราชนะ สถิติของคุณ

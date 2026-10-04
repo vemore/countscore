@@ -35,7 +35,7 @@ palette here were deleted on 2026-09-20: both still specified the deep purple th
 behind on 2026-09-18, and a palette copied into prose goes stale in silence. The icon's own
 constraints are `.llmwiki/Release.md` §Icons, beside the command that regenerates it.
 
-The ten published locales are Play's identifiers, **not** the app's:
+The twenty locales are Play's identifiers, **not** the app's:
 
 | Play locale | App ARB | | Play locale | App ARB |
 |---|---|---|---|---|
@@ -44,6 +44,14 @@ The ten published locales are Play's identifiers, **not** the app's:
 | `en-US` | `app_en.arb` | | `ru-RU` | `app_ru.arb` |
 | `es-ES` | `app_es.arb` | | `zh-CN` | `app_zh.arb` |
 | `fr-FR` | `app_fr.arb` | | `hi-IN` | `app_hi.arb` |
+| `id` | `app_id.arb` | | `tr-TR` | `app_tr.arb` |
+| `it-IT` | `app_it.arb` | | `ko-KR` | `app_ko.arb` |
+| `vi` | `app_vi.arb` | | `th` | `app_th.arb` |
+| `pl-PL` | `app_pl.arb` | | `bn-BD` | `app_bn.arb` |
+| `ur` | `app_ur.arb` | | `nl-NL` | `app_nl.arb` |
+
+The last ten were added on 2026-10-04 with their text only: they have no `raw/` set yet and are
+listed in `AWAITING_CAPTURES` (`scripts/compose_screenshots.py`) until the captures are taken.
 
 Adding a language to `lib/l10n/` does not create the listing for it, and vice versa.
 

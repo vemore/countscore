@@ -254,7 +254,7 @@ countscore/
 ├── android/             # Android platform code
 ├── test/                # Unit, Drift and migration tests
 ├── integration_test/    # End-to-end suite (web + real device)
-├── store_listing/       # Play Store assets and the listing text, in 10 locales
+├── store_listing/       # Play Store assets and the listing text, in 20 locales
 ├── docs/                # Published by GitHub Pages — the privacy policy Play links to
 ├── scripts/             # Keystore, screenshots, privacy page, PWA deploy, web binaries, CI freshness, delivery and agent metrics, self-tests
 ├── evals/               # Agent evals: past tasks replayed with `claude -p`, script-checked

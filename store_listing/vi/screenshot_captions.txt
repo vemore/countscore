@@ -1,0 +1,12 @@
+# Captions of the store screenshots, one per raw capture in
+# raw/ next to this file — `<capture stem>: <caption>`.
+# Translated from the validated fr-FR captions. Composed by scripts/compose_screenshots.py
+# into screenshots/phone/ next to this file.
+01_main_screen: Trò chơi của bạn toàn cảnh
+02_player_management: Người chơi qua mỗi buổi chơi
+03_game_types: Trò yêu thích sẵn sàng ghi
+04_podium: Bục chiến thắng sau hiệp chót
+05_game_board: Điểm tổng tự động cập nhật
+06_customization: Không tìm thấy? Tạo trò
+07_score_entry: Nhập điểm từng hiệp
+08_statistics: Trò, chiến thắng, tỉ lệ

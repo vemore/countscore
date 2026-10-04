@@ -101,16 +101,24 @@ FONTS: dict[str, tuple[str, ...]] = {
     "zh-CN": ("NotoSansCJK-Bold.ttc", "NotoSansCJKsc-Bold.otf", "NotoSansSC-Bold.ttf"),
     "hi-IN": ("NotoSansDevanagari-Bold.ttf", "NotoSansDevanagariUI-Bold.ttf"),
     "ar": ("NotoSansArabic-Bold.ttf", "NotoSansArabicUI-Bold.ttf", "NotoKufiArabic-Bold.ttf"),
+    "ko-KR": ("NotoSansCJK-Bold.ttc", "NotoSansCJKkr-Bold.otf", "NotoSansKR-Bold.ttf"),
+    "th": ("NotoSansThai-Bold.ttf", "NotoSansThaiUI-Bold.ttf", "NotoLoopedThai-Bold.ttf"),
+    "bn-BD": ("NotoSansBengali-Bold.ttf", "NotoSansBengaliUI-Bold.ttf"),
+    # Urdu is set in Naskh: the Nastaliq face is taller than a caption band allows.
+    "ur": ("NotoNaskhArabic-Bold.ttf", "NotoSansArabic-Bold.ttf"),
 }
 DEFAULT_FONTS = ("Roboto-Bold.ttf",)
-RTL_LOCALES = {"ar"}
+RTL_LOCALES = {"ar", "ur"}
 # A .ttc holds several faces: the CJK collection is JP, KR, SC, TC, HK in that order, and
 # the Chinese listing must get the Simplified Chinese glyph shapes, not the Japanese ones.
-FONT_INDEX = {"zh-CN": 2}
+FONT_INDEX = {"ko-KR": 1, "zh-CN": 2}
 # Scripts whose glyphs must be shaped (joined, reordered): without libraqm Pillow draws them
 # as isolated, wrongly ordered letters — legible to nobody who reads the language.
-SHAPED_LOCALES = {"ar", "hi-IN"}
-LANGUAGE = {"ar": "ar", "hi-IN": "hi", "ja-JP": "ja", "zh-CN": "zh-Hans"}
+SHAPED_LOCALES = {"ar", "hi-IN", "bn-BD", "th", "ur"}
+LANGUAGE = {
+    "ar": "ar", "hi-IN": "hi", "ja-JP": "ja", "zh-CN": "zh-Hans",
+    "ko-KR": "ko", "th": "th", "bn-BD": "bn", "ur": "ur",
+}
 # A line break after one of these ends a clause (Latin, Arabic, CJK and dash punctuation).
 CLAUSE_END = (",", "?", ":", "!", ";", "—", "،", "؟", "，", "？", "：", "、")
 BREAK = "|"  # in a caption, forces the line break there (and is not drawn)
@@ -121,6 +129,16 @@ FONT_DIRS = (
     "/usr/local/share/fonts",
     "~/.local/share/fonts",
     "~/.fonts",
+)
+
+
+# Store locales whose listing text is committed before anyone has captured their screenshots:
+# the capture needs the app to ship the language, then the Pixel (scripts/capture_screenshots.sh).
+# `--check` tolerates the missing raw/ set of exactly these and asks for the name to leave this
+# set once the raw/ set exists. play_publish.py --graphics still refuses them — they have no
+# screenshots/phone/ — so nothing can be published half-done.
+AWAITING_CAPTURES = frozenset(
+    {"id", "tr-TR", "it-IT", "ko-KR", "vi", "th", "pl-PL", "bn-BD", "ur", "nl-NL"}
 )
 
 
@@ -385,6 +403,14 @@ def compose_locale(
 def check(root: Path, locales: list[str]) -> list[str]:
     problems = []
     for locale in locales:
+        has_raw = bool(list(raw_dir(root, locale).glob("*.png")))
+        if locale in AWAITING_CAPTURES:
+            if not has_raw:
+                continue  # listed on purpose: the capture is the next step, not a defect
+            problems.append(
+                f"{locale}: has a raw set — remove it from AWAITING_CAPTURES in "
+                f"{Path(__file__).name}, the capture is done"
+            )
         names = [s.name for s in raw_captures(root, locale)]
         out_dir = root / LISTING_ROOT / locale / OUT_DIR
         for extra in sorted(p for p in out_dir.glob("*.png") if p.name not in names):

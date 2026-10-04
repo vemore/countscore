@@ -1,0 +1,53 @@
+CountScore adalah penghitung poin dan kalkulator skor untuk permainan kartu dan permainan papan Anda. Apa pun yang Anda mainkan, aplikasi ini menghitung poinnya.
+
+Ini menggantikan kartu penilaian kertas: tambahkan pemain Anda, masukkan poin putaran demi putaran, dan total berjalan serta peringkat akan memperbarui diri sendiri.
+
+PERMAINAN YANG BERFUNGSI
+
+CountScore bukan aplikasi resmi siapa pun — ini adalah lembar skor yang Anda gunakan untuk permainan yang sudah Anda miliki.
+
+Ini berfungsi untuk permainan Skyjo, Uno, Domino, Remi, Belote, Coinche, Tarot, dan Presiden Anda. Ini berfungsi untuk permainan Scrabble, Bridge, Yahtzee, Phase 10, dan Flip 7 Anda. Ini melakukan pekerjaan yang sama untuk malam permainan papan, untuk Mille Bornes, Rummikub, 6 nimmt!, Qwirkle, Farkle, atau ZapZap.
+
+Jika permainan Anda tidak ada dalam daftar itu, Anda membuat jenis permainan Anda sendiri dalam beberapa detik: nama, warna, ikon, dan apakah skor tertinggi atau terendah yang menang. Apa pun yang dimainkan untuk poin cocok.
+
+LEMBAR SKOR YANG MENGIKUTI ATURAN ANDA
+
+Skor tertinggi menang, atau skor terendah menang — Anda memutuskan, per jenis permainan. Masukkan poin positif atau negatif, perbaiki kesalahan di putaran apa pun, dan papan skor menghitung ulang dirinya sendiri. Atur ambang batas dan CountScore memberi tahu Anda ketika pemain keluar atau ketika permainan berakhir, seperti Skyjo yang berakhir di 100 dan Belote di 1000.
+
+PEMAIN DAN STATISTIK
+
+Pemain dibagikan di semua permainan, statistik mereka mengikuti dari malam ke malam: permainan yang dimainkan, dimenangkan, tingkat kemenangan, rincian per jenis. Tidak perlu mendaftar — pemain hanyalah nama dan warna.
+
+RIWAYAT PERMAINAN YANG LENGKAP
+
+Setiap permainan yang selesai menyimpan kartu penilaiannya yang lengkap. Buka lagi untuk melihat siapa yang menandai apa di putaran mana, dan selesaikan "siapa yang menang terakhir kali?" dengan lembar skor sebagai gantinya dari ingatan.
+
+TIDAK PERLU KONEKSI UNTUK MENANDAI POIN
+
+Permainan Anda hidup dalam basis data di ponsel. Menghitung poin, menambah pemain, membaca statistik, dan menelusuri riwayat semuanya berfungsi dalam mode pesawat — di taman, di kereta, di tempat perkemahan, di kabin tanpa sinyal.
+
+SEMPURNA UNTUK
+
+Malam permainan keluarga, turnamen kartu, klub permainan papan, aktivitas sekolah atau liburan, atau malam dengan teman. Jika dimainkan untuk poin, CountScore menghitungnya.
+
+LANJUTAN: SERVER ANDA SENDIRI (OPSIONAL)
+
+Dua fitur memerlukan server yang Anda hosting sendiri. CountScore dikirim tanpa alamat, sehingga mereka tetap mati sampai Anda mengetik satu di Pengaturan → Server.
+
+- Berbagi grup: buat grup atau bergabung dengan satu menggunakan kode undangan, dan permainan yang Anda pilih untuk dibagikan muncul di ponsel lain di grup. Skor yang dimasukkan secara offline tertinggal ketika koneksi kembali. Permainan yang tidak Anda bagikan tetap di perangkat Anda.
+- Analisis AI: komentar tertulis permainan yang selesai, dalam salah satu dari sembilan suara dan bahasa Anda. Skor, nama pemain, dan komentar putaran dikirim ke server Anda untuk ditulis oleh model AI. Hanya berjalan ketika Anda menekan tombol; "Laporkan komentar ini" menandai yang buruk melalui email.
+
+PRIVASI, DINYATAKAN DENGAN JELAS
+
+Tidak ada akun, tidak ada iklan, tidak ada analitik, tidak ada pelacakan. Nama pemain dan konten permainan hanya bepergian ketika Anda meminta analisis atau berbagi permainan dengan grup Anda. "ID perangkat" adalah token acak yang server Anda keluarkan ketika bergabung dengan grup — bukan pengenal perangkat keras atau iklan. Tanpa server, aplikasi tidak membuat permintaan jaringan apa pun. CountScore adalah sumber terbuka di bawah lisensi MIT, semua dapat diperiksa dalam kode.
+
+SEPENUHNYA GRATIS
+
+Tidak ada iklan, tidak ada pembelian dalam aplikasi, tidak ada langganan, tidak ada pembukaan berbayar.
+
+DUKUNGAN
+
+Email: scribio.ai@gmail.com
+Kode sumber: github.com/vemore/countscore
+
+Memerlukan Android 7.0 atau lebih tinggi.

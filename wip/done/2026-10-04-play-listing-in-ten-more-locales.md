@@ -1,5 +1,7 @@
 # The Play listing has no page for the ten new app languages
 
+**Status:** done (2026-10-04) — closed by docs/play-listing-ten-more-locales. Ten `store_listing/<locale>/` directories hold title, short and full description, captions and video (limits checked with `wc -m`, copy rules read); `compose_screenshots.py` has the fonts, shaping, RTL set and `AWAITING_CAPTURES`. Nothing is published; the screenshots are `wip/todo_nr/2026-10-04-store-screenshots-for-ten-more-locales.md`.
+
 - **Noted:** 2026-10-04 — the user asked for ten more languages, store listing included
 - **Theme:** store-listing
 - **Area:** docs

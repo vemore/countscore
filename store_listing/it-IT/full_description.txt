@@ -1,0 +1,53 @@
+CountScore è un segnapunti e contatore di punti per le tue partite di carte e giochi da tavolo. Qualunque gioco tu stia giocando, conta i punti.
+
+Sostituisce il foglio di carta: aggiungi i tuoi giocatori, inserisci i punti mano dopo mano, i totali e la classifica si aggiornano da soli.
+
+GIOCHI CON CUI FUNZIONA
+
+CountScore non è l'app ufficiale di nessuno — è un carnet di punti per i giochi che già possiedi.
+
+Funziona per le tue partite di Skyjo, Uno, Belote, Coinche, Tarocchi, Rami e Presidente. Funziona per Scrabble, Bridge, Yahtzee, Phase 10 e Flip 7. Per le serate di giochi da tavolo: Mille Bornes, Rummikub, 6 nimmt!, Qwirkle, Farkle, ZapZap. Per giochi italiani come Scopa, Briscola, Tressette e Burraco.
+
+Se il tuo gioco non è in questo elenco, crealo in pochi secondi: un nome, un colore, un'icona e se vince il punteggio più alto o più basso. Qualunque cosa si giochi a punti si adatta.
+
+UN CARNET DI PUNTI CHE SEGUE LE TUE REGOLE
+
+Vince il punteggio più alto o più basso — tu decidi, per ogni tipo di gioco. Inserisci punti positivi o negativi, correggi qualunque mano, e il carnet si ricalcola. Imposta una soglia e CountScore ti dice quando un giocatore è fuori o quando la partita finisce, come lo Skyjo a 100 o la Belote a 1000.
+
+GIOCATORI E STATISTICHE
+
+I giocatori valgono per tutte le partite, così le loro statistiche li seguono da una sera all'altra: partite giocate, partite vinte, percentuale di vittorie e dettagli per tipo di gioco. Nessun account da creare.
+
+STORICO COMPLETO DEL GIOCO
+
+Ogni partita finita conserva il suo carnet di punti. Riaprilo per vedere chi ha segnato cosa in quale mano, e risolvi "chi ha vinto l'ultima volta?" con il carnet, non dalla memoria.
+
+NESSUNA CONNESSIONE SERVE PER CONTARE I PUNTI
+
+Le tue partite vivono nel database del telefono. Contare i punti, aggiungere giocatori, leggere statistiche e consultare la cronologia funzionano in modalità aereo — in giardino, in treno, in campeggio, in una baita senza segnale.
+
+PERFETTO PER
+
+Serate di giochi in famiglia, tornei di carte, club di giochi da tavolo, attività scolastiche, vacanze, o una lunga serata con amici. Se si gioca a punti, CountScore li conta.
+
+AVANZATE: TUO PROPRIO SERVER (OPZIONALE)
+
+Due funzioni vanno oltre il dispositivo e richiedono un server che tu ospiti dal codice open source del repository. CountScore non ha alcun indirizzo incorporato, quindi rimangono disabilitate finché non ne inserisci uno in Impostazioni → Server.
+
+- Condivisione di gruppo: crea un gruppo o iscriviti con un codice di invito, e le partite che condividi appaiono sui telefoni degli altri membri. I punti inseriti offline si sincronizzano al ritorno della connessione. Le partite non condivise rimangono sul tuo dispositivo.
+- Analisi IA: un commento scritto di qualunque partita terminata, in una di nove voci e nella tua lingua. I punteggi, i nomi dei giocatori e i commenti della mano vanno al tuo server, che li usa per far scrivere un commento da un modello di IA. Nulla viene inviato senza che tu premi il pulsante, e "Segnala questo commento" contrassegna uno cattivo via email.
+
+PRIVACY, DETTO CHIARAMENTE
+
+Nessun account, nessuna pubblicità, nessuna analittica, nessun tracciamento. La scheda Sicurezza dei dati di Play elenca tre tipi di dati: i nomi dei giocatori e il contenuto della partita viaggiano solo quando chiedi un'analisi o condividi una partita con il tuo gruppo, e l'"ID dispositivo" è un token casuale che il tuo server emette quando ti unisci a un gruppo — non un identificatore hardware, non un identificatore pubblicitario, non collegato a nessuna identità. Senza server configurato, l'app non fa alcuna richiesta di rete. CountScore è open source sotto licenza MIT, quindi tutto può essere verificato nel codice.
+
+COMPLETAMENTE GRATUITO
+
+Nessuna pubblicità, nessun acquisto in-app, nessun abbonamento, nessuno sblocco a pagamento.
+
+SUPPORTO
+
+Email: scribio.ai@gmail.com
+Codice sorgente: github.com/vemore/countscore
+
+Richiede Android 7.0 o superiore.

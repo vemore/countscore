@@ -1,0 +1,53 @@
+CountScore to licznik punktów dla twoich gier karcianych i planszowych. Bez względu na to, co grasz, app liczy punkty.
+
+Zastępuje papierową kartę wyników: dodaj graczy, wpisuj punkty rundę za rundą, a bieżące sumy i ranking aktualizują się automatycznie.
+
+GRY, KTÓRYM SŁUŻY
+
+CountScore nie jest oficjalną aplikacją nikogo — to karta wyników dla gier, które już posiadasz, i nie jest związana z żadną z nich.
+
+Pracuje dla twoich gier Skyjo, Uno, Belote, Coinche, Tarot, Rami i Prezydenta. Pracuje dla twoich gier Scrabble, Bridge, Yahtzee, Phase 10 i Flip 7. Działa na wieczorze gier planszowych dla Tysiąca, Remika, Makao, Mille Bornes, Rummikub, 6 nimmt!, Qwirkle, Farkle czy ZapZap.
+
+Jeśli twoja gra tu nie ma, utworzysz własny typ gry w kilka sekund: nazwa, kolor, ikona i czy wyższa czy niższa liczba wynika. Wszystko, co się gra na punkty, tu się mieści.
+
+KARTA WYNIKÓW WEDŁUG TWOICH ZASAD
+
+Wygrywa wyższa czy niższa liczba — ty decydujesz, dla każdego typu. Wpisuj punkty dodatnie lub ujemne, popraw każdą rundę — tablica sama się przelicza. Ustal próg, a CountScore mówi, kiedy gracz odpada i kiedy gra się kończy, jak Skyjo przy 100 czy Belote przy 1000.
+
+GRACZE I STATYSTYKI
+
+Gracze są wspólni dla wszystkich gier, ich statystyki towarzyszą im z wieczoru na wieczór: gry rozegrane, gry wygrane, procent zwycięstw, podział na typ gry. Nic do logowania — gracz to imię i kolor.
+
+PEŁNA HISTORIA GRY
+
+Każda ukończona gra zachowuje swoją kartę wyników. Otwórz ją, by zobaczyć, kto co zapisał w której rundzie — i rozstrzygnij „kto wygrał ostatnio?" z kartą zamiast z pamięci.
+
+BEZ INTERNETU, BY LICZYĆ
+
+Twoje gry są w bazie danych w telefonie. Liczenie punktów, dodawanie graczy, czytanie statystyk i przeglądanie historii — wszystko działa w trybie samolotowym: w ogrodzie, w pociągu, na kempingu, w domku bez zasięgu.
+
+IDEALNE NA
+
+Wieczory gier rodzinnych, turnieje kartowe, kluby gier planszowych, zajęcia szkolne i wakacyjne, długi wieczór z przyjaciółmi. Jeśli gra się na punkty, CountScore je liczy.
+
+ZAAWANSOWANE: TWÓJ WŁASNY SERWER (OPCJONALNIE)
+
+Dwie możliwości sięgają poza telefon i obie wymagają serwera, który sam hostasz z kodu open-source z repozytorium. CountScore nie dołącza adresu — pozostają wyłączone, aż wpiszesz jeden w Ustawienia → Serwer.
+
+- Udostępnianie grupy: utwórz grupę lub dołącz za kodem zaproszenia, a gry, które udostępnisz, pojawiają się na innych telefonach grupy. Punkty wpisane offline synchronizują się, gdy połączenie wróci. Gry, których nie udostępniasz, zostają na urządzeniu.
+- Analiza AI: napisany komentarz do każdej skończonej gry, w jednym z dziewięciu głosów i w twoim języku. Wyniki, imiona graczy i uwagi rundy idą na twój serwer, gdzie model AI je pisze. Nic się nie wysyła bez kliknięcia przycisku, a „Zgłoś ten komentarz" powiadamia e-mailem.
+
+PRYWATNOŚĆ, JASNO POWIEDZIANA
+
+Bez konta, bez reklam, bez analityki, bez śledzenia. Karta Bezpieczeństwa Danych Play wymieniła trzy kategorie; oto co to są naprawdę: imiona graczy i zawartość gry przechodzą tylko, gdy poprosisz o analizę lub udostępnisz grę grupie, a „ID urządzenia" to losowy token, który twój serwer wydaje przy dołączeniu do grupy — nie ID sprzętu, nie ID reklamy, nie powiązane z żadną tożsamością. Bez serwera apka nie wysyła żadnego żądania sieciowego. CountScore jest open source na licencji MIT, każde słowo można sprawdzić w kodzie.
+
+CAŁKOWICIE DARMOWE
+
+Bez reklam, bez zakupów w aplikacji, bez abonamentu, bez płatnego odblokowania.
+
+WSPARCIE
+
+E-mail: scribio.ai@gmail.com
+Kod źródłowy: github.com/vemore/countscore
+
+Wymaga Android 7.0 lub wyższego.

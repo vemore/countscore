@@ -4,7 +4,7 @@
 > assets behind it. The Console walkthrough is `PUBLISHING.md`; the publishing mechanism is
 > [[Release]] and the `release-android` skill.
 > Related: [[Release]] · [[I18n]] · [[Documentation]] · [[KnownLimits]]
-> Updated: 2026-09-24
+> Updated: 2026-10-04
 
 ## Facts
 
@@ -119,16 +119,31 @@ allowed), rendered by the `/brag` plugin into the ignored `brag-output/`: the te
 lanes, the keypad with its "0 ZapZap" key, the end-screen podium and the analysis voices,
 rebuilt in HTML from the widgets rather than captured.
 
-### Published locales (10, since 2026-09-16)
+### Store locales (20 committed, 10 published since 2026-09-16)
 
-`ar` · `de-DE` · `en-US` · `es-ES` · `fr-FR` · `hi-IN` · `ja-JP` · `pt-BR` · `ru-RU` · `zh-CN`.
+Published: `ar` · `de-DE` · `en-US` · `es-ES` · `fr-FR` · `hi-IN` · `ja-JP` · `pt-BR` · `ru-RU` · `zh-CN`.
 
-They match the app's 10 languages ([[I18n]]) but **are not the same identifiers**: the app has
+Committed on 2026-10-04, **not published**: `id` · `tr-TR` · `it-IT` · `ko-KR` · `vi` · `th` ·
+`pl-PL` · `bn-BD` · `ur` · `nl-NL` — text only, see *Awaiting captures* below.
+
+They match the app's 20 languages ([[I18n]]) but **are not the same identifiers**: the app has
 `fr`, Play wants `fr-FR`; the app has `pt`, Play wants `pt-BR`; Arabic is `ar` on both sides.
 Adding a language to `lib/l10n/` does not add a store locale, and the reverse is equally true.
 
-**Release notes stay in `en-US` and `fr-FR` only** — the 8 new locales deliberately have no
+**Release notes stay in `en-US` and `fr-FR` only** — the 18 other locales deliberately have no
 `release_notes_*.txt`.
+
+**Awaiting captures.** The ten locales of 2026-10-04 have `title.txt`, the two descriptions,
+`screenshot_captions.txt` and `video.txt`, but no `raw/` set and so no `screenshots/phone/`:
+the capture needs the app to ship the language first, then the Pixel
+(`scripts/capture_screenshots.sh <locale>`). `AWAITING_CAPTURES` in
+`scripts/compose_screenshots.py` names them; `--check` tolerates exactly those locales' missing
+set and fails once one has a `raw/` directory but is still listed, so whoever takes the captures
+empties the set. `play_publish.py --graphics` refuses a locale without `screenshots/phone/`,
+which is what keeps them from going out half-done. Fonts: Korean from the CJK collection's
+second face (`FONT_INDEX`), Noto Sans Thai and Bengali, Noto Naskh Arabic for Urdu (Nastaliq
+is too tall for the band), all shaped through libraqm; Urdu is RTL; Thai breaks a caption at
+the `|` the caption itself carries.
 
 > **Published on 2026-09-16.** `play_publish.py listing --commit` pushed the ten locales
 > live in one edit (`edits.validate OK`, `committed: store listing for ar, de-DE, en-US,
@@ -347,6 +362,16 @@ store:
   CountScore is not a game, a misfiled app ranks badly inside its category and reviewers
   notice — and the 500 K-install leader of this exact niche sits in Tools. What changes is the
   *tags*, which is what actually builds the "similar apps" block.
+- **Twenty store locales, two locales of release notes (2026-10-04).** The ten languages
+  added to the app the same day (`I18n.md`) got a listing each, in the head term of the market
+  — `Penghitung Skor`, `Skor Tutucu`, `Segnapunti`, `점수 계산기`, `Tính điểm`, `ตัวนับคะแนน`,
+  `Licznik punktów`, `স্কোর কাউন্টার`, `اسکور کاؤنٹر`, `Puntentelling` — and the local games
+  named in a sentence (Okey and Batak, Scopa and Burraco, 고스톱 and 훌라, Tiến lên and Phỏm,
+  Tysiąc and Remik, Rummy, Ludo and Carrom, Klaverjassen and Jokeren, Domino and Remi, ดัมมี่).
+  Written by Haiku from the `en-US` text and checked on form only — limits, facts, the Data
+  Safety wording, no backend URL — never read by a native speaker; the French was the only
+  one the author validated. Pok Deng, Teen Patti and the like were left out: games of chance are
+  a policy topic this app has no reason to touch. Nothing is published until the captures exist.
 - **Ten store locales, two locales of release notes (2026-09-16).** The app was translated
   into 10 languages while the listing existed in 2, so 8 markets could not match a search at
   all — Play indexes the listing, not the app's ARB files. Release notes were left bilingual

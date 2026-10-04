@@ -15,7 +15,7 @@ the reader to answer "no data collected" about an app that transmits game data.
 | Answer the Data Safety form | `PLAY_STORE_DATA_SAFETY.md` |
 | Know what we tell users we do | `privacy_policy.md` (published from `docs/`) |
 | Know the signing/target/icon state | `.llmwiki/Release.md` |
-| Write or change the listing text | `store_listing/<locale>/` (10 locales), rules in `.llmwiki/StoreListing.md` |
+| Write or change the listing text | `store_listing/<locale>/` (20 locales), rules in `.llmwiki/StoreListing.md` |
 | Produce the listing images | `store_listing/*.md`, `scripts/capture_screenshots.sh` |
 
 ---
@@ -76,8 +76,9 @@ retype it:
 | Full description | `store_listing/<locale>/full_description.txt` | 4000 |
 | Release notes | `store_listing/<locale>/release_notes_v<x.y.z>.txt` | 500 |
 
-**Ten locales** are maintained — `ar`, `de-DE`, `en-US`, `es-ES`, `fr-FR`, `hi-IN`, `ja-JP`,
-`pt-BR`, `ru-RU`, `zh-CN` — and the release notes deliberately only exist for `en-US` and
+**Twenty locales** are maintained — `ar`, `de-DE`, `en-US`, `es-ES`, `fr-FR`, `hi-IN`, `ja-JP`,
+`pt-BR`, `ru-RU`, `zh-CN`, and, since 2026-10-04, `id`, `tr-TR`, `it-IT`, `ko-KR`, `vi`, `th`,
+`pl-PL`, `bn-BD`, `ur`, `nl-NL` (text only until their screenshots are taken) — and the release notes deliberately only exist for `en-US` and
 `fr-FR`. If you change the wording in the Console, change the file too, or the next release
 silently reverts it. `play_publish.py` refuses any file over its limit. What the copy must
 and must not say, and the keyword targeted in each market: `.llmwiki/StoreListing.md`.
