@@ -201,7 +201,7 @@ List<GameType> sortGameTypesByDisplayName(
 /// sort), and the packages that do bring ICU data or native assets to both the
 /// APK and the PWA — for a list of about twenty names. So this is a small
 /// approximation of the Unicode Collation Algorithm's levels, enough for the
-/// scripts the ten locales name game types in:
+/// scripts the twenty locales name game types in:
 ///
 /// 1. **Primary** — case and accents folded (`É` = `e`, `ß` = `ss`, `ё` = `е`),
 ///    katakana folded onto hiragana, voiced and small kana onto their base

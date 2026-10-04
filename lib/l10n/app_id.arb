@@ -1,0 +1,771 @@
+{
+  "@@locale": "id",
+
+  "appTitle": "CountScore",
+
+  "homeTitle": "Beranda",
+
+  "playersListTitle": "Daftar Pemain",
+
+  "gameTypesTitle": "Jenis Permainan",
+
+  "settingsTitle": "Pengaturan",
+
+  "aboutTitle": "Tentang",
+
+  "newGame": "Permainan Baru",
+
+  "noGames": "Tidak ada permainan",
+
+  "noGamesOfThisType": "Tidak ada permainan jenis ini",
+
+  "createFirstGame": "Buat permainan pertama Anda",
+
+  "newWithSamePlayers": "Baru dengan pemain yang sama",
+
+  "playAgain": "Bermain lagi",
+
+  "rename": "Ubah nama",
+
+  "delete": "Hapus",
+
+  "confirmDeletion": "Konfirmasi penghapusan",
+
+  "confirmDeleteGame": "Apakah Anda ingin menghapus permainan \"{name}\"?",
+
+  "cancel": "Batal",
+
+  "renameGame": "Ubah nama permainan",
+
+  "gameName": "Nama permainan",
+
+  "save": "Simpan",
+
+  "allGames": "Semua permainan",
+
+  "filterGames": "Filter permainan",
+
+  "applyFilter": "Terapkan",
+
+  "resetFilter": "Atur Ulang",
+
+  "selectGameType": "Pilih jenis permainan",
+
+  "gameType": "Jenis permainan",
+
+  "loadingGameTypes": "Memuat jenis permainan...",
+
+  "lowestScoreWins": "Skor terendah menang",
+
+  "highestScoreWins": "Skor tertinggi menang",
+
+  "players": "Pemain",
+
+  "add": "Tambah",
+
+  "pleaseEnterName": "Silakan masukkan nama",
+
+  "clear": "Hapus",
+
+  "remove": "Hapus",
+
+  "game": "Permainan",
+
+  "editGame": "Edit permainan",
+
+  "editGameDialogTitle": "Edit permainan",
+
+  "removePlayer": "Hapus pemain",
+
+  "addPlayerToGame": "Tambah pemain",
+
+  "warningRemovePlayer": "Peringatan! Menghapus pemain ini akan menghapus semua skor mereka dari permainan ini. Tindakan ini tidak dapat dibatalkan.",
+
+  "confirmRemovePlayer": "Apakah Anda yakin ingin menghapus {playerName} dari permainan ini?",
+
+  "playerRemoved": "Pemain dihapus dari permainan",
+
+  "deleteLastRound": "Hapus putaran terakhir",
+
+  "confirm": "Konfirmasi",
+
+  "confirmDeleteLastRound": "Hapus putaran terakhir?",
+
+  "noPlayersInGame": "Tidak ada pemain dalam permainan ini",
+
+  "round": "Putaran",
+
+  "boardRoundButton": "Putaran {round}",
+
+  "keypadCaption": "{player} · putaran {round}",
+
+  "keypadCaptionWithPosition": "{player} · putaran {round} · {position}/{count}",
+
+  "keypadTotalAfter": "total setelah: {total}",
+
+  "keypadNext": "Berikutnya\n{player}",
+
+  "keypadValidateRound": "Validasi putaran",
+
+  "keypadToggleSign": "Ubah tanda",
+
+  "keypadBackspace": "Hapus angka",
+
+  "keypadShortcutTitle": "Pintasan papan ketik",
+
+  "keypadShortcutKind": "Jenis tombol",
+
+  "keypadShortcutKindValue": "Masukkan nilai",
+
+  "keypadShortcutKindMultiply": "Kalikan skor (positif saja)",
+
+  "keypadShortcutKindAdd": "Tambah ke skor",
+
+  "keypadShortcutAmount": "Angka",
+
+  "keypadShortcutLabel": "Label tombol (opsional)",
+
+  "keypadShortcutAddRange": "Angka bulat antara {min} dan {max}, bukan 0",
+
+  "keypadShortcutAmountRange": "Angka bulat antara {min} dan {max}",
+
+  "appearance": "Tampilan",
+
+  "light": "Terang",
+
+  "dark": "Gelap",
+
+  "system": "Sistem",
+
+  "screen": "Layar",
+
+  "keepScreenAwake": "Jaga layar tetap aktif",
+
+  "keepScreenAwakeDescription": "Mencegah layar tidur selama permainan",
+
+  "backup": "Cadangan",
+
+  "exportDatabase": "Ekspor basis data",
+
+  "exportDatabaseDescription": "Simpan semua permainan Anda ke file",
+
+  "databaseExportedTo": "Basis data diekspor ke:",
+
+  "errorDuringExport": "Kesalahan saat mengekspor:",
+
+  "importDatabase": "Impor basis data",
+
+  "importDatabaseDescription": "Pulihkan permainan Anda dari file cadangan",
+
+  "confirmation": "Konfirmasi",
+
+  "importWarning": "Mengimpor akan menggantikan semua data Anda saat ini. Cadangan otomatis akan dibuat sebelum impor.\n\nApakah Anda ingin melanjutkan?",
+
+  "import": "Impor",
+
+  "databaseImportedSuccessfully": "Basis data berhasil diimpor",
+
+  "importSuccessful": "Impor berhasil",
+
+  "importSuccessMessage": "Basis data telah berhasil diimpor.\n\nAplikasi akan ditutup sekarang. Silakan buka kembali untuk melihat data baru.",
+
+  "ok": "OK",
+
+  "errorDuringImport": "Kesalahan saat mengimpor:",
+
+  "noPlayers": "Tidak ada pemain",
+
+  "playersAppearMessage": "Pemain akan muncul di sini setelah\nAnda membuat permainan",
+
+  "gamesCount": "{count, plural, =0{0 permainan} =1{1 permainan} other{{count} permainan}}",
+
+  "winsCount": "{count, plural, =0{0 kemenangan} =1{1 kemenangan} other{{count} kemenangan}}",
+
+  "changeColor": "Ubah warna",
+
+  "renamePlayer": "Ubah nama pemain",
+
+  "newName": "Nama baru",
+
+  "playerRenamedTo": "Pemain diubah nama menjadi \"{name}\"",
+
+  "deletePlayer": "Hapus pemain",
+
+  "confirmDeletePlayer": "Apakah Anda yakin ingin menghapus \"{name}\"?\n\nPemain ini akan dihapus dari semua {count} permainan.",
+
+  "playerDeleted": "Pemain \"{name}\" dihapus",
+
+  "chooseColor": "Pilih warna",
+
+  "noGameTypes": "Tidak ada jenis permainan",
+
+  "edit": "Edit",
+
+  "newType": "Jenis baru",
+
+  "editType": "Edit jenis",
+
+  "newGameType": "Jenis permainan baru",
+
+  "gameTypeName": "Nama jenis permainan",
+
+  "icon": "Ikon:",
+
+  "color": "Warna:",
+
+  "chooseIcon": "Pilih ikon",
+
+  "nameIsRequired": "Nama diperlukan",
+
+  "create": "Buat",
+
+  "ranking": "Peringkat",
+
+  "noCurrentGame": "Tidak ada permainan saat ini",
+
+  "noScoresRecorded": "Tidak ada skor yang dicatat",
+
+  "playerStatistics": "Statistik Pemain",
+
+  "noStatisticsAvailable": "Tidak ada statistik tersedia",
+
+  "gamesPlayed": "Permainan dimainkan",
+
+  "wins": "Kemenangan",
+
+  "winRate": "Tingkat kemenangan",
+
+  "byGameType": "Berdasarkan jenis permainan",
+
+  "rate": "Rating",
+
+  "version": "Versi {version}",
+
+  "appDescription": "Aplikasi manajemen skor untuk sesi permainan Anda oleh Vincent Moreau",
+
+  "features": "Fitur",
+
+  "featureDifferentGameTypes": "Jenis permainan berbeda",
+
+  "featurePlayerManagement": "Manajemen pemain",
+
+  "featureDetailedStatistics": "Statistik terperinci",
+
+  "featureCustomization": "Kustomisasi",
+
+  "featureDarkLightTheme": "Tema gelap/terang",
+
+  "featureGroupSharing": "Berbagi grup",
+
+  "featureGameAnalysis": "Analisis permainan AI",
+
+  "rateApp": "Rating CountScore",
+
+  "search": "Cari",
+
+  "newPlayerName": "Nama pemain baru",
+
+  "noPlayersFound": "Tidak ada pemain ditemukan",
+
+  "close": "Tutup",
+
+  "playerEliminationCondition": "Kondisi Eliminasi Pemain",
+
+  "gameOverCondition": "Kondisi Game Over",
+
+  "none": "Tidak ada",
+
+  "overThreshold": "Di atas ambang batas",
+
+  "underThreshold": "Di bawah ambang batas",
+
+  "firstPlayerOver": "Pemain pertama untuk mencapai",
+
+  "firstPlayerUnder": "Pemain pertama di bawah",
+
+  "lastPlayerOver": "Pemain terakhir berdiri (yang lain di atas)",
+
+  "lastPlayerUnder": "Pemain terakhir berdiri (yang lain di bawah)",
+
+  "threshold": "Ambang batas",
+
+  "conditionType": "Jenis Kondisi",
+
+  "continuePlay": "Terus Bermain",
+  "gameEndWinner": "{name} menang",
+  "gameEndTie": "Seri: {names}",
+  "gameEndRounds": "{count, plural, one{{count} putaran} other{{count} putaran}}",
+  "gameEndLowestWins": "skor terendah menang",
+  "gameEndHighestWins": "skor tertinggi menang",
+  "gameEndAnalysis": "Analisis",
+  "gameEndResults": "Hasil",
+  "rankingEliminationNote": "Peringkat berdasarkan urutan eliminasi: siapa yang keluar lebih dulu, skor berapa pun.",
+
+  "endGame": "Akhiri Permainan",
+  "reopenGame": "Buka Kembali Permainan",
+  "gameFinished": "Selesai",
+  "undo": "Batalkan",
+  "gameReopened": "Permainan dibuka kembali",
+
+  "comment": "Komentar",
+
+  "enterComment": "Masukkan komentar",
+
+  "analyzeGame": "Analisis permainan",
+
+  "analysisTitle": "Analisis permainan",
+
+  "analysisStyle": "Gaya analisis",
+
+  "analysisStyleProfessor": "Profesor",
+
+  "analysisStyleCommentator": "Komentator olahraga",
+
+  "analysisStyleDocumentary": "Dokumenter satwa liar",
+
+  "analysisStyleNoir": "Detektif",
+
+  "analysisStyleBard": "Penyair",
+
+  "analysisStyleCoach": "Pelatih",
+
+  "analysisStyleConsultant": "Konsultan",
+
+  "analysisStyleAstrologer": "Astrolog",
+
+  "analysisStyleRealityTv": "Acara realitas",
+
+  "generatingAnalysis": "Membuat analisis…",
+
+  "generateAnalysis": "Buat analisis",
+
+  "regenerateAnalysis": "Buat ulang analisis",
+
+  "deleteAnalysis": "Hapus analisis",
+
+  "confirmRegenerateAnalysis": "Buat ulang? Analisis saat ini akan diganti.",
+
+  "confirmDeleteAnalysis": "Hapus analisis untuk permainan ini?",
+
+  "analysisError": "Gagal membuat analisis",
+
+  "analysisErrorStatus": "Gagal membuat analisis (HTTP {status})",
+  "analysisErrorUnavailable": "Server analisis tidak tersedia saat ini. Coba lagi nanti.",
+  "analysisErrorGroupBudget": "Grup Anda telah menghabiskan anggaran analisis bulan ini. Akan diperbaharui di awal bulan depan.",
+  "analysisStyleGroupDefault": "Tidak ada gaya dipilih: permainan bersama ini dianalisis dalam gaya dan bahasa grup.",
+
+  "retry": "Coba Lagi",
+
+  "analysisGeneratedAt": "Dibuat pada {date}",
+
+  "serverSection": "Server",
+  "backendUrlLabel": "URL Server",
+  "backendUrlHint": "https://countscore.example.com",
+  "backendUrlDescription": "Fitur terhubung memerlukan server CountScore. Instal satu dari folder backend/ dan masukkan alamatnya di sini. Tanpa server, tidak ada data yang meninggalkan perangkat ini.",
+  "backendNotConfigured": "Tidak ada server yang dikonfigurasi",
+  "backendUrlInvalid": "Alamat tidak valid. Masukkan URL lengkap, misalnya https://countscore.example.com",
+  "backendUrlInsecure": "http:// hanya diterima di jaringan lokal. Gunakan https:// untuk server publik.",
+  "testConnection": "Uji koneksi",
+  "connectionOk": "Server merespons",
+  "connectionFailed": "Server tidak merespons",
+  "serverUrlSaved": "Server disimpan",
+  "analysisRequiresBackend": "Analisis ini memerlukan server. Konfigurasikan satu di pengaturan.",
+  "openSettings": "Buka pengaturan",
+  "serverUrlCleared": "Server dihapus"
+,
+
+  "groupSection": "Grup",
+
+  "groupDescription": "Bagikan permainan dengan perangkat lain dalam grup Anda. Permainan bersama, pemain, skor, komentar, dan analisis dikirim ke server Anda; permainan lain tetap di perangkat ini.",
+
+  "groupNeedsServer": "Atur server di atas terlebih dahulu.",
+
+  "groupCreate": "Buat grup",
+
+  "groupJoin": "Bergabung dengan grup",
+
+  "groupNameLabel": "Nama grup",
+
+  "groupNicknameLabel": "Nama panggilan Anda",
+
+  "groupNicknameHint": "Yang lain di grup akan melihatnya",
+
+  "groupNicknameCurrent": "Nama panggilan Anda: {nickname}",
+
+  "groupNicknameEdit": "Ubah nama panggilan Anda",
+
+  "shareTokenLabel": "Kode undangan",
+
+  "shareTokenHint": "Tempel kode yang dikirim anggota grup kepada Anda",
+
+  "groupCurrent": "Grup: {name}",
+
+  "shareTokenExplain": "Kirim kode ini ke perangkat yang harus bergabung dengan grup. Siapa pun yang memilikinya dapat bergabung.",
+
+  "shareTokenCopy": "Salin kode",
+
+  "shareTokenCopied": "Kode disalin",
+
+  "shareTokenRotate": "Kode baru",
+
+  "shareTokenRotateConfirm": "Kode lama tidak lagi membiarkan siapa pun bergabung. Perangkat yang sudah ada di grup tidak terpengaruh.",
+
+  "groupLeave": "Tinggalkan grup",
+
+  "groupLeaveConfirm": "Perangkat ini meninggalkan grup. Permainan bersama tetap di perangkat ini tetapi tidak akan lagi disinkronkan.",
+
+  "groupLeft": "Meninggalkan grup",
+
+  "groupJoined": "Bergabung dengan grup",
+
+  "clearServerLeavesGroup": "Menghapus server meninggalkan grup. Permainan bersama tetap di perangkat ini.",
+
+  "syncNow": "Sinkronkan sekarang",
+
+  "syncStatusIdle": "Disinkronkan pada {time}",
+
+  "syncStatusSyncing": "Menyinkronkan…",
+
+  "syncStatusOffline": "Server tidak terjangkau — perubahan akan dikirim nanti",
+
+  "syncStatusUnauthorized": "Server tidak lagi menerima perangkat ini. Tinggalkan grup, lalu bergabunglah lagi.",
+
+  "syncStatusError": "Kesalahan server saat sinkronisasi",
+
+  "syncPending": "{count, plural, =1{1 perubahan menunggu} other{{count} perubahan menunggu}}",
+
+  "syncRejected": "{count, plural, =1{1 perubahan ditolak oleh server} other{{count} perubahan ditolak oleh server}}",
+
+  "groupErrorUnknownToken": "Kode undangan tidak dikenal atau sudah diganti",
+
+  "groupErrorRateLimited": "Terlalu banyak percobaan. Coba lagi dalam semenit.",
+
+  "groupErrorUnreachable": "Server tidak terjangkau",
+
+  "groupErrorServer": "Kesalahan server",
+
+  "shareWithGroup": "Bagikan dengan grup",
+
+  "shareWithGroupSubtitle": "Perangkat di {name} akan melihat dan mengedit permainan ini",
+
+  "shareGameConfirm": "Permainan, pemain, skor, dan komentar akan dikirim ke {name}. Berbagi tidak dapat dibatalkan.",
+
+  "gameSharedDone": "Permainan dibagikan dengan grup",
+
+  "gameSharedBadge": "Permainan bersama",
+
+  "invalidPlayerNamesForSync": "Nama-nama ini tidak dapat dibagikan: {names}. Gunakan huruf, angka, spasi, tanda hubung, apostrof, atau titik (maksimal 32 karakter).",
+
+  "roundRenumbered": "Putaran itu sudah dimasukkan di perangkat lain, jadi menjadi putaran {number}.",
+
+  "gameDeletedElsewhere": "\"{name}\" dihapus di perangkat lain",
+  "groupDevices": "Perangkat",
+  "groupDevicesExplain": "Ponsel yang hilang atau dijual dapat dihapus dari grup di sini.",
+  "groupDeviceThisOne": "Perangkat ini",
+  "groupDeviceLastSeen": "Terakhir dilihat {date}",
+  "groupDeviceRevoke": "Hapus",
+  "groupDeviceRevokeConfirm": "Hapus \"{label}\" dari grup? Itu tidak akan lagi disinkronkan. Kode undangan berubah juga: anggota mempertahankan akses mereka, tetapi Anda perlu berbagi kode baru untuk mengundang siapa pun.",
+  "groupDeviceRevoked": "\"{label}\" dihapus. Kode undangan telah berubah.",
+
+  "reportCommentary": "Laporkan komentar ini",
+
+  "reportCommentarySubject": "CountScore — laporan komentar AI",
+
+  "reportCommentaryBody": "Apa yang salah dengan komentar yang dihasilkan AI ini?\n\n\n---\nReferensi: {reference}\nKomentar:\n{commentary}",
+
+  "reportCommentaryNoMailApp": "Tidak ada aplikasi email yang ditemukan. Tulis ke {email} untuk melaporkan komentar ini.",
+
+  "gameRulesTitle": "Aturan permainan",
+  "gameRulesInApp": "Di CountScore",
+  "gameRulesSection": "Aturan-aturannya",
+  "gameRulesNoElimination": "Tidak ada eliminasi selama permainan",
+  "gameRulesEliminationOver": "Pemain dieliminasi di atas {threshold} poin",
+  "gameRulesEliminationUnder": "Pemain dieliminasi di bawah {threshold} poin",
+  "gameRulesEndFirstOver": "Permainan berakhir segera setelah pemain mencapai {threshold} poin",
+  "gameRulesEndFirstUnder": "Permainan berakhir segera setelah pemain turun di bawah {threshold} poin",
+  "gameRulesEndLastOver": "Permainan berakhir ketika setiap pemain kecuali satu berada di atas {threshold} poin",
+  "gameRulesEndLastUnder": "Permainan berakhir ketika setiap pemain kecuali satu berada di bawah {threshold} poin",
+  "gameRulesNoEnd": "Tidak ada akhir otomatis: Anda memutuskan kapan permainan selesai",
+  "gameRulesEmptyTitle": "Belum ada aturan",
+  "gameRulesEmptyHint": "Tuliskan bagaimana meja Anda menghitung poin — semua orang akan memiliki versi yang sama.",
+  "gameRulesWrite": "Tulis aturan",
+  "gameRulesEditTitle": "Edit aturan",
+  "gameRulesEditorHint": "Aturan meja Anda. Markdown didukung.",
+  "gameRulesFromGroup": "Aturan grup Anda",
+  "gameRulesRestoreDefault": "Pulihkan aturan asli",
+  "gameRulesSaved": "Aturan disimpan",
+  "gameRulesRestored": "Aturan asli dipulihkan",
+  "gameRulesDisclaimer": "Ringkasan ditulis untuk CountScore dari aturan seperti yang biasanya dimainkan. Nama permainan adalah milik pemiliknya masing-masing dan digunakan hanya secara deskriptif."
+,
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameZapzapSortKey": "ZapZap",
+
+  "gameTypeNameUno": "Uno",
+
+  "gameTypeNameUnoSortKey": "Uno",
+
+  "gameTypeNameScrabble": "Scrabble",
+
+  "gameTypeNameScrabbleSortKey": "Scrabble",
+
+  "gameTypeNameOther": "Lainnya",
+
+  "gameTypeNameOtherSortKey": "Lainnya",
+
+  "gameTypeNameSkyjo": "Skyjo",
+
+  "gameTypeNameSkyjoSortKey": "Skyjo",
+
+  "gameTypeNamePresident": "President",
+
+  "gameTypeNamePresidentSortKey": "President",
+
+  "gameTypeNameBelote": "Belote",
+
+  "gameTypeNameBeloteSortKey": "Belote",
+
+  "gameTypeNameTarot": "Tarot",
+
+  "gameTypeNameTarotSortKey": "Tarot",
+
+  "gameTypeNameBridge": "Bridge",
+
+  "gameTypeNameBridgeSortKey": "Bridge",
+
+  "gameTypeNameRami": "Rummy",
+
+  "gameTypeNameRamiSortKey": "Rummy",
+
+  "gameTypeNameCoinche": "Coinche",
+
+  "gameTypeNameCoincheSortKey": "Coinche",
+
+  "gameTypeNameYahtzee": "Yahtzee",
+
+  "gameTypeNameYahtzeeSortKey": "Yahtzee",
+
+  "gameTypeNamePhase10": "Phase 10",
+
+  "gameTypeNamePhase10SortKey": "Phase 10",
+
+  "gameTypeNameFlip7": "Flip 7",
+
+  "gameTypeNameFlip7SortKey": "Flip 7",
+
+  "gameTypeNameMilleBornes": "Mille Bornes",
+
+  "gameTypeNameMilleBornesSortKey": "Mille Bornes",
+
+  "gameTypeNameRummikub": "Rummikub",
+
+  "gameTypeNameRummikubSortKey": "Rummikub",
+
+  "gameTypeNameSixNimmt": "Take 6",
+
+  "gameTypeNameSixNimmtSortKey": "Take 6",
+
+  "gameTypeNameQwirkle": "Qwirkle",
+
+  "gameTypeNameQwirkleSortKey": "Qwirkle",
+
+  "gameTypeNameFarkle": "Farkle",
+
+  "gameTypeNameFarkleSortKey": "Farkle",
+
+  "gameTypeNameCanasta": "Canasta",
+
+  "gameTypeNameCanastaSortKey": "Canasta",
+
+  "gameTypeNameWizard": "Wizard",
+
+  "gameTypeNameWizardSortKey": "Wizard",
+
+  "gameTypeNameTriomino": "Triomino",
+
+  "gameTypeNameTriominoSortKey": "Triomino",
+
+  "groupDeviceOwner": "Pemilik",
+
+  "groupDeviceMakeOwner": "Jadikan pemilik",
+
+  "groupDeviceMakeOwnerConfirm": "Serahkan grup ke \"{label}\"? Perangkat ini tidak akan lagi dapat menghapus perangkat atau mengubah kode undangan.",
+
+  "groupDeviceOwnerChanged": "\"{label}\" sekarang memiliki grup.",
+
+  "groupDevicesExplainMember": "Hanya pemilik grup yang dapat menghapus perangkat atau mengubah kode undangan.",
+
+  "groupErrorNotOwner": "Hanya pemilik grup yang dapat melakukan ini",
+  "whoStarts": "Siapa yang memulai?",
+  "whoStartsAgain": "Undian lagi",
+  "diceRoller": "Lempar dadu",
+  "diceCount": "Jumlah dadu",
+  "diceRollAgain": "Lempar lagi",
+  "diceTotal": "Total: {total}",
+  "resumeGame": "Lanjutkan",
+  "recentGames": "Terakhir",
+  "gameInProgress": "Sedang berlangsung",
+  "roundNumber": "putaran {number}",
+  "gameLeader": "{name} memimpin · {score}",
+  "gameWonBy": "Dimenangkan oleh {name}",
+  "boardRank": "{rank, plural, one{#{rank}} other{#{rank}}}",
+  "boardViewRows": "Satu baris per pemain",
+  "boardViewLanes": "Satu kolom per pemain",
+  "boardSeatOrder": "Urutan tempat duduk",
+  "boardRoundShort": "P{number}",
+  "boardPlayer": "Pemain",
+  "boardTotal": "Total",
+  "boardLeader": "Memimpin",
+  "groupSettingsTitle": "Komentar dan penggunaan",
+  "groupSettingsDescription": "Gaya dan bahasa komentar yang ditulis server untuk permainan grup. Anggota apa pun dapat mengubahnya.",
+  "groupCommentStyle": "Gaya komentar",
+  "groupCommentStyleNarrative": "Naratif",
+  "groupCommentStyleHumorous": "Lucu",
+  "groupCommentStyleAnalytical": "Analitis",
+  "groupCommentLanguage": "Bahasa komentar",
+  "groupSettingsSaved": "Pengaturan grup disimpan",
+  "groupUsageTitle": "Penggunaan LLM bulan ini",
+  "groupUsageAmount": "{used} dihabiskan dari {budget}",
+  "groupUsageResets": "Direset pada {date}",
+  "statsBestWinRate": "Tingkat kemenangan terbaik",
+  "statsWinsOutOfGames": "{wins, plural, =0{Tidak ada kemenangan dari {games}} one{{wins} kemenangan dari {games}} other{{wins} kemenangan dari {games}}}",
+  "statsColumnPlayer": "Pemain",
+  "statsColumnGames": "Permainan",
+  "statsUnranked": "{count, plural, one{{count} permainan · belum peringkat} other{{count} permainan · belum peringkat}}",
+  "statsLeaderboardFooter": "{count, plural, one{Peringkat dari {count} permainan selesai. Ketuk pemain untuk melihat kartu mereka.} other{Peringkat dari {count} permainan selesai. Ketuk pemain untuk melihat kartu mereka.}}",
+  "statsGamesLabel": "{count, plural, one{permainan} other{permainan}}",
+  "statsWinsLabel": "{count, plural, one{kemenangan} other{kemenangan}}",
+  "statsAverageRank": "tempat rata-rata",
+  "statsRankChartTitle": "{count, plural, one{Tempat, permainan terakhir} other{Tempat, {count} permainan terakhir}}",
+  "statsTrendImproving": "meningkat",
+  "statsTrendDeclining": "menurun",
+  "statsTrendSteady": "stabil",
+  "statsRankOrdinal": "{rank, select, 1{1} 2{2} 3{3} other{{rank}}}",
+  "statsWinStreak": "{count, plural, =0{Tidak ada garis kemenangan} one{Garis: {count} kemenangan} other{Garis: {count} kemenangan}}",
+  "statsRecord": "Terbaik: {total}",
+  "statsOnGameType": "Di {gameType}",
+  "statsAverageTotal": "Total akhir rata-rata",
+  "statsBestTotal": "Total akhir terbaik",
+  "statsMostBeaten": "Lawan yang paling sering kalah",
+  "statsOpenPlayerCard": "buka kartu pemain",
+
+  "shareResult": "Bagikan hasilnya",
+
+  "shareAnalysis": "Bagikan analisis",
+
+  "shareResultSubject": "Hasil: {gameName}",
+
+  "shareResultTitle": "Permainan {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} poin} other{{points} poin}}",
+
+  "shareResultFooter": "Skor disimpan dengan {appName}: {url}",
+
+  "shareFailed": "Berbagi tidak dapat dibuka",
+
+  "newGameNameLabel": "Nama",
+
+  "newGameGameLabel": "Permainan",
+
+  "newGameAllGames": "Semua permainan ({count})",
+
+  "newGamePlayersLabel": "Pemain · urutan tempat duduk",
+
+  "newGameDragToReorder": "seret untuk mengatur ulang",
+
+  "newGameDealer": "membagikan kartu",
+
+  "newGameAddPlayer": "Tambah pemain",
+
+  "newGameStart": "{count, plural, =0{Mulai} =1{Mulai · 1 pemain} other{Mulai · {count} pemain}}",
+
+  "whoIsPlayingTitle": "Siapa yang bermain?",
+
+  "whoIsPlayingSearchHint": "Nama, atau pemain baru",
+
+  "whoIsPlayingFrequent": "Sering bermain dengan Anda",
+
+  "whoIsPlayingSameAs": "Pemain yang sama seperti \"{gameName}\"",
+
+  "whoIsPlayingCreate": "Buat \"{name}\"",
+
+  "whoIsPlayingConfirm": "{count, plural, =0{Selesai} =1{Tambah 1 pemain} other{Tambah {count} pemain}}",
+
+  "defaultGameName": "Permainan {number}",
+
+  "pwaUpdateReady": "Versi baru CountScore siap",
+
+  "pwaUpdateReload": "Muat ulang",
+
+  "thresholdIsRequired": "Ambang batas diperlukan untuk kondisi ini",
+
+  "thresholdTooLarge": "Ambang batas tidak dapat melebihi {max}",
+
+  "deletionImpossible": "Penghapusan tidak mungkin",
+
+  "gameTypeInUse": "{count, plural, one{1 permainan menggunakan jenis ini: tidak dapat dihapus.} other{{count} permainan menggunakan jenis ini: tidak dapat dihapus.}}",
+
+  "confirmDeleteGameType": "Apakah Anda yakin ingin menghapus jenis permainan \"{name}\"?",
+
+  "winDirectionChangeTitle": "Balik siapa yang menang?",
+
+  "winDirectionChangeWarning": "{count, plural, one{1 permainan selesai dari jenis ini akan memiliki peringkatnya dibalik: pemenangnya menjadi yang terakhir.} other{{count} permainan selesai dari jenis ini akan memiliki peringkat mereka dibalik: pemenang mereka menjadi yang terakhir.}}",
+
+  "winDirectionContradiction": "Kondisi game-over memberi penghargaan yang berlawanan dengan pemenang yang dipilih. Aturan rumah mungkin menginginkan persis itu.",
+
+  "rulesOutOfDateTitle": "Perbarui aturannya?",
+
+  "rulesOutOfDateMessage": "Aturan jenis ini masih menjelaskan kondisi lama.",
+
+  "later": "Nanti",
+
+  "currentIcon": "Ikon saat ini",
+
+  "currentColor": "Warna saat ini",
+
+  "groupDeviceClaimOwner": "Klaim kepemilikan",
+
+  "groupDeviceClaimOwnerConfirm": "\"{label}\" memiliki grup tetapi belum terlihat dalam waktu lama. Ambil alih kepemilikan di perangkat ini?",
+
+  "groupDeviceOwnerClaimed": "Perangkat ini sekarang memiliki grup.",
+
+  "groupErrorOwnerActive": "Pemilik grup telah terlihat baru-baru ini: kepemilikan tidak dapat diklaim.",
+
+  "groupCreatedOwnerExplain": "Grup dibuat. Perangkat ini memilikinya; peran dapat diserahkan ke perangkat lain di Perangkat.",
+  "boardEliminated": "Dieliminasi",
+  "soundsSection": "Suara",
+  "gameSounds": "Suara permainan",
+  "gameSoundsDescription": "Suara ketika pemain dieliminasi, ketika permainan dimenangkan, dan ketika pengatur waktu berakhir",
+  "turnTimer": "Pengatur waktu giliran",
+  "turnTimerLess": "Waktu lebih sedikit",
+  "turnTimerMore": "Lebih banyak waktu",
+  "turnTimerStart": "Mulai",
+  "turnTimerPause": "Jeda",
+  "turnTimerReset": "Atur Ulang",
+  "turnTimerTimeUp": "Waktu habis!",
+  "configShareOpen": "Bagikan dengan kode QR",
+  "configShareTitle": "Bagikan konfigurasi ini",
+  "configShareExplainServer": "Pindai kode ini dengan ponsel lain untuk menyiapkannya dengan server yang sama.",
+  "configShareExplainGroup": "Pindai kode ini dengan ponsel lain untuk menyiapkannya dengan server yang sama dan bergabung dengan grup {name}. Itu berisi kode undangan grup: tampilkan hanya kepada orang-orang yang ingin Anda di grup.",
+  "configShareWebAppLabel": "Alamat aplikasi web",
+  "configShareWebAppHelper": "Tempat server menayangkan aplikasi web CountScore, seperti https://countscore.example.com/countscore. Kode membuka halaman ini.",
+  "configShareWebAppNeeded": "Masukkan alamat aplikasi web untuk menampilkan kode.",
+  "configShareQrLabel": "Kode QR tautan konfigurasi",
+  "configShareCopyLink": "Salin tautan",
+  "configShareLinkCopied": "Tautan disalin",
+  "configShareTooLong": "Tautan ini terlalu panjang untuk muat dalam kode QR. Gunakan \"Salin tautan\" sebagai gantinya.",
+  "replaceConfigTitle": "Ganti konfigurasi?",
+  "replaceConfigCurrent": "Sekarang: {value}",
+  "replaceConfigNew": "Baru: {value}",
+  "replaceConfigInvite": "kode undangan {code}",
+  "replaceConfigLeavesGroup": "Perangkat ini akan meninggalkan grup {name}. Permainannya tetap di perangkat ini.",
+  "replaceConfigConfirm": "Ganti",
+  "replaceConfigUnsynced": "{count, plural, =1{1 perubahan di perangkat ini belum mencapai grup. Jika Anda pergi sekarang, grup tidak akan pernah menerimanya.} other{{count} perubahan di perangkat ini belum mencapai grup. Jika Anda pergi sekarang, grup tidak akan pernah menerimanya.}}",
+  "replaceConfigLeaveAnyway": "Pergi saja",
+  "replaceConfigDone": "Konfigurasi diganti",
+  "replaceConfigUnchanged": "Perangkat ini sudah menggunakan konfigurasi ini",
+  "joinLinkHandOverMessage": "Tautan ini dapat dibuka di aplikasi CountScore Android. Jika aplikasi tidak terinstal, Play Store terbuka sebagai gantinya.",
+  "joinLinkOpenInApp": "Buka di aplikasi",
+  "joinLinkContinueHere": "Lanjutkan di browser"
+}

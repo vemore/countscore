@@ -1,6 +1,6 @@
 ---
 name: i18n-add-string
-description: Add, rename, or remove a user-facing string in the CountScore Flutter app across all 10 languages. Use whenever new text must appear in the UI, when a label needs rewording, when a hardcoded string is found in a widget, or when adding a plural or a parameterized message. Triggers: "add a string", "ajouter une traduction", "nouveau texte", "translate this label", "hardcoded string", "add a language", "plural form", "gen-l10n".
+description: Add, rename, or remove a user-facing string in the CountScore Flutter app across all 20 languages. Use whenever new text must appear in the UI, when a label needs rewording, when a hardcoded string is found in a widget, or when adding a plural or a parameterized message. Triggers: "add a string", "ajouter une traduction", "nouveau texte", "translate this label", "hardcoded string", "add a language", "plural form", "gen-l10n".
 ---
 
 # Adding a localized string to CountScore

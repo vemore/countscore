@@ -1,5 +1,7 @@
 # The app and the AI analysis stop at ten languages
 
+**Status:** done (2026-10-04) — closed by feat/ten-more-languages. Ten ARB files (454 keys), ten `rules_<l>.md` (21 rulesets), `supportedLocales`, `GameRulesCatalog.locales`, the comment-language picker and ten `LANGUAGES` rows with native directives; Haiku translations reviewed on form only. Verified: `arb_keys.py`, `flutter analyze`, `flutter test`, `pytest`..
+
 - **Noted:** 2026-10-04 — the user asked for ten more languages, store listing included
 - **Theme:** i18n
 - **Area:** app

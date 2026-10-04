@@ -20,10 +20,11 @@ class GameRulesCatalog {
 
   final AssetBundle _bundle;
 
-  /// The locales that have a `rules_<locale>.md` asset — the app's ten, which
+  /// The locales that have a `rules_<locale>.md` asset — the app's twenty, which
   /// `main.dart` lists as `supportedLocales`.
   static const locales = <String>[
     'ar', 'de', 'en', 'es', 'fr', 'hi', 'ja', 'pt', 'ru', 'zh',
+    'bn', 'id', 'it', 'ko', 'nl', 'pl', 'th', 'tr', 'ur', 'vi',
   ];
 
   /// Every slug a shipped asset must define. `Autre` is a catch-all with no

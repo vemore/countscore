@@ -1,0 +1,769 @@
+{
+  "@@locale": "vi",
+
+  "appTitle": "CountScore",
+
+  "homeTitle": "Trang chủ",
+
+  "playersListTitle": "Danh sách người chơi",
+
+  "gameTypesTitle": "Loại trò chơi",
+
+  "settingsTitle": "Cài đặt",
+
+  "aboutTitle": "Thông tin",
+
+  "newGame": "Trò chơi mới",
+
+  "noGames": "Chưa có trò chơi",
+
+  "noGamesOfThisType": "Chưa có trò chơi loại này",
+
+  "createFirstGame": "Tạo trò chơi đầu tiên của bạn",
+
+  "newWithSamePlayers": "Trò chơi mới với cùng người chơi",
+
+  "playAgain": "Chơi lại",
+
+  "rename": "Đổi tên",
+
+  "delete": "Xóa",
+
+  "confirmDeletion": "Xác nhận xóa",
+
+  "confirmDeleteGame": "Bạn có thực sự muốn xóa trò chơi \"{name}\" không?",
+
+  "cancel": "Hủy",
+
+  "renameGame": "Đổi tên trò chơi",
+
+  "gameName": "Tên trò chơi",
+
+  "save": "Lưu",
+
+  "allGames": "Tất cả trò chơi",
+
+  "filterGames": "Lọc trò chơi",
+
+  "applyFilter": "Áp dụng",
+
+  "resetFilter": "Đặt lại",
+
+  "selectGameType": "Chọn loại trò chơi",
+
+  "gameType": "Loại trò chơi",
+
+  "loadingGameTypes": "Đang tải loại trò chơi...",
+
+  "lowestScoreWins": "Điểm thấp nhất thắng",
+
+  "highestScoreWins": "Điểm cao nhất thắng",
+
+  "players": "Người chơi",
+
+  "add": "Thêm",
+
+  "pleaseEnterName": "Vui lòng nhập tên",
+
+  "clear": "Xóa",
+
+  "remove": "Loại bỏ",
+
+  "game": "Trò chơi",
+
+  "editGame": "Chỉnh sửa trò chơi",
+
+  "editGameDialogTitle": "Chỉnh sửa trò chơi",
+
+  "removePlayer": "Loại bỏ người chơi",
+
+  "addPlayerToGame": "Thêm người chơi",
+
+  "warningRemovePlayer": "Cảnh báo! Loại bỏ người chơi này sẽ xóa tất cả điểm của họ khỏi trò chơi này. Thao tác này không thể hoàn tác.",
+
+  "confirmRemovePlayer": "Bạn có thực sự muốn loại bỏ {playerName} khỏi trò chơi này không?",
+
+  "playerRemoved": "Người chơi đã bị loại bỏ khỏi trò chơi",
+
+  "deleteLastRound": "Xóa vòng cuối cùng",
+
+  "confirm": "Xác nhận",
+
+  "confirmDeleteLastRound": "Xóa vòng cuối cùng?",
+
+  "noPlayersInGame": "Không có người chơi trong trò chơi này",
+
+  "round": "Vòng",
+
+  "boardRoundButton": "Vòng {round}",
+
+  "keypadCaption": "{player} · vòng {round}",
+
+  "keypadCaptionWithPosition": "{player} · vòng {round} · {position}/{count}",
+
+  "keypadTotalAfter": "tổng sau: {total}",
+
+  "keypadNext": "Tiếp theo\n{player}",
+
+  "keypadValidateRound": "Xác nhận vòng",
+
+  "keypadToggleSign": "Đổi dấu",
+
+  "keypadBackspace": "Xóa một chữ số",
+
+  "keypadShortcutTitle": "Phím tắt bàn phím",
+
+  "keypadShortcutKind": "Loại phím",
+
+  "keypadShortcutKindValue": "Nhập một giá trị",
+
+  "keypadShortcutKindMultiply": "Nhân điểm (chỉ dương)",
+
+  "keypadShortcutKindAdd": "Cộng vào điểm",
+
+  "keypadShortcutAmount": "Số",
+
+  "keypadShortcutLabel": "Nhãn phím (tùy chọn)",
+
+  "keypadShortcutAddRange": "Số nguyên từ {min} đến {max}, khác 0",
+
+  "keypadShortcutAmountRange": "Số nguyên từ {min} đến {max}",
+
+  "appearance": "Giao diện",
+
+  "light": "Sáng",
+
+  "dark": "Tối",
+
+  "system": "Hệ thống",
+
+  "screen": "Màn hình",
+
+  "keepScreenAwake": "Giữ màn hình sáng",
+
+  "keepScreenAwakeDescription": "Ngăn màn hình tắt trong quá trình chơi",
+
+  "backup": "Sao lưu",
+
+  "exportDatabase": "Xuất cơ sở dữ liệu",
+
+  "exportDatabaseDescription": "Lưu tất cả trò chơi của bạn vào một tệp",
+
+  "databaseExportedTo": "Cơ sở dữ liệu đã xuất đến:",
+
+  "errorDuringExport": "Lỗi trong khi xuất:",
+
+  "importDatabase": "Nhập cơ sở dữ liệu",
+
+  "importDatabaseDescription": "Khôi phục trò chơi của bạn từ tệp sao lưu",
+
+  "confirmation": "Xác nhận",
+
+  "importWarning": "Nhập sẽ thay thế tất cả dữ liệu hiện tại của bạn. Một bản sao lưu tự động sẽ được tạo trước khi nhập.\n\nBạn có muốn tiếp tục không?",
+
+  "import": "Nhập",
+
+  "databaseImportedSuccessfully": "Cơ sở dữ liệu đã nhập thành công",
+
+  "importSuccessful": "Nhập thành công",
+
+  "importSuccessMessage": "Cơ sở dữ liệu đã được nhập thành công.\n\nUng dụng sẽ đóng ngay bây giờ. Vui lòng mở lại để xem dữ liệu mới.",
+
+  "ok": "OK",
+
+  "errorDuringImport": "Lỗi trong khi nhập:",
+
+  "noPlayers": "Không có người chơi",
+
+  "playersAppearMessage": "Người chơi sẽ xuất hiện ở đây khi\nbạn đã tạo các trò chơi",
+
+  "gamesCount": "{count, plural, =0{0 trò chơi} =1{1 trò chơi} other{{count} trò chơi}}",
+
+  "winsCount": "{count, plural, =0{0 chiến thắng} =1{1 chiến thắng} other{{count} chiến thắng}}",
+
+  "changeColor": "Đổi màu",
+
+  "renamePlayer": "Đổi tên người chơi",
+
+  "newName": "Tên mới",
+
+  "playerRenamedTo": "Người chơi được đổi tên thành \"{name}\"",
+
+  "deletePlayer": "Xóa người chơi",
+
+  "confirmDeletePlayer": "Bạn có thực sự muốn xóa \"{name}\" không?\n\nNguời chơi này sẽ bị loại bỏ khỏi tất cả {count} trò chơi.",
+
+  "playerDeleted": "Người chơi \"{name}\" đã bị xóa",
+
+  "chooseColor": "Chọn một màu",
+
+  "noGameTypes": "Chưa có loại trò chơi",
+
+  "edit": "Chỉnh sửa",
+
+  "newType": "Loại mới",
+
+  "editType": "Chỉnh sửa loại",
+
+  "newGameType": "Loại trò chơi mới",
+
+  "gameTypeName": "Tên loại trò chơi",
+
+  "icon": "Biểu tượng:",
+
+  "color": "Màu:",
+
+  "chooseIcon": "Chọn một biểu tượng",
+
+  "nameIsRequired": "Tên là bắt buộc",
+
+  "create": "Tạo",
+
+  "ranking": "Xếp hạng",
+
+  "noCurrentGame": "Không có trò chơi nào đang diễn ra",
+
+  "noScoresRecorded": "Chưa ghi lại điểm nào",
+
+  "playerStatistics": "Thống kê người chơi",
+
+  "noStatisticsAvailable": "Không có thống kê nào",
+
+  "gamesPlayed": "Trò chơi đã chơi",
+
+  "wins": "Chiến thắng",
+
+  "winRate": "Tỷ lệ thắng",
+
+  "byGameType": "Theo loại trò chơi",
+
+  "rate": "Tỷ lệ",
+
+  "version": "Phiên bản {version}",
+
+  "appDescription": "Ứng dụng quản lý điểm cho các trò chơi của bạn bởi Vincent Moreau",
+
+  "features": "Tính năng",
+
+  "featureDifferentGameTypes": "Các loại trò chơi khác nhau",
+
+  "featurePlayerManagement": "Quản lý người chơi",
+
+  "featureDetailedStatistics": "Thống kê chi tiết",
+
+  "featureCustomization": "Tùy chỉnh",
+
+  "featureDarkLightTheme": "Chế độ tối/sáng",
+
+  "featureGroupSharing": "Chia sẻ nhóm",
+
+  "featureGameAnalysis": "Phân tích trò chơi bằng AI",
+
+  "rateApp": "Đánh giá CountScore",
+
+  "search": "Tìm kiếm",
+
+  "newPlayerName": "Tên người chơi mới",
+
+  "noPlayersFound": "Không tìm thấy người chơi nào",
+
+  "close": "Đóng",
+
+  "playerEliminationCondition": "Điều kiện loại bỏ người chơi",
+
+  "gameOverCondition": "Điều kiện kết thúc trò chơi",
+
+  "none": "Không có",
+
+  "overThreshold": "Vượt quá ngưỡng",
+
+  "underThreshold": "Dưới ngưỡng",
+
+  "firstPlayerOver": "Người chơi đầu tiên đạt",
+
+  "firstPlayerUnder": "Người chơi đầu tiên dưới",
+
+  "lastPlayerOver": "Người chơi cuối cùng còn lại (những người khác vượt quá)",
+
+  "lastPlayerUnder": "Người chơi cuối cùng còn lại (những người khác dưới)",
+
+  "threshold": "Ngưỡng",
+
+  "conditionType": "Loại điều kiện",
+
+  "continuePlay": "Tiếp tục chơi",
+  "gameEndWinner": "{name} thắng",
+  "gameEndTie": "Hòa: {names}",
+  "gameEndRounds": "{count, plural, one{{count} vòng} other{{count} vòng}}",
+  "gameEndLowestWins": "điểm thấp nhất thắng",
+  "gameEndHighestWins": "điểm cao nhất thắng",
+  "gameEndAnalysis": "Phân tích",
+  "gameEndResults": "Kết quả",
+  "rankingEliminationNote": "Xếp hạng theo thứ tự loại bỏ: người nào bị loại sau xếp trước, bất kể tổng điểm.",
+
+  "endGame": "Kết thúc trò chơi",
+  "reopenGame": "Mở lại trò chơi",
+  "gameFinished": "Đã hoàn thành",
+  "undo": "Hoàn tác",
+  "gameReopened": "Trò chơi đã mở lại",
+
+  "comment": "Bình luận",
+
+  "enterComment": "Nhập bình luận",
+
+  "analyzeGame": "Phân tích trò chơi",
+
+  "analysisTitle": "Phân tích trò chơi",
+
+  "analysisStyle": "Phong cách phân tích",
+
+  "analysisStyleProfessor": "Giáo sư",
+
+  "analysisStyleCommentator": "Bình luận viên thể thao",
+
+  "analysisStyleDocumentary": "Phim tài liệu thiên nhiên",
+
+  "analysisStyleNoir": "Thám tử",
+
+  "analysisStyleBard": "Nhạc sĩ",
+
+  "analysisStyleCoach": "Huấn luyện viên",
+
+  "analysisStyleConsultant": "Cố vấn",
+
+  "analysisStyleAstrologer": "Nhà chiêm tinh",
+
+  "analysisStyleRealityTv": "Chương trình thực tế",
+
+  "generatingAnalysis": "Đang tạo phân tích…",
+
+  "generateAnalysis": "Tạo phân tích",
+
+  "regenerateAnalysis": "Tạo lại phân tích",
+
+  "deleteAnalysis": "Xóa phân tích",
+
+  "confirmRegenerateAnalysis": "Tạo lại? Phân tích hiện tại sẽ bị thay thế.",
+
+  "confirmDeleteAnalysis": "Xóa phân tích cho trò chơi này?",
+
+  "analysisError": "Không thể tạo phân tích",
+
+  "analysisErrorStatus": "Không thể tạo phân tích (HTTP {status})",
+  "analysisErrorUnavailable": "Máy chủ phân tích tạm thời không khả dụng. Thử lại sau.",
+  "analysisErrorGroupBudget": "Nhóm của bạn đã hết ngân sách phân tích cho tháng này. Nó sẽ được cấp lại vào đầu tháng sau.",
+  "analysisStyleGroupDefault": "Chưa chọn phong cách: trò chơi chia sẻ này được phân tích theo phong cách và ngôn ngữ của nhóm.",
+
+  "retry": "Thử lại",
+
+  "analysisGeneratedAt": "Được tạo vào {date}",
+
+  "serverSection": "Máy chủ",
+  "backendUrlLabel": "URL máy chủ",
+  "backendUrlHint": "https://countscore.example.com",
+  "backendUrlDescription": "Các tính năng kết nối cần máy chủ CountScore. Cài đặt một máy chủ từ thư mục backend/ và nhập địa chỉ của nó tại đây. Không có máy chủ, không có dữ liệu nào rời khỏi thiết bị này.",
+  "backendNotConfigured": "Chưa cấu hình máy chủ",
+  "backendUrlInvalid": "Địa chỉ không hợp lệ. Nhập URL đầy đủ, ví dụ https://countscore.example.com",
+  "backendUrlInsecure": "http:// chỉ được chấp nhận trên mạng cục bộ. Sử dụng https:// cho máy chủ công khai.",
+  "testConnection": "Kiểm tra kết nối",
+  "connectionOk": "Máy chủ đang phản hồi",
+  "connectionFailed": "Máy chủ không phản hồi",
+  "serverUrlSaved": "Máy chủ đã lưu",
+  "analysisRequiresBackend": "Phân tích này cần máy chủ. Cấu hình một máy chủ trong cài đặt.",
+  "openSettings": "Mở cài đặt",
+  "serverUrlCleared": "Máy chủ đã xóa",
+
+  "groupSection": "Nhóm",
+
+  "groupDescription": "Chia sẻ trò chơi với các thiết bị khác trong nhóm. Các trò chơi chia sẻ, người chơi, điểm, bình luận và phân tích của chúng được gửi đến máy chủ của bạn; các trò chơi khác ở lại trên thiết bị này.",
+
+  "groupNeedsServer": "Trước tiên hãy cài đặt máy chủ ở trên.",
+
+  "groupCreate": "Tạo một nhóm",
+
+  "groupJoin": "Tham gia nhóm",
+
+  "groupNameLabel": "Tên nhóm",
+
+  "groupNicknameLabel": "Biệt danh của bạn",
+
+  "groupNicknameHint": "Những người khác trong nhóm sẽ thấy nó",
+
+  "groupNicknameCurrent": "Biệt danh của bạn: {nickname}",
+
+  "groupNicknameEdit": "Thay đổi biệt danh của bạn",
+
+  "shareTokenLabel": "Mã mời",
+
+  "shareTokenHint": "Dán mã mà thành viên nhóm gửi cho bạn",
+
+  "groupCurrent": "Nhóm: {name}",
+
+  "shareTokenExplain": "Gửi mã này đến các thiết bị nên tham gia nhóm. Bất kỳ ai có nó đều có thể tham gia.",
+
+  "shareTokenCopy": "Sao chép mã",
+
+  "shareTokenCopied": "Mã đã sao chép",
+
+  "shareTokenRotate": "Mã mới",
+
+  "shareTokenRotateConfirm": "Mã cũ sẽ không cho phép bất kỳ ai tham gia nhóm. Các thiết bị đã ở trong nhóm không bị ảnh hưởng.",
+
+  "groupLeave": "Rời nhóm",
+
+  "groupLeaveConfirm": "Thiết bị này rời nhóm. Các trò chơi chia sẻ ở lại trên thiết bị này nhưng sẽ không còn đồng bộ.",
+
+  "groupLeft": "Đã rời nhóm",
+
+  "groupJoined": "Đã tham gia nhóm",
+
+  "clearServerLeavesGroup": "Xóa máy chủ sẽ rời nhóm. Các trò chơi chia sẻ ở lại trên thiết bị này.",
+
+  "syncNow": "Đồng bộ ngay",
+
+  "syncStatusIdle": "Đã đồng bộ lúc {time}",
+
+  "syncStatusSyncing": "Đang đồng bộ…",
+
+  "syncStatusOffline": "Máy chủ không thể tiếp cận — các thay đổi sẽ được gửi sau",
+
+  "syncStatusUnauthorized": "Máy chủ không còn chấp nhận thiết bị này. Rời nhóm, rồi tham gia lại.",
+
+  "syncStatusError": "Lỗi máy chủ trong khi đồng bộ",
+
+  "syncPending": "{count, plural, =1{1 thay đổi đang chờ} other{{count} thay đổi đang chờ}}",
+
+  "syncRejected": "{count, plural, =1{1 thay đổi bị từ chối bởi máy chủ} other{{count} thay đổi bị từ chối bởi máy chủ}}",
+
+  "groupErrorUnknownToken": "Mã mời không rõ hoặc bị thay thế",
+
+  "groupErrorRateLimited": "Quá nhiều lần thử. Thử lại trong một phút.",
+
+  "groupErrorUnreachable": "Máy chủ không thể tiếp cận",
+
+  "groupErrorServer": "Lỗi máy chủ",
+
+  "shareWithGroup": "Chia sẻ với nhóm",
+
+  "shareWithGroupSubtitle": "Các thiết bị trong nhóm {name} sẽ xem và chỉnh sửa trò chơi này",
+
+  "shareGameConfirm": "Trò chơi, người chơi, điểm và bình luận của nó sẽ được gửi đến nhóm {name}. Chia sẻ không thể được hoàn tác.",
+
+  "gameSharedDone": "Trò chơi đã chia sẻ với nhóm",
+
+  "gameSharedBadge": "Trò chơi chia sẻ",
+
+  "invalidPlayerNamesForSync": "Những tên này không thể chia sẻ: {names}. Sử dụng chữ cái, chữ số, khoảng trắng, dấu gạch ngang, dấu nháy hoặc dấu chấm (tối đa 32 ký tự).",
+
+  "roundRenumbered": "Vòng đó đã được nhập trên thiết bị khác, nên nó trở thành vòng {number}.",
+
+  "gameDeletedElsewhere": "\"{name}\" đã bị xóa trên thiết bị khác",
+  "groupDevices": "Thiết bị",
+  "groupDevicesExplain": "Điện thoại bị mất hoặc đã bán có thể bị loại bỏ khỏi nhóm ở đây.",
+  "groupDeviceThisOne": "Thiết bị này",
+  "groupDeviceLastSeen": "Lần cuối cùng thấy {date}",
+  "groupDeviceRevoke": "Loại bỏ",
+  "groupDeviceRevokeConfirm": "Loại bỏ \"{label}\" khỏi nhóm? Nó sẽ không còn đồng bộ. Mã mời cũng thay đổi: các thành viên giữ quyền truy cập, nhưng bạn sẽ cần chia sẻ mã mới để mời ai đó.",
+  "groupDeviceRevoked": "\"{label}\" đã bị loại bỏ. Mã mời đã thay đổi.",
+
+  "reportCommentary": "Báo cáo bình luận này",
+
+  "reportCommentarySubject": "CountScore — báo cáo bình luận AI",
+
+  "reportCommentaryBody": "Cái gì không ổn với bình luận được tạo bởi AI này?\n\n\n---\nTham chiếu: {reference}\nBình luận:\n{commentary}",
+
+  "reportCommentaryNoMailApp": "Không tìm thấy ứng dụng email. Viết thư đến {email} để báo cáo bình luận này.",
+
+  "gameRulesTitle": "Quy tắc trò chơi",
+  "gameRulesInApp": "Trong CountScore",
+  "gameRulesSection": "Các quy tắc",
+  "gameRulesNoElimination": "Không có loại bỏ trong quá trình chơi",
+  "gameRulesEliminationOver": "Một người chơi bị loại trên {threshold} điểm",
+  "gameRulesEliminationUnder": "Một người chơi bị loại dưới {threshold} điểm",
+  "gameRulesEndFirstOver": "Trò chơi kết thúc ngay khi một người chơi đạt {threshold} điểm",
+  "gameRulesEndFirstUnder": "Trò chơi kết thúc ngay khi một người chơi dưới {threshold} điểm",
+  "gameRulesEndLastOver": "Trò chơi kết thúc khi tất cả người chơi ngoài một người vượt quá {threshold} điểm",
+  "gameRulesEndLastUnder": "Trò chơi kết thúc khi tất cả người chơi ngoài một người dưới {threshold} điểm",
+  "gameRulesNoEnd": "Không có kết thúc tự động: bạn quyết định khi nào trò chơi kết thúc",
+  "gameRulesEmptyTitle": "Chưa có quy tắc",
+  "gameRulesEmptyHint": "Viết cách bàn bạn tính điểm — mọi người sẽ có cùng phiên bản.",
+  "gameRulesWrite": "Viết quy tắc",
+  "gameRulesEditTitle": "Chỉnh sửa quy tắc",
+  "gameRulesEditorHint": "Quy tắc của bàn bạn. Markdown được hỗ trợ.",
+  "gameRulesFromGroup": "Quy tắc của nhóm bạn",
+  "gameRulesRestoreDefault": "Khôi phục quy tắc gốc",
+  "gameRulesSaved": "Quy tắc đã lưu",
+  "gameRulesRestored": "Quy tắc gốc đã khôi phục",
+  "gameRulesDisclaimer": "Tóm tắt được viết cho CountScore từ các quy tắc như chúng thường được chơi. Tên trò chơi thuộc về chủ sở hữu tương ứng của chúng và chỉ được sử dụng mô tả.",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameZapzapSortKey": "ZapZap",
+
+  "gameTypeNameUno": "Uno",
+
+  "gameTypeNameUnoSortKey": "Uno",
+
+  "gameTypeNameScrabble": "Scrabble",
+
+  "gameTypeNameScrabbleSortKey": "Scrabble",
+
+  "gameTypeNameOther": "Khác",
+
+  "gameTypeNameOtherSortKey": "Khác",
+
+  "gameTypeNameSkyjo": "Skyjo",
+
+  "gameTypeNameSkyjoSortKey": "Skyjo",
+
+  "gameTypeNamePresident": "President",
+
+  "gameTypeNamePresidentSortKey": "President",
+
+  "gameTypeNameBelote": "Belote",
+
+  "gameTypeNameBeloteSortKey": "Belote",
+
+  "gameTypeNameTarot": "Tarot",
+
+  "gameTypeNameTarotSortKey": "Tarot",
+
+  "gameTypeNameBridge": "Bridge",
+
+  "gameTypeNameBridgeSortKey": "Bridge",
+
+  "gameTypeNameRami": "Rummy",
+
+  "gameTypeNameRamiSortKey": "Rummy",
+
+  "gameTypeNameCoinche": "Coinche",
+
+  "gameTypeNameCoincheSortKey": "Coinche",
+
+  "gameTypeNameYahtzee": "Yahtzee",
+
+  "gameTypeNameYahtzeeSortKey": "Yahtzee",
+
+  "gameTypeNamePhase10": "Phase 10",
+
+  "gameTypeNamePhase10SortKey": "Phase 10",
+
+  "gameTypeNameFlip7": "Flip 7",
+
+  "gameTypeNameFlip7SortKey": "Flip 7",
+
+  "gameTypeNameMilleBornes": "Mille Bornes",
+
+  "gameTypeNameMilleBornesSortKey": "Mille Bornes",
+
+  "gameTypeNameRummikub": "Rummikub",
+
+  "gameTypeNameRummikubSortKey": "Rummikub",
+
+  "gameTypeNameSixNimmt": "Take 6",
+
+  "gameTypeNameSixNimmtSortKey": "Take 6",
+
+  "gameTypeNameQwirkle": "Qwirkle",
+
+  "gameTypeNameQwirkleSortKey": "Qwirkle",
+
+  "gameTypeNameFarkle": "Farkle",
+
+  "gameTypeNameFarkleSortKey": "Farkle",
+
+  "gameTypeNameCanasta": "Canasta",
+
+  "gameTypeNameCanastaSortKey": "Canasta",
+
+  "gameTypeNameWizard": "Wizard",
+
+  "gameTypeNameWizardSortKey": "Wizard",
+
+  "gameTypeNameTriomino": "Triomino",
+
+  "gameTypeNameTriominoSortKey": "Triomino",
+
+  "groupDeviceOwner": "Chủ sở hữu",
+
+  "groupDeviceMakeOwner": "Làm chủ sở hữu",
+
+  "groupDeviceMakeOwnerConfirm": "Chuyển nhóm cho \"{label}\"? Thiết bị này sẽ không còn có khả năng loại bỏ thiết bị hoặc thay đổi mã mời.",
+
+  "groupDeviceOwnerChanged": "\"{label}\" hiện sở hữu nhóm.",
+
+  "groupDevicesExplainMember": "Chỉ chủ sở hữu nhóm mới có thể loại bỏ thiết bị hoặc thay đổi mã mời.",
+
+  "groupErrorNotOwner": "Chỉ chủ sở hữu nhóm mới có thể làm điều này",
+  "whoStarts": "Ai bắt đầu?",
+  "whoStartsAgain": "Quay lại",
+  "diceRoller": "Lăn xúc xắc",
+  "diceCount": "Số xúc xắc",
+  "diceRollAgain": "Quay lại",
+  "diceTotal": "Tổng: {total}",
+  "resumeGame": "Tiếp tục",
+  "recentGames": "Gần đây",
+  "gameInProgress": "Đang diễn ra",
+  "roundNumber": "vòng {number}",
+  "gameLeader": "{name} dẫn · {score}",
+  "gameWonBy": "Thắng bởi {name}",
+  "boardRank": "{rank, plural, one{#{rank}} other{#{rank}}}",
+  "boardViewRows": "Một hàng cho mỗi người chơi",
+  "boardViewLanes": "Một cột cho mỗi người chơi",
+  "boardSeatOrder": "Thứ tự chỗ ngồi",
+  "boardRoundShort": "R{number}",
+  "boardPlayer": "Người chơi",
+  "boardTotal": "Tổng",
+  "boardLeader": "Dẫn",
+  "groupSettingsTitle": "Bình luận và sử dụng",
+  "groupSettingsDescription": "Phong cách và ngôn ngữ của các bình luận mà máy chủ viết cho các trò chơi của nhóm. Bất kỳ thành viên nào cũng có thể thay đổi chúng.",
+  "groupCommentStyle": "Phong cách bình luận",
+  "groupCommentStyleNarrative": "Tường thuật",
+  "groupCommentStyleHumorous": "Hài hước",
+  "groupCommentStyleAnalytical": "Phân tích",
+  "groupCommentLanguage": "Ngôn ngữ bình luận",
+  "groupSettingsSaved": "Cài đặt nhóm đã lưu",
+  "groupUsageTitle": "Sử dụng LLM tháng này",
+  "groupUsageAmount": "{used} được sử dụng của {budget}",
+  "groupUsageResets": "Đặt lại vào {date}",
+  "statsBestWinRate": "Tỷ lệ thắng tốt nhất",
+  "statsWinsOutOfGames": "{wins, plural, =0{Không có chiến thắng trong {games}} one{{wins} chiến thắng trong {games}} other{{wins} chiến thắng trong {games}}}",
+  "statsColumnPlayer": "Người chơi",
+  "statsColumnGames": "Trò chơi",
+  "statsUnranked": "{count, plural, one{{count} trò chơi · chưa được xếp hạng} other{{count} trò chơi · chưa được xếp hạng}}",
+  "statsLeaderboardFooter": "{count, plural, one{Xếp hạng từ {count} trò chơi hoàn thành. Nhấn vào một người chơi để xem thẻ của họ.} other{Xếp hạng từ {count} trò chơi hoàn thành. Nhấn vào một người chơi để xem thẻ của họ.}}",
+  "statsGamesLabel": "{count, plural, one{trò chơi} other{trò chơi}}",
+  "statsWinsLabel": "{count, plural, one{chiến thắng} other{chiến thắng}}",
+  "statsAverageRank": "vị trí trung bình",
+  "statsRankChartTitle": "{count, plural, one{Vị trí, trò chơi cuối cùng} other{Vị trí, {count} trò chơi cuối cùng}}",
+  "statsTrendImproving": "đang cải thiện",
+  "statsTrendDeclining": "đang suy giảm",
+  "statsTrendSteady": "ổn định",
+  "statsRankOrdinal": "{rank, select, 1{1} 2{2} 3{3} other{{rank}}}",
+  "statsWinStreak": "{count, plural, =0{Không có chuỗi thắng} one{Chuỗi: {count} chiến thắng} other{Chuỗi: {count} chiến thắng}}",
+  "statsRecord": "Tốt nhất: {total}",
+  "statsOnGameType": "Trên {gameType}",
+  "statsAverageTotal": "Tổng điểm cuối cùng trung bình",
+  "statsBestTotal": "Tổng điểm cuối cùng tốt nhất",
+  "statsMostBeaten": "Đối thủ bị đánh bại nhiều nhất",
+  "statsOpenPlayerCard": "mở thẻ người chơi",
+
+  "shareResult": "Chia sẻ kết quả",
+
+  "shareAnalysis": "Chia sẻ phân tích",
+
+  "shareResultSubject": "Kết quả: {gameName}",
+
+  "shareResultTitle": "Trò chơi của {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} điểm} other{{points} điểm}}",
+
+  "shareResultFooter": "Điểm được ghi bằng {appName}: {url}",
+
+  "shareFailed": "Không thể mở chia sẻ",
+
+  "newGameNameLabel": "Tên",
+
+  "newGameGameLabel": "Trò chơi",
+
+  "newGameAllGames": "Tất cả trò chơi ({count})",
+
+  "newGamePlayersLabel": "Người chơi · thứ tự chỗ ngồi",
+
+  "newGameDragToReorder": "kéo để sắp xếp lại",
+
+  "newGameDealer": "chia",
+
+  "newGameAddPlayer": "Thêm một người chơi",
+
+  "newGameStart": "{count, plural, =0{Bắt đầu} =1{Bắt đầu · 1 người chơi} other{Bắt đầu · {count} người chơi}}",
+
+  "whoIsPlayingTitle": "Ai đang chơi?",
+
+  "whoIsPlayingSearchHint": "Tên, hoặc một người chơi mới",
+
+  "whoIsPlayingFrequent": "Thường xuyên chơi với bạn",
+
+  "whoIsPlayingSameAs": "Cùng người chơi như \"{gameName}\"",
+
+  "whoIsPlayingCreate": "Tạo \"{name}\"",
+
+  "whoIsPlayingConfirm": "{count, plural, =0{Xong} =1{Thêm 1 người chơi} other{Thêm {count} người chơi}}",
+
+  "defaultGameName": "Trò chơi {number}",
+
+  "pwaUpdateReady": "Phiên bản mới của CountScore đã sẵn sàng",
+
+  "pwaUpdateReload": "Tải lại",
+
+  "thresholdIsRequired": "Ngưỡng là bắt buộc cho điều kiện này",
+
+  "thresholdTooLarge": "Ngưỡng không thể vượt quá {max}",
+
+  "deletionImpossible": "Không thể xóa",
+
+  "gameTypeInUse": "{count, plural, one{1 trò chơi sử dụng loại này: nó không thể bị xóa.} other{{count} trò chơi sử dụng loại này: chúng không thể bị xóa.}}",
+
+  "confirmDeleteGameType": "Bạn có thực sự muốn xóa loại trò chơi \"{name}\" không?",
+
+  "winDirectionChangeTitle": "Đảo ngược ai thắng?",
+
+  "winDirectionChangeWarning": "{count, plural, one{1 trò chơi hoàn thành loại này sẽ có bảng xếp hạng bị đảo ngược: người chiến thắng sẽ trở thành người cuối cùng.} other{{count} trò chơi hoàn thành loại này sẽ có bảng xếp hạng bị đảo ngược: những người chiến thắng sẽ trở thành những người cuối cùng.}}",
+
+  "winDirectionContradiction": "Điều kiện kết thúc trò chơi làm phương hướng ngược lại của lựa chọn người chiến thắng. Một quy tắc nhà có thể muốn chính xác như vậy.",
+
+  "rulesOutOfDateTitle": "Cập nhật quy tắc?",
+
+  "rulesOutOfDateMessage": "Các quy tắc loại này vẫn mô tả điều kiện cũ.",
+
+  "later": "Sau",
+
+  "currentIcon": "Biểu tượng hiện tại",
+
+  "currentColor": "Màu hiện tại",
+
+  "groupDeviceClaimOwner": "Yêu cầu quyền sở hữu",
+
+  "groupDeviceClaimOwnerConfirm": "\"{label}\" sở hữu nhóm nhưng chưa thấy từ lâu. Lấy quyền sở hữu thiết bị này không?",
+
+  "groupDeviceOwnerClaimed": "Thiết bị này hiện sở hữu nhóm.",
+
+  "groupErrorOwnerActive": "Chủ sở hữu nhóm đã thấy gần đây: không thể yêu cầu quyền sở hữu.",
+
+  "groupCreatedOwnerExplain": "Nhóm được tạo. Thiết bị này sở hữu nó; vai trò có thể được chuyển giao cho thiết bị khác trong Thiết bị.",
+  "boardEliminated": "Bị loại",
+  "soundsSection": "Âm thanh",
+  "gameSounds": "Âm thanh trò chơi",
+  "gameSoundsDescription": "Âm thanh khi một người chơi bị loại, khi trò chơi được thắng và khi hết giờ hẹn",
+  "turnTimer": "Hẹn giờ lượt",
+  "turnTimerLess": "Ít thời gian hơn",
+  "turnTimerMore": "Thêm thời gian",
+  "turnTimerStart": "Bắt đầu",
+  "turnTimerPause": "Tạm dừng",
+  "turnTimerReset": "Đặt lại",
+  "turnTimerTimeUp": "Hết giờ!",
+  "configShareOpen": "Chia sẻ qua mã QR",
+  "configShareTitle": "Chia sẻ cấu hình này",
+  "configShareExplainServer": "Quét mã này bằng điện thoại khác để thiết lập cùng máy chủ.",
+  "configShareExplainGroup": "Quét mã này bằng điện thoại khác để thiết lập cùng máy chủ và tham gia nhóm {name}. Nó chứa mã mời của nhóm: chỉ hiển thị cho những người bạn muốn trong nhóm.",
+  "configShareWebAppLabel": "Địa chỉ ứng dụng web",
+  "configShareWebAppHelper": "Nơi máy chủ phục vụ ứng dụng web CountScore, chẳng hạn như https://countscore.example.com/countscore. Mã mở trang này.",
+  "configShareWebAppNeeded": "Nhập địa chỉ ứng dụng web để hiển thị mã.",
+  "configShareQrLabel": "Mã QR của liên kết cấu hình",
+  "configShareCopyLink": "Sao chép liên kết",
+  "configShareLinkCopied": "Liên kết đã sao chép",
+  "configShareTooLong": "Liên kết này quá dài để vừa vào mã QR. Sử dụng \"Sao chép liên kết\" thay thế.",
+  "replaceConfigTitle": "Thay thế cấu hình?",
+  "replaceConfigCurrent": "Bây giờ: {value}",
+  "replaceConfigNew": "Mới: {value}",
+  "replaceConfigInvite": "mã mời {code}",
+  "replaceConfigLeavesGroup": "Thiết bị này sẽ rời nhóm {name}. Các trò chơi của nó ở lại thiết bị này.",
+  "replaceConfigConfirm": "Thay thế",
+  "replaceConfigUnsynced": "{count, plural, =1{1 thay đổi trên thiết bị này chưa tới nhóm. Nếu bạn rời đi ngay bây giờ, nhóm sẽ không bao giờ nhận được nó.} other{{count} thay đổi trên thiết bị này chưa tới nhóm. Nếu bạn rời đi ngay bây giờ, nhóm sẽ không bao giờ nhận được chúng.}}",
+  "replaceConfigLeaveAnyway": "Rời dù sao đi nữa",
+  "replaceConfigDone": "Cấu hình đã thay thế",
+  "replaceConfigUnchanged": "Thiết bị này đã sử dụng cấu hình này",
+  "joinLinkHandOverMessage": "Liên kết này có thể mở trong ứng dụng CountScore Android. Nếu ứng dụng không được cài đặt, Play Store sẽ mở thay thế.",
+  "joinLinkOpenInApp": "Mở trong ứng dụng",
+  "joinLinkContinueHere": "Tiếp tục trong trình duyệt"
+}

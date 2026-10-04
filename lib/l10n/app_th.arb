@@ -1,0 +1,917 @@
+{
+  "@@locale": "th",
+
+  "appTitle": "CountScore",
+
+  "homeTitle": "หน้าแรก",
+
+  "playersListTitle": "รายชื่อผู้เล่น",
+
+  "gameTypesTitle": "ประเภทเกม",
+
+  "settingsTitle": "การตั้งค่า",
+
+  "aboutTitle": "เกี่ยวกับ",
+
+  "newGame": "เกมใหม่",
+
+  "noGames": "ไม่มีเกม",
+
+  "noGamesOfThisType": "ไม่มีเกมของประเภทนี้",
+
+  "createFirstGame": "สร้างเกมแรกของคุณ",
+
+  "newWithSamePlayers": "เกมใหม่ผู้เล่นเดิม",
+
+  "playAgain": "เล่นอีกครั้ง",
+
+  "rename": "เปลี่ยนชื่อ",
+
+  "delete": "ลบ",
+
+  "confirmDeletion": "ยืนยันการลบ",
+
+  "confirmDeleteGame": "คุณต้องการลบเกม \"{name}\" จริงหรือ",
+
+  "cancel": "ยกเลิก",
+
+  "renameGame": "เปลี่ยนชื่อเกม",
+
+  "gameName": "ชื่อเกม",
+
+  "save": "บันทึก",
+
+  "allGames": "เกมทั้งหมด",
+
+  "filterGames": "กรองเกม",
+
+  "applyFilter": "ใช้",
+
+  "resetFilter": "รีเซ็ต",
+
+  "selectGameType": "เลือกประเภทเกม",
+
+  "gameType": "ประเภทเกม",
+
+  "loadingGameTypes": "กำลังโหลดประเภทเกม...",
+
+  "lowestScoreWins": "คะแนนต่ำสุดชนะ",
+
+  "highestScoreWins": "คะแนนสูงสุดชนะ",
+
+  "players": "ผู้เล่น",
+
+  "add": "เพิ่ม",
+
+  "pleaseEnterName": "กรุณาป้อนชื่อ",
+
+  "clear": "ล้าง",
+
+  "remove": "นำออก",
+
+  "game": "เกม",
+
+  "editGame": "แก้ไขเกม",
+
+  "editGameDialogTitle": "แก้ไขเกม",
+
+  "removePlayer": "นำผู้เล่นออก",
+
+  "addPlayerToGame": "เพิ่มผู้เล่น",
+
+  "warningRemovePlayer": "คำเตือน! การนำผู้เล่นนี้ออกจะลบคะแนนทั้งหมดของเขา/เธอจากเกมนี้ การกระทำนี้ไม่สามารถเลิกทำได้",
+
+  "confirmRemovePlayer": "คุณต้องการนำ {playerName} ออกจากเกมนี้จริงหรือ",
+
+  "playerRemoved": "นำผู้เล่นออกจากเกมแล้ว",
+
+  "deleteLastRound": "ลบรอบสุดท้าย",
+
+  "confirm": "ยืนยัน",
+
+  "confirmDeleteLastRound": "ลบรอบสุดท้ายหรือ",
+
+  "noPlayersInGame": "ไม่มีผู้เล่นในเกมนี้",
+
+  "round": "รอบ",
+
+  "boardRoundButton": "รอบ {round}",
+
+  "keypadCaption": "{player} · รอบ {round}",
+
+  "keypadCaptionWithPosition": "{player} · รอบ {round} · {position}/{count}",
+
+  "keypadTotalAfter": "รวมหลังจากนี้: {total}",
+
+  "keypadNext": "ถัดไป\n{player}",
+
+  "keypadValidateRound": "ยืนยันรอบ",
+
+  "keypadToggleSign": "เปลี่ยนเครื่องหมาย",
+
+  "keypadBackspace": "ลบตัวเลข",
+
+  "keypadShortcutTitle": "ปุ่มลัดแป้นพิมพ์",
+
+  "keypadShortcutKind": "ประเภทปุ่ม",
+
+  "keypadShortcutKindValue": "ป้อนค่า",
+
+  "keypadShortcutKindMultiply": "คูณคะแนน (บวกเท่านั้น)",
+
+  "keypadShortcutKindAdd": "เพิ่มในคะแนน",
+
+  "keypadShortcutAmount": "ตัวเลข",
+
+  "keypadShortcutLabel": "ป้ายกำกับปุ่ม (ตัวเลือก)",
+
+  "keypadShortcutAddRange": "จำนวนเต็มระหว่าง {min} และ {max} นอกเหนือจากศูนย์",
+
+  "keypadShortcutAmountRange": "จำนวนเต็มระหว่าง {min} และ {max}",
+
+  "appearance": "รูปลักษณ์",
+
+  "light": "สว่าง",
+
+  "dark": "มืด",
+
+  "system": "ระบบ",
+
+  "screen": "จอแสดงผล",
+
+  "keepScreenAwake": "เปิดใจของจอแสดงผล",
+
+  "keepScreenAwakeDescription": "ป้องกันไม่ให้จอแสดงผลหลับไประหว่างเล่นเกม",
+
+  "backup": "สำรองข้อมูล",
+
+  "exportDatabase": "ส่งออกฐานข้อมูล",
+
+  "exportDatabaseDescription": "บันทึกเกมทั้งหมดของคุณลงในไฟล์",
+
+  "databaseExportedTo": "ส่งออกฐานข้อมูลไปยัง:",
+
+  "errorDuringExport": "ข้อผิดพลาดระหว่างการส่งออก:",
+
+  "importDatabase": "นำเข้าฐานข้อมูล",
+
+  "importDatabaseDescription": "คืนค่าเกมของคุณจากไฟล์สำรองข้อมูล",
+
+  "confirmation": "ยืนยัน",
+
+  "importWarning": "การนำเข้าจะแทนที่ข้อมูลปัจจุบันของคุณทั้งหมด ระบบจะสร้างสำรองข้อมูลโดยอัตโนมัติก่อนการนำเข้า\n\nคุณต้องการดำเนินการต่อหรือไม่",
+
+  "import": "นำเข้า",
+
+  "databaseImportedSuccessfully": "นำเข้าฐานข้อมูลสำเร็จแล้ว",
+
+  "importSuccessful": "นำเข้าสำเร็จ",
+
+  "importSuccessMessage": "นำเข้าฐานข้อมูลสำเร็จแล้ว\n\nแอปพลิเคชันจะปิดตอนนี้ กรุณาเปิดใหม่เพื่อดูข้อมูลใหม่",
+
+  "ok": "ตกลง",
+
+  "errorDuringImport": "ข้อผิดพลาดระหว่างการนำเข้า:",
+
+  "noPlayers": "ไม่มีผู้เล่น",
+
+  "playersAppearMessage": "ผู้เล่นจะปรากฏที่นี่เมื่อ\nคุณสร้างเกม",
+
+  "gamesCount": "{count, plural, =0{0 เกม} =1{1 เกม} other{{count} เกม}}",
+
+  "winsCount": "{count, plural, =0{0 ชัยชนะ} =1{1 ชัยชนะ} other{{count} ชัยชนะ}}",
+
+  "changeColor": "เปลี่ยนสี",
+
+  "renamePlayer": "เปลี่ยนชื่อผู้เล่น",
+
+  "newName": "ชื่อใหม่",
+
+  "playerRenamedTo": "เปลี่ยนชื่อผู้เล่นเป็น \"{name}\"",
+
+  "deletePlayer": "ลบผู้เล่น",
+
+  "confirmDeletePlayer": "คุณต้องการลบ \"{name}\" จริงหรือ\n\nผู้เล่นนี้จะถูกนำออกจากเกม {count} เกม",
+
+  "playerDeleted": "ลบผู้เล่น \"{name}\" แล้ว",
+
+  "chooseColor": "เลือกสี",
+
+  "noGameTypes": "ไม่มีประเภทเกม",
+
+  "edit": "แก้ไข",
+
+  "newType": "ประเภทใหม่",
+
+  "editType": "แก้ไขประเภท",
+
+  "newGameType": "ประเภทเกมใหม่",
+
+  "gameTypeName": "ชื่อประเภทเกม",
+
+  "icon": "ไอคอน:",
+
+  "color": "สี:",
+
+  "chooseIcon": "เลือกไอคอน",
+
+  "nameIsRequired": "ต้องระบุชื่อ",
+
+  "create": "สร้าง",
+
+  "ranking": "การจัดอันดับ",
+
+  "noCurrentGame": "ไม่มีเกมปัจจุบัน",
+
+  "noScoresRecorded": "ไม่มีคะแนนที่บันทึก",
+
+  "playerStatistics": "สถิติผู้เล่น",
+
+  "noStatisticsAvailable": "ไม่มีสถิติที่พร้อมใช้งาน",
+
+  "gamesPlayed": "เกมที่เล่น",
+
+  "wins": "ชัยชนะ",
+
+  "winRate": "อัตราชัยชนะ",
+
+  "byGameType": "ตามประเภทเกม",
+
+  "rate": "อัตรา",
+
+  "version": "เวอร์ชัน {version}",
+
+  "appDescription": "แอปพลิเคชันจัดการคะแนนสำหรับเซสชั่นเกมของคุณโดย Vincent Moreau",
+
+  "features": "คุณสมบัติ",
+
+  "featureDifferentGameTypes": "ประเภทเกมต่างๆ",
+
+  "featurePlayerManagement": "การจัดการผู้เล่น",
+
+  "featureDetailedStatistics": "สถิติโดยละเอียด",
+
+  "featureCustomization": "การปรับแต่ง",
+
+  "featureDarkLightTheme": "ธีมมืด/สว่าง",
+
+  "featureGroupSharing": "การแชร์ในกลุ่ม",
+
+  "featureGameAnalysis": "การวิเคราะห์เกม AI",
+
+  "rateApp": "ให้คะแนน CountScore",
+
+  "search": "ค้นหา"
+,
+
+  "newPlayerName": "ชื่อผู้เล่นใหม่",
+
+  "noPlayersFound": "ไม่พบผู้เล่น",
+
+  "close": "ปิด",
+
+  "playerEliminationCondition": "เงื่อนไขการตัดสินผู้เล่น",
+
+  "gameOverCondition": "เงื่อนไขสิ้นสุดเกม",
+
+  "none": "ไม่มี",
+
+  "overThreshold": "เกินขีดจำกัด",
+
+  "underThreshold": "ต่ำกว่าขีดจำกัด",
+
+  "firstPlayerOver": "ผู้เล่นคนแรกถึง",
+
+  "firstPlayerUnder": "ผู้เล่นคนแรกต่ำกว่า",
+
+  "lastPlayerOver": "ผู้เล่นคนสุดท้ายที่เหลือ (อื่นๆ เกิน)",
+
+  "lastPlayerUnder": "ผู้เล่นคนสุดท้ายที่เหลือ (อื่นๆ ต่ำกว่า)",
+
+  "threshold": "ขีดจำกัด",
+
+  "conditionType": "ประเภทเงื่อนไข",
+
+  "continuePlay": "เล่นต่อ",
+
+  "gameEndWinner": "{name} ชนะ",
+
+  "gameEndTie": "เสมอ: {names}",
+
+  "gameEndRounds": "{count, plural, one{{count} รอบ} other{{count} รอบ}}",
+
+  "gameEndLowestWins": "คะแนนต่ำสุดชนะ",
+
+  "gameEndHighestWins": "คะแนนสูงสุดชนะ",
+
+  "gameEndAnalysis": "การวิเคราะห์",
+
+  "gameEndResults": "ผลลัพธ์",
+
+  "rankingEliminationNote": "จัดอันดับตามลำดับการตัดสิน: ผู้ที่ออกไปช้ากว่าจัดอันดับสูงกว่า ไม่ว่าจะเป็นจำนวนเงินเท่าใด",
+
+  "endGame": "สิ้นสุดเกม",
+
+  "reopenGame": "เปิดเกมอีกครั้ง",
+
+  "gameFinished": "เสร็จสิ้น",
+
+  "undo": "เลิกทำ",
+
+  "gameReopened": "เปิดเกมอีกครั้งแล้ว",
+
+  "comment": "ความเห็น",
+
+  "enterComment": "ป้อนความเห็น",
+
+  "analyzeGame": "วิเคราะห์เกม",
+
+  "analysisTitle": "การวิเคราะห์เกม",
+
+  "analysisStyle": "สไตล์การวิเคราะห์",
+
+  "analysisStyleProfessor": "ศาสตราจารย์",
+
+  "analysisStyleCommentator": "ผู้ประกาศกีฬา",
+
+  "analysisStyleDocumentary": "สารคดีสัตว์ป่า",
+
+  "analysisStyleNoir": "นักสืบ",
+
+  "analysisStyleBard": "กวีคนสำราญ",
+
+  "analysisStyleCoach": "โค้ช",
+
+  "analysisStyleConsultant": "ที่ปรึกษา",
+
+  "analysisStyleAstrologer": "นักโหราศาสตร์",
+
+  "analysisStyleRealityTv": "รายการโทรทัศน์จริง",
+
+  "generatingAnalysis": "สร้างการวิเคราะห์...",
+
+  "generateAnalysis": "สร้างการวิเคราะห์",
+
+  "regenerateAnalysis": "สร้างการวิเคราะห์ใหม่",
+
+  "deleteAnalysis": "ลบการวิเคราะห์",
+
+  "confirmRegenerateAnalysis": "สร้างใหม่ หรือไม่ การวิเคราะห์ปัจจุบันจะถูกแทนที่",
+
+  "confirmDeleteAnalysis": "ลบการวิเคราะห์สำหรับเกมนี้หรือ",
+
+  "analysisError": "ไม่สามารถสร้างการวิเคราะห์",
+
+  "analysisErrorStatus": "ไม่สามารถสร้างการวิเคราะห์ (HTTP {status})",
+
+  "analysisErrorUnavailable": "เซิร์ฟเวอร์วิเคราะห์หมดอายุชั่วคราว ลองใหม่ภายหลัง",
+
+  "analysisErrorGroupBudget": "กลุ่มของคุณใช้งบประมาณการวิเคราะห์หมดสำหรับเดือนนี้ ต่ออายุในตอนเริ่มต้นของเดือนหน้า",
+
+  "analysisStyleGroupDefault": "ไม่ได้เลือกสไตล์: เกมที่แชร์นี้จะถูกวิเคราะห์ในสไตล์และภาษาของกลุ่ม",
+
+  "retry": "ลองใหม่"
+,
+
+  "analysisGeneratedAt": "สร้างเมื่อ {date}",
+
+  "serverSection": "เซิร์ฟเวอร์",
+
+  "backendUrlLabel": "URL เซิร์ฟเวอร์",
+
+  "backendUrlHint": "https://countscore.example.com",
+
+  "backendUrlDescription": "คุณสมบัติที่เชื่อมต่อต้องการเซิร์ฟเวอร์ CountScore ติดตั้งแบบที่โฮสต์ด้วยตัวเองจากโฟลเดอร์ backend/ และป้อน URL ที่นี่ ไม่มีเซิร์ฟเวอร์ ข้อมูลจะไม่ออกจากอุปกรณ์นี้",
+
+  "backendNotConfigured": "ไม่ได้กำหนดค่าเซิร์ฟเวอร์",
+
+  "backendUrlInvalid": "ที่อยู่ไม่ถูกต้อง ป้อน URL เต็มเช่น https://countscore.example.com",
+
+  "backendUrlInsecure": "http:// ยอมรับได้เฉพาะบนเครือข่ายท้องถิ่นเท่านั้น ใช้ https:// สำหรับเซิร์ฟเวอร์สาธารณะ",
+
+  "testConnection": "ทดสอบการเชื่อมต่อ",
+
+  "connectionOk": "เซิร์ฟเวอร์ตอบสนอง",
+
+  "connectionFailed": "เซิร์ฟเวอร์ไม่ตอบสนอง",
+
+  "serverUrlSaved": "บันทึกเซิร์ฟเวอร์",
+
+  "analysisRequiresBackend": "การวิเคราะห์นี้ต้องการเซิร์ฟเวอร์ กำหนดค่าหนึ่งในการตั้งค่า",
+
+  "openSettings": "เปิดการตั้งค่า",
+
+  "serverUrlCleared": "ล้างเซิร์ฟเวอร์",
+
+  "groupSection": "กลุ่ม",
+
+  "groupDescription": "แชร์เกมกับอุปกรณ์อื่นในกลุ่มของคุณ เกมที่แชร์ผู้เล่น คะแนน ความเห็น และการวิเคราะห์ของพวกเขาจะถูกส่งไปยังเซิร์ฟเวอร์ของคุณ เกมอื่นๆ จะอยู่บนอุปกรณ์นี้",
+
+  "groupNeedsServer": "ตั้งค่าเซิร์ฟเวอร์ก่อน",
+
+  "groupCreate": "สร้างกลุ่ม",
+
+  "groupJoin": "เข้าร่วมกลุ่ม",
+
+  "groupNameLabel": "ชื่อกลุ่ม",
+
+  "groupNicknameLabel": "ชื่อเล่นของคุณ",
+
+  "groupNicknameHint": "สมาชิกอื่นๆ ในกลุ่มจะเห็น",
+
+  "groupNicknameCurrent": "ชื่อเล่นของคุณ: {nickname}",
+
+  "groupNicknameEdit": "เปลี่ยนชื่อเล่นของคุณ",
+
+  "shareTokenLabel": "โค้ดเชิญ",
+
+  "shareTokenHint": "วางโค้ดที่สมาชิกกลุ่มส่ง",
+
+  "groupCurrent": "กลุ่ม: {name}",
+
+  "shareTokenExplain": "ส่งโค้ดนี้ไปยังอุปกรณ์ที่ควรเข้าร่วมกลุ่ม ใครที่มีโค้ดนี้ก็สามารถเข้าร่วมได้",
+
+  "shareTokenCopy": "คัดลอกโค้ด",
+
+  "shareTokenCopied": "คัดลอกโค้ดแล้ว",
+
+  "shareTokenRotate": "โค้ดใหม่",
+
+  "shareTokenRotateConfirm": "โค้ดเก่าจะไม่ให้อยู่ใจใหญ่เข้าร่วมกลุ่มอีกต่อไป อุปกรณ์ที่อยู่ในกลุ่มแล้วจะไม่ได้รับผลกระทบ",
+
+  "groupLeave": "ออกจากกลุ่ม",
+
+  "groupLeaveConfirm": "อุปกรณ์นี้ออกจากกลุ่ม เกมที่แชร์จะอยู่บนอุปกรณ์นี้แต่จะไม่ซิงค์อีกต่อไป",
+
+  "groupLeft": "ออกจากกลุ่มแล้ว",
+
+  "groupJoined": "เข้าร่วมกลุ่มแล้ว",
+
+  "clearServerLeavesGroup": "ล้างเซิร์ฟเวอร์ออกจากกลุ่ม เกมที่แชร์จะอยู่บนอุปกรณ์นี้",
+
+  "syncNow": "ซิงค์ตอนนี้",
+
+  "syncStatusIdle": "ซิงค์เมื่อ {time}",
+
+  "syncStatusSyncing": "กำลังซิงค์...",
+
+  "syncStatusOffline": "เซิร์ฟเวอร์ไม่สามารถเข้าถึงได้ — การเปลี่ยนแปลงจะถูกส่งภายหลัง",
+
+  "syncStatusUnauthorized": "เซิร์ฟเวอร์ไม่ยอมรับอุปกรณ์นี้อีกต่อไป ออกจากกลุ่มแล้วเข้าร่วมใหม่",
+
+  "syncStatusError": "ข้อผิดพลาดเซิร์ฟเวอร์ระหว่างซิงค์",
+
+  "syncPending": "{count, plural, =1{1 การเปลี่ยนแปลงรอดำเนิน} other{{count} การเปลี่ยนแปลงรอดำเนิน}}"
+,
+
+  "syncRejected": "{count, plural, =1{1 การเปลี่ยนแปลงถูกปฏิเสธโดยเซิร์ฟเวอร์} other{{count} การเปลี่ยนแปลงถูกปฏิเสธโดยเซิร์ฟเวอร์}}",
+
+  "groupErrorUnknownToken": "โค้ดเชิญที่ไม่รู้จักหรือถูกแทนที่",
+
+  "groupErrorRateLimited": "มีการพยายามมากเกินไป ลองใหม่ในหนึ่งนาที",
+
+  "groupErrorUnreachable": "เซิร์ฟเวอร์ไม่สามารถเข้าถึงได้",
+
+  "groupErrorServer": "ข้อผิดพลาดเซิร์ฟเวอร์",
+
+  "shareWithGroup": "แชร์กับกลุ่ม",
+
+  "shareWithGroupSubtitle": "อุปกรณ์ในกลุ่ม {name} จะดูและแก้ไขเกมนี้",
+
+  "shareGameConfirm": "เกม ผู้เล่น คะแนน และความเห็นของเกมจะถูกส่งไปยัง {name} ไม่สามารถยกเลิกการแชร์ได้",
+
+  "gameSharedDone": "แชร์เกมกับกลุ่มแล้ว",
+
+  "gameSharedBadge": "เกมที่แชร์",
+
+  "invalidPlayerNamesForSync": "ชื่อเหล่านี้ไม่สามารถแชร์ได้: {names} ใช้ตัวอักษร ตัวเลข ช่องว่าง ยัติภังค์ เครื่องหมายอัญประกาศหรือจุด (32 ตัวอักษรมากที่สุด)",
+
+  "roundRenumbered": "รอบนี้ได้ถูกป้อนแล้วบนอุปกรณ์อื่น จึงกลายเป็นรอบ {number}",
+
+  "gameDeletedElsewhere": "เกม \"{name}\" ถูกลบบนอุปกรณ์อื่น",
+
+  "groupDevices": "อุปกรณ์",
+
+  "groupDevicesExplain": "โทรศัพท์ที่หายไปหรือขายได้อาจถูกนำออกจากกลุ่มที่นี่",
+
+  "groupDeviceThisOne": "อุปกรณ์นี้",
+
+  "groupDeviceLastSeen": "เห็นเมื่อ {date}",
+
+  "groupDeviceRevoke": "นำออก",
+
+  "groupDeviceRevokeConfirm": "นำ \"{label}\" ออกจากกลุ่ม หรือไม่ จะไม่สามารถซิงค์อีกต่อไป โค้ดเชิญจะเปลี่ยนด้วย: สมาชิกจะเก็บการเข้าถึงของพวกเขา แต่คุณจะต้องแชร์โค้ดใหม่เพื่อเชิญคนอื่น",
+
+  "groupDeviceRevoked": "\"{label}\" ถูกนำออกแล้ว โค้ดเชิญเปลี่ยนแล้ว",
+
+  "reportCommentary": "รายงานบทวิจารณ์นี้",
+
+  "reportCommentarySubject": "CountScore — รายงานบทวิจารณ์ AI",
+
+  "reportCommentaryBody": "อะไรผิดกับบทวิจารณ์ที่สร้างโดย AI นี้\n\n\n---\nการอ้างอิง: {reference}\nบทวิจารณ์:\n{commentary}",
+
+  "reportCommentaryNoMailApp": "ไม่พบแอปอีเมล เขียนถึง {email} เพื่อรายงานบทวิจารณ์นี้",
+
+  "gameRulesTitle": "กฎเกม",
+
+  "gameRulesInApp": "ใน CountScore",
+
+  "gameRulesSection": "กฎ",
+
+  "gameRulesNoElimination": "ไม่มีการตัดสินในการเล่น",
+
+  "gameRulesEliminationOver": "ผู้เล่นถูกตัดสินหากเกิน {threshold} คะแนน",
+
+  "gameRulesEliminationUnder": "ผู้เล่นถูกตัดสินหากต่ำกว่า {threshold} คะแนน",
+
+  "gameRulesEndFirstOver": "เกมจบทันทีที่ผู้เล่นถึง {threshold} คะแนน",
+
+  "gameRulesEndFirstUnder": "เกมจบทันทีที่ผู้เล่นต่ำกว่า {threshold} คะแนน",
+
+  "gameRulesEndLastOver": "เกมจบเมื่อผู้เล่นทุกคนยกเว้นหนึ่งเกิน {threshold} คะแนน",
+
+  "gameRulesEndLastUnder": "เกมจบเมื่อผู้เล่นทุกคนยกเว้นหนึ่งต่ำกว่า {threshold} คะแนน",
+
+  "gameRulesNoEnd": "ไม่มีจุดสิ้นสุดโดยอัตโนมัติ: คุณตัดสินใจเมื่อเกมจบ",
+
+  "gameRulesEmptyTitle": "ยังไม่มีกฎ",
+
+  "gameRulesEmptyHint": "จดวิธีการนับคะแนนของโต๊ะของคุณ — ทุกคนจะมีเวอร์ชันเดียวกัน",
+
+  "gameRulesWrite": "เขียนกฎ",
+
+  "gameRulesEditTitle": "แก้ไขกฎ",
+
+  "gameRulesEditorHint": "กฎของโต๊ะของคุณ รองรับ Markdown",
+
+  "gameRulesFromGroup": "กฎของกลุ่มของคุณ",
+
+  "gameRulesRestoreDefault": "คืนค่าเป็นกฎดั้งเดิม",
+
+  "gameRulesSaved": "บันทึกกฎแล้ว",
+
+  "gameRulesRestored": "คืนค่าเป็นกฎดั้งเดิมแล้ว",
+
+  "gameRulesDisclaimer": "สรุปที่เขียนขึ้นสำหรับ CountScore จากกฎที่เล่นกันทั่วไป ชื่อเกมเป็นของเจ้าของและใช้โดยอธิบายเท่านั้น"
+,
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameZapzapSortKey": "ZapZap",
+
+  "gameTypeNameUno": "Uno",
+
+  "gameTypeNameUnoSortKey": "Uno",
+
+  "gameTypeNameScrabble": "Scrabble",
+
+  "gameTypeNameScrabbleSortKey": "Scrabble",
+
+  "gameTypeNameOther": "อื่นๆ",
+
+  "gameTypeNameOtherSortKey": "อื่นๆ",
+
+  "gameTypeNameSkyjo": "Skyjo",
+
+  "gameTypeNameSkyjoSortKey": "Skyjo",
+
+  "gameTypeNamePresident": "President",
+
+  "gameTypeNamePresidentSortKey": "President",
+
+  "gameTypeNameBelote": "Belote",
+
+  "gameTypeNameBeloteSortKey": "Belote",
+
+  "gameTypeNameTarot": "Tarot",
+
+  "gameTypeNameTarotSortKey": "Tarot",
+
+  "gameTypeNameBridge": "Bridge",
+
+  "gameTypeNameBridgeSortKey": "Bridge",
+
+  "gameTypeNameRami": "Rummy",
+
+  "gameTypeNameRamiSortKey": "Rummy",
+
+  "gameTypeNameCoinche": "Coinche",
+
+  "gameTypeNameCoincheSortKey": "Coinche",
+
+  "gameTypeNameYahtzee": "Yahtzee",
+
+  "gameTypeNameYahtzeeSortKey": "Yahtzee",
+
+  "gameTypeNamePhase10": "Phase 10",
+
+  "gameTypeNamePhase10SortKey": "Phase 10",
+
+  "gameTypeNameFlip7": "Flip 7",
+
+  "gameTypeNameFlip7SortKey": "Flip 7",
+
+  "gameTypeNameMilleBornes": "Mille Bornes",
+
+  "gameTypeNameMilleBornesSortKey": "Mille Bornes",
+
+  "gameTypeNameRummikub": "Rummikub",
+
+  "gameTypeNameRummikubSortKey": "Rummikub",
+
+  "gameTypeNameSixNimmt": "Take 6",
+
+  "gameTypeNameSixNimmtSortKey": "Take 6",
+
+  "gameTypeNameQwirkle": "Qwirkle",
+
+  "gameTypeNameQwirkleSortKey": "Qwirkle",
+
+  "gameTypeNameFarkle": "Farkle",
+
+  "gameTypeNameFarkleSortKey": "Farkle",
+
+  "gameTypeNameCanasta": "Canasta",
+
+  "gameTypeNameCanastaSortKey": "Canasta",
+
+  "gameTypeNameWizard": "Wizard",
+
+  "gameTypeNameWizardSortKey": "Wizard",
+
+  "gameTypeNameTriomino": "Triomino",
+
+  "gameTypeNameTriominoSortKey": "Triomino",
+
+  "groupDeviceOwner": "เจ้าของ",
+
+  "groupDeviceMakeOwner": "ตั้งเป็นเจ้าของ",
+
+  "groupDeviceMakeOwnerConfirm": "มอบกลุ่มให้ \"{label}\" หรือไม่ อุปกรณ์นี้จะไม่สามารถนำอุปกรณ์ออกหรือเปลี่ยนโค้ดเชิญได้อีกต่อไป",
+
+  "groupDeviceOwnerChanged": "\"{label}\" เป็นเจ้าของกลุ่มแล้ว",
+
+  "groupDevicesExplainMember": "เฉพาะเจ้าของกลุ่มเท่านั้นที่สามารถนำอุปกรณ์ออกหรือเปลี่ยนโค้ดเชิญ",
+
+  "groupErrorNotOwner": "เฉพาะเจ้าของกลุ่มเท่านั้นที่สามารถทำสิ่งนี้ได้",
+
+  "whoStarts": "ใครเริ่มต้น",
+
+  "whoStartsAgain": "จับสลากใหม่",
+
+  "diceRoller": "ม้วนลูกเต๋า",
+
+  "diceCount": "จำนวนลูกเต๋า",
+
+  "diceRollAgain": "ม้วนอีกครั้ง",
+
+  "diceTotal": "รวม: {total}",
+
+  "resumeGame": "ดำเนินการต่อ",
+
+  "recentGames": "ล่าสุด",
+
+  "gameInProgress": "อยู่ระหว่างดำเนิน",
+
+  "roundNumber": "รอบ {number}",
+
+  "gameLeader": "{name} นำ · {score}",
+
+  "gameWonBy": "ชนะโดย {name}",
+
+  "boardRank": "{rank, plural, one{#{rank}} other{#{rank}}}",
+
+  "boardViewRows": "หนึ่งแถวต่อผู้เล่น",
+
+  "boardViewLanes": "หนึ่งคอลัมน์ต่อผู้เล่น",
+
+  "boardSeatOrder": "ลำดับที่นั่ง",
+
+  "boardRoundShort": "R{number}",
+
+  "boardPlayer": "ผู้เล่น",
+
+  "boardTotal": "รวม",
+
+  "boardLeader": "นำ",
+
+  "groupSettingsTitle": "ความเห็นและการใช้งาน",
+
+  "groupSettingsDescription": "สไตล์และภาษาของความเห็นที่เซิร์ฟเวอร์เขียนสำหรับเกมของกลุ่ม สมาชิกใดสามารถเปลี่ยนได้",
+
+  "groupCommentStyle": "สไตล์ความเห็น",
+
+  "groupCommentStyleNarrative": "บู๎ค",
+
+  "groupCommentStyleHumorous": "ตลกขบขัน",
+
+  "groupCommentStyleAnalytical": "วิเคราะห์"
+,
+
+  "groupCommentLanguage": "ภาษาความเห็น",
+
+  "groupSettingsSaved": "บันทึกการตั้งค่ากลุ่มแล้ว",
+
+  "groupUsageTitle": "การใช้ LLM เดือนนี้",
+
+  "groupUsageAmount": "ใช้ {used} จาก {budget}",
+
+  "groupUsageResets": "รีเซ็ตเมื่อ {date}",
+
+  "statsBestWinRate": "อัตราชัยชนะที่ดีที่สุด",
+
+  "statsWinsOutOfGames": "{wins, plural, =0{ไม่มีชัยชนะจาก {games}} one{{wins} ชัยชนะจาก {games}} other{{wins} ชัยชนะจาก {games}}}",
+
+  "statsColumnPlayer": "ผู้เล่น",
+
+  "statsColumnGames": "เกม",
+
+  "statsUnranked": "{count, plural, one{{count} เกม · ยังไม่ได้จัดอันดับ} other{{count} เกม · ยังไม่ได้จัดอันดับ}}",
+
+  "statsLeaderboardFooter": "{count, plural, one{จัดอันดับจากเกมจบ {count} เกม แตะผู้เล่นเพื่อดูการ์ดของพวกเขา} other{จัดอันดับจากเกมจบ {count} เกม แตะผู้เล่นเพื่อดูการ์ดของพวกเขา}}",
+
+  "statsGamesLabel": "{count, plural, one{เกม} other{เกม}}",
+
+  "statsWinsLabel": "{count, plural, one{ชัยชนะ} other{ชัยชนะ}}",
+
+  "statsAverageRank": "สถานที่เฉลี่ย",
+
+  "statsRankChartTitle": "{count, plural, one{สถานที่ เกมสุดท้าย} other{สถานที่ {count} เกมสุดท้าย}}",
+
+  "statsTrendImproving": "ดีขึ้น",
+
+  "statsTrendDeclining": "แย่ลง",
+
+  "statsTrendSteady": "คงที่",
+
+  "statsRankOrdinal": "{rank, select, 1{1} 2{2} 3{3} other{{rank}}}",
+
+  "statsWinStreak": "{count, plural, =0{ไม่มีชัยชนะติดต่อกัน} one{สตรีค: {count} ชัยชนะ} other{สตรีค: {count} ชัยชนะ}}",
+
+  "statsRecord": "ที่ดีที่สุด: {total}",
+
+  "statsOnGameType": "บน {gameType}",
+
+  "statsAverageTotal": "รวมสุดท้ายเฉลี่ย",
+
+  "statsBestTotal": "รวมสุดท้ายที่ดีที่สุด",
+
+  "statsMostBeaten": "คู่ต่อสู้ที่พบบ่อยที่สุด",
+
+  "statsOpenPlayerCard": "เปิดการ์ดผู้เล่น",
+
+  "shareResult": "แชร์ผลลัพธ์",
+
+  "shareAnalysis": "แชร์การวิเคราะห์",
+
+  "shareResultSubject": "ผลลัพธ์: {gameName}",
+
+  "shareResultTitle": "เกมของ {date}",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} คะแนน} other{{points} คะแนน}}",
+
+  "shareResultFooter": "คะแนนที่เก็บไว้ด้วย {appName}: {url}",
+
+  "shareFailed": "ไม่สามารถเปิดการแชร์",
+
+  "newGameNameLabel": "ชื่อ",
+
+  "newGameGameLabel": "เกม",
+
+  "newGameAllGames": "เกมทั้งหมด ({count})",
+
+  "newGamePlayersLabel": "ผู้เล่น · ลำดับที่นั่ง",
+
+  "newGameDragToReorder": "ลากเพื่อเรียงลำดับใหม่",
+
+  "newGameDealer": "จ่าย",
+
+  "newGameAddPlayer": "เพิ่มผู้เล่น",
+
+  "newGameStart": "{count, plural, =0{เริ่ม} =1{เริ่ม · 1 ผู้เล่น} other{เริ่ม · {count} ผู้เล่น}}",
+
+  "whoIsPlayingTitle": "ใครกำลังเล่น",
+
+  "whoIsPlayingSearchHint": "ชื่อ หรือผู้เล่นใหม่",
+
+  "whoIsPlayingFrequent": "มักเล่นกับคุณ",
+
+  "whoIsPlayingSameAs": "ผู้เล่นเดียวกับ \"{gameName}\"",
+
+  "whoIsPlayingCreate": "สร้าง \"{name}\"",
+
+  "whoIsPlayingConfirm": "{count, plural, =0{เสร็จสิ้น} =1{เพิ่ม 1 ผู้เล่น} other{เพิ่ม {count} ผู้เล่น}}",
+
+  "defaultGameName": "เกม {number}",
+
+  "pwaUpdateReady": "เวอร์ชันใหม่ของ CountScore พร้อมใช้งาน",
+
+  "pwaUpdateReload": "โหลดใหม่",
+
+  "thresholdIsRequired": "จำเป็นต้องมีขีดจำกัด"
+,
+
+  "thresholdTooLarge": "ขีดจำกัดไม่สามารถสูงกว่า {max}",
+
+  "deletionImpossible": "ไม่สามารถลบ",
+
+  "gameTypeInUse": "{count, plural, one{1 เกมใช้ประเภทนี้: ไม่สามารถลบได้} other{{count} เกมใช้ประเภทนี้: ไม่สามารถลบได้}}",
+
+  "confirmDeleteGameType": "คุณต้องการลบประเภทเกม \"{name}\" จริงหรือ",
+
+  "winDirectionChangeTitle": "สลับผู้ชนะหรือไม่",
+
+  "winDirectionChangeWarning": "{count, plural, one{1 เกมจบของประเภทนี้จะมีการจัดอันดับสลับไป: ผู้ชนะกลายเป็นคนสุดท้าย} other{{count} เกมจบของประเภทนี้จะมีการจัดอันดับสลับไป: ผู้ชนะกลายเป็นคนสุดท้าย}}",
+
+  "winDirectionContradiction": "เงื่อนไขสิ้นสุดเกมให้รางวัลตรงกันข้ามของผู้ชนะที่เลือก กฎของบ้านอาจต้องการสิ่งนี้",
+
+  "rulesOutOfDateTitle": "อัพเดตกฎหรือไม่",
+
+  "rulesOutOfDateMessage": "กฎของประเภทนี้ยังคงอธิบายเงื่อนไขเก่า",
+
+  "later": "ภายหลัง",
+
+  "currentIcon": "ไอคอนปัจจุบัน",
+
+  "currentColor": "สีปัจจุบัน",
+
+  "groupDeviceClaimOwner": "เรียกร้องความเป็นเจ้าของ",
+
+  "groupDeviceClaimOwnerConfirm": "\"{label}\" เป็นเจ้าของกลุ่ม แต่ไม่เห็นมานาน คุณต้องการขอความเป็นเจ้าของบนอุปกรณ์นี้หรือไม่",
+
+  "groupDeviceOwnerClaimed": "อุปกรณ์นี้เป็นเจ้าของกลุ่มแล้ว",
+
+  "groupErrorOwnerActive": "เจ้าของกลุ่มเห็นเมื่อเร็ว ๆ นี้: ไม่สามารถเรียกร้องความเป็นเจ้าของได้",
+
+  "groupCreatedOwnerExplain": "สร้างกลุ่มแล้ว อุปกรณ์นี้เป็นเจ้าของ บทบาทสามารถมอบให้อีกอุปกรณ์ในอุปกรณ์",
+
+  "boardEliminated": "ตัดสิน",
+
+  "soundsSection": "เสียง",
+
+  "gameSounds": "เสียงเกม",
+
+  "gameSoundsDescription": "เสียงเมื่อผู้เล่นถูกตัดสิน เมื่อชนะเกม และเมื่อหมดเวลา",
+
+  "turnTimer": "ตัวจับเวลา",
+
+  "turnTimerLess": "เวลาน้อยกว่า",
+
+  "turnTimerMore": "เวลามากขึ้น",
+
+  "turnTimerStart": "เริ่ม",
+
+  "turnTimerPause": "หยุดชั่วคราว",
+
+  "turnTimerReset": "รีเซ็ต",
+
+  "turnTimerTimeUp": "หมดเวลา",
+
+  "configShareOpen": "แชร์ด้วยโค้ด QR",
+
+  "configShareTitle": "แชร์การกำหนดค่านี้",
+
+  "configShareExplainServer": "สแกนรหัสนี้ด้วยโทรศัพท์อื่นเพื่อตั้งค่าด้วยเซิร์ฟเวอร์เดียวกัน",
+
+  "configShareExplainGroup": "สแกนรหัสนี้ด้วยโทรศัพท์อื่นเพื่อตั้งค่าด้วยเซิร์ฟเวอร์เดียวกันและเข้าร่วมกลุ่ม {name} รหัสนี้มีโค้ดเชิญกลุ่ม: แสดงเฉพาะให้กับผู้คนที่คุณต้องการในกลุ่ม",
+
+  "configShareWebAppLabel": "ที่อยู่เว็บแอป",
+
+  "configShareWebAppHelper": "ที่เซิร์ฟเวอร์ให้บริการเว็บแอป CountScore เช่น https://countscore.example.com/countscore รหัสเปิดหน้านี้",
+
+  "configShareWebAppNeeded": "ป้อนที่อยู่เว็บแอปเพื่อแสดงรหัส",
+
+  "configShareQrLabel": "โค้ด QR ของลิงก์การกำหนดค่า",
+
+  "configShareCopyLink": "คัดลอกลิงก์",
+
+  "configShareLinkCopied": "คัดลอกลิงก์แล้ว",
+
+  "configShareTooLong": "ลิงก์นี้ยาวเกินไปที่จะใส่ในโค้ด QR ใช้ \"คัดลอกลิงก์\" แทน",
+
+  "replaceConfigTitle": "แทนที่การกำหนดค่าหรือไม่",
+
+  "replaceConfigCurrent": "ตอนนี้: {value}",
+
+  "replaceConfigNew": "ใหม่: {value}",
+
+  "replaceConfigInvite": "โค้ดเชิญ {code}",
+
+  "replaceConfigLeavesGroup": "อุปกรณ์นี้จะออกจากกลุ่ม {name} เกมของมันจะอยู่บนอุปกรณ์นี้",
+
+  "replaceConfigConfirm": "แทนที่",
+
+  "replaceConfigUnsynced": "{count, plural, =1{1 การเปลี่ยนแปลงบนอุปกรณ์นี้ยังไม่ได้ถึงกลุ่ม หากคุณออกตอนนี้ กลุ่มจะไม่รับมันเลย} other{{count} การเปลี่ยนแปลงบนอุปกรณ์นี้ยังไม่ได้ถึงกลุ่ม หากคุณออกตอนนี้ กลุ่มจะไม่รับมันเลย}}",
+
+  "replaceConfigLeaveAnyway": "ออกไปต่อ",
+
+  "replaceConfigDone": "แทนที่การกำหนดค่าแล้ว",
+
+  "replaceConfigUnchanged": "อุปกรณ์นี้ใช้การกำหนดค่านี้แล้ว",
+
+  "joinLinkHandOverMessage": "ลิงก์นี้อาจเปิดในแอป CountScore Android ถ้าไม่มีแอปติดตั้ง Play Store จะเปิดแทน",
+
+  "joinLinkOpenInApp": "เปิดในแอป",
+
+  "joinLinkContinueHere": "ดำเนินการต่อในเบราวเซอร์"
+}

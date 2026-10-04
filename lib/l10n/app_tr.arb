@@ -1,0 +1,771 @@
+{
+  "@@locale": "tr",
+
+  "appTitle": "CountScore",
+
+  "homeTitle": "Anasayfa",
+
+  "playersListTitle": "Oyuncular Listesi",
+
+  "gameTypesTitle": "Oyun Türleri",
+
+  "settingsTitle": "Ayarlar",
+
+  "aboutTitle": "Hakkında",
+
+  "newGame": "Yeni Oyun",
+
+  "noGames": "Oyun yok",
+
+  "noGamesOfThisType": "Bu türde oyun yok",
+
+  "createFirstGame": "İlk oyununuzu oluşturun",
+
+  "newWithSamePlayers": "Aynı oyuncularla yeni oyun",
+
+  "playAgain": "Tekrar oyna",
+
+  "rename": "Yeniden adlandır",
+
+  "delete": "Sil",
+
+  "confirmDeletion": "Silmeyi onayla",
+
+  "confirmDeleteGame": "\"{name}\" oyununu silmek istediğinizden emin misiniz?",
+
+  "cancel": "İptal",
+
+  "renameGame": "Oyunu yeniden adlandır",
+
+  "gameName": "Oyun adı",
+
+  "save": "Kaydet",
+
+  "allGames": "Tüm oyunlar",
+
+  "filterGames": "Oyunları filtrele",
+
+  "applyFilter": "Uygula",
+
+  "resetFilter": "Sıfırla",
+
+  "selectGameType": "Bir oyun türü seçin",
+
+  "gameType": "Oyun türü",
+
+  "loadingGameTypes": "Oyun türleri yükleniyor...",
+
+  "lowestScoreWins": "En düşük skor kazanır",
+
+  "highestScoreWins": "En yüksek skor kazanır",
+
+  "players": "Oyuncular",
+
+  "add": "Ekle",
+
+  "pleaseEnterName": "Lütfen bir ad girin",
+
+  "clear": "Temizle",
+
+  "remove": "Kaldır",
+
+  "game": "Oyun",
+
+  "editGame": "Oyunu düzenle",
+
+  "editGameDialogTitle": "Oyunu düzenle",
+
+  "removePlayer": "Oyuncuyu kaldır",
+
+  "addPlayerToGame": "Oyuncu ekle",
+
+  "warningRemovePlayer": "Uyarı! Bu oyuncuyu kaldırmak, bu oyundaki tüm puanlarını silecektir. Bu işlem geri alınamaz.",
+
+  "confirmRemovePlayer": "{playerName} oyuncusunu bu oyundan kaldırmak istediğinizden emin misiniz?",
+
+  "playerRemoved": "Oyuncu oyundan kaldırıldı",
+
+  "deleteLastRound": "Son turu sil",
+
+  "confirm": "Onayla",
+
+  "confirmDeleteLastRound": "Son tur silinsin mi?",
+
+  "noPlayersInGame": "Bu oyunda oyuncu yok",
+
+  "round": "Tur",
+
+  "boardRoundButton": "Tur {round}",
+
+  "keypadCaption": "{player} · tur {round}",
+
+  "keypadCaptionWithPosition": "{player} · tur {round} · {position}/{count}",
+
+  "keypadTotalAfter": "sonra toplam: {total}",
+
+  "keypadNext": "Sonraki\n{player}",
+
+  "keypadValidateRound": "Turu onayla",
+
+  "keypadToggleSign": "İşareti değiştir",
+
+  "keypadBackspace": "Bir rakam sil",
+
+  "keypadShortcutTitle": "Tuş takısı kısayolu",
+
+  "keypadShortcutKind": "Tuş türü",
+
+  "keypadShortcutKindValue": "Bir değer gir",
+
+  "keypadShortcutKindMultiply": "Puanı çarp (sadece pozitif)",
+
+  "keypadShortcutKindAdd": "Puana ekle",
+
+  "keypadShortcutAmount": "Sayı",
+
+  "keypadShortcutLabel": "Tuş etiketi (isteğe bağlı)",
+
+  "keypadShortcutAddRange": "{min} ve {max} arasında bir tam sayı, 0 dışında",
+
+  "keypadShortcutAmountRange": "{min} ve {max} arasında bir tam sayı",
+
+  "appearance": "Görünüm",
+
+  "light": "Açık",
+
+  "dark": "Koyu",
+
+  "system": "Sistem",
+
+  "screen": "Ekran",
+
+  "keepScreenAwake": "Ekranı açık tutun",
+
+  "keepScreenAwakeDescription": "Oyun sırasında ekranın uyku moduna girmesini engeller",
+
+  "backup": "Yedekleme",
+
+  "exportDatabase": "Veritabanını dışa aktar",
+
+  "exportDatabaseDescription": "Tüm oyunlarınızı bir dosyaya kaydedin",
+
+  "databaseExportedTo": "Veritabanı dışa aktarıldı:",
+
+  "errorDuringExport": "Dışa aktarma sırasında hata:",
+
+  "importDatabase": "Veritabanını içe aktar",
+
+  "importDatabaseDescription": "Oyunlarınızı yedek dosyasından geri yükleyin",
+
+  "confirmation": "Onay",
+
+  "importWarning": "İçe aktarma tüm mevcut verilerinizi değiştirecektir. İçe aktarmadan önce otomatik bir yedek oluşturulacaktır.\n\nDevam etmek ister misiniz?",
+
+  "import": "İçe aktar",
+
+  "databaseImportedSuccessfully": "Veritabanı başarıyla içe aktarıldı",
+
+  "importSuccessful": "İçe aktarma başarılı",
+
+  "importSuccessMessage": "Veritabanı başarıyla içe aktarıldı.\n\nUygulama şimdi kapatılacak. Yeni verileri görmek için lütfen tekrar açın.",
+
+  "ok": "Tamam",
+
+  "errorDuringImport": "İçe aktarma sırasında hata:",
+
+  "noPlayers": "Oyuncu yok",
+
+  "playersAppearMessage": "Oyunlar oluşturulduktan sonra\noyuncular burada görünecektir",
+
+  "gamesCount": "{count, plural, =0{0 oyun} =1{1 oyun} other{{count} oyun}}",
+
+  "winsCount": "{count, plural, =0{0 zafer} =1{1 zafer} other{{count} zafer}}",
+
+  "changeColor": "Rengi değiştir",
+
+  "renamePlayer": "Oyuncuyu yeniden adlandır",
+
+  "newName": "Yeni ad",
+
+  "playerRenamedTo": "Oyuncu \"{name}\" olarak yeniden adlandırıldı",
+
+  "deletePlayer": "Oyuncuyu sil",
+
+  "confirmDeletePlayer": "\"{name}\" oyuncusunu silmek istediğinizden emin misiniz?\n\nBu oyuncu {count} oyundan kaldırılacak.",
+
+  "playerDeleted": "\"{name}\" oyuncusu silindi",
+
+  "chooseColor": "Bir renk seçin",
+
+  "noGameTypes": "Oyun türü yok",
+
+  "edit": "Düzenle",
+
+  "newType": "Yeni tür",
+
+  "editType": "Türü düzenle",
+
+  "newGameType": "Yeni oyun türü",
+
+  "gameTypeName": "Oyun türü adı",
+
+  "icon": "İkon:",
+
+  "color": "Renk:",
+
+  "chooseIcon": "Bir ikon seçin",
+
+  "nameIsRequired": "Ad gereklidir",
+
+  "create": "Oluştur",
+
+  "ranking": "Sıralama",
+
+  "noCurrentGame": "Mevcut oyun yok",
+
+  "noScoresRecorded": "Hiçbir puan kaydedilmedi",
+
+  "playerStatistics": "Oyuncu İstatistikleri",
+
+  "noStatisticsAvailable": "İstatistik yok",
+
+  "gamesPlayed": "Oynanan oyunlar",
+
+  "wins": "Zafetler",
+
+  "winRate": "Zafer yüzdesi",
+
+  "byGameType": "Oyun türüne göre",
+
+  "rate": "Oran",
+
+  "version": "Sürüm {version}",
+
+  "appDescription": "Oyun seanslarınız için skor yönetim uygulaması - Vincent Moreau",
+
+  "features": "Özellikler",
+
+  "featureDifferentGameTypes": "Farklı oyun türleri",
+
+  "featurePlayerManagement": "Oyuncu yönetimi",
+
+  "featureDetailedStatistics": "Ayrıntılı istatistikler",
+
+  "featureCustomization": "Özelleştirme",
+
+  "featureDarkLightTheme": "Koyu/açık tema",
+
+  "featureGroupSharing": "Grup paylaşımı",
+
+  "featureGameAnalysis": "Yapay zeka oyun analizi",
+
+  "rateApp": "CountScore değerlendir",
+
+  "search": "Ara",
+
+  "newPlayerName": "Yeni oyuncu adı",
+
+  "noPlayersFound": "Oyuncu bulunamadı",
+
+  "close": "Kapat",
+
+  "playerEliminationCondition": "Oyuncu Eleme Koşulu",
+
+  "gameOverCondition": "Oyun Bitme Koşulu",
+
+  "none": "Hiçbiri",
+
+  "overThreshold": "Eşik değerini aş",
+
+  "underThreshold": "Eşik değerinin altında",
+
+  "firstPlayerOver": "İlk oyuncu ulaşır",
+
+  "firstPlayerUnder": "İlk oyuncu altında",
+
+  "lastPlayerOver": "Son kalan oyuncu (diğerleri üstünde)",
+
+  "lastPlayerUnder": "Son kalan oyuncu (diğerleri altında)",
+
+  "threshold": "Eşik değeri",
+
+  "conditionType": "Koşul Türü",
+
+
+
+  "continuePlay": "Oynamaya Devam Et",
+  "gameEndWinner": "{name} kazanır",
+  "gameEndTie": "Berabere: {names}",
+  "gameEndRounds": "{count, plural, one{{count} tur} other{{count} tur}}",
+  "gameEndLowestWins": "en düşük skor kazanır",
+  "gameEndHighestWins": "en yüksek skor kazanır",
+  "gameEndAnalysis": "Analiz",
+  "gameEndResults": "Sonuçlar",
+  "rankingEliminationNote": "Eleme sırasına göre sıralanır: daha sonra çıkan oyuncu, toplamdan bağımsız olarak öne geçer.",
+
+  "endGame": "Oyunu Bitir",
+  "reopenGame": "Oyunu tekrar aç",
+  "gameFinished": "Tamamlandı",
+  "undo": "Geri al",
+  "gameReopened": "Oyun tekrar açıldı",
+
+  "comment": "Yorum",
+
+  "enterComment": "Bir yorum girin",
+
+  "analyzeGame": "Oyunu analiz et",
+
+  "analysisTitle": "Oyun analizi",
+
+  "analysisStyle": "Analiz stili",
+
+  "analysisStyleProfessor": "Profesör",
+
+  "analysisStyleCommentator": "Spor spikeri",
+
+  "analysisStyleDocumentary": "Vahşi yaşam belgeseli",
+
+  "analysisStyleNoir": "Dedektif",
+
+  "analysisStyleBard": "Ozanlar",
+
+  "analysisStyleCoach": "Antrenör",
+
+  "analysisStyleConsultant": "Danışman",
+
+  "analysisStyleAstrologer": "Astroloji uzmanı",
+
+  "analysisStyleRealityTv": "Gerçeklik şovu",
+
+  "generatingAnalysis": "Analiz oluşturuluyor…",
+
+  "generateAnalysis": "Analiz oluştur",
+
+  "regenerateAnalysis": "Analizi yeniden oluştur",
+
+  "deleteAnalysis": "Analizi sil",
+
+  "confirmRegenerateAnalysis": "Yeniden oluştur? Mevcut analiz değiştirilecektir.",
+
+  "confirmDeleteAnalysis": "Bu oyunun analizi silinsin mi?",
+
+  "analysisError": "Analiz oluşturma başarısız",
+
+  "analysisErrorStatus": "Analiz oluşturma başarısız (HTTP {status})",
+  "analysisErrorUnavailable": "Analiz sunucusu geçici olarak kullanılamıyor. Daha sonra tekrar deneyin.",
+  "analysisErrorGroupBudget": "Grubunuz bu ay için analiz bütçesini tüketmiştir. Gelecek ayın başında yenilenir.",
+  "analysisStyleGroupDefault": "Stil seçilmedi: bu paylaşılan oyun grubun stili ve diliyle analiz edilecek.",
+
+  "retry": "Tekrar dene",
+
+  "analysisGeneratedAt": "{date} tarihinde oluşturuldu",
+
+  "serverSection": "Sunucu",
+  "backendUrlLabel": "Sunucu URL'si",
+  "backendUrlHint": "https://countscore.example.com",
+  "backendUrlDescription": "Bağlantılı özellikler bir CountScore sunucusu gerektirir. Backend/ klasöründen birisini kurun ve adresini buraya girin. Sunucu olmadığında, hiçbir veri bu cihazdan çıkmaz.",
+  "backendNotConfigured": "Sunucu yapılandırılmadı",
+  "backendUrlInvalid": "Geçersiz adres. Tam bir URL girin, örneğin https://countscore.example.com",
+  "backendUrlInsecure": "http:// sadece yerel ağda kabul edilir. Genel bir sunucu için https:// kullanın.",
+  "testConnection": "Bağlantıyı test et",
+  "connectionOk": "Sunucu yanıt veriyor",
+  "connectionFailed": "Sunucu yanıt vermiyor",
+  "serverUrlSaved": "Sunucu kaydedildi",
+  "analysisRequiresBackend": "Bu analiz bir sunucu gerektirir. Ayarlarda birini yapılandırın.",
+  "openSettings": "Ayarları aç",
+  "serverUrlCleared": "Sunucu temizlendi",
+
+  "groupSection": "Grup",
+
+  "groupDescription": "Grubunuzdaki diğer cihazlarla oyunları paylaşın. Paylaşılan oyunlar, oyuncuları, puanları, yorumları ve analizleri sunucunuza gönderilir; diğer oyunlar bu cihazda kalır.",
+
+  "groupNeedsServer": "Önce yukarıya bir sunucu kurun.",
+
+  "groupCreate": "Grup oluştur",
+
+  "groupJoin": "Gruba katıl",
+
+  "groupNameLabel": "Grup adı",
+
+  "groupNicknameLabel": "Sizin takma adınız",
+
+  "groupNicknameHint": "Gruptaki diğerleri bunu görecek",
+
+  "groupNicknameCurrent": "Sizin takma adınız: {nickname}",
+
+  "groupNicknameEdit": "Takma adınızı değiştirin",
+
+  "shareTokenLabel": "Davet kodu",
+
+  "shareTokenHint": "Bir grup üyesinin gönderdiği kodu yapıştırın",
+
+  "groupCurrent": "Grup: {name}",
+
+  "shareTokenExplain": "Bu kodu gruba katılması gereken cihazlara gönderin. Onu alan herkes katılabilir.",
+
+  "shareTokenCopy": "Kodu kopyala",
+
+  "shareTokenCopied": "Kod kopyalandı",
+
+  "shareTokenRotate": "Yeni kod",
+
+  "shareTokenRotateConfirm": "Eski kod artık kimsenin gruba katılmasına izin vermez. Zaten üye olan cihazlar etkilenmez.",
+
+  "groupLeave": "Grubu terk et",
+
+  "groupLeaveConfirm": "Bu cihaz grubu terk edecek. Paylaşılan oyunlar bu cihazda kalacak ancak artık eşitlenmeyecek.",
+
+  "groupLeft": "Grup terk edildi",
+
+  "groupJoined": "Gruba katıldı",
+
+  "clearServerLeavesGroup": "Sunucuyu silmek grubu terk ettirir. Paylaşılan oyunlar bu cihazda kalır.",
+
+  "syncNow": "Şimdi eşitle",
+
+  "syncStatusIdle": "{time} tarihinde eşitlendi",
+
+  "syncStatusSyncing": "Eşitleniyor…",
+
+  "syncStatusOffline": "Sunucuya ulaşılamıyor — değişiklikler daha sonra gönderilecek",
+
+  "syncStatusUnauthorized": "Sunucu artık bu cihazı kabul etmiyor. Grubu terk edin, sonra tekrar katılın.",
+
+  "syncStatusError": "Eşitleme sırasında sunucu hatası",
+
+  "syncPending": "{count, plural, =1{1 değişiklik bekleniyor} other{{count} değişiklik bekleniyor}}",
+
+  "syncRejected": "{count, plural, =1{1 değişiklik sunucu tarafından reddedildi} other{{count} değişiklik sunucu tarafından reddedildi}}",
+
+  "groupErrorUnknownToken": "Bilinmeyen veya değiştirilen davet kodu",
+
+  "groupErrorRateLimited": "Çok fazla deneme. Bir dakika sonra tekrar deneyin.",
+
+  "groupErrorUnreachable": "Sunucuya ulaşılamıyor",
+
+  "groupErrorServer": "Sunucu hatası",
+
+  "shareWithGroup": "Grupla paylaş",
+
+  "shareWithGroupSubtitle": "{name} grubundaki cihazlar bu oyunu görecek ve düzenleyecek",
+
+  "shareGameConfirm": "Oyun, oyuncuları, puanları ve yorumları {name} adlı gruba gönderilecek. Paylaşım geri alınamaz.",
+
+  "gameSharedDone": "Oyun grupla paylaşıldı",
+
+  "gameSharedBadge": "Paylaşılan oyun",
+
+  "invalidPlayerNamesForSync": "Bu adlar paylaşılamaz: {names}. Harfler, rakamlar, boşluklar, tipler, kesmeleri veya noktaları kullanın (en fazla 32 karakter).",
+
+  "roundRenumbered": "Bu tur başka bir cihazda zaten girilmişti, bu nedenle {number} turu oldu.",
+
+  "gameDeletedElsewhere": "\"{name}\" başka bir cihazda silindi",
+  "groupDevices": "Cihazlar",
+  "groupDevicesExplain": "Kaybolan veya satılan bir telefon burada gruptan kaldırılabilir.",
+  "groupDeviceThisOne": "Bu cihaz",
+  "groupDeviceLastSeen": "Son olarak {date} tarihinde görüldü",
+  "groupDeviceRevoke": "Kaldır",
+  "groupDeviceRevokeConfirm": "\"{label}\" öğesini gruptan kaldırsın mı? Artık eşitlenmeyecek. Davet kodu da değişir: üyeler erişimlerini tutar, ancak herhangi birini davet etmek için yeni kodu paylaşmanız gerekir.",
+  "groupDeviceRevoked": "\"{label}\" kaldırıldı. Davet kodu değişti.",
+
+  "reportCommentary": "Bu yorumu bildir",
+
+  "reportCommentarySubject": "CountScore — Yapay zeka yorum raporu",
+
+  "reportCommentaryBody": "Bu yapay zeka tarafından üretilen yorumda sorun nedir?\n\n\n---\nReferans: {reference}\nYorum:\n{commentary}",
+
+  "reportCommentaryNoMailApp": "E-posta uygulaması bulunamadı. Bu yorumu bildirmek için {email} adresine yazın.",
+
+  "gameRulesTitle": "Oyun kuralları",
+  "gameRulesInApp": "CountScore'da",
+  "gameRulesSection": "Kurallar",
+  "gameRulesNoElimination": "Oyun sırasında eleme yok",
+  "gameRulesEliminationOver": "Bir oyuncu {threshold} puanın üzerinde elenir",
+  "gameRulesEliminationUnder": "Bir oyuncu {threshold} puanın altında elenir",
+  "gameRulesEndFirstOver": "Bir oyuncu {threshold} puana ulaştığında oyun biter",
+  "gameRulesEndFirstUnder": "Bir oyuncu {threshold} puanın altına düştüğünde oyun biter",
+  "gameRulesEndLastOver": "Birden fazla oyuncu {threshold} puanı aştığında oyun biter",
+  "gameRulesEndLastUnder": "Birden fazla oyuncu {threshold} puanın altında olduğunda oyun biter",
+  "gameRulesNoEnd": "Otomatik sonlanma yok: oyun ne zaman bittiğine siz karar verirsiniz",
+  "gameRulesEmptyTitle": "Henüz kural yok",
+  "gameRulesEmptyHint": "Tablonuzun puanları nasıl saydığını yazın — herkes aynı sürüme sahip olacak.",
+  "gameRulesWrite": "Kuralları yazın",
+  "gameRulesEditTitle": "Kuralları düzenle",
+  "gameRulesEditorHint": "Tablonuzun kuralları. Markdown desteklenir.",
+  "gameRulesFromGroup": "Grubunuzun kuralları",
+  "gameRulesRestoreDefault": "Orijinal kuralları geri yükle",
+  "gameRulesSaved": "Kurallar kaydedildi",
+  "gameRulesRestored": "Orijinal kurallar geri yüklendi",
+  "gameRulesDisclaimer": "CountScore için yazılan özet, genel olarak oynanan kurallardan. Oyun adları sahibine aittir ve sadece açıklayıcı olarak kullanılır.",
+
+  "gameTypeNameZapzap": "ZapZap",
+
+  "gameTypeNameZapzapSortKey": "ZapZap",
+
+  "gameTypeNameUno": "Uno",
+
+  "gameTypeNameUnoSortKey": "Uno",
+
+  "gameTypeNameScrabble": "Scrabble",
+
+  "gameTypeNameScrabbleSortKey": "Scrabble",
+
+  "gameTypeNameOther": "Diğer",
+
+  "gameTypeNameOtherSortKey": "Diğer",
+
+  "gameTypeNameSkyjo": "Skyjo",
+
+  "gameTypeNameSkyjoSortKey": "Skyjo",
+
+  "gameTypeNamePresident": "Başkan",
+
+  "gameTypeNamePresidentSortKey": "Başkan",
+
+  "gameTypeNameBelote": "Belote",
+
+  "gameTypeNameBeloteSortKey": "Belote",
+
+  "gameTypeNameTarot": "Tarot",
+
+  "gameTypeNameTarotSortKey": "Tarot",
+
+  "gameTypeNameBridge": "Bridge",
+
+  "gameTypeNameBridgeSortKey": "Bridge",
+
+  "gameTypeNameRami": "Rummy",
+
+  "gameTypeNameRamiSortKey": "Rummy",
+
+  "gameTypeNameCoinche": "Coinche",
+
+  "gameTypeNameCoincheSortKey": "Coinche",
+
+  "gameTypeNameYahtzee": "Yahtzee",
+
+  "gameTypeNameYahtzeeSortKey": "Yahtzee",
+
+  "gameTypeNamePhase10": "Phase 10",
+
+  "gameTypeNamePhase10SortKey": "Phase 10",
+
+  "gameTypeNameFlip7": "Flip 7",
+
+  "gameTypeNameFlip7SortKey": "Flip 7",
+
+  "gameTypeNameMilleBornes": "Mille Bornes",
+
+  "gameTypeNameMilleBornesSortKey": "Mille Bornes",
+
+  "gameTypeNameRummikub": "Rummikub",
+
+  "gameTypeNameRummikubSortKey": "Rummikub",
+
+  "gameTypeNameSixNimmt": "6'yı Al",
+
+  "gameTypeNameSixNimmtSortKey": "6'yı Al",
+
+  "gameTypeNameQwirkle": "Qwirkle",
+
+  "gameTypeNameQwirkleSortKey": "Qwirkle",
+
+  "gameTypeNameFarkle": "Farkle",
+
+  "gameTypeNameFarkleSortKey": "Farkle",
+
+  "gameTypeNameCanasta": "Canasta",
+
+  "gameTypeNameCanastaSortKey": "Canasta",
+
+  "gameTypeNameWizard": "Wizard",
+
+  "gameTypeNameWizardSortKey": "Wizard",
+
+  "gameTypeNameTriomino": "Triomino",
+
+  "gameTypeNameTriominoSortKey": "Triomino",
+
+  "groupDeviceOwner": "Sahibi",
+
+  "groupDeviceMakeOwner": "Sahibi yap",
+
+  "groupDeviceMakeOwnerConfirm": "Grubu \"{label}\" adlı kişiye teslim eder misiniz? Bu cihaz artık cihazları kaldıramayacak veya davet kodunu değiştiremeyecek.",
+
+  "groupDeviceOwnerChanged": "\"{label}\" şimdi grubun sahibi.",
+
+  "groupDevicesExplainMember": "Sadece grubun sahibi bir cihazı kaldırabilir veya davet kodunu değiştirebilir.",
+
+  "groupErrorNotOwner": "Sadece grubun sahibi bunu yapabilir",
+  "whoStarts": "Kim başlar?",
+  "whoStartsAgain": "Tekrar çek",
+  "diceRoller": "Zar at",
+  "diceCount": "Zar sayısı",
+  "diceRollAgain": "Tekrar at",
+  "diceTotal": "Toplam: {total}",
+  "resumeGame": "Devam et",
+  "recentGames": "Son oyunlar",
+  "gameInProgress": "Devam ediyor",
+  "roundNumber": "tur {number}",
+  "gameLeader": "{name} öncü · {score}",
+  "gameWonBy": "{name} tarafından kazanıldı",
+  "boardRank": "{rank, plural, one{#{rank}} other{#{rank}}}",
+  "boardViewRows": "Oyuncu başına bir satır",
+  "boardViewLanes": "Oyuncu başına bir sütun",
+  "boardSeatOrder": "Oturma sırası",
+  "boardRoundShort": "T{number}",
+  "boardPlayer": "Oyuncu",
+  "boardTotal": "Toplam",
+  "boardLeader": "Öncü",
+  "groupSettingsTitle": "Yorumlar ve kullanım",
+  "groupSettingsDescription": "Sunucunun grup oyunları için yazdığı yorumların stili ve dili. Herhangi bir üye bunları değiştirebilir.",
+  "groupCommentStyle": "Yorum stili",
+  "groupCommentStyleNarrative": "Anlatı",
+  "groupCommentStyleHumorous": "Mizahi",
+  "groupCommentStyleAnalytical": "Analitik",
+  "groupCommentLanguage": "Yorum dili",
+  "groupSettingsSaved": "Grup ayarları kaydedildi",
+  "groupUsageTitle": "Bu ay yapay zeka kullanımı",
+  "groupUsageAmount": "{used} ({budget} dışı harcandı)",
+  "groupUsageResets": "{date} tarihinde sıfırlanır",
+  "statsBestWinRate": "En iyi zafer yüzdesi",
+  "statsWinsOutOfGames": "{wins, plural, =0{{games} oyundan hiç zafer} one{{games} oyundan {wins} zafer} other{{games} oyundan {wins} zafer}}",
+  "statsColumnPlayer": "Oyuncu",
+  "statsColumnGames": "Oyunlar",
+  "statsUnranked": "{count, plural, one{{count} oyun · henüz sıralanmamış} other{{count} oyun · henüz sıralanmamış}}",
+  "statsLeaderboardFooter": "{count, plural, one{{count} bitmiş oyundan sıralandı. Oyuncunun kartını görmek için dokunun.} other{{count} bitmiş oyundan sıralandı. Oyuncunun kartını görmek için dokunun.}}",
+  "statsGamesLabel": "{count, plural, one{oyun} other{oyun}}",
+  "statsWinsLabel": "{count, plural, one{zafer} other{zafer}}",
+  "statsAverageRank": "ortalama sıra",
+  "statsRankChartTitle": "{count, plural, one{Sıra, son oyun} other{Sıra, son {count} oyun}}",
+  "statsTrendImproving": "iyileşiyor",
+  "statsTrendDeclining": "kötüleşiyor",
+  "statsTrendSteady": "sabit",
+  "statsRankOrdinal": "{rank, select, 1{1.} 2{2.} 3{3.} other{{rank}.}}",
+  "statsWinStreak": "{count, plural, =0{Zafer serisi yok} one{Seri: {count} zafer} other{Seri: {count} zafer}}",
+  "statsRecord": "En iyi: {total}",
+  "statsOnGameType": "{gameType} oyununda",
+  "statsAverageTotal": "Ortalama final toplamı",
+  "statsBestTotal": "En iyi final toplamı",
+  "statsMostBeaten": "En çok mağlup edilen rakip",
+  "statsOpenPlayerCard": "oyuncu kartını aç",
+
+  "shareResult": "Sonucu paylaş",
+
+  "shareAnalysis": "Analizi paylaş",
+
+  "shareResultSubject": "Sonuç: {gameName}",
+
+  "shareResultTitle": "{date} oyunu",
+
+  "shareResultStanding": "{rank}. {name} — {points, plural, one{{points} puan} other{{points} puan}}",
+
+  "shareResultFooter": "{appName} ile sayılan puanlar: {url}",
+
+  "shareFailed": "Paylaşım açılamadı",
+
+  "newGameNameLabel": "Ad",
+
+  "newGameGameLabel": "Oyun",
+
+  "newGameAllGames": "Tüm oyunlar ({count})",
+
+  "newGamePlayersLabel": "Oyuncular · oturma sırası",
+
+  "newGameDragToReorder": "yeniden sıralamak için sürükleyin",
+
+  "newGameDealer": "dağıtır",
+
+  "newGameAddPlayer": "Oyuncu ekle",
+
+  "newGameStart": "{count, plural, =0{Başla} =1{Başla · 1 oyuncu} other{Başla · {count} oyuncu}}",
+
+  "whoIsPlayingTitle": "Kim oynuyor?",
+
+  "whoIsPlayingSearchHint": "Ad, veya yeni oyuncu",
+
+  "whoIsPlayingFrequent": "Sık sık sizinle oynuyor",
+
+  "whoIsPlayingSameAs": "\"{gameName}\" ile aynı oyuncular",
+
+  "whoIsPlayingCreate": "\"{name}\" oluştur",
+
+  "whoIsPlayingConfirm": "{count, plural, =0{Bitti} =1{1 oyuncu ekle} other{{count} oyuncu ekle}}",
+
+  "defaultGameName": "Oyun {number}",
+
+  "pwaUpdateReady": "CountScore'un yeni sürümü hazır",
+
+  "pwaUpdateReload": "Yeniden yükle",
+
+  "thresholdIsRequired": "Bu koşul için eşik değeri gereklidir",
+
+  "thresholdTooLarge": "Eşik değeri {max} değerini aşamaz",
+
+  "deletionImpossible": "Silme imkansız",
+
+  "gameTypeInUse": "{count, plural, one{1 oyun bu türü kullanır: silinemez.} other{{count} oyun bu türü kullanır: silinemez.}}",
+
+  "confirmDeleteGameType": "\"{name}\" oyun türünü silmek istediğinizden emin misiniz?",
+
+  "winDirectionChangeTitle": "Kim kazanır tersine mi çevirelim?",
+
+  "winDirectionChangeWarning": "{count, plural, one{Bu türün 1 bitmiş oyunu sıralandı tersine çevrilecek: kazananı sonuncu olacak.} other{Bu türün {count} bitmiş oyunu sıralandı tersine çevrilecek: kazananları sonuncu olacak.}}",
+
+  "winDirectionContradiction": "Oyun bitme koşulu seçilen kazananın tersi yönü ödüllendirir. Bir ev kuralı tam olarak bunu isteyebilir.",
+
+  "rulesOutOfDateTitle": "Kuralları güncellemek ister misiniz?",
+
+  "rulesOutOfDateMessage": "Bu türün kuralları yine de eski koşulu tanımlıyor.",
+
+  "later": "Sonra",
+
+  "currentIcon": "Mevcut ikon",
+
+  "currentColor": "Mevcut renk",
+
+  "groupDeviceClaimOwner": "Sahipliği talep et",
+
+  "groupDeviceClaimOwnerConfirm": "\"{label}\" grubu elinde tutuyor ancak uzun süredir görülmüyor. Bu cihazda sahipliği devralmak ister misiniz?",
+
+  "groupDeviceOwnerClaimed": "Bu cihaz şimdi grubun sahibi.",
+
+  "groupErrorOwnerActive": "Grubun sahibi yakında görüldü: sahiplik talep edilemez.",
+
+  "groupCreatedOwnerExplain": "Grup oluşturuldu. Bu cihaz sahibi; rol Cihazlarda başka birine verilebilir.",
+  "boardEliminated": "Elendi",
+  "soundsSection": "Sesler",
+  "gameSounds": "Oyun sesleri",
+  "gameSoundsDescription": "Bir oyuncu elendiğinde, oyun kazanıldığında ve zaman bittiğinde ses",
+  "turnTimer": "Tur zamanlayıcısı",
+  "turnTimerLess": "Daha az zaman",
+  "turnTimerMore": "Daha fazla zaman",
+  "turnTimerStart": "Başla",
+  "turnTimerPause": "Durakla",
+  "turnTimerReset": "Sıfırla",
+  "turnTimerTimeUp": "Zaman bitti!",
+  "configShareOpen": "QR kod ile paylaş",
+  "configShareTitle": "Bu yapılandırmayı paylaş",
+  "configShareExplainServer": "Bu kodu başka bir telefonla tarayarak aynı sunucuyla kurun.",
+  "configShareExplainGroup": "Bu kodu başka bir telefonla tarayarak aynı sunucuyla kurun ve {name} grubuna katılın. Grubun davet kodunu tutar: sadece grupta olmak istediğiniz kişilere gösterin.",
+  "configShareWebAppLabel": "Web uygulaması adresi",
+  "configShareWebAppHelper": "Sunucunuzun CountScore web uygulamasını hizmet verdiği yer, örneğin https://countscore.example.com/countscore. Kod bu sayfayı açar.",
+  "configShareWebAppNeeded": "Kodu göstermek için web uygulaması adresini girin.",
+  "configShareQrLabel": "Yapılandırma bağlantısının QR kodu",
+  "configShareCopyLink": "Bağlantıyı kopyala",
+  "configShareLinkCopied": "Bağlantı kopyalandı",
+  "configShareTooLong": "Bu bağlantı bir QR koduna sığmak için çok uzun. \"Bağlantıyı kopyala\" ı kullanın.",
+  "replaceConfigTitle": "Yapılandırma değiştirilsin mi?",
+  "replaceConfigCurrent": "Şu an: {value}",
+  "replaceConfigNew": "Yeni: {value}",
+  "replaceConfigInvite": "davet kodu {code}",
+  "replaceConfigLeavesGroup": "Bu cihaz {name} grubunu terk edecek. Oyunları bu cihazda kalır.",
+  "replaceConfigConfirm": "Değiştir",
+  "replaceConfigUnsynced": "{count, plural, =1{Bu cihazın 1 değişikliği henüz gruba ulaşmadı. Şimdi ayrılırsanız, grup onu asla almayacak.} other{Bu cihazın {count} değişikliği henüz gruba ulaşmadı. Şimdi ayrılırsanız, grup onları asla almayacak.}}",
+  "replaceConfigLeaveAnyway": "Yine de ayrıl",
+  "replaceConfigDone": "Yapılandırma değiştirildi",
+  "replaceConfigUnchanged": "Bu cihaz zaten bu yapılandırmayı kullanıyor",
+  "joinLinkHandOverMessage": "Bu bağlantı CountScore Android uygulamasında açılabilir. Uygulama kurulu değilse, Play Store bunun yerine açılır.",
+  "joinLinkOpenInApp": "Uygulamada aç",
+  "joinLinkContinueHere": "Tarayıcıda devam et"
+}

@@ -53,16 +53,35 @@ SAME_AS_ENGLISH_OK = {
     "gameTypeName*": ALL_LOCALES,   # Yahtzee, Qwirkle, Uno, Skyjo, Rummikub, Farkle,
                                     # Bridge, Tarot, Canasta, Wizard, Scrabble, ZapZap --
                                     # proper nouns that most locales keep as they are
-    "gameRulesInApp": {"de"},        # "In CountScore" is the German for it too
-    "ok": {"fr", "de", "pt", "ja"},  # "OK" is the loanword in all four
+    "gameRulesInApp": {"de", "it", "nl"},  # "In CountScore" is the German, Italian and Dutch for it
+    "ok": {"fr", "de", "pt", "ja", "id", "it", "nl", "pl", "vi"},  # "OK" is the loanword
     "version": {"fr", "de"},         # "Version {version}"
     "confirmation": {"fr"},          # "Confirmation"
     "color": {"es"},                 # "Color:"
-    "system": {"de"},                # "System"
+    "system": {"de", "pl"},          # "System"
     "rate": {"de"},                  # "Rate"
-    "serverSection": {"de"},         # "Server"
-    "backup": {"pt"},                # "Backup"
+    "serverSection": {"de", "id", "it", "nl"},  # "Server"
+    "backup": {"pt", "it"},          # "Backup"
     "newGameNameLabel": {"de"},      # "Name" -- the German word is the same
+    # The ten languages added on 2026-10-04 (bn id it ko nl pl th tr ur vi). The game names
+    # stay in Latin script there, so the gameTypeName* family above already covers them.
+    "boardRank": ALL_LOCALES,        # "#{rank}" -- no word in it
+    "boardRoundShort": {"bn", "it", "ko", "nl", "pl", "th", "ur", "vi"},  # "R{number}"
+    "homeTitle": {"it", "nl"},       # "Home"
+    "later": {"nl"},                 # "Later"
+    "recentGames": {"nl"},           # "Recent"
+    "ranking": {"pl"},               # "Ranking"
+    "turnTimerReset": {"pl"},        # "Reset"
+    "turnTimerStart": {"nl"},        # "Start"
+    "boardTotal": {"id"},            # "Total"
+    "diceTotal": {"id"},             # "Total: {total}"
+    "edit": {"id"},                  # "Edit"
+    # Italian writes "round" for a round of play, as it does in sport and in board games.
+    "round": {"it"},
+    "boardRoundButton": {"it"},
+    "keypadCaption": {"it"},
+    "keypadCaptionWithPosition": {"it"},
+    "roundNumber": {"it"},
 }
 
 _EXEMPT_PREFIXES = {k[:-1]: v for k, v in SAME_AS_ENGLISH_OK.items() if k.endswith("*")}
