@@ -175,7 +175,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String keypadTotalAfter(int total) {
+  String keypadTotalAfter(String total) {
     return '录入后总分：$total';
   }
 
@@ -1141,7 +1141,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String gameLeader(String name, int score) {
+  String gameLeader(String name, String score) {
     return '$name领先 · $score';
   }
 
@@ -1319,7 +1319,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String statsRecord(int total) {
+  String statsRecord(String total) {
     return '纪录：$total';
   }
 

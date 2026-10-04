@@ -14,6 +14,7 @@ import '../widgets/player_avatars.dart';
 import '../utils/game_type_name.dart';
 import '../utils/insets.dart';
 import '../utils/play_again.dart';
+import '../utils/score_text.dart';
 import '../utils/undo_snack_bar.dart';
 import 'about_screen.dart';
 import 'create_game_screen.dart';
@@ -598,7 +599,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ? const SizedBox.shrink()
                               : Text(
                                   l10n.gameLeader(
-                                      leader.name, standing!.totalOf(leader)),
+                                      leader.name, scoreText(standing!.totalOf(leader))),
                                   key: const Key('resumeHeroLeader'),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,

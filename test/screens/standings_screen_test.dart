@@ -41,6 +41,7 @@ import 'package:countscore/screens/home_screen.dart';
 import 'package:countscore/screens/standings_screen.dart';
 import 'package:countscore/services/drift/database.dart';
 import 'package:countscore/utils/player_colors.dart';
+import 'package:countscore/utils/score_text.dart';
 import 'package:countscore/widgets/board_lanes.dart';
 import 'package:countscore/widgets/player_avatars.dart';
 import 'package:countscore/widgets/result_share_card.dart';
@@ -80,7 +81,7 @@ void main() {
 
   tearDown(() => db.close());
 
-  Widget wrap(Widget home, {String? server}) {
+  Widget wrap(Widget home, {String? server, String language = 'en'}) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<GameProvider>.value(value: games),
@@ -97,8 +98,10 @@ void main() {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        supportedLocales: const [Locale('en', ''), Locale('fr', '')],
-        locale: const Locale('en', ''),
+        supportedLocales: [
+          for (final l in const ['en', 'fr', 'ar', 'ur']) Locale(l, ''),
+        ],
+        locale: Locale(language, ''),
         home: home,
       ),
     );
@@ -399,6 +402,32 @@ void main() {
       expect(maxScrollExtent(tester), 0, reason: 'finished');
     });
   });
+
+  // A "-" in a right-to-left line lands after the digits, so -25 reads "25-"
+  // (`wip/done/2026-10-04-negative-scores-read-backwards-in-urdu.md`). The
+  // podium and the list set the total in an LTR isolate; the isolate is what
+  // the screen carries, the bidirectional algorithm is the platform's.
+  for (final language in ['ur', 'ar']) {
+    testWidgets('in $language, a negative total keeps its sign in front',
+        (tester) async {
+      await tester.runAsync(() => aGameOfFive(lowestWins: true, scores: {
+            'Alice': 30,
+            'Bob': 20,
+            'Chloé': 40,
+            'Dora': -25,
+            'Eve': -50,
+          }));
+      await tester.pumpWidget(
+          wrap(const StandingsScreen(boardBuilder: _board), language: language));
+      await tester.pumpAndSettle();
+
+      // The podium block and the list row of the same player.
+      expect(find.text(scoreText(-25)), findsNWidgets(2));
+      expect(find.text(scoreText(-50)), findsNWidgets(2));
+      expect(find.text('-25'), findsNothing);
+      expect(find.text('30'), findsNWidgets(1));
+    });
+  }
 
   testWidgets('a highest-wins game is shared in the order the screen draws',
       (tester) async {

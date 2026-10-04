@@ -443,7 +443,7 @@ abstract class AppLocalizations {
   ///
   /// In fr, this message translates to:
   /// **'total après : {total}'**
-  String keypadTotalAfter(int total);
+  String keypadTotalAfter(String total);
 
   /// Score keypad key that moves to the next player of the round, named. The name goes on its own line, after the line break: the key is narrow, and a label left to wrap by itself can break inside a word or before punctuation
   ///
@@ -2153,7 +2153,7 @@ abstract class AppLocalizations {
   ///
   /// In fr, this message translates to:
   /// **'{name} mène · {score}'**
-  String gameLeader(String name, int score);
+  String gameLeader(String name, String score);
 
   /// Tooltip and screen-reader label of the winner pill on a finished game's card
   ///
@@ -2369,7 +2369,7 @@ abstract class AppLocalizations {
   ///
   /// In fr, this message translates to:
   /// **'Record : {total}'**
-  String statsRecord(int total);
+  String statsRecord(String total);
 
   /// Player card section header: figures on one game type
   ///
