@@ -50,8 +50,8 @@ The twenty locales are Play's identifiers, **not** the app's:
 | `pl-PL` | `app_pl.arb` | | `bn-BD` | `app_bn.arb` |
 | `ur` | `app_ur.arb` | | `nl-NL` | `app_nl.arb` |
 
-The last ten were added on 2026-10-04 with their text only: they have no `raw/` set yet and are
-listed in `AWAITING_CAPTURES` (`scripts/compose_screenshots.py`) until the captures are taken.
+The last ten were added on 2026-10-04; their eight captures are taken and composed too, and
+none of the twenty is published beyond the first ten (`.llmwiki/StoreListing.md`).
 
 Adding a language to `lib/l10n/` does not create the listing for it, and vice versa.
 

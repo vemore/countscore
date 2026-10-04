@@ -1,5 +1,7 @@
 # The ten new locales have no Play screenshots of their own
 
+**Status:** done (2026-10-04) — closed by docs/play-screenshots-ten-more-locales. 80 captures taken over adb on the Pixel (profile build, demo database), read screen by screen, composed to 1080×1920; `compose_screenshots.py --check` exits 0 over twenty locales. Not published. Two defects found on the way: the statistics headers of `id` and `vi` collided (fixed in #fix/stats-header-id-vi), and negative scores read `25-` in Urdu (new entry).
+
 - **Noted:** 2026-10-04 — the user asked for ten more languages, store listing included
 - **Theme:** store-listing
 - **Area:** android
