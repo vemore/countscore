@@ -33,11 +33,16 @@ not exist), drops stale `offline` entries and runs `adb connect`. With several p
 network, pass the IP: `adb_connect.sh <ip>` (or `ADB_HOST`). It prints only the id on stdout
 and the reason for a failure on stderr.
 
-It exits 1 when mDNS shows nothing — wireless debugging off, another network, or a host that
-receives no multicast (WSL2 in NAT mode; mirrored mode does). Then **ask the user for
-`<ip>:<port>`** from Settings → Developer options → Wireless debugging ("IP address & Port"),
-`adb connect` it, and say mDNS found nothing. **Never scan the LAN for it** — mDNS only reads
-what the phone announces.
+**Fallback when mDNS shows nothing** (WSL2 in NAT mode filters multicast): an `nmap` scan of
+ports 30000–65535 on **the phone's one IP**, then `adb connect` on each open port. The IP is
+the argument / `ADB_HOST`, else the one remembered from the last successful connect
+(`~/.cache/countscore/pixel_adb_ip`, outside the repo), else a stale `offline` entry. With none
+of these it does not scan: it never sweeps a subnet. Needs `nmap` installed.
+
+It exits 1 when both fail — wireless debugging off, another network, another IP. Then **ask the
+user for `<ip>:<port>`** from Settings → Developer options → Wireless debugging ("IP address &
+Port"), `adb connect` it, and say mDNS and nmap found nothing. **Never scan beyond that one
+host.**
 
 If a fresh pairing is needed (the script says so: it sees a connect port that refuses, or the
 pairing screen), the user must approve it on the phone. **Do not** run `adb pair` blindly: it
