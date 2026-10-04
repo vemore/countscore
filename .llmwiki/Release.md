@@ -2,7 +2,7 @@
 
 > Scope: the Play Store configuration state. For the procedure, use the `release-android` skill.
 > Related: [[MobileApp]] · [[StoreListing]] · [[Testing]] · [[KnownLimits]] · [[Documentation]]
-> Updated: 2026-09-26
+> Updated: 2026-10-04
 
 ## Facts
 
@@ -227,6 +227,29 @@ and CI refuses a pull request whose committed file differs — never edit it by 
 | Release notes ≤ 500 characters per language | Play Console | `play_publish.py` refuses longer notes. |
 
 ### Submission state
+
+**1.6.0 (10) is on production at 20 %** since 2026-10-04 (`play_publish.py publish --track
+production --promote --rollout 0.2 --listing --graphics --commit`), promoted from internal, where
+it had been committed the same day. The same edit published the twenty store listings, the ten
+new ones included, with their captures (`StoreListing.md`). 1.5.0 (9), widened to 100 %, stays
+listed as the completed production release beside it until 1.6.0 is widened. Tagged `1.6.0+10`
+on the release pull request's squash commit (#251) and published as a GitHub release from the
+en-US notes.
+
+It ships ten more languages (id tr it ko vi th pl bn ur nl: interface, game rules, AI analysis),
+the configuration QR with its `countscore://join` link and PWA `#/join` route, and the Arabic and
+Urdu negative-score fix (#250). `verify_aab.sh` passed on the bundle (upload key, `INTERNET`,
+versionCode 10, targetSdk 36, 16 KB).
+
+The device pass was a **clean release install on the Pixel 9 Pro XL**, not the Settings → Import
+round trip of the skill: after the uninstall Android's auto-backup restored the owner's real
+database and settings, so importing the demo database would have overwritten them and was not
+done. The release build opened the restored database and listed its games; the QR sheet, the
+`countscore://join` replace dialog (cancelled) and a Thai and an Urdu switch were exercised.
+Export, the wakelock, ZapZap and groups were not exercised on the release build; the device is
+in no group.
+
+> **Status: Outdated** (2026-10-04) — superseded by 1.6.0 above:
 
 **1.5.0 (9) is on production at 20 %** since 2026-09-25 (`play_publish.py publish --track
 production --promote --rollout 0.2 --commit`), promoted from internal after a real-device pass
