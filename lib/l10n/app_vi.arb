@@ -231,7 +231,7 @@
 
   "gamesPlayed": "Trò chơi đã chơi",
 
-  "wins": "Chiến thắng",
+  "wins": "Thắng",
 
   "winRate": "Tỷ lệ thắng",
 
@@ -629,7 +629,7 @@
   "statsBestWinRate": "Tỷ lệ thắng tốt nhất",
   "statsWinsOutOfGames": "{wins, plural, =0{Không có chiến thắng trong {games}} one{{wins} chiến thắng trong {games}} other{{wins} chiến thắng trong {games}}}",
   "statsColumnPlayer": "Người chơi",
-  "statsColumnGames": "Trò chơi",
+  "statsColumnGames": "Ván",
   "statsUnranked": "{count, plural, one{{count} trò chơi · chưa được xếp hạng} other{{count} trò chơi · chưa được xếp hạng}}",
   "statsLeaderboardFooter": "{count, plural, one{Xếp hạng từ {count} trò chơi hoàn thành. Nhấn vào một người chơi để xem thẻ của họ.} other{Xếp hạng từ {count} trò chơi hoàn thành. Nhấn vào một người chơi để xem thẻ của họ.}}",
   "statsGamesLabel": "{count, plural, one{trò chơi} other{trò chơi}}",

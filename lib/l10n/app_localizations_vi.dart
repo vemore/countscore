@@ -409,7 +409,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get gamesPlayed => 'Trò chơi đã chơi';
 
   @override
-  String get wins => 'Chiến thắng';
+  String get wins => 'Thắng';
 
   @override
   String get winRate => 'Tỷ lệ thắng';
@@ -1276,7 +1276,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get statsColumnPlayer => 'Người chơi';
 
   @override
-  String get statsColumnGames => 'Trò chơi';
+  String get statsColumnGames => 'Ván';
 
   @override
   String statsUnranked(int count) {

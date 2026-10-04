@@ -408,7 +408,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get gamesPlayed => 'Permainan dimainkan';
 
   @override
-  String get wins => 'Kemenangan';
+  String get wins => 'Menang';
 
   @override
   String get winRate => 'Tingkat kemenangan';
@@ -1274,7 +1274,7 @@ class AppLocalizationsId extends AppLocalizations {
   String get statsColumnPlayer => 'Pemain';
 
   @override
-  String get statsColumnGames => 'Permainan';
+  String get statsColumnGames => 'Game';
 
   @override
   String statsUnranked(int count) {
