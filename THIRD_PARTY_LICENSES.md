@@ -114,7 +114,7 @@ Only direct dependencies are listed; their versions, and every transitive packag
 
 ### url_launcher
 **License:** BSD-3-Clause  
-**Copyright:** Copyright 2013 The Flutter Authors. All rights reserved.  
+**Copyright:** Copyright 2013 The Flutter Authors  
 **Repository:** https://github.com/flutter/packages/tree/main/packages/url_launcher/url_launcher
 
 ### package_info_plus
