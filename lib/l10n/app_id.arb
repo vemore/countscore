@@ -231,7 +231,7 @@
 
   "gamesPlayed": "Permainan dimainkan",
 
-  "wins": "Kemenangan",
+  "wins": "Menang",
 
   "winRate": "Tingkat kemenangan",
 
@@ -631,7 +631,7 @@
   "statsBestWinRate": "Tingkat kemenangan terbaik",
   "statsWinsOutOfGames": "{wins, plural, =0{Tidak ada kemenangan dari {games}} one{{wins} kemenangan dari {games}} other{{wins} kemenangan dari {games}}}",
   "statsColumnPlayer": "Pemain",
-  "statsColumnGames": "Permainan",
+  "statsColumnGames": "Game",
   "statsUnranked": "{count, plural, one{{count} permainan · belum peringkat} other{{count} permainan · belum peringkat}}",
   "statsLeaderboardFooter": "{count, plural, one{Peringkat dari {count} permainan selesai. Ketuk pemain untuk melihat kartu mereka.} other{Peringkat dari {count} permainan selesai. Ketuk pemain untuk melihat kartu mereka.}}",
   "statsGamesLabel": "{count, plural, one{permainan} other{permainan}}",

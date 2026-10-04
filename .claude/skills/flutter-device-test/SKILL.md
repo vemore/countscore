@@ -12,7 +12,7 @@ End-to-end workflow for testing Flutter apps on the user's physical Pixel 9 Pro 
 | Detail | Value |
 |--------|-------|
 | Model | Pixel 9 Pro XL |
-| ADB ID | `<ip>:<port>` over Wi-Fi ADB — changes on every reboot of wireless debugging; ask the user |
+| ADB ID | `<ip>:<port>` over Wi-Fi ADB — changes on every reboot of wireless debugging; `scripts/adb_connect.sh` finds it |
 | Android | 16 (API 36) |
 | Screen | 1008×2244 logical px @ 360 dpi (≈2992×6656 physical, 3×) |
 | `adb` path | `/home/vemore/sdk/android/platform-tools/adb` |
@@ -20,25 +20,33 @@ End-to-end workflow for testing Flutter apps on the user's physical Pixel 9 Pro 
 ### Find the device
 
 The address is never hardcoded here: the phone's IP and the wireless-debugging port both
-change, and `adb mdns services` sees nothing from WSL2.
+change. The phone advertises its current connect port over mDNS, so don't ask for it — run:
 
 ```bash
-adb devices          # already connected? its id is the <ip>:<port> in the first column
+export DEV=$(.claude/skills/flutter-device-test/scripts/adb_connect.sh)   # <ip>:<port>
+flutter devices      # confirm Flutter sees it
 ```
 
-If the Pixel is not listed (or shows `offline`), **ask the user for `<ip>:<port>`** from the
-phone's Settings → Developer options → Wireless debugging ("IP address & Port"). **Never scan
-the LAN for it.** Then:
+The script reuses a Wi-Fi device `adb devices` already lists as `device`; otherwise it reads
+`adb mdns services` (service `_adb-tls-connect._tcp` — not `_adb_secure_connect`, which does
+not exist), drops stale `offline` entries and runs `adb connect`. With several phones on the
+network, pass the IP: `adb_connect.sh <ip>` (or `ADB_HOST`). It prints only the id on stdout
+and the reason for a failure on stderr.
 
-```bash
-adb disconnect <ip>:<port>   # only if listed as offline
-adb connect <ip>:<port>
-flutter devices              # confirm Flutter sees it
-```
+**Fallback when mDNS shows nothing** (WSL2 in NAT mode filters multicast): an `nmap` scan of
+ports 30000–65535 on **the phone's one IP**, then `adb connect` on each open port. The IP is
+the argument / `ADB_HOST`, else the one remembered from the last successful connect
+(`~/.cache/countscore/pixel_adb_ip`, outside the repo), else a stale `offline` entry. With none
+of these it does not scan: it never sweeps a subnet. Needs `nmap` installed.
 
-If a fresh pairing is needed, the user must approve it on the phone — ask them to do so. **Do
-not** run `adb pair` blindly; it requires a 6-digit code (and a separate pairing port) only
-the user can read.
+It exits 1 when both fail — wireless debugging off, another network, another IP. Then **ask the
+user for `<ip>:<port>`** from Settings → Developer options → Wireless debugging ("IP address &
+Port"), `adb connect` it, and say mDNS and nmap found nothing. **Never scan beyond that one
+host.**
+
+If a fresh pairing is needed (the script says so: it sees a connect port that refuses, or the
+pairing screen), the user must approve it on the phone. **Do not** run `adb pair` blindly: it
+needs the 6-digit code and the separate pairing port, which only the user can read.
 
 For brevity below, the device id is referenced as `$DEV` — `export DEV=<ip>:<port>` once the
 address is known, or substitute inline.
