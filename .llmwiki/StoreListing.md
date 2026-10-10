@@ -4,7 +4,7 @@
 > assets behind it. The Console walkthrough is `PUBLISHING.md`; the publishing mechanism is
 > [[Release]] and the `release-android` skill.
 > Related: [[Release]] · [[I18n]] · [[Documentation]] · [[KnownLimits]]
-> Updated: 2026-10-04
+> Updated: 2026-10-10
 
 ## Facts
 
@@ -277,6 +277,29 @@ store:
 - « suivi de score » → CountScore 9th, on a query with almost no volume.
 - « skyjo » → more than 10 dedicated Skyjo counters; the per-game long tail is where the
   traffic is.
+
+### Measured again on 2026-10-10
+
+Same Console views, 28-day window (listing data runs to 2026-10-04/05, the rest to 10-09):
+
+| Metric | 2026-09-16 | 2026-10-10 |
+|---|---|---|
+| Impressions on devices | 133 | **607** |
+| Store listing visitors | 6 | **35** |
+| Unique install clicks from the listing | 2 | **15** |
+| Device acquisitions | — | **18** |
+| Visitor → install conversion | 50 % | **43 %** |
+| Active devices (monthly) | 6 | **13** |
+| Installed audience, daily | ~17 (09-12) | **26** (10-07: FR 23, BE 2, GB 1) |
+| Ratings | 0 | **0** |
+
+Read it as: **visibility moved, conversion held.** The installed audience is flat until
+09-29 and climbs from 10-01; Play credits 16 acquisitions in 90 days to *exploration*. The
+changes of 09-16 to 09-20 (Entertainment tag, ten store locales, the retaken screenshots) are
+the likely cause — correlation only, they cannot be told apart. The ten locales of 10-04 are
+**not measurable yet**: the gain is all France and Belgium, i.e. the French listing. Volumes
+are a handful of installs, so percentages swing on one or two. Re-check:
+`wip/todo_nr/2026-10-10-measure-the-ten-locales-of-2026-10-04.md`.
 
 ### Competitors (same date)
 
