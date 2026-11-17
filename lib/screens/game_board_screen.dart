@@ -12,6 +12,7 @@ import '../providers/group_provider.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
 import '../providers/settings_provider.dart';
+import '../utils/compact_landscape.dart';
 import '../utils/game_type_name.dart';
 import '../utils/player_colors.dart';
 import '../utils/undo_snack_bar.dart';
@@ -232,8 +233,13 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // A phone on its side: a shorter app bar, denser lanes, and the round
+    // button in a rail beside the grid instead of a bar under it. Portrait
+    // and every taller window keep the layout below unchanged.
+    final landscape = compactLandscapeOf(context);
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: compactToolbarHeightOf(context),
         title: Consumer2<GameProvider, GameTypeProvider>(
           builder: (context, gameProvider, gameTypeProvider, child) {
             final game = gameProvider.currentGame;
@@ -555,6 +561,10 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                 _editScore(gameProvider, gameType, player, round),
           );
 
+          if (landscape) {
+            return _landscapeBody(context, gameProvider, gameType, board);
+          }
+
           return Column(
             children: [
               Expanded(
@@ -589,6 +599,67 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
             ],
           );
         },
+      ),
+    );
+  }
+
+  /// Width of the landscape rail that holds the round button.
+  static const double _railWidth = 112;
+
+  /// The board of the compact landscape layout (`compactLandscapeOf`): the
+  /// lanes — dense — or the rows, and beside them, at the end, a rail with
+  /// the round button at the bottom, where a thumb holding the phone sideways
+  /// rests. Kept clear of a side camera cutout and a side navigation bar.
+  Widget _landscapeBody(BuildContext context, GameProvider gameProvider,
+      GameType? gameType, BoardData board) {
+    final l10n = AppLocalizations.of(context)!;
+    final finished = gameProvider.currentGame?.isFinished ?? false;
+    return SafeArea(
+      top: false,
+      child: Row(
+        children: [
+          Expanded(
+            child: _boardView(context) == BoardView.rows
+                ? BoardRows(data: board)
+                : BoardLanes(data: board, dense: true),
+          ),
+          Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(0, 8, 12, 12),
+            child: SizedBox(
+              width: _railWidth,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // Disabled while the game is finished, as in portrait.
+                  FilledButton(
+                    key: const Key('board_add_round'),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(_railWidth, 72),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 10),
+                    ),
+                    onPressed: finished
+                        ? null
+                        : () => _enterRound(gameProvider, gameType),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.add),
+                        const SizedBox(height: 4),
+                        Text(
+                          l10n.boardRoundButton(gameProvider.nextRoundNumber),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

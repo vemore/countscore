@@ -11,6 +11,7 @@ import '../models/game_standing.dart';
 import '../models/game_type.dart';
 import '../services/review_prompt.dart';
 import '../widgets/player_avatars.dart';
+import '../utils/compact_landscape.dart';
 import '../utils/game_type_name.dart';
 import '../utils/insets.dart';
 import '../utils/play_again.dart';
@@ -117,6 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: compactToolbarHeightOf(context),
         title: Text(l10n.appTitle),
         actions: [
           Badge(
@@ -413,7 +415,11 @@ class _HomeScreenState extends State<HomeScreen> {
             if (!identical(game, resume)) game,
         ];
 
-        return LayoutBuilder(builder: (context, constraints) {
+        // A phone on its side: the Resume card as one strip, tighter game
+        // cards, so a short screen shows the cards and not only the hero.
+        final landscape = compactLandscapeOf(context);
+
+        final grid = LayoutBuilder(builder: (context, constraints) {
           final columns = homeGridColumns(constraints.maxWidth);
           // Between the breakpoint and two full cards, a grid card is
           // narrower than a phone's: its status pill moves under the name.
@@ -423,20 +429,27 @@ class _HomeScreenState extends State<HomeScreen> {
           final compact = columns > 1 && cardWidth < kHomeGridMinCardWidth;
           Widget card(Game game) => _buildGameCard(context, game,
               gameTypeProvider.getGameTypeById(game.gameTypeId), gameProvider,
-              compact: compact);
+              compact: compact, dense: landscape);
           return ListView(
             // The bottom 88 keeps the last card clear of the extended FAB.
             padding: withBottomInset(
                 context, const EdgeInsets.fromLTRB(16, 8, 16, 88)),
             children: [
               if (resume != null)
-                _buildResumeHero(context, resume,
-                    gameTypeProvider.getGameTypeById(resume.gameTypeId),
-                    gameProvider),
+                landscape
+                    ? _buildResumeStrip(context, resume,
+                        gameTypeProvider.getGameTypeById(resume.gameTypeId),
+                        gameProvider)
+                    : _buildResumeHero(context, resume,
+                        gameTypeProvider.getGameTypeById(resume.gameTypeId),
+                        gameProvider),
               if (rest.isNotEmpty) ...[
                 Padding(
-                  padding: EdgeInsetsDirectional.only(
-                      start: 4, top: resume != null ? 24 : 8, bottom: 12),
+                  padding: landscape
+                      ? EdgeInsetsDirectional.only(
+                          start: 4, top: resume != null ? 14 : 4, bottom: 8)
+                      : EdgeInsetsDirectional.only(
+                          start: 4, top: resume != null ? 24 : 8, bottom: 12),
                   child: Text(
                     l10n.recentGames.toUpperCase(),
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
@@ -479,6 +492,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           );
         });
+        // Clear of a side camera cutout or navigation bar; the list keeps
+        // the bottom inset itself.
+        return landscape
+            ? SafeArea(top: false, bottom: false, child: grid)
+            : grid;
       },
     );
   }
@@ -633,12 +651,139 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  /// The Resume card of the compact landscape layout, as one strip: the
+  /// type's icon, the name over the type and round, the players, the leader
+  /// and the Resume button side by side — the hero's content at about a
+  /// third of its height.
+  Widget _buildResumeStrip(BuildContext context, Game game, GameType? gameType,
+      GameProvider gameProvider) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final dark = theme.brightness == Brightness.dark;
+    // The hero's colours (`_buildResumeHero`).
+    final background = dark
+        ? Color.alphaBlend(scheme.primary.withValues(alpha: 0.16),
+            theme.cardTheme.color ?? scheme.surface)
+        : scheme.primary;
+    final foreground = dark ? scheme.onSurface : scheme.onPrimary;
+    final rounds = gameProvider.roundCountOf(game.id!);
+    final subtitle = [
+      if (gameType != null) gameTypeDisplayName(l10n, gameType),
+      if (rounds > 0) l10n.roundNumber(rounds),
+    ].join(' · ');
+
+    return Material(
+      key: const Key('resumeHero'),
+      color: background,
+      borderRadius: BorderRadius.circular(20),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => _openBoard(context, game, gameProvider),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 10, 4, 10),
+          child: FutureBuilder<GameStanding>(
+            future: gameProvider.standingOf(game, gameType: gameType),
+            builder: (context, snapshot) {
+              final standing = snapshot.data;
+              // Nobody is named on a tie for the lead.
+              final leader = standing?.soleLeader;
+              return Row(
+                children: [
+                  Icon(gameType?.icon ?? Icons.sports_esports,
+                      color: foreground, size: 26),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                game.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.titleLarge
+                                    ?.copyWith(color: foreground),
+                              ),
+                            ),
+                            if (game.isShared) ...[
+                              const SizedBox(width: 6),
+                              Tooltip(
+                                message: l10n.gameSharedBadge,
+                                child: Icon(Icons.cloud_done_outlined,
+                                    size: 18, color: foreground),
+                              ),
+                            ],
+                          ],
+                        ),
+                        if (subtitle.isNotEmpty)
+                          Text(
+                            subtitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                                color: foreground.withValues(alpha: 0.85)),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Ringed in the text colour, as on the hero.
+                  PlayerAvatarStack(
+                    key: const Key('resumeHeroAvatars'),
+                    players: standing?.players ?? const [],
+                    size: 28,
+                    maxShown: 4,
+                    borderColor: foreground,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: leader == null
+                        ? const SizedBox.shrink()
+                        : Text(
+                            l10n.gameLeader(leader.name,
+                                scoreText(standing!.totalOf(leader))),
+                            key: const Key('resumeHeroLeader'),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodyMedium
+                                ?.copyWith(color: foreground),
+                          ),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: dark ? scheme.primary : scheme.onPrimary,
+                      foregroundColor: dark ? scheme.onPrimary : scheme.primary,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 12),
+                    ),
+                    onPressed: () => _openBoard(context, game, gameProvider),
+                    child: Text(l10n.resumeGame),
+                  ),
+                  _buildGameMenu(context, game, gameProvider,
+                      iconColor: foreground),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   /// A game card. [compact] puts the status pill beside the players rather
   /// than beside the name, for a grid card narrower than
-  /// [kHomeGridMinCardWidth].
+  /// [kHomeGridMinCardWidth]; [dense] tightens its padding and tile for the
+  /// compact landscape layout.
   Widget _buildGameCard(BuildContext context, Game game, GameType? gameType,
       GameProvider gameProvider,
-      {bool compact = false}) {
+      {bool compact = false, bool dense = false}) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
@@ -651,7 +796,9 @@ class _HomeScreenState extends State<HomeScreen> {
       child: InkWell(
         onTap: () => _openBoard(context, game, gameProvider),
         child: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 4, 16),
+          padding: dense
+              ? const EdgeInsetsDirectional.fromSTEB(12, 10, 4, 10)
+              : const EdgeInsetsDirectional.fromSTEB(16, 16, 4, 16),
           child: FutureBuilder<GameStanding>(
             future: gameProvider.standingOf(game, gameType: gameType),
             builder: (context, snapshot) {
@@ -662,15 +809,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   // The game's colour lives in this tile only: the card
                   // itself stays white, so amber does not turn to beige.
                   Container(
-                    width: 56,
-                    height: 56,
+                    width: dense ? 44 : 56,
+                    height: dense ? 44 : 56,
                     decoration: BoxDecoration(
                       color: gameColor.withValues(alpha: dark ? 0.2 : 0.14),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(dense ? 14 : 16),
                     ),
-                    child: Icon(gameIcon, color: gameColor, size: 28),
+                    child: Icon(gameIcon,
+                        color: gameColor, size: dense ? 24 : 28),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: dense ? 12 : 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -706,7 +854,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: theme.textTheme.bodyMedium
                               ?.copyWith(color: scheme.onSurfaceVariant),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: dense ? 4 : 8),
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,

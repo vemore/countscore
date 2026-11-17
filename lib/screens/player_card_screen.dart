@@ -6,6 +6,7 @@ import 'package:intl/intl.dart' show NumberFormat;
 import '../l10n/app_localizations.dart';
 import '../models/player_stats.dart';
 import '../utils/app_theme.dart';
+import '../utils/compact_landscape.dart';
 import '../utils/insets.dart';
 import '../utils/player_colors.dart';
 import '../utils/score_text.dart';
@@ -98,198 +99,241 @@ class _PlayerCardScreenState extends State<PlayerCardScreen> {
         ? null
         : (lowestWins ? l10n.lowestScoreWins : l10n.highestScoreWins);
 
+    final summary = Card(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  widget.gameTypeIcon ?? Icons.leaderboard_outlined,
+                  color: widget.gameTypeColour ??
+                      theme.colorScheme.primary,
+                  size: 22,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    [widget.gameTypeName, ?ruleText].join(' · '),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                _Tile(
+                  key: const Key('card_games'),
+                  value: '${stats.games}',
+                  label: l10n.statsGamesLabel(stats.games),
+                  colour: colour,
+                ),
+                const SizedBox(width: 10),
+                _Tile(
+                  key: const Key('card_wins'),
+                  value: '${stats.wins}',
+                  label: l10n.statsWinsLabel(stats.wins),
+                  colour: colour,
+                ),
+                const SizedBox(width: 10),
+                _Tile(
+                  key: const Key('card_average_rank'),
+                  value: stats.averageRank == null
+                      ? '–'
+                      : oneDecimal.format(stats.averageRank),
+                  label: l10n.statsAverageRank,
+                  colour: colour,
+                ),
+              ],
+            ),
+            if (stats.recentRanks.isNotEmpty) ...[
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.statsRankChartTitle(stats.recentRanks.length),
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                  if (stats.trend != null)
+                    Text(
+                      switch (stats.trend!) {
+                        RankTrend.improving => l10n.statsTrendImproving,
+                        RankTrend.declining => l10n.statsTrendDeclining,
+                        RankTrend.steady => l10n.statsTrendSteady,
+                      },
+                      key: const Key('card_trend'),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        color: stats.trend == RankTrend.declining
+                            ? theme.colorScheme.error
+                            : theme.colorScheme.primary,
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              _RankChart(
+                points: stats.recentRanks,
+                colour: colour,
+                ordinal: (rank) => l10n.statsRankOrdinal('$rank'),
+              ),
+            ],
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 10,
+              runSpacing: 8,
+              children: [
+                _Pill(
+                  key: const Key('card_streak'),
+                  text: l10n.statsWinStreak(stats.currentStreak),
+                  background: kLeaderGold.withValues(alpha: 0.22),
+                  foreground: theme.brightness == Brightness.dark
+                      ? kLeaderGold
+                      : const Color(0xFF6B5000),
+                ),
+                if (stats.bestTotal != null)
+                  _Pill(
+                    key: const Key('card_record'),
+                    text: l10n.statsRecord(scoreText(stats.bestTotal!)),
+                    background: theme.colorScheme.primary
+                        .withValues(alpha: 0.12),
+                    foreground: theme.colorScheme.primary,
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+    final detailsTitle = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Text(
+        (widget.gameTypeKey == kAllGameTypes
+                ? widget.gameTypeName
+                : l10n.statsOnGameType(widget.gameTypeName))
+            .toUpperCase(),
+        style: theme.textTheme.labelLarge?.copyWith(
+          letterSpacing: 1.2,
+          fontWeight: FontWeight.w800,
+          color: theme.colorScheme.onSurfaceVariant,
+        ),
+      ),
+    );
+    final details = Card(
+      child: Column(
+        children: [
+          if (stats.averageTotal != null)
+            _Row(
+              label: l10n.statsAverageTotal,
+              child: Text(
+                upToOneDecimal.format(stats.averageTotal),
+                key: const Key('card_average_total'),
+                style: _rowValueStyle,
+              ),
+            ),
+          if (stats.bestTotal != null) ...[
+            const Divider(height: 1),
+            _Row(
+              label: l10n.statsBestTotal,
+              child: Text(
+                scoreText(stats.bestTotal!),
+                key: const Key('card_best_total'),
+                style: _rowValueStyle,
+              ),
+            ),
+          ],
+          if (stats.mostBeatenUuid != null) ...[
+            const Divider(height: 1),
+            _Row(
+              label: l10n.statsMostBeaten,
+              child: Row(
+                key: const Key('card_most_beaten'),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  PlayerAvatar(
+                    name: _nameOf(stats.mostBeatenUuid!),
+                    color: _colourOf(stats.mostBeatenUuid!),
+                    size: 30,
+                    letters: 2,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(_nameOf(stats.mostBeatenUuid!),
+                      style: _rowValueStyle),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: compactToolbarHeightOf(context),
         title: Text(
           [name, widget.gameTypeName].join(' · '),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
       ),
-      body: ListView(
-        padding:
-            withBottomInset(context, const EdgeInsets.fromLTRB(16, 0, 16, 24)),
-        children: [
-          _buildStrip(),
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(
+      // A phone on its side: the player and the summary on the start side,
+      // the totals beside them, each scrolling on its own.
+      body: compactLandscapeOf(context)
+          ? SafeArea(
+              top: false,
+              bottom: false,
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Row(
-                    children: [
-                      Icon(
-                        widget.gameTypeIcon ?? Icons.leaderboard_outlined,
-                        color: widget.gameTypeColour ??
-                            theme.colorScheme.primary,
-                        size: 22,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          [widget.gameTypeName, ?ruleText].join(' · '),
-                          style: theme.textTheme.titleMedium?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      _Tile(
-                        key: const Key('card_games'),
-                        value: '${stats.games}',
-                        label: l10n.statsGamesLabel(stats.games),
-                        colour: colour,
-                      ),
-                      const SizedBox(width: 10),
-                      _Tile(
-                        key: const Key('card_wins'),
-                        value: '${stats.wins}',
-                        label: l10n.statsWinsLabel(stats.wins),
-                        colour: colour,
-                      ),
-                      const SizedBox(width: 10),
-                      _Tile(
-                        key: const Key('card_average_rank'),
-                        value: stats.averageRank == null
-                            ? '–'
-                            : oneDecimal.format(stats.averageRank),
-                        label: l10n.statsAverageRank,
-                        colour: colour,
-                      ),
-                    ],
-                  ),
-                  if (stats.recentRanks.isNotEmpty) ...[
-                    const SizedBox(height: 18),
-                    Row(
+                  Expanded(
+                    flex: 3,
+                    child: ListView(
+                      key: const Key('card_landscape_summary'),
+                      padding: withBottomInset(
+                          context, const EdgeInsets.fromLTRB(16, 0, 8, 16)),
                       children: [
-                        Expanded(
-                          child: Text(
-                            l10n.statsRankChartTitle(stats.recentRanks.length),
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w800),
-                          ),
-                        ),
-                        if (stats.trend != null)
-                          Text(
-                            switch (stats.trend!) {
-                              RankTrend.improving => l10n.statsTrendImproving,
-                              RankTrend.declining => l10n.statsTrendDeclining,
-                              RankTrend.steady => l10n.statsTrendSteady,
-                            },
-                            key: const Key('card_trend'),
-                            style: TextStyle(
-                              fontWeight: FontWeight.w800,
-                              color: stats.trend == RankTrend.declining
-                                  ? theme.colorScheme.error
-                                  : theme.colorScheme.primary,
-                            ),
-                          ),
+                        _buildStrip(),
+                        const SizedBox(height: 8),
+                        summary,
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    _RankChart(
-                      points: stats.recentRanks,
-                      colour: colour,
-                      ordinal: (rank) => l10n.statsRankOrdinal('$rank'),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: ListView(
+                      key: const Key('card_landscape_details'),
+                      padding: withBottomInset(
+                          context, const EdgeInsets.fromLTRB(8, 12, 16, 16)),
+                      children: [
+                        detailsTitle,
+                        const SizedBox(height: 8),
+                        details,
+                      ],
                     ),
-                  ],
-                  const SizedBox(height: 14),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 8,
-                    children: [
-                      _Pill(
-                        key: const Key('card_streak'),
-                        text: l10n.statsWinStreak(stats.currentStreak),
-                        background: kLeaderGold.withValues(alpha: 0.22),
-                        foreground: theme.brightness == Brightness.dark
-                            ? kLeaderGold
-                            : const Color(0xFF6B5000),
-                      ),
-                      if (stats.bestTotal != null)
-                        _Pill(
-                          key: const Key('card_record'),
-                          text: l10n.statsRecord(scoreText(stats.bestTotal!)),
-                          background: theme.colorScheme.primary
-                              .withValues(alpha: 0.12),
-                          foreground: theme.colorScheme.primary,
-                        ),
-                    ],
                   ),
                 ],
               ),
-            ),
-          ),
-          const SizedBox(height: 22),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Text(
-              (widget.gameTypeKey == kAllGameTypes
-                      ? widget.gameTypeName
-                      : l10n.statsOnGameType(widget.gameTypeName))
-                  .toUpperCase(),
-              style: theme.textTheme.labelLarge?.copyWith(
-                letterSpacing: 1.2,
-                fontWeight: FontWeight.w800,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Card(
-            child: Column(
+            )
+          : ListView(
+              padding: withBottomInset(
+                  context, const EdgeInsets.fromLTRB(16, 0, 16, 24)),
               children: [
-                if (stats.averageTotal != null)
-                  _Row(
-                    label: l10n.statsAverageTotal,
-                    child: Text(
-                      upToOneDecimal.format(stats.averageTotal),
-                      key: const Key('card_average_total'),
-                      style: _rowValueStyle,
-                    ),
-                  ),
-                if (stats.bestTotal != null) ...[
-                  const Divider(height: 1),
-                  _Row(
-                    label: l10n.statsBestTotal,
-                    child: Text(
-                      scoreText(stats.bestTotal!),
-                      key: const Key('card_best_total'),
-                      style: _rowValueStyle,
-                    ),
-                  ),
-                ],
-                if (stats.mostBeatenUuid != null) ...[
-                  const Divider(height: 1),
-                  _Row(
-                    label: l10n.statsMostBeaten,
-                    child: Row(
-                      key: const Key('card_most_beaten'),
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        PlayerAvatar(
-                          name: _nameOf(stats.mostBeatenUuid!),
-                          color: _colourOf(stats.mostBeatenUuid!),
-                          size: 30,
-                          letters: 2,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(_nameOf(stats.mostBeatenUuid!),
-                            style: _rowValueStyle),
-                      ],
-                    ),
-                  ),
-                ],
+                _buildStrip(),
+                const SizedBox(height: 12),
+                summary,
+                const SizedBox(height: 22),
+                detailsTitle,
+                const SizedBox(height: 8),
+                details,
               ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
