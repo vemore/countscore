@@ -1776,4 +1776,56 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get joinLinkContinueHere => 'المتابعة في المتصفح';
+
+  @override
+  String get gameTypeMaxRounds => 'الحد الأقصى للجولات';
+
+  @override
+  String get gameTypeMaxRoundsHelper => 'اتركه فارغًا لعدم التقييد';
+
+  @override
+  String gameTypeMaxRoundsRange(int min, int max) {
+    return 'بين $min و$max جولة';
+  }
+
+  @override
+  String gameRulesEndMaxRounds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'تنتهي المباراة بعد $count جولة',
+      many: 'تنتهي المباراة بعد $count جولة',
+      few: 'تنتهي المباراة بعد $count جولات',
+      two: 'تنتهي المباراة بعد جولتين',
+      one: 'تنتهي المباراة بعد جولة واحدة',
+      zero: 'تنتهي المباراة بعد $count جولة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String gameRulesEndOrMaxRounds(String condition, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$condition، أو بعد $count جولة',
+      many: '$condition، أو بعد $count جولة',
+      few: '$condition، أو بعد $count جولات',
+      two: '$condition، أو بعد جولتين',
+      one: '$condition، أو بعد جولة واحدة',
+      zero: '$condition، أو بعد $count جولة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String boardRoundProgress(int current, int total) {
+    return 'الجولة $current من $total';
+  }
+
+  @override
+  String get gameTypeNameChouineurs => 'Chouineurs';
+
+  @override
+  String get gameTypeNameChouineursSortKey => 'Chouineurs';
 }

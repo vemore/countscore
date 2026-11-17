@@ -2,7 +2,7 @@
 
 > Scope: how the app reaches SQLite — Drift, the sqflite bootstrap, repositories, codegen.
 > Related: [[Schema]] · [[MobileApp]] · [[Web]] · [[Testing]] · [[Sync]]
-> Updated: 2026-09-26
+> Updated: 2026-11-17
 
 ## Facts
 
@@ -33,7 +33,7 @@ All three remaining roles are inside `lib/services/database_service.dart` (1468 
 
   > **Status: Outdated** (2026-09-16, current number 2026-09-20) — both bullets above:
   > `tables.dart` declares **12** tables since v10, and `onUpgrade` has replayed the
-  > post-v9 steps since v11. `_insertDefaultGameTypes()` now seeds 22 types, each with its
+  > post-v9 steps since v11. `_insertDefaultGameTypes()` now seeds 23 types, each with its
   > `builtin_key`. The version number is deliberately not repeated here any more — it moves
   > with every schema change and [[Schema]] owns it.
 - On the web the executor is wrapped in `PersistenceFlushInterceptor`

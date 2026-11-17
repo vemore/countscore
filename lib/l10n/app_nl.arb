@@ -453,5 +453,13 @@
   "replaceConfigUnchanged": "Dit apparaat gebruikt al deze configuratie",
   "joinLinkHandOverMessage": "Deze link kan openen in de CountScore Android-app. Als de app niet is geïnstalleerd, wordt de Play Store geopend.",
   "joinLinkOpenInApp": "Open in de app",
-  "joinLinkContinueHere": "Doorgaan in de browser"
+  "joinLinkContinueHere": "Doorgaan in de browser",
+  "gameTypeMaxRounds": "Maximum aantal rondes",
+  "gameTypeMaxRoundsHelper": "Leeg laten voor geen limiet",
+  "gameTypeMaxRoundsRange": "Tussen {min} en {max} rondes",
+  "gameRulesEndMaxRounds": "{count, plural, one{Het spel eindigt na {count} ronde} other{Het spel eindigt na {count} rondes}}",
+  "gameRulesEndOrMaxRounds": "{count, plural, one{{condition}, of na {count} ronde} other{{condition}, of na {count} rondes}}",
+  "boardRoundProgress": "Ronde {current} van {total}",
+  "gameTypeNameChouineurs": "Chouineurs",
+  "gameTypeNameChouineursSortKey": "Chouineurs"
 }

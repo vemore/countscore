@@ -913,5 +913,13 @@
 
   "joinLinkOpenInApp": "เปิดในแอป",
 
-  "joinLinkContinueHere": "ดำเนินการต่อในเบราวเซอร์"
+  "joinLinkContinueHere": "ดำเนินการต่อในเบราวเซอร์",
+  "gameTypeMaxRounds": "จำนวนรอบสูงสุด",
+  "gameTypeMaxRoundsHelper": "เว้นว่างไว้หากไม่จำกัด",
+  "gameTypeMaxRoundsRange": "ระหว่าง {min} ถึง {max} รอบ",
+  "gameRulesEndMaxRounds": "{count, plural, one{เกมจบหลังจาก {count} รอบ} other{เกมจบหลังจาก {count} รอบ}}",
+  "gameRulesEndOrMaxRounds": "{count, plural, one{{condition} หรือหลังจาก {count} รอบ} other{{condition} หรือหลังจาก {count} รอบ}}",
+  "boardRoundProgress": "รอบ {current}/{total}",
+  "gameTypeNameChouineurs": "Chouineurs",
+  "gameTypeNameChouineursSortKey": "Chouineurs"
 }

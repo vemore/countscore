@@ -140,7 +140,7 @@ void main() {
 
   test('the slug map, the seed and the shipped assets agree', () {
     expect(defaultRulesSlugs.values.toSet(), GameRulesCatalog.slugs.toSet());
-    expect(defaultRulesSlugs, hasLength(21));
+    expect(defaultRulesSlugs, hasLength(22));
     for (final type in GameType.defaultGameTypes()) {
       expect(type.rulesSlug, defaultRulesSlugs[type.builtinKey],
           reason: '${type.builtinKey} seeds a slug the map does not know');

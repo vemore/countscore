@@ -1,10 +1,10 @@
 # Privacy Policy for CountScore
 
-**Last Updated**: September 25, 2026 (v2.12)
+**Last Updated**: November 17, 2026 (v2.13)
 
 **Effective Date**: Applies to CountScore v1.1.0 and later
 
-**Previous versions**: v2.11 (September 24, 2026), v2.10 (September 19, 2026), v2.9 (September 19, 2026), v2.8 (September 18, 2026), v2.7 and v2.6 (September 16, 2026), v2.5 (September 14, 2026), v2.4 (September 14, 2026), v2.3 (September 13, 2026), v2.2 (September 11, 2026), v2.1 and v2.0 (September 9, 2026) and v1.0 (November 9, 2025). v1.0
+**Previous versions**: v2.12 (September 25, 2026), v2.11 (September 24, 2026), v2.10 (September 19, 2026), v2.9 (September 19, 2026), v2.8 (September 18, 2026), v2.7 and v2.6 (September 16, 2026), v2.5 (September 14, 2026), v2.4 (September 14, 2026), v2.3 (September 13, 2026), v2.2 (September 11, 2026), v2.1 and v2.0 (September 9, 2026) and v1.0 (November 9, 2025). v1.0
 applies to CountScore 1.0.x — the versions currently on the Play Store. See
 [Version History](#version-history).
 
@@ -91,8 +91,8 @@ unless you open a game's analysis screen and explicitly tap the button to genera
 
 When you request an analysis, the app sends the following for that game:
 
-- the game's name, its game type, that type's scoring rule and thresholds, and the game's
-  creation date;
+- the game's name, its game type, that type's scoring rule, thresholds and maximum number of
+  rounds, and the game's creation date;
 - the voice you picked and the language the app is displayed in — both are settings of the
   app, not information about you;
 - the **names of the players** in that game;
@@ -167,7 +167,7 @@ you do not share never leave your device.
 For each **shared** game, and kept up to date as you play:
 
 - the game's name, its game type (name, icon, colour, elimination and game-over
-  thresholds, its score keypad shortcut — a number and, if you typed one, a short label —
+  thresholds, its maximum number of rounds, its score keypad shortcut — a number and, if you typed one, a short label —
   **any rules text you wrote for it**, and — for one of the app's own preset
   types — the fixed identifier that says which preset it is, so that devices set to
   different languages agree on it), its scoring rule, its creation date and, once you
@@ -410,6 +410,11 @@ changes are announced through app updates on the Google Play Store.
 
 ### Version History
 
+- **v2.13** (November 17, 2026): A game type can end after a maximum number of rounds (a
+  number from 1 to 999, or none), set on the new preset Chouineurs and editable on every
+  type. It is stored on your device with the type and, for a shared game, sent with its game
+  type; an analysis request carries it with the type's other scoring rules. No new recipient
+  and no new category of information about you.
 - **v2.12** (September 25, 2026): A game type can have a score keypad shortcut (such as
   "×2" or "162"), set on some preset types and editable on every type, presets included. It is stored on your
   device with the type and, for a shared game, sent with its game type: a number and, if you

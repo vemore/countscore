@@ -168,16 +168,17 @@ void main() {
     expect(games.map((g) => g.name), ['Jeudi', 'Mardi']);
     expect(games.every((g) => g.gameTypeId == 1), isTrue);
     // v13: this fixture holds one type, ZapZap. It is back-filled in place —
-    // same row, same id, so the games still point at it — and the twelve types
-    // the seed never held arrive alongside it. The nine other pre-v13 types
-    // were never in this database and are *not* resurrected: 1 + 12 = 13.
+    // same row, same id, so the games still point at it — and the thirteen
+    // types the seed never held (Chouineurs among them since v22) arrive
+    // alongside it. The nine other pre-v13 types were never in this database
+    // and are *not* resurrected: 1 + 13 = 14.
     final types = await DriftGameTypeRepository(db).getAll();
     expect(types.where((t) => t.builtinKey == 'zapzap').map((t) => t.id), [1]);
-    expect(types, hasLength(13));
+    expect(types, hasLength(14));
     expect(types.every((t) => t.builtinKey != null), isTrue);
     expect(types.map((t) => t.builtinKey), contains('mille_bornes'));
     expect(types.map((t) => t.builtinKey), isNot(contains('skyjo')));
-    // v13 and v16: each of the thirteen carries its shipped ruleset.
+    // v13 and v16: each of the fourteen carries its shipped ruleset.
     for (final t in types) {
       expect(t.rulesSlug, defaultRulesSlugs[t.builtinKey], reason: '${t.builtinKey}');
     }

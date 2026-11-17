@@ -767,5 +767,13 @@
   "replaceConfigUnchanged": "Perangkat ini sudah menggunakan konfigurasi ini",
   "joinLinkHandOverMessage": "Tautan ini dapat dibuka di aplikasi CountScore Android. Jika aplikasi tidak terinstal, Play Store terbuka sebagai gantinya.",
   "joinLinkOpenInApp": "Buka di aplikasi",
-  "joinLinkContinueHere": "Lanjutkan di browser"
+  "joinLinkContinueHere": "Lanjutkan di browser",
+  "gameTypeMaxRounds": "Jumlah putaran maksimum",
+  "gameTypeMaxRoundsHelper": "Kosongkan jika tanpa batas",
+  "gameTypeMaxRoundsRange": "Antara {min} dan {max} putaran",
+  "gameRulesEndMaxRounds": "{count, plural, one{Permainan berakhir setelah {count} putaran} other{Permainan berakhir setelah {count} putaran}}",
+  "gameRulesEndOrMaxRounds": "{count, plural, one{{condition}, atau setelah {count} putaran} other{{condition}, atau setelah {count} putaran}}",
+  "boardRoundProgress": "Putaran {current} dari {total}",
+  "gameTypeNameChouineurs": "Chouineurs",
+  "gameTypeNameChouineursSortKey": "Chouineurs"
 }

@@ -882,3 +882,35 @@ giocare, il giocatore con il minor numero di punti in mano segna la differenza.
 I turni si susseguono fino al totale concordato, spesso 400 punti, e il totale più alto
 vince. Imposta questa soglia nel tipo di gioco.
 
+<!--@chouineurs-->
+Gioco di prese per 3-5 giocatori, in **4 round da 7 prese**. Ogni carta ha due facce, e
+ognuno cerca di fare esattamente il numero di prese su cui ha scommesso.
+
+## Preparazione
+
+A ogni round, ogni giocatore riceve **7 carte a doppia faccia** e sceglie il lato che userà
+per tutto il round. Poi mette coperta una delle sue **5 carte Scommessa** (*Pari*): ognuna
+indica più numeri di prese, ciascuno con il proprio valore in punti.
+
+## Gioco
+
+Bisogna rispondere al seme giocato, se possibile. Il giallo è la briscola; i draghi neri sono
+super-briscole e si possono giocare in qualsiasi momento. Chi ha giocato **la carta più
+bassa** della presa *chouine* (si lamenta) — in caso di parità, tutti loro: gira una carta
+della propria mano oppure prende dalla riserva una carta che vale **1 punto**.
+
+## Punteggio
+
+A fine round, ognuno rivela la propria scommessa:
+- se il numero di prese fatte è sulla carta, si segnano i punti indicati e quella carta
+  Scommessa esce dal gioco;
+- altrimenti si segna 0 e la carta torna al suo proprietario;
+- si aggiunge **1 punto** per ogni carta presa lamentandosi.
+
+I punti si sommano di round in round.
+
+## Fine della partita
+
+Dopo il **4° round** vince il totale più alto. In caso di parità vince chi ha fatto più punti
+nell'ultimo round. CountScore mostra la schermata finale appena viene inserito il quarto
+round.

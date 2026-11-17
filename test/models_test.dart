@@ -92,6 +92,40 @@ void main() {
             gameOverThreshold: 10,
           );
 
+      test('a round limit ends the game on its last round, not before', () {
+        final four = GameType(
+          name: 'Quatre',
+          iconCodePoint: 0,
+          cardColorValue: 0,
+          isLowestScoreWins: false,
+          maxRounds: 4,
+        );
+        expect(four.isGameOver([], roundCount: 4), isTrue);
+        expect(four.isGameOver([], roundCount: 3), isFalse);
+        expect(four.isGameOver([], roundCount: 5), isTrue,
+            reason: 'a game the table continued is still past its limit');
+        expect(four.isGameOver([999, 0]), isFalse,
+            reason: 'no total condition, and roundCount defaults to 0');
+        expect(GameType.chouineurs().isGameOver([30, 12, 8], roundCount: 4),
+            isTrue);
+        expect(GameType.chouineurs().isGameOver([30, 12, 8], roundCount: 3),
+            isFalse);
+      });
+
+      test('a round limit and a total condition: either alone ends the game',
+          () {
+        final both = withRule(GameOverConditionType.firstPlayerOver)
+            .copyWith(maxRounds: 5);
+        expect(both.isGameOver([3, 4], roundCount: 2), isFalse);
+        expect(both.isGameOver([10, 4], roundCount: 2), isTrue,
+            reason: 'the threshold, before the limit');
+        expect(both.isGameOver([3, 4], roundCount: 5), isTrue,
+            reason: 'the limit, under the threshold');
+        expect(both.copyWith(clearMaxRounds: true).isGameOver([3, 4],
+                roundCount: 5),
+            isFalse);
+      });
+
       test('Président: a player on exactly 10 has won, one on 9 has not', () {
         final president = GameType.president();
         expect(president.isGameOver([10, 4, 2]), isTrue);
@@ -246,7 +280,7 @@ void main() {
 
     test('GameType default game types list', () {
       final defaultTypes = GameType.defaultGameTypes();
-      expect(defaultTypes.length, 22);
+      expect(defaultTypes.length, 23);
       // The first ten indices are what an install seeded before schema v13
       // already holds, in that order. New types are appended, never inserted.
       expect(defaultTypes[0].name, 'ZapZap');
@@ -271,6 +305,7 @@ void main() {
       expect(defaultTypes[19].name, 'Canasta');
       expect(defaultTypes[20].name, 'Wizard');
       expect(defaultTypes[21].name, 'Triomino');
+      expect(defaultTypes[22].name, 'Chouineurs');
     });
 
     test('GameType built-in keys', () {
@@ -279,7 +314,7 @@ void main() {
         'zapzap', 'uno', 'scrabble', 'other', 'skyjo', 'president', //
         'belote', 'tarot', 'bridge', 'rami', 'coinche', 'yahtzee', //
         'phase10', 'flip7', 'mille_bornes', 'rummikub', 'six_nimmt', //
-        'qwirkle', 'farkle', 'canasta', 'wizard', 'triomino',
+        'qwirkle', 'farkle', 'canasta', 'wizard', 'triomino', 'chouineurs',
       ]);
       // The ten the v13 migration back-fills rather than inserts.
       expect(GameType.seededNamesBeforeV14.keys,

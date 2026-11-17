@@ -130,12 +130,12 @@ void main() {
 
     final rows = await db.query('game_types', columns: ['name', 'builtin_key']);
     final names = rows.map((r) => r['name'] as String).toSet();
-    // The six the v5 step re-seeds, then the twelve v14 adds.
+    // The six the v5 step re-seeds, then the thirteen v14 adds.
     expect(names, containsAll(['Skyjo', 'Président', 'Belote', 'Tarot', 'Bridge', 'Rami']));
     expect(names, containsAll(['Yahtzee', 'Coinche', 'Triomino']));
     // v5 gave the re-seeded types their thresholds, and v14 gave every one of
-    // the 22 its key.
-    expect(rows.map((r) => r['builtin_key']).whereType<String>(), hasLength(22));
+    // the 23 its key.
+    expect(rows.map((r) => r['builtin_key']).whereType<String>(), hasLength(23));
 
     final skyjo = await db.query('game_types', where: 'name = ?', whereArgs: ['Skyjo']);
     expect(skyjo.single['gameOverThreshold'], 100);
@@ -143,7 +143,7 @@ void main() {
   });
 
   test('a v2 device upgrades too — that seed predates the condition columns', () async {
-    // The v2 → v3 step creates the six-column table and seeds all 22 types into
+    // The v2 → v3 step creates the six-column table and seeds all 23 types into
     // it. `toMap()` carries four condition columns v3 does not have, and now
     // `builtin_key` on top — the same class of defect, one step earlier. It was
     // already broken on `main` for the condition columns; the column filter in
@@ -152,7 +152,7 @@ void main() {
 
     expect(await db.getVersion(), DatabaseService.schemaVersion);
     final rows = await db.query('game_types', columns: ['name', 'builtin_key']);
-    expect(rows, hasLength(22));
+    expect(rows, hasLength(23));
     expect(
       rows.map((r) => r['builtin_key']).toSet(),
       GameType.defaultGameTypes().map((t) => t.builtinKey).toSet(),
@@ -160,6 +160,10 @@ void main() {
     // v5 then filled in the conditions the v3 seed could not carry.
     final zapzap = await db.query('game_types', where: 'name = ?', whereArgs: ['ZapZap']);
     expect(zapzap.single['playerDeadThreshold'], 100);
+    // v22 gave Chouineurs, seeded by v3 long before its column, its limit.
+    final chouineurs = await db.query('game_types',
+        where: 'builtin_key = ?', whereArgs: ['chouineurs']);
+    expect(chouineurs.single['max_rounds'], 4);
     // And the v4 step matched `games.gameType` to the seeded row.
     final game = await db.query('games', columns: ['gameTypeId']);
     expect(game.single['gameTypeId'], isNotNull);
@@ -169,7 +173,7 @@ void main() {
     final db = await upgradeFrom(4, GameType.seededNamesBeforeV14.values.toList());
 
     final rows = await db.query('game_types', columns: ['name', 'builtin_key']);
-    expect(rows, hasLength(22));
-    expect(rows.map((r) => r['builtin_key']).toSet(), hasLength(22));
+    expect(rows, hasLength(23));
+    expect(rows.map((r) => r['builtin_key']).toSet(), hasLength(23));
   });
 }

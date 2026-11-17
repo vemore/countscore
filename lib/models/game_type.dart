@@ -85,6 +85,17 @@ class GameType {
   /// `keypad_shortcut` (schema v21); a malformed stored value reads as null.
   final KeypadShortcut? keypadShortcut;
 
+  /// The number of rounds after which the game is over, or null for no limit
+  /// (schema v22, `max_rounds`). Combined with the total condition by **OR**
+  /// ([isGameOver]): a type may need both — "first to 500, or 10 rounds at
+  /// most" — which a fifth [GameOverConditionType] could not express.
+  final int? maxRounds;
+
+  /// The bounds of [maxRounds], both inclusive: the editor's and the server's
+  /// (`backend/app/services/delta_bounds.py`).
+  static const maxRoundsMin = 1;
+  static const maxRoundsMax = 999;
+
   GameType({
     this.id,
     this.builtinKey,
@@ -100,6 +111,7 @@ class GameType {
     this.rules,
     this.rulesSlug,
     this.keypadShortcut,
+    this.maxRounds,
   });
 
   // The code point comes from the database, so it cannot be a constant. This is
@@ -154,7 +166,13 @@ class GameType {
   /// the survivor included, until 2026-09-20 — a condition that never fired,
   /// because a player who is out stops being dealt in and the survivor's total
   /// never moves again (`wip/done/2026-09-20-the-last-player-standing-condition-is-mislabelled-misimplemented-and-unset.md`).
-  bool isGameOver(Iterable<int> totals) {
+  ///
+  /// [roundCount] is the number of rounds the game has had. When the type has
+  /// a [maxRounds], reaching it ends the game whatever the totals — either
+  /// condition alone is enough (schema v22).
+  bool isGameOver(Iterable<int> totals, {int roundCount = 0}) {
+    final limit = maxRounds;
+    if (limit != null && roundCount >= limit) return true;
     final type = gameOverConditionType;
     final threshold = gameOverThreshold;
     if (type == null || threshold == null) return false;
@@ -201,6 +219,7 @@ class GameType {
       'rules': rules,
       'rules_slug': rulesSlug,
       'keypad_shortcut': keypadShortcut?.encode(),
+      'max_rounds': maxRounds,
     };
   }
 
@@ -224,6 +243,7 @@ class GameType {
       rules: map['rules'] as String?,
       rulesSlug: map['rules_slug'] as String?,
       keypadShortcut: KeypadShortcut.decode(map['keypad_shortcut']),
+      maxRounds: map['max_rounds'] as int?,
     );
   }
 
@@ -233,6 +253,7 @@ class GameType {
   /// `clearPlayerDeadCondition` and `clearGameOverCondition` drop a condition
   /// *and* its threshold, which `x ?? this.x` cannot express — the editor needs
   /// them to save *None* over a condition the type used to have.
+  /// `clearMaxRounds` does the same for the round limit: an empty field.
   GameType copyWith({
     int? id,
     String? builtinKey,
@@ -253,6 +274,8 @@ class GameType {
     bool clearRules = false,
     KeypadShortcut? keypadShortcut,
     bool clearKeypadShortcut = false,
+    int? maxRounds,
+    bool clearMaxRounds = false,
   }) {
     return GameType(
       id: id ?? this.id,
@@ -281,6 +304,7 @@ class GameType {
       keypadShortcut: clearKeypadShortcut
           ? null
           : (keypadShortcut ?? this.keypadShortcut),
+      maxRounds: clearMaxRounds ? null : (maxRounds ?? this.maxRounds),
     );
   }
 
@@ -579,6 +603,23 @@ class GameType {
         isDefault: true,
       );
 
+  /// Chouineurs (Blam!, 2026): a trick-taking game played in exactly four
+  /// rounds, highest total wins. The first built-in whose end is a round
+  /// count rather than a total (schema v22, [maxRounds]); `applyV22` inserts
+  /// it on an existing install. Its colour is the palette's magenta
+  /// (`kGameTypePalette`), which no other seed uses and which keeps its
+  /// contrast on both themes.
+  static GameType chouineurs() => GameType(
+        builtinKey: 'chouineurs',
+        name: 'Chouineurs',
+        rulesSlug: 'chouineurs',
+        iconCodePoint: Icons.sentiment_very_dissatisfied.codePoint,
+        cardColorValue: const Color(0xFFD51FB0).toARGB32(),
+        isLowestScoreWins: false,
+        isDefault: true,
+        maxRounds: 4,
+      );
+
   /// The ten types seeded before schema v14, by the literal name they were
   /// seeded with. The v14 migration back-fills [builtinKey] on an existing
   /// install by matching these names, and skips them when it inserts the types
@@ -622,6 +663,7 @@ class GameType {
       canasta(),
       wizard(),
       triomino(),
+      chouineurs(), // schema v22
     ];
   }
 }

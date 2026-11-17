@@ -119,7 +119,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     super.dispose();
   }
 
-  /// The current game and every player's total, as last seen by
+  /// The current game, its round count and every player's total, as last seen by
   /// [_checkGameOverOnTotals].
   String? _totalsSeen;
 
@@ -128,6 +128,9 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     return [
       game?.id,
       game?.isFinished,
+      // The round count too: a type with a round limit ends on it, and a
+      // pulled round of zeros moves no total.
+      _gameProvider.currentRounds.length,
       for (final p in _gameProvider.currentPlayers)
         '${p.id}:${_gameProvider.getPlayerTotal(p.id!)}',
     ].join(',');
@@ -231,12 +234,27 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Consumer<GameProvider>(
-          builder: (context, gameProvider, child) {
+        title: Consumer2<GameProvider, GameTypeProvider>(
+          builder: (context, gameProvider, gameTypeProvider, child) {
             final game = gameProvider.currentGame;
+            final typeId = game?.gameTypeId;
+            final progress = _roundProgress(
+              typeId == null ? null : gameTypeProvider.getGameTypeById(typeId),
+              gameProvider.currentRounds.length,
+            );
             return Row(
               children: [
                 Flexible(child: Text(game?.name ?? l10n.game, overflow: TextOverflow.ellipsis)),
+                // Only for a type that ends on a round count: where the game
+                // stands against it ("Round 3 of 4").
+                if (progress != null) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    l10n.boardRoundProgress(progress.current, progress.total),
+                    key: const Key('board_round_progress'),
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                ],
                 if (game?.isShared ?? false) ...[
                   const SizedBox(width: 8),
                   Tooltip(
@@ -575,14 +593,31 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     );
   }
 
+  /// The round being played out of the type's limit, or null for a type
+  /// without one. The round in progress is the next one until the limit is
+  /// reached, then the last one played — "Round 4 of 4" on a finished game,
+  /// "Round 5 of 4" on one the table chose to continue.
+  static ({int current, int total})? _roundProgress(
+      GameType? gameType, int roundsPlayed) {
+    final limit = gameType?.maxRounds;
+    if (limit == null) return null;
+    final current = roundsPlayed < limit ? roundsPlayed + 1 : roundsPlayed;
+    return (current: current, total: limit);
+  }
+
+  /// Whether the type's end rule holds: a total condition, or the round limit
+  /// (schema v22) — either alone ends the game. Tested before anything else:
+  /// a type with a round limit and no threshold must still end.
   bool _checkGameOverCondition(GameProvider gameProvider, GameType? gameType) {
-    if (gameType?.gameOverConditionType == null || gameType?.gameOverThreshold == null) {
-      return false;
-    }
+    if (gameType == null) return false;
+    final hasTotalRule = gameType.gameOverConditionType != null &&
+        gameType.gameOverThreshold != null;
+    if (!hasTotalRule && gameType.maxRounds == null) return false;
 
     final players = gameProvider.currentPlayers;
     final playerTotals = players.map((p) => gameProvider.getPlayerTotal(p.id!)).toList();
-    return gameType!.isGameOver(playerTotals);
+    return gameType.isGameOver(playerTotals,
+        roundCount: gameProvider.currentRounds.length);
   }
 
   /// Opens the end screen once per crossing of the threshold.

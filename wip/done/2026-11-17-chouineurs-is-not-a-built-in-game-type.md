@@ -1,5 +1,12 @@
 # Chouineurs is not a built-in game type
 
+**Status:** done (2026-11-17) — closed by feat/max-rounds-chouineurs. `GameType.chouineurs()`
+(4 rounds, highest wins, no threshold) is the 23rd built-in, inserted on existing installs by
+`applyV22` under the v14 guards, named "Chouineurs" in every locale, with its rules summarised
+in our own words in all 20 `assets/rules/` files and a block in the analysis registry. The
+tie-break on the last round is not applied by the ranking:
+[[2026-11-17-a-chouineurs-tie-is-not-broken-by-the-last-round]].
+
 - **Noted:** 2026-11-17 — the user asked for it among the default games
 - **Theme:** game-types
 - **Area:** app | backend
@@ -49,5 +56,5 @@ read 2026-11-17), to be **summarised in our own words**, never reproduced:
 - A game of Chouineurs with 3 players shows the end screen after its 4th round, not before,
   and ranks the highest total first.
 
-**Open question:** none on the rules. Whether the board shows "Manche n/4" is the open
-question of the dependency entry.
+**Open question:** none on the rules. The board shows the round progress: decided yes in
+the dependency entry.

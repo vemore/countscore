@@ -12,7 +12,7 @@ import 'package:flutter/material.dart';
 /// seed introduces an icon this list lacks.
 ///
 /// The glyphs carry no tooltip: they have no names in the ARB files and naming
-/// 34 of them is a translation task of its own. Only the *current* one is
+/// 35 of them is a translation task of its own. Only the *current* one is
 /// labelled, because that label is about state, not about the glyph.
 const List<IconData> kGameTypeIcons = <IconData>[
   Icons.sports_esports,
@@ -51,6 +51,8 @@ const List<IconData> kGameTypeIcons = <IconData>[
   // opening either type and changing its icon could not be undone.
   Icons.style_outlined,
   Icons.change_history,
+  // Seeded by Chouineurs (schema v22): a whiner.
+  Icons.sentiment_very_dissatisfied,
 ];
 
 /// The colours the colour picker offers.

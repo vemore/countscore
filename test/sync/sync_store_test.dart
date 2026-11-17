@@ -442,6 +442,39 @@ void main() {
           reason: 'a value this version cannot read would get the whole row '
               'rejected, and must not overwrite what the group holds');
     });
+
+    test('a game type pushes its round limit, and a cleared one as null',
+        () async {
+      final m = await joined();
+      const typeId = 1; // ZapZap: no limit
+      final g = await localGame();
+      await store.shareGame(g.game, m.groupId);
+
+      Future<Map<String, dynamic>> pushedTypePayload() async {
+        final deltas = await store.preparePush((await store.membership())!);
+        final type = deltas.firstWhere((d) => d.entityType == 'game_type');
+        for (final d in deltas) {
+          await store.markSent(d, m.deviceId);
+        }
+        return type.payload;
+      }
+
+      final none = await pushedTypePayload();
+      expect(none.containsKey('max_rounds'), isTrue,
+          reason: 'no limit is a value too: it travels as null');
+      expect(none['max_rounds'], isNull);
+
+      await db.customStatement(
+          'UPDATE game_types SET max_rounds = 4 WHERE id = ?', [typeId]);
+      expect((await pushedTypePayload())['max_rounds'], 4);
+
+      await db.customStatement(
+          'UPDATE game_types SET max_rounds = NULL WHERE id = ?', [typeId]);
+      final cleared = await pushedTypePayload();
+      expect(cleared.containsKey('max_rounds'), isTrue,
+          reason: 'the user empties the field on purpose: the null travels');
+      expect(cleared['max_rounds'], isNull);
+    });
   });
 
   group('applyPulled', () {
@@ -661,6 +694,65 @@ void main() {
         _delta('game_type', remote, 102, 102, {'name': 'ZapZap'}),
       ], 102);
       expect(await local(), isNull, reason: 'an absent key changes nothing');
+    });
+
+    test('a pulled round limit replaces, a null clears, an out-of-bounds one '
+        'and an older peer without the key leave the local one', () async {
+      final m = await joined();
+      final typeId = await sharedTypeFreedOfGames(m);
+      final remote = await remoteTypeUuid(typeId);
+      Future<int?> local() async => (await gameTypes.getById(typeId))!.maxRounds;
+
+      await store.applyPulled(m, [
+        _delta('game_type', remote, 99, 99, {'name': 'ZapZap', 'max_rounds': 4}),
+      ], 99);
+      expect(await local(), 4);
+
+      // A device that predates v22 edits the type: its payload has no
+      // `max_rounds` at all, and must not clear a limit it cannot see.
+      await store.applyPulled(m, [
+        _delta('game_type', remote, 100, 100, {'name': 'ZapZap du jeudi'}),
+      ], 100);
+      expect(await local(), 4, reason: 'an absent key changes nothing');
+      expect((await gameTypes.getById(typeId))!.name, 'ZapZap du jeudi');
+
+      await store.applyPulled(m, [
+        _delta('game_type', remote, 101, 101, {'name': 'ZapZap', 'max_rounds': 0}),
+      ], 101);
+      expect(await local(), 4,
+          reason: 'what no app could have set does not clear what it has');
+
+      await store.applyPulled(m, [
+        _delta('game_type', remote, 102, 102, {'name': 'ZapZap', 'max_rounds': null}),
+      ], 102);
+      expect(await local(), isNull);
+    });
+
+    test('a built-in Chouineurs pulled with no max_rounds key gets the seeded '
+        'limit; an explicit null stays null; a user type gets none', () async {
+      final m = await joined();
+      await db.customStatement(
+          "DELETE FROM game_types WHERE builtin_key = 'chouineurs'");
+
+      await store.applyPulled(m, [
+        // From a device that predates v22 and still learned the key.
+        _delta('game_type', '56565656-5656-4565-8565-565656565656', 1, 1,
+            {'name': 'Chouineurs', 'builtin_key': 'chouineurs'}),
+        _delta('game_type', '78787878-7878-4787-8787-787878787878', 2, 2,
+            {'name': 'Maison', 'max_rounds': null}),
+        _delta('game_type', '90909090-9090-4909-8909-909090909090', 3, 3,
+            {'name': 'Sans clé'}),
+        _delta('game_type', '12341234-1234-4123-8123-123412341234', 4, 4,
+            {'name': 'Dix manches', 'max_rounds': 10}),
+      ], 4);
+
+      final all = await gameTypes.getAll();
+      expect(all.singleWhere((t) => t.builtinKey == 'chouineurs').maxRounds, 4,
+          reason: 'a NULL here would be pushed by the next local edit as a '
+              'clear nobody chose');
+      expect(all.singleWhere((t) => t.name == 'Maison').maxRounds, isNull);
+      expect(all.singleWhere((t) => t.name == 'Sans clé').maxRounds, isNull);
+      expect(all.singleWhere((t) => t.name == 'Dix manches').maxRounds, 10);
     });
 
     test('a custom type pulled with a shortcut lands with it; a malformed one '

@@ -1,5 +1,11 @@
 # A game type cannot end after a fixed number of rounds
 
+**Status:** done (2026-11-17) — closed by feat/max-rounds-chouineurs. `GameType.maxRounds`
+(schema v22, `game_types.max_rounds`, Alembic `0007_game_type_max_rounds`) is OR-ed with the
+total condition in `isGameOver`; the editor has a "Maximum rounds" field, the rule lines and
+the analysis payload carry it, it syncs with a null as a clear and an absent key as no
+change, and the board shows "Round n of N" for a type with a limit.
+
 - **Noted:** 2026-11-17 — the user asked for a "maximum rounds" end condition in the game-type editor, for games such as Chouineurs (4 rounds)
 - **Theme:** game-types
 - **Area:** app | backend
@@ -55,7 +61,11 @@ and the dropdown can hold only one.
 - `test/migration_v21_to_v22_test.dart`: both engines upgrade a v21 file, the column exists,
   every row reads null, a replay is a no-op.
 - A sync round-trip test pushes and pulls `max_rounds`; the server refuses 0 and 1000.
+- The board shows the round progress ("Round 3 of 4", `boardRoundProgress`, ICU-correct in
+  all 20 languages) in its header for a type with `maxRounds`, and nothing for a type
+  without — a widget test covers both.
 - `flutter analyze`, `flutter test`, backend `pytest` and the ARB checks are green.
 
-**Open question:** should the board show the progress ("Manche 3/4") in its header when a
-type has a limit? Not needed for the end screen; small, but one more string.
+**Decision (user, 2026-11-17):** yes — the game board shows the round progress ("Manche
+3/4" / "Round 3 of 4") in its header or an equally visible place, only for a type with
+`maxRounds` set.

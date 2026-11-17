@@ -1692,4 +1692,48 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get joinLinkContinueHere => '브라우저에서 계속';
+
+  @override
+  String get gameTypeMaxRounds => '최대 라운드 수';
+
+  @override
+  String get gameTypeMaxRoundsHelper => '비워 두면 제한 없음';
+
+  @override
+  String gameTypeMaxRoundsRange(int min, int max) {
+    return '$min~$max 라운드';
+  }
+
+  @override
+  String gameRulesEndMaxRounds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count라운드 후 게임 종료',
+      one: '$count라운드 후 게임 종료',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String gameRulesEndOrMaxRounds(String condition, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$condition (또는 $count라운드 후 종료)',
+      one: '$condition (또는 $count라운드 후 종료)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String boardRoundProgress(int current, int total) {
+    return '라운드 $current/$total';
+  }
+
+  @override
+  String get gameTypeNameChouineurs => 'Chouineurs';
+
+  @override
+  String get gameTypeNameChouineursSortKey => 'Chouineurs';
 }

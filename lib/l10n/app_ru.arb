@@ -739,5 +739,13 @@
   "configShareTooLong": "Эта ссылка слишком длинная для QR-кода. Используйте «Скопировать ссылку».",
   "joinLinkHandOverMessage": "Эта ссылка может открыться в приложении CountScore для Android. Если приложение не установлено, вместо него откроется Play Маркет.",
   "joinLinkOpenInApp": "Открыть в приложении",
-  "joinLinkContinueHere": "Продолжить в браузере"
+  "joinLinkContinueHere": "Продолжить в браузере",
+  "gameTypeMaxRounds": "Максимум раундов",
+  "gameTypeMaxRoundsHelper": "Оставьте пустым, чтобы не ограничивать",
+  "gameTypeMaxRoundsRange": "От {min} до {max} раундов",
+  "gameRulesEndMaxRounds": "{count, plural, one{Партия заканчивается после {count} раунда} few{Партия заканчивается после {count} раундов} many{Партия заканчивается после {count} раундов} other{Партия заканчивается после {count} раунда}}",
+  "gameRulesEndOrMaxRounds": "{count, plural, one{{condition} или после {count} раунда} few{{condition} или после {count} раундов} many{{condition} или после {count} раундов} other{{condition} или после {count} раунда}}",
+  "boardRoundProgress": "Раунд {current} из {total}",
+  "gameTypeNameChouineurs": "Chouineurs",
+  "gameTypeNameChouineursSortKey": "Chouineurs"
 }

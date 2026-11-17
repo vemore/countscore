@@ -1652,4 +1652,46 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get joinLinkContinueHere => '在浏览器中继续';
+
+  @override
+  String get gameTypeMaxRounds => '最大轮数';
+
+  @override
+  String get gameTypeMaxRoundsHelper => '留空表示不限';
+
+  @override
+  String gameTypeMaxRoundsRange(int min, int max) {
+    return '$min 到 $max 轮之间';
+  }
+
+  @override
+  String gameRulesEndMaxRounds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count 轮后对局结束',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String gameRulesEndOrMaxRounds(String condition, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$condition，或 $count 轮后结束',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String boardRoundProgress(int current, int total) {
+    return '第 $current 轮，共 $total 轮';
+  }
+
+  @override
+  String get gameTypeNameChouineurs => 'Chouineurs';
+
+  @override
+  String get gameTypeNameChouineursSortKey => 'Chouineurs';
 }

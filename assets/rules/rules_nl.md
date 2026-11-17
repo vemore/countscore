@@ -886,3 +886,35 @@ niemand kan spelen, scoort degene met de minste punten in hand het verschil.
 
 Ronden volgen elkaar tot het afgesproken totaal, vaak 400 punten, en de hoogste totaal
 wint. Stel die drempel in het speltype in.
+
+<!--@chouineurs-->
+Een slagenspel voor 3 tot 5 spelers, in **4 rondes van 7 slagen**. Elke kaart heeft twee
+kanten, en iedereen probeert precies het aantal slagen te halen waarop hij heeft gewed.
+
+## Setup
+
+Elke ronde krijgt iedere speler **7 dubbelzijdige kaarten** en kiest welke kant hij de hele
+ronde gebruikt. Daarna legt hij gedekt een van zijn **5 Gokkaarten** (*Pari*) neer: elke
+kaart noemt enkele aantallen slagen, elk met een eigen puntwaarde.
+
+## Speel
+
+Kleur bekennen is verplicht als het kan. Geel is troef; de zwarte draken zijn supertroeven
+en mogen altijd gespeeld worden. Wie **de laagste kaart** van een slag speelde, *chouine*
+(zeurt) — bij gelijkspel allemaal: hij draait een kaart in zijn hand om, of neemt uit de
+voorraad een kaart die **1 punt** waard is.
+
+## Scoring
+
+Aan het eind van de ronde onthult iedereen zijn gok:
+- staat het aantal gehaalde slagen op de kaart, dan scoor je de punten die erbij staan, en
+  die Gokkaart gaat uit het spel;
+- anders scoor je 0 en gaat de kaart terug naar de eigenaar;
+- tel **1 punt** op voor elke kaart die je al zeurend nam.
+
+De punten tellen op van ronde tot ronde.
+
+## Einde van het spel
+
+Na de **4e ronde** wint het hoogste totaal. Bij gelijkspel wint wie in de laatste ronde de
+meeste punten haalde. CountScore toont het eindscherm zodra de vierde ronde is ingevoerd.

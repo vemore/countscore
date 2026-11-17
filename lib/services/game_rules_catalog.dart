@@ -35,6 +35,8 @@ class GameRulesCatalog {
     // The long tail, shipped with schema v16.
     'coinche', 'yahtzee', 'phase10', 'flip7', 'mille_bornes', 'rummikub',
     'six_nimmt', 'qwirkle', 'farkle', 'canasta', 'wizard', 'triomino',
+    // Schema v22.
+    'chouineurs',
   ];
 
   /// The locale the app falls back to, matching `main.dart`'s

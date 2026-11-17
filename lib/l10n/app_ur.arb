@@ -993,5 +993,13 @@
 
   "joinLinkOpenInApp": "ایپ میں کھولیں",
 
-  "joinLinkContinueHere": "براؤزر میں جاری رکھیں"
+  "joinLinkContinueHere": "براؤزر میں جاری رکھیں",
+  "gameTypeMaxRounds": "زیادہ سے زیادہ راؤنڈ",
+  "gameTypeMaxRoundsHelper": "کوئی حد نہ ہو تو خالی چھوڑیں",
+  "gameTypeMaxRoundsRange": "{min} اور {max} راؤنڈ کے درمیان",
+  "gameRulesEndMaxRounds": "{count, plural, one{گیم {count} راؤنڈ کے بعد ختم ہوتی ہے} other{گیم {count} راؤنڈز کے بعد ختم ہوتی ہے}}",
+  "gameRulesEndOrMaxRounds": "{count, plural, one{{condition}، یا {count} راؤنڈ کے بعد} other{{condition}، یا {count} راؤنڈز کے بعد}}",
+  "boardRoundProgress": "راؤنڈ {current}/{total}",
+  "gameTypeNameChouineurs": "Chouineurs",
+  "gameTypeNameChouineursSortKey": "Chouineurs"
 }

@@ -72,6 +72,7 @@ const defaultRulesSlugs = <String, String>{
   'canasta': 'canasta',
   'wizard': 'wizard',
   'triomino': 'triomino',
+  'chouineurs': 'chouineurs', // schema v22
 };
 
 /// Schema v13, shared by both engines: `game_types.rules` and
@@ -549,4 +550,89 @@ Future<void> applyV21(
   await execute('INSERT OR REPLACE INTO sync_flags (id, suppress) VALUES '
       '(1, COALESCE((SELECT suppress FROM temp.v21_sync_flag), 0))');
   await execute('DROP TABLE temp.v21_sync_flag');
+}
+
+/// The built-in types seeded with a round limit, keyed on `builtin_key`:
+/// Chouineurs, 4 (`GameType.chouineurs`).
+Map<String, int> maxRoundsSeeds() => {
+      for (final type in GameType.defaultGameTypes())
+        type.builtinKey!: ?type.maxRounds,
+    };
+
+/// Schema v22, shared by both engines: `game_types.max_rounds`, the number of
+/// rounds after which a game of the type is over (`GameType.maxRounds`),
+/// INTEGER, nullable — null is no limit — and the built-in type Chouineurs,
+/// the first that ends on it.
+///
+/// Three steps:
+///
+/// 1. add the column. No back-fill of the existing built-ins: none of them
+///    ends on a round count, so NULL is what they mean;
+/// 2. **only when this run added the column**, give the live rows of
+///    [maxRoundsSeeds] their limit. The column is new, so a NULL there was
+///    never a choice. Two paths reach this with a Chouineurs row already
+///    present: the v14 seed of a device coming from before v14 (it writes the
+///    current catalogue, minus a column that does not exist yet), and a v21
+///    device that pulled Chouineurs from a newer member of its group. On a
+///    replay the column is there and this step is skipped, so a limit the user
+///    cleared stays cleared;
+/// 3. insert Chouineurs when **no row holds its key** — a tombstone included,
+///    so a type the user deleted is not resurrected — **and no live row has
+///    its name**, ignoring ASCII case: the [applyV14] step 3 pattern, so a
+///    user's own "Chouineurs" is kept and not doubled.
+///
+/// **The fill stays local**, as in [applyV21]: capture is suppressed around
+/// the step and `updated_at` does not move, so a group-linked Chouineurs does
+/// not push a 4 over whatever the group chose. The inserted row is new and
+/// linked to no group, so it captures nothing either way.
+///
+/// Idempotent: the column is checked before it is added, the fill runs only
+/// with it, and the insert is guarded on the key.
+Future<void> applyV22(
+  SqlExecutor execute,
+  Future<Set<String>> Function(String table) columnsOf,
+) async {
+  final existing = await columnsOf('game_types');
+  final added = !existing.contains('max_rounds');
+  if (added) {
+    await execute('ALTER TABLE game_types ADD COLUMN max_rounds INTEGER');
+  }
+  // SqlExecutor cannot read: the flag is saved in a temp table, as in
+  // [applyV21].
+  await execute('DROP TABLE IF EXISTS temp.v22_sync_flag');
+  await execute('CREATE TEMP TABLE v22_sync_flag AS '
+      'SELECT suppress FROM sync_flags WHERE id = 1');
+  await execute('INSERT OR REPLACE INTO sync_flags (id, suppress) VALUES (1, 1)');
+  if (added) {
+    for (final entry in maxRoundsSeeds().entries) {
+      await execute(
+        'UPDATE game_types SET max_rounds = ? '
+        'WHERE builtin_key = ? AND deleted_at IS NULL AND max_rounds IS NULL',
+        [entry.value, entry.key],
+      );
+    }
+  }
+
+  final columnsNow = await columnsOf('game_types');
+  final now = DateTime.now().millisecondsSinceEpoch;
+  final type = GameType.chouineurs();
+  final values = Map<String, Object?>.from(type.toMap())
+    ..remove('id')
+    ..removeWhere((column, _) => !columnsNow.contains(column));
+  values['uuid'] = newUuid();
+  values['created_at'] = now;
+  values['updated_at'] = now;
+  final columns = values.keys.join(', ');
+  final placeholders = List.filled(values.length, '?').join(', ');
+  await execute(
+    'INSERT INTO game_types ($columns) SELECT $placeholders '
+    'WHERE NOT EXISTS (SELECT 1 FROM game_types WHERE builtin_key = ?) '
+    'AND NOT EXISTS (SELECT 1 FROM game_types '
+    '                WHERE name = ? COLLATE NOCASE AND deleted_at IS NULL)',
+    [...values.values, type.builtinKey, type.name],
+  );
+
+  await execute('INSERT OR REPLACE INTO sync_flags (id, suppress) VALUES '
+      '(1, COALESCE((SELECT suppress FROM temp.v22_sync_flag), 0))');
+  await execute('DROP TABLE temp.v22_sync_flag');
 }

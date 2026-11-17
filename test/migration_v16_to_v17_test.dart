@@ -112,7 +112,7 @@ void main() {
     }.entries) {
       expect(deletedAtById[kept.value], isNull, reason: '${kept.key} was deleted');
     }
-    expect(liveKeyed, 22, reason: 'a built-in row was touched');
+    expect(liveKeyed, 23, reason: 'a built-in row was touched');
   }
 
   test('native: the sqflite chain soft-deletes the unused keyless copy',

@@ -67,6 +67,8 @@ String? builtinGameTypeName(AppLocalizations l10n, String? builtinKey) {
       return l10n.gameTypeNameWizard;
     case 'triomino':
       return l10n.gameTypeNameTriomino;
+    case 'chouineurs':
+      return l10n.gameTypeNameChouineurs;
     default:
       return null;
   }
@@ -130,6 +132,8 @@ String? builtinGameTypeSortKey(AppLocalizations l10n, String? builtinKey) {
       return l10n.gameTypeNameWizardSortKey;
     case 'triomino':
       return l10n.gameTypeNameTriominoSortKey;
+    case 'chouineurs':
+      return l10n.gameTypeNameChouineursSortKey;
     default:
       return null;
   }

@@ -739,5 +739,13 @@
   "configShareTooLong": "此链接太长，无法放入 QR 码。请改用“复制链接”。",
   "joinLinkHandOverMessage": "此链接可以在 CountScore Android 应用中打开。如果未安装该应用，则会改为打开 Play 商店。",
   "joinLinkOpenInApp": "在应用中打开",
-  "joinLinkContinueHere": "在浏览器中继续"
+  "joinLinkContinueHere": "在浏览器中继续",
+  "gameTypeMaxRounds": "最大轮数",
+  "gameTypeMaxRoundsHelper": "留空表示不限",
+  "gameTypeMaxRoundsRange": "{min} 到 {max} 轮之间",
+  "gameRulesEndMaxRounds": "{count, plural, other{{count} 轮后对局结束}}",
+  "gameRulesEndOrMaxRounds": "{count, plural, other{{condition}，或 {count} 轮后结束}}",
+  "boardRoundProgress": "第 {current} 轮，共 {total} 轮",
+  "gameTypeNameChouineurs": "Chouineurs",
+  "gameTypeNameChouineursSortKey": "Chouineurs"
 }

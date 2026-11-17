@@ -29,6 +29,7 @@ class GameTypes extends Table {
   TextColumn get rulesSlug => text().named('rules_slug').nullable()();
   TextColumn get keypadShortcut =>
       text().named('keypad_shortcut').nullable()();
+  IntColumn get maxRounds => integer().named('max_rounds').nullable()();
   TextColumn get uuid => text()();
   IntColumn get createdAt => integer().named('created_at')();
   IntColumn get updatedAt => integer().named('updated_at')();

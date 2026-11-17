@@ -2862,6 +2862,54 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Continuer dans le navigateur'**
   String get joinLinkContinueHere;
+
+  /// Game-type editor, End of game section: label of the optional field for the number of rounds after which the game is over
+  ///
+  /// In fr, this message translates to:
+  /// **'Nombre maximum de tours'**
+  String get gameTypeMaxRounds;
+
+  /// Game-type editor: helper under the maximum-rounds field; an empty field means the game has no round limit
+  ///
+  /// In fr, this message translates to:
+  /// **'Laisser vide pour ne pas limiter'**
+  String get gameTypeMaxRoundsHelper;
+
+  /// Game-type editor: error under the maximum-rounds field when the number is out of range
+  ///
+  /// In fr, this message translates to:
+  /// **'Entre {min} et {max} tours'**
+  String gameTypeMaxRoundsRange(int min, int max);
+
+  /// Derived rule line: the game is over after this many rounds (a game type with a maximum number of rounds and no total condition)
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, one{La partie s\'arrête après {count} tour} other{La partie s\'arrête après {count} tours}}'**
+  String gameRulesEndMaxRounds(int count);
+
+  /// Derived rule line: a total condition (condition, already a full sentence such as gameRulesEndFirstOver) joined to a round limit; either ends the game
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, one{{condition}, ou après {count} tour} other{{condition}, ou après {count} tours}}'**
+  String gameRulesEndOrMaxRounds(String condition, int count);
+
+  /// Game board header, only for a game type with a maximum number of rounds: the round being played out of the limit
+  ///
+  /// In fr, this message translates to:
+  /// **'Tour {current}/{total}'**
+  String boardRoundProgress(int current, int total);
+
+  /// Built-in game type: Chouineurs. A proper name, the same in every locale
+  ///
+  /// In fr, this message translates to:
+  /// **'Chouineurs'**
+  String get gameTypeNameChouineurs;
+
+  /// Not displayed: what gameTypeNameChouineurs sorts by in game-type lists. Equal to the name in every locale, zh included: the name stays in Latin script there (lib/utils/game_type_name.dart).
+  ///
+  /// In fr, this message translates to:
+  /// **'Chouineurs'**
+  String get gameTypeNameChouineursSortKey;
 }
 
 class _AppLocalizationsDelegate

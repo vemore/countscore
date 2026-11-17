@@ -124,7 +124,7 @@ void main() {
     final db = await DatabaseService.instance.openForTesting(path);
     addTearDown(db.close);
 
-    expect(await db.getVersion(), 21);
+    expect(await db.getVersion(), DatabaseService.schemaVersion);
     expectMigrated(await db.rawQuery(selectAll));
   });
 
@@ -160,7 +160,7 @@ void main() {
     expect(await db.customSelect('SELECT * FROM outbox').get(), isEmpty,
         reason: 'the seed stays local on web too');
     final version = await db.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 21);
+    expect(version.data.values.single, DatabaseService.schemaVersion);
   });
 
   test('replaying the step changes nothing, and keeps a shortcut the user set',

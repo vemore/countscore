@@ -746,4 +746,140 @@ void main() {
       });
     }
   });
+
+  // A type that ends on a round count (schema v22): Chouineurs, 4 rounds,
+  // highest total wins, no threshold
+  // (wip/done/2026-11-17-chouineurs-is-not-a-built-in-game-type.md).
+  group('a game of Chouineurs', () {
+    final progress = find.byKey(const Key('board_round_progress'));
+
+    Future<List<int>> aChouineursGame() async {
+      await gameTypes.loadGameTypes();
+      final type =
+          gameTypes.gameTypes.singleWhere((t) => t.builtinKey == 'chouineurs');
+      expect(type.maxRounds, 4);
+      expect(type.gameOverThreshold, isNull);
+      final gameId = await games.createGame('Chouineurs', type.id,
+          type.isLowestScoreWins, ['Alice', 'Bob', 'Carol'], null);
+      await games.loadGame(gameId);
+      return [for (final p in games.currentPlayers) p.id!];
+    }
+
+    /// One round on the keypad, a score per player in seat order.
+    Future<void> typeRound(WidgetTester tester, List<int> scores) async {
+      await tester.tap(find.byKey(const Key('board_add_round')));
+      await tester.pumpAndSettle();
+      for (final score in scores) {
+        if (score > 0) {
+          for (final d in '$score'.split('')) {
+            await tester.tap(find.byKey(Key('keypad_digit_$d')));
+            await tester.pumpAndSettle();
+          }
+        }
+        await tester.tap(find.byKey(const Key('keypad_primary')));
+        await tester.pumpAndSettle();
+      }
+      await settleTheEndScreen(tester);
+    }
+
+    String progressText(WidgetTester tester) =>
+        tester.widget<Text>(progress).data!;
+
+    testWidgets(
+        'three players: the end screen opens after round 4, not before, and '
+        'ranks the highest total first', (tester) async {
+      final ids = await aChouineursGame();
+      await tester.pumpWidget(wrap());
+      await settleTheEndScreen(tester);
+      expect(progressText(tester), l10n.boardRoundProgress(1, 4));
+
+      await typeRound(tester, [5, 9, 0]);
+      await typeRound(tester, [3, 9, 1]);
+      await typeRound(tester, [12, 0, 4]);
+      expect(find.byType(StandingsScreen), findsNothing,
+          reason: 'three rounds of four: the game goes on');
+      expect(games.currentGame!.isFinished, isFalse);
+      expect(progressText(tester), l10n.boardRoundProgress(4, 4));
+
+      await typeRound(tester, [0, 9, 2]); // Alice 20, Bob 27, Carol 7
+      expect(games.currentRounds, hasLength(4));
+      expect(games.currentGame!.isFinished, isTrue);
+      expect(find.byType(StandingsScreen), findsOneWidget);
+      expect(
+          tester.widget<Text>(find.byKey(const Key('game_end_headline'))).data,
+          l10n.gameEndWinner('Bob'));
+      double rowTop(int id) =>
+          tester.getTopLeft(find.byKey(Key('ranking_row_$id'))).dy;
+      expect(rowTop(ids[1]), lessThan(rowTop(ids[0])),
+          reason: 'Bob, 27, above Alice, 20');
+      expect(rowTop(ids[0]), lessThan(rowTop(ids[2])),
+          reason: 'Alice, 20, above Carol, 7');
+
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(roundButtonEnabled(tester), isFalse);
+      expect(progressText(tester), l10n.boardRoundProgress(4, 4));
+    });
+
+    testWidgets(
+        'deleting the 4th round brings the game back under its limit and '
+        'asks again on the next 4th', (tester) async {
+      await aChouineursGame();
+      for (var i = 0; i < 3; i++) {
+        await games.addRoundWithScores({
+          for (final p in games.currentPlayers) p.id!: 1,
+        });
+      }
+      await tester.pumpWidget(wrap());
+      await settleTheEndScreen(tester);
+
+      await typeRound(tester, [1, 1, 1]);
+      expect(find.byType(StandingsScreen), findsOneWidget);
+      await continuePlaying(tester);
+      expect(await storedDismissal(), isTrue);
+
+      await games.deleteRound(games.currentRounds.last.id!);
+      await settleTheEndScreen(tester);
+      expect(await storedDismissal(), isFalse,
+          reason: 'back under the limit: "Continue playing" is dropped');
+      expect(progressText(tester), l10n.boardRoundProgress(4, 4));
+
+      await typeRound(tester, [1, 1, 1]);
+      expect(find.byType(StandingsScreen), findsOneWidget);
+    });
+  });
+
+  group('the round progress in the header', () {
+    testWidgets('is absent for a type without a round limit', (tester) async {
+      await aGamePast(50);
+      await tester.pumpWidget(wrap());
+      await settleTheEndScreen(tester);
+      expect(find.byKey(const Key('board_round_progress')), findsNothing);
+    });
+
+    testWidgets('is shown for a type of the user\'s with a limit, beside a '
+        'threshold', (tester) async {
+      final typeId = await gameTypes.createGameType(GameType(
+        name: 'Maison',
+        iconCodePoint: Icons.casino.codePoint,
+        cardColorValue: Colors.blue.toARGB32(),
+        isLowestScoreWins: false,
+        gameOverConditionType: GameOverConditionType.firstPlayerOver,
+        gameOverThreshold: 100,
+        maxRounds: 10,
+      ));
+      final gameId =
+          await games.createGame('Partie', typeId, false, ['Alice', 'Bob'], null);
+      await games.loadGame(gameId);
+      await games.addRound();
+      await tester.pumpWidget(wrap());
+      await settleTheEndScreen(tester);
+
+      expect(
+          tester
+              .widget<Text>(find.byKey(const Key('board_round_progress')))
+              .data,
+          'Round 2 of 10');
+    });
+  });
 }

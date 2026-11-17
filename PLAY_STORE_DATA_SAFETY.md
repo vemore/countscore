@@ -2,7 +2,7 @@
 
 Complete guide for filling out the Data Safety section in Google Play Console for CountScore.
 
-**Last Updated**: September 26, 2026
+**Last Updated**: November 17, 2026
 **Applies to**: CountScore v1.1.0 and later
 **Privacy Policy**: `privacy_policy.md`, published at
 https://vemore.github.io/countscore/privacy-policy.html
@@ -115,6 +115,13 @@ typed one, a label of at most 12 characters). It is a game-type setting, covered
 *game-type settings* under App activity below; the label is user-typed text of the same kind
 as the game-type name already sent. Same self-hosted server, same group members: no new data
 type and no new recipient, and the answers below are unchanged.
+
+**Maximum rounds (November 17, 2026).** A shared game type now also carries its maximum
+number of rounds (`max_rounds`: a number from 1 to 999, or null for no limit), and an
+analysis request sends it with the type's other scoring rules. It is a game-type setting,
+covered by *game-type settings* under App activity below. Same self-hosted server, same group
+members, same analysis path: no new data type and no new recipient, and the answers below are
+unchanged.
 
 **Comment settings and usage (September 19, 2026).** Settings → Group → *Comments and usage*
 sends the group's comment style (one of three fixed values) and language code with

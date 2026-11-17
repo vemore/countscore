@@ -1719,4 +1719,48 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get joinLinkContinueHere => 'Tarayıcıda devam et';
+
+  @override
+  String get gameTypeMaxRounds => 'En fazla tur sayısı';
+
+  @override
+  String get gameTypeMaxRoundsHelper => 'Sınır olmaması için boş bırakın';
+
+  @override
+  String gameTypeMaxRoundsRange(int min, int max) {
+    return '$min ile $max tur arası';
+  }
+
+  @override
+  String gameRulesEndMaxRounds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Oyun $count turdan sonra biter',
+      one: 'Oyun $count turdan sonra biter',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String gameRulesEndOrMaxRounds(String condition, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$condition ya da $count turdan sonra',
+      one: '$condition ya da $count turdan sonra',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String boardRoundProgress(int current, int total) {
+    return 'Tur $current/$total';
+  }
+
+  @override
+  String get gameTypeNameChouineurs => 'Chouineurs';
+
+  @override
+  String get gameTypeNameChouineursSortKey => 'Chouineurs';
 }

@@ -907,5 +907,13 @@
 
   "joinLinkOpenInApp": "অ্যাপে খুলুন",
 
-  "joinLinkContinueHere": "ব্রাউজারে চালিয়ে যান"
+  "joinLinkContinueHere": "ব্রাউজারে চালিয়ে যান",
+  "gameTypeMaxRounds": "সর্বাধিক রাউন্ড",
+  "gameTypeMaxRoundsHelper": "কোনো সীমা না চাইলে খালি রাখুন",
+  "gameTypeMaxRoundsRange": "{min} থেকে {max} রাউন্ডের মধ্যে",
+  "gameRulesEndMaxRounds": "{count, plural, one{{count} রাউন্ড পরে খেলা শেষ হয়} other{{count} রাউন্ড পরে খেলা শেষ হয়}}",
+  "gameRulesEndOrMaxRounds": "{count, plural, one{{condition}, অথবা {count} রাউন্ড পরে} other{{condition}, অথবা {count} রাউন্ড পরে}}",
+  "boardRoundProgress": "রাউন্ড {current}/{total}",
+  "gameTypeNameChouineurs": "Chouineurs",
+  "gameTypeNameChouineursSortKey": "Chouineurs"
 }

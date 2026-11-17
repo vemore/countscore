@@ -1719,4 +1719,48 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get joinLinkContinueHere => 'Tiếp tục trong trình duyệt';
+
+  @override
+  String get gameTypeMaxRounds => 'Số vòng tối đa';
+
+  @override
+  String get gameTypeMaxRoundsHelper => 'Để trống nếu không giới hạn';
+
+  @override
+  String gameTypeMaxRoundsRange(int min, int max) {
+    return 'Từ $min đến $max vòng';
+  }
+
+  @override
+  String gameRulesEndMaxRounds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Trò chơi kết thúc sau $count vòng',
+      one: 'Trò chơi kết thúc sau $count vòng',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String gameRulesEndOrMaxRounds(String condition, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$condition, hoặc sau $count vòng',
+      one: '$condition, hoặc sau $count vòng',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String boardRoundProgress(int current, int total) {
+    return 'Vòng $current/$total';
+  }
+
+  @override
+  String get gameTypeNameChouineurs => 'Chouineurs';
+
+  @override
+  String get gameTypeNameChouineursSortKey => 'Chouineurs';
 }

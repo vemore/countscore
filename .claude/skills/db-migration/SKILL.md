@@ -5,7 +5,7 @@ description: Change the CountScore database schema — add a table, add a column
 
 # Changing the CountScore schema
 
-The mobile schema is **v21** and lives in two engines at once. The server schema is separate
+The mobile schema is **v22** and lives in two engines at once. The server schema is separate
 and moves with it. Read `.llmwiki/Schema.md` and `.llmwiki/DataLayer.md` before starting —
 the page name carries no version number, precisely so it never drifts from the one it
 documents.
@@ -14,8 +14,8 @@ documents.
 
 `schemaVersion` is declared **twice** and both must be bumped together:
 
-- `lib/services/drift/database.dart` → `int get schemaVersion => 21;`
-- `lib/services/database_service.dart` → `static const schemaVersion = 21;`
+- `lib/services/drift/database.dart` → `int get schemaVersion => 22;`
+- `lib/services/database_service.dart` → `static const schemaVersion = 22;`
 
 sqflite owns the migration chain on native, and Drift never reaches `onUpgrade` there: by
 the time Drift opens the file, sqflite has already migrated it.

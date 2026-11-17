@@ -789,3 +789,36 @@ z najmniejszą ilością punktów na ręce zdobywa różnicę.
 
 Rundy następują jedna po drugiej aż do uzgodnionej sumy, często 400 punktów, i najwyższy wynik
 wygrywa. Ustaw ten próg w typie gry.
+
+<!--@chouineurs-->
+Gra w lewy dla 3–5 graczy, rozgrywana w **4 rundach po 7 lew**. Każda karta ma dwie strony,
+a każdy stara się wziąć dokładnie tyle lew, ile obstawił.
+
+## Przygotowanie
+
+W każdej rundzie każdy gracz dostaje **7 dwustronnych kart** i wybiera stronę, której będzie
+używał przez całą rundę. Następnie kładzie zakrytą jedną ze swoich **5 kart Zakładu**
+(*Pari*): każda podaje kilka liczb lew, każdą z własną wartością punktową.
+
+## Gra
+
+Trzeba dołożyć do koloru, jeśli to możliwe. Żółty jest atutem; czarne smoki to superatuty,
+które można zagrać w każdej chwili. Kto zagrał **najniższą kartę** lewy, *chouine*
+(marudzi) — przy remisie wszyscy remisujący: odwraca jedną kartę z ręki albo bierze z rezerwy
+kartę wartą **1 punkt**.
+
+## Punktacja
+
+Na koniec rundy każdy odkrywa swój zakład:
+- jeśli liczba wziętych lew jest na karcie, zdobywa podane przy niej punkty, a ta karta
+  Zakładu odpada z gry;
+- w przeciwnym razie zdobywa 0, a karta wraca do właściciela;
+- dolicza się **1 punkt** za każdą kartę wziętą przy marudzeniu.
+
+Punkty sumują się z rundy na rundę.
+
+## Koniec gry
+
+Po **4. rundzie** wygrywa najwyższa suma. Przy remisie wygrywa ten, kto zdobył najwięcej
+punktów w ostatniej rundzie. CountScore pokazuje ekran końca gry, gdy tylko czwarta runda
+zostanie wpisana.

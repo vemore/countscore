@@ -6,6 +6,7 @@ import '../models/game_type.dart';
 import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
 import '../providers/group_provider.dart';
+import '../utils/game_over_rule.dart';
 import '../utils/game_type_name.dart';
 import '../utils/play_again.dart';
 import '../utils/player_colors.dart';
@@ -400,17 +401,8 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
     );
   }
 
-  String? _gameOver(AppLocalizations l10n, GameType type) {
-    final threshold = type.gameOverThreshold;
-    final condition = type.gameOverConditionType;
-    if (threshold == null || condition == null) return null;
-    return switch (condition) {
-      GameOverConditionType.firstPlayerOver => l10n.gameRulesEndFirstOver(threshold),
-      GameOverConditionType.firstPlayerUnder => l10n.gameRulesEndFirstUnder(threshold),
-      GameOverConditionType.lastPlayerOver => l10n.gameRulesEndLastOver(threshold),
-      GameOverConditionType.lastPlayerUnder => l10n.gameRulesEndLastUnder(threshold),
-    };
-  }
+  String? _gameOver(AppLocalizations l10n, GameType type) =>
+      gameOverRuleLine(l10n, type);
 }
 
 /// A small capitalised section label.

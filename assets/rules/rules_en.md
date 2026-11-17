@@ -792,3 +792,35 @@ player with the fewest points in hand scores the difference.
 
 Rounds follow one another up to the agreed total, often 400 points, and the highest total
 wins. Set that threshold in the game type.
+
+<!--@chouineurs-->
+A trick-taking game for 3 to 5 players, played in **4 rounds of 7 tricks**. Every card has
+two sides, and each player tries to win exactly the number of tricks they bet on.
+
+## Setup
+
+Each round, every player is dealt **7 two-sided cards** and picks the side they will use for
+the whole round. Then they place one of their **5 Bet cards** (*Pari*) face down: each lists
+several trick counts, each worth its own number of points.
+
+## Play
+
+Follow suit if you can. Yellow is trump; the black dragons are super-trumps and can be played
+at any time. Whoever played **the lowest card** of a trick *chouines* (whines) — on a tie,
+all of them: they either flip one card in their hand, or take a card from the reserve worth
+**1 point**.
+
+## Scoring
+
+At the end of the round, everyone reveals their bet:
+- if the number of tricks won is on the card, score the points shown next to it, and that
+  Bet card leaves the game;
+- otherwise score 0, and the card goes back to its owner;
+- add **1 point** for each card taken by whining.
+
+Scores add up from round to round.
+
+## End of the game
+
+After the **4th round**, the highest total wins. On a tie, whoever scored the most in the
+last round wins. CountScore offers the end screen as soon as the fourth round is entered.

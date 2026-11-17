@@ -2772,5 +2772,81 @@
   "joinLinkContinueHere": "Continuer dans le navigateur",
   "@joinLinkContinueHere": {
     "description": "Button: stay in the web app and show the replace-configuration dialog here"
+  },
+
+  "gameTypeMaxRounds": "Nombre maximum de tours",
+  "@gameTypeMaxRounds": {
+    "description": "Game-type editor, End of game section: label of the optional field for the number of rounds after which the game is over"
+  },
+
+  "gameTypeMaxRoundsHelper": "Laisser vide pour ne pas limiter",
+  "@gameTypeMaxRoundsHelper": {
+    "description": "Game-type editor: helper under the maximum-rounds field; an empty field means the game has no round limit"
+  },
+
+  "gameTypeMaxRoundsRange": "Entre {min} et {max} tours",
+  "@gameTypeMaxRoundsRange": {
+    "description": "Game-type editor: error under the maximum-rounds field when the number is out of range",
+    "placeholders": {
+      "min": {
+        "type": "int",
+        "example": "1"
+      },
+      "max": {
+        "type": "int",
+        "example": "999"
+      }
+    }
+  },
+
+  "gameRulesEndMaxRounds": "{count, plural, one{La partie s'arrête après {count} tour} other{La partie s'arrête après {count} tours}}",
+  "@gameRulesEndMaxRounds": {
+    "description": "Derived rule line: the game is over after this many rounds (a game type with a maximum number of rounds and no total condition)",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+
+  "gameRulesEndOrMaxRounds": "{count, plural, one{{condition}, ou après {count} tour} other{{condition}, ou après {count} tours}}",
+  "@gameRulesEndOrMaxRounds": {
+    "description": "Derived rule line: a total condition (condition, already a full sentence such as gameRulesEndFirstOver) joined to a round limit; either ends the game",
+    "placeholders": {
+      "condition": {
+        "type": "String",
+        "example": "La partie s'arrête dès qu'un joueur atteint 500 points"
+      },
+      "count": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+
+  "boardRoundProgress": "Tour {current}/{total}",
+  "@boardRoundProgress": {
+    "description": "Game board header, only for a game type with a maximum number of rounds: the round being played out of the limit",
+    "placeholders": {
+      "current": {
+        "type": "int",
+        "example": "3"
+      },
+      "total": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+
+  "gameTypeNameChouineurs": "Chouineurs",
+  "@gameTypeNameChouineurs": {
+    "description": "Built-in game type: Chouineurs. A proper name, the same in every locale"
+  },
+
+  "gameTypeNameChouineursSortKey": "Chouineurs",
+  "@gameTypeNameChouineursSortKey": {
+    "description": "Not displayed: what gameTypeNameChouineurs sorts by in game-type lists. Equal to the name in every locale, zh included: the name stays in Latin script there (lib/utils/game_type_name.dart)."
   }
 }

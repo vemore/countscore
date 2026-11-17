@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../models/game_type.dart';
 import '../providers/game_type_provider.dart';
 import '../services/game_rules_catalog.dart';
+import '../utils/game_over_rule.dart';
 import '../utils/game_type_name.dart';
 
 /// How a game type is played, and how CountScore scores it.
@@ -229,17 +230,8 @@ class _ScoringSummary extends StatelessWidget {
     };
   }
 
-  String _gameOver(AppLocalizations l10n) {
-    final threshold = gameType.gameOverThreshold;
-    final type = gameType.gameOverConditionType;
-    if (threshold == null || type == null) return l10n.gameRulesNoEnd;
-    return switch (type) {
-      GameOverConditionType.firstPlayerOver => l10n.gameRulesEndFirstOver(threshold),
-      GameOverConditionType.firstPlayerUnder => l10n.gameRulesEndFirstUnder(threshold),
-      GameOverConditionType.lastPlayerOver => l10n.gameRulesEndLastOver(threshold),
-      GameOverConditionType.lastPlayerUnder => l10n.gameRulesEndLastUnder(threshold),
-    };
-  }
+  String _gameOver(AppLocalizations l10n) =>
+      gameOverRuleLine(l10n, gameType) ?? l10n.gameRulesNoEnd;
 
   Widget _line(BuildContext context, IconData icon, String text) {
     final scheme = Theme.of(context).colorScheme;
