@@ -112,6 +112,15 @@ int? _pulledMaxRounds(Object? raw) => raw is int &&
     ? raw
     : null;
 
+/// The push side of `game_types.max_rounds`: a null as a clear, a value
+/// within bounds as it is, and anything else omitted — the pattern of
+/// [_keypadShortcutPayload].
+Map<String, Object?> _maxRoundsPayload(Object? raw) {
+  if (raw == null) return const {'max_rounds': null};
+  final limit = _pulledMaxRounds(raw);
+  return limit == null ? const {} : {'max_rounds': limit};
+}
+
 /// The round limit a game type inserted from a pulled delta gets — the
 /// pattern of [_insertedKeypadShortcut]:
 ///
@@ -546,8 +555,10 @@ class SyncStore {
             // over it and keeps what it has.
             ..._keypadShortcutPayload(r['keypad_shortcut']),
             // The round limit (schema v22). Null travels as null — the user
-            // empties the field on purpose — as the keypad shortcut does.
-            'max_rounds': r['max_rounds'],
+            // empties the field on purpose — as the keypad shortcut does, and
+            // a value out of 1..999 is omitted, so the server does not reject
+            // the whole row over it and keeps what it has.
+            ..._maxRoundsPayload(r['max_rounds']),
           },
           error: null,
         );

@@ -198,9 +198,14 @@ def _configuration(rules: GameRules) -> list[str]:
     if dead is not None and rules.player_dead_threshold is not None:
         lines.append(dead.format(threshold=rules.player_dead_threshold))
     over = _GAME_OVER.get(rules.game_over_condition_type or "")
-    by_total = over is not None and rules.game_over_threshold is not None
-    if over is not None and rules.game_over_threshold is not None:
-        lines.append(over.format(threshold=rules.game_over_threshold))
+    over_line = (
+        over.format(threshold=rules.game_over_threshold)
+        if over is not None and rules.game_over_threshold is not None
+        else None
+    )
+    by_total = over_line is not None
+    if over_line is not None:
+        lines.append(over_line)
     if rules.max_rounds is not None:
         rounds = "1 round" if rules.max_rounds == 1 else f"{rules.max_rounds} rounds"
         if by_total:

@@ -247,6 +247,63 @@ void main() {
     expect(await db.query('outbox'), isEmpty);
   });
 
+  group('a user "Chouineurs" from before v19', () {
+    // v19 claims a keyless row named like a built-in; it must not claim one
+    // for a type added later, or the same user type would end keyed (and given
+    // 4 rounds by v22) on a device upgrading from v18, and stay the user's on
+    // one upgrading from v21. `builtinKeysAfterV19`.
+    Future<void> writeV18File() async {
+      final db = await databaseFactoryFfi.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: DatabaseService.schemaVersion,
+          onCreate: (db, v) => DatabaseService.instance.createDB(db, v),
+        ),
+      );
+      await db.delete('game_types',
+          where: 'builtin_key = ?', whereArgs: ['chouineurs']);
+      await db.insert('game_types', {
+        ...row(null, 'Chouineurs', 'mine'),
+        'gameOverConditionType': 'firstPlayerOver',
+        'gameOverThreshold': 60,
+      });
+      await db.execute('ALTER TABLE game_types DROP COLUMN max_rounds');
+      await db.execute('PRAGMA user_version = 18');
+      await db.close();
+    }
+
+    void expectKeptAsTheUsers(List<Map<String, Object?>> rows) {
+      final named = rows
+          .where((r) => (r['name'] as String).toLowerCase() == 'chouineurs')
+          .toList();
+      expect(named, hasLength(1), reason: 'no second Chouineurs');
+      expect(named.single['uuid'], 'mine');
+      expect(named.single['builtin_key'], isNull,
+          reason: 'v19 claimed a type added after it');
+      expect(named.single['max_rounds'], isNull);
+      expect(named.single['gameOverThreshold'], 60);
+      expect(rows.where((r) => r['builtin_key'] == 'chouineurs'), isEmpty);
+    }
+
+    const select = 'SELECT uuid, name, builtin_key, max_rounds, '
+        'gameOverThreshold FROM game_types';
+
+    test('native: it stays keyless, with no limit, and alone', () async {
+      await writeV18File();
+      final db = await DatabaseService.instance.openForTesting(path);
+      addTearDown(db.close);
+      expectKeptAsTheUsers(await db.rawQuery(select));
+    });
+
+    test('web: the same through Drift', () async {
+      await writeV18File();
+      final db = AppDatabase.forTesting(NativeDatabase(File(path)));
+      addTearDown(db.close);
+      final rows = await db.customSelect(select).get();
+      expectKeptAsTheUsers([for (final r in rows) r.data]);
+    });
+  });
+
   test('the seeds hold Chouineurs alone, at 4', () {
     expect(maxRoundsSeeds(), {'chouineurs': 4});
     expect(GameType.chouineurs().maxRounds, 4);

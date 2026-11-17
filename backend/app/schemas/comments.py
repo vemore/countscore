@@ -160,6 +160,10 @@ class GameTypeRules(BaseModel):
     player_dead_threshold: Score | None = None
     game_over_condition_type: ConditionName | None = None
     game_over_threshold: Score | None = None
+    # The game is over after this many rounds (mobile schema v22). Loose on purpose:
+    # ``normalise_max_rounds`` drops anything outside the app's 1..999 rather than
+    # refusing the whole analysis over it.
+    max_rounds: int | None = None
 
 
 class GameAnalysisPayload(BaseModel):

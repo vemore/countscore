@@ -116,6 +116,11 @@ editor's and the server's bounds). It is combined with the total condition by **
    ignoring ASCII case: the `applyV14` step-3 guard, so a user's own "Chouineurs" is kept
    alone and keyless.
 
+That holds whatever version a device upgrades from: `applyV19` never claims a keyless row
+for a key in `builtinKeysAfterV19` (`chouineurs`), so a user's "Chouineurs" on a v18 device
+is not keyed by v19 and then given 4 rounds by v22 while the same type stays the user's on a
+v21 device. (`test/migration_v21_to_v22_test.dart`, "a user \"Chouineurs\" from before v19".)
+
 Capture is suppressed around the step and `updated_at` does not move, as in v21: a
 group-linked Chouineurs is not pushed with a 4 over whatever the group chose. Fresh installs
 get it from the seed through `toMap()`. Pushed as `max_rounds`, a column the server gained in

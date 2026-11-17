@@ -474,6 +474,16 @@ void main() {
       expect(cleared.containsKey('max_rounds'), isTrue,
           reason: 'the user empties the field on purpose: the null travels');
       expect(cleared['max_rounds'], isNull);
+
+      for (final bad in [0, 1000]) {
+        await db.customStatement(
+            'UPDATE game_types SET max_rounds = ? WHERE id = ?', [bad, typeId]);
+        final payload = await pushedTypePayload();
+        expect(payload.containsKey('max_rounds'), isFalse,
+            reason: '$bad would get the whole row rejected, and must not '
+                'overwrite what the group holds');
+        expect(payload['name'], isNotNull, reason: 'the rest of the row travels');
+      }
     });
   });
 

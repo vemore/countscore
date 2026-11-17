@@ -606,14 +606,10 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
   }
 
   /// Whether the type's end rule holds: a total condition, or the round limit
-  /// (schema v22) — either alone ends the game. Tested before anything else:
-  /// a type with a round limit and no threshold must still end.
+  /// (schema v22) — either alone ends the game. `GameType.isGameOver` decides
+  /// both, so a type with a round limit and no threshold still ends.
   bool _checkGameOverCondition(GameProvider gameProvider, GameType? gameType) {
     if (gameType == null) return false;
-    final hasTotalRule = gameType.gameOverConditionType != null &&
-        gameType.gameOverThreshold != null;
-    if (!hasTotalRule && gameType.maxRounds == null) return false;
-
     final players = gameProvider.currentPlayers;
     final playerTotals = players.map((p) => gameProvider.getPlayerTotal(p.id!)).toList();
     return gameType.isGameOver(playerTotals,

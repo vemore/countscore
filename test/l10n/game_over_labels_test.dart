@@ -44,8 +44,8 @@ void main() {
 
     // Every player but one above 100: what the sentence promises, and the game
     // ends. One more still in: it does not.
-    expect(type.isGameOver([101, 120, 130, 40]), isTrue);
-    expect(type.isGameOver([101, 120, 90, 40]), isFalse);
+    expect(type.isGameOver([101, 120, 130, 40], roundCount: 0), isTrue);
+    expect(type.isGameOver([101, 120, 90, 40], roundCount: 0), isFalse);
 
     expect(en.gameRulesEndLastUnder(0),
         'The game ends when every player but one is below 0 points');
@@ -57,8 +57,8 @@ void main() {
       gameOverConditionType: GameOverConditionType.lastPlayerUnder,
       gameOverThreshold: 0,
     );
-    expect(under.isGameOver([-1, -20, -30, 5]), isTrue);
-    expect(under.isGameOver([-1, -20, 3, 5]), isFalse);
+    expect(under.isGameOver([-1, -20, -30, 5], roundCount: 0), isTrue);
+    expect(under.isGameOver([-1, -20, 3, 5], roundCount: 0), isFalse);
   });
 
   test('the rule line: the round limit alone, the total alone, or both by OR',

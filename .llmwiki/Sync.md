@@ -145,8 +145,10 @@ limit. It follows the keypad shortcut's pattern rather than `rules_slug`'s:
 - **Server**: `NUMERIC_BOUNDS["game_type"]["max_rounds"] = (1, 999)` in
   `backend/app/services/delta_bounds.py`; 0, 1000, a string or a boolean is a rejected delta
   whose reason names `max_rounds`. The column is `0007_game_type_max_rounds`.
-- **Push** (`case 'game_type'`): always sent, **a null as null** — the user empties the
-  field on purpose, and a type created without a limit means "no limit" just as much. Every
+- **Push** (`case 'game_type'`, `_maxRoundsPayload`): sent with every row, **a null as
+  null** — the user empties the field on purpose —, a value within 1..999 as it is, and one
+  out of bounds **omitted**, so one bad field cannot get the whole row rejected.
+  A type created without a limit means "no limit" just as much. Every
   local NULL is therefore a choice: a type seeded or created without one, the editor's empty
   field, a clear pulled from the group; the two that would not be — a built-in row inserted
   from a delta with no key, and a Chouineurs a v21 device pulled before it had the column —

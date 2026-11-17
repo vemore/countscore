@@ -89,6 +89,29 @@ async def test_shared_game_analysis_is_billed_to_the_group(client, session_facto
     assert [c["style"] for c in r.json()] == ["bard"]
 
 
+async def test_the_round_limit_reaches_the_group_analysis_prompt(
+    client, session_factory, mock_provider
+):
+    """Schema v22: the group path reads ``game_type_rules.max_rounds`` too."""
+    group_id, headers = await _group(client)
+    game_id = await _shared_game(session_factory, group_id)
+
+    r = await client.post(
+        f"/groups/me/games/{game_id}/comments",
+        json={
+            "analysis": _analysis(
+                game_type="Chouineurs",
+                game_type_rules={"is_lowest_score_wins": False, "max_rounds": 4},
+            )
+        },
+        headers=headers,
+    )
+
+    assert r.status_code == 201, r.text
+    system_prompt, _ = mock_provider.generate.call_args.args
+    assert "The game is played over 4 rounds: it ends after the last one." in system_prompt
+
+
 async def test_no_voice_picked_uses_the_group_style_and_language(
     client, session_factory, mock_provider
 ):

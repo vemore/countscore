@@ -104,8 +104,8 @@ void main() {
         expect(four.isGameOver([], roundCount: 3), isFalse);
         expect(four.isGameOver([], roundCount: 5), isTrue,
             reason: 'a game the table continued is still past its limit');
-        expect(four.isGameOver([999, 0]), isFalse,
-            reason: 'no total condition, and roundCount defaults to 0');
+        expect(four.isGameOver([999, 0], roundCount: 0), isFalse,
+            reason: 'no total condition, and no round played');
         expect(GameType.chouineurs().isGameOver([30, 12, 8], roundCount: 4),
             isTrue);
         expect(GameType.chouineurs().isGameOver([30, 12, 8], roundCount: 3),
@@ -128,50 +128,50 @@ void main() {
 
       test('Président: a player on exactly 10 has won, one on 9 has not', () {
         final president = GameType.president();
-        expect(president.isGameOver([10, 4, 2]), isTrue);
-        expect(president.isGameOver([9, 8, 2]), isFalse);
-        expect(president.isGameOver([11, 0]), isTrue);
+        expect(president.isGameOver([10, 4, 2], roundCount: 0), isTrue);
+        expect(president.isGameOver([9, 8, 2], roundCount: 0), isFalse);
+        expect(president.isGameOver([11, 0], roundCount: 0), isTrue);
       });
 
       test('Skyjo stops at 100 or more', () {
-        expect(GameType.skyjo().isGameOver([100, 40]), isTrue);
-        expect(GameType.skyjo().isGameOver([99, 40]), isFalse);
+        expect(GameType.skyjo().isGameOver([100, 40], roundCount: 0), isTrue);
+        expect(GameType.skyjo().isGameOver([99, 40], roundCount: 0), isFalse);
       });
 
       test('firstPlayerUnder keeps its strict comparison', () {
-        expect(withRule(GameOverConditionType.firstPlayerUnder).isGameOver([10, 20]), isFalse);
-        expect(withRule(GameOverConditionType.firstPlayerUnder).isGameOver([9, 20]), isTrue);
+        expect(withRule(GameOverConditionType.firstPlayerUnder).isGameOver([10, 20], roundCount: 0), isFalse);
+        expect(withRule(GameOverConditionType.firstPlayerUnder).isGameOver([9, 20], roundCount: 0), isTrue);
       });
 
       test('lastPlayerOver ends when every player but one is past the threshold', () {
         final rule = withRule(GameOverConditionType.lastPlayerOver);
         // Four players, threshold 10: the game runs until three of them are out.
-        expect(rule.isGameOver([11, 12, 5, 4]), isFalse);
-        expect(rule.isGameOver([11, 12, 13, 4]), isTrue);
+        expect(rule.isGameOver([11, 12, 5, 4], roundCount: 0), isFalse);
+        expect(rule.isGameOver([11, 12, 13, 4], roundCount: 0), isTrue);
         // The survivor's own total is irrelevant — it is what stopped moving.
-        expect(rule.isGameOver([11, 12, 13, 0]), isTrue);
+        expect(rule.isGameOver([11, 12, 13, 0], roundCount: 0), isTrue);
         // Everyone out at once still ends the game.
-        expect(rule.isGameOver([11, 12, 13, 14]), isTrue);
+        expect(rule.isGameOver([11, 12, 13, 14], roundCount: 0), isTrue);
         // Two players: one out is enough, and 10 is not "over" 10.
-        expect(rule.isGameOver([10, 9]), isFalse);
-        expect(rule.isGameOver([9, 11]), isTrue);
+        expect(rule.isGameOver([10, 9], roundCount: 0), isFalse);
+        expect(rule.isGameOver([9, 11], roundCount: 0), isTrue);
         // A single player has nobody to be the last one standing.
-        expect(rule.isGameOver([4]), isFalse);
-        expect(rule.isGameOver([40]), isFalse);
+        expect(rule.isGameOver([4], roundCount: 0), isFalse);
+        expect(rule.isGameOver([40], roundCount: 0), isFalse);
       });
 
       test('lastPlayerUnder is the mirror image', () {
         final rule = withRule(GameOverConditionType.lastPlayerUnder);
-        expect(rule.isGameOver([9, 8, 15, 16]), isFalse);
-        expect(rule.isGameOver([9, 8, 7, 16]), isTrue);
-        expect(rule.isGameOver([9, 8, 7, 6]), isTrue);
-        expect(rule.isGameOver([10, 20]), isFalse);
-        expect(rule.isGameOver([11, 9]), isTrue);
-        expect(rule.isGameOver([5]), isFalse);
+        expect(rule.isGameOver([9, 8, 15, 16], roundCount: 0), isFalse);
+        expect(rule.isGameOver([9, 8, 7, 16], roundCount: 0), isTrue);
+        expect(rule.isGameOver([9, 8, 7, 6], roundCount: 0), isTrue);
+        expect(rule.isGameOver([10, 20], roundCount: 0), isFalse);
+        expect(rule.isGameOver([11, 9], roundCount: 0), isTrue);
+        expect(rule.isGameOver([5], roundCount: 0), isFalse);
       });
 
       test('a type without a rule never ends by itself', () {
-        expect(GameType.scrabble().isGameOver([1000000]), isFalse);
+        expect(GameType.scrabble().isGameOver([1000000], roundCount: 0), isFalse);
       });
 
       test('the three elimination types end on the last player standing', () {
@@ -181,8 +181,8 @@ void main() {
           expect(type.gameOverThreshold, type.playerDeadThreshold,
               reason: type.name);
           // Four players past 100 one by one: the fourth round is the last.
-          expect(type.isGameOver([101, 130, 90, 40]), isFalse, reason: type.name);
-          expect(type.isGameOver([101, 130, 120, 40]), isTrue, reason: type.name);
+          expect(type.isGameOver([101, 130, 90, 40], roundCount: 0), isFalse, reason: type.name);
+          expect(type.isGameOver([101, 130, 120, 40], roundCount: 0), isTrue, reason: type.name);
         }
 
         final sixNimmt = GameType.sixNimmt();
@@ -190,8 +190,8 @@ void main() {
             GameOverConditionType.lastPlayerOver);
         expect(sixNimmt.gameOverThreshold, 65);
         // The same strict 65 as the elimination rule: 65 is still in.
-        expect(sixNimmt.isGameOver([66, 70, 65, 10]), isFalse);
-        expect(sixNimmt.isGameOver([66, 70, 80, 10]), isTrue);
+        expect(sixNimmt.isGameOver([66, 70, 65, 10], roundCount: 0), isFalse);
+        expect(sixNimmt.isGameOver([66, 70, 80, 10], roundCount: 0), isTrue);
       });
 
       test('the types with no automatic end keep none', () {

@@ -339,6 +339,11 @@ Future<void> applyV17(SqlExecutor execute) async {
 /// `isDefault`. See .llmwiki/Schema.md.
 Future<void> applyV18(SqlExecutor execute) => applyV16(execute);
 
+/// The built-in keys added after schema v19, which [applyV19] never claims a
+/// keyless row for: Chouineurs (v22). The step that adds a type decides how it
+/// treats a user's homonym ([applyV22]: kept, keyless, and no second row).
+const builtinKeysAfterV19 = {'chouineurs'};
+
 /// Every name each built-in type with a ruleset is known by: its name in each
 /// of the ten locales (`game_type_name.dart`), the name it is seeded with, and —
 /// for the first ten — the name the pre-v14 seed wrote. A name two keys share,
@@ -347,6 +352,12 @@ Future<void> applyV18(SqlExecutor execute) => applyV16(execute);
 /// `other` is left out too. "Autre", "Other", "Otro" are what anyone calls a
 /// type of their own, and the built-in carries no ruleset, so claiming such a
 /// row would only swap the user's name for a localized one.
+///
+/// The keys of [builtinKeysAfterV19] are left out as well: [applyV19] repairs
+/// the built-ins of its own day, and must not claim a user's type for one added
+/// later — that row would get the newer type's settings from the step that
+/// adds it ([applyV22]) on a device upgrading through v19, and stay the user's
+/// on one already past it.
 ///
 /// The names keep their case: [applyV19] compares them `COLLATE NOCASE`, which
 /// folds ASCII only, so a lower-cased Cyrillic or accented name would never
@@ -363,6 +374,7 @@ Map<String, Set<String>> builtinNamesByKey() {
   for (final type in GameType.defaultGameTypes()) {
     final key = type.builtinKey!;
     if (!defaultRulesSlugs.containsKey(key)) continue;
+    if (builtinKeysAfterV19.contains(key)) continue;
     add(key, type.name);
     final seeded = GameType.seededNamesBeforeV14[key];
     if (seeded != null) add(key, seeded);

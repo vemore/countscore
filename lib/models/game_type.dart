@@ -170,7 +170,7 @@ class GameType {
   /// [roundCount] is the number of rounds the game has had. When the type has
   /// a [maxRounds], reaching it ends the game whatever the totals — either
   /// condition alone is enough (schema v22).
-  bool isGameOver(Iterable<int> totals, {int roundCount = 0}) {
+  bool isGameOver(Iterable<int> totals, {required int roundCount}) {
     final limit = maxRounds;
     if (limit != null && roundCount >= limit) return true;
     final type = gameOverConditionType;

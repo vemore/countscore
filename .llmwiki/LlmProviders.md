@@ -66,7 +66,9 @@ a 404 (`lib/services/backend_client.dart`).
     block for anything else that explicitly forbids inventing a rule. It always appends the
     configuration the app enforced, which **overrides** the registry block: a user may
     rename or retune a type. Since schema v22 that configuration includes the round limit:
-    the payload's `game_type_rules.max_rounds` (`game_analysis_screen.dart`), read by
+    the payload's `game_type_rules.max_rounds` (`game_analysis_screen.dart`), a loose
+    `int | None` on the request model `GameTypeRules` (`app/schemas/comments.py`, which
+    ignores unknown keys, so a field missing there never reaches the prompt), read by
     `builder.py` through `normalise_max_rounds` (an int from 1 to 999, anything else
     absent), adds "The game is played over N rounds" — or, beside a total condition,
     "Whatever the totals, the game ends after N rounds at most".
