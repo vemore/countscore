@@ -783,3 +783,36 @@ pemain dengan poin paling sedikit di tangan mencetak perbedaannya.
 Putaran mengikuti satu sama lain hingga total yang disepakati, sering 400 poin, dan total tertinggi
 menang. Atur ambang itu dalam jenis permainan.
 
+<!--@chouineurs-->
+Permainan trik untuk 3 sampai 5 pemain, dalam **4 putaran berisi 7 trik**. Setiap kartu
+punya dua sisi, dan setiap pemain berusaha memenangkan tepat jumlah trik yang ia taruhkan.
+
+## Persiapan
+
+Setiap putaran, setiap pemain menerima **7 kartu dua sisi** dan memilih sisi yang akan ia
+pakai sepanjang putaran. Lalu ia meletakkan tertutup salah satu dari **5 kartu Taruhan**
+(*Pari*) miliknya: setiap kartu mencantumkan beberapa jumlah trik, masing-masing dengan
+nilai poinnya sendiri.
+
+## Bermain
+
+Ikuti warna yang dimainkan jika bisa. Kuning adalah truf; naga hitam adalah super-truf dan
+boleh dimainkan kapan saja. Pemain yang memainkan **kartu terendah** dalam satu trik
+*chouine* (merengek) — jika seri, semuanya: ia membalik satu kartu di tangannya, atau
+mengambil dari cadangan sebuah kartu bernilai **1 poin**.
+
+## Penilaian
+
+Di akhir putaran, setiap pemain membuka taruhannya:
+- jika jumlah trik yang dimenangkan ada di kartu, ia mendapat poin yang tertera, dan kartu
+  Taruhan itu keluar dari permainan;
+- jika tidak, ia mendapat 0 dan kartu kembali ke pemiliknya;
+- tambahkan **1 poin** untuk setiap kartu yang diambil saat merengek.
+
+Poin dijumlahkan dari putaran ke putaran.
+
+## Akhir Permainan
+
+Setelah **putaran ke-4**, total tertinggi menang. Jika seri, pemenangnya adalah yang
+mencetak poin terbanyak di putaran terakhir. CountScore menampilkan layar akhir begitu
+putaran keempat dimasukkan.

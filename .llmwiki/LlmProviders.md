@@ -2,7 +2,7 @@
 
 > Scope: both LLM paths — Claude for short comments, a pluggable provider for the game
 > analysis. Related: [[Api]] · [[Backend]] · [[Security]] · [[MobileApp]] · [[Deployment]]
-> Updated: 2026-10-04
+> Updated: 2026-11-17
 
 ## Facts
 
@@ -61,10 +61,17 @@ a 404 (`lib/services/backend_client.dart`).
     is emitted **twice**, after the role line and as the last line, which is what holds
     `ar`/`hi`/`ja`/`zh` in line.
   - `game_rules.py` — a registry keyed on the *normalised* game-type name (NFKD, accents
-    stripped, casefold, alphanumerics) with a block for nine of the ten seeded types, plus a
-    generic block for anything else that explicitly forbids inventing a rule. It always
-    appends the configuration the app enforced, which **overrides** the registry block: a
-    user may rename or retune a type.
+    stripped, casefold, alphanumerics) with a block for nine of the ten seeded types and for
+    `chouineurs` (four rounds of seven tricks, bets, highest total wins), plus a generic
+    block for anything else that explicitly forbids inventing a rule. It always appends the
+    configuration the app enforced, which **overrides** the registry block: a user may
+    rename or retune a type. Since schema v22 that configuration includes the round limit:
+    the payload's `game_type_rules.max_rounds` (`game_analysis_screen.dart`), a loose
+    `int | None` on the request model `GameTypeRules` (`app/schemas/comments.py`, which
+    ignores unknown keys, so a field missing there never reaches the prompt), read by
+    `builder.py` through `normalise_max_rounds` (an int from 1 to 999, anything else
+    absent), adds "The game is played over N rounds" — or, beside a total condition,
+    "Whatever the totals, the game ends after N rounds at most".
   - `contract.py` — role, editorial contract, safety line, anti-injection rules. The
     contract is the point of the feature: 250–350 words, one paragraph per player about how
     they played and what their record says, **no table, no statistics list, no restated
@@ -201,6 +208,10 @@ the email from their own mail app — so this is not an outbound data flow.
 5. Light output guardrail: warn if tokens > 500 or suspicious markers appear.
 
 ## Decisions & History
+
+- **The round limit is one more configuration line (2026-11-17, `feat/max-rounds-chouineurs`).**
+  The prompt is still provider-blind; a limit outside the app's bounds reads as absent, as
+  an unknown condition does, so a hostile payload adds nothing.
 
 - **The report control is an email, not an endpoint (2026-09-14).** A
   `POST /comments/{id}/report` would be a new outbound flow — three privacy documents and a

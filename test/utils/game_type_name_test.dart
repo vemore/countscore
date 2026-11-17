@@ -133,7 +133,8 @@ void main() {
         _type(name: 'Pétanque'),
       ];
       expect(sorted(fr, types), [
-        '6 qui prend', 'Autre', 'Belote', 'Bridge', 'Canasta', 'Coinche', //
+        '6 qui prend', 'Autre', 'Belote', 'Bridge', 'Canasta', 'Chouineurs', //
+        'Coinche',
         'Farkle', 'Flip 7', 'Mille Bornes', 'Pétanque', 'Phase 10',
         'Président', 'Qwirkle', 'Rami', 'Rummikub', 'Scrabble', 'Skyjo',
         'Tarot', 'Triomino', 'Uno', 'Wizard', 'Yahtzee', 'ZapZap',
@@ -147,7 +148,8 @@ void main() {
       // after the whole katakana block). A dictionary reads ブ as フ and ー as
       // the vowel it lengthens.
       expect(sorted(ja, GameType.defaultGameTypes()), [
-        'ZapZap', 'ウィザード', 'ウノ', 'カナスタ', 'クワークル', 'コワンシュ', //
+        'Chouineurs', 'ZapZap', 'ウィザード', 'ウノ', 'カナスタ', 'クワークル', //
+        'コワンシュ',
         'スカイジョ', 'スクラブル', 'その他', 'タロット', 'トライオミノ', 'ニムト',
         'ファークル', 'フェーズ 10', 'ブリッジ', 'フリップ 7', 'ベロット',
         'ミルボルヌ', 'ヤッツィー', 'ラミー', 'ラミィキューブ', '大富豪',
@@ -160,7 +162,8 @@ void main() {
       // and Coinche, 其他 (qi) before 桥牌 (qiao) syllable by syllable, and
       // 拉米 (mǐ) before 拉密 (mì) on the tone.
       expect(sorted(zh, GameType.defaultGameTypes()), [
-        '6 nimmt!', '贝洛特', 'Coinche', '翻牌 7', 'Farkle', '阶段 10', //
+        '6 nimmt!', '贝洛特', 'Chouineurs', 'Coinche', '翻牌 7', 'Farkle', //
+        '阶段 10',
         '凯纳斯特', '快艇骰子', '拉米', '拉密', 'Mille Bornes', '其他', '桥牌',
         'Qwirkle', '三角骨牌', 'Scrabble', 'Skyjo', '塔罗牌', 'UNO', 'Wizard',
         'ZapZap', '总统',
@@ -187,7 +190,7 @@ void main() {
       // ヴ is read as ウ, and a hiragana name sorts with its katakana peers.
       final inJapanese =
           sorted(ja, [...builtins, _type(name: 'ヴィラ'), _type(name: 'かるた')]);
-      expect(inJapanese.sublist(1, 4), ['ウィザード', 'ヴィラ', 'ウノ']);
+      expect(inJapanese.sublist(2, 5), ['ウィザード', 'ヴィラ', 'ウノ']);
       expect(inJapanese.indexOf('かるた'), inJapanese.indexOf('カナスタ') + 1);
     });
 

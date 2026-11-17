@@ -3,12 +3,13 @@
 // database. Drift's onUpgrade must then bring it to the current schema itself.
 //
 // Simulated on a native file: build the current schema, strip everything v10,
-// v11, v12, v13, v14, v15, v16 and v21 added, stamp user_version 9, and reopen
-// through Drift.
+// v11, v12, v13, v14, v15, v16, v21 and v22 added, stamp user_version 9, and
+// reopen through Drift.
 // v17, v18 and v19 add no column: v17 finds no keyless copy to dedupe, v18
 // replays the v16 back-fill, which has nothing left to fill, and v19 finds no
 // keyless row to give a key back to. v20 adds no column either. v21 adds
-// `keypad_shortcut`, and fills it on the five built-ins that have one.
+// `keypad_shortcut`, and fills it on the five built-ins that have one. v22 adds
+// `max_rounds`, and gives 4 to the Chouineurs v14 inserted without it.
 
 import 'dart:io';
 
@@ -51,7 +52,7 @@ void main() {
     await raw.execute('ALTER TABLE games DROP COLUMN finishedAt');
     await raw.execute('DROP INDEX $gameTypesBuiltinKeyIndex');
     await raw.execute('ALTER TABLE game_types DROP COLUMN builtin_key');
-    for (final column in ['rules', 'rules_slug', 'keypad_shortcut']) {
+    for (final column in ['rules', 'rules_slug', 'keypad_shortcut', 'max_rounds']) {
       await raw.execute('ALTER TABLE game_types DROP COLUMN $column');
     }
     // A v9 browser holds the ten types the seed wrote then, and no more.
@@ -74,11 +75,12 @@ void main() {
     await db.customSelect('SELECT rejected_at, reject_reason FROM outbox').get();
     await db.customSelect('SELECT device_id, group_name FROM sync_state').get();
     await db.customSelect('SELECT finishedAt FROM games').get();
-    // v13: the ten are back-filled and the twelve new ones arrive.
+    // v13: the ten are back-filled and the thirteen new ones arrive —
+    // Chouineurs among them, from the v14 seed of the current catalogue.
     final types = await db
         .customSelect('SELECT name, builtin_key FROM game_types ORDER BY id')
         .get();
-    expect(types, hasLength(22));
+    expect(types, hasLength(23));
     expect(types.first.data['builtin_key'], 'zapzap');
     expect(
       types.map((r) => r.data['builtin_key']).toSet(),
@@ -103,6 +105,16 @@ void main() {
     for (final r in shortcuts) {
       expect(r.data['keypad_shortcut'], seeds[r.data['builtin_key']],
           reason: '${r.data['builtin_key']} has the wrong keypad shortcut');
+    }
+    // v22: the v14 seed ran before the column existed, so Chouineurs arrived
+    // without its limit; the step that adds the column fills it, and no other
+    // row gets one.
+    final limits = await db
+        .customSelect('SELECT builtin_key, max_rounds FROM game_types')
+        .get();
+    for (final r in limits) {
+      expect(r.data['max_rounds'], r.data['builtin_key'] == 'chouineurs' ? 4 : null,
+          reason: '${r.data['builtin_key']} has the wrong round limit');
     }
     // v15: one live row per built-in key.
     final index = await db

@@ -200,6 +200,8 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
           'game_over_condition_type':
               gameType?.gameOverConditionType?.toDbString(),
           'game_over_threshold': gameType?.gameOverThreshold,
+          // Schema v22: the game is over after this many rounds, or null.
+          'max_rounds': gameType?.maxRounds,
         },
         'players': [
           for (final p in players) {'id': p.id, 'name': p.name},

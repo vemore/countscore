@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:drift/drift.dart';
 
-import '../../models/keypad_shortcut.dart';
+import '../../models/game_type.dart';
 import '../backend_client.dart';
 import '../drift/database.dart';
 import '../schema_steps.dart';
@@ -100,6 +100,39 @@ String? _insertedKeypadShortcut(Map<String, dynamic> p, String? builtinKey) {
   }
   return _pulledKeypadShortcut(p['keypad_shortcut']) ??
       keypadShortcutSeeds()[builtinKey];
+}
+
+/// A round limit as pulled: an int within the model's bounds
+/// ([GameType.maxRoundsMin] to [GameType.maxRoundsMax]), or null for anything
+/// else. The server refuses a value out of bounds (`delta_bounds.py`), so this
+/// is only a guard against a payload no server should have logged.
+int? _pulledMaxRounds(Object? raw) => raw is int &&
+        raw >= GameType.maxRoundsMin &&
+        raw <= GameType.maxRoundsMax
+    ? raw
+    : null;
+
+/// The push side of `game_types.max_rounds`: a null as a clear, a value
+/// within bounds as it is, and anything else omitted — the pattern of
+/// [_keypadShortcutPayload].
+Map<String, Object?> _maxRoundsPayload(Object? raw) {
+  if (raw == null) return const {'max_rounds': null};
+  final limit = _pulledMaxRounds(raw);
+  return limit == null ? const {} : {'max_rounds': limit};
+}
+
+/// The round limit a game type inserted from a pulled delta gets — the
+/// pattern of [_insertedKeypadShortcut]:
+///
+/// - an explicit null is the group's own "no limit", kept;
+/// - a readable value, as it is;
+/// - no key at all — a device that predates schema v22 — or a value out of
+///   bounds: the limit derived from the built-in key (`maxRoundsSeeds()`, 4
+///   for Chouineurs) and NULL for a user's type. A NULL there would be pushed
+///   by the next local edit as a clear nobody chose.
+int? _insertedMaxRounds(Map<String, dynamic> p, String? builtinKey) {
+  if (p.containsKey('max_rounds') && p['max_rounds'] == null) return null;
+  return _pulledMaxRounds(p['max_rounds']) ?? maxRoundsSeeds()[builtinKey];
 }
 
 const _rank = {
@@ -521,6 +554,11 @@ class SyncStore {
             // version) is omitted, so the server does not reject the whole row
             // over it and keeps what it has.
             ..._keypadShortcutPayload(r['keypad_shortcut']),
+            // The round limit (schema v22). Null travels as null — the user
+            // empties the field on purpose — as the keypad shortcut does, and
+            // a value out of 1..999 is omitted, so the server does not reject
+            // the whole row over it and keeps what it has.
+            ..._maxRoundsPayload(r['max_rounds']),
           },
           error: null,
         );
@@ -832,6 +870,13 @@ class SyncStore {
           (p['keypad_shortcut'] == null ||
               _pulledKeypadShortcut(p['keypad_shortcut']) != null))
         'keypad_shortcut': _pulledKeypadShortcut(p['keypad_shortcut']),
+      // The round limit (schema v22), the same way: a null clears, a value
+      // out of bounds leaves the local one alone, and **an absent key** — a
+      // device that predates v22 pushing an edit of this type — changes
+      // nothing, so an older member never clears a limit it cannot see.
+      if (p.containsKey('max_rounds') &&
+          (p['max_rounds'] == null || _pulledMaxRounds(p['max_rounds']) != null))
+        'max_rounds': _pulledMaxRounds(p['max_rounds']),
     };
     final linked = await _localOf(groupId, 'game_type', d.entityUuid);
     if (linked != null) {
@@ -899,6 +944,7 @@ class SyncStore {
         // a healthy one has pushed the slug back.
         'rules_slug': p['rules_slug'] ?? defaultRulesSlugs[builtinKey],
         'keypad_shortcut': _insertedKeypadShortcut(p, builtinKey),
+        'max_rounds': _insertedMaxRounds(p, builtinKey),
         'uuid': localUuid,
         'created_at': now,
         'updated_at': now,

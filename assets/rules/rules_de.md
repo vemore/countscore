@@ -905,3 +905,36 @@ spielen kann, bekommt der Spieler mit den wenigsten Punkten in der Hand die Diff
 
 Die Runden folgen aufeinander bis zur vereinbarten Gesamtpunkte, oft 400 Punkte, und der
 höchste Gesamtstand gewinnt. Stellen Sie diese Schwelle im Spieltyp ein.
+
+<!--@chouineurs-->
+Ein Stichspiel für 3 bis 5 Spieler in **4 Runden zu je 7 Stichen**. Jede Karte hat zwei
+Seiten, und jeder versucht, genau so viele Stiche zu machen, wie er gewettet hat.
+
+## Vorbereitung
+
+In jeder Runde erhält jeder Spieler **7 doppelseitige Karten** und wählt die Seite, die er
+die ganze Runde über verwendet. Dann legt er verdeckt eine seiner **5 Wettkarten** (*Pari*)
+ab: Jede nennt mehrere Stichzahlen, jede mit ihrem eigenen Punktwert.
+
+## Spielablauf
+
+Die ausgespielte Farbe muss bedient werden, wenn möglich. Gelb ist Trumpf; die schwarzen
+Drachen sind Supertrümpfe und dürfen jederzeit gespielt werden. Wer **die niedrigste Karte**
+eines Stichs gespielt hat, *chouine* (jammert) – bei Gleichstand alle Betroffenen: Er dreht
+eine Karte seiner Hand um oder nimmt aus dem Vorrat eine Karte, die **1 Punkt** wert ist.
+
+## Punktezählung
+
+Am Ende der Runde deckt jeder seine Wette auf:
+- steht die Zahl der gemachten Stiche auf der Karte, gibt es die dort angegebenen Punkte,
+  und diese Wettkarte scheidet aus dem Spiel aus;
+- sonst gibt es 0 Punkte, und die Karte geht an ihren Besitzer zurück;
+- dazu kommt **1 Punkt** für jede Karte, die beim Jammern genommen wurde.
+
+Die Punkte werden über die Runden addiert.
+
+## Spielende
+
+Nach der **4. Runde** gewinnt die höchste Gesamtpunktzahl. Bei Gleichstand gewinnt, wer in
+der letzten Runde die meisten Punkte gemacht hat. CountScore zeigt den Endbildschirm, sobald
+die vierte Runde eingetragen ist.

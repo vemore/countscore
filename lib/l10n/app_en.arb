@@ -811,5 +811,13 @@
   "replaceConfigUnchanged": "This device already uses this configuration",
   "joinLinkHandOverMessage": "This link can open in the CountScore Android app. If the app is not installed, the Play Store opens instead.",
   "joinLinkOpenInApp": "Open in the app",
-  "joinLinkContinueHere": "Continue in the browser"
+  "joinLinkContinueHere": "Continue in the browser",
+  "gameTypeMaxRounds": "Maximum rounds",
+  "gameTypeMaxRoundsHelper": "Leave empty for no limit",
+  "gameTypeMaxRoundsRange": "Between {min} and {max} rounds",
+  "gameRulesEndMaxRounds": "{count, plural, one{The game ends after {count} round} other{The game ends after {count} rounds}}",
+  "gameRulesEndOrMaxRounds": "{count, plural, one{{condition}, or after {count} round} other{{condition}, or after {count} rounds}}",
+  "boardRoundProgress": "Round {current} of {total}",
+  "gameTypeNameChouineurs": "Chouineurs",
+  "gameTypeNameChouineursSortKey": "Chouineurs"
 }

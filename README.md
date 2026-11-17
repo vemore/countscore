@@ -14,13 +14,14 @@ at your own server in Settings → Server if you want the connected features.
 
 ## Features
 
-- **22 pre-configured game types** — ZapZap, Uno, Scrabble, Skyjo, President, Belote, Tarot,
+- **23 pre-configured game types** — ZapZap, Uno, Scrabble, Skyjo, President, Belote, Tarot,
   Bridge, Rummy, Coinche, Yahtzee, Phase 10, Flip 7, Mille Bornes, Rummikub, Take 6, Qwirkle,
-  Farkle, Canasta, Wizard, Triomino and a generic "Other" — each named in your own language —
+  Farkle, Canasta, Wizard, Triomino, Chouineurs and a generic "Other" — each named in your own
+  language —
   plus custom types with a user-picked icon and colour.
 - **Flexible scoring**: lowest-wins and highest-wins, per game type.
 - **Rules for the game you are playing** — reachable from the score table and from the
-  game-type list. Every pre-configured type but *Other* ships a ruleset — 21 of them,
+  game-type list. Every pre-configured type but *Other* ships a ruleset — 22 of them,
   translated into all twenty languages — next to a summary of how CountScore scores that type — and every type, shipped
   or your own, gets that summary. Any of it can be
   rewritten: your table's own rules replace the shipped text and travel with your group.
@@ -41,6 +42,9 @@ at your own server in Settings → Server if you want the connected features.
   Belote, Uno …) end the game by themselves as soon as a score or a round brings a total to
   that threshold, or when you open a game already at or past it — once: the standings then offer
   "Continue playing", remembered on the device until the game drops back under its threshold.
+  A game type can also end after a **maximum number of rounds** — Chouineurs after its 4th,
+  or any "we play 5 rounds" of your own, alone or beside a threshold, whichever comes first —
+  and the score table's header then shows where the game stands ("Round 3 of 4").
   The games played to a last survivor (ZapZap, Rami, 6 qui prend) end instead once every
   player but one is past the elimination threshold — last player standing, and their final
   standings follow the order the players went out in: the survivor first, then whoever lasted

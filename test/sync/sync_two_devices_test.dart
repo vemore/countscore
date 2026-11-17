@@ -163,6 +163,39 @@ void main() {
         KeypadShortcut.add(20));
   });
 
+  test("a type's round limit reaches the other device, a change comes back, "
+      'and a clear travels too', () async {
+    final typeId = await a.gameTypes.create(GameType(
+      name: 'Quatre manches',
+      iconCodePoint: 0xe000,
+      cardColorValue: 0xFF795548,
+      isLowestScoreWins: false,
+      maxRounds: 4,
+    ));
+    final gameId = await a.games.create(
+        Game(name: 'Vendredi', isLowestScoreWins: false, gameTypeId: typeId));
+    await a.players.create(Player(gameId: gameId, name: 'Alice', orderIndex: 0));
+    await a.store.shareGame(gameId, (await a.store.membership())!.groupId);
+    expect((await a.sync()).failure, isNull);
+    expect(await a.store.pendingCount(), 0);
+    expect((await b.sync()).failure, isNull);
+
+    final onB0 = (await b.gameTypes.getAll())
+        .singleWhere((t) => t.name == 'Quatre manches');
+    expect(onB0.maxRounds, 4);
+
+    await b.gameTypes.update(onB0.copyWith(maxRounds: 6));
+    expect((await b.sync()).failure, isNull);
+    expect((await a.sync()).failure, isNull);
+    expect((await a.gameTypes.getById(typeId))!.maxRounds, 6);
+
+    final onA = (await a.gameTypes.getById(typeId))!;
+    await a.gameTypes.update(onA.copyWith(clearMaxRounds: true));
+    expect((await a.sync()).failure, isNull);
+    expect((await b.sync()).failure, isNull);
+    expect((await b.gameTypes.getById(onB0.id!))!.maxRounds, isNull);
+  });
+
   test('the same round entered on both devices is renumbered, nothing lost', () async {
     final gameId = await a.games.create(Game(name: 'Course', isLowestScoreWins: false));
     await a.players.create(Player(gameId: gameId, name: 'Alice', orderIndex: 0));

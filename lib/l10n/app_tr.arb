@@ -767,5 +767,13 @@
   "replaceConfigUnchanged": "Bu cihaz zaten bu yapılandırmayı kullanıyor",
   "joinLinkHandOverMessage": "Bu bağlantı CountScore Android uygulamasında açılabilir. Uygulama kurulu değilse, Play Store bunun yerine açılır.",
   "joinLinkOpenInApp": "Uygulamada aç",
-  "joinLinkContinueHere": "Tarayıcıda devam et"
+  "joinLinkContinueHere": "Tarayıcıda devam et",
+  "gameTypeMaxRounds": "En fazla tur sayısı",
+  "gameTypeMaxRoundsHelper": "Sınır olmaması için boş bırakın",
+  "gameTypeMaxRoundsRange": "{min} ile {max} tur arası",
+  "gameRulesEndMaxRounds": "{count, plural, one{Oyun {count} turdan sonra biter} other{Oyun {count} turdan sonra biter}}",
+  "gameRulesEndOrMaxRounds": "{count, plural, one{{condition} ya da {count} turdan sonra} other{{condition} ya da {count} turdan sonra}}",
+  "boardRoundProgress": "Tur {current}/{total}",
+  "gameTypeNameChouineurs": "Chouineurs",
+  "gameTypeNameChouineursSortKey": "Chouineurs"
 }

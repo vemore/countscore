@@ -4,7 +4,9 @@
 // hand, run the production step, assert what survived. What matters here is the
 // three promises applyV14 makes: the ten seeded rows are back-filled by name,
 // the twelve types the seed never had are inserted, and nothing the user deleted
-// or renamed comes back.
+// or renamed comes back. The step inserts the *current* catalogue: thirteen
+// since Chouineurs joined it with schema v22, which `applyV22` then finds
+// already there.
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -105,7 +107,7 @@ void main() {
 
     final rows = await db.query('game_types', columns: ['builtin_key', 'uuid']);
     final keys = rows.map((r) => r['builtin_key'] as String?).toSet();
-    expect(keys, hasLength(22));
+    expect(keys, hasLength(23));
     expect(keys, containsAll(GameType.defaultGameTypes().map((t) => t.builtinKey)));
     // Every inserted row is sync-ready: a uuid of its own.
     expect(rows.map((r) => r['uuid']).toSet(), hasLength(rows.length));
@@ -124,7 +126,7 @@ void main() {
     expect(keys.keys, isNot(contains('Autre')));
     // The twelve new ones still arrive: they were never his to delete.
     expect(keys.keys, contains('Yahtzee'));
-    expect(keys, hasLength(13));
+    expect(keys, hasLength(14));
   });
 
   test('a type the user renamed stays a user type', () async {
@@ -185,9 +187,9 @@ void main() {
     expect(yahtzee, hasLength(1));
     expect(yahtzee.single['builtin_key'], isNull);
     expect(yahtzee.single['isDefault'], 0);
-    // The other eleven still arrive.
+    // The other twelve still arrive.
     final keyed = await db.query('game_types', where: 'builtin_key IS NOT NULL');
-    expect(keyed, hasLength(12));
+    expect(keyed, hasLength(13));
   });
 
   test('a seeded row the user renamed frees its name for the new type', () async {
@@ -199,7 +201,7 @@ void main() {
 
     final rows = await db.query('game_types', columns: ['name', 'builtin_key']);
     expect(rows.firstWhere((r) => r['name'] == 'Le jeu du jeudi')['builtin_key'], isNull);
-    expect(rows.where((r) => r['builtin_key'] != null), hasLength(12));
+    expect(rows.where((r) => r['builtin_key'] != null), hasLength(13));
   });
 
   test('replaying the step changes nothing', () async {

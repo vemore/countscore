@@ -885,3 +885,36 @@ peut jouer, celui qui a le moins de points en main marque la différence.
 
 On enchaîne les manches jusqu'au total convenu, souvent 400 points, et le plus haut total
 gagne. Réglez ce seuil dans le type de jeu.
+
+<!--@chouineurs-->
+Jeu de plis de 3 à 5 joueurs, en **4 manches de 7 plis**. Chaque carte a deux faces, et
+chacun tente de remporter exactement le nombre de plis sur lequel il a parié.
+
+## Mise en place
+
+À chaque manche, chaque joueur reçoit **7 cartes** à double face et choisit le côté qu'il
+utilisera pour toute la manche. Il pose ensuite face cachée l'une de ses **5 cartes Pari** :
+chacune propose plusieurs nombres de plis, chacun avec sa propre valeur en points.
+
+## Déroulement
+
+Il faut fournir la couleur demandée si on le peut. Le jaune est l'atout ; les dragons noirs
+sont des super-atouts, jouables à tout moment. Le joueur qui a posé **la plus faible carte**
+du pli *chouine* (en cas d'égalité, tous les ex æquo) : il retourne une carte de sa main, ou
+prend dans la réserve une carte qui vaut **1 point**.
+
+## Comptage
+
+En fin de manche, chacun révèle son Pari :
+- si le nombre de plis remportés figure sur la carte, on marque les points indiqués en face,
+  et cette carte Pari sort du jeu ;
+- sinon, on marque 0 et la carte revient à son propriétaire ;
+- on ajoute **1 point** par carte prise en chouinant.
+
+Les points s'additionnent d'une manche à l'autre.
+
+## Fin de la partie
+
+Après la **4e manche**, le plus haut total gagne. En cas d'égalité, celui qui a marqué le
+plus de points à la dernière manche l'emporte. CountScore propose l'écran de fin dès que la
+quatrième manche est saisie.

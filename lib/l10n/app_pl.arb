@@ -908,5 +908,13 @@
 
   "joinLinkOpenInApp": "Otwórz w aplikacji",
 
-  "joinLinkContinueHere": "Kontynuuj w przeglądarce"
+  "joinLinkContinueHere": "Kontynuuj w przeglądarce",
+  "gameTypeMaxRounds": "Maksymalna liczba rund",
+  "gameTypeMaxRoundsHelper": "Pozostaw puste, aby nie ograniczać",
+  "gameTypeMaxRoundsRange": "Od {min} do {max} rund",
+  "gameRulesEndMaxRounds": "{count, plural, one{Gra kończy się po {count} rundzie} few{Gra kończy się po {count} rundach} many{Gra kończy się po {count} rundach} other{Gra kończy się po {count} rundach}}",
+  "gameRulesEndOrMaxRounds": "{count, plural, one{{condition} lub po {count} rundzie} few{{condition} lub po {count} rundach} many{{condition} lub po {count} rundach} other{{condition} lub po {count} rundach}}",
+  "boardRoundProgress": "Runda {current} z {total}",
+  "gameTypeNameChouineurs": "Chouineurs",
+  "gameTypeNameChouineursSortKey": "Chouineurs"
 }

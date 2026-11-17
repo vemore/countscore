@@ -200,8 +200,11 @@ void main() {
   test('every built-in with a ruleset is known by its name in all ten locales',
       () {
     final names = builtinNamesByKey();
-    expect(names.keys.toSet(), defaultRulesSlugs.keys.toSet(),
-        reason: '`other` has no ruleset and is not claimed');
+    expect(names.keys.toSet(),
+        defaultRulesSlugs.keys.toSet().difference(builtinKeysAfterV19),
+        reason: '`other` has no ruleset and is not claimed, and a type added '
+            'after v19 is not v19\'s to claim');
+    expect(names.containsKey('chouineurs'), isFalse);
     expect(names['skyjo'], contains('Skyjo'));
     expect(names['six_nimmt'], contains('6 qui prend'));
     expect(names['wizard'], contains(wizardInRussian));

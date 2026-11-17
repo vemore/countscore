@@ -661,3 +661,33 @@ El, bir oyuncu son karosu yerleştiğinde biter: **25 puan** artı diğerleri ha
 Turlar üzerinde anlaştığınız toplama kadar devam eder, sık 400 puan ve en yüksek toplam
 kazanır. Oyun türünde eşik belirleyin.
 
+<!--@chouineurs-->
+3–5 oyuncu için, **7'şer elden oluşan 4 tur** süren bir el alma oyunu. Her kartın iki yüzü
+vardır ve herkes tam olarak bahse girdiği sayıda el almaya çalışır.
+
+## Hazırlama
+
+Her turda her oyuncuya **7 çift yüzlü kart** dağıtılır; oyuncu tur boyunca kullanacağı yüzü
+seçer. Ardından **5 Bahis kartından** (*Pari*) birini kapalı olarak koyar: her kart birkaç el
+sayısı gösterir ve her birinin kendi puan değeri vardır.
+
+## Oynanış
+
+Mümkünse istenen renk takip edilir. Sarı kozdur; siyah ejderhalar süper kozdur ve her an
+oynanabilir. Bir elde **en düşük kartı** oynayan *chouine* (sızlanır) — eşitlikte hepsi: ya
+elindeki bir kartı çevirir ya da yedekten **1 puan** değerinde bir kart alır.
+
+## Puanlama
+
+Tur sonunda herkes bahsini açar:
+- alınan el sayısı kartta yazıyorsa, karşısındaki puan yazılır ve o Bahis kartı oyundan
+  çıkar;
+- yazmıyorsa 0 yazılır ve kart sahibine geri döner;
+- sızlanarak alınan her kart için **1 puan** eklenir.
+
+Puanlar turdan tura toplanır.
+
+## Oyunun Sonu
+
+**4. turdan** sonra en yüksek toplam kazanır. Eşitlikte son turda en çok puanı alan kazanır.
+CountScore, dördüncü tur girilir girilmez bitiş ekranını gösterir.

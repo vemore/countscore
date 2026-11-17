@@ -1,5 +1,6 @@
 import 'package:countscore/l10n/app_localizations.dart';
 import 'package:countscore/models/game_type.dart';
+import 'package:countscore/utils/game_over_rule.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -43,8 +44,8 @@ void main() {
 
     // Every player but one above 100: what the sentence promises, and the game
     // ends. One more still in: it does not.
-    expect(type.isGameOver([101, 120, 130, 40]), isTrue);
-    expect(type.isGameOver([101, 120, 90, 40]), isFalse);
+    expect(type.isGameOver([101, 120, 130, 40], roundCount: 0), isTrue);
+    expect(type.isGameOver([101, 120, 90, 40], roundCount: 0), isFalse);
 
     expect(en.gameRulesEndLastUnder(0),
         'The game ends when every player but one is below 0 points');
@@ -56,7 +57,32 @@ void main() {
       gameOverConditionType: GameOverConditionType.lastPlayerUnder,
       gameOverThreshold: 0,
     );
-    expect(under.isGameOver([-1, -20, -30, 5]), isTrue);
-    expect(under.isGameOver([-1, -20, 3, 5]), isFalse);
+    expect(under.isGameOver([-1, -20, -30, 5], roundCount: 0), isTrue);
+    expect(under.isGameOver([-1, -20, 3, 5], roundCount: 0), isFalse);
+  });
+
+  test('the rule line: the round limit alone, the total alone, or both by OR',
+      () {
+    final en = lookupAppLocalizations(const Locale('en'));
+    final fr = lookupAppLocalizations(const Locale('fr'));
+    final ru = lookupAppLocalizations(const Locale('ru'));
+
+    expect(gameOverRuleLine(en, GameType.chouineurs()),
+        'The game ends after 4 rounds');
+    expect(gameOverRuleLine(fr, GameType.chouineurs()),
+        "La partie s'arrête après 4 tours");
+    expect(gameOverRuleLine(en, GameType.uno()),
+        'The game ends as soon as a player reaches 500 points');
+    expect(gameOverRuleLine(en, GameType.uno().copyWith(maxRounds: 1)),
+        'The game ends as soon as a player reaches 500 points, or after 1 round');
+    expect(gameOverRuleLine(en, GameType.tarot()), isNull);
+    // The plural follows the locale: one / few / many in Russian.
+    expect(gameOverRuleLine(ru, GameType.chouineurs()),
+        'Партия заканчивается после 4 раундов');
+    expect(gameOverRuleLine(ru, GameType.tarot().copyWith(maxRounds: 21)),
+        'Партия заканчивается после 21 раунда');
+
+    expect(en.boardRoundProgress(3, 4), 'Round 3 of 4');
+    expect(fr.boardRoundProgress(3, 4), 'Tour 3/4');
   });
 }

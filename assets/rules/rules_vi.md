@@ -754,3 +754,33 @@ với ít nhất điểm trong tay tính chênh lệch.
 
 Các vòng tiếp tục lên đến tổng thỏa thuận, thường 400 điểm, và tổng cao nhất
 thắng. Đặt ngưỡng đó trong loại trò chơi.
+
+<!--@chouineurs-->
+Trò chơi ăn nước bài cho 3 đến 5 người, chơi **4 vòng, mỗi vòng 7 nước**. Mỗi lá bài có
+hai mặt, và mỗi người cố thắng đúng số nước mình đã cược.
+
+## Chuẩn Bị
+
+Mỗi vòng, mỗi người nhận **7 lá bài hai mặt** và chọn mặt sẽ dùng suốt vòng đó. Sau đó, mỗi
+người úp một trong **5 lá Cược** (*Pari*) của mình: mỗi lá ghi vài số nước, mỗi số có điểm
+riêng.
+
+## Chơi
+
+Phải ra cùng chất nếu có thể. Màu vàng là chủ bài; rồng đen là siêu chủ bài và có thể ra bất
+cứ lúc nào. Người ra **lá thấp nhất** trong một nước sẽ *chouine* (than vãn) — nếu hòa thì
+tất cả những người đó: lật một lá trên tay, hoặc lấy từ kho dự trữ một lá trị giá **1 điểm**.
+
+## Tính Điểm
+
+Cuối vòng, mọi người lật lá Cược:
+- nếu số nước thắng có trên lá, ghi số điểm tương ứng, và lá Cược đó bị loại khỏi trò chơi;
+- nếu không, ghi 0 và lá bài trở về tay chủ;
+- cộng **1 điểm** cho mỗi lá lấy được khi than vãn.
+
+Điểm được cộng dồn qua các vòng.
+
+## Kết Thúc Trò Chơi
+
+Sau **vòng 4**, tổng điểm cao nhất thắng. Nếu hòa, người ghi nhiều điểm nhất ở vòng cuối
+thắng. CountScore hiện màn hình kết thúc ngay khi vòng thứ tư được nhập.

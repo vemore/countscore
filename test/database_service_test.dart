@@ -87,10 +87,30 @@ void main() {
       final rows = await db.query('game_types', columns: ['name', 'builtin_key']);
       final names = rows.map((r) => r['name'] as String).toSet();
       expect(names, containsAll(['ZapZap', 'Uno', 'Skyjo', 'Yahtzee', 'Qwirkle']));
-      expect(rows, hasLength(22));
+      expect(rows, hasLength(23));
       // A fresh install lands on the same shape the v13 migration produces:
       // every seeded row carries its key.
-      expect(rows.map((r) => r['builtin_key']).whereType<String>(), hasLength(22));
+      expect(rows.map((r) => r['builtin_key']).whereType<String>(), hasLength(23));
+    });
+
+    test('Chouineurs is seeded: four rounds, highest total wins, no threshold',
+        () async {
+      final row = (await db.query('game_types',
+              where: 'builtin_key = ?', whereArgs: ['chouineurs']))
+          .single;
+      final type = GameType.fromMap(row);
+      expect(type.name, 'Chouineurs');
+      expect(type.maxRounds, 4);
+      expect(type.isLowestScoreWins, isFalse);
+      expect(type.gameOverConditionType, isNull);
+      expect(type.gameOverThreshold, isNull);
+      expect(type.playerDeadConditionType, isNull);
+      expect(type.keypadShortcut, isNull);
+      expect(type.rulesSlug, 'chouineurs');
+      // Every other seeded type has no round limit.
+      final limited = await db.query('game_types',
+          columns: ['builtin_key'], where: 'max_rounds IS NOT NULL');
+      expect(limited.map((r) => r['builtin_key']), ['chouineurs']);
     });
 
     test('CRUD via DatabaseService singleton works on injected DB', () async {

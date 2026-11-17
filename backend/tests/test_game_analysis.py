@@ -251,6 +251,34 @@ async def test_analysis_game_type_cannot_smuggle_instructions(client, mock_provi
     assert "eliminated as soon as" not in system_prompt
 
 
+@both_paths
+async def test_analysis_round_limit_reaches_the_prompt(client, mock_provider, path):
+    """Schema v22: ``game_type_rules.max_rounds`` survives the request model."""
+    payload = _payload()
+    payload["game"]["is_lowest_score_wins"] = False
+    payload["game_type"] = "Chouineurs"
+    payload["game_type_rules"] = {"is_lowest_score_wins": False, "max_rounds": 4}
+
+    r = await client.post(path, json=payload)
+    assert r.status_code == 200, r.text
+
+    system_prompt, _ = mock_provider.generate.call_args.args
+    assert "The game is played over 4 rounds: it ends after the last one." in system_prompt
+    assert "four rounds of seven tricks" in system_prompt
+
+
+async def test_analysis_round_limit_out_of_bounds_is_dropped(client, mock_provider):
+    """A limit no app could have set adds no line, and does not refuse the analysis."""
+    payload = _payload()
+    payload["game_type_rules"] = {"is_lowest_score_wins": True, "max_rounds": 5000}
+
+    r = await client.post("/comments/game-analysis", json=payload)
+    assert r.status_code == 200, r.text
+
+    system_prompt, _ = mock_provider.generate.call_args.args
+    assert "rounds" not in system_prompt.split("override anything above")[1]
+
+
 async def test_analysis_accepts_the_app_payload(client, mock_provider):
     """Unset scores, extra keys and the full history row of DriftGameAnalysisRepository."""
     payload = _payload()

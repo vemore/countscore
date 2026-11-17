@@ -2,7 +2,7 @@
 
 > Scope: the offline-first sharing protocol — server and Flutter client.
 > Related: [[Api]] · [[Schema]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-09-26
+> Updated: 2026-11-17
 
 ## Facts
 
@@ -58,7 +58,7 @@ field**, ordered lexicographically by `(client_lamport, origin_device_id)`.
    back as a stable reason code rather than a driver error — codes in [[Api]].
 7. The log stores the payload's known client columns only; that is what other devices pull.
 
-Synced entities: `player`, `game_type` (with `rules` and `rules_slug` since v13, `builtin_key` since v14, `keypad_shortcut` since v21), `game`,
+Synced entities: `player`, `game_type` (with `rules` and `rules_slug` since v13, `builtin_key` since v14, `keypad_shortcut` since v21, `max_rounds` since v22), `game`,
 `game_player`, `round` (with `comment`), `score`, `game_analysis`. `game_player` still has
 no uuid and is hard-deleted.
 
@@ -136,6 +136,35 @@ reads it while the key is set. See [[Schema]] and [[I18n]].
 
 Tests: `test/sync/sync_store_test.dart`, `backend/tests/test_sync_contract.py`, and the
 round trip through a real server in `test/sync/sync_two_devices_test.dart`.
+
+### The round limit: an absent key changes nothing (since 2026-11-17)
+
+`game_types.max_rounds` (schema v22, [[Schema]]) is an integer, 1 to 999, or null for no
+limit. It follows the keypad shortcut's pattern rather than `rules_slug`'s:
+
+- **Server**: `NUMERIC_BOUNDS["game_type"]["max_rounds"] = (1, 999)` in
+  `backend/app/services/delta_bounds.py`; 0, 1000, a string or a boolean is a rejected delta
+  whose reason names `max_rounds`. The column is `0007_game_type_max_rounds`.
+- **Push** (`case 'game_type'`, `_maxRoundsPayload`): sent with every row, **a null as
+  null** — the user empties the field on purpose —, a value within 1..999 as it is, and one
+  out of bounds **omitted**, so one bad field cannot get the whole row rejected.
+  A type created without a limit means "no limit" just as much. Every
+  local NULL is therefore a choice: a type seeded or created without one, the editor's empty
+  field, a clear pulled from the group; the two that would not be — a built-in row inserted
+  from a delta with no key, and a Chouineurs a v21 device pulled before it had the column —
+  get the seed instead (`_insertedMaxRounds`, `applyV22`).
+- **Pull** (`_applyGameType`): an update takes a null (clear) or a value within the bounds,
+  and leaves the local value alone for one out of bounds. **An absent key changes nothing**:
+  a device that predates v22 pushes its edits of the type without `max_rounds`, and the
+  server logs the payload as sent (`_logged_payload` filters on key presence), so an older
+  member's rename or colour change never clears a limit it cannot see. An insert keeps an
+  explicit null, takes a value within bounds, and with no key derives the seed from the
+  built-in key (`maxRoundsSeeds()`: Chouineurs 4), NULL for a user's type.
+- **Migration**: the v22 fill is not pushed; capture is suppressed around it ([[Schema]]).
+
+Tests: `test/sync/sync_store_test.dart` (push, pull, older peer, insert),
+`backend/tests/test_sync_contract.py` (round trip, older client, bounds), and
+`test/sync/sync_two_devices_test.dart` through a real server.
 
 ### A wiped `rules_slug` does not travel (since 2026-09-20)
 
@@ -398,6 +427,11 @@ closed with 1013 before `accept()`. The counter is process memory too (`_open_st
 `cost_cents`), `change_log`, `rate_limits`. Colour columns are `BIGINT`.
 
 ## Decisions & History
+
+- **`max_rounds` follows `keypad_shortcut`, not `rules_slug` (2026-11-17, `feat/max-rounds-chouineurs`).**
+  A null is pushed as a clear because emptying the field is a choice, unlike a wiped slug;
+  an absent key is "no opinion", so an older peer cannot clear it. The seed is derived for a
+  built-in inserted from a delta without the key, so no NULL nobody chose is ever pushed.
 
 - **Hand-written delta-log over CRDTs or a managed sync product.** Roughly 500 LOC of
   backend and 500 of client, fully debuggable, and the log doubles as audit trail,

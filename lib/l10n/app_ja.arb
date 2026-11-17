@@ -739,5 +739,13 @@
   "configShareTooLong": "このリンクは長すぎて QR コードに収まりません。代わりに「リンクをコピー」を使ってください。",
   "joinLinkHandOverMessage": "このリンクは Android 版 CountScore アプリで開けます。アプリがインストールされていない場合は、代わりに Play ストアが開きます。",
   "joinLinkOpenInApp": "アプリで開く",
-  "joinLinkContinueHere": "ブラウザで続ける"
+  "joinLinkContinueHere": "ブラウザで続ける",
+  "gameTypeMaxRounds": "最大ラウンド数",
+  "gameTypeMaxRoundsHelper": "空欄なら制限なし",
+  "gameTypeMaxRoundsRange": "{min}〜{max} ラウンドの範囲",
+  "gameRulesEndMaxRounds": "{count, plural, other{{count}ラウンド後に終了します}}",
+  "gameRulesEndOrMaxRounds": "{count, plural, other{{condition}（または{count}ラウンド後に終了）}}",
+  "boardRoundProgress": "ラウンド {current}/{total}",
+  "gameTypeNameChouineurs": "Chouineurs",
+  "gameTypeNameChouineursSortKey": "Chouineurs"
 }

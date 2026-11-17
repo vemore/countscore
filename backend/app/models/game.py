@@ -58,6 +58,10 @@ class GameType(SQLModel, table=True):
     # (``{"kind": "multiply", "amount": 2}``, optional ``"label"``). NULL is a
     # plain 0. Validated in ``app/services/delta_bounds.py``.
     keypad_shortcut: str | None = Field(default=None, max_length=128)
+    # The number of rounds after which a game of this type is over (mobile schema
+    # v22), or NULL for no limit. Combined with the total condition by OR. Bounded
+    # 1..999 in ``app/services/delta_bounds.py``.
+    max_rounds: int | None = Field(default=None)
 
     created_at: datetime = Field(
         default_factory=_utcnow,

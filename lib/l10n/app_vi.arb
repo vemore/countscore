@@ -765,5 +765,13 @@
   "replaceConfigUnchanged": "Thiết bị này đã sử dụng cấu hình này",
   "joinLinkHandOverMessage": "Liên kết này có thể mở trong ứng dụng CountScore Android. Nếu ứng dụng không được cài đặt, Play Store sẽ mở thay thế.",
   "joinLinkOpenInApp": "Mở trong ứng dụng",
-  "joinLinkContinueHere": "Tiếp tục trong trình duyệt"
+  "joinLinkContinueHere": "Tiếp tục trong trình duyệt",
+  "gameTypeMaxRounds": "Số vòng tối đa",
+  "gameTypeMaxRoundsHelper": "Để trống nếu không giới hạn",
+  "gameTypeMaxRoundsRange": "Từ {min} đến {max} vòng",
+  "gameRulesEndMaxRounds": "{count, plural, one{Trò chơi kết thúc sau {count} vòng} other{Trò chơi kết thúc sau {count} vòng}}",
+  "gameRulesEndOrMaxRounds": "{count, plural, one{{condition}, hoặc sau {count} vòng} other{{condition}, hoặc sau {count} vòng}}",
+  "boardRoundProgress": "Vòng {current}/{total}",
+  "gameTypeNameChouineurs": "Chouineurs",
+  "gameTypeNameChouineursSortKey": "Chouineurs"
 }

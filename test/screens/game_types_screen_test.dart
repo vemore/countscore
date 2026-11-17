@@ -8,6 +8,7 @@
 // wip/done/2026-09-20-deleting-a-used-game-type-reports-an-export-error-in-english.md
 // wip/done/2026-09-20-the-win-direction-can-be-flipped-under-finished-games.md
 // wip/done/2026-09-18-keypad-has-no-per-game-shortcut.md
+// wip/done/2026-11-17-a-game-type-cannot-end-after-a-fixed-number-of-rounds.md
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -50,9 +51,17 @@ class _FakeGameTypeRepository implements GameTypeRepository {
     return null;
   }
 
+  /// Whether [update] writes the row back into what [getAll] returns, so a
+  /// test can save, reopen the editor and read what was stored.
+  bool storeUpdates = false;
+
   @override
   Future<int> update(GameType gameType) async {
     updates.add(gameType);
+    if (storeUpdates) {
+      final i = _types.indexWhere((t) => t.id == gameType.id);
+      if (i >= 0) _types[i] = gameType;
+    }
     return 1;
   }
 
@@ -742,6 +751,93 @@ void main() {
           find.byKey(const Key('game_type_shortcut_amount')), '3');
       await _save(tester);
       expect(repo.creations.single.keypadShortcut, KeypadShortcut.multiply(3));
+    });
+  });
+
+  group('the maximum rounds', () {
+    Finder field() => find.byKey(const Key('game_type_max_rounds'));
+    String text(WidgetTester tester) =>
+        tester.widget<TextField>(field()).controller!.text;
+
+    Future<void> enter(WidgetTester tester, String value) async {
+      await tester.ensureVisible(field());
+      await tester.pumpAndSettle();
+      await tester.enterText(field(), value);
+    }
+
+    testWidgets('set to 4, saved and reopened, it reads 4; cleared, it saves '
+        'null', (tester) async {
+      final repo = await _pump(tester, size: _editorSurface, types: [
+        _zapzap(),
+      ])
+        ..storeUpdates = true;
+
+      await _openEditor(tester);
+      expect(text(tester), '', reason: 'empty is no limit');
+      expect(find.text('Laisser vide pour ne pas limiter'), findsOneWidget);
+      await enter(tester, '4');
+      await _save(tester);
+      expect(repo.updates.last.maxRounds, 4);
+      // Everything else the form shows is unchanged.
+      expect(repo.updates.last.playerDeadThreshold, 100);
+      // An end rule changed, so the rules may be out of date: offered, as
+      // for a threshold.
+      expect(find.byKey(const Key('game_type_rules_outdated')), findsOneWidget);
+      await tester.tap(find.text('Plus tard'));
+      await tester.pumpAndSettle();
+
+      await _openEditor(tester);
+      expect(text(tester), '4');
+
+      await enter(tester, '');
+      await _save(tester);
+      expect(repo.updates.last.maxRounds, isNull);
+      await tester.tap(find.text('Plus tard'));
+      await tester.pumpAndSettle();
+
+      await _openEditor(tester);
+      expect(text(tester), '');
+    });
+
+    testWidgets('a new type takes it, with a total condition beside it',
+        (tester) async {
+      final repo = await _pump(tester, count: 1, size: _editorSurface);
+
+      await tester.tap(find.byType(FloatingActionButton));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+          find.byKey(const Key('game_type_name_field')), 'Maison');
+      await _choose(tester, _gameOverDropdown, 'Premier joueur à atteindre');
+      await tester.enterText(
+          find.byKey(const Key('game_type_game_over_threshold')), '500');
+      await enter(tester, '10');
+      await _save(tester);
+
+      final created = repo.creations.single;
+      expect(created.maxRounds, 10);
+      expect(created.gameOverConditionType,
+          GameOverConditionType.firstPlayerOver);
+      expect(created.gameOverThreshold, 500);
+    });
+
+    testWidgets('0 is refused under the field; letters and a 4th digit never '
+        'reach it', (tester) async {
+      final repo = await _pump(tester, size: _editorSurface, types: [
+        _zapzap(),
+      ]);
+
+      await _openEditor(tester);
+      await enter(tester, '0');
+      await _save(tester);
+      expect(find.text('Entre 1 et 999 tours'), findsOneWidget);
+      expect(repo.updates, isEmpty);
+
+      await enter(tester, '4a2');
+      expect(text(tester), '42');
+      await enter(tester, '1000');
+      expect(text(tester), '100');
+      await _save(tester);
+      expect(repo.updates.single.maxRounds, 100);
     });
   });
 }

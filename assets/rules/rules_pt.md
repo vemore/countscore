@@ -688,3 +688,35 @@ A rodada termina quando um jogador colocou sua última peça: ele marca **25 pon
 ## Fim da partida
 
 As rodadas se encadeiam até o total acordado, frequentemente 400 pontos, e o maior total ganha. Defina esse limite no tipo de jogo.
+
+<!--@chouineurs-->
+Jogo de vazas para 3 a 5 jogadores, em **4 rodadas de 7 vazas**. Cada carta tem dois lados,
+e cada um tenta ganhar exatamente o número de vazas em que apostou.
+
+## Preparação
+
+A cada rodada, cada jogador recebe **7 cartas de dupla face** e escolhe o lado que usará na
+rodada inteira. Depois coloca virada para baixo uma das suas **5 cartas de Aposta** (*Pari*):
+cada uma indica vários números de vazas, cada um com seu próprio valor em pontos.
+
+## Desenvolvimento
+
+É preciso seguir o naipe pedido, se possível. O amarelo é trunfo; os dragões pretos são
+supertrunfos e podem ser jogados a qualquer momento. Quem jogou **a carta mais baixa** da
+vaza *chouine* (reclama) — em caso de empate, todos eles: vira uma carta da mão ou pega da
+reserva uma carta que vale **1 ponto**.
+
+## Contagem
+
+No fim da rodada, cada um revela sua aposta:
+- se o número de vazas ganhas está na carta, marcam-se os pontos indicados, e essa carta de
+  Aposta sai do jogo;
+- senão, marca-se 0 e a carta volta ao dono;
+- soma-se **1 ponto** por carta pega ao reclamar.
+
+Os pontos se acumulam de uma rodada para outra.
+
+## Fim da partida
+
+Após a **4ª rodada**, vence o maior total. Em caso de empate, vence quem fez mais pontos na
+última rodada. O CountScore mostra a tela final assim que a quarta rodada é registrada.

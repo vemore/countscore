@@ -696,3 +696,101 @@ async def test_a_keypad_shortcut_label_is_counted_in_code_points(client):
         ),
     )
     assert _statuses(body) == [("applied", None)]
+
+
+async def test_a_game_type_max_rounds_makes_the_round_trip(client):
+    """Schema v22: the round limit travels like any other game-type column, null too."""
+    _body, headers = await _group(client)
+    game_type = uuid.uuid4()
+    body = await _push(
+        client,
+        headers,
+        _delta(
+            "game_type",
+            game_type,
+            1,
+            name="Chouineurs",
+            builtin_key="chouineurs",
+            icon_code_point=1,
+            card_color_value=1,
+            max_rounds=4,
+        ),
+        _delta("game_type", game_type, 2, name="Chouineurs", max_rounds=None),
+    )
+    assert _statuses(body) == [("applied", None), ("applied", None)]
+
+    r = await client.get("/sync/pull", params={"since": 0}, headers=headers)
+    assert r.status_code == 200, r.text
+    pulled = [d for d in r.json()["deltas"] if d["entity_type"] == "game_type"]
+    assert [d["payload"]["max_rounds"] for d in pulled] == [4, None]
+
+
+async def test_an_older_client_without_max_rounds_leaves_the_column(client, session_factory):
+    """A device that predates v22 omits the key: the server keeps the limit, and the
+    delta it logs carries no key, so no device pulls a clear nobody chose."""
+    from app.models import GameType
+
+    _body, headers = await _group(client)
+    game_type = uuid.uuid4()
+    body = await _push(
+        client,
+        headers,
+        _delta(
+            "game_type",
+            game_type,
+            1,
+            name="Chouineurs",
+            icon_code_point=1,
+            card_color_value=1,
+            max_rounds=4,
+        ),
+        _delta("game_type", game_type, 2, name="Chouineurs du jeudi"),
+    )
+    assert _statuses(body) == [("applied", None), ("applied", None)]
+
+    row = await _get(session_factory, GameType, game_type)
+    assert row.max_rounds == 4
+    r = await client.get("/sync/pull", params={"since": 0}, headers=headers)
+    pulled = [d for d in r.json()["deltas"] if d["entity_type"] == "game_type"]
+    assert "max_rounds" not in pulled[1]["payload"]
+
+
+@pytest.mark.parametrize("max_rounds", [0, 1000, -4, "4", True])
+async def test_a_max_rounds_out_of_bounds_is_rejected_cleanly(client, max_rounds):
+    """1 to 999, the editor's bounds: anything else is refused and never logged."""
+    _body, headers = await _group(client)
+    body = await _push(
+        client,
+        headers,
+        _delta(
+            "game_type",
+            uuid.uuid4(),
+            1,
+            name="Chouineurs",
+            icon_code_point=1,
+            card_color_value=1,
+            max_rounds=max_rounds,
+        ),
+    )
+    [(status, reason)] = _statuses(body)
+    assert status == "rejected"
+    assert "max_rounds" in reason
+
+
+@pytest.mark.parametrize("max_rounds", [1, 999])
+async def test_a_max_rounds_at_its_bounds_is_accepted(client, max_rounds):
+    _body, headers = await _group(client)
+    body = await _push(
+        client,
+        headers,
+        _delta(
+            "game_type",
+            uuid.uuid4(),
+            1,
+            name="Chouineurs",
+            icon_code_point=1,
+            card_color_value=1,
+            max_rounds=max_rounds,
+        ),
+    )
+    assert _statuses(body) == [("applied", None)]

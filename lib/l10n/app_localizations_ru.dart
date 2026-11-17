@@ -1757,4 +1757,53 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get joinLinkContinueHere => 'Продолжить в браузере';
+
+  @override
+  String get gameTypeMaxRounds => 'Максимум раундов';
+
+  @override
+  String get gameTypeMaxRoundsHelper =>
+      'Оставьте пустым, чтобы не ограничивать';
+
+  @override
+  String gameTypeMaxRoundsRange(int min, int max) {
+    return 'От $min до $max раундов';
+  }
+
+  @override
+  String gameRulesEndMaxRounds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Партия заканчивается после $count раунда',
+      many: 'Партия заканчивается после $count раундов',
+      few: 'Партия заканчивается после $count раундов',
+      one: 'Партия заканчивается после $count раунда',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String gameRulesEndOrMaxRounds(String condition, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$condition или после $count раунда',
+      many: '$condition или после $count раундов',
+      few: '$condition или после $count раундов',
+      one: '$condition или после $count раунда',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String boardRoundProgress(int current, int total) {
+    return 'Раунд $current из $total';
+  }
+
+  @override
+  String get gameTypeNameChouineurs => 'Chouineurs';
+
+  @override
+  String get gameTypeNameChouineursSortKey => 'Chouineurs';
 }

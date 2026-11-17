@@ -738,5 +738,13 @@
   "configShareTooLong": "Esta ligação é demasiado longa para caber num QR code. Use «Copiar ligação».",
   "joinLinkHandOverMessage": "Esta ligação pode abrir na aplicação CountScore para Android. Se a aplicação não estiver instalada, abre a Play Store.",
   "joinLinkOpenInApp": "Abrir na aplicação",
-  "joinLinkContinueHere": "Continuar no navegador"
+  "joinLinkContinueHere": "Continuar no navegador",
+  "gameTypeMaxRounds": "Número máximo de rodadas",
+  "gameTypeMaxRoundsHelper": "Deixe vazio para não limitar",
+  "gameTypeMaxRoundsRange": "Entre {min} e {max} rodadas",
+  "gameRulesEndMaxRounds": "{count, plural, one{A partida termina após {count} rodada} other{A partida termina após {count} rodadas}}",
+  "gameRulesEndOrMaxRounds": "{count, plural, one{{condition}, ou após {count} rodada} other{{condition}, ou após {count} rodadas}}",
+  "boardRoundProgress": "Rodada {current} de {total}",
+  "gameTypeNameChouineurs": "Chouineurs",
+  "gameTypeNameChouineursSortKey": "Chouineurs"
 }

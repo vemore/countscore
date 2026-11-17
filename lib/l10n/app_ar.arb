@@ -739,5 +739,13 @@
   "configShareTooLong": "هذا الرابط أطول من أن يتسع في رمز QR. استخدم «نسخ الرابط» بدلاً من ذلك.",
   "joinLinkHandOverMessage": "يمكن فتح هذا الرابط في تطبيق CountScore لنظام Android. إذا لم يكن التطبيق مثبتاً، يُفتح متجر Play بدلاً منه.",
   "joinLinkOpenInApp": "فتح في التطبيق",
-  "joinLinkContinueHere": "المتابعة في المتصفح"
+  "joinLinkContinueHere": "المتابعة في المتصفح",
+  "gameTypeMaxRounds": "الحد الأقصى للجولات",
+  "gameTypeMaxRoundsHelper": "اتركه فارغًا لعدم التقييد",
+  "gameTypeMaxRoundsRange": "بين {min} و{max} جولة",
+  "gameRulesEndMaxRounds": "{count, plural, zero{تنتهي المباراة بعد {count} جولة} one{تنتهي المباراة بعد جولة واحدة} two{تنتهي المباراة بعد جولتين} few{تنتهي المباراة بعد {count} جولات} many{تنتهي المباراة بعد {count} جولة} other{تنتهي المباراة بعد {count} جولة}}",
+  "gameRulesEndOrMaxRounds": "{count, plural, zero{{condition}، أو بعد {count} جولة} one{{condition}، أو بعد جولة واحدة} two{{condition}، أو بعد جولتين} few{{condition}، أو بعد {count} جولات} many{{condition}، أو بعد {count} جولة} other{{condition}، أو بعد {count} جولة}}",
+  "boardRoundProgress": "الجولة {current} من {total}",
+  "gameTypeNameChouineurs": "Chouineurs",
+  "gameTypeNameChouineursSortKey": "Chouineurs"
 }

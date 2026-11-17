@@ -48,6 +48,8 @@ NUMERIC_BOUNDS: dict[str, dict[str, tuple[int, int]]] = {
         "card_color_value": (0, _COLOR_MAX),
         "player_dead_threshold": (-_SCORE_ABS_MAX, _SCORE_ABS_MAX),
         "game_over_threshold": (-_SCORE_ABS_MAX, _SCORE_ABS_MAX),
+        # Mirrors GameType.maxRoundsMin / maxRoundsMax in lib/models/game_type.dart.
+        "max_rounds": (1, 999),
     },
 }
 

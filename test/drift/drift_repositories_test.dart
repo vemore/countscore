@@ -242,10 +242,36 @@ void main() {
           'rules',
           'rules_slug',
           'keypad_shortcut',
+          'max_rounds',
         },
         reason: 'a new column must be carried by `copyWith` in '
             'game_types_screen.dart, or deliberately left out',
       );
+    });
+
+    test('a round limit makes the round trip through create and update, '
+        'and clearMaxRounds writes it back to null', () async {
+      final id = await gameTypeRepo.create(GameType(
+        name: 'Maison',
+        iconCodePoint: 0,
+        cardColorValue: 0,
+        isLowestScoreWins: false,
+        maxRounds: 10,
+      ));
+      final created = (await gameTypeRepo.getById(id))!;
+      expect(created.maxRounds, 10);
+
+      await gameTypeRepo.update(created.copyWith(maxRounds: 4));
+      expect((await gameTypeRepo.getById(id))!.maxRounds, 4);
+
+      // Another edit keeps it: `copyWith` carries the column.
+      await gameTypeRepo.update(
+          (await gameTypeRepo.getById(id))!.copyWith(name: 'Maison 2'));
+      expect((await gameTypeRepo.getById(id))!.maxRounds, 4);
+
+      await gameTypeRepo.update(
+          (await gameTypeRepo.getById(id))!.copyWith(clearMaxRounds: true));
+      expect((await gameTypeRepo.getById(id))!.maxRounds, isNull);
     });
 
     test('a keypad shortcut makes the round trip through create and update',

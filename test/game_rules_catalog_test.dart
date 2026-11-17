@@ -59,6 +59,8 @@ void main() {
       'canasta': ['5000', '500', '300'],
       'wizard': ['60', '20'],
       'triomino': ['56', '40', '50', '25'],
+      // Schema v22: 4 rounds of 7 tricks, 5 bet cards, 1 point per card.
+      'chouineurs': ['4', '7', '5', '1'],
     };
     for (final locale in GameRulesCatalog.locales) {
       final sections = GameRulesCatalog.parse(read(locale));
@@ -75,9 +77,9 @@ void main() {
     }
   });
 
-  test('the catalogue covers the 21 rulesets the seed names', () {
-    expect(GameRulesCatalog.slugs, hasLength(21));
-    expect(GameRulesCatalog.slugs.toSet(), hasLength(21));
+  test('the catalogue covers the 22 rulesets the seed names', () {
+    expect(GameRulesCatalog.slugs, hasLength(22));
+    expect(GameRulesCatalog.slugs.toSet(), hasLength(22));
   });
 
   test('every locale says the game ends when a total reaches the threshold',
@@ -102,6 +104,25 @@ void main() {
     for (final slug in ['belote', 'tarot', 'bridge', 'wizard']) {
       expect(sections[slug], contains('吃墩类纸牌游戏'),
           reason: 'zh/$slug no longer introduces itself as a trick-taking game');
+    }
+  });
+
+  test('every locale ships a Chouineurs section with the four headings of '
+      'the French master', () {
+    // Mise en place · Déroulement · Comptage · Fin de la partie, in each
+    // locale's own words — the headings its Qwirkle section uses too.
+    for (final locale in GameRulesCatalog.locales) {
+      final sections = GameRulesCatalog.parse(read(locale));
+      final chouineurs = sections['chouineurs'];
+      expect(chouineurs, isNotNull, reason: '$locale has no chouineurs section');
+      List<String> headings(String body) => [
+            for (final line in body.split('\n'))
+              if (line.startsWith('## ')) line,
+          ];
+      expect(headings(chouineurs!), headings(sections['qwirkle']!),
+          reason: '$locale/chouineurs does not use the usual four headings');
+      expect(chouineurs, contains('Pari'),
+          reason: '$locale/chouineurs lost the name of the bet cards');
     }
   });
 

@@ -283,6 +283,7 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
       TextEditingController();
   final TextEditingController _gameOverThresholdController =
       TextEditingController();
+  final TextEditingController _maxRoundsController = TextEditingController();
   final TextEditingController _shortcutAmountController =
       TextEditingController();
   final TextEditingController _shortcutLabelController =
@@ -299,6 +300,7 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
   String? _shortcutError;
   String? _playerDeadError;
   String? _gameOverError;
+  String? _maxRoundsError;
   bool _saving = false;
   bool _nameSeeded = false;
 
@@ -313,6 +315,7 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
         existing?.playerDeadThreshold?.toString() ?? '';
     _gameOverThresholdController.text =
         existing?.gameOverThreshold?.toString() ?? '';
+    _maxRoundsController.text = existing?.maxRounds?.toString() ?? '';
     _icon = existing?.icon ?? Icons.sports_esports;
     _colour = existing?.cardColor ?? kGameTypePalette.first;
     _isLowestScoreWins = existing?.isLowestScoreWins ?? false;
@@ -343,6 +346,7 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
     _nameController.dispose();
     _playerDeadThresholdController.dispose();
     _gameOverThresholdController.dispose();
+    _maxRoundsController.dispose();
     _shortcutAmountController.dispose();
     _shortcutLabelController.dispose();
     super.dispose();
@@ -368,6 +372,26 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
     if (parsed == null) return (value: null, error: l10n.thresholdIsRequired);
     if (parsed > kMaxGameTypeThreshold) {
       return (value: null, error: l10n.thresholdTooLarge(kMaxGameTypeThreshold));
+    }
+    return (value: parsed, error: null);
+  }
+
+  /// The round limit in the field — null when it is empty, which is no limit —
+  /// and the error to show under it. The bounds are the model's own
+  /// ([GameType.maxRoundsMin], [GameType.maxRoundsMax]), the ones the server
+  /// checks too.
+  ({int? value, String? error}) _maxRounds(AppLocalizations l10n) {
+    final text = _maxRoundsController.text.trim();
+    if (text.isEmpty) return (value: null, error: null);
+    final parsed = int.tryParse(text);
+    if (parsed == null ||
+        parsed < GameType.maxRoundsMin ||
+        parsed > GameType.maxRoundsMax) {
+      return (
+        value: null,
+        error: l10n.gameTypeMaxRoundsRange(
+            GameType.maxRoundsMin, GameType.maxRoundsMax),
+      );
     }
     return (value: parsed, error: null);
   }
@@ -406,16 +430,19 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
     final gameOver =
         _threshold(l10n, _gameOverType != null, _gameOverThresholdController.text);
     final shortcut = _shortcut(l10n);
+    final maxRounds = _maxRounds(l10n);
 
     setState(() {
       _nameError = name.isEmpty ? l10n.nameIsRequired : null;
       _playerDeadError = playerDead.error;
       _gameOverError = gameOver.error;
+      _maxRoundsError = maxRounds.error;
       _shortcutError = shortcut.error;
     });
     if (_nameError != null ||
         _playerDeadError != null ||
         _gameOverError != null ||
+        _maxRoundsError != null ||
         _shortcutError != null) {
       return;
     }
@@ -434,6 +461,7 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
         gameOverConditionType: _gameOverType,
         gameOverThreshold: gameOver.value,
         keypadShortcut: shortcut.value,
+        maxRounds: maxRounds.value,
       );
       setState(() => _saving = true);
       await provider.createGameType(created);
@@ -475,12 +503,15 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
       clearGameOverCondition: _gameOverType == null,
       keypadShortcut: shortcut.value,
       clearKeypadShortcut: shortcut.value == null,
+      maxRounds: maxRounds.value,
+      clearMaxRounds: maxRounds.value == null,
     );
     final conditionsChanged =
         saved.playerDeadConditionType != existing.playerDeadConditionType ||
             saved.playerDeadThreshold != existing.playerDeadThreshold ||
             saved.gameOverConditionType != existing.gameOverConditionType ||
-            saved.gameOverThreshold != existing.gameOverThreshold;
+            saved.gameOverThreshold != existing.gameOverThreshold ||
+            saved.maxRounds != existing.maxRounds;
 
     setState(() => _saving = true);
     await provider.updateGameType(saved);
@@ -724,6 +755,17 @@ class _GameTypeDialogState extends State<_GameTypeDialog> {
                 errorText: _gameOverError,
               ),
             ],
+            // Always offered, whatever the condition above: the two combine
+            // by OR (`GameType.isGameOver`), "first to 500, or 10 rounds".
+            const SizedBox(height: 12),
+            _ThresholdField(
+              fieldKey: const Key('game_type_max_rounds'),
+              controller: _maxRoundsController,
+              label: l10n.gameTypeMaxRounds,
+              helperText: l10n.gameTypeMaxRoundsHelper,
+              errorText: _maxRoundsError,
+              maxDigits: 3,
+            ),
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 8),
@@ -841,6 +883,8 @@ class _ThresholdField extends StatelessWidget {
     required this.controller,
     required this.label,
     this.errorText,
+    this.helperText,
+    this.maxDigits = 7,
   });
 
   /// On the `TextField` itself, so a test can type into it.
@@ -848,6 +892,10 @@ class _ThresholdField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final String? errorText;
+  final String? helperText;
+
+  /// 7 for a threshold (`kMaxGameTypeThreshold`), 3 for a round limit.
+  final int maxDigits;
 
   @override
   Widget build(BuildContext context) {
@@ -858,11 +906,12 @@ class _ThresholdField extends StatelessWidget {
         labelText: label,
         border: const OutlineInputBorder(),
         errorText: errorText,
+        helperText: helperText,
       ),
       keyboardType: TextInputType.number,
       inputFormatters: [
         FilteringTextInputFormatter.digitsOnly, // no letters, no minus sign
-        LengthLimitingTextInputFormatter(7), // kMaxGameTypeThreshold is 7 digits
+        LengthLimitingTextInputFormatter(maxDigits),
       ],
     );
   }

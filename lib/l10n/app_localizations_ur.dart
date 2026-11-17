@@ -1717,4 +1717,48 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get joinLinkContinueHere => 'براؤزر میں جاری رکھیں';
+
+  @override
+  String get gameTypeMaxRounds => 'زیادہ سے زیادہ راؤنڈ';
+
+  @override
+  String get gameTypeMaxRoundsHelper => 'کوئی حد نہ ہو تو خالی چھوڑیں';
+
+  @override
+  String gameTypeMaxRoundsRange(int min, int max) {
+    return '$min اور $max راؤنڈ کے درمیان';
+  }
+
+  @override
+  String gameRulesEndMaxRounds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'گیم $count راؤنڈز کے بعد ختم ہوتی ہے',
+      one: 'گیم $count راؤنڈ کے بعد ختم ہوتی ہے',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String gameRulesEndOrMaxRounds(String condition, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$condition، یا $count راؤنڈز کے بعد',
+      one: '$condition، یا $count راؤنڈ کے بعد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String boardRoundProgress(int current, int total) {
+    return 'راؤنڈ $current/$total';
+  }
+
+  @override
+  String get gameTypeNameChouineurs => 'Chouineurs';
+
+  @override
+  String get gameTypeNameChouineursSortKey => 'Chouineurs';
 }

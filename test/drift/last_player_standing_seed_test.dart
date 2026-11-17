@@ -29,8 +29,8 @@ void main() {
 
     // A four-player ZapZap: three past 100 ends it, two does not.
     final zapzap = types.singleWhere((t) => t.builtinKey == 'zapzap');
-    expect(zapzap.isGameOver([101, 130, 90, 40]), isFalse);
-    expect(zapzap.isGameOver([101, 130, 120, 40]), isTrue);
+    expect(zapzap.isGameOver([101, 130, 90, 40], roundCount: 0), isFalse);
+    expect(zapzap.isGameOver([101, 130, 120, 40], roundCount: 0), isTrue);
   });
 
   test('the types with no automatic end are seeded without one', () async {

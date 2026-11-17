@@ -2,18 +2,18 @@
 
 > Scope: the mobile database — tables, the global-player model, the migration chain.
 > Related: [[DataLayer]] · [[Sync]] · [[MobileApp]] · [[Testing]]
-> Updated: 2026-09-26
+> Updated: 2026-11-17
 
 This page was `SchemaV9`, then `SchemaV10` (2026-09-13); each rename after a version
 bump left the name a step behind (v11 the same day, v12–v14 on 2026-09-16, v15 on
 2026-09-18, v16 on 2026-09-19, v17–v18 on 2026-09-20, v19 on 2026-09-22, v20–v21 on
-2026-09-24). Renamed to `Schema` (2026-09-26, `feat/wiki-lint`) so the name never
+2026-09-24, v22 on 2026-11-17). Renamed to `Schema` (2026-09-26, `feat/wiki-lint`) so the name never
 drifts from the version again; every version to date is still described here.
 
 ## Facts
 
-Schema version **21**, declared in two places that must stay in sync:
-`lib/services/drift/database.dart` (`schemaVersion => 21`) and
+Schema version **22**, declared in two places that must stay in sync:
+`lib/services/drift/database.dart` (`schemaVersion => 22`) and
 `DatabaseService.schemaVersion` in `lib/services/database_service.dart`, which both
 `openDatabase` calls use.
 
@@ -21,7 +21,7 @@ Schema version **21**, declared in two places that must stay in sync:
 
 | Table | Role |
 |---|---|
-| `game_types` | Game types. uuid + sync columns, `rules` and `rules_slug` since v13 (re-derived from `builtin_key` by v18 and v19), `builtin_key` since v14 (given back by v19 to the rows that missed it), one live row per `builtin_key` since v15, `keypad_shortcut` since v21. `isDefault` is historical only — see below. |
+| `game_types` | Game types. uuid + sync columns, `rules` and `rules_slug` since v13 (re-derived from `builtin_key` by v18 and v19), `builtin_key` since v14 (given back by v19 to the rows that missed it), one live row per `builtin_key` since v15, `keypad_shortcut` since v21, `max_rounds` since v22. `isDefault` is historical only — see below. |
 | `games` | Games. uuid, `group_id`, sync columns, `finishedAt` since v12. |
 | `players` | **Global identity**: `(id, name, colorValue, uuid, group_id, …)`. UNIQUE on `name COLLATE NOCASE` where `group_id IS NULL`. |
 | `game_players` | **Per-game membership**: `(id, gameId, player_id FK→players, name, orderIndex, colorValue, uuid, …)`. UNIQUE `(gameId, player_id)`. |
@@ -45,7 +45,7 @@ The device token is **not** in the database: it belongs in platform secure stora
 
 Both TEXT, nullable. `rules` is free Markdown the user wrote; NULL means the app shows the
 ruleset it ships for `rules_slug` instead, in the current locale. `rules_slug` names one of
-the 21 rulesets in `assets/rules/` — every built-in type but `Autre`, which has none — and exists as its own column
+the 22 rulesets in `assets/rules/` — every built-in type but `Autre`, which has none — and exists as its own column
 because `name` is user-editable — a renamed type must not lose its rules.
 
 Both push as `rules` and `rules_slug`, columns the server gained in
@@ -93,6 +93,40 @@ read is omitted from the push, and on the pull it leaves the local value alone. 
 Tests: `test/migration_v20_to_v21_test.dart`, `test/drift/web_upgrade_test.dart`,
 `test/models/keypad_shortcut_test.dart`.
 
+### `game_types.max_rounds` (since v22)
+
+INTEGER, nullable: the number of rounds after which a game of the type is over, NULL for no
+limit. `GameType.maxRounds`, bounded 1..999 (`GameType.maxRoundsMin` / `maxRoundsMax`, the
+editor's and the server's bounds). It is combined with the total condition by **OR** in
+`GameType.isGameOver` — not a fifth `GameOverConditionType`, since a type may need both
+("first to 500, or 10 rounds at most") and the dropdown holds one.
+
+`applyV22` in `lib/services/schema_steps.dart`, run by both engines on upgrade:
+
+1. adds the column; the existing built-ins are **not** back-filled — none ends on a round
+   count;
+2. **only in the run that adds the column**, fills the live rows of `maxRoundsSeeds()`
+   (`chouineurs`: 4) where it is NULL. Two paths bring a Chouineurs row there before the
+   column exists: the v14 seed of the current catalogue on a device coming from before v14
+   (`_gameTypeRow` and `applyV14` drop a column the table does not have yet), and a v21
+   device that pulled Chouineurs from a newer member. A replay finds the column and skips
+   the fill, so a limit the user cleared stays cleared;
+3. inserts **Chouineurs** (`GameType.chouineurs()`) when no row holds the key `chouineurs` —
+   a tombstone included, so a deleted one is not resurrected — and no live row has its name,
+   ignoring ASCII case: the `applyV14` step-3 guard, so a user's own "Chouineurs" is kept
+   alone and keyless.
+
+That holds whatever version a device upgrades from: `applyV19` never claims a keyless row
+for a key in `builtinKeysAfterV19` (`chouineurs`), so a user's "Chouineurs" on a v18 device
+is not keyed by v19 and then given 4 rounds by v22 while the same type stays the user's on a
+v21 device. (`test/migration_v21_to_v22_test.dart`, "a user \"Chouineurs\" from before v19".)
+
+Capture is suppressed around the step and `updated_at` does not move, as in v21: a
+group-linked Chouineurs is not pushed with a 4 over whatever the group chose. Fresh installs
+get it from the seed through `toMap()`. Pushed as `max_rounds`, a column the server gained in
+`0007_game_type_max_rounds`; see [[Sync]]. Tests: `test/migration_v21_to_v22_test.dart`,
+`test/drift/web_upgrade_test.dart`, `test/migration_v2_to_v14_test.dart`.
+
 ### `games.finishedAt` (since v12)
 
 ISO-8601 TEXT, nullable; null means the game is still open. Set when the user declares a
@@ -109,7 +143,7 @@ showing it as finished forever. `lib/services/sync/sync_store.dart`, `case 'game
 
 ### `game_types.builtin_key` (since v14)
 
-TEXT, nullable. The stable identity of one of the 22 built-in types — `'zapzap'`,
+TEXT, nullable. The stable identity of one of the 23 built-in types — `'zapzap'`,
 `'other'`, `'yahtzee'`, … — and null for a type the user created or renamed.
 
 **It carries the displayed name as well.** `lib/utils/game_type_name.dart` switches on it
@@ -260,6 +294,7 @@ pointing at it ([[Sync]]).
 | **v19** | **`builtin_key` given back to the live rows that never got it**, then `applyV16` replayed so they get their ruleset. `applyV19` in `lib/services/schema_steps.dart`, run by both engines. A keyless live row takes a key when its stored name is — ignoring ASCII case — a name of exactly one built-in type **with a ruleset** in any of the ten locales, its seed name or its pre-v14 seed name (`builtinNamesByKey`), **and no live row holds that key**; one row per key, the oldest across all of that key's names. `other` is excluded: it has no ruleset, and "Other" is what anyone calls a type of their own. `isDefault` and the scoring columns are not read, and only `builtin_key` and `rules_slug` are written. It repairs the seeded row the v14 back-fill skipped because the old editor had cleared `isDefault` (the owner's Skyjo), and a user's own row older than the built-in it names, which v14 declined to insert beside it (the owner's "6 qui prend"). A renamed built-in, and a homonym of a built-in that is still there, stay keyless. No column change; nothing is inserted. `test/migration_v18_to_v19_test.dart`. |
 | **v20** | **`lastPlayerOver` on the last-survivor built-ins that have no end** — ZapZap, Rami and 6 qui prend (the seeds with `lastPlayerOver`, `lastPlayerStandingSeeds`), which feat/last-player-standing seeded on a new database only. `applyV20` in `lib/services/schema_steps.dart`, run by both engines on upgrade. A live row keyed on one of the three, with `gameOverConditionType IS NULL` and an `over` elimination, gets `lastPlayerOver` at its own `playerDeadThreshold` (the seeded one if NULL: 100, 100, 65) and a new `updated_at`. A condition the user set, a deleted row, a row with no elimination and an `under` elimination are left alone. The editor's "None" (*Aucune*), a NULL end chosen on purpose, cannot be told from one never set, so it is overwritten. Finished games of these types are **re-ranked**: `GameStanding.ranksByEliminationOrder` is true for `lastPlayerOver`, so their final standings and the statistics' places follow the elimination order, and the winner can change when everyone went out (accepted by the user, 2026-09-24). The `UPDATE` fires the v11 `game_types` capture trigger, so a row linked into a group is pushed on the next sync; the server needs no change. No column change; nothing is inserted. `test/migration_v19_to_v20_test.dart`. |
 | **v21** | **`game_types.keypad_shortcut`** (TEXT, nullable): the score keypad's per-type key, a value or an operation, as compact JSON. `applyV21` in `lib/services/schema_steps.dart`, run by both engines on upgrade: adds the column, then fills the live rows keyed `zapzap`, `skyjo`, `belote`, `scrabble`, `rami` from `keypadShortcutSeeds()` where it is NULL, with capture suppressed so nothing is pushed. Additive; `UPDATE`s only, nothing inserted, deleted or renamed rows untouched. Pushed as `keypad_shortcut` by later edits; the server gained it in `0006_game_type_keypad_shortcut`. `test/migration_v20_to_v21_test.dart`. |
+| **v22** | **`game_types.max_rounds`** (INTEGER, nullable): the game is over after this many rounds, OR-ed with the total condition. `applyV22` in `lib/services/schema_steps.dart`, run by both engines on upgrade: adds the column, fills `maxRoundsSeeds()` (Chouineurs, 4) only in the run that adds it, and inserts the built-in **Chouineurs** when no row holds its key and no live row its name. Capture suppressed, `updated_at` untouched. No back-fill of the other built-ins. The server gained the column in `0007_game_type_max_rounds`. `test/migration_v21_to_v22_test.dart`. |
 | v10 | **Sync bookkeeping**: `group_links`, `entity_versions`, `sync_inbox`; `outbox.rejected_at` / `reject_reason`; `sync_state.device_id` / `group_name`. Additive only — `_createSyncV10Tables` is the fresh-install and the upgrade path at once. |
 
 ### The v9 migration in detail
@@ -291,6 +326,14 @@ Added in `b340c98`. Some installs recorded version 8 while still carrying pre-v6
 repairs the shape before the rest of the chain runs.
 
 ## Decisions & History
+
+- **A round limit is its own column, OR-ed with the total condition (2026-11-17, `feat/max-rounds-chouineurs`).**
+  A fifth `GameOverConditionType` ("after N rounds") was the alternative, rejected because
+  a type may need both rules and the editor's dropdown holds one. The step also inserts
+  Chouineurs, the first built-in that ends on it, under the v14 guards (key, then live
+  name), and fills its limit only in the run that adds the column: the v14 seed of the
+  current catalogue can reach a device before the column does, and a replay must not undo a
+  limit the user cleared. Deliberately not pushed, for the reason the v21 fill is not.
 
 - **Renamed `SchemaV10` → `Schema` (2026-09-26, `feat/wiki-lint`).** The page had already
   drifted from its name once (describing v21 while called `SchemaV10`) and every version

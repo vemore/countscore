@@ -29,6 +29,8 @@ class GameRules:
     player_dead_threshold: int | None = None
     game_over_condition_type: str | None = None
     game_over_threshold: int | None = None
+    # The game is over after this many rounds, whatever the totals (schema v22).
+    max_rounds: int | None = None
 
 
 _PLAYER_DEAD_CONDITIONS = ("over", "under")
@@ -59,6 +61,13 @@ def normalise_game_over_condition(value: object) -> str | None:
     return normalise_condition(value, _GAME_OVER_CONDITIONS)
 
 
+def normalise_max_rounds(value: object) -> int | None:
+    """A round limit the app could have set (1..999), or None for anything else."""
+    if isinstance(value, bool) or not isinstance(value, int):
+        return None
+    return value if 1 <= value <= 999 else None
+
+
 def normalise_game_type(name: object) -> str:
     """Fold a game-type name to a registry key: ``Président`` and ``PRESIDENT `` match."""
     if not isinstance(name, str):
@@ -68,7 +77,7 @@ def normalise_game_type(name: object) -> str:
     return "".join(c for c in stripped.casefold() if c.isalnum())
 
 
-# The nine seeded types that have a scoring shape worth describing. "Autre" (Other) is
+# The seeded types that have a scoring shape worth describing. "Autre" (Other) is
 # deliberately absent: it is the catch-all, and it gets the generic block.
 # lib/models/game_type.dart defaultGameTypes().
 KNOWN_GAME_TYPES: dict[str, str] = {
@@ -145,6 +154,16 @@ KNOWN_GAME_TYPES: dict[str, str] = {
         "hand when someone goes out. A 0 means going out first, and a large round means "
         "being caught with high cards or a melded hand that never came together."
     ),
+    "chouineurs": (
+        "A trick-taking game played in exactly four rounds of seven tricks. Before each "
+        "round every player secretly picks a bet card listing a few trick counts, each "
+        "worth its own points: hitting one of them exactly scores those points and uses "
+        "the card up, missing scores nothing and the card comes back. The player of the "
+        "lowest card of a trick may take a 1-point card, so small steady gains come from "
+        "losing tricks on purpose. Points are gains, highest total after round four wins; "
+        "a tie goes to the best last round. A big round is a risky bet that came in, a "
+        "zero is a bet that missed, and with only four rounds every miss weighs heavily."
+    ),
 }
 
 _GENERIC_BLOCK = (
@@ -179,8 +198,23 @@ def _configuration(rules: GameRules) -> list[str]:
     if dead is not None and rules.player_dead_threshold is not None:
         lines.append(dead.format(threshold=rules.player_dead_threshold))
     over = _GAME_OVER.get(rules.game_over_condition_type or "")
-    if over is not None and rules.game_over_threshold is not None:
-        lines.append(over.format(threshold=rules.game_over_threshold))
+    over_line = (
+        over.format(threshold=rules.game_over_threshold)
+        if over is not None and rules.game_over_threshold is not None
+        else None
+    )
+    by_total = over_line is not None
+    if over_line is not None:
+        lines.append(over_line)
+    if rules.max_rounds is not None:
+        rounds = "1 round" if rules.max_rounds == 1 else f"{rules.max_rounds} rounds"
+        if by_total:
+            lines.append(
+                f"Whatever the totals, the game ends after {rounds} at most, if the rule "
+                "above has not ended it first."
+            )
+        else:
+            lines.append(f"The game is played over {rounds}: it ends after the last one.")
     return lines
 
 

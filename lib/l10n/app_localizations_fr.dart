@@ -1720,4 +1720,48 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get joinLinkContinueHere => 'Continuer dans le navigateur';
+
+  @override
+  String get gameTypeMaxRounds => 'Nombre maximum de tours';
+
+  @override
+  String get gameTypeMaxRoundsHelper => 'Laisser vide pour ne pas limiter';
+
+  @override
+  String gameTypeMaxRoundsRange(int min, int max) {
+    return 'Entre $min et $max tours';
+  }
+
+  @override
+  String gameRulesEndMaxRounds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'La partie s\'arrête après $count tours',
+      one: 'La partie s\'arrête après $count tour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String gameRulesEndOrMaxRounds(String condition, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$condition, ou après $count tours',
+      one: '$condition, ou après $count tour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String boardRoundProgress(int current, int total) {
+    return 'Tour $current/$total';
+  }
+
+  @override
+  String get gameTypeNameChouineurs => 'Chouineurs';
+
+  @override
+  String get gameTypeNameChouineursSortKey => 'Chouineurs';
 }

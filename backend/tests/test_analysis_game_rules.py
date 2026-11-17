@@ -10,6 +10,7 @@ from app.services.analysis.game_rules import (
     describe_rules,
     normalise_game_over_condition,
     normalise_game_type,
+    normalise_max_rounds,
     normalise_player_dead_condition,
 )
 
@@ -143,3 +144,41 @@ def test_last_player_over_renders_as_last_player_standing():
     )
     assert "- The game ends when every player but one is above 100 points." in block.splitlines()
     assert "every player's total" not in block
+
+
+def test_chouineurs_has_a_block_and_says_four_rounds_highest_wins():
+    """A built-in since schema v22: its name folds to the registry key."""
+    assert normalise_game_type("Chouineurs") == "chouineurs"
+    block = describe_rules("Chouineurs", GameRules(is_lowest_score_wins=False, max_rounds=4))
+    assert KNOWN_GAME_TYPES["chouineurs"] in block
+    assert "four rounds" in KNOWN_GAME_TYPES["chouineurs"]
+    assert "The game is played over 4 rounds: it ends after the last one." in block
+    assert "Points are gains: the highest total wins." in block
+
+
+def test_a_round_limit_joins_a_total_condition():
+    """Either ends the game, as GameType.isGameOver reads them."""
+    block = describe_rules(
+        "Mölkky",
+        GameRules(
+            is_lowest_score_wins=False,
+            game_over_condition_type="firstPlayerOver",
+            game_over_threshold=500,
+            max_rounds=1,
+        ),
+    )
+    assert "as soon as one player's total reaches 500" in block
+    assert "the game ends after 1 round at most, if the rule above has not ended it first" in block
+
+
+def test_no_round_limit_adds_no_line():
+    block = describe_rules("Mölkky", GameRules(is_lowest_score_wins=False))
+    assert "round" not in block.split("override anything above")[1]
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [(4, 4), (1, 1), (999, 999), (0, None), (1000, None), ("4", None), (True, None), (None, None)],
+)
+def test_max_rounds_outside_the_app_bounds_means_absent(value, expected):
+    assert normalise_max_rounds(value) == expected

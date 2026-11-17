@@ -16,6 +16,7 @@ from .game_rules import (
     GameRules,
     describe_rules,
     normalise_game_over_condition,
+    normalise_max_rounds,
     normalise_player_dead_condition,
 )
 from .languages import resolve_language
@@ -55,6 +56,7 @@ def _rules_from_payload(payload: dict[str, Any]) -> GameRules:
         player_dead_threshold=raw.get("player_dead_threshold"),
         game_over_condition_type=normalise_game_over_condition(raw.get("game_over_condition_type")),
         game_over_threshold=raw.get("game_over_threshold"),
+        max_rounds=normalise_max_rounds(raw.get("max_rounds")),
     )
 
 

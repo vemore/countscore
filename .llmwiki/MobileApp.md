@@ -2,7 +2,7 @@
 
 > Scope: the Flutter app's own structure — entry point, state, screens, models.
 > Related: [[DataLayer]] · [[Schema]] · [[I18n]] · [[Web]] · [[Testing]]
-> Updated: 2026-09-26
+> Updated: 2026-11-17
 
 ## Facts
 
@@ -39,7 +39,7 @@ whether the connected features exist; the third starts the review prompt's clock
 | Provider | Responsibility |
 |---|---|
 | `game_provider.dart` | The substantial one. Repositories are constructor-injectable, defaulting to the six Drift implementations over `AppDatabase.instance`. Owns `_games`, `_currentGame`, `_currentPlayers`, `_currentRounds`, `_scores` (keyed `"playerId_roundId"`) and `_roundCounts` (game id → rounds played, one grouped query in `loadGames`, kept in step by `addRound`/`deleteRound`). Game/round/score CRUD plus stats. |
-| `game_type_provider.dart` | Game-type list CRUD, `getGameTypeById`. The 22 built-in types are rows like any other; their *displayed* name comes from `lib/utils/game_type_name.dart`, not from the row. |
+| `game_type_provider.dart` | Game-type list CRUD, `getGameTypeById`. The 23 built-in types are rows like any other; their *displayed* name comes from `lib/utils/game_type_name.dart`, not from the row. |
 | `settings_provider.dart` | Wakelock toggle, *Game sounds* (key `gameSounds`, off by default, the one `GameSounds` reads) and the board's layout, `BoardView` (`lanes` or `rows`, key `boardView`, app-wide) — all SharedPreferences-backed, read by `ready` — and DB export/import. The **only** caller of `DatabaseService` for I/O. Exposes `supportsDbExportImport => !kIsWeb`. |
 | `theme_provider.dart` | `ThemeMode` only, persisted to SharedPreferences under `themeMode` as `ThemeMode.name`. `load()` is called from `main()` before `runApp`. |
 | `group_provider.dart` | Group membership and the sync loop — create/join/leave/rotate, the device list and `revokeDevice`, `shareGame`, `syncNow`, `SyncStatus`, and a `SyncEvent` stream shown as snackbars by `_SyncEventListener` in `main.dart`. A `ChangeNotifierProxyProvider` over `BackendProvider`: runs only with a URL **and** a device token. Its stored membership is read by the first `updateBackend`, which the proxy makes on creation; `loaded` completes then, and until it does `isJoined` reads false. Calls `GameProvider.refreshFromSync` after remote changes. See [[Sync]]. |
@@ -83,6 +83,17 @@ flagged under the switch without blocking the save. A deletion asks
 ICU plural rather than the repository's English exception. After a save that changed a
 condition on a type that has rules, the screen *offers* the rules editor — nothing is
 rewritten.
+
+Under the game-over condition, whatever it is, sits **Maximum rounds**
+(`Key('game_type_max_rounds')`, `_ThresholdField` with a helper "Leave empty for no
+limit" and three digits): empty saves `clearMaxRounds`, a number from 1 to 999
+(`GameType.maxRoundsMin` / `maxRoundsMax`) saves `GameType.maxRounds`, anything else is
+refused under the field (`gameTypeMaxRoundsRange`). Changing it counts as a changed
+condition, so it offers the rules editor too. The rules screen's *In CountScore* summary and
+the create-game rule line read the end rule through one function, `gameOverRuleLine`
+(`lib/utils/game_over_rule.dart`): the total condition alone, "The game ends after 4
+rounds" alone (`gameRulesEndMaxRounds`, ICU plural), or both joined
+(`gameRulesEndOrMaxRounds`).
 
 The form's last section is the **keypad shortcut** (`Key('game_type_shortcut_kind')`): *None*,
 a value, a multiplication (positive scores only, which the item says), or an addition; then
@@ -495,7 +506,9 @@ edits stay open, to correct a mistake.
 
 `_GameBoardScreenState._maybeShowGameOver` finishes the game and opens its standings after
 a score edit, after a round is added and after one is deleted — every mutation that can move
-a total onto or past the game type's threshold — whenever the provider brings the open game new
+a total onto or past the game type's threshold, or the round count onto its limit
+(`_checkGameOverCondition` passes `currentRounds.length` to `GameType.isGameOver`, and tests
+the round limit before it would return false for a type with no threshold) — whenever the provider brings the open game new
 totals or a new finished state (`_checkGameOverOnTotals`, a `GameProvider` listener: a group
 sync pull reloads the game through `refreshFromSync`, so a round typed on another device ends
 the game on this board too), and once on the board's first build. `_gameOverDismissed` keeps it to one crossing and re-arms as soon as
@@ -510,6 +523,13 @@ by hand — is recorded as answered, in `_gameOverDismissed` and in `GameOverDis
 "Continue playing" is: a reopen, typed here or pulled from a device that chose to keep
 playing, is never undone by this board re-ending the game on the next round. A crossing
 this board did not end is not its to re-end.
+
+For a type with `maxRounds`, the app bar shows where the game stands against it beside
+the game's name (`Key('board_round_progress')`, `boardRoundProgress`: "Round 3 of 4",
+"Tour 3/4"): the next round until the limit is reached, then the last one played — "4 of 4"
+on a finished game, "5 of 4" on one the table chose to continue. A type without a limit shows
+nothing. `_totalsKey` includes the round count, so a pulled round of zeros still checks the
+limit.
 
 While a score keypad sheet is open (`_keypadOpen`) the rule finishes the game without
 pushing the end screen over the sheet; it opens when the sheet closes
@@ -574,7 +594,7 @@ the home cards — reads it through `GameStanding.ranks` and `rankedPlayers`.
   **finished** game of a type that both puts a player out on a threshold
   (`playerDeadConditionType` + `playerDeadThreshold`) and ends on the last player standing
   (`gameOverConditionType` is `lastPlayerOver` **or** `lastPlayerUnder`, the two conditions
-  `GameType.isGameOver` already treats as one shape) follows it. Of the twenty-two seeded
+  `GameType.isGameOver` already treats as one shape) follows it. Of the twenty-three seeded
   types only `zapzap`, `rami` and `six_nimmt` do — all three `lastPlayerOver`; a
   `lastPlayerUnder` type can only come from the game-type editor.
   `GameStanding.ranksByEliminationOrder` is the one test.
@@ -712,6 +732,13 @@ the reason. That warning *is* the tree-shaking constraint showing up in the anal
 not "fix" it by hardcoding a codepoint.
 
 ## Decisions & History
+
+- **A round limit beside the total condition, and its progress on the board (2026-11-17,
+  `feat/max-rounds-chouineurs`).** `GameType.isGameOver(totals, roundCount:)` returns true
+  once `roundCount >= maxRounds`, else applies the total condition: either alone ends the
+  game. The user decided the board shows the progress ("Round 3 of 4") for a type with a
+  limit, and nothing for one without — in the app bar beside the name, where the finished
+  chip already sits. Chouineurs (4 rounds, highest wins) is the first built-in that uses it.
 
 - **The keypad shortcut is per game type, a closed value, and a column (2026-09-24,
   `feat/keypad-game-shortcuts`).** The ZapZap key was a `builtinKey` test in the board; the

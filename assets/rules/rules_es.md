@@ -692,3 +692,36 @@ La ronda termina cuando un jugador ha colocado su última ficha: marca **25 punt
 ## Fin de la partida
 
 Se encadenan las rondas hasta el total acordado, a menudo 400 puntos, y el puntaje más alto gana. Fija este umbral en el tipo de juego.
+
+<!--@chouineurs-->
+Juego de bazas para 3 a 5 jugadores, en **4 rondas de 7 bazas**. Cada carta tiene dos caras,
+y cada jugador intenta ganar exactamente el número de bazas por el que ha apostado.
+
+## Preparación
+
+En cada ronda, cada jugador recibe **7 cartas de doble cara** y elige el lado que usará
+durante toda la ronda. Después coloca boca abajo una de sus **5 cartas de Apuesta** (*Pari*):
+cada una indica varios números de bazas, cada uno con su propio valor en puntos.
+
+## Desarrollo
+
+Hay que servir el palo pedido si se puede. El amarillo es triunfo; los dragones negros son
+supertriunfos y se pueden jugar en cualquier momento. Quien haya jugado **la carta más baja**
+de la baza *chouine* (se queja) —en caso de empate, todos ellos—: da la vuelta a una carta de
+su mano o toma de la reserva una carta que vale **1 punto**.
+
+## Conteo
+
+Al final de la ronda, cada uno revela su apuesta:
+- si el número de bazas ganadas figura en la carta, se anotan los puntos indicados y esa
+  carta de Apuesta sale del juego;
+- si no, se anota 0 y la carta vuelve a su dueño;
+- se suma **1 punto** por cada carta tomada al quejarse.
+
+Los puntos se acumulan de una ronda a otra.
+
+## Fin de la partida
+
+Tras la **4.ª ronda**, gana el total más alto. En caso de empate, gana quien más puntos haya
+hecho en la última ronda. CountScore muestra la pantalla final en cuanto se anota la cuarta
+ronda.
