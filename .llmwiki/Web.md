@@ -2,7 +2,7 @@
 
 > Scope: everything specific to the PWA build.
 > Related: [[DataLayer]] · [[MobileApp]] · [[Testing]] · [[LlmProviders]] · [[KnownLimits]]
-> Updated: 2026-10-04
+> Updated: 2026-11-17
 
 ## Facts
 
@@ -11,7 +11,7 @@
 `index.html` (the **stock Flutter template** — `$FLUTTER_BASE_HREF`, `flutter_bootstrap.js
 async`, no service-worker code — with real metadata: title and apple title "CountScore", a
 description, `<meta name="theme-color" content="#0E8F88">`) · `manifest.json` (CountScore,
-standalone, portrait-primary, `theme_color` `#0E8F88`, the light theme's brand teal
+standalone, no `orientation` — it rotates, see *Decisions* — `theme_color` `#0E8F88`, the light theme's brand teal
 `kBrandSeedLight`, `lib/utils/app_theme.dart:9`) · **`flutter_bootstrap.js`**, the stock
 loader template plus `fontFallbackBaseUrl` (below), without its `serviceWorkerSettings`, and
 with the registration of ours · **`service_worker.js`**, CountScore's service worker ("Offline
@@ -380,6 +380,12 @@ backend, whatever the app allows. `BackendProvider.check` accepts `http://` on a
 address for the Android case; on web that URL still only works from an http origin.
 
 ## Decisions & History
+
+- **The manifest stopped locking portrait (2026-11-17, `feat/landscape-layout`).** It asked
+  for `portrait-primary` while the Android app has never locked its orientation; with the
+  compact landscape layout ([[MobileApp]]) a phone on its side is a layout of its own, so
+  the user chose to let the installed PWA rotate too. Nothing else read the key: the service
+  worker precaches `manifest.json` like any other file, by its digest.
 
 - **`sqlite3.wasm` and `drift_worker.js` are tracked in git on purpose** (`8a13541`),
   1.1 MB and all. `dart run drift_dev make-web-worker` does not compile at the pinned

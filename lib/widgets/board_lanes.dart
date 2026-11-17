@@ -241,9 +241,15 @@ Widget? boardMark(
 /// from the header (avatar, name, total, place) down to the last round. The
 /// header and the cells of a lane are one column, so they cannot drift apart.
 class BoardLanes extends StatefulWidget {
-  const BoardLanes({super.key, required this.data});
+  const BoardLanes({super.key, required this.data, this.dense = false});
 
   final BoardData data;
+
+  /// The compact landscape layout (`isCompactLandscape`): a short header —
+  /// avatar and name on one line, the mark, total and place on the next —
+  /// and shorter rows, so a phone on its side shows several rounds rather
+  /// than one. False draws the portrait board, unchanged.
+  final bool dense;
 
   @override
   State<BoardLanes> createState() => _BoardLanesState();
@@ -283,6 +289,8 @@ class _BoardLanesState extends State<BoardLanes> {
   }
 
   static const double _rowHeight = 46;
+  static const double _denseRowHeight = 36;
+  static const double _denseHeaderHeight = 64;
   static const double _gap = 6;
   static const double _hPadding = 12;
 
@@ -290,7 +298,10 @@ class _BoardLanesState extends State<BoardLanes> {
   Widget build(BuildContext context) {
     final n = data.players.length;
     final compact = n >= kBoardCompactHeaderFrom;
-    final headerHeight = compact ? 176.0 : 156.0;
+    final dense = widget.dense;
+    final headerHeight =
+        dense ? _denseHeaderHeight : (compact ? 176.0 : 156.0);
+    final rowHeight = dense ? _denseRowHeight : _rowHeight;
 
     return LayoutBuilder(builder: (context, constraints) {
       final available =
@@ -313,8 +324,9 @@ class _BoardLanesState extends State<BoardLanes> {
               player: data.players[i],
               width: laneWidth,
               headerHeight: headerHeight,
-              rowHeight: _rowHeight,
+              rowHeight: rowHeight,
               compact: compact,
+              dense: dense,
             ),
           ],
         ],
@@ -346,14 +358,16 @@ class _BoardLanesState extends State<BoardLanes> {
 
       final grid = SingleChildScrollView(
         key: const Key('board_score_grid'),
-        padding: const EdgeInsets.fromLTRB(_hPadding, 8, _hPadding, 16),
+        padding: dense
+            ? const EdgeInsets.fromLTRB(_hPadding, 4, _hPadding, 8)
+            : const EdgeInsets.fromLTRB(_hPadding, 8, _hPadding, 16),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _RoundColumn(
               data: data,
               headerHeight: headerHeight,
-              rowHeight: _rowHeight,
+              rowHeight: rowHeight,
             ),
             Expanded(child: lanesView),
           ],
@@ -443,6 +457,7 @@ class _Lane extends StatelessWidget {
     required this.headerHeight,
     required this.rowHeight,
     required this.compact,
+    this.dense = false,
   });
 
   final BoardData data;
@@ -451,6 +466,7 @@ class _Lane extends StatelessWidget {
   final double headerHeight;
   final double rowHeight;
   final bool compact;
+  final bool dense;
 
   @override
   Widget build(BuildContext context) {
@@ -476,16 +492,26 @@ class _Lane extends StatelessWidget {
             key: Key('board_lane_header_${player.id}'),
             width: width,
             height: headerHeight,
-            child: _LaneHeader(
-              data: data,
-              player: player,
-              colour: colour,
-              total: total,
-              isLeader: isLeader,
-              eliminated: eliminated,
-              compact: compact,
-              width: width,
-            ),
+            child: dense
+                ? _DenseLaneHeader(
+                    data: data,
+                    player: player,
+                    colour: colour,
+                    total: total,
+                    isLeader: isLeader,
+                    eliminated: eliminated,
+                    width: width,
+                  )
+                : _LaneHeader(
+                    data: data,
+                    player: player,
+                    colour: colour,
+                    total: total,
+                    isLeader: isLeader,
+                    eliminated: eliminated,
+                    compact: compact,
+                    width: width,
+                  ),
           ),
           for (final round in data.rounds)
             InkWell(
@@ -499,13 +525,15 @@ class _Lane extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 2),
                     child: BoardScoreText(
                       score: data.scoreOf(player.id!, round.id!),
-                      fontSize: compact ? 16 : 19,
+                      fontSize: dense
+                          ? (compact ? 15 : 17)
+                          : (compact ? 16 : 19),
                     ),
                   ),
                 ),
               ),
             ),
-          const SizedBox(height: 8),
+          SizedBox(height: dense ? 4 : 8),
         ],
       ),
     );
@@ -635,6 +663,111 @@ class _LaneHeader extends StatelessWidget {
       ]);
     }
     return Column(children: children);
+  }
+}
+
+/// The lane header of the compact landscape layout, 64 dp high: the avatar
+/// and the name on one line, then the crown or the skull beside the total,
+/// and the place. Every lane is at least [kBoardMinLaneWidth] wide; below
+/// 64 dp the name gives way to the avatar's two letters.
+class _DenseLaneHeader extends StatelessWidget {
+  const _DenseLaneHeader({
+    required this.data,
+    required this.player,
+    required this.colour,
+    required this.total,
+    required this.isLeader,
+    required this.eliminated,
+    required this.width,
+  });
+
+  final BoardData data;
+  final Player player;
+  final Color colour;
+  final int total;
+  final bool isLeader;
+  final bool eliminated;
+  final double width;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final totalColour = data.isNearThreshold(total)
+        ? boardWarningColor(context)
+        : theme.colorScheme.onSurface;
+    final avatarSize = math.min(26.0, width - 8);
+    final mark = boardMark(eliminated: eliminated, isLeader: isLeader, size: 16);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 28,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                PlayerAvatar(
+                  name: player.name,
+                  color: colour,
+                  size: avatarSize,
+                  letters: 2,
+                  borderColor: theme.colorScheme.surface,
+                ),
+                if (width >= 64) ...[
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      player.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: theme.colorScheme.onSurface,
+                        decoration:
+                            eliminated ? TextDecoration.lineThrough : null,
+                        decorationColor: theme.colorScheme.error,
+                        decorationThickness: 2,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 28,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (mark != null) ...[mark, const SizedBox(width: 4)],
+                  Text(scoreText(total),
+                      style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          height: 1.2,
+                          color: totalColour)),
+                  if (data.hasScores) ...[
+                    const SizedBox(width: 6),
+                    Text(
+                      l10n.boardRank(data.ranks[player.id] ?? 1),
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.onSurfaceVariant),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

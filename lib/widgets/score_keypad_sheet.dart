@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../models/keypad_shortcut.dart';
 import '../models/player.dart';
 import '../utils/app_theme.dart';
+import '../utils/compact_landscape.dart';
 import '../utils/score_text.dart';
 import 'fit_words_text.dart';
 import 'player_avatars.dart';
@@ -273,6 +274,31 @@ class _ScoreKeypadSheetState extends State<ScoreKeypadSheet> {
       primaryLabel = l10n.keypadNext(widget.players[_index + 1].name);
     }
 
+    final value = Text(
+      _display(entry),
+      key: const Key('keypad_value'),
+      style: TextStyle(
+        fontSize: 64,
+        fontWeight: FontWeight.w800,
+        height: 1,
+        color: entry.digits.isEmpty && !entry.negative
+            ? scheme.outline
+            : scheme.onSurface,
+      ),
+    );
+    final captionStyle = TextStyle(fontSize: 15, color: scheme.onSurfaceVariant);
+    final totalAfter = l10n.keypadTotalAfter(scoreText(total));
+
+    if (compactLandscapeOf(context)) {
+      return _landscape(
+        value: value,
+        caption: caption,
+        totalAfter: totalAfter,
+        captionStyle: captionStyle,
+        primaryLabel: primaryLabel,
+      );
+    }
+
     return SafeArea(
       top: false,
       child: Padding(
@@ -289,18 +315,7 @@ class _ScoreKeypadSheetState extends State<ScoreKeypadSheet> {
               children: [
                 Padding(
                   padding: const EdgeInsets.only(left: 12),
-                  child: Text(
-                    _display(entry),
-                    key: const Key('keypad_value'),
-                    style: TextStyle(
-                      fontSize: 64,
-                      fontWeight: FontWeight.w800,
-                      height: 1,
-                      color: entry.digits.isEmpty && !entry.negative
-                          ? scheme.outline
-                          : scheme.onSurface,
-                    ),
-                  ),
+                  child: value,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -309,15 +324,13 @@ class _ScoreKeypadSheetState extends State<ScoreKeypadSheet> {
                     children: [
                       Text(caption,
                           textAlign: TextAlign.end,
-                          style: TextStyle(
-                              fontSize: 15, color: scheme.onSurfaceVariant)),
+                          style: captionStyle),
                       const SizedBox(height: 4),
                       Text(
-                        l10n.keypadTotalAfter(scoreText(total)),
+                        totalAfter,
                         key: const Key('keypad_total_after'),
                         textAlign: TextAlign.end,
-                        style: TextStyle(
-                            fontSize: 15, color: scheme.onSurfaceVariant),
+                        style: captionStyle,
                       ),
                     ],
                   ),
@@ -333,6 +346,71 @@ class _ScoreKeypadSheetState extends State<ScoreKeypadSheet> {
               onToggleSign: _toggleSign,
               onShortcut: _shortcut,
               onPrimary: _primary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// The sheet on a phone held sideways (`compactLandscapeOf`): the chips, the
+  /// number, the caption and the total after it on the start half, the pad —
+  /// shorter keys — on the end half, so the whole sheet fits a 360 dp height.
+  Widget _landscape({
+    required Widget value,
+    required String caption,
+    required String totalAfter,
+    required TextStyle captionStyle,
+    required String primaryLabel,
+  }) {
+    return SafeArea(
+      top: false,
+      child: Padding(
+        key: const Key('keypad_sheet'),
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _Chips(state: this),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: FittedBox(fit: BoxFit.scaleDown, child: value),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(caption,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: captionStyle),
+                  const SizedBox(height: 2),
+                  Text(
+                    totalAfter,
+                    key: const Key('keypad_total_after'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: captionStyle,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _Pad(
+                shortcut: widget.shortcut,
+                primaryLabel: primaryLabel,
+                onDigit: _digit,
+                onBackspace: _backspace,
+                onToggleSign: _toggleSign,
+                onShortcut: _shortcut,
+                onPrimary: _primary,
+                keyHeight: 48,
+                gap: 8,
+              ),
             ),
           ],
         ),
@@ -464,6 +542,8 @@ class _Pad extends StatelessWidget {
     required this.onToggleSign,
     required this.onShortcut,
     required this.onPrimary,
+    this.keyHeight = 64,
+    this.gap = 12,
   });
 
   final KeypadShortcut? shortcut;
@@ -474,8 +554,10 @@ class _Pad extends StatelessWidget {
   final VoidCallback onShortcut;
   final VoidCallback onPrimary;
 
-  static const double _keyHeight = 64;
-  static const double _gap = 12;
+  /// A key's height and the space between two keys: 64 and 12, shorter in
+  /// the compact landscape layout.
+  final double keyHeight;
+  final double gap;
 
   @override
   Widget build(BuildContext context) {
@@ -492,11 +574,11 @@ class _Pad extends StatelessWidget {
       required VoidCallback onTap,
       Color? background,
       Color? foreground,
-      double height = _keyHeight,
+      double? height,
       String? tooltip,
     }) {
       final button = SizedBox(
-        height: height,
+        height: height ?? keyHeight,
         child: Material(
           color: background ?? digitBg,
           borderRadius: BorderRadius.circular(18),
@@ -531,7 +613,7 @@ class _Pad extends StatelessWidget {
           child: Column(
             children: [
               for (var i = 0; i < keys.length; i++) ...[
-                if (i > 0) const SizedBox(height: _gap),
+                if (i > 0) SizedBox(height: gap),
                 keys[i],
               ],
             ],
@@ -565,7 +647,7 @@ class _Pad extends StatelessWidget {
             foreground: dark ? const Color(0xFFFFD166) : const Color(0xFF8A5A00),
             onTap: onShortcut,
           );
-    const hole = SizedBox(height: _keyHeight);
+    final hole = SizedBox(height: keyHeight);
 
     return Directionality(
       textDirection: TextDirection.ltr,
@@ -575,11 +657,11 @@ class _Pad extends StatelessWidget {
           // With a shortcut: the shortcut, ±, 0. Otherwise the 0 itself sits
           // bottom-left, beside ±.
           column([digit(1), digit(4), digit(7), shortcutKey ?? zero]),
-          const SizedBox(width: _gap),
+          SizedBox(width: gap),
           column([digit(2), digit(5), digit(8), sign]),
-          const SizedBox(width: _gap),
+          SizedBox(width: gap),
           column([digit(3), digit(6), digit(9), shortcutKey == null ? hole : zero]),
-          const SizedBox(width: _gap),
+          SizedBox(width: gap),
           column([
             key(
               'keypad_backspace',
@@ -590,7 +672,7 @@ class _Pad extends StatelessWidget {
             ),
             key(
               'keypad_primary',
-              height: _keyHeight * 2 + _gap,
+              height: keyHeight * 2 + gap,
               background: scheme.primary,
               foreground: scheme.onPrimary,
               onTap: onPrimary,

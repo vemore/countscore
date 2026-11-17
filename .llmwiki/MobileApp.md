@@ -132,6 +132,10 @@ game's scores in round order — so a finished ZapZap game gives the player card
 count, the average place and the rank chart the places its standings screen shows
 (`wip/done/2026-09-20-statistics-rank-by-score-while-the-standings-rank-by-elimination.md`).
 A game of any other type never leaves `RankingRule.score`.
+In the compact landscape layout the leaderboard scrolls on its own (`stats_leaderboard`)
+beside a column (`stats_side`) of the filter chips, the hero and the footer, its rows
+`dense` (32 dp avatar, 8 dp padding, a 6 dp bar); the player card splits into the strip and
+summary card (`card_landscape_summary`) beside the totals card (`card_landscape_details`).
 Colours come from `playerColorsByUuid` — `assignPlayerColors` over the players in the order
 they first appear walking back from the latest game — so the latest game shows exactly its
 board's colours and the filter never recolours anyone. Tests:
@@ -177,6 +181,11 @@ grid row is an `IntrinsicHeight` row of equal-height cards, not a `GridView`, be
 is as tall as its content. A grid card narrower than 360 dp (two columns, 600–775 dp) is
 `compact`: its status pill moves beside the players, under the name. The Resume card keeps
 the full width, and below 600 dp the list is one column as before.
+
+In the compact landscape layout (*The board*, below) home keeps that grid but shows the
+Resume card as one strip (`_buildResumeStrip`, same `resumeHero` key: icon, name over type
+and round, avatars, leader, *Resume*, menu, ~64 dp high) and tighter cards (`dense`: 10 dp
+padding, a 44 dp tile).
 
 `game_rules_screen` takes its `GameType` as a constructor argument rather than reading a
 provider: both callers — the board's overflow menu and the game-type list — already hold
@@ -373,6 +382,10 @@ their tinted cards, checked in `test/utils/game_type_appearance_test.dart`); the
 `cardColorValue`s are deliberately left outside it, and a type already coloured otherwise
 keeps its colour as an extra swatch —
 `config_link.dart` — the configuration link's encoder and parser ([[ConfigShare]]) —
+`compact_landscape.dart` — `isCompactLandscape(size)`: wider than tall and under
+`kCompactLandscapeMaxHeight` (500 dp), the one test behind every landscape layout below
+(*The compact landscape layout*), and `compactToolbarHeightOf`: `kCompactLandscapeToolbarHeight`
+(48 dp) there, null — the default — everywhere else —
 `game_result_share.dart`, `widget_image.dart` and `undo_snack_bar.dart` — `undoSnackBar`, the one snackbar that
 offers an action back: `persist: false` and `kUndoSnackBarDuration` (6 s), so the Undo
 goes away on its own instead of staying up until dismissed, Flutter's default for a
@@ -649,6 +662,23 @@ an always-visible scrollbar under the lanes. No lane grows past `kBoardMaxLaneWi
 wide screen the lanes are centred. From 6 players (`kBoardCompactHeaderFrom`) the header is
 compact: avatar, vertical name, total.
 
+**The compact landscape layout.** A window wider than tall and under 500 dp high — a phone
+on its side, never a tablet — is `compactLandscapeOf(context)`
+(`lib/utils/compact_landscape.dart`), chosen on the height and not on a width: a landscape
+phone (~800 dp) already passes every width breakpoint, and what it lacks is height. There
+the board, home and the statistics take an additive branch; every other size runs the
+portrait code untouched. The board's app bar is 48 dp (`toolbarHeight`);
+`BoardLanes(dense: true)` draws a 64 dp header (`_DenseLaneHeader`: avatar and name on one
+line, then crown or skull, total and place; the name gives way to the avatar in a lane under
+64 dp) and 36 dp rows (score 17, 15 compact); the round button (`board_add_round`, same key)
+leaves the bottom bar for a 112 dp rail at the end side, at the bottom, beside the grid; the
+body sits in a `SafeArea` against a side cutout or navigation bar. At 800x360 that is 6
+rounds in view against 1 (4 players) or 0 (8) before, `test/screens/landscape_layout_test.dart`.
+`BoardRows` itself is unchanged, and gains the rail's height. The keypad sheet (below) puts
+the chips, the number, caption and total on the start half and the pad — 48 dp keys, 8 dp
+gaps — on the end half: the portrait sheet is ~550 dp high and overflowed a 360 dp window by
+193 dp.
+
 The app-bar toggle (`board_view_toggle`) switches to **one row per player** (`BoardRows`):
 seat order, or rank order through a segmented button (not remembered); the last 4 rounds
 (`kBoardRowsVisibleRounds`) as columns, older rounds a swipe to the right away, then the
@@ -732,6 +762,20 @@ the reason. That warning *is* the tree-shaking constraint showing up in the anal
 not "fix" it by hardcoding a codepoint.
 
 ## Decisions & History
+
+- **A compact landscape layout, chosen on the height (2026-11-17, `feat/landscape-layout`).**
+  A phone on its side got the portrait layout on a ~360 dp height: one round of the board in
+  view, and a keypad sheet that overflowed. The width breakpoints could not see it — a
+  landscape phone is already "wide" — so the switch is `width > height && height < 500`; 500
+  sits above a phone on its side (360–450 dp) and under any tablet's short side (600+). The
+  branch is additive, so portrait and the 800x600 test surface run the code they ran before
+  and no portrait expectation moved. The user scoped it to the board, home and the
+  statistics; the keypad came along because entering a round is the board's job and it
+  overflowed. The round button went to a side rail rather than the app bar: the rail is
+  where a thumb holding the phone sideways rests, and the app bar already holds three
+  actions and the round progress. Home keeps a single scrolling list with a one-line Resume
+  strip rather than a hero pane beside the list: the strip leaves the width to the 2-column
+  grid of cards, which shows more games. Screenshots: `wip/assets/2026-11-17-landscape-layout/`.
 
 - **A round limit beside the total condition, and its progress on the board (2026-11-17,
   `feat/max-rounds-chouineurs`).** `GameType.isGameOver(totals, roundCount:)` returns true

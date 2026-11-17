@@ -9,6 +9,7 @@ import '../providers/game_provider.dart';
 import '../providers/game_type_provider.dart';
 import '../utils/app_theme.dart';
 import '../utils/game_type_name.dart';
+import '../utils/compact_landscape.dart';
 import '../utils/insets.dart';
 import '../utils/player_colors.dart';
 import '../widgets/player_avatars.dart';
@@ -96,7 +97,10 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.playerStatistics)),
+      appBar: AppBar(
+        toolbarHeight: compactToolbarHeightOf(context),
+        title: Text(l10n.playerStatistics),
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _results.isEmpty
@@ -115,46 +119,33 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
       color: theme.colorScheme.onSurfaceVariant,
     );
 
+    final hero = leader == null
+        ? null
+        : _Hero(
+            entry: leader,
+            colour: _colourOf(leader.playerUuid),
+            gameTypeName: _typeName(l10n, _filter),
+          );
+    final footer = Text(
+      l10n.statsLeaderboardFooter(kMinGamesToRank),
+      style: theme.textTheme.bodyMedium
+          ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+    );
+
+    if (compactLandscapeOf(context)) {
+      return _buildLandscape(context, l10n, entries, hero, footer, headerStyle);
+    }
+
     return ListView(
       padding: withBottomInset(context, const EdgeInsets.fromLTRB(16, 4, 16, 24)),
       children: [
         _buildChips(context, l10n),
         const SizedBox(height: 16),
-        if (leader != null) ...[
-          _Hero(
-            entry: leader,
-            colour: _colourOf(leader.playerUuid),
-            gameTypeName: _typeName(l10n, _filter),
-          ),
+        if (hero != null) ...[
+          hero,
           const SizedBox(height: 20),
         ],
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: Row(
-            children: [
-              Expanded(
-                child: _HeaderLabel(l10n.statsColumnPlayer,
-                    key: const Key('stats_header_player'),
-                    style: headerStyle,
-                    alignment: AlignmentDirectional.centerStart),
-              ),
-              SizedBox(
-                width: _gamesColumnWidth,
-                child: _HeaderLabel(l10n.statsColumnGames,
-                    key: const Key('stats_header_games'),
-                    style: headerStyle,
-                    alignment: AlignmentDirectional.center),
-              ),
-              SizedBox(
-                width: _winsColumnWidth,
-                child: _HeaderLabel(l10n.wins,
-                    key: const Key('stats_header_wins'),
-                    style: headerStyle,
-                    alignment: AlignmentDirectional.centerEnd),
-              ),
-            ],
-          ),
-        ),
+        _buildColumnHeaders(l10n, headerStyle),
         const SizedBox(height: 8),
         for (final entry in entries)
           Padding(
@@ -167,12 +158,102 @@ class _PlayerStatsScreenState extends State<PlayerStatsScreen> {
             ),
           ),
         const SizedBox(height: 8),
-        Text(
-          l10n.statsLeaderboardFooter(kMinGamesToRank),
-          style: theme.textTheme.bodyMedium
-              ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-        ),
+        footer,
       ],
+    );
+  }
+
+  /// The statistics on a phone held sideways (`compactLandscapeOf`): the
+  /// filter, the best win rate and the footer in a column on the start side,
+  /// the leaderboard — denser rows — scrolling on its own beside it.
+  Widget _buildLandscape(
+    BuildContext context,
+    AppLocalizations l10n,
+    List<LeaderboardEntry> entries,
+    Widget? hero,
+    Widget footer,
+    TextStyle? headerStyle,
+  ) {
+    return SafeArea(
+      top: false,
+      bottom: false,
+      child: LayoutBuilder(builder: (context, constraints) {
+        final side = (constraints.maxWidth * 0.38).clamp(260.0, 360.0);
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              width: side,
+              child: ListView(
+                key: const Key('stats_side'),
+                padding: withBottomInset(
+                    context, const EdgeInsetsDirectional.fromSTEB(16, 4, 8, 16)
+                        .resolve(Directionality.of(context))),
+                children: [
+                  _buildChips(context, l10n),
+                  const SizedBox(height: 12),
+                  if (hero != null) ...[hero, const SizedBox(height: 12)],
+                  footer,
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                key: const Key('stats_leaderboard'),
+                padding: withBottomInset(
+                    context, const EdgeInsetsDirectional.fromSTEB(8, 8, 16, 24)
+                        .resolve(Directionality.of(context))),
+                children: [
+                  _buildColumnHeaders(l10n, headerStyle),
+                  const SizedBox(height: 6),
+                  for (final entry in entries)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _LeaderboardRow(
+                        key: Key('stats_row_${entry.playerUuid}'),
+                        entry: entry,
+                        colour: _colourOf(entry.playerUuid),
+                        onTap: () => _openCard(entries, entry),
+                        dense: true,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        );
+      }),
+    );
+  }
+
+  /// The leaderboard's column headers: player, games, wins.
+  Widget _buildColumnHeaders(AppLocalizations l10n, TextStyle? headerStyle) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: _HeaderLabel(l10n.statsColumnPlayer,
+                key: const Key('stats_header_player'),
+                style: headerStyle,
+                alignment: AlignmentDirectional.centerStart),
+          ),
+          SizedBox(
+            width: _gamesColumnWidth,
+            child: _HeaderLabel(l10n.statsColumnGames,
+                key: const Key('stats_header_games'),
+                style: headerStyle,
+                alignment: AlignmentDirectional.center),
+          ),
+          SizedBox(
+            width: _winsColumnWidth,
+            child: _HeaderLabel(l10n.wins,
+                key: const Key('stats_header_wins'),
+                style: headerStyle,
+                alignment: AlignmentDirectional.centerEnd),
+          ),
+        ],
+      ),
     );
   }
 
@@ -321,11 +402,16 @@ class _LeaderboardRow extends StatelessWidget {
     required this.entry,
     required this.colour,
     required this.onTap,
+    this.dense = false,
   });
 
   final LeaderboardEntry entry;
   final Color colour;
   final VoidCallback onTap;
+
+  /// The compact landscape layout's row: a smaller avatar, less padding and
+  /// a thinner bar.
+  final bool dense;
 
   @override
   Widget build(BuildContext context) {
@@ -345,7 +431,7 @@ class _LeaderboardRow extends StatelessWidget {
                 fontSize: 18, fontWeight: FontWeight.w900, color: muted),
           ),
         ),
-        PlayerAvatar(name: entry.name, color: colour, size: 36, letters: 2),
+        PlayerAvatar(name: entry.name, color: colour, size: dense ? 32 : 36, letters: 2),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
@@ -398,18 +484,20 @@ class _LeaderboardRow extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+            padding: dense
+                ? const EdgeInsets.fromLTRB(14, 8, 14, 8)
+                : const EdgeInsets.fromLTRB(14, 12, 14, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 head,
                 if (entry.isRanked) ...[
-                  const SizedBox(height: 10),
+                  SizedBox(height: dense ? 6 : 10),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
                       value: entry.winRate,
-                      minHeight: 8,
+                      minHeight: dense ? 6 : 8,
                       color: colour,
                       backgroundColor: scheme.surfaceContainerHighest,
                     ),
