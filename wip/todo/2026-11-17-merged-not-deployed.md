@@ -9,12 +9,13 @@
 |---|---|---|
 | `29ad3cf` | #269 feat: a game type can end after a maximum number of rounds; Chouineurs is built in | **backend with Alembic** `0007_game_type_max_rounds`, then **PWA** |
 | `ec1b255` | #273 feat: a compact landscape layout for the board, home and the statistics | **PWA** (new `web/manifest.json`, no `orientation`) |
+| `b972b60` | #275 feat: in landscape the board's order switch sits in the app bar and the rows board packs more rounds | **PWA** |
 
 **Fix:** from a session that can reach the NAS, deploy `origin/main` — backend first
 (`backend-deploy` skill, `alembic upgrade head` included), then the PWA (`web-deploy`). One
 deploy covers every sha listed. Smoke-test: `/health`; the PWA loads; in the game-type
 editor, set "Nombre de manches maximum" on a type, play to the limit and see the end screen
-and the "Tour n/N" header; Chouineurs is listed among the built-in types; on a phone held sideways, the PWA rotates and the board shows the compact landscape layout (round button in a side rail).
+and the "Tour n/N" header; Chouineurs is listed among the built-in types; on a phone held sideways, the PWA rotates and the board shows the compact landscape layout (round button in a side rail); in the one-row-per-player view the Ordre de jeu / Classement switch is in the app bar beside the game name and 7 or more rounds show.
 
 **Acceptance:**
 - `alembic current` on the NAS prints `0007_game_type_max_rounds`.
