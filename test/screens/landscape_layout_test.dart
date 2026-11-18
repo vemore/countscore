@@ -23,6 +23,7 @@ import 'package:countscore/models/round.dart';
 import 'package:countscore/models/score.dart';
 import 'package:countscore/providers/game_provider.dart';
 import 'package:countscore/providers/game_type_provider.dart';
+import 'package:countscore/providers/settings_provider.dart';
 import 'package:countscore/repositories/drift/drift_repositories.dart';
 import 'package:countscore/screens/home_screen.dart';
 import 'package:countscore/screens/player_stats_screen.dart';
@@ -454,6 +455,108 @@ void main() {
         360 - 32,
       );
       expect(tester.getSize(find.byType(AppBar)).height, kToolbarHeight);
+    });
+  });
+  // The one-row-per-player board on a phone on its side: the seat / ranking
+  // switch sits in the app bar beside the game's name, and the round columns
+  // are packed, so more than the portrait layout's four rounds show.
+  group('the rows board at 800 x 360', () {
+    late BoardHarness board;
+    setUp(() => board = BoardHarness());
+    tearDown(() => board.close());
+
+    Future<void> openRows(WidgetTester tester, Size size) async {
+      final settings = SettingsProvider();
+      await tester.runAsync(() => settings.ready);
+      await tester.runAsync(() => settings.setBoardView(BoardView.rows));
+      await tester.runAsync(
+        () => board.aGame(
+          ['Zoe', 'Adam', 'Mia'],
+          rounds: [
+            for (var r = 0; r < 12; r++) [30 - r, r + 1, (r * 5) % 17],
+          ],
+        ),
+      );
+      _setSize(tester, size);
+      await tester.pumpWidget(board.wrap(settings: settings));
+      await tester.pump(const Duration(milliseconds: 200));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('the order switch is in the app bar, beside the name', (
+      tester,
+    ) async {
+      await openRows(tester, _landscape);
+
+      expect(tester.takeException(), isNull);
+      final selector = tester.getRect(
+        find.byKey(const Key('board_rows_order')),
+      );
+      final bar = tester.getRect(find.byType(AppBar));
+      final title = tester.getRect(find.text('Partie'));
+      expect(selector.bottom, lessThanOrEqualTo(bar.bottom));
+      expect(selector.left, greaterThan(title.right));
+
+      double rowY(String name) => tester
+          .getTopLeft(
+            find.byKey(Key('board_row_${board.playerNamed(name).id}')),
+          )
+          .dy;
+      expect(rowY('Zoe'), lessThan(rowY('Adam')));
+      await tester.tap(find.text('Ranking'));
+      await tester.pumpAndSettle();
+      expect(
+        rowY('Zoe'),
+        greaterThan(rowY('Adam')),
+        reason: 'Zoe totals the most, so she ranks last',
+      );
+    });
+
+    testWidgets('more than four rounds are in view, none cut off', (
+      tester,
+    ) async {
+      await openRows(tester, _landscape);
+
+      final first = board.games.currentPlayers.first;
+      final viewport = tester.getRect(
+        find.byKey(const Key('board_rows_rounds')),
+      );
+      var inside = 0;
+      for (final e in find.byWidgetPredicate((w) {
+        final k = w.key;
+        return k is ValueKey<String> &&
+            k.value.startsWith('board_rows_cell_${first.id}_');
+      }).evaluate()) {
+        final box = e.renderObject! as RenderBox;
+        final r = box.localToGlobal(Offset.zero) & box.size;
+        if (r.left >= viewport.left - 0.5 && r.right <= viewport.right + 0.5) {
+          inside++;
+        }
+      }
+      expect(inside, greaterThanOrEqualTo(7));
+    });
+
+    testWidgets('in portrait the switch stays above the rows, four rounds', (
+      tester,
+    ) async {
+      await openRows(tester, const Size(400, 800));
+
+      final selector = tester.getRect(
+        find.byKey(const Key('board_rows_order')),
+      );
+      expect(selector.top, greaterThanOrEqualTo(kToolbarHeight));
+      final viewport = tester.getRect(
+        find.byKey(const Key('board_rows_rounds')),
+      );
+      final first = board.games.currentPlayers.first;
+      final cell = tester.getRect(
+        find.byKey(
+          Key(
+            'board_rows_cell_${first.id}_${board.games.currentRounds.last.id}',
+          ),
+        ),
+      );
+      expect(cell.width, moreOrLessEquals(viewport.width / 4, epsilon: 0.5));
     });
   });
 }

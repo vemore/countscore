@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/player.dart';
+import '../utils/compact_landscape.dart';
 import '../utils/score_text.dart';
 import 'board_lanes.dart';
 import 'player_avatars.dart';
@@ -12,16 +13,65 @@ import 'player_avatars.dart';
 /// are a swipe away.
 const int kBoardRowsVisibleRounds = 4;
 
+/// The narrowest a round column gets in the compact landscape layout
+/// (`compactLandscapeOf`), dp: the layout shows as many as fit at this width.
+const double kCompactRoundColumnWidth = 56;
+
 /// The board as one row per player: seat order by default, rank order on
 /// request; the last [kBoardRowsVisibleRounds] rounds as columns, then the
 /// total. The round columns scroll together, and open on the latest round.
+///
+/// With [byRank] given the order is the caller's and the selector is not drawn
+/// here: the compact landscape board puts a [BoardOrderSelector] in its app
+/// bar, beside the game's name, and passes the choice down.
 class BoardRows extends StatefulWidget {
-  const BoardRows({super.key, required this.data});
+  const BoardRows({super.key, required this.data, this.byRank});
 
   final BoardData data;
 
+  /// The order chosen by the caller, or null to keep it here, behind the
+  /// selector above the rows.
+  final bool? byRank;
+
   @override
   State<BoardRows> createState() => _BoardRowsState();
+}
+
+/// The seat order / ranking switch of [BoardRows].
+class BoardOrderSelector extends StatelessWidget {
+  const BoardOrderSelector({
+    super.key,
+    required this.byRank,
+    required this.onChanged,
+    this.compact = false,
+  });
+
+  final bool byRank;
+  final ValueChanged<bool> onChanged;
+
+  /// Shrinks the buttons to sit in an app bar.
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return SegmentedButton<bool>(
+      key: const Key('board_rows_order'),
+      showSelectedIcon: false,
+      style: compact
+          ? const ButtonStyle(
+              visualDensity: VisualDensity.compact,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            )
+          : null,
+      segments: [
+        ButtonSegment(value: false, label: Text(l10n.boardSeatOrder)),
+        ButtonSegment(value: true, label: Text(l10n.ranking)),
+      ],
+      selected: {byRank},
+      onSelectionChanged: (s) => onChanged(s.first),
+    );
+  }
 }
 
 class _BoardRowsState extends State<BoardRows> {
@@ -37,8 +87,8 @@ class _BoardRowsState extends State<BoardRows> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final data = widget.data;
-    final players =
-        _byRank && data.hasScores ? data.byRank : data.players;
+    final byRank = widget.byRank ?? _byRank;
+    final players = byRank && data.hasScores ? data.byRank : data.players;
     final muted = TextStyle(
       fontSize: 13,
       fontWeight: FontWeight.w700,
@@ -47,29 +97,32 @@ class _BoardRowsState extends State<BoardRows> {
 
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-          child: SizedBox(
-            width: double.infinity,
-            child: SegmentedButton<bool>(
-              key: const Key('board_rows_order'),
-              showSelectedIcon: false,
-              segments: [
-                ButtonSegment(value: false, label: Text(l10n.boardSeatOrder)),
-                ButtonSegment(value: true, label: Text(l10n.ranking)),
-              ],
-              selected: {_byRank},
-              onSelectionChanged: (s) => setState(() => _byRank = s.first),
+        if (widget.byRank == null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: SizedBox(
+              width: double.infinity,
+              child: BoardOrderSelector(
+                byRank: _byRank,
+                onChanged: (v) => setState(() => _byRank = v),
+              ),
             ),
           ),
-        ),
         Expanded(
           child: LayoutBuilder(builder: (context, constraints) {
             const padding = 16.0;
             final inner = constraints.maxWidth - 2 * padding;
-            final nameWidth = math.min(200.0, inner * 0.38);
+            final compact = compactLandscapeOf(context);
+            final nameWidth = math.min(compact ? 150.0 : 200.0, inner * 0.38);
             final roundsWidth = inner - nameWidth - _totalWidth;
-            final roundWidth = roundsWidth / kBoardRowsVisibleRounds;
+            // On a phone on its side the round columns are packed as tightly
+            // as a score needs, and as many as fit are shown, instead of the
+            // same four spread over the width.
+            final visibleRounds = compact
+                ? math.max(kBoardRowsVisibleRounds,
+                    (roundsWidth / kCompactRoundColumnWidth).floor())
+                : kBoardRowsVisibleRounds;
+            final roundWidth = roundsWidth / visibleRounds;
             final rowsHeight = players.length * (_rowHeight + _gap);
 
             // Row backgrounds, under the three columns that sit on them.

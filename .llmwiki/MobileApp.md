@@ -2,7 +2,7 @@
 
 > Scope: the Flutter app's own structure — entry point, state, screens, models.
 > Related: [[DataLayer]] · [[Schema]] · [[I18n]] · [[Web]] · [[Testing]]
-> Updated: 2026-11-17
+> Updated: 2026-11-18
 
 ## Facts
 
@@ -674,7 +674,11 @@ line, then crown or skull, total and place; the name gives way to the avatar in 
 leaves the bottom bar for a 112 dp rail at the end side, at the bottom, beside the grid; the
 body sits in a `SafeArea` against a side cutout or navigation bar. At 800x360 that is 6
 rounds in view against 1 (4 players) or 0 (8) before, `test/screens/landscape_layout_test.dart`.
-`BoardRows` itself is unchanged, and gains the rail's height. The keypad sheet (below) puts
+`BoardRows` gains the rail's height, and two things of its own there: the seat / ranking
+switch (`BoardOrderSelector`, key `board_rows_order`) moves to the app bar, beside the game's
+name, the order held by the screen (`_rowsByRank`) and passed as `BoardRows.byRank`; and the
+round columns are packed at 56 dp (`kCompactRoundColumnWidth`) with a 150 dp name column, so
+as many rounds as fit show (7 at 800 dp) instead of 4. Portrait is unchanged. The keypad sheet (below) puts
 the chips, the number, caption and total on the start half and the pad — 48 dp keys, 8 dp
 gaps — on the end half: the portrait sheet is ~550 dp high and overflowed a 360 dp window by
 193 dp.

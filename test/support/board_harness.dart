@@ -13,6 +13,7 @@ import 'package:countscore/models/game_type.dart';
 import 'package:countscore/models/player.dart';
 import 'package:countscore/providers/backend_provider.dart';
 import 'package:countscore/providers/game_provider.dart';
+import 'package:countscore/providers/settings_provider.dart';
 import 'package:countscore/providers/game_type_provider.dart';
 import 'package:countscore/providers/group_provider.dart';
 import 'package:countscore/repositories/drift/drift_repositories.dart';
@@ -89,9 +90,11 @@ class BoardHarness {
     ));
   }
 
-  Widget wrap() {
+  Widget wrap({SettingsProvider? settings}) {
     return MultiProvider(
       providers: [
+        if (settings != null)
+          ChangeNotifierProvider<SettingsProvider>.value(value: settings),
         ChangeNotifierProvider<GameProvider>.value(value: games),
         ChangeNotifierProvider<GameTypeProvider>.value(value: gameTypes),
         ChangeNotifierProvider<BackendProvider>(

@@ -69,6 +69,10 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
   /// leaving the board and coming back does not ask again.
   bool _gameOverDismissed = false;
 
+  /// The one-row-per-player board's order, held here because the compact
+  /// landscape layout draws its selector in the app bar (not remembered).
+  bool _rowsByRank = false;
+
   /// The stored "Continue playing" for this game, read once when the board
   /// opens. Every check awaits it, so a round added in the first frames cannot
   /// ask a question the user already answered.
@@ -282,6 +286,16 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                     labelStyle: Theme.of(context).textTheme.labelSmall,
                     visualDensity: VisualDensity.compact,
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ],
+                // On a phone on its side the order switch sits beside the
+                // name instead of taking a line of the board.
+                if (landscape && _boardView(context) == BoardView.rows) ...[
+                  const SizedBox(width: 16),
+                  BoardOrderSelector(
+                    compact: true,
+                    byRank: _rowsByRank,
+                    onChanged: (v) => setState(() => _rowsByRank = v),
                   ),
                 ],
               ],
@@ -620,7 +634,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
         children: [
           Expanded(
             child: _boardView(context) == BoardView.rows
-                ? BoardRows(data: board)
+                ? BoardRows(data: board, byRank: _rowsByRank)
                 : BoardLanes(data: board, dense: true),
           ),
           Padding(
