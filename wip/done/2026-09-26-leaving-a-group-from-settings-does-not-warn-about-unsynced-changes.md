@@ -1,5 +1,7 @@
 # Leaving a group from Settings does not warn about unsynced changes
 
+**Status:** done (2026-11-19) — closed by fix/leave-group-warn-unsynced. *Leave* and *Clear* read `countPending` when pressed and show `replaceConfigUnsynced` (no new string) with a *Leave anyway* button.
+
 - **Noted:** 2026-09-26 — while building the configuration QR's replace dialog (feat/config-share-qr)
 - **Theme:** groups-v2
 - **Area:** app

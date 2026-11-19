@@ -3,7 +3,7 @@
 > Scope: bringing a device onto the same server and group from a QR code — the link, its
 > encoder and parser, the QR sheet, the shared "replace the configuration?" dialog.
 > Related: [[Sync]] · [[Security]] · [[Deployment]] · [[Web]] · [[MobileApp]]
-> Updated: 2026-09-26
+> Updated: 2026-11-19
 
 ## Facts
 
@@ -78,7 +78,9 @@ accepted:
   already say so (same server) or when changes are waiting to reach it. The count is read then,
   from the outbox (`GroupProvider.countPending`), not from `pendingChanges`, which is only
   recounted at the end of a sync pass and reads 0 on a cold start from a link. *Cancel* there
-  withdraws the new registration (`cancelJoin`). Then `completeJoin` leaves the current group
+  withdraws the new registration (`cancelJoin`). Settings → Group *Leave* and Settings → Server
+  *Clear* (while in a group) ask the same, counted the same way, with the same
+  `replaceConfigUnsynced` string and a *Leave anyway* button; *Cancel* changes nothing. Then `completeJoin` leaves the current group
   (revoked on its own server, outbox emptied, [[Sync]] *Joining*), stores the new server URL
   (`BackendProvider.persist`, SharedPreferences `backendUrl`) before the new credentials, adopts
   the new membership and syncs with the new server; the dialog then tells the live
