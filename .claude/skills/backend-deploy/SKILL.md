@@ -1,6 +1,6 @@
 ---
 name: backend-deploy
-description: Deploy or roll back the CountScore FastAPI backend on the Synology NAS — build, push to the local registry, restart the container, run Alembic migrations, verify health. Use when shipping backend changes to production, rolling back a bad deploy, changing production environment variables, or diagnosing the live service. Triggers: "deploy the backend", "déployer le backend", "push to prod", "rollback", "deploy_nas", "alembic upgrade in prod", "restart the api container".
+description: Deploy or roll back the CountScore FastAPI backend on the Synology NAS — build, push to the local registry, run Alembic migrations, restart the container, verify health and roll back. Use when shipping backend changes to production, rolling back a bad deploy, changing production environment variables, or diagnosing the live service. Triggers: "deploy the backend", "déployer le backend", "push to prod", "rollback", "deploy_nas", "alembic upgrade in prod", "restart the api container".
 ---
 
 # Deploying the CountScore backend
@@ -112,19 +112,41 @@ cd backend
 The script checks that the NAS `.env` has `BACKUP_AGE_RECIPIENT=age1…`, builds two images
 from `HEAD` — `countscore` (`Dockerfile`) and `countscore-backup` (`Dockerfile.backup`),
 both tagged `<short sha>` and `latest` — pushes them to the registry named by `$REGISTRY`,
-SSHes to `$NAS_SSH`, brings the compose stack up, prints the `db-backup` status and last log
-lines, and runs `alembic upgrade head`. All three come
-from `scripts/deploy.env`; the script exits naming the variable if one is missing.
+then on `$NAS_SSH`, in this order:
 
-**Before the upgrade, a pending revision gets its own dump.** When `alembic current` differs
-from `alembic heads` in the new container, the script has the `db-backup` sidecar write
-`backups/premigration_<UTC ts>_<from>-to-<to>.dump.gz.age` (age-encrypted like the daily
-dumps, outside their 7-day retention), and stops without migrating if that fails. There is no
-staging: this dump and CI's upgrade/`downgrade base`/upgrade round trip stand in for one.
-Note the file name it prints — §5 needs it. Delete it by hand once the release has proved
-itself.
+1. tags the image the running `api` container uses `localhost:5050/countscore:pre-deploy`
+   (on the NAS only), then `docker compose pull` — nothing restarts yet;
+2. reads `alembic current` and `heads` from one-off containers of the new image
+   (`docker compose run --rm -T api alembic …`);
+3. **a pending revision gets its own dump**: the `db-backup` service writes
+   `backups/premigration_<UTC ts>_<from>-to-<to>.dump.gz.age` (age-encrypted like the daily
+   dumps, outside their 7-day retention) — no dump, no upgrade;
+4. `docker compose run --rm -T api alembic upgrade head`, still before the swap;
+5. the swap: `docker compose up -d --wait --wait-timeout 90`, then
+   `curl -fsS "$PUBLIC_URL/health"`; then the `db-backup` status and last log lines.
+
+`REGISTRY`, `NAS_SSH`, `NAS_DEPLOY_DIR` and `PUBLIC_URL` come from `scripts/deploy.env`; the
+script exits naming the variable if one is missing.
+
+**What a failure leaves running:**
+
+- **Dump or upgrade failed** (steps 2–4): the previous `api` container is still serving and the
+  schema is unchanged (`alembic/env.py` runs all pending revisions in one transaction). The
+  script pins the NAS `compose.yaml` to `:pre-deploy`, so a later `docker compose up -d` (§2)
+  cannot start the pulled `:latest` on the old schema. Fix and redeploy.
+- **New image unhealthy, no migration ran**: the script puts `:pre-deploy` back by itself
+  (`up --wait` and `/health` again), and exits non-zero either way.
+- **New image unhealthy after a migration**: the script stops and prints the dump's name. The
+  old code against the new schema is not something it decides alone: §5.
+
+There is no staging: the dump and CI's upgrade/`downgrade base`/upgrade round trip stand in
+for one. Note the dump's file name it prints — §5 needs it. Delete it by hand once the release
+has proved itself.
 
 ## 4. Verify
+
+The script already waited for the healthchecks and printed `$PUBLIC_URL/health` — a 200 only.
+What it cannot judge is the content:
 
 ```bash
 source scripts/deploy.env
@@ -178,7 +200,12 @@ alerting** — logs are all there is.
 
 ```bash
 ./scripts/deploy_nas.sh --rollback <git-sha>
+./scripts/deploy_nas.sh --rollback pre-deploy   # the image that ran before the last deploy
 ```
+
+It rewrites the `api` image in the NAS `compose.yaml`, then `up -d --wait --wait-timeout 90`,
+and exits non-zero if the healthchecks do not pass. `pre-deploy` is a tag on the NAS only,
+moved by each deploy (§3); a `<git-sha>` is pulled from the registry.
 
 **Alembic does not roll back with it.** If the bad deploy applied a migration, undo the
 schema by restoring the `premigration_*` dump §3 took — not by `alembic downgrade`, whose
@@ -221,7 +248,8 @@ The Dockerfile runs one worker and the dev compose file inherits it — the same
 ## Checklist
 
 - [ ] `ruff check .` and `pytest -m 'not integration'` clean
-- [ ] Any new Alembic revision read, not just generated; its `premigration_*` dump name noted
+- [ ] Any new Alembic revision read, not just generated, and it keeps the previous release's
+      code working (expand/contract, `db-migration`); its `premigration_*` dump name noted
 - [ ] `.env.example` updated if `app/config.py` gained a setting
 - [ ] `CORS_ORIGINS` correct, never `*`
 - [ ] `BACKUP_AGE_RECIPIENT` set in the NAS `.env` (public key only), and `db-backup` running,

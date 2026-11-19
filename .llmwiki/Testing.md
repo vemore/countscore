@@ -2,7 +2,7 @@
 
 > Scope: what is tested, how to run it, and the traps.
 > Related: [[MobileApp]] · [[DataLayer]] · [[Schema]] · [[Backend]] · [[Web]] · [[KnownLimits]]
-> Updated: 2026-11-17
+> Updated: 2026-11-19
 
 ## Facts
 
@@ -235,7 +235,10 @@ a total condition) · `test_game_analysis.py` and `test_group_analysis.py` also 
 the built prompt, and an out-of-bounds limit adds nothing · `test_analysis_signals.py` (the derived facts, which the model
 is forbidden to recite and so cannot check) · `test_llm_providers.py` ·
 `test_ip_rate_limit.py` · `test_health.py` (the `/health` shape, including that the resolved
-LLM model is reported and that an unknown `LLM_PROVIDER` still answers 200).
+LLM model is reported and that an unknown `LLM_PROVIDER` still answers 200) ·
+`test_deploy_script.py` (`backend/scripts/deploy_nas.sh` against stub `ssh`/`docker`/`curl`: dump and
+upgrade before the swap, nothing swapped after a failed one, rollback only without a
+migration, `--rollback`; shellcheck when installed).
 
 **Tests never read `backend/.env`.** `tests/conftest.py` sets `Settings.model_config["env_file"]`
 to `None` before `app.db` builds its settings at import, so a developer's local `.env` cannot

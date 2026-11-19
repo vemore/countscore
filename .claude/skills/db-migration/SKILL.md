@@ -91,6 +91,15 @@ Only needed if the entity syncs.
    `No new upgrade operations detected.` — the CI backend job runs upgrade, `downgrade base`,
    upgrade, then `check` on a fresh Postgres, so a `downgrade()` that does not run, or a model
    whose type differs from the revision's DDL, fails there.
+
+   **A revision must not break the previous release's code (expand/contract).**
+   `deploy_nas.sh` migrates from a one-off container *before* it swaps the `api`, so the
+   release still serving runs against the new schema for the length of the swap — and for
+   good if the new image never turns healthy, since the script does not roll the image back
+   after a migration. So a revision only *expands*: add a table, or a column that is nullable
+   or has a server default. A rename, a drop, a `NOT NULL` without a default or a narrowed
+   type is the *contract* step: it ships in a later release, once no deployed code reads or
+   writes the old shape. A rename is therefore add-new, copy, and drop-old a release later.
 4. **Sync handler** — register the entity's model in `_ENTITY_MAP` and its name in
    `EntityType` (`backend/app/routes/sync.py`, `backend/app/schemas/sync.py`). Easy to forget, and the entity silently never syncs
    without it.
@@ -114,6 +123,8 @@ grep -n "schemaVersion = " lib/services/database_service.dart
 
 - **Never break existing users.** They are live on the Play Store. A migration that can
   lose data is not shippable — see the two-release strategy in `.llmwiki/DataLayer.md`.
+- **An Alembic revision keeps the previous backend release working** — expand now, contract
+  in a later release (Server procedure, step 3; `.llmwiki/Deployment.md`).
 - `group_id IS NULL` means a local, unsynced row. Every new table must tolerate NULL.
 - Local key is `INTEGER AUTOINCREMENT`; the UUID is the logical key for sync.
 - Update `.llmwiki/Schema.md` and its `Updated:` date in the same commit.

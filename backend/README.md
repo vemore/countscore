@@ -50,7 +50,7 @@ source scripts/deploy.env
 cat .env | ssh "$NAS_SSH" "cat > $NAS_DEPLOY_DIR/.env"
 ```
 
-**Déployer** (build → push registre → compose up → migrations) :
+**Déployer** (build → push registre → dump + migrations dans un conteneur jetable → compose up --wait → `/health`, retour à l'image précédente si elle échoue sans migration) :
 
 ```bash
 ./scripts/deploy_nas.sh                 # déploie HEAD
