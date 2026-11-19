@@ -2,7 +2,7 @@
 
 > Scope: production topology and environment. For the procedure, use the `backend-deploy` skill.
 > Related: [[Backend]] · [[Security]] · [[Web]] · [[LlmProviders]]
-> Updated: 2026-09-24
+> Updated: 2026-11-19
 
 ## Facts
 
@@ -51,7 +51,7 @@ Every self-hosting user deploys this image, so it is locked down by default:
   the only mount is the read-only PWA, which `deploy_web.sh` makes world-readable
   (`chmod -R a+rX`).
 - `PATH` starts with `/app/.venv/bin`. The compose healthcheck (`python -c …`) and
-  `docker compose exec -T api alembic upgrade head` therefore work unchanged.
+  `docker compose run --rm -T api alembic upgrade head` therefore work unchanged.
 
 Measured on 2026-09-14: 600 MB before, 271 MB after. Checked against a Postgres 17
 container: `alembic upgrade head`, `/health`, a PWA file under `PWA_BASE_PATH`,
@@ -60,8 +60,8 @@ uid ≠ 0, no compiler, no pytest, and that the app imports.
 
 ```bash
 cd backend
-./scripts/deploy_nas.sh                    # check BACKUP_AGE_RECIPIENT → build api + backup images → push → up → [pre-migration dump] → alembic upgrade
-./scripts/deploy_nas.sh --rollback <sha>   # roll back to a git sha (the image only, never the schema)
+./scripts/deploy_nas.sh                    # check BACKUP_AGE_RECIPIENT → build api + backup images → push → tag running api :pre-deploy → pull → [pre-migration dump → alembic upgrade] → up --wait → /health
+./scripts/deploy_nas.sh --rollback <sha>   # roll back to a git sha, or to pre-deploy (the image only, never the schema)
 ```
 
 **Migrations have no staging** (decided 2026-09-14: the owner is production's sole user, and
@@ -72,6 +72,16 @@ differs from `alembic heads`, `deploy_nas.sh` has the `db-backup` sidecar write
 outside the 7-day retention glob, and no upgrade if it fails. A bad migration is undone by
 restoring that dump over an emptied `public` schema, not by `alembic downgrade`
 (`backend-deploy` §5).
+
+**Migrate first, then swap, then verify** (`deploy_nas.sh`). The dump and `alembic upgrade
+head` run in one-off containers of the new image (`docker compose run --rm -T`) while the
+previous `api` keeps serving; then `up -d --wait --wait-timeout 90` and `curl -fsS
+"$PUBLIC_URL/health"`. A failed dump or upgrade stops before the swap, schema unchanged
+(`alembic/env.py` runs all pending revisions in one transaction), and pins the NAS
+`compose.yaml` to `:pre-deploy`, the running image tagged before the pull. An unhealthy new
+image is replaced by `:pre-deploy` only when no migration ran. **So a revision must keep the
+previous release's code working — expand/contract** (`db-migration` skill). Tested by
+`backend/tests/test_deploy_script.py` against stub `ssh`/`docker`/`curl`.
 
 **Client address.** Web Station reaches the API through the published port, so inside the
 container the peer is the compose network's gateway. The network is pinned to
@@ -353,6 +363,16 @@ whose users run it lists `https://<owner>.github.io` in `CORS_ORIGINS` and serve
   makes `umask 077` hold by itself. Kept. The hand-taken plaintext `pre_0002_20260913.sql.gz`
   was deleted rather than encrypted: the `0002_sync_contract` migration it guarded has been
   live since 2026-09-13.
+- **The deploy migrates before it swaps, and rolls back only an unmigrated deploy
+  (2026-11-19).** Closed `wip/done/2026-09-25-deploy-starts-new-code-before-migrating.md` and
+  `wip/done/2026-09-25-deploy-does-not-verify-or-roll-back.md`. Until then the script ran
+  `pull && up -d`, slept 5 s, dumped and migrated inside the already-replaced container, and
+  exited 0 on a crash-looping one. No zero-downtime side-by-side swap (`docker-rollout`): a
+  few seconds' gap is cheap for one self-hosted backend. The rollback target is a NAS-local
+  `:pre-deploy` tag rather than a recorded sha, so no state file; sha tags are
+  `wip/todo_nr/2026-09-25-deployed-version-is-not-identifiable.md`. Checked against a local
+  compose stack: a revision failing mid-way left the old container serving the old revision; a
+  broken image was put back in 12 s; one after a migration was left for §5.
 - **Backups are `pg_dump` on a cron sidecar with 7-day rotation**, not a managed service.
   The dataset is small and the recovery story is "copy a file back".
 - **The backups' contents were written down before being encrypted (2026-09-14).** The

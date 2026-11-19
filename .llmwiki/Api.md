@@ -2,7 +2,7 @@
 
 > Scope: the HTTP and WebSocket surface. Source of truth is `backend/app/routes/`.
 > Related: [[Backend]] · [[Sync]] · [[LlmProviders]] · [[Security]]
-> Updated: 2026-09-25
+> Updated: 2026-11-19
 
 ## Facts
 
@@ -97,8 +97,9 @@ Both stateless endpoints pass through `_enforce_ip_rate_limit`.
 "credentials": bool}}` (`HealthResponse` in `app/main.py`). The `llm` block is the ZapZap
 provider as the process resolved it, built without calling the provider — `credentials` means
 a key is set, never that the model can be called. Polled by the compose healthcheck every 30 s
-and asserted by §4 of the `backend-deploy` skill; `deploy_nas.sh` only prints the URL
-(`scripts/deploy_nas.sh:71`), it never requests it.
+and by `deploy_nas.sh` after the swap (`up --wait`, then `curl -fsS "$PUBLIC_URL/health"`; a
+failure puts the previous image back when no migration ran — [[Deployment]]). Its `llm` block
+is still read by hand, §4 of the `backend-deploy` skill.
 
 It answers **200 even when the LLM is misconfigured** — an unknown `LLM_PROVIDER` yields
 `"model": null` rather than a 5xx. Failing the probe would restart-loop a container whose

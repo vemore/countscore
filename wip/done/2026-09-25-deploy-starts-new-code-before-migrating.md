@@ -1,5 +1,7 @@
 # A backend deploy starts the new code before it migrates the schema
 
+**Status:** done (2026-11-19) — closed by fix/deploy-nas-migrate-first-and-verify. `deploy_nas.sh` now pulls, dumps and runs `alembic upgrade head` from one-off `docker compose run --rm -T` containers before any `up`; a failed dump or upgrade stops with the previous `api` serving (checked against a local compose stack with a revision raising mid-way) and pins compose.yaml to `:pre-deploy`. The expand/contract rule is in the `db-migration` skill and `.llmwiki/Deployment.md`; `backend/tests/test_deploy_script.py` pins the order.
+
 - **Noted:** 2026-09-25 — comparing the NAS deploy with standard deployment practice
 - **Theme:** deploy-safety
 - **Area:** backend
