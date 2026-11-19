@@ -1,0 +1,8 @@
+CountScore 1.7.0
+
+• Mode paysage : une disposition compacte pour le tableau des scores, l'accueil et les statistiques, pour voir plus de manches à l'écran.
+• Un type de jeu peut maintenant s'arrêter après un nombre maximum de manches. Les Chouineurs sont intégrés.
+• Quitter un groupe, ou effacer le serveur, indique maintenant combien de changements n'ont pas encore atteint le groupe.
+• Petites corrections.
+
+Les fonctions en ligne restent inactives sans serveur.
