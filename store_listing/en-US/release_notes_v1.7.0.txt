@@ -1,0 +1,8 @@
+CountScore 1.7.0
+
+• Landscape mode: a compact layout for the scoreboard, the home screen and the statistics, so more rounds fit on screen.
+• A game type can now end after a maximum number of rounds. Chouineurs is built in.
+• Leaving a group, or clearing the server, now tells you how many changes have not reached the group yet.
+• Smaller fixes.
+
+Online features stay off until you enter your server.
