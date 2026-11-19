@@ -37,5 +37,11 @@ Sources: [AvePoint, 3-2-1 backup rule guide](https://www.avepoint.com/blog/backu
 - A documented command restores the latest off-site dump into a scratch Postgres and
   reports row counts.
 
-**Open question:** which off-site target — Hyper Backup to a cloud provider, or another
-machine at home?
+**Refined (2026-11-19):** the owner says the NAS already has its own off-site backup project and
+a local backup in place, so the off-site copy is not a CountScore script's job. What stays
+open: confirm that `$NAS_DEPLOY_DIR/backups` is inside that backup's scope, write it in
+`.llmwiki/Deployment.md`, and exercise the restore test above. The first acceptance
+statement is met by the NAS's backup once the folder is confirmed in scope; the restore
+test is the remaining work.
+
+**Open question:** is `$NAS_DEPLOY_DIR/backups` included in the NAS's off-site backup job?
