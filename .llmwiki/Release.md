@@ -2,7 +2,7 @@
 
 > Scope: the Play Store configuration state. For the procedure, use the `release-android` skill.
 > Related: [[MobileApp]] · [[StoreListing]] · [[Testing]] · [[KnownLimits]] · [[Documentation]]
-> Updated: 2026-10-04
+> Updated: 2026-11-19
 
 ## Facts
 
@@ -227,6 +227,29 @@ and CI refuses a pull request whose committed file differs — never edit it by 
 | Release notes ≤ 500 characters per language | Play Console | `play_publish.py` refuses longer notes. |
 
 ### Submission state
+
+**1.7.0 (11) is on production at 20 %** since 2026-11-19 (`play_publish.py publish --track
+production --promote --rollout 0.2 --commit`), promoted from internal, where it had been
+committed the same day. 1.6.0 (10), at 100 %, stays listed as the completed production release
+beside it until 1.7.0 is widened. The store listing was not touched.
+
+It ships the landscape layout (board, home, statistics; #273, #275), a maximum number of rounds
+per game type with Chouineurs built in (#269), and the warning with a count before *Leave* and
+*Clear server* when changes have not reached the group (#278). No schema step: the database
+stays at v22, so the device pass could not exercise a migration. `verify_aab.sh` passed (upload
+key, `INTERNET`, versionCode 11, targetSdk 36, 16 KB), run with `LC_ALL=C` and
+`JAVA_TOOL_OPTIONS=-Duser.language=en`: in a French locale `keytool` prints `SHA 256:` and the
+script's `SHA256:` match fails.
+
+The device pass was a **clean release install on a Xiaomi M2007J3SG (Android 11)**, after the
+uninstall of the Play 1.0.1 build: Android's auto-backup restored a database again. The
+Settings → Import of a v22 database taken from the `.dev` debug install took effect (the open
+game changed, the 18 players and Chouineurs were there); the wakelock toggled. Export, ZapZap and
+groups were not exercised: the device is in no group, and MIUI's file picker ignores `adb` taps
+on folders. MIUI also refuses `adb install` until "Install via USB" is allowed in the developer
+options.
+
+> **Status: Outdated** (2026-11-19) — superseded by 1.7.0 above:
 
 **1.6.0 (10) is on production at 20 %** since 2026-10-04 (`play_publish.py publish --track
 production --promote --rollout 0.2 --listing --graphics --commit`), promoted from internal, where
