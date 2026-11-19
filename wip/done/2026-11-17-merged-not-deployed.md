@@ -1,5 +1,7 @@
 # Merges on main are not deployed to production
 
+**Status:** done (2026-11-19) — deployed at `f5336f4` (a superset of `b972b60`) by the ship-parallel session. Backend: `deploy_nas.sh` (the new migrate-first script, #279) found the schema already at `0007_game_type_max_rounds` and an `api` image built on 2026-11-18, after #269 — the backend part had been deployed in the meantime, and Chouineurs is in the running container. PWA: `deploy_web.sh` published `f5336f4`; the served `service_worker.js` carries the build id of the local build, `/manifest.json` has no `orientation`, `/health` is ok. Not driven in a browser: the end screen / "Tour n/N" header and the landscape layout on a phone.
+
 - **Noted:** 2026-11-17 — the ship-parallel session that merged them ran without `backend/scripts/deploy.env` (no route to the NAS)
 - **Theme:** deploy-safety
 - **Area:** backend | web
