@@ -1,5 +1,7 @@
 # A backend deploy neither waits for health nor rolls back on failure
 
+**Status:** done (2026-11-19) — closed by fix/deploy-nas-migrate-first-and-verify. No `sleep`; the swap is `up -d --wait --wait-timeout 90` then `curl -fsS "$PUBLIC_URL/health"`, and a failure without a migration puts back the NAS-local `:pre-deploy` image and exits non-zero; after a migration it stops and points at `backend-deploy` §5. The reported `version` is not checked: it is still the constant `0.1.0`, which `wip/todo_nr/2026-09-25-deployed-version-is-not-identifiable.md` owns.
+
 - **Noted:** 2026-09-25 — comparing the NAS deploy with standard deployment practice
 - **Theme:** deploy-safety
 - **Area:** backend
