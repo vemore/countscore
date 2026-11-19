@@ -64,11 +64,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final l10n = AppLocalizations.of(context)!;
     final group = context.read<GroupProvider>();
     if (group.isJoined) {
+      // Counted now: leaving empties the outbox, and a write made a moment ago
+      // is not in the figure the last sync pass left behind.
+      final pending = await group.countPending();
+      if (!mounted) return false;
       final ok = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
           title: Text(l10n.confirmation),
-          content: Text(l10n.clearServerLeavesGroup),
+          content: Text(
+            pending > 0 ? l10n.replaceConfigUnsynced(pending) : l10n.clearServerLeavesGroup,
+            key: const Key('clear_server_question'),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -76,7 +83,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: Text(l10n.clear),
+              child: Text(pending > 0 ? l10n.replaceConfigLeaveAnyway : l10n.clear),
             ),
           ],
         ),

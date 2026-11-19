@@ -75,13 +75,13 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
     );
   }
 
-  Future<bool> _confirm(String message, String action) async {
+  Future<bool> _confirm(String message, String action, {Key? key}) async {
     final l10n = AppLocalizations.of(context)!;
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.confirmation),
-        content: Text(message),
+        content: Text(message, key: key),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l10n.cancel)),
           TextButton(onPressed: () => Navigator.pop(context, true), child: Text(action)),
@@ -310,7 +310,18 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
               onPressed: _busy
                   ? null
                   : () async {
-                      if (!await _confirm(l10n.groupLeaveConfirm, l10n.groupLeave)) return;
+                      // Counted now, not read from the last sync pass: a write made a
+                      // moment ago is still waiting, and leaving empties the outbox.
+                      final pending = await group.countPending();
+                      if (!mounted) return;
+                      final ok = pending > 0
+                          ? await _confirm(
+                              l10n.replaceConfigUnsynced(pending),
+                              l10n.replaceConfigLeaveAnyway,
+                              key: const Key('group_leave_unsynced'),
+                            )
+                          : await _confirm(l10n.groupLeaveConfirm, l10n.groupLeave);
+                      if (!ok) return;
                       await _run(group.leave, done: l10n.groupLeft);
                     },
             ),
