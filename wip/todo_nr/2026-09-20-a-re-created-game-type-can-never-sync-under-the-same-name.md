@@ -28,9 +28,8 @@ The same shape applies to a player, with one difference: a player's delete is no
 the log since 2026-09-20, so the server half is real.
 
 > **Status: Outdated** (2026-11-24) for players: `_link` no longer gives up on a held name.
-> It mints a per-row identity when the holder is a live player (renamed since), or takes
-> the identity over when the holder is gone, and a membership no longer vanishes from the
-> outbox while its player is unlinked ([[Sync]]). Game types
+> The newcomer mints a per-row identity, a deleted player still sends its last name, and a
+> membership no longer vanishes from the outbox while its player is unlinked ([[Sync]]). Game types
 > still follow the paragraphs above.
 
 Not urgent: it needs a group, a deletion and a re-creation under the same name, and the sole

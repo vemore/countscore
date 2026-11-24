@@ -452,16 +452,21 @@ class SyncStore {
       // "Thibaut D", and a new "Thibaut" created. Giving up here left the
       // newcomer unlinked, and its place in every shared game and its scores
       // were then dropped from the outbox, unseen by the rest of the group.
-      if (await _isLivePlayer(holder)) {
-        // The holder is still somebody: the newcomer takes an identity of its own.
-        remote = uuid5(groupId, 'player:${normalizeName(name)}#$localUuid');
-      } else {
-        // The holder is gone: the newcomer is the group's player of that name.
-        await _db.customStatement(
-          "DELETE FROM group_links WHERE group_id = ? AND entity_type = 'player' AND remote_uuid = ?",
-          [groupId, remote],
-        );
-      }
+      //
+      // The newcomer takes an identity of its own, whatever became of the
+      // holder. Taking the holder's over is wrong even once the holder is
+      // deleted: a player's delete never reaches the group, so the server row
+      // is still the old person, and the takeover would rename them on every
+      // other device; and the holder's pending membership deletes would lose
+      // the link they are built from.
+      remote = uuid5(groupId, 'player:${normalizeName(name)}#$localUuid');
+      // The newcomer's name is free on the server only once the holder's
+      // rename got there, which an older build could drop: send it again.
+      await _db.customStatement(
+        'INSERT INTO outbox (entity_type, entity_uuid, op, payload, client_lamport, created_at) '
+        "VALUES ('player', ?, 'upsert', '', 0, ?)",
+        [holder, _nowMs()],
+      );
     }
     await _db.customStatement(
       'INSERT INTO group_links (group_id, entity_type, local_uuid, remote_uuid) VALUES (?, ?, ?, ?)',
@@ -492,14 +497,6 @@ class SyncStore {
       'WHERE p.uuid = ? AND s.group_id = ? AND s.deleted_at IS NULL',
       [now, localUuid, groupId],
     );
-  }
-
-  Future<bool> _isLivePlayer(String localUuid) async {
-    final row = await _db.customSelect(
-      'SELECT 1 FROM players WHERE uuid = ? AND deleted_at IS NULL',
-      variables: [Variable(localUuid)],
-    ).getSingleOrNull();
-    return row != null;
   }
 
   /// `_build`'s answer for a live membership or score whose player has no group
@@ -545,16 +542,19 @@ class SyncStore {
     switch (type) {
       case 'player':
         // Deleting a player from this device's catalogue is not a group event;
-        // its shared memberships are tombstoned and sync on their own.
-        if (deleted) return null;
+        // its shared memberships are tombstoned and sync on their own. Its
+        // name still is one: a rename made just before the delete must reach
+        // the group, or the server keeps the old name taken, and a new player
+        // under that name is refused `name_taken`. So a deleted player is sent
+        // as an upsert of its last name, never as a delete.
         final remote = await _remoteOf(groupId, type, uuid);
         if (remote == null) return null;
         final name = (r['name'] as String).trim();
         if (!isSyncablePlayerName(name)) {
-          return (op: op, remoteUuid: remote, payload: const <String, dynamic>{}, error: 'invalid_player_name');
+          return (op: 'upsert', remoteUuid: remote, payload: const <String, dynamic>{}, error: 'invalid_player_name');
         }
         return (
-          op: op,
+          op: 'upsert',
           remoteUuid: remote,
           payload: {
             'name': name,

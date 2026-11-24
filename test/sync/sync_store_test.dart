@@ -365,24 +365,30 @@ void main() {
         await store.shareGame(game, m.groupId);
       }
 
-      test('whose row is gone hands the group identity over, '
-          'and the newcomer\'s membership and scores are pushed', () async {
+      test('renamed then deleted, the newcomer still gets an identity of its own, '
+          'and the old membership delete is still sent', () async {
         await sharedAndSent();
-        // The linked row disappears (no app path removes a shared player today,
-        // but a link must not outlive its row and block the name for good).
-        await db.customStatement(
-            "UPDATE players SET name = 'Alice old' WHERE name = 'Alice'");
-        await db.customStatement("DELETE FROM players WHERE name = 'Alice old'");
-        await db.customStatement('DELETE FROM outbox');
-
+        await players.renameByName('Alice', 'Alicia');
+        await players.deleteByName('Alicia');
         await newSharedGameWithAlice((await store.membership())!);
+
         final deltas = await store.preparePush((await store.membership())!);
 
-        final alice = deltas.singleWhere((d) => d.entityType == 'player');
-        expect(alice.entityUuid, linkedRemoteUuid(_group, 'player', 'alice'));
-        final gp = deltas.singleWhere((d) => d.entityType == 'game_player');
-        expect(gp.payload['player_id'], alice.entityUuid);
-        final score = deltas.singleWhere((d) => d.entityType == 'score');
+        final original = linkedRemoteUuid(_group, 'player', 'alice');
+        final alicia = deltas.singleWhere((d) => d.payload['name'] == 'Alicia');
+        expect(alicia.entityUuid, original,
+            reason: 'the rename still travels, or the server keeps "alice" taken');
+        expect(alicia.op, 'upsert', reason: "a player's delete is not a group event");
+        final alice = deltas.singleWhere((d) => d.payload['name'] == 'Alice');
+        expect(alice.entityUuid, isNot(original),
+            reason: 'the server row is still the old person; taking it over would rename them');
+        final removed = deltas.singleWhere(
+            (d) => d.entityType == 'game_player' && d.op == 'delete');
+        expect(removed.payload['player_id'], original);
+        final joined = deltas.singleWhere(
+            (d) => d.entityType == 'game_player' && d.op == 'upsert');
+        expect(joined.payload['player_id'], alice.entityUuid);
+        final score = deltas.singleWhere((d) => d.entityType == 'score' && d.op == 'upsert');
         expect(score.payload['player_id'], alice.entityUuid);
         expect(score.payload['value'], 7);
         expect(await store.rejectedCount(), 0);

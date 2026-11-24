@@ -305,13 +305,15 @@ first: their server uuid is `uuid5(group_id, "<type>:<normalised name>")`, so ev
 computes the same identity for "Alice" and the server's unique name never collides. A player
 keeps the link of the name it was shared under through any rename, so that name can already
 be held when a new player takes it ("Thibaut" shared, renamed "Thibaut D", a new "Thibaut"):
-`_link` then mints `uuid5(group_id, "player:<name>#<local uuid>")`, or takes the identity
-over when its holder row is gone or tombstoned. Linking a player re-enqueues its live
+`_link` then mints `uuid5(group_id, "player:<name>#<local uuid>")` for the newcomer, and
+re-sends the holder so its rename reaches the server first. Linking a player re-enqueues its live
 memberships and scores in the group, and a live membership or score whose player has no link
 yet stays queued (`player_unlinked`) instead of being dropped (since 2026-11-24). Batches of
 100, parents first (`game_type` → `player` → `game` → `game_player` → `round` → `score` →
 `game_analysis`). Strings are clipped to the server bounds. A player's delete is
-not sent: removing a player from this device's catalogue is not a group event. **A game
+not sent: removing a player from this device's catalogue is not a group event. A deleted
+player is still sent as an upsert of its last name (since 2026-11-24), so a rename made just
+before the delete reaches the group and frees the old name on the server. **A game
 type's delete is** (since 2026-09-20). Game types carry no `group_id` — they reach a group
 through `group_links` — so `DriftGameTypeRepository.delete` tombstones a type that has a
 link and hard-deletes one the group never saw (`_isLinked`,
@@ -495,8 +497,13 @@ closed with 1013 before `accept()`. The counter is process memory too (`_open_st
   shared game showed six players on the phone that ran it and five everywhere else: `_link`
   returned silently when another local row held the name's uuid, and `preparePush` then
   deleted the newcomer's memberships and scores from the outbox, since `_build` found no link.
-  Re-pointing a live holder was rejected: after a rename, its server row carries the new
-  name, and handing it over would rename it back on every device. Game types keep the old
+  The newcomer always takes an identity of its own. Handing it the holder's was rejected,
+  even for a deleted holder: since a player's delete never travels, the server row is still
+  the old person, and the hand-over renamed them into the newcomer on every other device; it
+  also cut the link the holder's pending membership deletes are built from (both found by
+  the independent review of #286). For the same reason a deleted player now sends its last
+  name: otherwise a rename followed by a delete left the old name taken on the server, and
+  the newcomer was refused `name_taken`. Game types keep the old
   first-link rule; their deletes travel, see the 2026-09-20 re-created-type `wip/` entry.
 - **Players merge by name through a deterministic uuid (2026-09-13).** Chosen with the user
   over separate group players: stats stay keyed on the local global player, and two devices

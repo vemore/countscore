@@ -296,6 +296,37 @@ void main() {
     expect((await b.players.getByGame(lundi.id!)).map((p) => p.name), ['Thibaut D']);
   });
 
+  test('a player renamed then deleted keeps its old games apart from a new player of its name',
+      () async {
+    final groupId = (await a.store.membership())!.groupId;
+    final first = await a.games.create(Game(name: 'Lundi', isLowestScoreWins: true, gameTypeId: 1));
+    await a.players.create(Player(gameId: first, name: 'Thibaut', orderIndex: 0));
+    await a.store.shareGame(first, groupId);
+    expect((await a.sync()).failure, isNull);
+    expect((await b.sync()).failure, isNull);
+
+    // Renamed and deleted with no sync in between, then the name is taken again.
+    await a.players.renameByName('Thibaut', 'Thibaut D');
+    await a.players.deleteByName('Thibaut D');
+    final second = await a.games.create(Game(name: 'Mardi', isLowestScoreWins: true, gameTypeId: 1));
+    await a.players.create(Player(gameId: second, name: 'Thibaut', orderIndex: 0));
+    await a.store.shareGame(second, groupId);
+    expect((await a.sync()).failure, isNull);
+    expect(await a.store.pendingCount(), 0);
+    expect(await a.store.rejectedCount(), 0);
+    expect((await b.sync()).failure, isNull);
+
+    Future<List<String>> namesOnB(String game) async => [
+          for (final p in await b.players
+              .getByGame((await b.games.getAll()).singleWhere((g) => g.name == game).id!))
+            p.name,
+        ];
+    expect(await namesOnB('Lundi'), isEmpty, reason: 'the old membership delete reached B');
+    expect(await namesOnB('Mardi'), ['Thibaut']);
+    expect(await b.players.getAllNames(), contains('Thibaut D'),
+        reason: 'the old person is not renamed into the new one on B');
+  });
+
   test('leaving keeps the games as local ones', () async {
     final gameId = await a.games.create(Game(name: 'Gardée', isLowestScoreWins: false));
     await a.players.create(Player(gameId: gameId, name: 'Alice', orderIndex: 0));
