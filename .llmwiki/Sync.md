@@ -2,7 +2,7 @@
 
 > Scope: the offline-first sharing protocol — server and Flutter client.
 > Related: [[Api]] · [[Schema]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-11-17
+> Updated: 2026-11-24
 
 ## Facts
 
@@ -302,7 +302,13 @@ payload is built from the row as it is *now*, and a lamport is stamped from
 `sync_state.last_lamport`; a prepared row keeps its lamport and payload until the server
 answers, so a retry is a `duplicate`, never a second apply. Players and game types are linked
 first: their server uuid is `uuid5(group_id, "<type>:<normalised name>")`, so every device
-computes the same identity for "Alice" and the server's unique name never collides. Batches of
+computes the same identity for "Alice" and the server's unique name never collides. A player
+keeps the link of the name it was shared under through any rename, so that name can already
+be held when a new player takes it ("Thibaut" shared, renamed "Thibaut D", a new "Thibaut"):
+`_link` then mints `uuid5(group_id, "player:<name>#<local uuid>")`, or takes the identity
+over when its holder row is gone or tombstoned. Linking a player re-enqueues its live
+memberships and scores in the group, and a live membership or score whose player has no link
+yet stays queued (`player_unlinked`) instead of being dropped (since 2026-11-24). Batches of
 100, parents first (`game_type` → `player` → `game` → `game_player` → `round` → `score` →
 `game_analysis`). Strings are clipped to the server bounds. A player's delete is
 not sent: removing a player from this device's catalogue is not a group event. **A game
@@ -485,6 +491,13 @@ closed with 1013 before `accept()`. The counter is process memory too (`_open_st
   true for game types the moment their names became localized, so built-in types hash their
   `builtin_key` instead. Translating the rows in place was the alternative and it fails the
   same way: two devices, two locales, two names, two rows.
+- **A name already linked no longer leaves a player unsynced (2026-11-24).** In production a
+  shared game showed six players on the phone that ran it and five everywhere else: `_link`
+  returned silently when another local row held the name's uuid, and `preparePush` then
+  deleted the newcomer's memberships and scores from the outbox, since `_build` found no link.
+  Re-pointing a live holder was rejected: after a rename, its server row carries the new
+  name, and handing it over would rename it back on every device. Game types keep the old
+  first-link rule; their deletes travel, see the 2026-09-20 re-created-type `wip/` entry.
 - **Players merge by name through a deterministic uuid (2026-09-13).** Chosen with the user
   over separate group players: stats stay keyed on the local global player, and two devices
   that both have "Alice" converge without a join-time reconciliation step.

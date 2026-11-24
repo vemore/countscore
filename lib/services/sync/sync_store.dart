@@ -309,6 +309,7 @@ class SyncStore {
           await _db.customStatement('DELETE FROM outbox WHERE id = ?', [id]);
           continue;
         }
+        if (built.error == _playerUnlinked) continue; // stays queued, see _build
         if (built.error != null) {
           await _reject(id, built.error!);
           continue;
@@ -409,7 +410,7 @@ class SyncStore {
   Future<void> _ensureLinks(String groupId) async {
     final players = await _db.customSelect(
       'SELECT DISTINCT p.uuid, p.name FROM game_players gp JOIN players p ON p.id = gp.player_id '
-      'WHERE gp.group_id = ? AND p.uuid NOT IN '
+      'WHERE gp.group_id = ? AND p.deleted_at IS NULL AND p.uuid NOT IN '
       "(SELECT local_uuid FROM group_links WHERE group_id = ? AND entity_type = 'player')",
       variables: [Variable(groupId), Variable(groupId)],
     ).get();
@@ -436,26 +437,82 @@ class SyncStore {
 
   Future<void> _link(String groupId, String type, String localUuid, String name,
       {String? builtinKey}) async {
-    final remote = type == 'game_type'
+    var remote = type == 'game_type'
         ? linkedGameTypeRemoteUuid(groupId, builtinKey, name)
         : linkedRemoteUuid(groupId, type, name);
-    // Another local row may already hold that remote identity — two local
-    // "Alice (2)"-style duplicates that normalise alike. Keep the first link.
-    final taken = await _db.customSelect(
-      'SELECT 1 FROM group_links WHERE group_id = ? AND entity_type = ? AND remote_uuid = ?',
-      variables: [Variable(groupId), Variable(type), Variable(remote)],
-    ).getSingleOrNull();
-    if (taken != null) return;
+    // Another local row may already hold that remote identity.
+    final holder = await _localOf(groupId, type, remote);
+    if (holder != null) {
+      // A game type keeps the first link: see the 2026-09-20 wip entry on
+      // re-created types, whose delete the server makes win.
+      if (type != 'player') return;
+      // A player keeps the link of the name it was shared under, through any
+      // rename since (the rename travels on that identity). So a name can be
+      // linked to a row that now goes by another one: "Thibaut" shared, renamed
+      // "Thibaut D", and a new "Thibaut" created. Giving up here left the
+      // newcomer unlinked, and its place in every shared game and its scores
+      // were then dropped from the outbox, unseen by the rest of the group.
+      if (await _isLivePlayer(holder)) {
+        // The holder is still somebody: the newcomer takes an identity of its own.
+        remote = uuid5(groupId, 'player:${normalizeName(name)}#$localUuid');
+      } else {
+        // The holder is gone: the newcomer is the group's player of that name.
+        await _db.customStatement(
+          "DELETE FROM group_links WHERE group_id = ? AND entity_type = 'player' AND remote_uuid = ?",
+          [groupId, remote],
+        );
+      }
+    }
     await _db.customStatement(
       'INSERT INTO group_links (group_id, entity_type, local_uuid, remote_uuid) VALUES (?, ?, ?, ?)',
       [groupId, type, localUuid, remote],
     );
+    final now = _nowMs();
     await _db.customStatement(
       'INSERT INTO outbox (entity_type, entity_uuid, op, payload, client_lamport, created_at) '
       "VALUES (?, ?, 'upsert', '', 0, ?)",
-      [type, localUuid, _nowMs()],
+      [type, localUuid, now],
+    );
+    if (type != 'player') return;
+    // Memberships and scores captured before the link may have been dropped
+    // unsent (an older build discarded them while the player had no link), so
+    // linking sends them again. A copy still pending is coalesced by
+    // `preparePush`; one already sent comes back as a harmless re-upsert.
+    await _db.customStatement(
+      'INSERT INTO outbox (entity_type, entity_uuid, op, payload, client_lamport, created_at) '
+      "SELECT 'game_player', gp.uuid, 'upsert', '', 0, ? FROM game_players gp "
+      'JOIN players p ON p.id = gp.player_id '
+      'WHERE p.uuid = ? AND gp.group_id = ? AND gp.deleted_at IS NULL',
+      [now, localUuid, groupId],
+    );
+    await _db.customStatement(
+      'INSERT INTO outbox (entity_type, entity_uuid, op, payload, client_lamport, created_at) '
+      "SELECT 'score', s.uuid, 'upsert', '', 0, ? FROM scores s "
+      'JOIN game_players gp ON gp.id = s.playerId JOIN players p ON p.id = gp.player_id '
+      'WHERE p.uuid = ? AND s.group_id = ? AND s.deleted_at IS NULL',
+      [now, localUuid, groupId],
     );
   }
+
+  Future<bool> _isLivePlayer(String localUuid) async {
+    final row = await _db.customSelect(
+      'SELECT 1 FROM players WHERE uuid = ? AND deleted_at IS NULL',
+      variables: [Variable(localUuid)],
+    ).getSingleOrNull();
+    return row != null;
+  }
+
+  /// `_build`'s answer for a live membership or score whose player has no group
+  /// link yet: neither sent nor dropped, it stays in the outbox for a later pass.
+  static const _playerUnlinked = 'player_unlinked';
+
+  ({String op, String remoteUuid, Map<String, dynamic> payload, String? error})
+      _awaitingPlayer(String uuid) => (
+            op: 'upsert',
+            remoteUuid: uuid,
+            payload: const <String, dynamic>{},
+            error: _playerUnlinked,
+          );
 
   Future<String?> _remoteOf(String groupId, String type, String localUuid) async {
     final row = await _db.customSelect(
@@ -597,7 +654,8 @@ class SyncStore {
         ).getSingleOrNull();
         if (refs == null) return null;
         final player = await _remoteOf(groupId, 'player', refs.data['player'] as String);
-        if (player == null) return null;
+        // A live membership waits for its player's link rather than being dropped.
+        if (player == null) return deleted ? null : _awaitingPlayer(uuid);
         final keys = {'game_id': refs.data['game'], 'player_id': player};
         if (deleted) return (op: op, remoteUuid: uuid, payload: keys, error: null);
         return (
@@ -636,7 +694,7 @@ class SyncStore {
         ).getSingleOrNull();
         if (refs == null) return null;
         final player = await _remoteOf(groupId, 'player', refs.data['player'] as String);
-        if (player == null) return null;
+        if (player == null) return _awaitingPlayer(uuid);
         return (
           op: op,
           remoteUuid: uuid,

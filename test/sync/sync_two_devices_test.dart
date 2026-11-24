@@ -267,6 +267,35 @@ void main() {
     }
   });
 
+  test('a new player under a name a renamed one was shared with reaches the other device',
+      () async {
+    final groupId = (await a.store.membership())!.groupId;
+    final first = await a.games.create(Game(name: 'Lundi', isLowestScoreWins: true, gameTypeId: 1));
+    await a.players.create(Player(gameId: first, name: 'Thibaut', orderIndex: 0));
+    await a.store.shareGame(first, groupId);
+    expect((await a.sync()).failure, isNull);
+
+    // "Thibaut" becomes "Thibaut D", and a second Thibaut joins a new shared game.
+    await a.players.renameByName('Thibaut', 'Thibaut D');
+    final second = await a.games.create(Game(name: 'Mardi', isLowestScoreWins: true, gameTypeId: 1));
+    final thibaut = await a.players.create(Player(gameId: second, name: 'Thibaut', orderIndex: 0));
+    final alice = await a.players.create(Player(gameId: second, name: 'Alice', orderIndex: 1));
+    final r1 = await a.rounds.create(Round(gameId: second, roundNumber: 1));
+    await a.scores.create(Score(playerId: thibaut, roundId: r1, value: 6));
+    await a.scores.create(Score(playerId: alice, roundId: r1, value: 2));
+    await a.store.shareGame(second, groupId);
+
+    expect((await a.sync()).failure, isNull);
+    expect(await a.store.pendingCount(), 0);
+    expect(await a.store.rejectedCount(), 0);
+    expect((await b.sync()).failure, isNull);
+
+    final onB = (await b.games.getAll()).singleWhere((g) => g.name == 'Mardi');
+    expect(await b.totals(onB.id!), {'Thibaut': 6, 'Alice': 2});
+    final lundi = (await b.games.getAll()).singleWhere((g) => g.name == 'Lundi');
+    expect((await b.players.getByGame(lundi.id!)).map((p) => p.name), ['Thibaut D']);
+  });
+
   test('leaving keeps the games as local ones', () async {
     final gameId = await a.games.create(Game(name: 'Gardée', isLowestScoreWins: false));
     await a.players.create(Player(gameId: gameId, name: 'Alice', orderIndex: 0));

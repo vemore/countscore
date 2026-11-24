@@ -344,6 +344,88 @@ void main() {
       expect(game.payload['ended_at'], isNull);
     });
 
+    group('a player whose name a previous player already linked', () {
+      /// Shares [localGame] and acknowledges everything it pushed.
+      Future<SyncMembership> sharedAndSent() async {
+        final m = await joined();
+        final g = await localGame();
+        await store.shareGame(g.game, m.groupId);
+        for (final d in await store.preparePush(m)) {
+          await store.markSent(d, m.deviceId);
+        }
+        return (await store.membership())!;
+      }
+
+      /// A new shared game where a fresh "Alice" plays and scores 7.
+      Future<void> newSharedGameWithAlice(SyncMembership m) async {
+        final game = await games.create(Game(name: 'Jeudi', isLowestScoreWins: true, gameTypeId: 1));
+        final alice = await players.create(Player(gameId: game, name: 'Alice', orderIndex: 0));
+        final round = await rounds.create(Round(gameId: game, roundNumber: 1));
+        await scores.create(Score(playerId: alice, roundId: round, value: 7));
+        await store.shareGame(game, m.groupId);
+      }
+
+      test('whose row is gone hands the group identity over, '
+          'and the newcomer\'s membership and scores are pushed', () async {
+        await sharedAndSent();
+        // The linked row disappears (no app path removes a shared player today,
+        // but a link must not outlive its row and block the name for good).
+        await db.customStatement(
+            "UPDATE players SET name = 'Alice old' WHERE name = 'Alice'");
+        await db.customStatement("DELETE FROM players WHERE name = 'Alice old'");
+        await db.customStatement('DELETE FROM outbox');
+
+        await newSharedGameWithAlice((await store.membership())!);
+        final deltas = await store.preparePush((await store.membership())!);
+
+        final alice = deltas.singleWhere((d) => d.entityType == 'player');
+        expect(alice.entityUuid, linkedRemoteUuid(_group, 'player', 'alice'));
+        final gp = deltas.singleWhere((d) => d.entityType == 'game_player');
+        expect(gp.payload['player_id'], alice.entityUuid);
+        final score = deltas.singleWhere((d) => d.entityType == 'score');
+        expect(score.payload['player_id'], alice.entityUuid);
+        expect(score.payload['value'], 7);
+        expect(await store.rejectedCount(), 0);
+      });
+
+      test('renamed, the name taken again gets an identity of its own', () async {
+        final m = await sharedAndSent();
+        await players.renameByName('Alice', 'Alicia');
+        await newSharedGameWithAlice(m);
+
+        final deltas = await store.preparePush((await store.membership())!);
+
+        final original = linkedRemoteUuid(_group, 'player', 'alice');
+        final alicia = deltas.singleWhere((d) => d.payload['name'] == 'Alicia');
+        expect(alicia.entityUuid, original, reason: 'the rename travels on the old identity');
+        final alice = deltas.singleWhere((d) => d.payload['name'] == 'Alice');
+        expect(alice.entityUuid, isNot(original));
+        final gp = deltas.singleWhere(
+            (d) => d.entityType == 'game_player' && d.payload['player_id'] == alice.entityUuid);
+        expect(gp.payload['order_index'], 0);
+        expect(
+          deltas.where((d) => d.entityType == 'score' && d.payload['player_id'] == alice.entityUuid),
+          hasLength(1),
+        );
+      });
+    });
+
+    test('linking a player sends again the memberships and scores an older build dropped',
+        () async {
+      final m = await joined();
+      final g = await localGame();
+      await store.shareGame(g.game, m.groupId);
+      // What an older build left behind: the player could not be linked, and its
+      // memberships and scores were discarded from the outbox unsent.
+      await db.customStatement(
+          "DELETE FROM outbox WHERE entity_type IN ('game_player', 'score')");
+
+      final deltas = await store.preparePush(m);
+
+      expect(deltas.where((d) => d.entityType == 'game_player'), hasLength(2));
+      expect(deltas.where((d) => d.entityType == 'score'), hasLength(2));
+    });
+
     test('a player whose name the server refuses is rejected, not sent', () async {
       final m = await joined();
       final game = await games.create(Game(name: 'G', isLowestScoreWins: false));
