@@ -309,6 +309,7 @@ class SyncStore {
           await _db.customStatement('DELETE FROM outbox WHERE id = ?', [id]);
           continue;
         }
+        if (built.error == _playerUnlinked) continue; // stays queued, see _build
         if (built.error != null) {
           await _reject(id, built.error!);
           continue;
@@ -409,7 +410,7 @@ class SyncStore {
   Future<void> _ensureLinks(String groupId) async {
     final players = await _db.customSelect(
       'SELECT DISTINCT p.uuid, p.name FROM game_players gp JOIN players p ON p.id = gp.player_id '
-      'WHERE gp.group_id = ? AND p.uuid NOT IN '
+      'WHERE gp.group_id = ? AND p.deleted_at IS NULL AND p.uuid NOT IN '
       "(SELECT local_uuid FROM group_links WHERE group_id = ? AND entity_type = 'player')",
       variables: [Variable(groupId), Variable(groupId)],
     ).get();
@@ -436,26 +437,79 @@ class SyncStore {
 
   Future<void> _link(String groupId, String type, String localUuid, String name,
       {String? builtinKey}) async {
-    final remote = type == 'game_type'
+    var remote = type == 'game_type'
         ? linkedGameTypeRemoteUuid(groupId, builtinKey, name)
         : linkedRemoteUuid(groupId, type, name);
-    // Another local row may already hold that remote identity — two local
-    // "Alice (2)"-style duplicates that normalise alike. Keep the first link.
-    final taken = await _db.customSelect(
-      'SELECT 1 FROM group_links WHERE group_id = ? AND entity_type = ? AND remote_uuid = ?',
-      variables: [Variable(groupId), Variable(type), Variable(remote)],
-    ).getSingleOrNull();
-    if (taken != null) return;
+    // Another local row may already hold that remote identity.
+    final holder = await _localOf(groupId, type, remote);
+    if (holder != null) {
+      // A game type keeps the first link: see the 2026-09-20 wip entry on
+      // re-created types, whose delete the server makes win.
+      if (type != 'player') return;
+      // A player keeps the link of the name it was shared under, through any
+      // rename since (the rename travels on that identity). So a name can be
+      // linked to a row that now goes by another one: "Thibaut" shared, renamed
+      // "Thibaut D", and a new "Thibaut" created. Giving up here left the
+      // newcomer unlinked, and its place in every shared game and its scores
+      // were then dropped from the outbox, unseen by the rest of the group.
+      //
+      // The newcomer takes an identity of its own, whatever became of the
+      // holder. Taking the holder's over is wrong even once the holder is
+      // deleted: a player's delete never reaches the group, so the server row
+      // is still the old person, and the takeover would rename them on every
+      // other device; and the holder's pending membership deletes would lose
+      // the link they are built from.
+      remote = uuid5(groupId, 'player:${normalizeName(name)}#$localUuid');
+      // The newcomer's name is free on the server only once the holder's
+      // rename got there, which an older build could drop: send it again.
+      await _db.customStatement(
+        'INSERT INTO outbox (entity_type, entity_uuid, op, payload, client_lamport, created_at) '
+        "VALUES ('player', ?, 'upsert', '', 0, ?)",
+        [holder, _nowMs()],
+      );
+    }
     await _db.customStatement(
       'INSERT INTO group_links (group_id, entity_type, local_uuid, remote_uuid) VALUES (?, ?, ?, ?)',
       [groupId, type, localUuid, remote],
     );
+    final now = _nowMs();
     await _db.customStatement(
       'INSERT INTO outbox (entity_type, entity_uuid, op, payload, client_lamport, created_at) '
       "VALUES (?, ?, 'upsert', '', 0, ?)",
-      [type, localUuid, _nowMs()],
+      [type, localUuid, now],
+    );
+    if (type != 'player') return;
+    // Memberships and scores captured before the link may have been dropped
+    // unsent (an older build discarded them while the player had no link), so
+    // linking sends them again. A copy still pending is coalesced by
+    // `preparePush`; one already sent comes back as a harmless re-upsert.
+    await _db.customStatement(
+      'INSERT INTO outbox (entity_type, entity_uuid, op, payload, client_lamport, created_at) '
+      "SELECT 'game_player', gp.uuid, 'upsert', '', 0, ? FROM game_players gp "
+      'JOIN players p ON p.id = gp.player_id '
+      'WHERE p.uuid = ? AND gp.group_id = ? AND gp.deleted_at IS NULL',
+      [now, localUuid, groupId],
+    );
+    await _db.customStatement(
+      'INSERT INTO outbox (entity_type, entity_uuid, op, payload, client_lamport, created_at) '
+      "SELECT 'score', s.uuid, 'upsert', '', 0, ? FROM scores s "
+      'JOIN game_players gp ON gp.id = s.playerId JOIN players p ON p.id = gp.player_id '
+      'WHERE p.uuid = ? AND s.group_id = ? AND s.deleted_at IS NULL',
+      [now, localUuid, groupId],
     );
   }
+
+  /// `_build`'s answer for a live membership or score whose player has no group
+  /// link yet: neither sent nor dropped, it stays in the outbox for a later pass.
+  static const _playerUnlinked = 'player_unlinked';
+
+  ({String op, String remoteUuid, Map<String, dynamic> payload, String? error})
+      _awaitingPlayer(String uuid) => (
+            op: 'upsert',
+            remoteUuid: uuid,
+            payload: const <String, dynamic>{},
+            error: _playerUnlinked,
+          );
 
   Future<String?> _remoteOf(String groupId, String type, String localUuid) async {
     final row = await _db.customSelect(
@@ -488,16 +542,21 @@ class SyncStore {
     switch (type) {
       case 'player':
         // Deleting a player from this device's catalogue is not a group event;
-        // its shared memberships are tombstoned and sync on their own.
-        if (deleted) return null;
+        // its shared memberships are tombstoned and sync on their own. Its
+        // name still is one: a rename made just before the delete must reach
+        // the group, or the server keeps the old name taken, and a new player
+        // under that name is refused `name_taken`. So a deleted player is sent
+        // as an upsert of its last name, never as a delete.
         final remote = await _remoteOf(groupId, type, uuid);
         if (remote == null) return null;
         final name = (r['name'] as String).trim();
         if (!isSyncablePlayerName(name)) {
-          return (op: op, remoteUuid: remote, payload: const <String, dynamic>{}, error: 'invalid_player_name');
+          // A deleted player has nothing to tell the group if its name cannot go.
+          if (deleted) return null;
+          return (op: 'upsert', remoteUuid: remote, payload: const <String, dynamic>{}, error: 'invalid_player_name');
         }
         return (
-          op: op,
+          op: 'upsert',
           remoteUuid: remote,
           payload: {
             'name': name,
@@ -597,7 +656,8 @@ class SyncStore {
         ).getSingleOrNull();
         if (refs == null) return null;
         final player = await _remoteOf(groupId, 'player', refs.data['player'] as String);
-        if (player == null) return null;
+        // A live membership waits for its player's link rather than being dropped.
+        if (player == null) return deleted ? null : _awaitingPlayer(uuid);
         final keys = {'game_id': refs.data['game'], 'player_id': player};
         if (deleted) return (op: op, remoteUuid: uuid, payload: keys, error: null);
         return (
@@ -636,7 +696,7 @@ class SyncStore {
         ).getSingleOrNull();
         if (refs == null) return null;
         final player = await _remoteOf(groupId, 'player', refs.data['player'] as String);
-        if (player == null) return null;
+        if (player == null) return _awaitingPlayer(uuid);
         return (
           op: op,
           remoteUuid: uuid,

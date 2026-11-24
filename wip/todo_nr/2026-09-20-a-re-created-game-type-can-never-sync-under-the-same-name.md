@@ -27,6 +27,11 @@ The same shape applies to a player, with one difference: a player's delete is no
 `group_links` row blocks the relink, and `leave` clears that. A game type's delete does reach
 the log since 2026-09-20, so the server half is real.
 
+> **Status: Outdated** (2026-11-24) for players: `_link` no longer gives up on a held name.
+> The newcomer mints a per-row identity, a deleted player still sends its last name, and a
+> membership no longer vanishes from the outbox while its player is unlinked ([[Sync]]). Game types
+> still follow the paragraphs above.
+
 Not urgent: it needs a group, a deletion and a re-creation under the same name, and the sole
 user of production is on one device.
 
