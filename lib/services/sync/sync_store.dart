@@ -551,6 +551,8 @@ class SyncStore {
         if (remote == null) return null;
         final name = (r['name'] as String).trim();
         if (!isSyncablePlayerName(name)) {
+          // A deleted player has nothing to tell the group if its name cannot go.
+          if (deleted) return null;
           return (op: 'upsert', remoteUuid: remote, payload: const <String, dynamic>{}, error: 'invalid_player_name');
         }
         return (
