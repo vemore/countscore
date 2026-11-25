@@ -245,10 +245,10 @@ another whose board is open.
 Sync runs only while a server URL is configured **and** the device holds a device token —
 the user's design. A device may be in up to five groups since 2026-11-25: the storage keeps
 them apart since schema v23, and `GroupProvider` runs one sync session per membership — see
-**Several groups** below. The screens still show one group, the first joined, until
-`wip/todo/2026-11-25-multi-group-ui.md`.
+**Several groups** below. The screens show every group since `feat/multi-group-ui`
+([[MultiGroup]]).
 
-**Joining.** Settings → Group creates a group (`POST /groups`) or joins one with a pasted
+**Joining.** Settings → Groups creates a group (`POST /groups`) or joins one with a pasted
 `share_token` (`POST /groups/join`). The device token and share token go to
 `flutter_secure_storage` (`sync_credentials.dart`), **keyed by group id** since v23
 (`sync.group.<id>.deviceToken`, `….shareToken`); group id, name and device id go to a
@@ -289,7 +289,7 @@ group's queue pushed under it. `test/sync/sync_reconcile_test.dart`.
 the server and the invite code, and a scanned one opens a "replace the configuration?" dialog
 that leaves and joins through `GroupProvider`: [[ConfigShare]].
 
-**Removing another device.** Settings → Group → *Devices* (`group_devices_sheet.dart`) lists
+**Removing another device.** Settings → Groups → *Devices* (`group_devices_sheet.dart`) lists
 `GET /groups/me/devices`, marks the owner, and — on the owner only — offers a revoke and a
 hand-over (*Make owner*, `PUT /groups/me/owner`) on every device but this one; this one leaves
 instead. A member that is not the owner sees the list and no action, with one exception: when
@@ -299,7 +299,7 @@ is what an uninstalled app looks like — that row offers *Claim ownership*
 (`GroupActionError.ownerActive`) is shown as a message and `isOwner` is not flipped on a
 guess; a server that predates the field sends no `dormant` and the action never appears.
 Creating a group says in one line that the role lives on this device and can be handed over
-(`groupCreatedOwnerExplain`). Settings → Group hides *New code* from a member. `GroupProvider.isOwner` is held in memory, never in the database:
+(`groupCreatedOwnerExplain`). Settings → Groups hides *New code* from a member. `GroupProvider.isOwner` is held in memory, never in the database:
 true after creating, false after joining, then refreshed from `owner_device_id`
 (`GET /groups/me`) on every start and resume, from `is_owner` whenever the list loads, and
 dropped on any 403. A server that predates owners sends neither field; every device then
@@ -311,15 +311,16 @@ next push to the group or the next idle heartbeat, whichever comes first — see
 **A pass across a group switch.** `GroupSession._stop` bumps that session's generation counter; a `syncNow` pass that finds it changed after its engine returns (its group left, or the server changed, meanwhile) writes neither its status nor its pending counts nor events, and the loop runs again for the queued `_rerun`. Another group's pass is another session: a leave, a join or a refusal in one changes nothing in it. Tested in `test/providers/group_provider_generation_test.dart` and `group_provider_multi_group_test.dart`.
 
 **The nickname.** A device's name in a group (`devices.label`) is what its siblings see in
-the devices list. The create and join dialogs ask for it first (`group_nickname_field`,
-`groupNicknameLabel` with the `groupNicknameHint` helper), filled with the nickname this device
-already goes by and empty before any, and OK stays disabled until every field holds a
-non-blank value; the values go out trimmed. **One nickname for every group** (decision 8 of
-the multi-group plan), kept on the device in `SyncCredentials` (`sync.nickname`) since
-2026-11-25: saved on create and join — joining under another name renames the groups already
-joined —, on rename, and learnt from a devices list only by an install that holds none yet
-(one from when it was kept in memory); read on start, so it is known offline. Settings →
-Group shows it (`groupNicknameCurrent`) with an edit button (`group_nickname_edit`) that
+the devices list. While the device has none, the create, join and "join this group too?"
+dialogs ask for it first (`group_nickname_field`, `groupNicknameLabel` with the
+`groupNicknameHint` helper), empty, and OK stays disabled until every field holds a non-blank
+value; the values go out trimmed. Once it has one they ask nothing about it and register
+under it as it is. **One nickname for every group** (decision 8 of the multi-group plan),
+kept on the device in `SyncCredentials` (`sync.nickname`) since 2026-11-25: saved on the
+first create or join, on rename, and learnt from a devices list only by an install that holds
+none yet (one from when it was kept in memory); read on start, so it is known offline. Only
+another server's configuration, which leaves every group first, asks again (prefilled).
+Settings → Groups shows it (`groupNicknameCurrent`) with an edit button (`group_nickname_edit`) that
 reuses the field and calls `GroupProvider.renameDevice`: `PATCH /groups/devices/me` with each
 group's token. The new name is held from the start, so a pass meanwhile cannot send the old
 one back. A 422 refuses the name, and so does an error from every group (429, 401, 5xx,
@@ -332,7 +333,7 @@ answer (a counter bumped by each rename). The fields stop at 64 **code points**,
 server counts (`maxLength` would count grapheme clusters); an unchanged nickname sends
 nothing. A rename changes no synced row.
 
-**Comment settings and usage.** Settings → Group → *Comments and usage*
+**Comment settings and usage.** Settings → Groups → *Comments and usage*
 (`group_settings_screen.dart`) shows the group's `comment_style` and `comment_language` from
 `GET /groups/me` and changes them with `PATCH /groups/me/settings` — every member may — and
 the month's spending from `GET /groups/me/usage`. `BackendClient.updateGroupSettings` has no

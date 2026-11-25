@@ -397,8 +397,6 @@
 
   "shareTokenHint": "그룹 구성원이 보낸 코드를 붙여넣으세요",
 
-  "groupCurrent": "그룹: {name}",
-
   "shareTokenExplain": "이 코드를 그룹에 참여해야 하는 기기로 보내세요. 코드를 가진 사람은 누구나 참여할 수 있습니다.",
 
   "shareTokenCopy": "코드 복사",
@@ -411,13 +409,9 @@
 
   "groupLeave": "그룹 나가기",
 
-  "groupLeaveConfirm": "이 기기가 그룹을 떠납니다. 공유 게임은 이 기기에 남아있지만 더 이상 동기화되지 않습니다.",
-
   "groupLeft": "그룹을 나갔습니다",
 
   "groupJoined": "그룹에 참여했습니다",
-
-  "clearServerLeavesGroup": "서버를 지우면 그룹을 떠납니다. 공유 게임은 이 기기에 남아있습니다.",
 
   "syncNow": "지금 동기화",
 
@@ -759,7 +753,6 @@
   "replaceConfigCurrent": "현재: {value}",
   "replaceConfigNew": "새: {value}",
   "replaceConfigInvite": "초대 코드 {code}",
-  "replaceConfigLeavesGroup": "이 기기가 그룹 {name}을 떠날 것입니다. 게임은 이 기기에 남아있습니다.",
   "replaceConfigConfirm": "교체",
   "replaceConfigUnsynced": "{count, plural, =1{이 기기의 1개 변경이 아직 그룹에 도달하지 않았습니다. 지금 떠나면 그룹은 절대 받지 못합니다.} other{이 기기의 {count}개 변경이 아직 그룹에 도달하지 않았습니다. 지금 떠나면 그룹은 절대 받지 못합니다.}}",
   "replaceConfigLeaveAnyway": "어쨌든 떠나기",
@@ -775,5 +768,19 @@
   "gameRulesEndOrMaxRounds": "{count, plural, one{{condition} (또는 {count}라운드 후 종료)} other{{condition} (또는 {count}라운드 후 종료)}}",
   "boardRoundProgress": "라운드 {current}/{total}",
   "gameTypeNameChouineurs": "Chouineurs",
-  "gameTypeNameChouineursSortKey": "Chouineurs"
+  "gameTypeNameChouineursSortKey": "Chouineurs",
+  "groupsSection": "그룹",
+  "groupsMaxReached": "최대 그룹 수에 도달했습니다 ({max}개). 새 그룹을 만들거나 참여하려면 하나를 나가세요.",
+  "groupLeaveConfirmNamed": "이 기기가 {name} 그룹을 떠납니다. 공유 게임은 이 기기에 남아있지만 더 이상 동기화되지 않습니다. 다른 그룹은 변경되지 않습니다.",
+  "clearServerLeavesGroups": "{count, plural, other{서버를 지우면 그룹 {count}개를 모두 떠납니다. 공유 게임은 이 기기에 남아있습니다.}}",
+  "replaceConfigLeavesGroups": "{count, plural, other{이 기기가 다음 그룹 {count}개를 떠납니다(게임은 이 기기에 남아 있습니다):}}",
+  "joinGroupTooTitle": "이 그룹에도 참여할까요?",
+  "joinGroupTooBody": "이 기기가 같은 서버의 초대 코드 {code} 그룹에 참여합니다. 다음 현재 그룹에도 계속 남아 있습니다:",
+  "joinGroupTooConfirm": "참여",
+  "joinLinkAlreadyMember": "이 기기는 이미 {name} 그룹에 있습니다. 변경된 것은 없습니다.",
+  "newGameShareWith": "공유 대상",
+  "newGameLocalOnly": "이 기기에만",
+  "newGameLocalSubtitle": "게임은 이 기기에 남아 있습니다.",
+  "shareGameChooseGroup": "이 게임을 어느 그룹과 공유할까요? 게임, 플레이어, 점수 및 댓글이 그곳으로 전송됩니다. 공유는 취소할 수 없습니다.",
+  "gameSharedWith": "공유 대상: {name}"
 }

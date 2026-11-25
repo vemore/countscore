@@ -2,7 +2,7 @@
 
 > Scope: the Play Store configuration state. For the procedure, use the `release-android` skill.
 > Related: [[MobileApp]] · [[StoreListing]] · [[Testing]] · [[KnownLimits]] · [[Documentation]]
-> Updated: 2026-11-19
+> Updated: 2026-11-25
 
 ## Facts
 
@@ -514,7 +514,7 @@ not apply (`wip/done/2026-09-16-edge-to-edge-insets.md`).
   `wip/done/2026-09-13-play-console-upload-api.md`.
 - **No account-deletion flow is required.** Play's account-deletion policy applies to apps
   that let users create an account. CountScore has none: creating or joining a group issues
-  a device token, and Settings → Group → Leave revokes it. Server-side history belongs to
+  a device token, and Settings → Groups → Leave revokes it. Server-side history belongs to
   whoever operates the server the group chose, not to the developer ([[Sync]], `privacy_policy.md`).
 - **A pruning pass before each release (2026-09-14).** The hooks, `CLAUDE.md` and the wiki
   only ever grew: every incident became a rule, none was removed

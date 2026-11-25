@@ -730,11 +730,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareTokenHint => 'Paste the code a group member sent you';
 
   @override
-  String groupCurrent(String name) {
-    return 'Group: $name';
-  }
-
-  @override
   String get shareTokenExplain =>
       'Send this code to the devices that should join the group. Anyone who has it can join.';
 
@@ -755,18 +750,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupLeave => 'Leave group';
 
   @override
-  String get groupLeaveConfirm =>
-      'This device leaves the group. Shared games stay on this device but will no longer sync.';
-
-  @override
   String get groupLeft => 'Left the group';
 
   @override
   String get groupJoined => 'Joined the group';
-
-  @override
-  String get clearServerLeavesGroup =>
-      'Clearing the server leaves the group. Shared games stay on this device.';
 
   @override
   String get syncNow => 'Sync now';
@@ -1683,11 +1670,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String replaceConfigLeavesGroup(String name) {
-    return 'This device will leave the group $name. Its games stay on this device.';
-  }
-
-  @override
   String get replaceConfigConfirm => 'Replace';
 
   @override
@@ -1765,4 +1747,75 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get gameTypeNameChouineursSortKey => 'Chouineurs';
+
+  @override
+  String get groupsSection => 'Groups';
+
+  @override
+  String groupsMaxReached(int max) {
+    return 'Maximum number of groups reached ($max): leave one to create or join another.';
+  }
+
+  @override
+  String groupLeaveConfirmNamed(String name) {
+    return 'This device leaves the group $name. Its shared games stay on this device but will no longer sync. Your other groups are unchanged.';
+  }
+
+  @override
+  String clearServerLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Clearing the server leaves all $count groups. Shared games stay on this device.',
+      one: 'Clearing the server leaves the group. Shared games stay on this device.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String replaceConfigLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'This device will leave these $count groups (their games stay on this device):',
+      one: 'This device will leave this group (its games stay on this device):',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get joinGroupTooTitle => 'Join this group too?';
+
+  @override
+  String joinGroupTooBody(String code) {
+    return 'This device will join the group of invite code $code, on the same server. It stays in your current groups:';
+  }
+
+  @override
+  String get joinGroupTooConfirm => 'Join';
+
+  @override
+  String joinLinkAlreadyMember(String name) {
+    return 'This device is already in the group $name: nothing changes.';
+  }
+
+  @override
+  String get newGameShareWith => 'Share with';
+
+  @override
+  String get newGameLocalOnly => 'This device only';
+
+  @override
+  String get newGameLocalSubtitle => 'The game stays on this device.';
+
+  @override
+  String get shareGameChooseGroup =>
+      'Which group should this game be shared with? The game, its players, scores and comments will be sent there. Sharing cannot be undone.';
+
+  @override
+  String gameSharedWith(String name) {
+    return 'Shared with $name';
+  }
 }

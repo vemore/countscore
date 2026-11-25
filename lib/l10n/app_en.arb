@@ -443,8 +443,6 @@
 
   "shareTokenHint": "Paste the code a group member sent you",
 
-  "groupCurrent": "Group: {name}",
-
   "shareTokenExplain": "Send this code to the devices that should join the group. Anyone who has it can join.",
 
   "shareTokenCopy": "Copy code",
@@ -457,13 +455,9 @@
 
   "groupLeave": "Leave group",
 
-  "groupLeaveConfirm": "This device leaves the group. Shared games stay on this device but will no longer sync.",
-
   "groupLeft": "Left the group",
 
   "groupJoined": "Joined the group",
-
-  "clearServerLeavesGroup": "Clearing the server leaves the group. Shared games stay on this device.",
 
   "syncNow": "Sync now",
 
@@ -805,7 +799,6 @@
   "replaceConfigCurrent": "Now: {value}",
   "replaceConfigNew": "New: {value}",
   "replaceConfigInvite": "invite code {code}",
-  "replaceConfigLeavesGroup": "This device will leave the group {name}. Its games stay on this device.",
   "replaceConfigConfirm": "Replace",
   "replaceConfigUnsynced": "{count, plural, =1{1 change on this device has not reached the group yet. If you leave now, the group will never receive it.} other{{count} changes on this device have not reached the group yet. If you leave now, the group will never receive them.}}",
   "replaceConfigLeaveAnyway": "Leave anyway",
@@ -821,5 +814,19 @@
   "gameRulesEndOrMaxRounds": "{count, plural, one{{condition}, or after {count} round} other{{condition}, or after {count} rounds}}",
   "boardRoundProgress": "Round {current} of {total}",
   "gameTypeNameChouineurs": "Chouineurs",
-  "gameTypeNameChouineursSortKey": "Chouineurs"
+  "gameTypeNameChouineursSortKey": "Chouineurs",
+  "groupsSection": "Groups",
+  "groupsMaxReached": "Maximum number of groups reached ({max}): leave one to create or join another.",
+  "groupLeaveConfirmNamed": "This device leaves the group {name}. Its shared games stay on this device but will no longer sync. Your other groups are unchanged.",
+  "clearServerLeavesGroups": "{count, plural, one{Clearing the server leaves the group. Shared games stay on this device.} other{Clearing the server leaves all {count} groups. Shared games stay on this device.}}",
+  "replaceConfigLeavesGroups": "{count, plural, one{This device will leave this group (its games stay on this device):} other{This device will leave these {count} groups (their games stay on this device):}}",
+  "joinGroupTooTitle": "Join this group too?",
+  "joinGroupTooBody": "This device will join the group of invite code {code}, on the same server. It stays in your current groups:",
+  "joinGroupTooConfirm": "Join",
+  "joinLinkAlreadyMember": "This device is already in the group {name}: nothing changes.",
+  "newGameShareWith": "Share with",
+  "newGameLocalOnly": "This device only",
+  "newGameLocalSubtitle": "The game stays on this device.",
+  "shareGameChooseGroup": "Which group should this game be shared with? The game, its players, scores and comments will be sent there. Sharing cannot be undone.",
+  "gameSharedWith": "Shared with {name}"
 }

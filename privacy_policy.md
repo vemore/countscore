@@ -1,10 +1,10 @@
 # Privacy Policy for CountScore
 
-**Last Updated**: November 25, 2026 (v2.14)
+**Last Updated**: November 25, 2026 (v2.15)
 
 **Effective Date**: Applies to CountScore v1.1.0 and later
 
-**Previous versions**: v2.12 (September 25, 2026), v2.11 (September 24, 2026), v2.10 (September 19, 2026), v2.9 (September 19, 2026), v2.8 (September 18, 2026), v2.7 and v2.6 (September 16, 2026), v2.5 (September 14, 2026), v2.4 (September 14, 2026), v2.3 (September 13, 2026), v2.2 (September 11, 2026), v2.1 and v2.0 (September 9, 2026) and v1.0 (November 9, 2025). v1.0
+**Previous versions**: v2.14 (November 25, 2026), v2.12 (September 25, 2026), v2.11 (September 24, 2026), v2.10 (September 19, 2026), v2.9 (September 19, 2026), v2.8 (September 18, 2026), v2.7 and v2.6 (September 16, 2026), v2.5 (September 14, 2026), v2.4 (September 14, 2026), v2.3 (September 13, 2026), v2.2 (September 11, 2026), v2.1 and v2.0 (September 9, 2026) and v1.0 (November 9, 2025). v1.0
 applies to CountScore 1.0.x — the versions currently on the Play Store. See
 [Version History](#version-history).
 
@@ -23,8 +23,8 @@ off your device, and both require you to first enter, in Settings → Server, th
 backend **you** run:
 
 - the **AI game analysis**, which runs only when you ask for one; and
-- **group sharing**, which runs only after you also create or join a group, and only for the
-  games you share with it.
+- **group sharing**, which runs only after you also create or join a group — or several, up to
+  five — and only for the games you share with one of them.
 
 Both are described in full below.
 
@@ -54,7 +54,7 @@ CountScore stores the following **locally on your device**:
    identifier in the group, and a record of which changes have been sent. The two group
    secrets (this device's access token and the group's invite code) are kept in the
    platform's secure storage (the Android Keystore; encrypted browser storage on the web),
-   not in the database, and so is your **nickname** — one for all your groups, offered again
+   not in the database, and so is your **nickname** — one for all your groups, used as it is
    when you join another one and kept after you leave a group.
 
 ### Storage technology
@@ -75,7 +75,7 @@ until you delete it.
 CountScore includes an optional feature that generates a written analysis of a finished game
 — of any game type — using a large language model (LLM). You choose the voice it is written
 in from a list of nine, and it answers in the language the app is displayed in. For a game
-shared with your group (see [Group Sharing](#group-sharing)), the group's language and, if you
+shared with one of your groups (see [Group Sharing](#group-sharing)), the group's language and, if you
 have never picked a voice, the group's comment style apply instead.
 
 **It is switched off until you supply a server.** The app is published with no backend
@@ -158,10 +158,13 @@ up to date with each other.
 
 **It is off until you do three things.** You must (1) enter the address of a server you host
 in **Settings → Server**; (2) create a group, or join one with an invite code someone gave
-you, in **Settings → Group**; and (3) share a game. While you are in a group, new games are
-shared by default — the switch is shown on the "New game" screen and you can turn it off —
-and an existing local game is shared only if you choose "Share with the group" on it. Games
-you do not share never leave your device.
+you, in **Settings → Groups**; and (3) share a game. You can be in up to five groups on the
+same server — family and friends, say — and each shared game belongs to one of them only.
+While you are in a group, new games are shared by default: the "New game" screen shows a
+switch you can turn off when you are in one group, and with several a choice between "This
+device only" and each group, starting on the group you used last. An existing local game is
+shared only if you choose "Share with the group" on it, and with several groups you pick
+which one. Games you do not share never leave your device.
 
 ### What is sent
 
@@ -178,14 +181,16 @@ For each **shared** game, and kept up to date as you play:
 - its analysis, if one was generated.
 
 When you create or join a group, the app also sends the **group name** and the **name you give
-this device**, your nickname in the group (both typed by you). The server issues this device
-an identifier and a secret access token; the token authenticates each later request. If you
-change that nickname later (Settings → Group), the app sends the new one to the server, which
-replaces the old one; the other devices of the group see it the next time they list the
-group's devices.
+this device**, your nickname (both typed by you). The nickname is **one for all your
+groups**: once this device has one, joining another group sends that same nickname without
+asking again, so the members of **every** group you are in see it. The server issues this
+device an identifier and a secret access token in each group; the token authenticates each
+later request. If you change your nickname later (Settings → Groups), the app sends the new
+one to the server of each of your groups, which replaces the old one; the other devices of
+each group see it the next time they list the group's devices.
 
-If you change the group's **comment style or language** (Settings → Group → Comments and
-usage), the app sends your choice — one of three styles and a language code — to the server,
+If you change a group's **comment style or language** (Settings → Groups → that group →
+Comments and usage), the app sends your choice — one of three styles and a language code — to the server,
 which keeps it with the group, where every member can see and change it. The server uses them
 for the AI analysis of the group's shared games, described above. The same screen reads
 from the server how much of the group's monthly AI budget has been spent; the app keeps none
@@ -202,7 +207,7 @@ keep anything sensitive out of comments.
    this data**: the current state of each shared game, and a log of every change made to it,
    which is how devices catch up after being offline. The server also records, per device,
    its name, when it joined and when it was last seen.
-2. **To the other devices in the group**, which download the shared games from that server.
+2. **To the other devices in that group**, which download the shared games from that server.
    Anyone who has the group's invite code can join the group and see its shared games, so
    share the code only with people you mean to share with; you can replace it in Settings.
    Every device in the group can also see the list of the group's devices — **each device's
@@ -213,13 +218,15 @@ No LLM provider is involved in group sharing, and nothing is sent to us.
 
 ### Leaving, and deleting
 
-- **Deleting a shared game** deletes it on every device in the group. On the server it is
+- **Deleting a shared game** deletes it on every device in its group. On the server it is
   marked deleted, but its earlier content remains in the change log.
-- **Leaving the group** (Settings → Group) revokes this device's access token — when the server
-  can be reached at that moment; otherwise the token is only erased from the device — and
-  turns your copies of the shared games back into local games. It does not remove the games from the
-  server or from the other devices.
-- **Removing another device** (Settings → Group → Devices) revokes that device's access token,
+- **Leaving a group** (Settings → Groups → that group → Leave) revokes this device's access
+  token in that group — when the server can be reached at that moment; otherwise the token is
+  only erased from the device — and turns your copies of that group's shared games back into
+  local games. Your other groups, and their games, are not affected. It does not remove the
+  games from the server or from the other devices. Clearing the server address, or opening a
+  configuration code of another server, leaves every group, after asking.
+- **Removing another device** (Settings → Groups → that group → Devices) revokes that device's access token,
   so it can no longer read or change the group's games, and replaces the invite code, since
   that device knew it. It does not erase the games already on that device.
 - **Removing the data from the server** is done by whoever operates it — normally you. The
@@ -227,8 +234,8 @@ No LLM provider is involved in group sharing, and nothing is sent to us.
 
 ### Legal basis
 
-Consent, given by configuring a server, joining a group and sharing a game — and withdrawn by
-leaving the group or clearing the server address.
+Consent, given by configuring a server, joining a group and sharing a game with it — and
+withdrawn by leaving that group or clearing the server address.
 
 ## Reporting an AI Commentary
 
@@ -331,7 +338,7 @@ file. Your data is not tied to any account or service.
 ### GDPR rights
 Users in the EEA and the UK have rights of access, rectification, erasure, restriction,
 portability and objection, and the right to withdraw consent at any time (by clearing the
-server address, leaving the group, or not using the analysis feature), as well as the right to complain to a
+server address, leaving a group, or not using the analysis feature), as well as the right to complain to a
 supervisory authority. Since we hold no server-side copy of your data and cannot identify
 you, most of these rights are exercised
 directly on your device. To ask a question, use the contact details above.
@@ -411,6 +418,11 @@ changes are announced through app updates on the Google Play Store.
 
 ### Version History
 
+- **v2.15** (November 25, 2026): One device can be in up to five groups on the same server.
+  The "New game" screen offers a choice of group, starting on the one you used last; Settings
+  → Groups lists your groups, each left on its own. Your one nickname is sent as it is when
+  you join another group, so the members of every group you are in see it; it changes only
+  when you rename it. No new recipient and no new category of information about you.
 - **v2.14** (November 25, 2026): Your nickname in your groups is now kept on your device, in
   secure storage with the group secrets — one nickname for every group you are in — so the
   app knows it after a restart without asking your server, and offers it when you join

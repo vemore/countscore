@@ -94,7 +94,7 @@ class GroupActionException implements Exception {
 /// group's device token — both conditions from the user's design
 /// (wip/done/ARCHIVE-2026-09.md, 2026-09-13). One server for every group, one
 /// nickname for every group, at most [maxGroups] groups (the multi-group plan,
-/// `wip/todo/2026-11-17-belong-to-several-groups.md`). A session is triggered
+/// `wip/done/2026-11-17-belong-to-several-groups.md`). A session is triggered
 /// by a local write that queued a change for its group (debounced), by its
 /// server's WebSocket signal, on app resume, and every [pollInterval].
 class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
@@ -151,23 +151,21 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   /// it was kept — until a devices list names this device.
   String? get nickname => _nickname;
 
-  // ── One group, as the single-group screens read it ────────────────────────
-  //
-  // The first group joined, or every group summed up. Kept for Settings →
-  // Group, the QR dialog, the create-game switch and the board's share action
-  // until the multi-group UI (`wip/todo/2026-11-25-multi-group-ui.md`) reads
-  // [memberships] instead. A game's own group goes through [session].
-
-  GroupSession? get _first => _sessions.values.firstOrNull;
+  /// Whether this device is in at least one group.
   bool get isJoined => _sessions.isNotEmpty;
-  String? get groupName => _first?.groupName;
-  String? get groupId => _first?.groupId;
-  String? get deviceId => _first?.deviceId;
-  String? get shareToken => _first?.shareToken;
-  bool get isOwner => _first?.isOwner ?? false;
 
-  /// [nickname], while in a group.
-  String? get deviceLabel => isJoined ? _nickname : null;
+  /// The server every group is on, as this provider follows it — what
+  /// [completeJoin] compares a shared configuration's server with.
+  String? get baseUrl => _baseUrl;
+
+  /// Whether one more group may be created or joined ([maxGroups]).
+  bool get canJoinMore => _sessions.length < maxGroups;
+
+  /// The group whose invite code this device holds as [code], if any.
+  GroupSession? sessionByInvite(String code) =>
+      _sessions.values.where((s) => s.shareToken == code).firstOrNull;
+
+  // ── Every group summed up, wherever one figure is shown ───────────────────
 
   /// The worst status of every group ([SyncStatus.worse]); off in none.
   SyncStatus get status =>
@@ -187,21 +185,37 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   int get pendingChanges => _sessions.values.fold(0, (n, s) => n + s.pendingChanges);
   int get rejectedChanges => _sessions.values.fold(0, (n, s) => n + s.rejectedChanges);
 
-  /// True when a call to the first group's server is possible at all.
-  bool get canReachGroup => _first?.canReach ?? false;
+  /// The first group joined, for the tests written when a device had one
+  /// group (`test/sync/sync_reconcile_test.dart`). No screen reads it.
+  @visibleForTesting
+  String? get groupId => _sessions.values.firstOrNull?.groupId;
 
-  Future<void> rotateShareToken() async => _first?.rotateShareToken();
-  Future<List<GroupDevice>> devices() async => await _first?.devices() ?? const [];
-  Future<void> revokeDevice(String deviceId) async => _first?.revokeDevice(deviceId);
-  Future<void> transferOwnership(String deviceId) async => _first?.transferOwnership(deviceId);
-  Future<void> claimOwnership() async => _first?.claimOwnership();
+  /// The first group's invite code; see [groupId].
+  @visibleForTesting
+  String? get shareToken => _sessions.values.firstOrNull?.shareToken;
 
-  Future<({GroupSettings settings, GroupUsage usage})> groupSettings() =>
-      (_first ?? (throw GroupActionException(GroupActionError.unreachable))).groupSettings();
+  /// Puts [m] among the memberships — or replaces the one of its group — with
+  /// no request and nothing stored, for the fake providers of widget tests.
+  /// Its session never syncs while no server is followed.
+  @visibleForTesting
+  void debugPutMembership(
+    SyncMembership m, {
+    String? shareToken,
+    bool isOwner = false,
+    SyncStatus status = SyncStatus.off,
+  }) {
+    _sessions[m.groupId] =
+        GroupSession._(this, m, 'test-token-${m.groupId}', shareToken, isOwner: isOwner)
+          .._status = status;
+    _changed();
+  }
 
-  Future<GroupSettings> updateGroupSettings({String? commentStyle, String? commentLanguage}) =>
-      (_first ?? (throw GroupActionException(GroupActionError.unreachable)))
-          .updateGroupSettings(commentStyle: commentStyle, commentLanguage: commentLanguage);
+  /// Drops [groupId] from the memberships, as [debugPutMembership] added it.
+  @visibleForTesting
+  void debugRemoveMembership(String groupId) {
+    _sessions.remove(groupId)?._closed = true;
+    _changed();
+  }
 
   // ──────────────────────────────────────────────────────────────────────────
 
@@ -289,12 +303,13 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     String? shareToken,
   }) async {
     if (_baseUrl == null) throw GroupActionException(GroupActionError.unreachable);
-    // Before the server: a refused create or join leaves every group as it
-    // was, and a sixth registration would be a device row nobody uses. A code
-    // this device holds for one of its groups is let through: it most likely
-    // names that group again, and only the answer says which group it is.
+    // A create at five is refused before the server: it is always a new
+    // group, and a sixth registration would be a device row nobody uses. A
+    // join goes to the server whatever its code — a code this device does not
+    // hold may be a newer one of a group it is in, and only the answer says
+    // which group it is; a new one is withdrawn below.
     final full = _sessions.length >= maxGroups;
-    if (full && !_sessions.values.any((s) => shareToken != null && s.shareToken == shareToken)) {
+    if (full && shareToken == null) {
       throw GroupActionException(GroupActionError.tooManyGroups);
     }
     final m = await _register(call);
@@ -401,8 +416,12 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
 
   /// Step two. For [JoinCandidate.sameGroup] the membership is kept (nothing
   /// is left, no row is unshared), the registration [prepareJoin] made is
-  /// withdrawn, and the newer invite code is stored. Otherwise the
-  /// configuration is replaced, as the QR dialog says today: every group is
+  /// withdrawn, and the newer invite code is stored. Otherwise, on the server
+  /// this device already uses, [c] joins beside the other groups (decision 7
+  /// of the multi-group plan) — refused with [GroupActionError.tooManyGroups],
+  /// its registration withdrawn, when that would make a sixth; a group already
+  /// joined under a token the server refuses takes the new registration. On
+  /// another server the configuration is replaced (decision 4): every group is
   /// left, on the server they were registered with, then [c] adopted on its own.
   Future<void> completeJoin(JoinCandidate c) async {
     final kept = c.sameGroup ? _sessions[c.membership.groupId] : null;
@@ -416,6 +435,14 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
         await _restart();
       }
       _changed();
+      return;
+    }
+    if (c.baseUrl == _baseUrl) {
+      if (!canJoinMore && !_sessions.containsKey(c.membership.groupId)) {
+        await cancelJoin(c);
+        throw GroupActionException(GroupActionError.tooManyGroups);
+      }
+      await _adopt(c.membership, owner: false, label: c.label);
       return;
     }
     await leave();
@@ -444,7 +471,7 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     await Future.wait([for (final s in _sessions.values) s.refreshOwner()]);
   }
 
-  /// Leaves every group (the single-group screens' Leave, and clearing the server).
+  /// Leaves every group: clearing the server, or a configuration of another one.
   Future<void> leave() async {
     for (final groupId in [..._sessions.keys]) {
       await leaveGroup(groupId);

@@ -12,7 +12,7 @@
 |---|---|
 | Device token on the client | `flutter_secure_storage`: Android Keystore; on web, encrypted in localStorage. Never in the database, SharedPreferences or an export (`lib/services/sync/sync_credentials.dart`). |
 | `device_token` | `<device id hex>.<secret>`, 128 bits of secret. Stored argon2-hashed server-side; one verify per request, failures capped per IP. |
-| `share_token` | uuid4, rotatable. Unused once a device has joined. Shown in Settings → Group so it can be passed on, and in the configuration QR code, where it travels only in the URL fragment, never sent to the server ([[ConfigShare]]); kept in secure storage on the device. |
+| `share_token` | uuid4, rotatable. Unused once a device has joined. Shown in Settings → Groups so it can be passed on, and in the configuration QR code, where it travels only in the URL fragment, never sent to the server ([[ConfigShare]]); kept in secure storage on the device. |
 | Configuration links | Any page or app may fire `countscore://join?…` at the Android app or send a browser to the PWA's `#/join?…`: the link only opens the replace dialog, which names the current and the new server and group, and nothing is sent or changed before the user confirms; a server `BackendProvider.check` refuses or a malformed invite code opens nothing. Custom scheme only, no App Links host. Once read, the PWA takes the payload out of its address bar and of its tab's back and forward entries, whether the link opened the page or reached it while it ran, and resets Flutter's own route to `/`; the browser's list of visited pages still records the address, as for any link. On Android, an activity restored after process death drops its original intent (`MainActivity`), so the dialog does not come back. [[ConfigShare]] *What opens a link*. |
 | `ANTHROPIC_API_KEY`, AWS keys | Environment only, never logged, never bundled in the APK. |
 | TLS | Synology Web Station, integrated Let's Encrypt. |
@@ -134,7 +134,7 @@ proof-of-concept results are in `wip/done/2026-09-13-backend-security-review.md`
   group, which matches the household model but not a public one. Since a revoke rotates the
   share token, the members who stay hold a stale invite link until they rotate it again
   (`GET /groups/me` never returns the token).
-  Since 2026-09-14 the app puts that privilege on screen: Settings → Group → Devices lets any
+  Since 2026-09-14 the app puts that privilege on screen: Settings → Groups → Devices lets any
   member remove any other, and shows every member each device's name and last-seen time.
   Only the member who revoked gets the new code; the others see theirs stop working for
   invitations. An owner role is the change to make before a public launch.

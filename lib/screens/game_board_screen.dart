@@ -25,6 +25,8 @@ import '../services/review_prompt.dart';
 import '../widgets/board_lanes.dart';
 import '../widgets/board_rows.dart';
 import '../widgets/dice_roller_dialog.dart';
+import '../widgets/group_badge.dart';
+import '../widgets/share_group_dialog.dart';
 import '../widgets/score_keypad_sheet.dart';
 import '../widgets/turn_timer_dialog.dart';
 import '../widgets/who_starts_dialog.dart';
@@ -203,31 +205,12 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
   Future<void> _shareGame(GameProvider gameProvider, GroupProvider group) async {
     final l10n = AppLocalizations.of(context)!;
     final game = gameProvider.currentGame;
-    // The group the dialog names, read before it opens (the multi-group UI
-    // adds a choice).
-    final groupId = group.groupId;
-    final groupName = group.groupName;
-    if (game == null || groupId == null) return;
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.shareWithGroup),
-        content: Text(l10n.shareGameConfirm(groupName ?? '')),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(l10n.shareWithGroup),
-          ),
-        ],
-      ),
-    );
+    if (game == null || !group.isJoined) return;
+    // One group: today's confirmation naming it. Several: which one.
+    final groupId = await showShareGroupDialog(context, group.memberships);
     // Left while the dialog was open: the game stays local, as the menu no
     // longer offers to share it.
-    if (confirm != true || !mounted || group.session(groupId) == null) return;
+    if (groupId == null || !mounted || group.session(groupId) == null) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
       await group.shareGame(game.id!, groupId);
@@ -273,10 +256,7 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
                 ],
                 if (game?.isShared ?? false) ...[
                   const SizedBox(width: 8),
-                  Tooltip(
-                    message: l10n.gameSharedBadge,
-                    child: const Icon(Icons.cloud_done_outlined, size: 20),
-                  ),
+                  Flexible(child: GroupBadge(groupId: game!.groupId!)),
                 ],
                 // The list shows a finished game as finished; the board used to
                 // show nothing at all, so the two disagreed about a fact one of

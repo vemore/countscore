@@ -370,8 +370,6 @@
 
   "shareTokenHint": "粘贴群组成员发给您的邀请码",
 
-  "groupCurrent": "群组：{name}",
-
   "shareTokenExplain": "把此邀请码发给要加入群组的设备。任何拿到它的人都可以加入。",
 
   "shareTokenCopy": "复制邀请码",
@@ -384,13 +382,9 @@
 
   "groupLeave": "退出群组",
 
-  "groupLeaveConfirm": "本设备将退出群组。共享的对局仍保留在本设备上，但不再同步。",
-
   "groupLeft": "已退出群组",
 
   "groupJoined": "已加入群组",
-
-  "clearServerLeavesGroup": "清除服务器会退出群组。共享的对局仍保留在本设备上。",
 
   "syncNow": "立即同步",
 
@@ -732,7 +726,6 @@
   "replaceConfigCurrent": "当前：{value}",
   "replaceConfigNew": "新：{value}",
   "replaceConfigInvite": "邀请码 {code}",
-  "replaceConfigLeavesGroup": "本设备将退出群组 {name}。游戏将保留在本设备上。",
   "replaceConfigConfirm": "替换",
   "replaceConfigUnsynced": "{count, plural, other{{count} 项更改尚未到达群组。如果现在退出，群组将无法收到它们。}}",
   "replaceConfigLeaveAnyway": "仍然退出",
@@ -749,5 +742,19 @@
   "gameRulesEndOrMaxRounds": "{count, plural, other{{condition}，或 {count} 轮后结束}}",
   "boardRoundProgress": "第 {current} 轮，共 {total} 轮",
   "gameTypeNameChouineurs": "Chouineurs",
-  "gameTypeNameChouineursSortKey": "Chouineurs"
+  "gameTypeNameChouineursSortKey": "Chouineurs",
+  "groupsSection": "群组",
+  "groupsMaxReached": "已达到群组数上限（{max}）：请先退出一个群组，才能创建或加入其他群组。",
+  "groupLeaveConfirmNamed": "本设备将退出群组“{name}”。其共享的对局仍保留在本设备上，但不再同步。您的其他群组不受影响。",
+  "clearServerLeavesGroups": "{count, plural, other{清除服务器将退出全部 {count} 个群组。共享的对局仍保留在本设备上。}}",
+  "replaceConfigLeavesGroups": "{count, plural, other{本设备将退出以下 {count} 个群组（其对局仍保留在本设备上）：}}",
+  "joinGroupTooTitle": "同时加入此群组？",
+  "joinGroupTooBody": "本设备将加入邀请码 {code} 对应的群组，该群组位于同一服务器。本设备将保留在您当前的以下群组中：",
+  "joinGroupTooConfirm": "加入",
+  "joinLinkAlreadyMember": "本设备已在群组“{name}”中：无需更改。",
+  "newGameShareWith": "分享给",
+  "newGameLocalOnly": "仅本设备",
+  "newGameLocalSubtitle": "此对局将保留在本设备上。",
+  "shareGameChooseGroup": "要与哪个群组分享此对局？对局、玩家、分数和评论都将发送到该群组。分享后无法撤销。",
+  "gameSharedWith": "已与{name}分享"
 }

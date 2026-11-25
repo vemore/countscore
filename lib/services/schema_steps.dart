@@ -655,7 +655,7 @@ const syncTablesByGroup = ['outbox', 'sync_inbox', 'entity_versions'];
 
 /// Schema v23, shared by both engines and by both fresh-install paths: the sync
 /// queue tells groups apart, so a device can belong to several
-/// (`wip/todo/2026-11-17-belong-to-several-groups.md`, step 2).
+/// (`wip/done/2026-11-17-belong-to-several-groups.md`, step 2).
 ///
 /// 1. `group_id TEXT` on [syncTablesByGroup]. Nullable, as an added column
 ///    must be; nothing writes a NULL there from v23 on.

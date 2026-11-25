@@ -1,5 +1,7 @@
 # A device can belong to one group only
 
+**Status:** done (2026-11-25) — closed by feat/multi-group-ui, the last of its five pull requests. Acceptance: (1) two groups, each game reaching its own group only — `integration_test/multi_group_test.dart` (through the UI, a local backend) and `test/sync/sync_multi_group_backend_test.dart` "a game shared into A reaches Y and never Z; into B, the reverse"; (2) leaving one group keeps the other's games and sync — the same e2e (a round entered after the leave reaches the group still joined), "X leaves A: B keeps its games, links and sync; what B links stays" and `test/providers/group_provider_multi_group_test.dart` "leaveGroup(A) keeps B: its game, links, credentials and sync"; (3) an install upgraded with one group keeps it with no re-join — `test/migration_v22_to_v23_test.dart` "native: the membership and every queued row are kept, attributed to the group" and "the credentials of the one group are kept: moved under its id, the old keys deleted". `.llmwiki/MultiGroup.md`.
+
 - **Noted:** 2026-11-17 — requested by the user
 - **Theme:** groups-v2
 - **Area:** app

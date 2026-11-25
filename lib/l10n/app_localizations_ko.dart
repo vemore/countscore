@@ -724,11 +724,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get shareTokenHint => '그룹 구성원이 보낸 코드를 붙여넣으세요';
 
   @override
-  String groupCurrent(String name) {
-    return '그룹: $name';
-  }
-
-  @override
   String get shareTokenExplain =>
       '이 코드를 그룹에 참여해야 하는 기기로 보내세요. 코드를 가진 사람은 누구나 참여할 수 있습니다.';
 
@@ -749,17 +744,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get groupLeave => '그룹 나가기';
 
   @override
-  String get groupLeaveConfirm =>
-      '이 기기가 그룹을 떠납니다. 공유 게임은 이 기기에 남아있지만 더 이상 동기화되지 않습니다.';
-
-  @override
   String get groupLeft => '그룹을 나갔습니다';
 
   @override
   String get groupJoined => '그룹에 참여했습니다';
-
-  @override
-  String get clearServerLeavesGroup => '서버를 지우면 그룹을 떠납니다. 공유 게임은 이 기기에 남아있습니다.';
 
   @override
   String get syncNow => '지금 동기화';
@@ -1661,11 +1649,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String replaceConfigLeavesGroup(String name) {
-    return '이 기기가 그룹 $name을 떠날 것입니다. 게임은 이 기기에 남아있습니다.';
-  }
-
-  @override
   String get replaceConfigConfirm => '교체';
 
   @override
@@ -1741,4 +1724,71 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get gameTypeNameChouineursSortKey => 'Chouineurs';
+
+  @override
+  String get groupsSection => '그룹';
+
+  @override
+  String groupsMaxReached(int max) {
+    return '최대 그룹 수에 도달했습니다 ($max개). 새 그룹을 만들거나 참여하려면 하나를 나가세요.';
+  }
+
+  @override
+  String groupLeaveConfirmNamed(String name) {
+    return '이 기기가 $name 그룹을 떠납니다. 공유 게임은 이 기기에 남아있지만 더 이상 동기화되지 않습니다. 다른 그룹은 변경되지 않습니다.';
+  }
+
+  @override
+  String clearServerLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '서버를 지우면 그룹 $count개를 모두 떠납니다. 공유 게임은 이 기기에 남아있습니다.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String replaceConfigLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '이 기기가 다음 그룹 $count개를 떠납니다(게임은 이 기기에 남아 있습니다):',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get joinGroupTooTitle => '이 그룹에도 참여할까요?';
+
+  @override
+  String joinGroupTooBody(String code) {
+    return '이 기기가 같은 서버의 초대 코드 $code 그룹에 참여합니다. 다음 현재 그룹에도 계속 남아 있습니다:';
+  }
+
+  @override
+  String get joinGroupTooConfirm => '참여';
+
+  @override
+  String joinLinkAlreadyMember(String name) {
+    return '이 기기는 이미 $name 그룹에 있습니다. 변경된 것은 없습니다.';
+  }
+
+  @override
+  String get newGameShareWith => '공유 대상';
+
+  @override
+  String get newGameLocalOnly => '이 기기에만';
+
+  @override
+  String get newGameLocalSubtitle => '게임은 이 기기에 남아 있습니다.';
+
+  @override
+  String get shareGameChooseGroup =>
+      '이 게임을 어느 그룹과 공유할까요? 게임, 플레이어, 점수 및 댓글이 그곳으로 전송됩니다. 공유는 취소할 수 없습니다.';
+
+  @override
+  String gameSharedWith(String name) {
+    return '공유 대상: $name';
+  }
 }

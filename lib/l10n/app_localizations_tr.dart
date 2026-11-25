@@ -732,11 +732,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get shareTokenHint => 'Bir grup üyesinin gönderdiği kodu yapıştırın';
 
   @override
-  String groupCurrent(String name) {
-    return 'Grup: $name';
-  }
-
-  @override
   String get shareTokenExplain =>
       'Bu kodu gruba katılması gereken cihazlara gönderin. Onu alan herkes katılabilir.';
 
@@ -757,18 +752,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get groupLeave => 'Grubu terk et';
 
   @override
-  String get groupLeaveConfirm =>
-      'Bu cihaz grubu terk edecek. Paylaşılan oyunlar bu cihazda kalacak ancak artık eşitlenmeyecek.';
-
-  @override
   String get groupLeft => 'Grup terk edildi';
 
   @override
   String get groupJoined => 'Gruba katıldı';
-
-  @override
-  String get clearServerLeavesGroup =>
-      'Sunucuyu silmek grubu terk ettirir. Paylaşılan oyunlar bu cihazda kalır.';
 
   @override
   String get syncNow => 'Şimdi eşitle';
@@ -1686,11 +1673,6 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String replaceConfigLeavesGroup(String name) {
-    return 'Bu cihaz $name grubunu terk edecek. Oyunları bu cihazda kalır.';
-  }
-
-  @override
   String get replaceConfigConfirm => 'Değiştir';
 
   @override
@@ -1768,4 +1750,75 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get gameTypeNameChouineursSortKey => 'Chouineurs';
+
+  @override
+  String get groupsSection => 'Gruplar';
+
+  @override
+  String groupsMaxReached(int max) {
+    return 'En fazla grup sayısına ulaşıldı ($max): yenisini oluşturmak ya da katılmak için birinden ayrılın.';
+  }
+
+  @override
+  String groupLeaveConfirmNamed(String name) {
+    return 'Bu cihaz $name grubundan ayrılacak. Bu gruptaki paylaşılan oyunlar bu cihazda kalır ama artık eşitlenmez. Diğer gruplarınız değişmez.';
+  }
+
+  @override
+  String clearServerLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Sunucuyu temizlemek $count grubun tamamından ayrılmanıza neden olur. Paylaşılan oyunlar bu cihazda kalır.',
+      one: 'Sunucuyu temizlemek gruptan ayrılmanıza neden olur. Paylaşılan oyunlar bu cihazda kalır.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String replaceConfigLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Bu cihaz bu $count gruptan ayrılacak (oyunları bu cihazda kalır):',
+      one: 'Bu cihaz bu gruptan ayrılacak (oyunları bu cihazda kalır):',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get joinGroupTooTitle => 'Bu gruba da katılsın mı?';
+
+  @override
+  String joinGroupTooBody(String code) {
+    return 'Bu cihaz, aynı sunucudaki $code davet kodlu gruba katılacak. Mevcut gruplarında kalmaya devam edecek:';
+  }
+
+  @override
+  String get joinGroupTooConfirm => 'Katıl';
+
+  @override
+  String joinLinkAlreadyMember(String name) {
+    return 'Bu cihaz zaten $name grubunda: bir şey değişmedi.';
+  }
+
+  @override
+  String get newGameShareWith => 'Şununla paylaş';
+
+  @override
+  String get newGameLocalOnly => 'Yalnızca bu cihaz';
+
+  @override
+  String get newGameLocalSubtitle => 'Oyun bu cihazda kalır.';
+
+  @override
+  String get shareGameChooseGroup =>
+      'Bu oyun hangi grupla paylaşılsın? Oyun, oyuncuları, puanları ve yorumları oraya gönderilecek. Paylaşım geri alınamaz.';
+
+  @override
+  String gameSharedWith(String name) {
+    return '$name ile paylaşıldı';
+  }
 }

@@ -10,6 +10,7 @@ import '../models/game.dart';
 import '../models/game_standing.dart';
 import '../models/game_type.dart';
 import '../services/review_prompt.dart';
+import '../widgets/group_badge.dart';
 import '../widgets/player_avatars.dart';
 import '../utils/compact_landscape.dart';
 import '../utils/game_type_name.dart';
@@ -572,11 +573,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (game.isShared)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Tooltip(
-                        message: l10n.gameSharedBadge,
-                        child: Icon(Icons.cloud_done_outlined,
-                            size: 18, color: foreground),
-                      ),
+                      child: GroupBadge(groupId: game.groupId!, color: foreground, maxWidth: 96),
                     ),
                   _buildGameMenu(context, game, gameProvider,
                       iconColor: foreground),
@@ -702,6 +699,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         Row(
                           children: [
                             Flexible(
+                              // The name before the badge: two thirds of the room each gets.
+                              flex: 2,
                               child: Text(
                                 game.name,
                                 maxLines: 1,
@@ -712,10 +711,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             if (game.isShared) ...[
                               const SizedBox(width: 6),
-                              Tooltip(
-                                message: l10n.gameSharedBadge,
-                                child: Icon(Icons.cloud_done_outlined,
-                                    size: 18, color: foreground),
+                              Flexible(
+                                child: GroupBadge(groupId: game.groupId!, color: foreground, maxWidth: 96),
                               ),
                             ],
                           ],
@@ -826,6 +823,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         Row(
                           children: [
                             Flexible(
+                              // The name before the badge: two thirds of the room each gets.
+                              flex: 2,
                               child: Text(
                                 game.name,
                                 maxLines: 1,
@@ -835,14 +834,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             if (game.isShared) ...[
                               const SizedBox(width: 6),
-                              Tooltip(
-                                message: l10n.gameSharedBadge,
-                                child: Icon(
-                                  Icons.cloud_done_outlined,
-                                  size: 16,
-                                  color: scheme.primary,
-                                ),
-                              ),
+                              Flexible(child: GroupBadge(groupId: game.groupId!)),
                             ],
                           ],
                         ),

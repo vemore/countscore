@@ -731,11 +731,6 @@ class AppLocalizationsId extends AppLocalizations {
       'Tempel kode yang dikirim anggota grup kepada Anda';
 
   @override
-  String groupCurrent(String name) {
-    return 'Grup: $name';
-  }
-
-  @override
   String get shareTokenExplain =>
       'Kirim kode ini ke perangkat yang harus bergabung dengan grup. Siapa pun yang memilikinya dapat bergabung.';
 
@@ -756,18 +751,10 @@ class AppLocalizationsId extends AppLocalizations {
   String get groupLeave => 'Tinggalkan grup';
 
   @override
-  String get groupLeaveConfirm =>
-      'Perangkat ini meninggalkan grup. Permainan bersama tetap di perangkat ini tetapi tidak akan lagi disinkronkan.';
-
-  @override
   String get groupLeft => 'Meninggalkan grup';
 
   @override
   String get groupJoined => 'Bergabung dengan grup';
-
-  @override
-  String get clearServerLeavesGroup =>
-      'Menghapus server meninggalkan grup. Permainan bersama tetap di perangkat ini.';
 
   @override
   String get syncNow => 'Sinkronkan sekarang';
@@ -1685,11 +1672,6 @@ class AppLocalizationsId extends AppLocalizations {
   }
 
   @override
-  String replaceConfigLeavesGroup(String name) {
-    return 'Perangkat ini akan meninggalkan grup $name. Permainannya tetap di perangkat ini.';
-  }
-
-  @override
   String get replaceConfigConfirm => 'Ganti';
 
   @override
@@ -1767,4 +1749,73 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get gameTypeNameChouineursSortKey => 'Chouineurs';
+
+  @override
+  String get groupsSection => 'Grup';
+
+  @override
+  String groupsMaxReached(int max) {
+    return 'Jumlah maksimum grup tercapai ($max): tinggalkan salah satu untuk membuat atau bergabung dengan grup lain.';
+  }
+
+  @override
+  String groupLeaveConfirmNamed(String name) {
+    return 'Perangkat ini meninggalkan grup $name. Permainan bersamanya tetap di perangkat ini tetapi tidak akan lagi disinkronkan. Grup Anda yang lain tidak berubah.';
+  }
+
+  @override
+  String clearServerLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Menghapus server membuat perangkat ini meninggalkan $count grup. Permainan bersama tetap di perangkat ini.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String replaceConfigLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Perangkat ini akan meninggalkan $count grup berikut (permainannya tetap di perangkat ini):',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get joinGroupTooTitle => 'Bergabung juga dengan grup ini?';
+
+  @override
+  String joinGroupTooBody(String code) {
+    return 'Perangkat ini akan bergabung dengan grup berkode undangan $code, di server yang sama. Perangkat tetap berada di grup Anda saat ini:';
+  }
+
+  @override
+  String get joinGroupTooConfirm => 'Gabung';
+
+  @override
+  String joinLinkAlreadyMember(String name) {
+    return 'Perangkat ini sudah berada di grup $name: tidak ada yang berubah.';
+  }
+
+  @override
+  String get newGameShareWith => 'Bagikan dengan';
+
+  @override
+  String get newGameLocalOnly => 'Hanya perangkat ini';
+
+  @override
+  String get newGameLocalSubtitle => 'Permainan tetap di perangkat ini.';
+
+  @override
+  String get shareGameChooseGroup =>
+      'Bagikan permainan ini dengan grup mana? Permainan, pemain, skor, dan komentar akan dikirim ke sana. Berbagi tidak dapat dibatalkan.';
+
+  @override
+  String gameSharedWith(String name) {
+    return 'Dibagikan dengan $name';
+  }
 }
