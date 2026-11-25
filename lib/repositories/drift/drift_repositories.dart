@@ -47,7 +47,8 @@ Future<bool> _isShared(AppDatabase db, String table, int id) async {
 /// reach a group through `group_links`, which is also the condition their
 /// capture trigger tests (`sync_schema.dart`, `_linked`). `_isShared` therefore
 /// never sees them, and this is the predicate that decides whether their delete
-/// has to travel.
+/// has to travel. A row linked into several groups (schema v23) has one link
+/// each: any of them will do.
 Future<bool> _isLinked(
   AppDatabase db,
   String entityType,
@@ -58,7 +59,7 @@ Future<bool> _isLinked(
       .customSelect(
         'SELECT 1 AS linked FROM group_links l '
         'JOIN $table t ON t.uuid = l.local_uuid '
-        'WHERE l.entity_type = ? AND t.id = ?',
+        'WHERE l.entity_type = ? AND t.id = ? LIMIT 1',
         variables: [Variable(entityType), Variable(id)],
       )
       .getSingleOrNull();

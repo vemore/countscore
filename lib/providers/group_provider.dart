@@ -9,6 +9,7 @@ import 'backend_provider.dart';
 import '../services/drift/database.dart';
 import '../services/sync/sync_credentials.dart';
 import '../services/sync/sync_engine.dart';
+import '../services/sync/sync_reconcile.dart';
 import '../services/sync/sync_store.dart';
 import '../services/sync/sync_stream.dart';
 
@@ -161,9 +162,19 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     if (!_loaded) {
       _loaded = true;
       try {
+        // An imported database may name groups the stored tokens do not, or
+        // the reverse: settle that before anything syncs. Secure storage that
+        // cannot be read is no reason to leave anything: the reads below then
+        // fail as they did before.
+        try {
+          await reconcileMemberships(_store, _credentials);
+        } catch (_) {}
         _membership = await _store.membership();
-        _deviceToken = await _credentials.deviceToken();
-        _shareToken = await _credentials.shareToken();
+        final groupId = _membership?.groupId;
+        if (groupId != null) {
+          _deviceToken = await _credentials.deviceToken(groupId);
+          _shareToken = await _credentials.shareToken(groupId);
+        }
       } finally {
         _ready.complete();
       }
@@ -234,7 +245,7 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   }) async {
     if (_membership != null) await leave();
     if (baseUrl != null) await _switchServer(baseUrl);
-    await _credentials.save(deviceToken: m.deviceToken, shareToken: m.shareToken);
+    await _credentials.save(m.groupId, deviceToken: m.deviceToken, shareToken: m.shareToken);
     await _store.join(m);
     _deviceToken = m.deviceToken;
     _shareToken = m.shareToken;
@@ -306,7 +317,7 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     if (c.sameGroup && _membership?.groupId == c.membership.groupId) {
       await cancelJoin(c);
       _shareToken = c.membership.shareToken;
-      await _credentials.saveShareToken(c.membership.shareToken);
+      await _credentials.saveShareToken(c.membership.groupId, c.membership.shareToken);
       // A group id is unique to its server: another URL is another way to it.
       if (c.baseUrl != _baseUrl) {
         await _switchServer(c.baseUrl);
@@ -388,8 +399,10 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
         // Offline or already revoked: leaving locally must still work.
       }
     }
-    if (m != null) await _store.leave(m.groupId);
-    await _credentials.clear();
+    if (m != null) {
+      await _store.leave(m.groupId);
+      await _credentials.clear(m.groupId);
+    }
     _membership = null;
     _deviceToken = null;
     _shareToken = null;
@@ -404,13 +417,14 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
 
   Future<void> rotateShareToken() async {
     final token = _deviceToken;
-    if (token == null || _baseUrl == null) return;
+    final group = groupId;
+    if (token == null || group == null || _baseUrl == null) return;
     try {
       _shareToken = await _client().rotateShareToken(token);
     } catch (e) {
       throw _ownerActionError(e);
     }
-    await _credentials.saveShareToken(_shareToken!);
+    await _credentials.saveShareToken(group, _shareToken!);
     notifyListeners();
   }
 
@@ -480,7 +494,10 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   /// [leave].
   Future<void> revokeDevice(String deviceId) async {
     final token = _deviceToken;
-    if (token == null || _baseUrl == null || deviceId == this.deviceId) return;
+    final group = groupId;
+    if (token == null || group == null || _baseUrl == null || deviceId == this.deviceId) {
+      return;
+    }
     final String? newShareToken;
     try {
       newShareToken = await _client().revokeDevice(token, deviceId);
@@ -489,7 +506,7 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     }
     if (newShareToken != null) {
       _shareToken = newShareToken;
-      await _credentials.saveShareToken(newShareToken);
+      await _credentials.saveShareToken(group, newShareToken);
     }
     notifyListeners();
   }
@@ -627,7 +644,8 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     try {
       do {
         _rerun = false;
-        final result = await SyncEngine(_store, _client(), _deviceToken!).run();
+        final result =
+            await SyncEngine(_store, _client(), _deviceToken!, _membership!.groupId).run();
         for (final e in result.events) {
           _events.add(e);
         }

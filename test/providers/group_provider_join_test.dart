@@ -59,8 +59,8 @@ void main() {
     expect(group.isJoined, isTrue);
     expect(group.groupId, oldGroupId);
     expect(group.shareToken, oldInvite);
-    expect(await credentials.deviceToken(), oldDeviceToken);
-    expect(await credentials.shareToken(), oldInvite);
+    expect(await credentials.deviceToken(group.groupId!), oldDeviceToken);
+    expect(await credentials.shareToken(group.groupId!), oldInvite);
     expect(await outboxCount(db), 1, reason: 'the unsynced change is still queued');
     expect(servers.seen.where((r) => r.url.path.endsWith('/revoke')), isEmpty,
         reason: 'the old device is not revoked');
@@ -91,7 +91,7 @@ void main() {
     expect(group.groupId, newGroupId);
     expect(group.shareToken, newInvite);
     expect(group.deviceLabel, 'Tablet');
-    expect(await credentials.deviceToken(), newDeviceToken);
+    expect(await credentials.deviceToken(group.groupId!), newDeviceToken);
     expect(servers.seen.where((r) => r.url.path == '/sync/pull').single.url.host,
         'new.example.com');
   });
@@ -105,9 +105,9 @@ void main() {
 
     expect(group.isJoined, isTrue);
     expect(group.groupId, oldGroupId);
-    expect(await credentials.deviceToken(), oldDeviceToken, reason: 'same device');
+    expect(await credentials.deviceToken(group.groupId!), oldDeviceToken, reason: 'same device');
     expect(group.shareToken, 'rotated-code');
-    expect(await credentials.shareToken(), 'rotated-code');
+    expect(await credentials.shareToken(group.groupId!), 'rotated-code');
     expect(await outboxCount(db), 1, reason: 'no row unshared, nothing dropped');
     // The registration the join made is withdrawn with its own token.
     final revoke = servers.seen.singleWhere((r) => r.url.path.endsWith('/revoke'));
@@ -129,7 +129,7 @@ void main() {
 
     expect(group.isJoined, isTrue);
     expect(group.groupId, oldGroupId);
-    expect(await credentials.deviceToken(), newDeviceToken, reason: 'the new token is kept');
+    expect(await credentials.deviceToken(group.groupId!), newDeviceToken, reason: 'the new token is kept');
     expect(group.deviceId, newDeviceId);
     expect(group.shareToken, 'fresh-code');
     expect(
@@ -188,7 +188,7 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString('backendUrl'), newServer,
         reason: 'stored by the join itself, before any BackendProvider call');
-    expect(await credentials.deviceToken(), newDeviceToken);
+    expect(await credentials.deviceToken(group.groupId!), newDeviceToken);
   });
 
   test('the same group under another URL keeps the membership and stores the URL', () async {
@@ -200,7 +200,7 @@ void main() {
     await group.completeJoin(c);
     await idle(group);
 
-    expect(await credentials.deviceToken(), oldDeviceToken);
+    expect(await credentials.deviceToken(group.groupId!), oldDeviceToken);
     expect((await SharedPreferences.getInstance()).getString('backendUrl'), otherUrl);
   });
 

@@ -51,15 +51,17 @@ class _Device {
   late final DriftScoreRepository scores;
   late final DriftGameTypeRepository gameTypes;
   late String token;
+  late String groupId;
 
   BackendClient get client => BackendClient(_url!);
 
   Future<void> enter(GroupMembership m) async {
     token = m.deviceToken;
+    groupId = m.groupId;
     await store.join(m);
   }
 
-  Future<SyncPassResult> sync() => SyncEngine(store, client, token).run();
+  Future<SyncPassResult> sync() => SyncEngine(store, client, token, groupId).run();
 
   Future<Game> onlyGame() async => (await games.getAll()).single;
 

@@ -5,7 +5,7 @@ description: Change the CountScore database schema — add a table, add a column
 
 # Changing the CountScore schema
 
-The mobile schema is **v22** and lives in two engines at once. The server schema is separate
+The mobile schema is **v23** and lives in two engines at once. The server schema is separate
 and moves with it. Read `.llmwiki/Schema.md` and `.llmwiki/DataLayer.md` before starting —
 the page name carries no version number, precisely so it never drifts from the one it
 documents.
@@ -14,8 +14,8 @@ documents.
 
 `schemaVersion` is declared **twice** and both must be bumped together:
 
-- `lib/services/drift/database.dart` → `int get schemaVersion => 22;`
-- `lib/services/database_service.dart` → `static const schemaVersion = 22;`
+- `lib/services/drift/database.dart` → `int get schemaVersion => 23;`
+- `lib/services/database_service.dart` → `static const schemaVersion = 23;`
 
 sqflite owns the migration chain on native, and Drift never reaches `onUpgrade` there: by
 the time Drift opens the file, sqflite has already migrated it.
@@ -29,8 +29,9 @@ adds a column, `columnsOf`; then call it from both `DatabaseService._upgradeDB` 
 `AppDatabase.onUpgrade`. `applyV21` (a column plus a back-fill: `SqlExecutor` and
 `columnsOf`) and `applyV20` (a data-only step: `SqlExecutor` alone) are the examples; the
 `columnsOf` guard is what makes replaying safe. Every step goes there, synced column or not —
-`lib/services/sync/sync_schema.dart` holds only the sync bookkeeping (v10 tables, v11
-capture triggers) and is not where a new step goes.
+`lib/services/sync/sync_schema.dart` holds only the sync bookkeeping (v10 tables, the v11
+capture triggers and their v23 rewrite, which `applyV23` installs) and is not where a new
+step goes.
 
 On web there is no legacy file at all for a *fresh* install, so Drift's `onCreate` builds
 the current version directly. **Every schema change must be made in all three places —

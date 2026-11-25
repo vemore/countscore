@@ -3,13 +3,15 @@
 // database. Drift's onUpgrade must then bring it to the current schema itself.
 //
 // Simulated on a native file: build the current schema, strip everything v10,
-// v11, v12, v13, v14, v15, v16, v21 and v22 added, stamp user_version 9, and
-// reopen through Drift.
+// v11, v12, v13, v14, v15, v16, v21, v22 and v23 added, stamp user_version 9,
+// and reopen through Drift.
 // v17, v18 and v19 add no column: v17 finds no keyless copy to dedupe, v18
 // replays the v16 back-fill, which has nothing left to fill, and v19 finds no
 // keyless row to give a key back to. v20 adds no column either. v21 adds
 // `keypad_shortcut`, and fills it on the five built-ins that have one. v22 adds
-// `max_rounds`, and gives 4 to the Chouineurs v14 inserted without it.
+// `max_rounds`, and gives 4 to the Chouineurs v14 inserted without it. v23 adds
+// `group_id` to `outbox`, `sync_inbox` and `entity_versions` (the last two are
+// dropped whole here, as v10 created them).
 
 import 'dart:io';
 
@@ -43,7 +45,8 @@ void main() {
     for (final table in ['group_links', 'entity_versions', 'sync_inbox', 'sync_flags']) {
       await raw.execute('DROP TABLE $table');
     }
-    for (final column in ['rejected_at', 'reject_reason']) {
+    await raw.execute('DROP INDEX idx_outbox_group_unsent');
+    for (final column in ['rejected_at', 'reject_reason', 'group_id']) {
       await raw.execute('ALTER TABLE outbox DROP COLUMN $column');
     }
     for (final column in ['device_id', 'group_name']) {
@@ -72,7 +75,9 @@ void main() {
     for (final table in ['group_links', 'entity_versions', 'sync_inbox', 'sync_flags']) {
       await db.customSelect('SELECT COUNT(*) FROM $table').getSingle();
     }
-    await db.customSelect('SELECT rejected_at, reject_reason FROM outbox').get();
+    await db.customSelect('SELECT rejected_at, reject_reason, group_id FROM outbox').get();
+    await db.customSelect('SELECT group_id FROM sync_inbox').get();
+    await db.customSelect('SELECT group_id FROM entity_versions').get();
     await db.customSelect('SELECT device_id, group_name FROM sync_state').get();
     await db.customSelect('SELECT finishedAt FROM games').get();
     // v13: the ten are back-filled and the thirteen new ones arrive —

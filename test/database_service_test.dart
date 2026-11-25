@@ -69,6 +69,29 @@ void main() {
       expect(await columns('sync_state'), containsAll(['device_id', 'group_name']));
     });
 
+    test('v23 group_id exists on the sync queue, and a shared row is queued for its group',
+        () async {
+      for (final table in ['outbox', 'sync_inbox', 'entity_versions']) {
+        final columns = (await db.rawQuery('PRAGMA table_info($table)'))
+            .map((r) => r['name'] as String)
+            .toSet();
+        expect(columns, contains('group_id'), reason: table);
+      }
+      await db.insert('games', {
+        'name': 'Partagée',
+        'isLowestScoreWins': 0,
+        'createdAt': '2026-11-25T20:00:00.000',
+        'uuid': 'fresh-v23-game',
+        'created_at': 1,
+        'updated_at': 1,
+        'group_id': 'g-1',
+      });
+      final queued = await db.query('outbox', where: "entity_uuid = 'fresh-v23-game'");
+      expect(queued.single['group_id'], 'g-1');
+      await db.delete('outbox');
+      await db.delete('games', where: "uuid = 'fresh-v23-game'");
+    });
+
     test('v12 finishedAt exists on games', () async {
       final columns = (await db.rawQuery('PRAGMA table_info(games)'))
           .map((r) => r['name'] as String)

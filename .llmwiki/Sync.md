@@ -2,7 +2,7 @@
 
 > Scope: the offline-first sharing protocol — server and Flutter client.
 > Related: [[Api]] · [[Schema]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-11-24
+> Updated: 2026-11-25
 
 ## Facts
 
@@ -220,17 +220,39 @@ another whose board is open.
 ### The client (since 2026-09-13)
 
 Sync runs only while a server URL is configured **and** the device holds a device token —
-the user's design. One group per device.
+the user's design. One group per device in the app: `GroupProvider` holds one membership.
+The storage under it holds several since schema v23 (`feat/multi-group-storage`, step 2 of
+`wip/todo/2026-11-17-belong-to-several-groups.md`); the per-group sessions and the UI are the
+next steps of that plan.
 
 **Joining.** Settings → Group creates a group (`POST /groups`) or joins one with a pasted
 `share_token` (`POST /groups/join`). The device token and share token go to
-`flutter_secure_storage` (`sync_credentials.dart`); group id, name and device id go to
-`sync_state`. Leaving revokes the device when the server answers, then `SyncStore.leave`
-turns every shared row back into a local one and empties `outbox`, `group_links`,
-`entity_versions`, `sync_inbox` and `sync_state`. Tombstones with nobody left to inform go
-for good, game types among them: a game-type tombstone no game points at is deleted, or it
-would hold its `builtin_key` reserved against the seed for ever. Clearing the server URL
-while in a group asks, then leaves.
+`flutter_secure_storage` (`sync_credentials.dart`), **keyed by group id** since v23
+(`sync.group.<id>.deviceToken`, `….shareToken`); group id, name and device id go to a
+`sync_state` row, and `SyncStore.join` adds that row beside the others (a group joined again
+gets its row replaced: new device id, cursor back to 0, lamport kept). The pre-v23 pair
+(`sync.deviceToken`, `sync.shareToken`) is moved under the first group it is read for, then
+deleted — on start, the one membership an upgraded install has; same code on Android and on
+the web. `SyncCredentials.nickname` is the slot for the one nickname of every group
+(`sync.nickname`, kept when a group is cleared); `GroupProvider` neither writes nor reads it
+yet (`wip/todo_nr/2026-11-25-the-stored-nickname-is-not-read-by-group-provider.md`). Leaving revokes the device when the server answers, then
+`SyncStore.leave(groupId)` turns that group's shared rows back into local ones and deletes
+that group's `outbox`, `group_links`, `entity_versions`, `sync_inbox` and `sync_state` rows,
+and nothing of another group's. Tombstones with nobody left to inform go for good, game types
+among them: a game-type tombstone no game points at is deleted, or it would hold its
+`builtin_key` reserved against the seed for ever — unless another group still links it (a
+player or type tombstone it still owes that group). Clearing the server URL while in a group
+asks, then leaves.
+
+**Storage that disagrees with the tokens (since v23).** `sync_state` is in the database and
+the tokens are not, so Settings → Import (or a restored backup) can bring memberships the
+secure storage holds no token for, or drop ones it does. `reconcileMemberships`
+(`sync_reconcile.dart`), run by `GroupProvider` on start before anything syncs: a group the
+database names — a membership, or a shared row, link or queue entry with no membership — and
+no token is held for is **left locally** (its games stay, as local games); a token for a group
+the database does not name is **forgotten**. Before v23 the one stored token was used for
+whatever group the database named: refused for ever, or another group's queue pushed under it.
+`test/sync/sync_reconcile_test.dart`.
 
 **Sharing the configuration by QR code (since 2026-09-26).** Settings shows a QR code carrying
 the server and the invite code, and a scanned one opens a "replace the configuration?" dialog
@@ -290,16 +312,21 @@ create screen), or later from the board menu; never undone. `SyncStore.shareGame
 (`isSyncablePlayerName`, mirroring `is_valid_player_name`: letters with their combining
 marks, digits, space, `-`, `'`, `.`) block sharing up front.
 
-**Capture — SQLite triggers, not repository code** (`sync_schema.dart`, schema v11). Every
-INSERT/UPDATE on a row with `group_id` set appends `(entity_type, entity_uuid, op)` to
-`outbox`, `op` read from `deleted_at`; players and game types are captured once they have a
-`group_links` row. Rows inserted under a shared game inherit its `group_id` through
-`*_inherit` triggers, so the repositories stay group-blind. `sync_flags.suppress` is raised
-while pulled deltas are applied, so nothing received is sent back.
+**Capture — SQLite triggers, not repository code** (`sync_schema.dart`, schema v11, rewritten
+in v23). Every INSERT/UPDATE on a row with `group_id` set appends `(entity_type, entity_uuid,
+op, group_id)` to `outbox`, `op` read from `deleted_at`; players and game types are captured
+once they have a `group_links` row — **one outbox row per group they are linked in**, so a
+local rename reaches every group. Rows inserted under a shared game inherit its `group_id`
+through `*_inherit` triggers, so the repositories stay group-blind. `sync_flags.suppress` is
+raised while pulled deltas are applied, so nothing received is sent back — nor relayed to
+another group: an edit pulled from A reaches B with the next local edit of the row (decision 3
+of the multi-group plan).
 
-**Push** (`SyncStore.preparePush`, `SyncEngine`). Outbox rows are coalesced per entity, the
-payload is built from the row as it is *now*, and a lamport is stamped from
-`sync_state.last_lamport`; a prepared row keeps its lamport and payload until the server
+**Push** (`SyncStore.preparePush`, `SyncEngine`). One group per pass: `SyncEngine` takes the
+group id with its token, and `preparePush`, `pendingCount` and `rejectedCount` read that
+group's outbox rows only (the counts sum every group without one). Outbox rows are coalesced
+per entity, the payload is built from the row as it is *now*, and a lamport is stamped from
+the group's `sync_state.last_lamport`; a prepared row keeps its lamport and payload until the server
 answers, so a retry is a `duplicate`, never a second apply. Players and game types are linked
 first: their server uuid is `uuid5(group_id, "<type>:<normalised name>")`, so every device
 computes the same identity for "Alice" and the server's unique name never collides. A player
@@ -341,8 +368,9 @@ A pulled player or game type links to the local one of the same name or is creat
 pulled `game_type` delete tombstones the linked local row — unless a live game still plays
 it, which may be a local game the group never saw, and then the row stays (`_applyGameType`).
 An upsert for a type this device has already tombstoned is ignored, as on the server. A delta
-whose parent is not local yet waits in `sync_inbox`, replayed after every page. The local
-lamport is raised past every lamport seen.
+whose parent is not local yet waits in `sync_inbox` under its group, replayed after every page
+of that group's pull only. Versions are recorded under the group they were learnt in. The
+local lamport is raised past every lamport seen.
 
 **A game deleted elsewhere while open** closes its board: `GameProvider.refreshFromSync`
 notices the current game is gone and the board pops with a snackbar naming it.
@@ -435,6 +463,16 @@ closed with 1013 before `accept()`. The counter is process memory too (`_open_st
 `cost_cents`), `change_log`, `rate_limits`. Colour columns are `BIGINT`.
 
 ## Decisions & History
+
+- **The sync storage tells groups apart (2026-11-25, `feat/multi-group-storage`).** Schema
+  v23 gives `outbox`, `sync_inbox` and `entity_versions` a `group_id`, so a device can hold
+  several memberships before the app lets it. A player or game type is one local row linked
+  into each group (the user's decision 2), so its capture is one outbox row per link, not one
+  row the first group's push would consume. `entity_versions` keeps its key: the uuid there is
+  the server's, which one group alone holds. Credentials are keyed by group id, and the old
+  pair is claimed by the one membership on first read. The reconciliation on start is new
+  with it: an import used to pair any database with the one token on the device, which is
+  the "sync that 401s for ever" — or worse, a push into the wrong group.
 
 - **`max_rounds` follows `keypad_shortcut`, not `rules_slug` (2026-11-17, `feat/max-rounds-chouineurs`).**
   A null is pushed as a clear because emptying the field is a choice, unlike a wiped slug;

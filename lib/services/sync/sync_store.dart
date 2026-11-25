@@ -10,7 +10,7 @@ import '../uuid.dart';
 import 'sync_ids.dart';
 import 'sync_schema.dart';
 
-/// The group this device is in, as `sync_state` records it.
+/// One group this device is in, as its `sync_state` row records it.
 typedef SyncMembership = ({
   String groupId,
   String groupName,
@@ -23,6 +23,7 @@ typedef SyncMembership = ({
 class PreparedDelta {
   PreparedDelta({
     required this.outboxId,
+    required this.groupId,
     required this.entityType,
     required this.entityUuid,
     required this.op,
@@ -32,6 +33,9 @@ class PreparedDelta {
   });
 
   final int outboxId;
+
+  /// The group the outbox row is queued for (schema v23).
+  final String groupId;
   final String entityType;
 
   /// The uuid the server knows: the local one, or for players and game types the
@@ -155,34 +159,55 @@ class SyncStore {
 
   // ── Membership ────────────────────────────────────────────────────────────
 
-  Future<SyncMembership?> membership() async {
+  static SyncMembership _membershipOf(QueryRow row) => (
+        groupId: row.data['group_id'] as String,
+        groupName: (row.data['group_name'] as String?) ?? '',
+        deviceId: row.data['device_id'] as String,
+        lastServerSeq: row.data['last_server_seq'] as int,
+        lastLamport: row.data['last_lamport'] as int,
+      );
+
+  /// Every group this device is in, in the order it joined them. A `sync_state`
+  /// row with no device (the v6 shape, never joined) is not a membership.
+  Future<List<SyncMembership>> memberships() async => [
+        for (final row in await _db
+            .customSelect('SELECT * FROM sync_state WHERE device_id IS NOT NULL ORDER BY rowid')
+            .get())
+          _membershipOf(row),
+      ];
+
+  /// The membership of [groupId], or with no argument the first one joined —
+  /// what a caller that still handles a single group reads.
+  Future<SyncMembership?> membership([String? groupId]) async {
     final row = await _db
-        .customSelect('SELECT * FROM sync_state WHERE device_id IS NOT NULL LIMIT 1')
+        .customSelect(
+          groupId == null
+              ? 'SELECT * FROM sync_state WHERE device_id IS NOT NULL ORDER BY rowid LIMIT 1'
+              : 'SELECT * FROM sync_state WHERE device_id IS NOT NULL AND group_id = ?',
+          variables: [if (groupId != null) Variable(groupId)],
+        )
         .getSingleOrNull();
-    if (row == null) return null;
-    return (
-      groupId: row.data['group_id'] as String,
-      groupName: (row.data['group_name'] as String?) ?? '',
-      deviceId: row.data['device_id'] as String,
-      lastServerSeq: row.data['last_server_seq'] as int,
-      lastLamport: row.data['last_lamport'] as int,
-    );
+    return row == null ? null : _membershipOf(row);
   }
 
-  /// Records a fresh membership. One group per device: any previous state goes.
-  Future<void> join(GroupMembership m) async {
-    await _db.transaction(() async {
-      await _db.customStatement('DELETE FROM sync_state');
-      await _db.customStatement(
+  /// Records a membership, beside the ones this device already has. Joining a
+  /// group again under a new registration replaces that group's row: the new
+  /// device id, the cursor back to 0 (a pull from the start is idempotent), and
+  /// the lamport kept, so this device's next writes still sort after its last.
+  /// The group's links, queue and versions are kept, and so is every other
+  /// group's row.
+  Future<void> join(GroupMembership m) => _db.customStatement(
         'INSERT INTO sync_state (group_id, group_name, device_id, last_server_seq, last_lamport) '
-        'VALUES (?, ?, ?, 0, 0)',
+        'VALUES (?, ?, ?, 0, 0) ON CONFLICT (group_id) DO UPDATE SET '
+        'group_name = excluded.group_name, device_id = excluded.device_id, last_server_seq = 0',
         [m.groupId, m.groupName, m.deviceId],
       );
-    });
-  }
 
-  /// Turns every shared row of [groupId] back into a local one and forgets all
-  /// sync bookkeeping. Tombstones have nobody left to inform, so they go for good.
+  /// Turns every shared row of [groupId] back into a local one and forgets that
+  /// group's sync bookkeeping — its `sync_state` row, links, queue, quarantine
+  /// and versions. Its tombstones have nobody left to inform, so they go for
+  /// good, unless another group still links them. Every other group is left as
+  /// it was.
   Future<void> leave(String groupId) async {
     await _db.transaction(() async {
       await _setSuppress(true);
@@ -196,23 +221,53 @@ class SyncStore {
             'UPDATE $table SET group_id = NULL WHERE group_id = ?', [groupId]);
       }
       // Global players tombstoned only because a shared membership held them.
+      // One another group still links keeps its tombstone: its last name is
+      // still owed to that group (`_build`).
       await _db.customStatement(
         'DELETE FROM players WHERE deleted_at IS NOT NULL AND id NOT IN '
-        '(SELECT player_id FROM game_players)',
+        '(SELECT player_id FROM game_players) AND uuid NOT IN ($_linkedElsewhere)',
+        ['player', groupId],
       );
-      // A game type is only ever tombstoned for the group's sake (a local delete
+      // A game type is only ever tombstoned for a group's sake (a local delete
       // is a hard one). With the group gone the stamp has nobody to inform, and
-      // it would otherwise keep its `builtin_key` reserved against the seed.
+      // it would otherwise keep its `builtin_key` reserved against the seed —
+      // unless another group links the type and still has its delete to hear.
       await _db.customStatement(
         'DELETE FROM game_types WHERE deleted_at IS NOT NULL AND id NOT IN '
-        '(SELECT gameTypeId FROM games WHERE gameTypeId IS NOT NULL)',
+        '(SELECT gameTypeId FROM games WHERE gameTypeId IS NOT NULL) '
+        'AND uuid NOT IN ($_linkedElsewhere)',
+        ['game_type', groupId],
       );
       for (final table in ['outbox', 'group_links', 'entity_versions', 'sync_inbox', 'sync_state']) {
-        await _db.customStatement('DELETE FROM $table');
+        await _db.customStatement('DELETE FROM $table WHERE group_id = ?', [groupId]);
       }
       await _setSuppress(false);
     });
   }
+
+  /// The groups a shared row, a link or a bookkeeping row names without a
+  /// membership to go with it: what an import of a database cut in the middle
+  /// of a leave, or edited by hand, can hold. `reconcileMemberships` leaves
+  /// them.
+  Future<List<String>> groupsWithoutMembership() async {
+    final named = [
+      for (final table in [
+        'games', 'game_players', 'rounds', 'scores', 'game_analyses', //
+        'group_links', 'outbox', 'sync_inbox', 'entity_versions',
+      ])
+        'SELECT group_id FROM $table WHERE group_id IS NOT NULL',
+    ].join(' UNION ');
+    final rows = await _db
+        .customSelect('SELECT group_id FROM ($named) WHERE group_id NOT IN '
+            '(SELECT group_id FROM sync_state WHERE device_id IS NOT NULL) ORDER BY group_id')
+        .get();
+    return [for (final r in rows) r.data['group_id'] as String];
+  }
+
+  /// The local uuids of one entity type linked into a group other than the
+  /// one being left. Arguments: the entity type, the group being left.
+  static const _linkedElsewhere =
+      'SELECT local_uuid FROM group_links WHERE entity_type = ? AND group_id <> ?';
 
   // ── Sharing ───────────────────────────────────────────────────────────────
 
@@ -264,24 +319,36 @@ class SyncStore {
 
   // ── Push ──────────────────────────────────────────────────────────────────
 
-  /// Number of local changes not yet accepted by the server.
-  Future<int> pendingCount() async {
+  /// Number of local changes not yet accepted by the server: in [groupId], or
+  /// summed over every group when none is given. A change queued for two groups
+  /// counts once in each.
+  Future<int> pendingCount({String? groupId}) async {
     final row = await _db
-        .customSelect('SELECT COUNT(DISTINCT entity_type || entity_uuid) AS c FROM outbox '
-            'WHERE sent_at IS NULL AND rejected_at IS NULL')
+        .customSelect(
+          'SELECT COUNT(DISTINCT group_id || entity_type || entity_uuid) AS c FROM outbox '
+          'WHERE sent_at IS NULL AND rejected_at IS NULL${_inGroup(groupId)}',
+          variables: [if (groupId != null) Variable(groupId)],
+        )
         .getSingle();
     return row.data['c'] as int;
   }
 
-  /// Number of local changes the server refused for good.
-  Future<int> rejectedCount() async {
+  /// Number of local changes the server refused for good: in [groupId], or in
+  /// every group when none is given.
+  Future<int> rejectedCount({String? groupId}) async {
     final row = await _db
-        .customSelect('SELECT COUNT(*) AS c FROM outbox WHERE rejected_at IS NOT NULL')
+        .customSelect(
+          'SELECT COUNT(*) AS c FROM outbox WHERE rejected_at IS NOT NULL${_inGroup(groupId)}',
+          variables: [if (groupId != null) Variable(groupId)],
+        )
         .getSingle();
     return row.data['c'] as int;
   }
 
-  /// Turns captured outbox rows into deltas: coalesces several writes to one
+  static String _inGroup(String? groupId) => groupId == null ? '' : ' AND group_id = ?';
+
+  /// Turns [m]'s captured outbox rows into deltas — another group's queue is
+  /// not read: coalesces several writes to one
   /// entity, builds each payload from the row as it is now, links players and
   /// game types into the group, and stamps a lamport. A delta prepared once keeps
   /// its lamport and payload until the server has answered, so a retry after a
@@ -291,11 +358,14 @@ class SyncStore {
       await _ensureLinks(m.groupId);
 
       final fresh = await _db
-          .customSelect('SELECT * FROM outbox WHERE sent_at IS NULL AND rejected_at IS NULL '
-              'AND client_lamport = 0 ORDER BY id')
+          .customSelect(
+            'SELECT * FROM outbox WHERE group_id = ? AND sent_at IS NULL '
+            'AND rejected_at IS NULL AND client_lamport = 0 ORDER BY id',
+            variables: [Variable(m.groupId)],
+          )
           .get();
       final seen = <String>{};
-      var lamport = (await membership())?.lastLamport ?? m.lastLamport;
+      var lamport = (await membership(m.groupId))?.lastLamport ?? m.lastLamport;
       for (final row in fresh) {
         final id = row.data['id'] as int;
         final type = row.data['entity_type'] as String;
@@ -329,8 +399,11 @@ class SyncStore {
           'UPDATE sync_state SET last_lamport = ? WHERE group_id = ?', [lamport, m.groupId]);
 
       final ready = await _db
-          .customSelect('SELECT * FROM outbox WHERE sent_at IS NULL AND rejected_at IS NULL '
-              'AND client_lamport > 0')
+          .customSelect(
+            'SELECT * FROM outbox WHERE group_id = ? AND sent_at IS NULL '
+            'AND rejected_at IS NULL AND client_lamport > 0',
+            variables: [Variable(m.groupId)],
+          )
           .get();
       final deltas = [
         for (final row in ready)
@@ -338,6 +411,7 @@ class SyncStore {
             final stored = jsonDecode(row.data['payload'] as String) as Map<String, dynamic>;
             return PreparedDelta(
               outboxId: row.data['id'] as int,
+              groupId: m.groupId,
               entityType: row.data['entity_type'] as String,
               entityUuid: stored['uuid'] as String,
               op: row.data['op'] as String,
@@ -360,7 +434,7 @@ class SyncStore {
     await _db.transaction(() async {
       await _db.customStatement(
           'UPDATE outbox SET sent_at = ? WHERE id = ?', [_nowMs(), d.outboxId]);
-      await _recordVersion(d.entityType, d.entityUuid, d.lamport, deviceId);
+      await _recordVersion(d.groupId, d.entityType, d.entityUuid, d.lamport, deviceId);
     });
   }
 
@@ -463,9 +537,9 @@ class SyncStore {
       // The newcomer's name is free on the server only once the holder's
       // rename got there, which an older build could drop: send it again.
       await _db.customStatement(
-        'INSERT INTO outbox (entity_type, entity_uuid, op, payload, client_lamport, created_at) '
-        "VALUES ('player', ?, 'upsert', '', 0, ?)",
-        [holder, _nowMs()],
+        'INSERT INTO outbox (entity_type, entity_uuid, op, payload, client_lamport, created_at, group_id) '
+        "VALUES ('player', ?, 'upsert', '', 0, ?, ?)",
+        [holder, _nowMs(), groupId],
       );
     }
     await _db.customStatement(
@@ -474,9 +548,9 @@ class SyncStore {
     );
     final now = _nowMs();
     await _db.customStatement(
-      'INSERT INTO outbox (entity_type, entity_uuid, op, payload, client_lamport, created_at) '
-      "VALUES (?, ?, 'upsert', '', 0, ?)",
-      [type, localUuid, now],
+      'INSERT INTO outbox (entity_type, entity_uuid, op, payload, client_lamport, created_at, group_id) '
+      "VALUES (?, ?, 'upsert', '', 0, ?, ?)",
+      [type, localUuid, now, groupId],
     );
     if (type != 'player') return;
     // Memberships and scores captured before the link may have been dropped
@@ -484,15 +558,15 @@ class SyncStore {
     // linking sends them again. A copy still pending is coalesced by
     // `preparePush`; one already sent comes back as a harmless re-upsert.
     await _db.customStatement(
-      'INSERT INTO outbox (entity_type, entity_uuid, op, payload, client_lamport, created_at) '
-      "SELECT 'game_player', gp.uuid, 'upsert', '', 0, ? FROM game_players gp "
+      'INSERT INTO outbox (entity_type, entity_uuid, op, payload, client_lamport, created_at, group_id) '
+      "SELECT 'game_player', gp.uuid, 'upsert', '', 0, ?, gp.group_id FROM game_players gp "
       'JOIN players p ON p.id = gp.player_id '
       'WHERE p.uuid = ? AND gp.group_id = ? AND gp.deleted_at IS NULL',
       [now, localUuid, groupId],
     );
     await _db.customStatement(
-      'INSERT INTO outbox (entity_type, entity_uuid, op, payload, client_lamport, created_at) '
-      "SELECT 'score', s.uuid, 'upsert', '', 0, ? FROM scores s "
+      'INSERT INTO outbox (entity_type, entity_uuid, op, payload, client_lamport, created_at, group_id) '
+      "SELECT 'score', s.uuid, 'upsert', '', 0, ?, s.group_id FROM scores s "
       'JOIN game_players gp ON gp.id = s.playerId JOIN players p ON p.id = gp.player_id '
       'WHERE p.uuid = ? AND s.group_id = ? AND s.deleted_at IS NULL',
       [now, localUuid, groupId],
@@ -749,8 +823,9 @@ class SyncStore {
         } else if (outcome != _skip) {
           quarantined++;
           await _db.customStatement(
-            'INSERT INTO sync_inbox (server_seq, delta, reason, created_at) VALUES (?, ?, ?, ?)',
-            [d.serverSeq, jsonEncode(_deltaJson(d)), outcome, _nowMs()],
+            'INSERT INTO sync_inbox (server_seq, delta, reason, created_at, group_id) '
+            'VALUES (?, ?, ?, ?, ?)',
+            [d.serverSeq, jsonEncode(_deltaJson(d)), outcome, _nowMs(), m.groupId],
           );
         }
       }
@@ -767,12 +842,17 @@ class SyncStore {
 
   static const _skip = '';
 
-  /// Retries quarantined deltas in server order until a pass makes no progress.
+  /// Retries [m]'s quarantined deltas in server order until a pass makes no
+  /// progress. Another group's quarantine waits for that group's pull: its
+  /// deltas name that group's links.
   Future<int> _replayInbox(SyncMembership m) async {
     var total = 0;
     while (true) {
       final rows = await _db
-          .customSelect('SELECT id, delta FROM sync_inbox ORDER BY server_seq, id')
+          .customSelect(
+            'SELECT id, delta FROM sync_inbox WHERE group_id = ? ORDER BY server_seq, id',
+            variables: [Variable(m.groupId)],
+          )
           .get();
       var progress = 0;
       for (final row in rows) {
@@ -792,7 +872,7 @@ class SyncStore {
   /// the delta has to wait.
   Future<String?> _applyOne(SyncMembership m, PulledDelta d) async {
     if (d.originDeviceId == m.deviceId) {
-      await _recordVersion(d.entityType, d.entityUuid, d.clientLamport, d.originDeviceId);
+      await _recordVersion(m.groupId, d.entityType, d.entityUuid, d.clientLamport, d.originDeviceId);
       return _skip;
     }
     final version = await _db.customSelect(
@@ -820,12 +900,14 @@ class SyncStore {
       _ => _skip,
     };
     if (waiting != null) return waiting;
-    await _recordVersion(d.entityType, d.entityUuid, d.clientLamport, d.originDeviceId);
+    await _recordVersion(m.groupId, d.entityType, d.entityUuid, d.clientLamport, d.originDeviceId);
     if (d.op == 'delete') {
-      // A delete wins: whatever this device still meant to send about it is moot.
+      // A delete wins: whatever this device still meant to send about it is moot
+      // — to this group. Another group's queue is that group's business.
       await _db.customStatement(
-        'DELETE FROM outbox WHERE sent_at IS NULL AND entity_type = ? AND entity_uuid = ?',
-        [d.entityType, d.entityUuid],
+        'DELETE FROM outbox WHERE sent_at IS NULL AND group_id = ? AND entity_type = ? '
+        'AND entity_uuid = ?',
+        [m.groupId, d.entityType, d.entityUuid],
       );
     }
     return null;
@@ -1270,14 +1352,16 @@ class SyncStore {
   Future<void> _setSuppress(bool on) => _db.customStatement(
       'INSERT OR REPLACE INTO sync_flags (id, suppress) VALUES (1, ?)', [on ? 1 : 0]);
 
-  Future<void> _recordVersion(String type, String uuid, int lamport, String origin) =>
+  Future<void> _recordVersion(
+          String groupId, String type, String uuid, int lamport, String origin) =>
       _db.customStatement(
-        'INSERT INTO entity_versions (entity_type, entity_uuid, lamport, origin_device_id) '
-        'VALUES (?, ?, ?, ?) ON CONFLICT (entity_type, entity_uuid) DO UPDATE SET '
-        'lamport = excluded.lamport, origin_device_id = excluded.origin_device_id '
+        'INSERT INTO entity_versions (entity_type, entity_uuid, lamport, origin_device_id, group_id) '
+        'VALUES (?, ?, ?, ?, ?) ON CONFLICT (entity_type, entity_uuid) DO UPDATE SET '
+        'lamport = excluded.lamport, origin_device_id = excluded.origin_device_id, '
+        'group_id = excluded.group_id '
         'WHERE excluded.lamport > entity_versions.lamport OR (excluded.lamport = '
         'entity_versions.lamport AND excluded.origin_device_id > entity_versions.origin_device_id)',
-        [type, uuid, lamport, origin],
+        [type, uuid, lamport, origin, groupId],
       );
 
   Future<int?> _idOf(String table, String uuid) async {

@@ -137,6 +137,9 @@ class Outbox extends Table {
   // v10: a delta the server refused for good. Kept, not deleted, so the UI can say so.
   IntColumn get rejectedAt => integer().named('rejected_at').nullable()();
   TextColumn get rejectReason => text().named('reject_reason').nullable()();
+  // v23: the group the row is queued for. A player or game type linked into
+  // two groups is queued once for each.
+  TextColumn get groupId => text().named('group_id').nullable()();
 }
 
 @DataClassName('SyncStateRow')
@@ -210,6 +213,8 @@ class EntityVersions extends Table {
   TextColumn get entityUuid => text().named('entity_uuid')();
   IntColumn get lamport => integer()();
   TextColumn get originDeviceId => text().named('origin_device_id')();
+  // v23: the group the version was learnt in, so leaving one forgets only its own.
+  TextColumn get groupId => text().named('group_id').nullable()();
 
   @override
   Set<Column> get primaryKey => {entityType, entityUuid};
@@ -227,4 +232,6 @@ class SyncInbox extends Table {
   TextColumn get delta => text()();
   TextColumn get reason => text()();
   IntColumn get createdAt => integer().named('created_at')();
+  // v23: the group the delta was pulled from; replayed only in that group.
+  TextColumn get groupId => text().named('group_id').nullable()();
 }

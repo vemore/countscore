@@ -2,18 +2,18 @@
 
 > Scope: the mobile database — tables, the global-player model, the migration chain.
 > Related: [[DataLayer]] · [[Sync]] · [[MobileApp]] · [[Testing]]
-> Updated: 2026-11-17
+> Updated: 2026-11-25
 
 This page was `SchemaV9`, then `SchemaV10` (2026-09-13); each rename after a version
 bump left the name a step behind (v11 the same day, v12–v14 on 2026-09-16, v15 on
 2026-09-18, v16 on 2026-09-19, v17–v18 on 2026-09-20, v19 on 2026-09-22, v20–v21 on
-2026-09-24, v22 on 2026-11-17). Renamed to `Schema` (2026-09-26, `feat/wiki-lint`) so the name never
+2026-09-24, v22 on 2026-11-17, v23 on 2026-11-25). Renamed to `Schema` (2026-09-26, `feat/wiki-lint`) so the name never
 drifts from the version again; every version to date is still described here.
 
 ## Facts
 
-Schema version **22**, declared in two places that must stay in sync:
-`lib/services/drift/database.dart` (`schemaVersion => 22`) and
+Schema version **23**, declared in two places that must stay in sync:
+`lib/services/drift/database.dart` (`schemaVersion => 23`) and
 `DatabaseService.schemaVersion` in `lib/services/database_service.dart`, which both
 `openDatabase` calls use.
 
@@ -27,19 +27,20 @@ Schema version **22**, declared in two places that must stay in sync:
 | `game_players` | **Per-game membership**: `(id, gameId, player_id FK→players, name, orderIndex, colorValue, uuid, …)`. UNIQUE `(gameId, player_id)`. |
 | `rounds` | `(gameId FK, roundNumber, comment, …)`. |
 | `scores` | `(playerId FK→game_players.id, roundId FK, value, …)`. |
-| `outbox` | Local sync queue `(entity_type, client_lamport, sent_at)`, plus `rejected_at`, `reject_reason` since v10. Written by nobody yet. |
-| `sync_state` | Per-group sync cursor `(last_server_seq, last_lamport)`, plus `device_id`, `group_name` since v10. Unused so far. |
+| `outbox` | Local sync queue `(entity_type, client_lamport, sent_at)`, plus `rejected_at`, `reject_reason` since v10, and `group_id` since v23 — the group the row is queued for; a player or game type linked into two groups is queued once for each. Written by the capture triggers ([[Sync]]). |
+| `sync_state` | One row per group this device is in: cursor `(last_server_seq, last_lamport)`, plus `device_id`, `group_name` since v10. Several rows since v23; `join` adds one. |
 | `game_analyses` | ZapZap analysis cache. `gameId` UNIQUE, `content`, `modelId`, sync columns. |
 | `group_links` | v10. `(group_id, entity_type, local_uuid) → remote_uuid`, UNIQUE on the remote side: how a local player or game type is known in a group, since those merge by name. |
-| `entity_versions` | v10. `(entity_type, entity_uuid) → (lamport, origin_device_id)`: the last writer of each synced entity, for client-side LWW. |
-| `sync_inbox` | v10. Pulled deltas waiting for a parent that has not arrived, with the reason. |
+| `entity_versions` | v10. `(entity_type, entity_uuid) → (lamport, origin_device_id)`: the last writer of each synced entity, for client-side LWW. `group_id` since v23, the group it was learnt in; the key is unchanged (the uuid is the server's, held by one group only). |
+| `sync_inbox` | v10. Pulled deltas waiting for a parent that has not arrived, with the reason. `group_id` since v23: replayed by that group's pull only. |
 
 Local key is `INTEGER AUTOINCREMENT`; the UUID is the logical key for sync. Every entity
 table carries `uuid`, `created_at`, `updated_at`, `deleted_at` and `group_id`. All existing
 rows have `group_id = NULL`, meaning local-only mode — so the sync columns are dormant, not
 wrong.
 
-The device token is **not** in the database: it belongs in platform secure storage.
+The device tokens are **not** in the database: they are in platform secure storage, one pair
+per group since v23 ([[Sync]]).
 
 ### `game_types.rules` / `game_types.rules_slug` (since v13)
 
@@ -258,7 +259,7 @@ Drift's `onUpgrade` is **not** a no-op any more. Native still never reaches it �
 migrated the file first — but a browser keeps its database across PWA releases, and the PWA
 has been in production at v9 since 2026-09-13. `onUpgrade` runs `applySyncV10` for
 `from < 10`, the v11 statements for `from < 11`, then each `applyVN` for `from < N`, from
-`applyV12` to `applyV21`: the same SQL sqflite runs, from `sync_schema.dart` (v10, v11) and
+`applyV12` to `applyV23`: the same SQL sqflite runs, from `sync_schema.dart` (v10, v11) and
 `schema_steps.dart` (v12 on). Covered by `test/drift/web_upgrade_test.dart` and the
 `test/migration_v*_test.dart` files, which run both engines' upgrade callbacks.
 
@@ -295,6 +296,7 @@ pointing at it ([[Sync]]).
 | **v20** | **`lastPlayerOver` on the last-survivor built-ins that have no end** — ZapZap, Rami and 6 qui prend (the seeds with `lastPlayerOver`, `lastPlayerStandingSeeds`), which feat/last-player-standing seeded on a new database only. `applyV20` in `lib/services/schema_steps.dart`, run by both engines on upgrade. A live row keyed on one of the three, with `gameOverConditionType IS NULL` and an `over` elimination, gets `lastPlayerOver` at its own `playerDeadThreshold` (the seeded one if NULL: 100, 100, 65) and a new `updated_at`. A condition the user set, a deleted row, a row with no elimination and an `under` elimination are left alone. The editor's "None" (*Aucune*), a NULL end chosen on purpose, cannot be told from one never set, so it is overwritten. Finished games of these types are **re-ranked**: `GameStanding.ranksByEliminationOrder` is true for `lastPlayerOver`, so their final standings and the statistics' places follow the elimination order, and the winner can change when everyone went out (accepted by the user, 2026-09-24). The `UPDATE` fires the v11 `game_types` capture trigger, so a row linked into a group is pushed on the next sync; the server needs no change. No column change; nothing is inserted. `test/migration_v19_to_v20_test.dart`. |
 | **v21** | **`game_types.keypad_shortcut`** (TEXT, nullable): the score keypad's per-type key, a value or an operation, as compact JSON. `applyV21` in `lib/services/schema_steps.dart`, run by both engines on upgrade: adds the column, then fills the live rows keyed `zapzap`, `skyjo`, `belote`, `scrabble`, `rami` from `keypadShortcutSeeds()` where it is NULL, with capture suppressed so nothing is pushed. Additive; `UPDATE`s only, nothing inserted, deleted or renamed rows untouched. Pushed as `keypad_shortcut` by later edits; the server gained it in `0006_game_type_keypad_shortcut`. `test/migration_v20_to_v21_test.dart`. |
 | **v22** | **`game_types.max_rounds`** (INTEGER, nullable): the game is over after this many rounds, OR-ed with the total condition. `applyV22` in `lib/services/schema_steps.dart`, run by both engines on upgrade: adds the column, fills `maxRoundsSeeds()` (Chouineurs, 4) only in the run that adds it, and inserts the built-in **Chouineurs** when no row holds its key and no live row its name. Capture suppressed, `updated_at` untouched. No back-fill of the other built-ins. The server gained the column in `0007_game_type_max_rounds`. `test/migration_v21_to_v22_test.dart`. |
+| **v23** | **The sync queue tells groups apart.** `group_id` TEXT on `outbox`, `sync_inbox` and `entity_versions` (`syncTablesByGroup`). `applyV23` in `lib/services/schema_steps.dart`, run by both engines on upgrade and by both fresh-install paths: adds each column, and **only in the run that adds it** back-fills it from the one membership an upgraded install has (`sync_state` with a `device_id`, first by rowid), then deletes a row no membership claims; indexes `idx_outbox_group_unsent`, `idx_sync_inbox_group_seq`, `idx_entity_versions_group`; then drops and re-creates the `trg_sync_*` capture triggers (`syncV23CaptureStatements` in `sync_schema.dart`): a game and its children are queued for `NEW.group_id`, a player or game type once per `group_links` row. `test/migration_v22_to_v23_test.dart`. |
 | v10 | **Sync bookkeeping**: `group_links`, `entity_versions`, `sync_inbox`; `outbox.rejected_at` / `reject_reason`; `sync_state.device_id` / `group_name`. Additive only — `_createSyncV10Tables` is the fresh-install and the upgrade path at once. |
 
 ### The v9 migration in detail
@@ -326,6 +328,16 @@ Added in `b340c98`. Some installs recorded version 8 while still carrying pre-v6
 repairs the shape before the rest of the chain runs.
 
 ## Decisions & History
+
+- **v23 back-fills from the membership, and only once (2026-11-25, `feat/multi-group-storage`).**
+  Before v23 `join` emptied `sync_state` and `leave` emptied every sync table, so whatever an
+  upgraded install has queued belongs to its one membership; a row with none to claim it
+  could never be pushed or counted, so it goes. On a replay — a PWA whose version never
+  reached IndexedDB runs `onCreate` again — the column is already there and nothing is
+  re-attributed: with several groups, "the first one" would be a guess. `entity_versions`
+  kept its primary key rather than being rebuilt with `group_id` in it: the server refuses a
+  uuid another group holds, so the old key never collides, and a rebuild of a table in both
+  engines was the riskier change.
 
 - **A round limit is its own column, OR-ed with the total condition (2026-11-17, `feat/max-rounds-chouineurs`).**
   A fifth `GameOverConditionType` ("after N rounds") was the alternative, rejected because
