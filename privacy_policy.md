@@ -1,6 +1,6 @@
 # Privacy Policy for CountScore
 
-**Last Updated**: November 17, 2026 (v2.13)
+**Last Updated**: November 25, 2026 (v2.14)
 
 **Effective Date**: Applies to CountScore v1.1.0 and later
 
