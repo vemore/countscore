@@ -17,7 +17,7 @@ Schema version **24**, declared in two places that must stay in sync:
 `DatabaseService.schemaVersion` in `lib/services/database_service.dart`, which both
 `openDatabase` calls use.
 
-### Tables (12)
+### Tables (13)
 
 | Table | Role |
 |---|---|
@@ -32,6 +32,7 @@ Schema version **24**, declared in two places that must stay in sync:
 | `game_analyses` | ZapZap analysis cache. `gameId` UNIQUE, `content`, `modelId`, sync columns. |
 | `group_links` | v10. `(group_id, entity_type, local_uuid) → remote_uuid`, UNIQUE on the remote side: how a local player or game type is known in a group, since those merge by name. |
 | `entity_versions` | v10. `(entity_type, entity_uuid) → (lamport, origin_device_id)`: the last writer of each synced entity, for client-side LWW. `group_id` since v23, the group it was learnt in; the key is unchanged (the uuid is the server's, held by one group only). |
+| `game_player_aliases` | v24. `alias_uuid → game_player_uuid`, with `group_id`: a membership another device added under its own uuid, merged into the row this device already had for that player in that game. A later delete or edit of the alias reaches that row only (`_applyGamePlayer`, [[Sync]]). Emptied for a group by `leave`. |
 | `sync_inbox` | v10. Pulled deltas waiting for a parent that has not arrived, with the reason. `group_id` since v23: replayed by that group's pull only. |
 
 Local key is `INTEGER AUTOINCREMENT`; the UUID is the logical key for sync. Every entity
@@ -298,7 +299,7 @@ pointing at it ([[Sync]]).
 | **v21** | **`game_types.keypad_shortcut`** (TEXT, nullable): the score keypad's per-type key, a value or an operation, as compact JSON. `applyV21` in `lib/services/schema_steps.dart`, run by both engines on upgrade: adds the column, then fills the live rows keyed `zapzap`, `skyjo`, `belote`, `scrabble`, `rami` from `keypadShortcutSeeds()` where it is NULL, with capture suppressed so nothing is pushed. Additive; `UPDATE`s only, nothing inserted, deleted or renamed rows untouched. Pushed as `keypad_shortcut` by later edits; the server gained it in `0006_game_type_keypad_shortcut`. `test/migration_v20_to_v21_test.dart`. |
 | **v22** | **`game_types.max_rounds`** (INTEGER, nullable): the game is over after this many rounds, OR-ed with the total condition. `applyV22` in `lib/services/schema_steps.dart`, run by both engines on upgrade: adds the column, fills `maxRoundsSeeds()` (Chouineurs, 4) only in the run that adds it, and inserts the built-in **Chouineurs** when no row holds its key and no live row its name. Capture suppressed, `updated_at` untouched. No back-fill of the other built-ins. The server gained the column in `0007_game_type_max_rounds`. `test/migration_v21_to_v22_test.dart`. |
 | **v23** | **The sync queue tells groups apart.** `group_id` TEXT on `outbox`, `sync_inbox` and `entity_versions` (`syncTablesByGroup`). `applyV23` in `lib/services/schema_steps.dart`, run by both engines on upgrade and by both fresh-install paths: adds each column, and **only in the run that adds it** back-fills it from the one membership an upgraded install has (`sync_state` with a `device_id`, first by rowid), then deletes a row no membership claims; indexes `idx_outbox_group_unsent`, `idx_sync_inbox_group_seq`, `idx_entity_versions_group`; then drops and re-creates the `trg_sync_*` capture triggers (`syncV23CaptureStatements` in `sync_schema.dart`): a game and its children are queued for `NEW.group_id`, a player or game type once per `group_links` row. `test/migration_v22_to_v23_test.dart`. |
-| **v24** | **One live membership per `(game, player)`.** `applyV24` in `lib/services/schema_steps.dart`, run by both engines on upgrade: drops `idx_game_players_unique` (v9, over every row) and creates `idx_game_players_live` `WHERE deleted_at IS NULL` (`gamePlayersLiveIndex`, also what both fresh-install paths create). Until then a player removed from a shared game — a tombstone — could not be added back: the insert failed `UNIQUE constraint failed`. No data change. `test/migration_v23_to_v24_test.dart`. |
+| **v24** | **One live membership per `(game, player)`.** `applyV24` in `lib/services/schema_steps.dart`, run by both engines on upgrade: drops `idx_game_players_unique` (v9, over every row) and creates `idx_game_players_live` `WHERE deleted_at IS NULL` (`gamePlayersLiveIndex`), and creates `game_player_aliases`. Both fresh-install paths run it too, so a PWA that lost its `user_version` and reruns `onCreate` drops the v9 index as well. Until then a player removed from a shared game — a tombstone — could not be added back: the insert failed `UNIQUE constraint failed`. No data change. `test/migration_v23_to_v24_test.dart`, `test/drift/persistence_flush_test.dart`. |
 | v10 | **Sync bookkeeping**: `group_links`, `entity_versions`, `sync_inbox`; `outbox.rejected_at` / `reject_reason`; `sync_state.device_id` / `group_name`. Additive only — `_createSyncV10Tables` is the fresh-install and the upgrade path at once. |
 
 ### The v9 migration in detail
@@ -338,8 +339,13 @@ repairs the shape before the rest of the chain runs.
   tombstone revived under a new uuid. Reviving was rejected: the old uuid's row is gone, so its
   delete still queued offline builds nothing and never leaves, and a late delete of the old
   uuid can no longer tell "removed before the re-add" from "merged into this row" and removes
-  the player added back on some devices only. The server needs no change: it keys a
-  membership by `(game, player)`. The players' equivalent problem
+  the player added back on some devices only. The server accepts the new uuid, but it keys a
+  membership by `(game, player)` and ignores the uuid, so its own `game_players` — which
+  `backend/app/routes/comments.py` reads for the group commentary — can diverge from the
+  devices': `wip/todo_nr/2026-11-25-the-server-applies-a-membership-upsert-over-its-delete.md`.
+  The alias table came with the review of #295: merging a second device's uuid into this
+  device's row, then falling back on `(game, player)` for that uuid, reached the membership
+  added back since. The players' equivalent problem
   (`wip/todo_nr/2026-11-24-a-shared-player-deleted-cannot-be-created-again.md`) leans the
   other way, reviving the row, because a player keeps its uuid across a revival.
 

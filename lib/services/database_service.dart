@@ -216,7 +216,6 @@ class DatabaseService {
     await db.execute('CREATE INDEX idx_games_gameTypeId ON games(gameTypeId)');
     await db.execute('CREATE INDEX idx_game_players_gameId ON game_players(gameId)');
     await db.execute('CREATE INDEX idx_game_players_player_id ON game_players(player_id)');
-    await db.execute(gamePlayersLiveIndex);
     await db.execute('CREATE INDEX idx_rounds_gameId ON rounds(gameId)');
     await db.execute('CREATE INDEX idx_scores_playerId ON scores(playerId)');
     await db.execute('CREATE INDEX idx_scores_roundId ON scores(roundId)');
@@ -236,6 +235,7 @@ class DatabaseService {
     await _createSyncV11Capture(db);
     await applyV15(db.execute);
     await applyV23(db.execute, (t) => _columnsOf(db, t));
+    await applyV24(db.execute);
 
     await _insertDefaultGameTypes(db);
   }

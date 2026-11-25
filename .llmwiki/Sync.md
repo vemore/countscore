@@ -425,13 +425,21 @@ A pulled player or game type links to the local one of the same name or is creat
 pulled `game_type` delete tombstones the linked local row — unless a live game still plays
 it, which may be a local game the group never saw, and then the row stays (`_applyGameType`).
 An upsert for a type this device has already tombstoned is ignored, as on the server.
-**A membership** (`_applyGamePlayer`, since 2026-11-25) is matched by its uuid first: an
-upsert of a tombstoned one changes nothing, whatever its lamport, and a delete of one leaves
-the player added back since alone. A player removed and added back is a new membership under
-a new uuid (schema v24, [[Schema]]), inserted beside the tombstone. An unknown uuid updates
-the pair's live row — the same player added on two devices, each under its own uuid — or,
-with none, is inserted, unless `entity_versions` already knows it: merged into a membership
-since removed, its stale edit stays out. A delta
+**A membership** (`_applyGamePlayer`, since 2026-11-25) is matched by its uuid — its own
+row, or the row it was merged into (`game_player_aliases`, schema v24): an upsert of a
+tombstoned one changes nothing, whatever its lamport, and a delete of one leaves the player
+added back since alone. A player removed and added back is a new membership under a new uuid
+([[Schema]]), inserted beside the tombstone. A uuid never seen here is merged into the pair's
+live row — the same player added on two devices, each under its own uuid — and the alias
+kept, or, with none, inserted. A uuid seen with no row nor alias (merged before v24) reaches
+the live row only while the pair holds no tombstone. A score pulled for a player whose
+membership was removed, with none live, is dropped rather than queued: a membership added
+back later pushes its own scores after itself.
+**A pre-v24 device in the group** still revives the tombstoned row when it pulls a membership
+added back, under the old uuid; its later edit or removal of that player goes out under that
+uuid, which v24 devices hold as a tombstone and ignore. Nothing on the v24 side can tell that
+from a stale edit, so the devices disagree until it upgrades
+(`wip/todo_nr/2026-11-25-a-pre-v24-device-revives-a-removed-membership.md`). A delta
 whose parent is not local yet waits in `sync_inbox` under its group, replayed after every page
 of that group's pull only. Versions are recorded under the group they were learnt in. The
 local lamport is raised past every lamport seen.

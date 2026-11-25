@@ -38,7 +38,7 @@ Load this file first. Then read only the pages your task touches.
 |---|---|---|
 | [[MobileApp]] | `lib/` layout, providers, screens, widgets, services and `utils/`, the compact landscape layout, the dynamic-icon constraint | 2026-11-25 |
 | [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-11-25 |
-| [[Schema]] | Schema v24: the twelve tables, `builtin_key` and its unique index, `max_rounds`, per-group sync bookkeeping, a live-only membership index, tombstones, the migration chain | 2026-11-25 |
+| [[Schema]] | Schema v24: the thirteen tables, `builtin_key` and its unique index, `max_rounds`, per-group sync bookkeeping, a live-only membership index, tombstones, the migration chain | 2026-11-25 |
 | [[ConfigShare]] | The configuration QR: the `#/join` link and its parser, the PWA base, the replace dialog, what opens a link (PWA route, Android deep link) | 2026-11-25 |
 | [[MultiGroup]] | Up to five groups per device: sessions, one server and nickname, worst status, the Groups list, create selector, group badge | 2026-11-25 |
 | [[I18n]] | 20 languages × 473 keys, French template, English fallback, localized built-in names and their sort key, the ARB checks, rules as assets | 2026-11-25 |

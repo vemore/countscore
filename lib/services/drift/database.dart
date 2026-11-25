@@ -44,6 +44,7 @@ class AppDatabase extends _$AppDatabase {
           }
           await applyV15(customStatement);
           await applyV23(customStatement, _columnsOf);
+          await applyV24(customStatement);
           await _insertDefaultGameTypes();
         },
         onUpgrade: (m, from, to) async {
@@ -123,7 +124,6 @@ class AppDatabase extends _$AppDatabase {
       'CREATE INDEX IF NOT EXISTS idx_game_players_gameId ON game_players(gameId)',
       'CREATE INDEX IF NOT EXISTS idx_game_players_player_id ON game_players(player_id)',
       'CREATE INDEX IF NOT EXISTS idx_game_players_group_id ON game_players(group_id)',
-      gamePlayersLiveIndex,
       'CREATE INDEX IF NOT EXISTS idx_rounds_gameId ON rounds(gameId)',
       'CREATE UNIQUE INDEX IF NOT EXISTS idx_rounds_uuid ON rounds(uuid)',
       'CREATE INDEX IF NOT EXISTS idx_scores_playerId ON scores(playerId)',

@@ -4,7 +4,8 @@
 // game could not be added back.
 //
 // Built on the model of migration_v22_to_v23_test.dart: a current database is
-// stepped back to v23 — the v9 index put back in place of the v24 one — and
+// stepped back to v23 — the v9 index put back in place of the v24 one, the
+// aliases table dropped — and
 // filled with a shared game Alice was removed from, then reopened through both
 // engines' real upgrade callbacks and once more straight through `applyV24`.
 
@@ -48,6 +49,7 @@ void main() {
       ),
     );
     await db.execute('DROP INDEX idx_game_players_live');
+    await db.execute('DROP TABLE game_player_aliases');
     await db.execute(
         'CREATE UNIQUE INDEX idx_game_players_unique ON game_players(gameId, player_id)');
     alice = await db.insert('players',
@@ -105,6 +107,7 @@ void main() {
           'created_at': 3,
           'updated_at': 3,
         };
+    expect(await db.query('game_player_aliases'), isEmpty, reason: 'the v24 table is there');
     await db.insert('game_players', membership('back'));
     await expectLater(db.insert('game_players', membership('twice')), throwsA(anything));
   });

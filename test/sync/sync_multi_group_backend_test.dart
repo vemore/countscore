@@ -620,5 +620,41 @@ void main() {
       expect(y.recorder.reasons, isEmpty);
       expect(x.recorder.reasons, isEmpty);
     });
+
+    test('added on both devices, then removed and added back on one while the other removes '
+        'its own: both keep the one added back', () async {
+      await aliceInBoth();
+      Future<List<String>> withDora(_Device d) async => [
+            for (final p in await d.players.getByGame(await gameOn(d)))
+              if (p.name == 'Dora') p.name,
+          ];
+
+      // Both add Dora, each under its own uuid; each merges the other's.
+      for (final d in [x, y]) {
+        await d.players.create(Player(gameId: await gameOn(d), name: 'Dora', orderIndex: 2));
+      }
+      await x.syncOk(a);
+      await y.syncOk(a);
+      await x.syncOk(a);
+      expect(await withDora(x), ['Dora']);
+      expect(await withDora(y), ['Dora']);
+
+      // Y removes its Dora and adds her back.
+      Future<void> removeDora(_Device d) async {
+        final dora = (await d.players.getByGame(await gameOn(d))).firstWhere((p) => p.name == 'Dora');
+        await d.players.delete(dora.id!);
+      }
+
+      await removeDora(y);
+      await y.players.create(Player(gameId: await gameOn(y), name: 'Dora', orderIndex: 3));
+      await y.syncOk(a);
+      // X, which had not pulled that, removes its own.
+      await removeDora(x);
+      await x.syncOk(a);
+      await y.syncOk(a);
+
+      expect(await withDora(x), ['Dora'], reason: "Y's new membership came after");
+      expect(await withDora(y), ['Dora'], reason: "X's delete named the old one");
+    });
   });
 }

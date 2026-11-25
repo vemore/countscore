@@ -717,11 +717,27 @@ Future<void> applyV23(
 /// the server's unique rules do — and adding a player back inserts a new
 /// membership, under a new uuid: the old one stays deleted on every device.
 ///
-/// Idempotent: the old index is dropped if it is there, the new one created
-/// if it is not.
+/// It also adds `game_player_aliases`: a membership another device added
+/// under its own uuid, for a player this device had already added to the
+/// game, is merged into this device's row, and the alias says which row.
+/// A later delete or edit of that uuid then reaches that row only — not the
+/// membership added back since, which a fallback on `(game, player)` would
+/// pick (`SyncStore._applyGamePlayer`).
+///
+/// Shared by both fresh-install paths too, so a PWA whose `user_version` was
+/// lost and that reruns `onCreate` drops the v9 index as well.
+///
+/// Idempotent: the old index is dropped if it is there, the new one and the
+/// table created if they are not.
 Future<void> applyV24(SqlExecutor execute) async {
   await execute('DROP INDEX IF EXISTS idx_game_players_unique');
   await execute(gamePlayersLiveIndex);
+  await execute('CREATE TABLE IF NOT EXISTS game_player_aliases ('
+      'alias_uuid TEXT NOT NULL PRIMARY KEY, '
+      'game_player_uuid TEXT NOT NULL, '
+      'group_id TEXT NOT NULL)');
+  await execute('CREATE INDEX IF NOT EXISTS idx_game_player_aliases_group '
+      'ON game_player_aliases(group_id)');
 }
 
 /// One live membership per `(game, player)`; tombstones do not count (v24).
