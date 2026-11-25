@@ -894,14 +894,16 @@ class SyncStore {
   /// Null when applied, [_skip] when there is nothing to do, otherwise the reason
   /// the delta has to wait.
   Future<String?> _applyOne(SyncMembership m, PulledDelta d) async {
-    if (d.originDeviceId == m.deviceId) {
-      await _recordVersion(m.groupId, d.entityType, d.entityUuid, d.clientLamport, d.originDeviceId);
-      return _skip;
-    }
     final version = await _db.customSelect(
       'SELECT lamport, origin_device_id FROM entity_versions WHERE entity_type = ? AND entity_uuid = ?',
       variables: [Variable(d.entityType), Variable(d.entityUuid)],
     ).getSingleOrNull();
+    if (d.originDeviceId == m.deviceId && await _holdsOwn(m, d, version)) {
+      await _recordVersion(m.groupId, d.entityType, d.entityUuid, d.clientLamport, d.originDeviceId);
+      return _skip;
+    }
+    // Another device's delta — or one of this device's that this database never
+    // stamped (a restored backup, an import): applied by the same rules.
     if (d.op == 'upsert' && version != null) {
       final lamport = version.data['lamport'] as int;
       final origin = version.data['origin_device_id'] as String;
@@ -934,6 +936,44 @@ class SyncStore {
       );
     }
     return null;
+  }
+
+  /// Whether this database already holds [d], a delta this device logged in
+  /// [m]'s group — the usual case, skipped: the row has it, or something newer.
+  ///
+  /// It does when it recorded the delta's version, or a later one of its own
+  /// ([markSent]); or when this group's outbox holds that lamport unsent — the
+  /// answer was lost, and a newer local edit may be queued behind it. Lamports
+  /// are per group, so another group's outbox says nothing. A sent row is
+  /// [markSent]'s version already, so only the unsent rows are read, through
+  /// the `(group_id, sent_at)` index.
+  ///
+  /// A database that does neither went back in time — a restored backup or an
+  /// import, its cursor and clock with it — and the edits this device made
+  /// since are in the log alone: they are applied like any other device's, or
+  /// its next local edit of the row would push the old values back over the
+  /// group's.
+  ///
+  /// The version test is the cheap one (a primary-key read), and spares a
+  /// delete this device sent a second run through its `_apply…` branch; an
+  /// upsert it sent would lose on the usual comparison below anyway.
+  ///
+  /// A version recorded from another device, even a higher one, does not
+  /// count: an upsert then loses on the usual comparison anyway, and a delete
+  /// wins regardless — this device may have deleted the row offline, after
+  /// the other's write, and the restored database still holds it live.
+  Future<bool> _holdsOwn(SyncMembership m, PulledDelta d, QueryRow? version) async {
+    if (version != null &&
+        version.data['origin_device_id'] == m.deviceId &&
+        (version.data['lamport'] as int) >= d.clientLamport) {
+      return true;
+    }
+    final stamped = await _db.customSelect(
+      'SELECT 1 FROM outbox WHERE group_id = ? AND sent_at IS NULL AND client_lamport = ? '
+      'LIMIT 1',
+      variables: [Variable(m.groupId), Variable(d.clientLamport)],
+    ).getSingleOrNull();
+    return stamped != null;
   }
 
   Future<String?> _applyPlayer(String groupId, PulledDelta d) async {

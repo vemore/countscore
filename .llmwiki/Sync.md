@@ -402,8 +402,13 @@ off (since 2026-09-24).
 | `lamport_reused` | every such delta of the batch collected; the group's log read **once** from seq 0 for its highest lamport (nothing applied, cursor kept) and the clock raised past it; only then each stamp cleared, so each is stamped again and pushed again in the same pass. A scan that fails leaves the rows as they were, for the next pass to do it all again; a second refusal after a scan that succeeded is rejected (since 2026-11-25) |
 | anything else | rejected, counted in Settings |
 
-**Pull** (`SyncStore.applyPulled`, one transaction per page). Own deltas skipped. Upserts
-are applied only when `(client_lamport, origin_device_id)` beats `entity_versions`; a delete
+**Pull** (`SyncStore.applyPulled`, one transaction per page). This device's own deltas
+are skipped when the database holds them (`_holdsOwn`): their version, or a later one of
+its own, is in `entity_versions` (what `markSent` records), or this group's outbox holds
+their lamport unsent — an answer that was lost. One it holds neither way is from a database that went
+back in time, a restored backup or Settings → Import, cursor and clock with it: applied by
+the rules below, like another device's (since 2026-11-25). Every other upsert is
+applied only when `(client_lamport, origin_device_id)` beats `entity_versions`; a delete
 always applies, tombstones the row and its children, and drops pending outbox rows for it.
 A pulled player or game type links to the local one of the same name or is created. A
 pulled `game_type` delete tombstones the linked local row — unless a live game still plays
@@ -513,6 +518,33 @@ closed with 1013 before `accept()`. The counter is process memory too (`_open_st
 
 ## Decisions & History
 
+- **A restored database applies the own deltas it never stamped (2026-11-25,
+  `fix/restored-device-own-deltas`).** The pull skipped every delta whose origin was this
+  device, on the assumption that the database had sent it. A restored backup or an import
+  brings back its cursor and clock, so the next pull returns the edits this device pushed
+  since — and skipped them: the rows stayed old here, and the row's next local edit, stamped
+  past the log, pushed the old values back over the group's. Two fixes were weighed.
+  *Marking a restore* and applying own deltas on the first pull after it was rejected: an
+  import can set a flag, but an Android auto-backup restore or a copied file cannot be seen
+  from inside the database, and the pull after it would still need a test for the own
+  deltas it does hold. Chosen: the test alone, with no flag and no schema change — an own
+  delta is skipped when `entity_versions` holds its version or a later one of this device's
+  (what `markSent` records), or when this group's outbox holds its lamport unsent (a row
+  whose answer was lost keeps its lamport, perhaps with a newer local edit queued behind
+  it; sent rows are left out, `markSent` covers them, so the read stays on the
+  `(group_id, sent_at)` index). Anything else is applied as another device's delta
+  would be: an upsert by LWW, a delete always. A version learnt from another device does not
+  make an own delta "held", or a delete made offline after that device's write would be
+  lost here. Lamports are per group, so the outbox test is per group. Real-server tests:
+  `test/sync/sync_multi_group_backend_test.dart`, *a restored database*.
+  **With `wip/todo_nr/2026-11-25-an-imported-database-keeps-another-devices-id.md`** (a
+  database exported on X and imported on Y keeps X's `device_id`): X's later deltas used
+  to be skipped on Y as Y's own, all of them; now the ones whose lamport Y's outbox has not
+  holds unsent and that beat Y's version are applied. That is partial — both devices stamp from
+  the same restored clock, so their lamports overlap — and the entry stays open: its fix
+  (take the token's device id, cursor back to 0) is still needed. That fix must reckon with
+  this one: its replay from 0 returns Y's own pushes, which `markSent` recorded under X's
+  id, and `_holdsOwn` matches a version by the membership's device id.
 - **A reused lamport is refused, not deduplicated (2026-11-25, `test/sync-adversarial-api`).**
   Dedup answered `duplicate` to anything under a logged `(device, lamport)`, so a device
   restored from a backup, re-stamping lamports it had already used, lost each new edit and
