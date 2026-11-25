@@ -123,6 +123,11 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   StreamSubscription<void>? _localWrites;
   bool _running = false;
   bool _rerun = false;
+
+  /// Bumped by every [_stop] (so by each group switch, leave and server change):
+  /// a pass that began under another value works for a group that is gone, and
+  /// reports nothing.
+  int _generation = 0;
   final _events = StreamController<SyncEvent>.broadcast();
 
   bool get isJoined => _membership != null && _deviceToken != null;
@@ -627,7 +632,11 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     try {
       do {
         _rerun = false;
+        final gen = _generation;
         final result = await SyncEngine(_store, _client(), _deviceToken!).run();
+        // The group changed under this pass (a 401 from the revoked old token,
+        // say): say nothing about it; the restart queued a pass for the new one.
+        if (gen != _generation) continue;
         for (final e in result.events) {
           _events.add(e);
         }
@@ -647,8 +656,13 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
         }
         if (result.failure != null) break;
       } while (_rerun && _active);
-      _pending = await _store.pendingCount();
-      _rejected = await _store.rejectedCount();
+      final gen = _generation;
+      final pending = await _store.pendingCount();
+      final rejected = await _store.rejectedCount();
+      if (gen == _generation) {
+        _pending = pending;
+        _rejected = rejected;
+      }
     } finally {
       _running = false;
       notifyListeners();
@@ -682,6 +696,7 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   }
 
   Future<void> _stop() async {
+    _generation++;
     WidgetsBinding.instance.removeObserver(this);
     _poll?.cancel();
     _debounce?.cancel();
