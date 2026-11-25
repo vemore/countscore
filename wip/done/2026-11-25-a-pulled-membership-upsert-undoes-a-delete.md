@@ -1,5 +1,7 @@
 # A pulled membership upsert brings back a player the group removed
 
+**Status:** done (2026-11-25) — closed by fix/pulled-membership-keeps-delete. `_applyGamePlayer` matches a membership by its uuid and leaves a tombstone tombstoned; adding a player back — which had never worked on a shared game, the v9 unique index refused the insert — is now a new row under a new uuid (schema v24, a live-only index). The server still applies such an upsert: `wip/todo_nr/2026-11-25-the-server-applies-a-membership-upsert-over-its-delete.md`.
+
 - **Noted:** 2026-11-25 — fix/restored-device-own-deltas, the review of #293 and its `merged_lww` real-server test
 - **Theme:** sync-robustness
 - **Area:** app

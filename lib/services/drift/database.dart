@@ -32,7 +32,7 @@ class AppDatabase extends _$AppDatabase {
   static final AppDatabase instance = AppDatabase();
 
   @override
-  int get schemaVersion => 23;
+  int get schemaVersion => 24;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -99,6 +99,9 @@ class AppDatabase extends _$AppDatabase {
           if (from < 23) {
             await applyV23(customStatement, _columnsOf);
           }
+          if (from < 24) {
+            await applyV24(customStatement);
+          }
         },
       );
 
@@ -120,7 +123,7 @@ class AppDatabase extends _$AppDatabase {
       'CREATE INDEX IF NOT EXISTS idx_game_players_gameId ON game_players(gameId)',
       'CREATE INDEX IF NOT EXISTS idx_game_players_player_id ON game_players(player_id)',
       'CREATE INDEX IF NOT EXISTS idx_game_players_group_id ON game_players(group_id)',
-      'CREATE UNIQUE INDEX IF NOT EXISTS idx_game_players_unique ON game_players(gameId, player_id)',
+      gamePlayersLiveIndex,
       'CREATE INDEX IF NOT EXISTS idx_rounds_gameId ON rounds(gameId)',
       'CREATE UNIQUE INDEX IF NOT EXISTS idx_rounds_uuid ON rounds(uuid)',
       'CREATE INDEX IF NOT EXISTS idx_scores_playerId ON scores(playerId)',

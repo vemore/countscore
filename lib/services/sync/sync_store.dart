@@ -938,7 +938,7 @@ class SyncStore {
       'player' => await _applyPlayer(m.groupId, d),
       'game_type' => await _applyGameType(m.groupId, d),
       'game' => await _applyGame(m.groupId, d),
-      'game_player' => await _applyGamePlayer(m.groupId, d),
+      'game_player' => await _applyGamePlayer(m.groupId, d, seen: version != null),
       'round' => await _applyRound(m.groupId, d),
       'score' => await _applyScore(m.groupId, d),
       'game_analysis' => await _applyAnalysis(m.groupId, d),
@@ -1249,7 +1249,24 @@ class SyncStore {
     return null;
   }
 
-  Future<String?> _applyGamePlayer(String groupId, PulledDelta d) async {
+  /// A membership: one player in one game. The delta's uuid is one membership
+  /// — a player removed from a game and added back is a new membership under a
+  /// new uuid (schema v24, `applyV24`) — while the server keys it by
+  /// `(game, player)`, and two devices that added the same player each minted
+  /// their own uuid. So:
+  ///
+  /// - **A delete** tombstones the row of that uuid; with none here (the
+  ///   membership was merged into this device's own), the live row of the
+  ///   pair. A tombstone it names stays as it is: a late delete of a removed
+  ///   membership does not remove the one added back since.
+  /// - **An upsert** of a uuid whose row is a tombstone changes nothing: a
+  ///   delete wins, whatever the upsert's lamport, as on the server. Of a live
+  ///   row, it updates it. Of an unknown uuid, it updates the pair's live row
+  ///   (the same player added on two devices); with none, it inserts a new
+  ///   membership — unless this device has applied that uuid before ([seen]):
+  ///   it was merged into a row that has since been removed, and this is a
+  ///   stale edit of it.
+  Future<String?> _applyGamePlayer(String groupId, PulledDelta d, {required bool seen}) async {
     final gameUuid = d.payload['game_id'] as String?;
     final playerRemote = d.payload['player_id'] as String?;
     if (gameUuid == null || playerRemote == null) return _skip;
@@ -1257,50 +1274,57 @@ class SyncStore {
     final playerLocal = await _localOf(groupId, 'player', playerRemote);
     final playerId = playerLocal == null ? null : await _idOf('players', playerLocal);
     final now = _nowMs();
-    if (d.op == 'delete') {
+    final own = await _db.customSelect(
+      'SELECT id, deleted_at FROM game_players WHERE uuid = ?',
+      variables: [Variable(d.entityUuid)],
+    ).getSingleOrNull();
+    final ownId = own?.data['id'] as int?;
+    final ownLive = own != null && own.data['deleted_at'] == null;
+    Future<int?> livePair() async {
       if (gameId == null || playerId == null) return null;
-      final gp = await _db.customSelect(
+      final row = await _db.customSelect(
         'SELECT id FROM game_players WHERE gameId = ? AND player_id = ? AND deleted_at IS NULL',
         variables: [Variable(gameId), Variable(playerId)],
       ).getSingleOrNull();
-      if (gp != null) {
-        final id = gp.data['id'] as int;
+      return row?.data['id'] as int?;
+    }
+
+    if (d.op == 'delete') {
+      final id = own != null ? (ownLive ? ownId : null) : await livePair();
+      if (id != null) {
         await _tombstoneWhere('scores', 'playerId = ?', [id], now);
         await _tombstoneWhere('game_players', 'id = ?', [id], now);
       }
       return null;
     }
+    if (own != null && !ownLive) return null;
     if (gameId == null) return 'game';
     if (playerId == null) return 'player';
     if (await _isTombstoned('games', gameId)) return null;
 
     final player = await _db.customSelect('SELECT name, colorValue FROM players WHERE id = ?',
         variables: [Variable(playerId)]).getSingle();
-    final gp = await _db.customSelect(
-      'SELECT id FROM game_players WHERE gameId = ? AND player_id = ?',
-      variables: [Variable(gameId), Variable(playerId)],
-    ).getSingleOrNull();
     final order = d.payload['order_index'] as int? ?? 0;
     final color = d.payload.containsKey('color_value')
         ? d.payload['color_value']
         : player.data['colorValue'];
-    if (gp != null) {
-      await _update('game_players', gp.data['id'] as int, {
+    final target = ownLive ? ownId : await livePair();
+    if (target != null) {
+      await _update('game_players', target, {
         'orderIndex': order,
         'colorValue': color,
-        'deleted_at': null,
         'updated_at': now,
       });
       return null;
     }
-    final uuidFree = await _idOf('game_players', d.entityUuid) == null;
+    if (seen) return null;
     await _insert('game_players', {
       'gameId': gameId,
       'player_id': playerId,
       'name': player.data['name'],
       'orderIndex': order,
       'colorValue': color,
-      'uuid': uuidFree ? d.entityUuid : newUuid(),
+      'uuid': d.entityUuid,
       'created_at': now,
       'updated_at': now,
       'group_id': groupId,

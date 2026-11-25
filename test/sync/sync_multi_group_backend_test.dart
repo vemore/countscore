@@ -521,8 +521,11 @@ void main() {
     Future<Game> gameNamed(_Device d, String name) async =>
         (await d.games.getAll()).singleWhere((g) => g.name == name);
 
-    test('an edit the server logs as merged_lww does not undo the delete that beat it',
-        () async {
+    // For a membership the server answers X's edit `applied`, not `merged_lww`,
+    // and re-creates its own row (wip/todo_nr/2026-11-25-the-server-applies-a-
+    // membership-upsert-over-its-delete.md); what the devices show is the case
+    // here: the delete wins on both.
+    test('an edit that lost to a delete does not undo it, on either device', () async {
       final (inA, _) = await aliceInBoth();
       // X's clock is well ahead of Y's — X has been busy elsewhere.
       await x.db.customStatement(
@@ -546,8 +549,76 @@ void main() {
       await x.syncOk(a);
       expect([for (final p in await x.players.getByGame(inA)) p.name], ['Bob']);
       expect(await x.store.pendingCount(), 0);
-      // Y, pulling X's losing edit as another device's, is not checked here:
-      // wip/todo_nr/2026-11-25-a-pulled-membership-upsert-undoes-a-delete.md.
+
+      // Y pulls X's edit as another device's, under a higher lamport than its
+      // own delete: the membership stays deleted
+      // (wip/done/2026-11-25-a-pulled-membership-upsert-undoes-a-delete.md).
+      await y.syncOk(a);
+      final onY = await gameNamed(y, 'Mardi A');
+      expect([for (final p in await y.players.getByGame(onY.id!)) p.name], ['Bob']);
+    });
+  });
+
+  group('a membership removed and added back', () {
+    Future<int> gameOn(_Device d) async =>
+        (await d.games.getAll()).singleWhere((g) => g.name == 'Mardi A').id!;
+
+    Future<List<String>> namesOn(_Device d) async =>
+        [for (final p in await d.players.getByGame(await gameOn(d))) p.name];
+
+    Future<void> removeAlice(_Device d) async {
+      final alice = (await d.players.getByGame(await gameOn(d))).firstWhere((p) => p.name == 'Alice');
+      await d.players.delete(alice.id!);
+    }
+
+    /// Alice added back to the game on [d], scoring [value] in round 1.
+    Future<void> addAliceBack(_Device d, int value) async {
+      final game = await gameOn(d);
+      final alice = await d.players.create(Player(gameId: game, name: 'Alice', orderIndex: 2));
+      final round = (await d.rounds.getByGame(game)).single;
+      await d.scores.create(Score(playerId: alice, roundId: round.id!, value: value));
+    }
+
+    Future<int?> aliceScoreOn(_Device d) async {
+      final game = await gameOn(d);
+      final alice = (await d.players.getByGame(game)).singleWhere((p) => p.name == 'Alice');
+      final round = (await d.rounds.getByGame(game)).single;
+      return (await d.scores.getByPlayerAndRound(alice.id!, round.id!))?.value;
+    }
+
+    test('on one device, then on the other: both show her back, with her new score', () async {
+      await aliceInBoth();
+
+      // Y removes her, and X hears it.
+      await removeAlice(y);
+      await y.syncOk(a);
+      await x.syncOk(a);
+      expect(await namesOn(x), ['Bob']);
+
+      // Y adds her back: a new membership, which X pulls.
+      await addAliceBack(y, 7);
+      await y.syncOk(a);
+      await x.syncOk(a);
+      expect(await namesOn(y), ['Bob', 'Alice']);
+      expect(await namesOn(x), ['Bob', 'Alice']);
+      expect(await aliceScoreOn(x), 7);
+
+      // Then X does both, offline, before one sync: Y gets the delete and the
+      // new membership in one pull.
+      await removeAlice(x);
+      await addAliceBack(x, 9);
+      await x.syncOk(a);
+      await y.syncOk(a);
+      expect(await namesOn(x), ['Bob', 'Alice']);
+      expect(await namesOn(y), ['Bob', 'Alice']);
+      expect(await aliceScoreOn(y), 9);
+
+      for (final d in [x, y]) {
+        expect(await d.store.pendingCount(), 0);
+        expect(await d.store.rejectedCount(), 0);
+      }
+      expect(y.recorder.reasons, isEmpty);
+      expect(x.recorder.reasons, isEmpty);
     });
   });
 }

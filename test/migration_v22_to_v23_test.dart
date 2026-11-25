@@ -199,7 +199,7 @@ void main() {
     final db = await DatabaseService.instance.openForTesting(path);
     addTearDown(db.close);
 
-    expect(await db.getVersion(), 23);
+    expect(await db.getVersion(), DatabaseService.schemaVersion);
     expectKept(await readAfter(db.rawQuery));
 
     // The capture triggers queue for the group from now on.
@@ -224,7 +224,7 @@ void main() {
     expectKept(await readAfter((sql) async =>
         [for (final r in await db.customSelect(sql).get()) r.data]));
     final version = await db.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 23);
+    expect(version.data.values.single, DatabaseService.schemaVersion);
 
     // What the app counts and pushes for the group is what was queued.
     final store = SyncStore(db);

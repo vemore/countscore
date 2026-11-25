@@ -20,7 +20,7 @@ class DatabaseService {
 
   /// Must equal `AppDatabase.schemaVersion`: Drift adopts the file this chain
   /// produced and never migrates it itself.
-  static const schemaVersion = 23;
+  static const schemaVersion = 24;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -216,7 +216,7 @@ class DatabaseService {
     await db.execute('CREATE INDEX idx_games_gameTypeId ON games(gameTypeId)');
     await db.execute('CREATE INDEX idx_game_players_gameId ON game_players(gameId)');
     await db.execute('CREATE INDEX idx_game_players_player_id ON game_players(player_id)');
-    await db.execute('CREATE UNIQUE INDEX idx_game_players_unique ON game_players(gameId, player_id)');
+    await db.execute(gamePlayersLiveIndex);
     await db.execute('CREATE INDEX idx_rounds_gameId ON rounds(gameId)');
     await db.execute('CREATE INDEX idx_scores_playerId ON scores(playerId)');
     await db.execute('CREATE INDEX idx_scores_roundId ON scores(roundId)');
@@ -547,6 +547,10 @@ class DatabaseService {
 
     if (oldVersion < 23) {
       await applyV23(db.execute, (t) => _columnsOf(db, t));
+    }
+
+    if (oldVersion < 24) {
+      await applyV24(db.execute);
     }
   }
 

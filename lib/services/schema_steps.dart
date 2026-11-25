@@ -705,3 +705,25 @@ Future<void> applyV23(
     await execute(statement);
   }
 }
+
+/// Schema v24, shared by both engines: a player can be **added back** to a
+/// shared game (`wip/done/2026-11-25-a-pulled-membership-upsert-undoes-a-delete.md`).
+///
+/// A membership removed from a shared game is a tombstone: the row stays, with
+/// its uuid, so its delete reaches the group and wins there. Until v24
+/// `idx_game_players_unique` held `(gameId, player_id)` unique over every row,
+/// tombstones included, so adding the same player back failed on the insert
+/// (`UNIQUE constraint failed`). The index now holds over live rows only — as
+/// the server's unique rules do — and adding a player back inserts a new
+/// membership, under a new uuid: the old one stays deleted on every device.
+///
+/// Idempotent: the old index is dropped if it is there, the new one created
+/// if it is not.
+Future<void> applyV24(SqlExecutor execute) async {
+  await execute('DROP INDEX IF EXISTS idx_game_players_unique');
+  await execute(gamePlayersLiveIndex);
+}
+
+/// One live membership per `(game, player)`; tombstones do not count (v24).
+const gamePlayersLiveIndex = 'CREATE UNIQUE INDEX IF NOT EXISTS idx_game_players_live '
+    'ON game_players(gameId, player_id) WHERE deleted_at IS NULL';
