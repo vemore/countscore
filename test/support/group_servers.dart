@@ -106,6 +106,10 @@ String groupIdOf(int n) => '${'$n' * 8}-0000-4000-8000-000000000000';
 /// This device's id in group [n] on a [MultiGroupServer].
 String deviceIdOf(int n) => '${'$n' * 8}-1111-4111-8111-111111111111';
 
+/// The other device of group [n] on a [MultiGroupServer], which the owner
+/// actions act on.
+String otherDeviceIdOf(int n) => '${'$n' * 8}-2222-4222-8222-222222222222';
+
 /// One backend holding several groups, told apart by the device token: the
 /// invite code `invite-<n>` joins group [groupIdOf] n as device [deviceIdOf] n,
 /// token `token-<n>`. Pulls bring nothing, pushes are applied. Every request is
@@ -157,7 +161,18 @@ class MultiGroupServer {
               },
             });
           case '/groups/me':
-            return json({'id': groupIdOf(n), 'owner_device_id': deviceIdOf(n)});
+            return json({
+              'id': groupIdOf(n),
+              'name': 'Groupe $n',
+              'owner_device_id': deviceIdOf(n),
+              'comment_style': 'narrative',
+              'comment_language': 'fr',
+            });
+          case '/groups/me/usage':
+            // Group n has spent n cents: a screen shows which group it read.
+            return json({'current_month_used_cents': n, 'budget_cents': 100, 'resets_at': null});
+          case '/groups/me/rotate-share-token':
+            return json({'share_token': 'rotated-$n'});
           case '/groups/me/devices':
             return json({
               'devices': [
@@ -167,6 +182,14 @@ class MultiGroupServer {
                   'joined_at': '2026-11-25T10:00:00Z',
                   'last_seen_at': '2026-11-25T10:00:00Z',
                   'is_owner': true,
+                  'dormant': false,
+                },
+                {
+                  'id': otherDeviceIdOf(n),
+                  'label': 'Tablette $n',
+                  'joined_at': '2026-11-25T10:00:00Z',
+                  'last_seen_at': '2026-11-25T10:00:00Z',
+                  'is_owner': false,
                   'dormant': false,
                 },
               ],

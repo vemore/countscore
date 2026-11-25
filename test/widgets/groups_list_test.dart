@@ -167,4 +167,85 @@ void main() {
     expect(find.byKey(const Key('group_max_reached')), findsNothing);
     await _end(tester);
   });
+
+  // Each card acts on its own group: the second card's requests carry the
+  // second group's token, and none the first's.
+  testWidgets("the second card's owner actions and comments go to the second group",
+      (tester) async {
+    final (group, server) = await _pump(tester, [1, 2]);
+    await tester.tap(find.descendant(of: _card(2), matching: find.text('Groupe 2')));
+    await tester.pumpAndSettle();
+    server.seen.clear();
+    final dialogAction = find.descendant(of: find.byType(AlertDialog), matching: find.byType(TextButton));
+
+    // Rotate the invite code.
+    await tester.tap(_in(2, 'group_rotate_share_token'));
+    await tester.pumpAndSettle();
+    await tester.tap(dialogAction.last);
+    await _settle(tester);
+    expect(server.calls(2, '/groups/me/rotate-share-token'), hasLength(1));
+    expect(group.session(groupIdOf(2))!.shareToken, 'rotated-2');
+    expect(group.session(groupIdOf(1))!.shareToken, 'invite-1');
+
+    // Remove the other device, then hand the group over to it.
+    await tester.tap(_in(2, 'group_devices'));
+    await _settle(tester);
+    expect(find.text('Tablette 2'), findsOneWidget);
+    await tester.tap(find.byKey(Key('group_device_revoke_${otherDeviceIdOf(2)}')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('group_device_revoke_confirm')));
+    await _settle(tester);
+    expect(server.calls(2, '/groups/me/devices/${otherDeviceIdOf(2)}/revoke'), hasLength(1));
+    await tester.tap(find.byKey(Key('group_device_make_owner_${otherDeviceIdOf(2)}')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('group_device_make_owner_confirm')));
+    await _settle(tester);
+    expect(server.calls(2, '/groups/me/owner'), hasLength(1));
+    expect(group.session(groupIdOf(1))!.isOwner, isTrue, reason: 'the first group is untouched');
+    Navigator.of(tester.element(find.byType(GroupSettingsSection))).pop();
+    await tester.pumpAndSettle();
+
+    // Its comments and usage.
+    await tester.tap(_in(2, 'group_settings_open'));
+    await _settle(tester);
+    expect(tester.widget<Text>(find.byKey(const Key('group_settings_group'))).data, 'Groupe 2');
+    expect(server.calls(2, '/groups/me/usage'), hasLength(1));
+
+    final first = RegExp('Bearer token-1');
+    expect(server.seen.where((r) => first.hasMatch(r.headers['Authorization'] ?? '')), isEmpty,
+        reason: "nothing the second card did reached the first group");
+    await _end(tester);
+  });
+
+  testWidgets('a devices sheet whose group is left before a confirmation closes, saying nothing',
+      (tester) async {
+    final (group, server) = await _pump(tester, [1, 2]);
+    await tester.tap(find.descendant(of: _card(2), matching: find.text('Groupe 2')));
+    await tester.pumpAndSettle();
+    await tester.tap(_in(2, 'group_devices'));
+    await _settle(tester);
+    await tester.tap(find.byKey(Key('group_device_revoke_${otherDeviceIdOf(2)}')));
+    await tester.pumpAndSettle();
+
+    await tester.runAsync(() => group.leaveGroup(groupIdOf(2)));
+    await tester.tap(find.byKey(const Key('group_device_revoke_confirm')));
+    await _settle(tester);
+
+    expect(find.byKey(const Key('group_devices_message')), findsNothing);
+    expect(find.text('Tablette 2'), findsNothing, reason: 'the sheet is closed');
+    expect(server.calls(2, '/groups/me/devices/${otherDeviceIdOf(2)}/revoke'), isEmpty);
+    await _end(tester);
+  });
+
+  testWidgets('a group whose name is not known is shown by its invite code', (tester) async {
+    final (group, _) = await _pump(tester, [1]);
+    final s = group.session(groupIdOf(1))!;
+    group.debugPutMembership(
+      (groupId: s.groupId, groupName: '', deviceId: s.deviceId, lastServerSeq: 0, lastLamport: 0),
+      shareToken: 'invite-1',
+    );
+    await tester.pumpAndSettle();
+    expect(tester.widget<Text>(_in(1, 'group_name')).data, 'invite code invite-1');
+    await _end(tester);
+  });
 }

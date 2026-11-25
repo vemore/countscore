@@ -920,11 +920,11 @@
 
   "clearServerLeavesGroups": "{count, plural, one{Wyczyszczenie serwera powoduje opuszczenie grupy. Udostępniane gry pozostają na tym urządzeniu.} few{Wyczyszczenie serwera powoduje opuszczenie {count} grup. Udostępniane gry pozostają na tym urządzeniu.} many{Wyczyszczenie serwera powoduje opuszczenie {count} grup. Udostępniane gry pozostają na tym urządzeniu.} other{Wyczyszczenie serwera powoduje opuszczenie {count} grup. Udostępniane gry pozostają na tym urządzeniu.}}",
 
-  "replaceConfigLeavesGroups": "{count, plural, one{To urządzenie opuści grupę {names}. Jego gry pozostają na tym urządzeniu.} few{To urządzenie opuści {count} grupy: {names}. Jego gry pozostają na tym urządzeniu.} many{To urządzenie opuści {count} grup: {names}. Jego gry pozostają na tym urządzeniu.} other{To urządzenie opuści {count} grup: {names}. Jego gry pozostają na tym urządzeniu.}}",
+  "replaceConfigLeavesGroups": "{count, plural, one{To urządzenie opuści tę grupę (jej gry pozostaną na tym urządzeniu):} few{To urządzenie opuści te {count} grupy (ich gry pozostaną na tym urządzeniu):} many{To urządzenie opuści tych {count} grup (ich gry pozostaną na tym urządzeniu):} other{To urządzenie opuści tych {count} grup (ich gry pozostaną na tym urządzeniu):}}",
 
   "joinGroupTooTitle": "Dołączyć też do tej grupy?",
 
-  "joinGroupTooBody": "To urządzenie dołączy do grupy z kodem zaproszenia {code}, na tym samym serwerze. Pozostanie w swoich obecnych grupach: {groups}.",
+  "joinGroupTooBody": "To urządzenie dołączy do grupy z kodem zaproszenia {code}, na tym samym serwerze. Pozostanie w swoich obecnych grupach:",
 
   "joinGroupTooConfirm": "Dołącz",
 

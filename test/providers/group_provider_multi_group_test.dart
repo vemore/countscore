@@ -56,24 +56,42 @@ void main() {
     await idle(group);
   }
 
-  test('a sixth group is refused before any request', () async {
+  test('a sixth group is refused: a create before any request, a join once the server names it',
+      () async {
     await joinAll([1, 2, 3, 4, 5]);
     expect(group.memberships, hasLength(GroupProvider.maxGroups));
     server.seen.clear();
+
+    await expectLater(
+      group.createGroup('Sixième', 'Phone'),
+      throwsA(isA<GroupActionException>()
+          .having((e) => e.error, 'error', GroupActionError.tooManyGroups)),
+    );
+    expect(server.seen, isEmpty, reason: 'a create is always a new group: no device row made');
 
     await expectLater(
       group.joinGroup('invite-6', 'Phone'),
       throwsA(isA<GroupActionException>()
           .having((e) => e.error, 'error', GroupActionError.tooManyGroups)),
     );
-    await expectLater(
-      group.createGroup('Sixième', 'Phone'),
-      throwsA(isA<GroupActionException>()
-          .having((e) => e.error, 'error', GroupActionError.tooManyGroups)),
-    );
-    expect(server.seen, isEmpty, reason: 'no device row the install would not use');
+    expect(server.calls(6, '/groups/me/devices/${deviceIdOf(6)}/revoke'), hasLength(1),
+        reason: 'the registration the join made is withdrawn');
+    expect(await credentials.deviceToken(groupIdOf(6)), isNull);
     expect([for (final s in group.memberships) s.groupId],
         [for (final n in [1, 2, 3, 4, 5]) groupIdOf(n)]);
+  });
+
+  test("at five, a group's rotated code this device does not hold re-registers that group",
+      () async {
+    await joinAll([1, 2, 3, 4, 5]);
+    server.joinsTo['rotated-1'] = 1;
+
+    await group.joinGroup('rotated-1', 'Phone');
+    await idle(group);
+
+    expect([for (final s in group.memberships) s.groupId],
+        unorderedEquals([for (final n in [1, 2, 3, 4, 5]) groupIdOf(n)]));
+    expect(group.session(groupIdOf(1))!.shareToken, 'rotated-1');
   });
 
   // The configuration QR on the server this device uses (decision 7): joined

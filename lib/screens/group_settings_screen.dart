@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../providers/backend_provider.dart';
 import '../providers/group_provider.dart';
 import '../services/backend_client.dart';
+import '../utils/group_label.dart';
 import '../widgets/group_settings_section.dart' show groupActionErrorText;
 
 /// Settings → Groups → a group → *Comments and usage*: that group's comment style and
@@ -175,7 +176,12 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
                 preferredSize: const Size.fromHeight(24),
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(session.groupName, key: const Key('group_settings_group')),
+                  child: Text(
+                    groupLabel(l10n, session),
+                    key: const Key('group_settings_group'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
       ),

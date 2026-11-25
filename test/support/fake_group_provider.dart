@@ -28,11 +28,12 @@ class FakeGroupProvider extends GroupProvider {
     String joinGroupId = 'group-new',
     GroupActionException? joinError,
     String? server = 'https://old.example.com',
+    String? nickname,
   }) : this._(AppDatabase.forTesting(NativeDatabase.memory()), joined, name, token, pending,
-            storedPending ?? pending, joinGroupId, joinError, server);
+            storedPending ?? pending, joinGroupId, joinError, server, nickname);
 
   FakeGroupProvider._(this._db, bool joined, String name, String token, this.pending,
-      this.storedPending, this.joinGroupId, this.joinError, this.server)
+      this.storedPending, this.joinGroupId, this.joinError, this.server, this.fakeNickname)
       : super(
           db: _db,
           credentials: MemorySyncCredentials(),
@@ -54,14 +55,30 @@ class FakeGroupProvider extends GroupProvider {
   /// Thrown by [prepareJoin] when set.
   GroupActionException? joinError;
 
+  /// The nickname this device holds; null before any.
+  String? fakeNickname;
+
+  @override
+  String? get nickname => fakeNickname;
+
+  @override
+  String? get baseUrl => server;
+
   final calls = <String>[];
 
   /// Puts this device in group [groupId].
-  void addGroup(String groupId, String name, String? token, {bool isOwner = false}) =>
+  void addGroup(
+    String groupId,
+    String name,
+    String? token, {
+    bool isOwner = false,
+    SyncStatus status = SyncStatus.off,
+  }) =>
       debugPutMembership(
         (groupId: groupId, groupName: name, deviceId: 'device-$groupId', lastServerSeq: 0, lastLamport: 0),
         shareToken: token,
         isOwner: isOwner,
+        status: status,
       );
 
   @override
@@ -118,7 +135,8 @@ class FakeGroupProvider extends GroupProvider {
         deviceToken: 'token-new',
       ),
       label: deviceLabel.trim(),
-      sameGroup: session(joinGroupId) != null,
+      sameGroup: session(joinGroupId) != null &&
+          session(joinGroupId)!.status != SyncStatus.unauthorized,
     );
   }
 
@@ -134,9 +152,14 @@ class FakeGroupProvider extends GroupProvider {
     if (c.baseUrl != server) {
       if (isJoined) await leave();
       server = c.baseUrl;
+    } else if (!canJoinMore && kept == null) {
+      // A sixth group, as GroupProvider.completeJoin refuses it.
+      calls.add('cancel');
+      throw GroupActionException(GroupActionError.tooManyGroups);
     }
     calls.add('adopt ${c.membership.groupId} on ${c.baseUrl}');
-    addGroup(c.membership.groupId, c.membership.groupName, c.membership.shareToken);
+    addGroup(c.membership.groupId, kept?.groupName ?? c.membership.groupName, c.membership.shareToken);
+    fakeNickname = c.label;
   }
 
   @override

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/group_provider.dart';
 import '../services/backend_client.dart';
+import '../utils/group_label.dart';
 import 'group_settings_section.dart' show groupActionErrorText;
 
 /// Settings → Groups → a group → Devices: that group's devices, the one that owns the group,
@@ -48,7 +49,6 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
 
   Future<void> _revoke(GroupDevice device) async {
     final l10n = AppLocalizations.of(context)!;
-    final session = _session;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -66,14 +66,13 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
     );
     if (confirmed != true || !mounted) return;
     await _act(
-      () async => session?.revokeDevice(device.id),
+      (session) => session.revokeDevice(device.id),
       done: l10n.groupDeviceRevoked(device.label),
     );
   }
 
   Future<void> _makeOwner(GroupDevice device) async {
     final l10n = AppLocalizations.of(context)!;
-    final session = _session;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -91,7 +90,7 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
     );
     if (confirmed != true || !mounted) return;
     await _act(
-      () async => session?.transferOwnership(device.id),
+      (session) => session.transferOwnership(device.id),
       done: l10n.groupDeviceOwnerChanged(device.label),
     );
   }
@@ -101,7 +100,6 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
   /// refuses while that device has been seen inside its dormancy window.
   Future<void> _claimOwnership(GroupDevice device) async {
     final l10n = AppLocalizations.of(context)!;
-    final session = _session;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -118,16 +116,24 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
       ),
     );
     if (confirmed != true || !mounted) return;
-    await _act(() async => session?.claimOwnership(), done: l10n.groupDeviceOwnerClaimed);
+    await _act((session) => session.claimOwnership(), done: l10n.groupDeviceOwnerClaimed);
   }
 
-  /// Runs an owner action, then reloads the list — on failure too, since a
-  /// refusal usually means the owner changed meanwhile.
-  Future<void> _act(Future<void> Function() action, {required String done}) async {
+  /// Runs an owner action on the group's session, then reloads the list — on
+  /// failure too, since a refusal usually means the owner changed meanwhile.
+  /// A group left while the sheet was open has nothing to act on: the sheet
+  /// closes, and nothing says done.
+  Future<void> _act(Future<void> Function(GroupSession session) action,
+      {required String done}) async {
     final l10n = AppLocalizations.of(context)!;
+    final session = _session;
+    if (session == null) {
+      Navigator.of(context).pop();
+      return;
+    }
     setState(() => _busy = true);
     try {
-      await action();
+      await action(session);
       _message = (text: done, error: false);
     } on GroupActionException catch (e) {
       _message = (text: groupActionErrorText(l10n, e), error: true);
@@ -185,7 +191,13 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(l10n.groupDevices, style: theme.textTheme.titleLarge),
-            if (session != null) Text(session.groupName, style: theme.textTheme.titleSmall),
+            if (session != null)
+              Text(
+                groupLabel(l10n, session),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleSmall,
+              ),
             const SizedBox(height: 4),
             Text(
               isOwner ? l10n.groupDevicesExplain : l10n.groupDevicesExplainMember,

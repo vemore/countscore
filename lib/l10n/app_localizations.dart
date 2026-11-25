@@ -2917,11 +2917,11 @@ abstract class AppLocalizations {
   /// **'{count, plural, one{Effacer le serveur fait quitter le groupe. Les parties partagées restent sur cet appareil.} other{Effacer le serveur fait quitter les {count} groupes. Les parties partagées restent sur cet appareil.}}'**
   String clearServerLeavesGroups(int count);
 
-  /// Replace-configuration dialog, a configuration of another server: every group this device is in will be left. count is how many, names their names separated by commas
+  /// Replace-configuration dialog, a configuration of another server: every group this device is in will be left. count is how many; the screen lists their names one per line under this sentence, which ends with a colon
   ///
   /// In fr, this message translates to:
-  /// **'{count, plural, one{Cet appareil va quitter le groupe {names}. Ses parties restent sur cet appareil.} other{Cet appareil va quitter ses {count} groupes : {names}. Ses parties restent sur cet appareil.}}'**
-  String replaceConfigLeavesGroups(int count, String names);
+  /// **'{count, plural, one{Cet appareil va quitter ce groupe (ses parties restent sur cet appareil) :} other{Cet appareil va quitter ces {count} groupes (leurs parties restent sur cet appareil) :}}'**
+  String replaceConfigLeavesGroups(int count);
 
   /// Title of the dialog a configuration QR code opens when it names a group on the server this device already uses, while it is in other groups
   ///
@@ -2929,11 +2929,11 @@ abstract class AppLocalizations {
   /// **'Rejoindre aussi ce groupe ?'**
   String get joinGroupTooTitle;
 
-  /// Body of the join-this-group-too dialog; code is the invite code from the QR code, groups the names of the groups this device is in, separated by commas
+  /// Body of the join-this-group-too dialog; code is the invite code from the QR code. The screen lists the groups this device is in one per line under this sentence, which ends with a colon
   ///
   /// In fr, this message translates to:
-  /// **'Cet appareil va rejoindre le groupe du code d\'invitation {code}, sur le même serveur. Il reste dans vos groupes actuels : {groups}.'**
-  String joinGroupTooBody(String code, String groups);
+  /// **'Cet appareil va rejoindre le groupe du code d\'invitation {code}, sur le même serveur. Il reste dans vos groupes actuels :'**
+  String joinGroupTooBody(String code);
 
   /// Button of the join-this-group-too dialog that joins the group
   ///

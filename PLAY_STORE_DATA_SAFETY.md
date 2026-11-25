@@ -2,7 +2,7 @@
 
 Complete guide for filling out the Data Safety section in Google Play Console for CountScore.
 
-**Last Updated**: November 17, 2026
+**Last Updated**: November 25, 2026
 **Applies to**: CountScore v1.1.0 and later
 **Privacy Policy**: `privacy_policy.md`, published at
 https://vemore.github.io/countscore/privacy-policy.html
@@ -104,7 +104,7 @@ unchanged.
 
 **Nickname in the group (September 24, 2026).** The create and join dialogs now ask for a
 nickname (the same **device name** field, first, empty and required instead of pre-filled),
-and Settings → Group lets a device change it (`PATCH /groups/devices/me`, `{label}`). The
+and Settings → Groups lets a device change it (`PATCH /groups/devices/me`, `{label}`). The
 server replaces the stored device name; it goes to the same self-hosted server and the same
 group members as before. No new data type and no new recipient: the answers below are
 unchanged.
@@ -123,16 +123,27 @@ covered by *game-type settings* under App activity below. Same self-hosted serve
 members, same analysis path: no new data type and no new recipient, and the answers below are
 unchanged.
 
-**Comment settings and usage (September 19, 2026).** Settings → Group → *Comments and usage*
-sends the group's comment style (one of three fixed values) and language code with
+**Comment settings and usage (September 19, 2026).** Settings → Groups → a group → *Comments and
+usage* sends that group's comment style (one of three fixed values) and language code with
 `PATCH /groups/me/settings`, and reads them back with `GET /groups/me`, along with the
 month's AI spending from `GET /groups/me/usage`. These are app settings chosen from fixed
 lists, not information about the user, and the server already stored them with the group; the
 recipient is the same self-hosted server. The answers below are unchanged.
 
+**Several groups (November 25, 2026).** One installation can be in up to five groups on the
+same self-hosted server, each with its own device identifier and access token; each shared game
+belongs to one group and is sent to that group only. The "New game" screen offers a choice of
+group (or none), starting on the last one used, kept on the device only. The nickname is one
+for all groups: once the device holds one, joining another group sends it as it is, so the
+members of every group the user joined see the same **device name**; renaming sends it to each
+group. A configuration QR of the server already in use joins one more group; one of another
+server leaves every group first, after asking. Same data types, same self-hosted server, and the
+recipients are still the members of groups the user chose to join: the answers below are
+unchanged.
+
 ### Opening a configuration link (September 26, 2026)
 
-A configuration QR code (Settings → Server or Group) holds a link to the web app the user's
+A configuration QR code (Settings → Server, or a group's card in Settings → Groups) holds a link to the web app the user's
 own server hosts, with the server address and the group's invite code after the `#`, which a
 browser does not send. In an Android browser that page offers to continue in the app, through
 an `intent://` link the browser resolves on the phone into `countscore://join?…`; the app
@@ -292,8 +303,9 @@ queries the manifest.
    deleting a game also deletes its cached analysis.
 2. **Clear app data** — Android Settings → Apps → CountScore → Storage → Clear Data.
 3. **Uninstall** — removes all app data permanently.
-4. **Shared games** — deleting a shared game deletes it on every device of the group and marks
-   it deleted on the server; leaving the group revokes the device. Removing the stored data
+4. **Shared games** — deleting a shared game deletes it on every device of its group and marks
+   it deleted on the server; leaving a group revokes the device in that group, and the other
+   groups it is in are unaffected. Removing the stored data
    from the server is done by its operator (the user, for a self-hosted server): deleting the
    group row cascades to everything it holds.
 5. **Analysis** — for an unshared game, nothing to delete server-side: that endpoint stores no

@@ -154,6 +154,10 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   /// Whether this device is in at least one group.
   bool get isJoined => _sessions.isNotEmpty;
 
+  /// The server every group is on, as this provider follows it — what
+  /// [completeJoin] compares a shared configuration's server with.
+  String? get baseUrl => _baseUrl;
+
   /// Whether one more group may be created or joined ([maxGroups]).
   bool get canJoinMore => _sessions.length < maxGroups;
 
@@ -194,9 +198,15 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   /// no request and nothing stored, for the fake providers of widget tests.
   /// Its session never syncs while no server is followed.
   @visibleForTesting
-  void debugPutMembership(SyncMembership m, {String? shareToken, bool isOwner = false}) {
+  void debugPutMembership(
+    SyncMembership m, {
+    String? shareToken,
+    bool isOwner = false,
+    SyncStatus status = SyncStatus.off,
+  }) {
     _sessions[m.groupId] =
-        GroupSession._(this, m, 'test-token-${m.groupId}', shareToken, isOwner: isOwner);
+        GroupSession._(this, m, 'test-token-${m.groupId}', shareToken, isOwner: isOwner)
+          .._status = status;
     _changed();
   }
 
@@ -293,12 +303,13 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     String? shareToken,
   }) async {
     if (_baseUrl == null) throw GroupActionException(GroupActionError.unreachable);
-    // Before the server: a refused create or join leaves every group as it
-    // was, and a sixth registration would be a device row nobody uses. A code
-    // this device holds for one of its groups is let through: it most likely
-    // names that group again, and only the answer says which group it is.
+    // A create at five is refused before the server: it is always a new
+    // group, and a sixth registration would be a device row nobody uses. A
+    // join goes to the server whatever its code — a code this device does not
+    // hold may be a newer one of a group it is in, and only the answer says
+    // which group it is; a new one is withdrawn below.
     final full = _sessions.length >= maxGroups;
-    if (full && !_sessions.values.any((s) => shareToken != null && s.shareToken == shareToken)) {
+    if (full && shareToken == null) {
       throw GroupActionException(GroupActionError.tooManyGroups);
     }
     final m = await _register(call);

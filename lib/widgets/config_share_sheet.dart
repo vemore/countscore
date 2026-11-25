@@ -9,7 +9,7 @@ import '../l10n/app_localizations.dart';
 import '../providers/backend_provider.dart';
 import '../providers/group_provider.dart';
 import '../utils/config_link.dart';
-import 'replace_config_dialog.dart' show groupLabel;
+import '../utils/group_label.dart';
 
 /// Settings → *Share by QR code*: a QR code carrying this device's server and,
 /// when it is in a group, the group's invite code, as the link

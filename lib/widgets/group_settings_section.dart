@@ -7,6 +7,7 @@ import '../l10n/app_localizations.dart';
 import '../providers/backend_provider.dart';
 import '../providers/group_provider.dart';
 import '../screens/group_settings_screen.dart';
+import '../utils/group_label.dart';
 import 'config_share_sheet.dart';
 import 'group_devices_sheet.dart';
 
@@ -94,22 +95,46 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
     return ok == true;
   }
 
-  /// The nickname field, first in the create and join dialogs and alone in the
-  /// rename one. It starts with the nickname this device already goes by — one
-  /// for every group — and empty before any: a pre-filled default was left as
-  /// it was, and a group's devices could no longer be told apart.
-  _Field _nicknameField(AppLocalizations l10n, {String? initial}) => (
+  /// The nickname field: alone in the rename dialog, and first in the create
+  /// and join dialogs while this device has no nickname yet — empty, since a
+  /// pre-filled default was left as it was and a group's devices could no
+  /// longer be told apart. Once it has one, those dialogs ask nothing about it
+  /// and the group gets that nickname as it is: one for every group, renamed
+  /// from its own row only (decision 8).
+  _Field _nicknameField(AppLocalizations l10n, {String initial = ''}) => (
         key: const Key('group_nickname_field'),
         label: l10n.groupNicknameLabel,
-        initial: initial ?? context.read<GroupProvider>().nickname ?? '',
+        initial: initial,
         hint: null,
         helper: l10n.groupNicknameHint,
       );
 
-  Future<void> _create(GroupProvider group) async {
+  /// Asks for [field] — and for a nickname first while this device has none —
+  /// then hands [action] the value and the nickname to register with.
+  Future<void> _withNickname(
+    GroupProvider group,
+    String title,
+    _Field field,
+    Future<void> Function(String value, String nickname) action, {
+    required String done,
+  }) async {
+    final held = group.nickname;
+    final values = await _ask(title: title, fields: [
+      if (held == null) _nicknameField(AppLocalizations.of(context)!),
+      field,
+    ]);
+    if (values == null) return;
+    await _run(() => action(values.last, held ?? values.first), done: done);
+  }
+
+  Future<void> _create(GroupProvider group) {
     final l10n = AppLocalizations.of(context)!;
-    final values = await _ask(title: l10n.groupCreate, fields: [
-      _nicknameField(l10n),
+    // The creator owns the group, and nothing on screen says so otherwise: the one
+    // line that follows is where the user learns the role lives on this device and
+    // can be handed to another one.
+    return _withNickname(
+      group,
+      l10n.groupCreate,
       (
         key: const Key('group_name_field'),
         label: l10n.groupNameLabel,
@@ -117,19 +142,16 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
         hint: null,
         helper: null,
       ),
-    ]);
-    if (values == null) return;
-    // The creator owns the group, and nothing on screen says so otherwise: the one
-    // line that follows is where the user learns the role lives on this device and
-    // can be handed to another one.
-    await _run(() => group.createGroup(values[1], values[0]),
-        done: l10n.groupCreatedOwnerExplain);
+      (name, nickname) => group.createGroup(name, nickname),
+      done: l10n.groupCreatedOwnerExplain,
+    );
   }
 
-  Future<void> _join(GroupProvider group) async {
+  Future<void> _join(GroupProvider group) {
     final l10n = AppLocalizations.of(context)!;
-    final values = await _ask(title: l10n.groupJoin, fields: [
-      _nicknameField(l10n),
+    return _withNickname(
+      group,
+      l10n.groupJoin,
       (
         key: const Key('group_invite_field'),
         label: l10n.shareTokenLabel,
@@ -137,9 +159,9 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
         hint: l10n.shareTokenHint,
         helper: null,
       ),
-    ]);
-    if (values == null) return;
-    await _run(() => group.joinGroup(values[1], values[0]), done: l10n.groupJoined);
+      (code, nickname) => group.joinGroup(code, nickname),
+      done: l10n.groupJoined,
+    );
   }
 
   Future<void> _rename(GroupProvider group) async {
@@ -165,7 +187,7 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
             l10n.replaceConfigLeaveAnyway,
             key: const Key('group_leave_unsynced'),
           )
-        : await _confirm(l10n.groupLeaveConfirmNamed(s.groupName), l10n.groupLeave);
+        : await _confirm(l10n.groupLeaveConfirmNamed(groupLabel(l10n, s)), l10n.groupLeave);
     if (!ok) return;
     await _run(() => group.leaveGroup(s.groupId), done: l10n.groupLeft);
   }
@@ -284,7 +306,13 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
           problem ? Icons.cloud_off : Icons.cloud_done,
           color: problem ? theme.colorScheme.error : theme.colorScheme.primary,
         ),
-        title: Text(s.groupName, key: const Key('group_name'), style: theme.textTheme.titleMedium),
+        title: Text(
+          groupLabel(l10n, s),
+          key: const Key('group_name'),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.titleMedium,
+        ),
         subtitle: Text(_statusText(l10n, s), key: const Key('group_status')),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         expandedCrossAxisAlignment: CrossAxisAlignment.start,

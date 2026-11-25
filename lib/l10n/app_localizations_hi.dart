@@ -1773,13 +1773,13 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String replaceConfigLeavesGroups(int count, String names) {
+  String replaceConfigLeavesGroups(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
       other:
-          'यह उपकरण अपने $count समूह छोड़ देगा: $names। इसके खेल इसी उपकरण पर रहेंगे।',
-      one: 'यह उपकरण समूह $names छोड़ देगा। इसके खेल इसी उपकरण पर रहेंगे।',
+          'यह उपकरण ये $count समूह छोड़ देगा (इनके खेल इसी उपकरण पर रहेंगे):',
+      one: 'यह उपकरण यह समूह छोड़ देगा (इसके खेल इसी उपकरण पर रहेंगे):',
     );
     return '$_temp0';
   }
@@ -1788,8 +1788,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get joinGroupTooTitle => 'क्या इस समूह में भी शामिल हों?';
 
   @override
-  String joinGroupTooBody(String code, String groups) {
-    return 'यह उपकरण आमंत्रण कोड $code वाले समूह में शामिल हो जाएगा, उसी सर्वर पर। यह अपने मौजूदा समूहों में बना रहेगा: $groups।';
+  String joinGroupTooBody(String code) {
+    return 'यह उपकरण आमंत्रण कोड $code वाले समूह में शामिल हो जाएगा, उसी सर्वर पर। यह अपने मौजूदा समूहों में बना रहेगा:';
   }
 
   @override

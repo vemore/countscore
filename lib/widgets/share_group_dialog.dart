@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import '../providers/group_provider.dart';
+import '../utils/group_label.dart';
 
 /// Asks which group a local game is shared with, from its board; the chosen
 /// group's id, or null when the user backs out. With one group it is today's
@@ -33,7 +34,7 @@ class _ShareGroupDialogState extends State<_ShareGroupDialog> {
     final groups = widget.groups;
     final Widget content;
     if (groups.length == 1) {
-      content = Text(l10n.shareGameConfirm(groups.single.groupName));
+      content = Text(l10n.shareGameConfirm(groupLabel(l10n, groups.single)));
     } else {
       content = SingleChildScrollView(
         child: RadioGroup<String>(
@@ -49,7 +50,7 @@ class _ShareGroupDialogState extends State<_ShareGroupDialog> {
                 RadioListTile<String>(
                   key: Key('share_group_${g.groupId}'),
                   contentPadding: EdgeInsets.zero,
-                  title: Text(g.groupName),
+                  title: Text(groupLabel(l10n, g)),
                   value: g.groupId,
                 ),
             ],

@@ -57,22 +57,29 @@ group's code while the device is in exactly one, and the server alone in none or
 `wip/done/2026-11-17-belong-to-several-groups.md`):
 
 - **The server this device uses, a group link, and the device already in a group**: no
-  replace dialog. A code one of its groups holds (`GroupProvider.sessionByInvite`) changes
-  nothing and says so (`joinLinkAlreadyMember`, no request). At `GroupProvider.maxGroups` it
-  is refused before any request (`groupErrorTooManyGroups`). Otherwise `JoinGroupTooDialog`
-  asks "join this group too?" (`joinGroupTooTitle`, naming the invite code and the groups that
-  stay), with the nickname field filled with the one every group shares; *Join* runs
-  `prepareJoin` then `completeJoin`, which adds the group beside the others and leaves nothing
-  (`groupJoined`). A newer code of a group already joined is recognised by the server's answer
-  and kept as below (`joinLinkAlreadyMember`).
+  replace dialog. "The server this device uses" is `GroupProvider.baseUrl`, the very value
+  `completeJoin` compares the link's with, so this path can never end in the leave-every-group
+  branch without its question. A code one of its groups holds (`GroupProvider.sessionByInvite`)
+  changes nothing and says so (`joinLinkAlreadyMember`, no request) — unless that group's
+  server refuses this device (`SyncStatus.unauthorized`, revoked): then its own code takes a
+  new registration through `prepareJoin` and `completeJoin`, for that group only. Otherwise
+  `JoinGroupTooDialog` asks "join this group too?" (`joinGroupTooTitle`; `joinGroupTooBody`
+  names the invite code, the groups that stay are listed one per line under it). It asks for
+  a nickname only while the device has none: the one every group shares is used as it is, and
+  renamed from Settings → Groups only (decision 8). *Join* runs `prepareJoin` then
+  `completeJoin`, which adds the group beside the others and leaves nothing (`groupJoined`).
+  Nothing is counted first: at `GroupProvider.maxGroups` only the server's answer tells a
+  newer code of a group already joined (kept as below, `joinLinkAlreadyMember`) from a sixth
+  group, which `completeJoin` refuses (`groupErrorTooManyGroups`), its registration withdrawn.
 - **Another server, or no group yet**: `ReplaceConfigDialog`, as follows.
 - **The same server and no group in the link**: nothing to do (`replaceConfigUnchanged`).
 
 `ReplaceConfigDialog` shows the current and new server and groups (`ReplaceConfigPlan`: the new
-group is known only by its invite code; the current groups are listed by `groupsLabel`, and one
-whose name is not known by its own code, `groupLabel`), says every current group will be left
-when the server changes (`replaceConfigLeavesGroups`, an ICU plural on their count), and asks
-for the nickname when a group is joined, starting from the device's nickname, with the
+group is known only by its invite code; the current groups are listed one per line
+(`GroupList`, never joined into one string), each by `groupLabel` — its name, or its own code
+when the name is not known), says every current group will be left when the server changes
+(`replaceConfigLeavesGroups`, an ICU plural on their count, the groups listed under it), and
+asks for the nickname when a group is joined, starting from the device's nickname, with the
 Settings → Groups field's limit (`groupFieldFormatter`, 64 code points; [[Sync]], *The
 nickname*). *Cancel* changes nothing.
 

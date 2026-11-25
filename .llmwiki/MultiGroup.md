@@ -16,11 +16,11 @@ Drift. The user's decisions are in `wip/done/2026-11-17-belong-to-several-groups
 
 - **At most `GroupProvider.maxGroups` (5)** (`GroupActionError.tooManyGroups`,
   `groupErrorTooManyGroups`): the server cannot tell two device rows are one install. At five,
-  a create, and a join whose code matches none of the invite codes this device holds, are
-  refused before any request. A join with a held code goes to the server, since only its
-  answer names the group: the group already joined takes the new registration; a new one
-  (the code moved to another group) is refused then, its registration revoked and nothing
-  kept. A group's rotated code that this device does not hold yet is refused at five.
+  a create is refused before any request, and Settings hides *Create* and *Join*. A join —
+  typed, or from a configuration QR — goes to the server whatever its code, since only its
+  answer names the group: a group already joined (its rotated code, say) takes the new
+  registration or is kept; a new one is refused then, its registration revoked and nothing
+  kept.
 - **Create and join add a membership**; the same group joined again takes the new
   registration and revokes the old one. **The configuration QR on the same server adds one
   too** ("join this group too?", decision 7): `completeJoin` adopts it beside the others
@@ -34,20 +34,27 @@ Drift. The user's decisions are in `wip/done/2026-11-17-belong-to-several-groups
   *Share with the group* switch (on) in one, and in several a chip per group beside *This
   device only* (`create_group_<groupId>`, `create_group_local`), starting on the group the last
   game was created in (`LastGameGroup`, SharedPreferences `lastGameGroupId`; a game created
-  local leaves it; a group since left falls back on the first joined). The board's *Share
+  local leaves it; a remembered group since left falls back on the first joined). The selector
+  shows once that default is read, and keeps the chip it shows: a group left while the screen is
+  open leaves no chip selected and *Start* disabled until one is tapped, never another group in
+  its place. The board's *Share
   with the group* names the one group, or asks which of several with none preselected
   (`showShareGroupDialog`): sharing cannot be undone.
 - **A shared game shows its group** (decision 6): `GroupBadge`, a small rounded label with the
   group's name (tooltip `gameSharedWith`), on the game cards, the Resume card and the board's
   title, where a cloud icon was. A group this device does not know by name shows the cloud
-  icon.
+  icon. Everywhere else a group is named — cards, chips, dialogs, the devices sheet and the
+  comments screen — it is by `groupLabel` (`lib/utils/group_label.dart`): its name, or its
+  invite code when the name is not known.
 - **Settings → Groups** (`group_settings_section.dart`) is a list: one card per group
   (`group_card_<groupId>`, unfolded when it is the only one) with its own status, waiting and
   refused counts, invite code, *Sync now*, QR, *Devices* (`GroupDevicesSheet(groupId)`, the
   owner actions included), *Comments and usage* (`GroupSettingsScreen(groupId)`), the owner's
   *Rotate* and its own *Leave* (`leaveGroup`, that group's pending count); one nickname row
-  above the list (decision 8); *Create* and *Join* replaced by `groupsMaxReached` at
-  `maxGroups` (`GroupProvider.canJoinMore`).
+  above the list (decision 8), the only place a rename happens: *Create* and *Join* ask for a
+  nickname only while the device has none, and use the stored one as it is after; *Create* and
+  *Join* replaced by `groupsMaxReached` at `maxGroups` (`GroupProvider.canJoinMore`). A
+  devices sheet whose group is left before a confirmation closes, saying nothing.
 - **One status where one is shown**: `GroupProvider.status` is the worst of every group's
   (`SyncStatus.worse`: off < idle < syncing < offline < error < unauthorized),
   `pendingChanges` and `rejectedChanges` the sums, `lastSyncAt` the oldest. Per group:
@@ -73,6 +80,15 @@ rules are [[Sync]], *The nickname*.
 
 ## Decisions & History
 
+- **At five, a join is no longer refused before the server (2026-11-25, review of
+  `feat/multi-group-ui`).** The pre-check refused a code this device did not hold, so a
+  group's rotated code — a QR of a group already joined — could not reach that group. Only a
+  create, always a new group, is refused up front; a join's answer decides.
+- **One nickname, never retyped (2026-11-25, review of `feat/multi-group-ui`).** The create,
+  join and "join this group too?" dialogs asked for the nickname even when the device had
+  one, and a different name typed there renamed the device in every group without saying so.
+  They now ask only while the device has none; a rename is the nickname row's alone
+  (decision 8).
 - **The screens name their group; the single-group layer is gone (2026-11-25,
   `feat/multi-group-ui`).** Every screen reads `memberships` or `session(groupId)`;
   `groupName`, `deviceId`, `isOwner`, `deviceLabel`, `canReachGroup` and the owner and

@@ -178,4 +178,46 @@ void main() {
     expect(group.shared, isEmpty);
     expect(await LastGameGroup.read(), 'group-2');
   });
+
+  testWidgets('the chosen group left while the screen is open: no group chosen, Start waits',
+      (tester) async {
+    final group = await open(tester, 3);
+    expect(selected(tester, 'create_group_group-1'), isTrue);
+    await tester.tap(find.byKey(const Key('create_add_player')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('player_picker_same_as')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('player_picker_confirm')));
+    await tester.pumpAndSettle();
+
+    group.debugRemoveMembership('group-1');
+    await tester.pumpAndSettle();
+
+    expect(selected(tester, 'create_group_local'), isFalse);
+    expect(selected(tester, 'create_group_group-2'), isFalse,
+        reason: 'never moved silently to another group');
+    expect(selected(tester, 'create_group_group-3'), isFalse);
+    expect(find.byKey(const Key('create_group_choice_hint')), findsNothing);
+    FilledButton start() =>
+        tester.widget<FilledButton>(find.byKey(const Key('create_game_submit')));
+    expect(start().onPressed, isNull);
+
+    await tester.tap(find.byKey(const Key('create_group_group-3')));
+    await tester.pumpAndSettle();
+    expect(start().onPressed, isNotNull);
+    await tester.tap(find.byKey(const Key('create_game_submit')));
+    await tester.pumpAndSettle();
+    expect(group.shared, ['group-3']);
+  });
+
+  testWidgets('a group whose name is not known is offered by its invite code', (tester) async {
+    final group = await open(tester, 2);
+    group.addGroup('group-2', '', 'invite-2');
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(
+          of: find.byKey(const Key('create_group_group-2')), matching: find.text('invite code invite-2')),
+      findsOneWidget,
+    );
+  });
 }

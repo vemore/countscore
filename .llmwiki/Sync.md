@@ -311,15 +311,16 @@ next push to the group or the next idle heartbeat, whichever comes first — see
 **A pass across a group switch.** `GroupSession._stop` bumps that session's generation counter; a `syncNow` pass that finds it changed after its engine returns (its group left, or the server changed, meanwhile) writes neither its status nor its pending counts nor events, and the loop runs again for the queued `_rerun`. Another group's pass is another session: a leave, a join or a refusal in one changes nothing in it. Tested in `test/providers/group_provider_generation_test.dart` and `group_provider_multi_group_test.dart`.
 
 **The nickname.** A device's name in a group (`devices.label`) is what its siblings see in
-the devices list. The create and join dialogs ask for it first (`group_nickname_field`,
-`groupNicknameLabel` with the `groupNicknameHint` helper), filled with the nickname this device
-already goes by and empty before any, and OK stays disabled until every field holds a
-non-blank value; the values go out trimmed. **One nickname for every group** (decision 8 of
-the multi-group plan), kept on the device in `SyncCredentials` (`sync.nickname`) since
-2026-11-25: saved on create and join — joining under another name renames the groups already
-joined —, on rename, and learnt from a devices list only by an install that holds none yet
-(one from when it was kept in memory); read on start, so it is known offline. Settings →
-Group shows it (`groupNicknameCurrent`) with an edit button (`group_nickname_edit`) that
+the devices list. While the device has none, the create, join and "join this group too?"
+dialogs ask for it first (`group_nickname_field`, `groupNicknameLabel` with the
+`groupNicknameHint` helper), empty, and OK stays disabled until every field holds a non-blank
+value; the values go out trimmed. Once it has one they ask nothing about it and register
+under it as it is. **One nickname for every group** (decision 8 of the multi-group plan),
+kept on the device in `SyncCredentials` (`sync.nickname`) since 2026-11-25: saved on the
+first create or join, on rename, and learnt from a devices list only by an install that holds
+none yet (one from when it was kept in memory); read on start, so it is known offline. Only
+another server's configuration, which leaves every group first, asks again (prefilled).
+Settings → Groups shows it (`groupNicknameCurrent`) with an edit button (`group_nickname_edit`) that
 reuses the field and calls `GroupProvider.renameDevice`: `PATCH /groups/devices/me` with each
 group's token. The new name is held from the start, so a pass meanwhile cannot send the old
 one back. A 422 refuses the name, and so does an error from every group (429, 401, 5xx,

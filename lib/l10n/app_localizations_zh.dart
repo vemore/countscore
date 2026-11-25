@@ -1708,11 +1708,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String replaceConfigLeavesGroups(int count, String names) {
+  String replaceConfigLeavesGroups(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '本设备将退出 $count 个群组：$names。其对局仍保留在本设备上。',
+      other: '本设备将退出以下 $count 个群组（其对局仍保留在本设备上）：',
     );
     return '$_temp0';
   }
@@ -1721,8 +1721,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get joinGroupTooTitle => '同时加入此群组？';
 
   @override
-  String joinGroupTooBody(String code, String groups) {
-    return '本设备将加入邀请码 $code 对应的群组，该群组位于同一服务器。本设备将保留在您当前的群组中：$groups。';
+  String joinGroupTooBody(String code) {
+    return '本设备将加入邀请码 $code 对应的群组，该群组位于同一服务器。本设备将保留在您当前的以下群组中：';
   }
 
   @override

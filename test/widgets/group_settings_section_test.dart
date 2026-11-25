@@ -422,19 +422,38 @@ void main() {
     group.dispose();
   });
 
-  testWidgets('joining again offers the nickname this device already goes by', (tester) async {
-    final credentials = MemorySyncCredentials();
-    await credentials.saveNickname('Alice');
-    final group = await _pumpSection(tester, [], credentials: credentials);
-    await tester.pump();
+  // One nickname for every group (decision 8): once the device has one, joining
+  // or creating another group does not ask again, and cannot rename the others.
+  group('with a nickname held', () {
+    testWidgets('join asks only for the invite code and joins under that nickname',
+        (tester) async {
+      final fake = await _pumpWithFake(tester, nickname: 'Alice');
+      await tester.tap(find.byKey(const Key('group_join')));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('group_join')));
-    await tester.pumpAndSettle();
-    final field = find.byKey(const Key('group_nickname_field'));
-    expect(tester.widget<TextField>(field).controller!.text, 'Alice');
+      expect(find.byKey(const Key('group_nickname_field')), findsNothing);
+      await tester.enterText(find.byKey(const Key('group_invite_field')), ' invite-2 ');
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('group_dialog_ok')));
+      await tester.pumpAndSettle();
 
-    await tester.pumpWidget(const SizedBox());
-    group.dispose();
+      expect(fake.joined, [('invite-2', 'Alice')]);
+    });
+
+    testWidgets('create asks only for the group name and creates under that nickname',
+        (tester) async {
+      final fake = await _pumpWithFake(tester, nickname: 'Alice');
+      await tester.tap(find.byKey(const Key('group_create')));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('group_nickname_field')), findsNothing);
+      await tester.enterText(find.byKey(const Key('group_name_field')), 'Amis');
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('group_dialog_ok')));
+      await tester.pumpAndSettle();
+
+      expect(fake.created, [('Amis', 'Alice')]);
+    });
   });
 
   testWidgets('a sixth group is refused with its own message', (tester) async {
@@ -551,8 +570,13 @@ FilledButton _okButton(WidgetTester tester) =>
 
 /// A [GroupProvider] that records what the dialogs hand it and touches no server.
 class _FakeGroupProvider extends GroupProvider {
-  _FakeGroupProvider(AppDatabase db)
+  _FakeGroupProvider(AppDatabase db, this._nickname)
       : super(db: db, credentials: MemorySyncCredentials(), enableStream: false);
+
+  final String? _nickname;
+
+  @override
+  String? get nickname => _nickname;
 
   final created = <(String, String)>[];
   final joined = <(String, String)>[];
@@ -566,10 +590,10 @@ class _FakeGroupProvider extends GroupProvider {
       joined.add((shareToken, deviceLabel));
 }
 
-Future<_FakeGroupProvider> _pumpWithFake(WidgetTester tester) async {
+Future<_FakeGroupProvider> _pumpWithFake(WidgetTester tester, {String? nickname}) async {
   final db = AppDatabase.forTesting(NativeDatabase.memory());
   addTearDown(db.close);
-  final fake = _FakeGroupProvider(db);
+  final fake = _FakeGroupProvider(db, nickname);
   await tester.pumpWidget(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => BackendProvider('https://countscore.example.com')),

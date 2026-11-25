@@ -3,13 +3,14 @@ import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
 import '../providers/group_provider.dart';
+import '../utils/group_label.dart';
 
 /// The group a shared game belongs to, as a small rounded label with its name
 /// — on the game cards, the Resume card and the board's title, where a cloud
 /// icon used to say only "shared". The name comes from the session of
-/// [groupId]; a group this device does not know by name (not loaded yet, or
-/// no `GroupProvider` above, as in some screen tests) shows the cloud icon
-/// alone, with the generic tooltip.
+/// [groupId]; a group this device does not know by name (recorded before
+/// names were kept, not loaded yet, or no `GroupProvider` above, as in some
+/// screen tests) shows the cloud icon alone.
 class GroupBadge extends StatelessWidget {
   const GroupBadge({super.key, required this.groupId, this.color, this.maxWidth = 120});
 
@@ -22,13 +23,14 @@ class GroupBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final name = context
-        .select<GroupProvider?, String?>((g) => g?.session(groupId)?.groupName)
-        ?.trim();
+    final session = context.select<GroupProvider?, GroupSession?>((g) => g?.session(groupId));
+    final name = session?.groupName.trim();
     final colour = color ?? Theme.of(context).colorScheme.primary;
-    if (name == null || name.isEmpty) {
+    if (session == null || name!.isEmpty) {
+      // An invite code is no label for a badge; the tooltip still names the
+      // group by it ([groupLabel]).
       return Tooltip(
-        message: l10n.gameSharedBadge,
+        message: session == null ? l10n.gameSharedBadge : l10n.gameSharedWith(groupLabel(l10n, session)),
         child: Icon(Icons.cloud_done_outlined, size: 16, color: colour),
       );
     }

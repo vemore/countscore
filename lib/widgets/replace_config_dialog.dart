@@ -5,6 +5,7 @@ import '../l10n/app_localizations.dart';
 import '../providers/backend_provider.dart';
 import '../providers/group_provider.dart';
 import '../utils/config_link.dart';
+import '../utils/group_label.dart';
 import 'group_settings_section.dart'
     show groupActionErrorText, groupFieldFormatter, groupFieldMaxLength;
 
@@ -64,13 +65,17 @@ Future<ReplaceConfigResult> showReplaceConfigDialog(
   }
   final groups = group.memberships;
   final invite = config.invite;
-  if (invite != null && server == backend.baseUrl && groups.isNotEmpty) {
+  // The server the groups are on, as the provider follows it: the one
+  // [GroupProvider.completeJoin] compares the link's with, so a link this
+  // dialog takes for the same server is never one the provider leaves every
+  // group for.
+  final current = group.baseUrl;
+  if (invite != null && server == current && groups.isNotEmpty) {
     return _joinToo(context, group, server, invite, snack);
   }
   final plan = ReplaceConfigPlan(
-    currentServer: backend.baseUrl,
-    currentGroup: groups.isEmpty ? null : groupsLabel(l10n, groups),
-    currentGroupCount: groups.length,
+    currentServer: current,
+    currentGroups: [for (final s in groups) groupLabel(l10n, s)],
     newServer: server,
     newInvite: invite,
   );
@@ -94,12 +99,14 @@ Future<ReplaceConfigResult> showReplaceConfigDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.confirmation),
-        content: Text(
-          pending > 0
-              ? l10n.replaceConfigUnsynced(pending)
-              : l10n.replaceConfigLeavesGroups(plan.currentGroupCount, plan.currentGroup!),
-          key: const Key('replace_config_leave_question'),
-        ),
+        content: pending > 0
+            ? Text(l10n.replaceConfigUnsynced(pending),
+                key: const Key('replace_config_leave_question'))
+            : GroupList(
+                key: const Key('replace_config_leave_question'),
+                intro: l10n.replaceConfigLeavesGroups(plan.currentGroups.length),
+                groups: plan.currentGroups,
+              ),
         actions: [
           TextButton(
             key: const Key('replace_config_leave_cancel'),
@@ -171,22 +178,30 @@ Future<ReplaceConfigResult> _joinToo(
 ) async {
   final l10n = AppLocalizations.of(context)!;
   final held = group.sessionByInvite(invite);
-  if (held != null) {
+  // A group whose server refuses this device (revoked) is in by id only: its
+  // own code takes a new registration, as any join does.
+  if (held != null && held.status != SyncStatus.unauthorized) {
     snack(l10n.joinLinkAlreadyMember(groupLabel(l10n, held)));
     return ReplaceConfigResult.unchanged;
   }
-  if (!group.canJoinMore) {
-    snack(l10n.groupErrorTooManyGroups(GroupProvider.maxGroups));
-    return ReplaceConfigResult.joinFailed;
+  // No count here: at five, only the server's answer says whether the code is
+  // a group already joined (kept) or a sixth (refused by completeJoin).
+  // A group this device is in, under a refused token, is not one to "join
+  // too": with a nickname to register under, its new registration goes
+  // without a question.
+  final String? nickname;
+  if (held != null && group.nickname != null) {
+    nickname = group.nickname;
+  } else {
+    nickname = await showDialog<String>(
+      context: context,
+      builder: (_) => JoinGroupTooDialog(
+        invite: invite,
+        currentGroups: [for (final s in group.memberships) groupLabel(l10n, s)],
+        nickname: group.nickname,
+      ),
+    );
   }
-  final nickname = await showDialog<String>(
-    context: context,
-    builder: (_) => JoinGroupTooDialog(
-      invite: invite,
-      currentGroups: groupsLabel(l10n, group.memberships),
-      nickname: group.nickname,
-    ),
-  );
   if (nickname == null || !context.mounted) return ReplaceConfigResult.cancelled;
 
   try {
@@ -207,18 +222,29 @@ Future<ReplaceConfigResult> _joinToo(
   return ReplaceConfigResult.applied;
 }
 
-/// How a group is named on screen: its name, or its invite code when the name
-/// is not known (a membership recorded before names were kept).
-String groupLabel(AppLocalizations l10n, GroupSession s) {
-  final name = s.groupName.trim();
-  if (name.isNotEmpty) return name;
-  final code = s.shareToken;
-  return code == null ? l10n.groupSection : l10n.replaceConfigInvite(code);
-}
+/// [intro], then one line per group of [groups]: a list never joined into one
+/// string, whose separator would be a language's.
+class GroupList extends StatelessWidget {
+  const GroupList({super.key, required this.intro, required this.groups, this.style});
 
-/// Every group of [groups], by [groupLabel], in the order they were joined.
-String groupsLabel(AppLocalizations l10n, List<GroupSession> groups) =>
-    [for (final s in groups) groupLabel(l10n, s)].join(', ');
+  final String intro;
+  final List<String> groups;
+  final TextStyle? style;
+
+  @override
+  Widget build(BuildContext context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(intro, style: style),
+          for (final g in groups)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(start: 8, top: 2),
+              child: Text('• $g', style: style),
+            ),
+        ],
+      );
+}
 
 /// What replacing the current configuration with a link's would change, as far
 /// as it can be known before asking the server. Not used for a group link on
@@ -227,34 +253,32 @@ String groupsLabel(AppLocalizations l10n, List<GroupSession> groups) =>
 class ReplaceConfigPlan {
   const ReplaceConfigPlan({
     required this.currentServer,
-    required this.currentGroup,
-    this.currentGroupCount = 1,
+    this.currentGroups = const [],
     required this.newServer,
     required this.newInvite,
   });
 
   final String? currentServer;
 
-  /// The current groups, as [groupsLabel] names them; null when this device
+  /// The current groups, as [groupLabel] names them; empty when this device
   /// is in none.
-  final String? currentGroup;
-
-  /// How many groups [currentGroup] names.
-  final int currentGroupCount;
+  final List<String> currentGroups;
   final String newServer;
 
   /// The link's invite code; null for a link carrying a server alone.
   final String? newInvite;
 
+  bool get inGroups => currentGroups.isNotEmpty;
+
   bool get changesServer => newServer != currentServer;
 
   /// A group is joined: the link has one, on another server or while this
   /// device is in none.
-  bool get joinsGroup => newInvite != null && (changesServer || currentGroup == null);
+  bool get joinsGroup => newInvite != null && (changesServer || !inGroups);
 
   /// The first question already says the current groups are left: another
   /// server cannot hold them.
-  bool get announcesLeaving => currentGroup != null && changesServer;
+  bool get announcesLeaving => inGroups && changesServer;
 
   bool get changesAnything => changesServer || joinsGroup;
 }
@@ -299,21 +323,23 @@ class _ReplaceConfigDialogState extends State<ReplaceConfigDialog> {
     final plan = widget.plan;
     final newGroup = plan.joinsGroup
         ? l10n.replaceConfigInvite(plan.newInvite!)
-        : plan.announcesLeaving || plan.currentGroup == null
+        : plan.announcesLeaving || !plan.inGroups
             ? l10n.none
-            : plan.currentGroup!;
+            : plan.currentGroups.single;
 
-    Widget values(String heading, String now, String next, String key) => Padding(
+    Widget values(String heading, Widget now, String next, String key) => Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(heading, style: theme.textTheme.labelLarge),
-              Text(l10n.replaceConfigCurrent(now), key: Key('replace_config_${key}_current')),
+              KeyedSubtree(key: Key('replace_config_${key}_current'), child: now),
               Text(l10n.replaceConfigNew(next), key: Key('replace_config_${key}_new')),
             ],
           ),
         );
+    Widget now(String value) => Text(l10n.replaceConfigCurrent(value));
+    final groups = plan.currentGroups;
 
     return AlertDialog(
       title: Text(l10n.replaceConfigTitle),
@@ -322,15 +348,24 @@ class _ReplaceConfigDialogState extends State<ReplaceConfigDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            values(l10n.serverSection, plan.currentServer ?? l10n.none, plan.newServer, 'server'),
-            values(plan.currentGroupCount > 1 ? l10n.groupsSection : l10n.groupSection,
-                plan.currentGroup ?? l10n.none, newGroup, 'group'),
+            values(l10n.serverSection, now(plan.currentServer ?? l10n.none), plan.newServer,
+                'server'),
+            values(
+              groups.length > 1 ? l10n.groupsSection : l10n.groupSection,
+              groups.length > 1
+                  // Several: "Now:" over one line each.
+                  ? GroupList(intro: l10n.replaceConfigCurrent('').trimRight(), groups: groups)
+                  : now(groups.isEmpty ? l10n.none : groups.single),
+              newGroup,
+              'group',
+            ),
             if (plan.announcesLeaving)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: Text(
-                  l10n.replaceConfigLeavesGroups(plan.currentGroupCount, plan.currentGroup!),
+                child: GroupList(
                   key: const Key('replace_config_leaves_group'),
+                  intro: l10n.replaceConfigLeavesGroups(plan.currentGroups.length),
+                  groups: plan.currentGroups,
                   style: TextStyle(color: theme.colorScheme.error),
                 ),
               ),
@@ -369,9 +404,10 @@ class _ReplaceConfigDialogState extends State<ReplaceConfigDialog> {
 }
 
 /// "Join this group too?": the link's group on the server this device already
-/// uses, beside [currentGroups], which stay. Pops the trimmed nickname on
-/// *Join*, null on *Cancel*. The nickname is the one every group shares,
-/// filled in when this device has one.
+/// uses, beside [currentGroups], which stay. Pops the nickname on *Join*, null
+/// on *Cancel*. The nickname is the one every group shares (decision 8): with
+/// one already, the dialog asks nothing more and pops it as it is — a rename is
+/// Settings → Groups' alone; with none yet, it asks for one, trimmed.
 class JoinGroupTooDialog extends StatefulWidget {
   const JoinGroupTooDialog({
     super.key,
@@ -381,7 +417,7 @@ class JoinGroupTooDialog extends StatefulWidget {
   });
 
   final String invite;
-  final String currentGroups;
+  final List<String> currentGroups;
   final String? nickname;
 
   @override
@@ -389,8 +425,7 @@ class JoinGroupTooDialog extends StatefulWidget {
 }
 
 class _JoinGroupTooDialogState extends State<JoinGroupTooDialog> {
-  late final _nickname = TextEditingController(text: widget.nickname ?? '')
-    ..addListener(() => setState(() {}));
+  late final _nickname = TextEditingController()..addListener(() => setState(() {}));
 
   @override
   void dispose() {
@@ -401,7 +436,8 @@ class _JoinGroupTooDialogState extends State<JoinGroupTooDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final name = _nickname.text.trim();
+    final held = widget.nickname;
+    final name = held ?? _nickname.text.trim();
     return AlertDialog(
       title: Text(l10n.joinGroupTooTitle),
       content: SingleChildScrollView(
@@ -409,25 +445,28 @@ class _JoinGroupTooDialogState extends State<JoinGroupTooDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              l10n.joinGroupTooBody(widget.invite, widget.currentGroups),
+            GroupList(
               key: const Key('join_group_too_body'),
+              intro: l10n.joinGroupTooBody(widget.invite),
+              groups: widget.currentGroups,
             ),
-            const SizedBox(height: 16),
-            TextField(
-              key: const Key('replace_config_nickname'),
-              controller: _nickname,
-              autofocus: widget.nickname == null,
-              // The server counts code points, as in Settings → Groups.
-              inputFormatters: [groupFieldFormatter],
-              decoration: InputDecoration(
-                labelText: l10n.groupNicknameLabel,
-                helperText: l10n.groupNicknameHint,
-                helperMaxLines: 2,
-                counterText: '${_nickname.text.runes.length}/$groupFieldMaxLength',
-                border: const OutlineInputBorder(),
+            if (held == null) ...[
+              const SizedBox(height: 16),
+              TextField(
+                key: const Key('replace_config_nickname'),
+                controller: _nickname,
+                autofocus: true,
+                // The server counts code points, as in Settings → Groups.
+                inputFormatters: [groupFieldFormatter],
+                decoration: InputDecoration(
+                  labelText: l10n.groupNicknameLabel,
+                  helperText: l10n.groupNicknameHint,
+                  helperMaxLines: 2,
+                  counterText: '${_nickname.text.runes.length}/$groupFieldMaxLength',
+                  border: const OutlineInputBorder(),
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),

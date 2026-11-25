@@ -1776,12 +1776,12 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String replaceConfigLeavesGroups(int count, String names) {
+  String replaceConfigLeavesGroups(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
       other:
-          'Thiết bị này sẽ rời $count nhóm: $names. Các trò chơi của nó ở lại trên thiết bị này.',
+          'Thiết bị này sẽ rời $count nhóm sau (các trò chơi vẫn ở lại trên thiết bị này):',
     );
     return '$_temp0';
   }
@@ -1790,8 +1790,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String get joinGroupTooTitle => 'Cũng tham gia nhóm này?';
 
   @override
-  String joinGroupTooBody(String code, String groups) {
-    return 'Thiết bị này sẽ tham gia nhóm của mã mời $code, trên cùng máy chủ. Nó vẫn ở trong các nhóm hiện tại: $groups.';
+  String joinGroupTooBody(String code) {
+    return 'Thiết bị này sẽ tham gia nhóm của mã mời $code, trên cùng máy chủ. Nó vẫn ở trong các nhóm hiện tại:';
   }
 
   @override

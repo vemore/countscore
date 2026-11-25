@@ -1847,18 +1847,19 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String replaceConfigLeavesGroups(int count, String names) {
+  String replaceConfigLeavesGroups(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
       other:
-          'سيغادر هذا الجهاز $count مجموعة: $names. تبقى ألعابه على هذا الجهاز.',
+          'سيغادر هذا الجهاز هذه المجموعات الـ$count (تبقى ألعابها على هذا الجهاز):',
       many:
-          'سيغادر هذا الجهاز $count مجموعة: $names. تبقى ألعابه على هذا الجهاز.',
+          'سيغادر هذا الجهاز هذه المجموعات الـ$count (تبقى ألعابها على هذا الجهاز):',
       few:
-          'سيغادر هذا الجهاز $count مجموعات: $names. تبقى ألعابه على هذا الجهاز.',
-      two: 'سيغادر هذا الجهاز المجموعتين: $names. تبقى ألعابه على هذا الجهاز.',
-      one: 'سيغادر هذا الجهاز المجموعة $names. تبقى ألعابه على هذا الجهاز.',
+          'سيغادر هذا الجهاز هذه المجموعات الـ$count (تبقى ألعابها على هذا الجهاز):',
+      two: 'سيغادر هذا الجهاز هاتين المجموعتين (تبقى ألعابهما على هذا الجهاز):',
+      one: 'سيغادر هذا الجهاز هذه المجموعة (تبقى ألعابها على هذا الجهاز):',
+      zero: 'سيغادر هذا الجهاز هذه المجموعات (تبقى ألعابها على هذا الجهاز):',
     );
     return '$_temp0';
   }
@@ -1867,8 +1868,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get joinGroupTooTitle => 'هل تريد الانضمام إلى هذه المجموعة أيضًا؟';
 
   @override
-  String joinGroupTooBody(String code, String groups) {
-    return 'سينضم هذا الجهاز إلى المجموعة ذات رمز الدعوة $code، على الخادم نفسه. يبقى في مجموعاتك الحالية: $groups.';
+  String joinGroupTooBody(String code) {
+    return 'سينضم هذا الجهاز إلى المجموعة ذات رمز الدعوة $code، على الخادم نفسه. يبقى في مجموعاتك الحالية:';
   }
 
   @override
