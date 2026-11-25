@@ -2,7 +2,7 @@
 
 > Scope: the offline-first sharing protocol — server and Flutter client.
 > Related: [[Api]] · [[Schema]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-11-24
+> Updated: 2026-11-25
 
 ## Facts
 
@@ -254,6 +254,8 @@ keeps the actions, as before. `GroupProvider.revokeDevice` stores the rotated `s
 the section shows the new invite code at once. The revoked device learns of it on its next
 request: a 401, shown as `SyncStatus.unauthorized` (its open stream closes with 1008 at the
 next push to the group or the next idle heartbeat, whichever comes first — see *WebSocket*). Its local copies of the games stay where they are.
+
+**A pass across a group switch.** `GroupProvider._stop` bumps a generation counter; a `syncNow` pass that finds it changed after its engine returns (a switch, leave or server change happened meanwhile) writes neither `_status` nor the pending counts nor events, and the loop runs again for the queued `_rerun`, so the new group syncs at once instead of showing `unauthorized` until the next poll. Tested in `test/providers/group_provider_generation_test.dart`.
 
 **The nickname.** A device's name in the group (`devices.label`) is what its siblings see in
 the devices list. The create and join dialogs ask for it first (`group_nickname_field`,
