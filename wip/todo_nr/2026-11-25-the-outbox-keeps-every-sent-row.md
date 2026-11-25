@@ -12,11 +12,14 @@ a row with its JSON payload behind, so the outbox of a device in a group grows w
 sync history. The reads that matter filter on `sent_at IS NULL` through
 `idx_outbox_group_unsent`, so it costs storage and backup size rather than speed today.
 
-Nothing reads a sent row: `markSent` records the version in `entity_versions`, which is what
-the pull compares against, and `_holdsOwn` reads unsent rows only — so a prune is safe as far
-as the sync is concerned.
+The pull reads no sent row: every answer under which the server logs a delta records its
+version in `entity_versions` — `markSent` for `applied` and `duplicate`, `markMerged` for
+`merged_lww` — and that is what the pull compares against; `_holdsOwn` reads unsent rows
+only. A row `markSuperseded` closes (a renumbered round, an adopted cell or row) was never
+logged, so nothing comes back for it. A prune is therefore safe as far as the sync is
+concerned.
 
-**Fix:** delete the row in `markSent` / `markSuperseded` instead of stamping `sent_at`, or
+**Fix:** delete the row in `markSent` / `markMerged` / `markSuperseded` instead of stamping `sent_at`, or
 prune sent rows older than a few days at the start of a pass; the column can stay for
 the rows a schema step or a test still reads.
 

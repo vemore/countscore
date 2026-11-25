@@ -1066,6 +1066,40 @@ void main() {
         expect(await games.getAll(), isEmpty);
       });
 
+      test('an edit answered merged_lww, logged all the same, does not undo the delete that beat it',
+          () async {
+        final m = await joined();
+        final (_, id) = await pushedGame(m, answered: true);
+        final alice = (await players.getByGame(id)).firstWhere((p) => p.name == 'Alice');
+        await db.customStatement(
+            'UPDATE game_players SET colorValue = 4283215696 WHERE id = ?', [alice.id]);
+        final edit = (await store.preparePush(m)).single;
+        expect(edit.entityType, 'game_player');
+        // Another device removed Alice first, under a lower lamport: the delete wins.
+        await store.markMerged(edit, m.deviceId);
+
+        await store.applyPulled(m, [
+          _delta('game_player', edit.entityUuid, 1, 1,
+              {'game_id': edit.payload['game_id'], 'player_id': edit.payload['player_id']},
+              op: 'delete'),
+          back(edit, 2),
+        ], 2);
+
+        expect([for (final p in await players.getByGame(id)) p.name], ['Bob']);
+      });
+
+      test('an unsent row of the same lamport but another entity does not hide it', () async {
+        final m = await joined();
+        final (inFlight, _) = await pushedGame(m, answered: false);
+
+        await store.applyPulled(m, [
+          _delta('game', 'eeeeeeee-0000-4000-8000-000000000006', inFlight.lamport, 1,
+              {'name': 'Importée'}, origin: _me),
+        ], 1);
+
+        expect([for (final g in await games.getAll()) g.name], contains('Importée'));
+      });
+
       test('a lamport stamped in another group does not hide one of this group', () async {
         const groupB = '44444444-4444-4444-8444-444444444444';
         final m = await joined();
