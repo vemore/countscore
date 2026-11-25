@@ -258,7 +258,7 @@ void main() {
       expect(find.text('Unknown or replaced invite code'), findsOneWidget);
       expect(group.groupId, real.oldGroupId);
       expect(group.shareToken, real.oldInvite);
-      expect(await tester.runAsync(credentials.deviceToken), real.oldDeviceToken);
+      expect(await tester.runAsync(() => credentials.deviceToken(real.oldGroupId)), real.oldDeviceToken);
       expect(await tester.runAsync(() => real.outboxCount(db)), 1);
       expect(servers.seen.map((r) => '${r.method} ${r.url.host}${r.url.path}'),
           ['POST new.example.com/groups/join'],

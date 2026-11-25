@@ -32,7 +32,7 @@ class AppDatabase extends _$AppDatabase {
   static final AppDatabase instance = AppDatabase();
 
   @override
-  int get schemaVersion => 22;
+  int get schemaVersion => 23;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -43,6 +43,7 @@ class AppDatabase extends _$AppDatabase {
             await customStatement(statement);
           }
           await applyV15(customStatement);
+          await applyV23(customStatement, _columnsOf);
           await _insertDefaultGameTypes();
         },
         onUpgrade: (m, from, to) async {
@@ -94,6 +95,9 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 22) {
             await applyV22(customStatement, _columnsOf);
+          }
+          if (from < 23) {
+            await applyV23(customStatement, _columnsOf);
           }
         },
       );

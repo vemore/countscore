@@ -233,6 +233,12 @@ class BackendClient {
     ];
   }
 
+  /// `GET /groups/me`: the id of the group [deviceToken] belongs to.
+  Future<String> groupIdOf(String deviceToken) async {
+    final body = await _send('GET', '/groups/me', token: deviceToken);
+    return body['id'] as String;
+  }
+
   /// `GET /groups/me`: the id of the group's owner device.
   ///
   /// [known] is false when the server predates group owners and sends no

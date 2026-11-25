@@ -9,6 +9,7 @@ import 'backend_provider.dart';
 import '../services/drift/database.dart';
 import '../services/sync/sync_credentials.dart';
 import '../services/sync/sync_engine.dart';
+import '../services/sync/sync_reconcile.dart';
 import '../services/sync/sync_store.dart';
 import '../services/sync/sync_stream.dart';
 
@@ -163,16 +164,32 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   Future<void> updateBackend(String? baseUrl) async {
     if (_loaded && baseUrl == _baseUrl) return;
     _baseUrl = baseUrl;
+    var leftOnStart = false;
     if (!_loaded) {
       _loaded = true;
       try {
+        // An imported database may name groups the stored tokens do not, or
+        // the reverse: settle that before anything syncs. Secure storage that
+        // cannot be read is no reason to leave anything: the reads below then
+        // fail as they did before.
+        try {
+          final report = await reconcileMemberships(_store, _credentials);
+          // A group left here turned its games local: the list shows them so.
+          leftOnStart = report.left.isNotEmpty;
+        } catch (e) {
+          debugPrint('GroupProvider: memberships not reconciled: $e');
+        }
         _membership = await _store.membership();
-        _deviceToken = await _credentials.deviceToken();
-        _shareToken = await _credentials.shareToken();
+        final groupId = _membership?.groupId;
+        if (groupId != null) {
+          _deviceToken = await _credentials.deviceToken(groupId);
+          _shareToken = await _credentials.shareToken(groupId);
+        }
       } finally {
         _ready.complete();
       }
     }
+    if (leftOnStart) await onRemoteChange?.call();
     await _restart();
   }
 
@@ -239,13 +256,13 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   }) async {
     if (_membership != null) await leave();
     if (baseUrl != null) await _switchServer(baseUrl);
-    await _credentials.save(deviceToken: m.deviceToken, shareToken: m.shareToken);
+    await _credentials.save(m.groupId, deviceToken: m.deviceToken, shareToken: m.shareToken);
     await _store.join(m);
     _deviceToken = m.deviceToken;
     _shareToken = m.shareToken;
     _isOwner = owner;
     _deviceLabel = label;
-    _membership = await _store.membership();
+    _membership = await _store.membership(m.groupId);
     await _restart();
   }
 
@@ -311,7 +328,7 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     if (c.sameGroup && _membership?.groupId == c.membership.groupId) {
       await cancelJoin(c);
       _shareToken = c.membership.shareToken;
-      await _credentials.saveShareToken(c.membership.shareToken);
+      await _credentials.saveShareToken(c.membership.groupId, c.membership.shareToken);
       // A group id is unique to its server: another URL is another way to it.
       if (c.baseUrl != _baseUrl) {
         await _switchServer(c.baseUrl);
@@ -393,8 +410,16 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
         // Offline or already revoked: leaving locally must still work.
       }
     }
-    if (m != null) await _store.leave(m.groupId);
-    await _credentials.clear();
+    await _forget(m);
+  }
+
+  /// Turns [m]'s shared games back into local ones, forgets its token, and
+  /// leaves this provider outside any group. Nothing is sent to the server.
+  Future<void> _forget(SyncMembership? m) async {
+    if (m != null) {
+      await _store.leave(m.groupId);
+      await _credentials.clear(m.groupId);
+    }
     _membership = null;
     _deviceToken = null;
     _shareToken = null;
@@ -407,15 +432,50 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     await onRemoteChange?.call();
   }
 
+  /// Whether a sync pass may run under the current token. One moved from the
+  /// pre-v23 keys (`SyncCredentials.needsGroupCheck`) names no group: a database
+  /// imported on the old version may be another group's than the token. So
+  /// before anything is pulled or pushed under it, `GET /groups/me` says which
+  /// group it is — once; a match is remembered. Another group's token is treated
+  /// as no token at all, as `reconcileMemberships` does: the group is left on
+  /// this device (its games stay, as local ones) and the token forgotten. No
+  /// answer leaves the pass undone, to be tried again.
+  Future<bool> _tokenGroupConfirmed() async {
+    final m = _membership;
+    final token = _deviceToken;
+    if (m == null || token == null) return false;
+    if (!await _credentials.needsGroupCheck(m.groupId)) return true;
+    if (_baseUrl == null) return false;
+    final String tokenGroup;
+    try {
+      tokenGroup = await _client().groupIdOf(token);
+    } on BackendException catch (e) {
+      _status = e.statusCode == 401 ? SyncStatus.unauthorized : SyncStatus.error;
+      return false;
+    } catch (_) {
+      _status = SyncStatus.offline;
+      return false;
+    }
+    if (_membership?.groupId != m.groupId) return false; // switched meanwhile: not this pass's
+    if (tokenGroup == m.groupId) {
+      await _credentials.markGroupChecked(m.groupId);
+      return true;
+    }
+    await _stop();
+    await _forget(m);
+    return false;
+  }
+
   Future<void> rotateShareToken() async {
     final token = _deviceToken;
-    if (token == null || _baseUrl == null) return;
+    final group = groupId;
+    if (token == null || group == null || _baseUrl == null) return;
     try {
       _shareToken = await _client().rotateShareToken(token);
     } catch (e) {
       throw _ownerActionError(e);
     }
-    await _credentials.saveShareToken(_shareToken!);
+    await _credentials.saveShareToken(group, _shareToken!);
     notifyListeners();
   }
 
@@ -485,7 +545,10 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   /// [leave].
   Future<void> revokeDevice(String deviceId) async {
     final token = _deviceToken;
-    if (token == null || _baseUrl == null || deviceId == this.deviceId) return;
+    final group = groupId;
+    if (token == null || group == null || _baseUrl == null || deviceId == this.deviceId) {
+      return;
+    }
     final String? newShareToken;
     try {
       newShareToken = await _client().revokeDevice(token, deviceId);
@@ -494,7 +557,7 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     }
     if (newShareToken != null) {
       _shareToken = newShareToken;
-      await _credentials.saveShareToken(newShareToken);
+      await _credentials.saveShareToken(group, newShareToken);
     }
     notifyListeners();
   }
@@ -633,7 +696,13 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
       do {
         _rerun = false;
         final gen = _generation;
-        final result = await SyncEngine(_store, _client(), _deviceToken!).run();
+        final confirmed = await _tokenGroupConfirmed();
+        // A switch, a leave or a server change meanwhile: this pass is not
+        // theirs (the restart queued one for a new group, which reruns).
+        if (gen != _generation || !_active) continue;
+        if (!confirmed) break;
+        final result =
+            await SyncEngine(_store, _client(), _deviceToken!, _membership!.groupId).run();
         // The group changed under this pass (a 401 from the revoked old token,
         // say): say nothing about it; the restart queued a pass for the new one.
         if (gen != _generation) continue;
