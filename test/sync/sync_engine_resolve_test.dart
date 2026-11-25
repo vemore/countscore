@@ -100,6 +100,108 @@ void main() {
     expect(await store.rejectedCount(), 1);
   });
 
+  group('lamport_reused (a clock behind its own log)', () {
+    /// A server whose log holds this device's own delta at lamport 40 and
+    /// another device's at 41, past this device's restored clock, so a pull
+    /// from the start returns both. It answers the `game` delta
+    /// `lamport_reused` [reused] times, then `applied`, and records every
+    /// lamport pushed for it in [gameLamports].
+    SyncEngine engine(int reused, List<int> gameLamports) {
+      var refusals = 0;
+      http.Response json(Object body) =>
+          http.Response(jsonEncode(body), 200, headers: {'content-type': 'application/json'});
+      final client = MockClient((request) async {
+        if (request.url.path.endsWith('/sync/pull')) {
+          final since = int.parse(request.url.queryParameters['since_seq'] ?? '0');
+          return json({
+            'deltas': [
+              if (since < 2) ...[
+                {
+                  'server_seq': 1,
+                  'entity_type': 'game',
+                  'entity_uuid': '33333333-3333-4333-8333-333333333333',
+                  'op': 'upsert',
+                  'payload': <String, dynamic>{},
+                  'client_lamport': 40,
+                  'origin_device_id': _me,
+                },
+                {
+                  'server_seq': 2,
+                  'entity_type': 'something_later',
+                  'entity_uuid': '44444444-4444-4444-8444-444444444444',
+                  'op': 'upsert',
+                  'payload': <String, dynamic>{},
+                  'client_lamport': 41,
+                  'origin_device_id': '55555555-5555-4555-8555-555555555555',
+                },
+              ],
+            ],
+            'server_seq_max': 2,
+            'has_more': false,
+          });
+        }
+        final deltas = ((jsonDecode(request.body) as Map)['deltas'] as List).cast<Map>();
+        return json({
+          'results': [
+            for (final d in deltas)
+              if (d['entity_type'] == 'game') ...[
+                () {
+                  gameLamports.add(d['client_lamport'] as int);
+                  return refusals++ < reused
+                      ? {'status': 'rejected', 'server_seq': null, 'reason': 'lamport_reused'}
+                      : {'status': 'applied', 'server_seq': 3, 'reason': null};
+                }(),
+              ] else
+                {'status': 'applied', 'server_seq': 3, 'reason': null},
+          ],
+        });
+      });
+      return SyncEngine(store, BackendClient('https://example.test', httpClient: client), 'tok', _group);
+    }
+
+    test('a whole database restored reuses nothing: the first pull lifts the clock', () async {
+      await engine(0, []).run();
+      await db.customStatement('UPDATE sync_state SET last_lamport = 0, last_server_seq = 0');
+      await db.customStatement("UPDATE games SET name = 'Mercredi'");
+
+      final lamports = <int>[];
+      await engine(0, lamports).run();
+      expect(lamports.single, greaterThan(41));
+    });
+
+    test('is stamped again past every lamport of the log, pushed again and applied', () async {
+      // The clock goes back behind its cursor: the pull every pass starts
+      // with brings nothing, so the stamp reuses one of the log's lamports.
+      await engine(0, []).run();
+      await db.customStatement('UPDATE sync_state SET last_lamport = 0');
+      await db.customStatement("UPDATE games SET name = 'Mercredi'");
+
+      final lamports = <int>[];
+      final result = await engine(1, lamports).run();
+
+      expect(result.failure, isNull);
+      expect(lamports, hasLength(2), reason: 'refused once, pushed again in the same pass');
+      expect(lamports.first, lessThanOrEqualTo(41));
+      expect(lamports.last, greaterThan(41), reason: 'past every lamport of the log, its own too');
+      expect(await store.pendingCount(), 0, reason: 'marked sent');
+      expect(await store.rejectedCount(), 0);
+    });
+
+    test('a second refusal in a row is rejected, with no third push', () async {
+      await engine(0, []).run();
+      await db.customStatement('UPDATE sync_state SET last_lamport = 0');
+      await db.customStatement("UPDATE games SET name = 'Mercredi'");
+
+      final lamports = <int>[];
+      final result = await engine(99, lamports).run();
+
+      expect(result.failure, isNull);
+      expect(lamports, hasLength(2));
+      expect(await store.rejectedCount(), 1);
+      expect(await store.pendingCount(), 0);
+    });
+  });
+
   test('a resolved game_type does not loop the pass forever', () async {
     // `_resolve` returning true is progress, so the pass must terminate rather
     // than re-preparing the same delta on every round.

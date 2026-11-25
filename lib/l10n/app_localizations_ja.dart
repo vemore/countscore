@@ -1541,6 +1541,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get groupErrorOwnerActive => 'グループのオーナーは最近利用しています。オーナーは引き継げません。';
 
   @override
+  String groupErrorTooManyGroups(int max) {
+    return 'このデバイスはすでに上限のグループ数（$max）に参加しています。先にどれかから退出してください。';
+  }
+
+  @override
   String get groupCreatedOwnerExplain =>
       'グループを作成しました。このデバイスがオーナーです。この役割は「デバイス」で他のデバイスに引き継げます。';
 

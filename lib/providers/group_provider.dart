@@ -13,6 +13,8 @@ import '../services/sync/sync_reconcile.dart';
 import '../services/sync/sync_store.dart';
 import '../services/sync/sync_stream.dart';
 
+part 'group_session.dart';
+
 /// Where sync stands, as the Settings screen shows it.
 enum SyncStatus {
   /// No server, or no group: nothing leaves the device.
@@ -27,7 +29,15 @@ enum SyncStatus {
   unauthorized,
 
   /// The server answered with an error.
-  error,
+  error;
+
+  /// Worst last: what one status shown for several groups picks
+  /// ([GroupProvider.status]).
+  static const _byGravity = [off, idle, syncing, offline, error, unauthorized];
+
+  /// The worse of this and [other].
+  SyncStatus worse(SyncStatus other) =>
+      _byGravity.indexOf(other) > _byGravity.indexOf(this) ? other : this;
 }
 
 /// Why creating, joining or sharing did not happen. One l10n string each.
@@ -43,6 +53,10 @@ enum GroupActionError {
 
   /// The owner role cannot be claimed: that device has been seen recently (409).
   ownerActive,
+
+  /// This device is in [GroupProvider.maxGroups] groups already. Refused
+  /// before any request: the server cannot tell two device rows are one install.
+  tooManyGroups,
 }
 
 /// A registration with a group that [GroupProvider.prepareJoin] made, not yet
@@ -60,7 +74,7 @@ class JoinCandidate {
   final GroupMembership membership;
   final String label;
 
-  /// The group this device is already in.
+  /// A group this device is already in, under a token the server still accepts.
   final bool sameGroup;
 }
 
@@ -72,12 +86,17 @@ class GroupActionException implements Exception {
   final List<String> detail;
 }
 
-/// Group membership and the sync loop around it.
+/// The groups this device is in, one [GroupSession] each, and what they share:
+/// the server, the nickname, the local-write trigger, the app lifecycle and the
+/// conflict events.
 ///
 /// Sync runs only while a server URL is configured **and** this device holds a
-/// device token — both conditions from the user's design (wip/done/ARCHIVE-2026-09.md, 2026-09-13).
-/// It is triggered by local writes (debounced), by the server's WebSocket signal,
-/// on app resume, and every [pollInterval] as a safety net.
+/// group's device token — both conditions from the user's design
+/// (wip/done/ARCHIVE-2026-09.md, 2026-09-13). One server for every group, one
+/// nickname for every group, at most [maxGroups] groups (the multi-group plan,
+/// `wip/todo/2026-11-17-belong-to-several-groups.md`). A session is triggered
+/// by a local write that queued a change for its group (debounced), by its
+/// server's WebSocket signal, on app resume, and every [pollInterval].
 class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   GroupProvider({
     AppDatabase? db,
@@ -88,6 +107,9 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     this.enableStream = true,
   })  : _db = db ?? AppDatabase.instance,
         _credentials = credentials ?? SecureSyncCredentials();
+
+  /// The most groups one install may be in (decision 9 of the multi-group plan).
+  static const maxGroups = 5;
 
   final AppDatabase _db;
   final SyncCredentials _credentials;
@@ -101,66 +123,99 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
 
   late final SyncStore _store = SyncStore(_db);
 
+  /// In the order they were joined.
+  final _sessions = <String, GroupSession>{};
   String? _baseUrl;
-  SyncMembership? _membership;
-  String? _shareToken;
-  String? _deviceToken;
-  bool _isOwner = false;
-  String? _deviceLabel;
+  String? _nickname;
 
   /// Bumped by every completed [renameDevice], so a devices list requested
-  /// before a rename cannot put the old name back when it arrives after it.
+  /// before a rename cannot be taken for the server's answer to it.
   int _renames = 0;
-  bool _loadingLabel = false;
-  SyncStatus _status = SyncStatus.off;
-  DateTime? _lastSyncAt;
-  int _pending = 0;
-  int _rejected = 0;
   bool _loaded = false;
+  bool _disposed = false;
 
-  SyncStream? _stream;
-  Timer? _poll;
-  Timer? _debounce;
+  bool _attached = false;
   StreamSubscription<void>? _localWrites;
-  bool _running = false;
-  bool _rerun = false;
-
-  /// Bumped by every [_stop] (so by each group switch, leave and server change):
-  /// a pass that began under another value works for a group that is gone, and
-  /// reports nothing.
-  int _generation = 0;
+  Timer? _wake;
   final _events = StreamController<SyncEvent>.broadcast();
 
-  bool get isJoined => _membership != null && _deviceToken != null;
-  String? get groupName => _membership?.groupName;
-  String? get groupId => _membership?.groupId;
-  String? get deviceId => _membership?.deviceId;
-  String? get shareToken => _shareToken;
+  /// Every group this device is in, in the order it joined them.
+  List<GroupSession> get memberships => List.unmodifiable(_sessions.values);
 
-  /// This device's name in the group, as its siblings see it: what it joined or
-  /// created the group with, then the server's answer to [devices] or
-  /// [renameDevice]. Held in memory only, so null after a restart until the
-  /// devices list is read: on start, on resume and after a successful sync while
-  /// it is still unknown ([refreshDeviceLabel]).
-  String? get deviceLabel => isJoined ? _deviceLabel : null;
+  /// The session of [groupId], or null when this device is not in it.
+  GroupSession? session(String? groupId) => groupId == null ? null : _sessions[groupId];
 
-  /// Whether this device owns the group: the only one that may remove another
-  /// device, renew the invite code or hand the role over. Held in memory only —
-  /// the server is asked on every start ([refreshOwner]) — and false until it
-  /// answers. A server that predates owners treats every device as one.
-  bool get isOwner => isJoined && _isOwner;
-  SyncStatus get status => _status;
-  DateTime? get lastSyncAt => _lastSyncAt;
-  int get pendingChanges => _pending;
-  int get rejectedChanges => _rejected;
+  /// The one nickname this device goes by in every group, kept on the device
+  /// (`SyncCredentials.nickname`): known after a restart without a request.
+  /// Null until a group is created or joined, or — on an install from before
+  /// it was kept — until a devices list names this device.
+  String? get nickname => _nickname;
+
+  // ── One group, as the single-group screens read it ────────────────────────
+  //
+  // The first group joined, or every group summed up. Kept for Settings →
+  // Group, the QR dialog, the create-game switch and the board's share action
+  // until the multi-group UI (`wip/todo/2026-11-25-multi-group-ui.md`) reads
+  // [memberships] instead. A game's own group goes through [session].
+
+  GroupSession? get _first => _sessions.values.firstOrNull;
+  bool get isJoined => _sessions.isNotEmpty;
+  String? get groupName => _first?.groupName;
+  String? get groupId => _first?.groupId;
+  String? get deviceId => _first?.deviceId;
+  String? get shareToken => _first?.shareToken;
+  bool get isOwner => _first?.isOwner ?? false;
+
+  /// [nickname], while in a group.
+  String? get deviceLabel => isJoined ? _nickname : null;
+
+  /// The worst status of every group ([SyncStatus.worse]); off in none.
+  SyncStatus get status =>
+      _sessions.values.fold(SyncStatus.off, (worst, s) => worst.worse(s.status));
+
+  /// The oldest last sync of every group; null while one has none.
+  DateTime? get lastSyncAt {
+    DateTime? oldest;
+    for (final s in _sessions.values) {
+      final at = s.lastSyncAt;
+      if (at == null) return null;
+      if (oldest == null || at.isBefore(oldest)) oldest = at;
+    }
+    return oldest;
+  }
+
+  int get pendingChanges => _sessions.values.fold(0, (n, s) => n + s.pendingChanges);
+  int get rejectedChanges => _sessions.values.fold(0, (n, s) => n + s.rejectedChanges);
+
+  /// True when a call to the first group's server is possible at all.
+  bool get canReachGroup => _first?.canReach ?? false;
+
+  Future<void> rotateShareToken() async => _first?.rotateShareToken();
+  Future<List<GroupDevice>> devices() async => await _first?.devices() ?? const [];
+  Future<void> revokeDevice(String deviceId) async => _first?.revokeDevice(deviceId);
+  Future<void> transferOwnership(String deviceId) async => _first?.transferOwnership(deviceId);
+  Future<void> claimOwnership() async => _first?.claimOwnership();
+
+  Future<({GroupSettings settings, GroupUsage usage})> groupSettings() =>
+      (_first ?? (throw GroupActionException(GroupActionError.unreachable))).groupSettings();
+
+  Future<GroupSettings> updateGroupSettings({String? commentStyle, String? commentLanguage}) =>
+      (_first ?? (throw GroupActionException(GroupActionError.unreachable)))
+          .updateGroupSettings(commentStyle: commentStyle, commentLanguage: commentLanguage);
+
+  // ──────────────────────────────────────────────────────────────────────────
 
   /// Conflicts worth a snackbar, wherever the user is.
   Stream<SyncEvent> get events => _events.stream;
 
   SyncStore get store => _store;
 
+  void _changed() {
+    if (!_disposed) notifyListeners();
+  }
+
   /// Follows the server URL from [BackendProvider]. Sync stops when it is
-  /// cleared; membership is kept, so setting the URL back resumes it.
+  /// cleared; memberships are kept, so setting the URL back resumes them.
   Future<void> updateBackend(String? baseUrl) async {
     if (_loaded && baseUrl == _baseUrl) return;
     _baseUrl = baseUrl;
@@ -179,11 +234,16 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
         } catch (e) {
           debugPrint('GroupProvider: memberships not reconciled: $e');
         }
-        _membership = await _store.membership();
-        final groupId = _membership?.groupId;
-        if (groupId != null) {
-          _deviceToken = await _credentials.deviceToken(groupId);
-          _shareToken = await _credentials.shareToken(groupId);
+        try {
+          _nickname = await _credentials.nickname();
+        } catch (e) {
+          debugPrint('GroupProvider: nickname not read: $e');
+        }
+        for (final m in await _store.memberships()) {
+          final token = await _credentials.deviceToken(m.groupId);
+          if (token == null) continue;
+          _sessions[m.groupId] =
+              GroupSession._(this, m, token, await _credentials.shareToken(m.groupId));
         }
       } finally {
         _ready.complete();
@@ -195,9 +255,9 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
 
   final _ready = Completer<void>();
 
-  /// Completes once the membership stored on this device has been read — by the
-  /// first [updateBackend], which the provider tree makes when it creates this
-  /// provider. Until then [isJoined] reads false for a device that is in a
+  /// Completes once the memberships stored on this device have been read — by
+  /// the first [updateBackend], which the provider tree makes when it creates
+  /// this provider. Until then [isJoined] reads false for a device that is in a
   /// group: a configuration link opened on a cold start waits for it
   /// (`JoinLinkListener`).
   Future<void> get loaded => _ready.future;
@@ -206,28 +266,37 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
 
   // ── Membership ────────────────────────────────────────────────────────────
 
-  /// Creates a group as [deviceLabel], trimmed, and joins it as its owner.
+  /// Creates a group as [deviceLabel], trimmed, and joins it as its owner,
+  /// beside the groups this device is already in.
   Future<void> createGroup(String name, String deviceLabel) {
     final label = deviceLabel.trim();
     return _enter(() => _client().createGroup(name, label), owner: true, label: label);
   }
 
-  /// Joins the group [shareToken] names as [deviceLabel]; both are trimmed.
+  /// Joins the group [shareToken] names as [deviceLabel], beside the groups
+  /// this device is already in; both are trimmed.
   Future<void> joinGroup(String shareToken, String deviceLabel) {
     final label = deviceLabel.trim();
-    return _enter(() => _client().joinGroup(shareToken.trim(), label),
-        owner: false, label: label);
+    final token = shareToken.trim();
+    return _enter(() => _client().joinGroup(token, label),
+        owner: false, label: label, shareToken: token);
   }
 
   Future<void> _enter(
     Future<GroupMembership> Function() call, {
     required bool owner,
     required String label,
+    String? shareToken,
   }) async {
     if (_baseUrl == null) throw GroupActionException(GroupActionError.unreachable);
-    // The server first: a refused create or join leaves the current group as it was.
-    final m = await _register(call);
-    await _adopt(m, owner: owner, label: label);
+    // Before the server: a refused create or join leaves every group as it
+    // was, and a sixth registration would be a device row nobody uses. A code
+    // this device already holds names a group it is in.
+    if (_sessions.length >= maxGroups &&
+        !_sessions.values.any((s) => shareToken != null && s.shareToken == shareToken)) {
+      throw GroupActionException(GroupActionError.tooManyGroups);
+    }
+    await _adopt(await _register(call), owner: owner, label: label);
   }
 
   /// Runs a create or join call, mapping its failures. Changes nothing here.
@@ -245,25 +314,51 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     }
   }
 
-  /// Makes [m] this device's membership, on [baseUrl] when given. The current
-  /// group, if any, is left first: revoked on the server it was registered with,
-  /// since [_baseUrl] still names it at that point.
-  Future<void> _adopt(
-    GroupMembership m, {
-    required bool owner,
-    required String label,
-    String? baseUrl,
-  }) async {
-    if (_membership != null) await leave();
-    if (baseUrl != null) await _switchServer(baseUrl);
+  /// Adds [m] to this device's memberships, registered as [label], which
+  /// becomes the nickname of every group. A group already joined under
+  /// another registration takes the new one; the old is withdrawn.
+  Future<void> _adopt(GroupMembership m, {required bool owner, required String label}) async {
+    final previous = _sessions.remove(m.groupId);
+    if (previous != null) {
+      previous._closed = true;
+      await previous._stop();
+      unawaited(_revoke(previous._deviceToken, previous.deviceId));
+    }
     await _credentials.save(m.groupId, deviceToken: m.deviceToken, shareToken: m.shareToken);
     await _store.join(m);
-    _deviceToken = m.deviceToken;
-    _shareToken = m.shareToken;
-    _isOwner = owner;
-    _deviceLabel = label;
-    _membership = await _store.membership(m.groupId);
-    await _restart();
+    final session = GroupSession._(
+      this,
+      (await _store.membership(m.groupId))!,
+      m.deviceToken,
+      m.shareToken,
+      isOwner: owner,
+      labelOnServer: label,
+    );
+    _sessions[m.groupId] = session;
+    if (label != _nickname) {
+      await _saveNickname(label);
+      // One nickname for every group: the others hear of it now, or at their next pass.
+      for (final other in _sessions.values) {
+        if (other != session) unawaited(other._syncLabel());
+      }
+    }
+    if (_baseUrl != null) {
+      _attach();
+      session._start();
+    }
+    _changed();
+  }
+
+  /// Revokes a registration of this device. Best effort: offline, or already
+  /// revoked, the record stays on the server, unused.
+  Future<void> _revoke(String token, String deviceId, [String? baseUrl]) async {
+    final url = baseUrl ?? _baseUrl;
+    if (url == null) return;
+    try {
+      await BackendClient(url, httpClient: httpClient).revokeDevice(token, deviceId);
+    } catch (_) {
+      // Offline or already revoked: leaving locally must still work.
+    }
   }
 
   // ── Joining from a shared configuration ───────────────────────────────────
@@ -271,44 +366,21 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   /// Step one of joining from a shared configuration, possibly on another server:
   /// registers this device with the group [shareToken] names on [baseUrl], and
   /// changes nothing else. Throws [GroupActionException] when the server refuses
-  /// or cannot be reached; the current server and group are then untouched.
+  /// or cannot be reached; the current server and groups are then untouched.
   ///
   /// The result goes to [completeJoin], or is dropped with [cancelJoin].
-  /// [JoinCandidate.sameGroup] says whether it is the group this device is
+  /// [JoinCandidate.sameGroup] says whether it is a group this device is
   /// already in, behind a newer invite code.
   Future<JoinCandidate> prepareJoin(String baseUrl, String shareToken, String deviceLabel) async {
     final label = deviceLabel.trim();
     final m = await _register(() => BackendClient(baseUrl, httpClient: httpClient)
         .joinGroup(shareToken.trim(), label));
-    final current = _membership;
     return JoinCandidate(
       baseUrl: baseUrl,
       membership: m,
       label: label,
-      sameGroup: isJoined &&
-          current != null &&
-          m.groupId == current.groupId &&
-          await _currentTokenAccepted(baseUrl),
+      sameGroup: await _sessions[m.groupId]?._tokenAccepted(baseUrl) ?? false,
     );
-  }
-
-  /// Whether the server still accepts this device's own token: a device the
-  /// owner revoked is in "the same group" by id only, and must take the new
-  /// registration rather than keep a token that is refused. Asked with
-  /// `GET /groups/me`; a 401 or 403 is a no, and so is a status already
-  /// [SyncStatus.unauthorized]. Anything else (the server answered the join a
-  /// moment ago) keeps the current registration.
-  Future<bool> _currentTokenAccepted(String baseUrl) async {
-    final token = _deviceToken;
-    if (token == null || _status == SyncStatus.unauthorized) return false;
-    try {
-      await BackendClient(baseUrl, httpClient: httpClient).groupOwner(token);
-      return true;
-    } on BackendException catch (e) {
-      return e.statusCode != 401 && e.statusCode != 403;
-    } catch (_) {
-      return true;
-    }
   }
 
   /// Moves sync to [baseUrl] and stores it as the configured server at once, in
@@ -320,338 +392,133 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     await BackendProvider.persist(baseUrl);
   }
 
-  /// Step two: makes [c] this device's group. For [JoinCandidate.sameGroup] the
-  /// membership is kept (nothing is left, no row is unshared), the registration
-  /// [prepareJoin] made is withdrawn, and the newer invite code is stored.
-  /// Otherwise the current group is left, then [c] adopted, syncing with [c]'s server.
+  /// Step two. For [JoinCandidate.sameGroup] the membership is kept (nothing
+  /// is left, no row is unshared), the registration [prepareJoin] made is
+  /// withdrawn, and the newer invite code is stored. Otherwise the
+  /// configuration is replaced, as the QR dialog says today: every group is
+  /// left, on the server they were registered with, then [c] adopted on its own.
   Future<void> completeJoin(JoinCandidate c) async {
-    if (c.sameGroup && _membership?.groupId == c.membership.groupId) {
+    final kept = c.sameGroup ? _sessions[c.membership.groupId] : null;
+    if (kept != null) {
       await cancelJoin(c);
-      _shareToken = c.membership.shareToken;
-      await _credentials.saveShareToken(c.membership.groupId, c.membership.shareToken);
+      kept._shareToken = c.membership.shareToken;
+      await _credentials.saveShareToken(kept.groupId, c.membership.shareToken);
       // A group id is unique to its server: another URL is another way to it.
       if (c.baseUrl != _baseUrl) {
         await _switchServer(c.baseUrl);
         await _restart();
       }
-      notifyListeners();
+      _changed();
       return;
     }
-    await _adopt(c.membership, owner: false, label: c.label, baseUrl: c.baseUrl);
+    await leave();
+    await _switchServer(c.baseUrl);
+    await _adopt(c.membership, owner: false, label: c.label);
   }
 
   /// Withdraws the registration [prepareJoin] made, when the user backs out or it
-  /// turns out to be this device's group already. Best effort: an unreachable
-  /// server keeps a device record nobody uses.
-  Future<void> cancelJoin(JoinCandidate c) async {
-    try {
-      await BackendClient(c.baseUrl, httpClient: httpClient)
-          .revokeDevice(c.membership.deviceToken, c.membership.deviceId);
-    } catch (_) {
-      // Offline: the record stays on the server, unused.
-    }
-  }
+  /// turns out to be this device's group already.
+  Future<void> cancelJoin(JoinCandidate c) =>
+      _revoke(c.membership.deviceToken, c.membership.deviceId, c.baseUrl);
 
-  /// The changes still waiting to reach the group, counted now. [pendingChanges]
-  /// is only recounted at the end of a sync pass; this refreshes it as well.
-  Future<int> countPending() async {
-    if (_membership == null) return 0;
-    final n = await _store.pendingCount();
-    if (n != _pending) {
-      _pending = n;
-      notifyListeners();
+  /// The changes still waiting to reach [groupId], or every group, counted
+  /// now. [pendingChanges] is only recounted at the end of a sync pass; this
+  /// refreshes it as well.
+  Future<int> countPending([String? groupId]) async {
+    var n = 0;
+    for (final s in [..._sessions.values]) {
+      if (groupId == null || s.groupId == groupId) n += await s.countPending();
     }
     return n;
   }
 
-  /// Asks the server who owns the group. Silent on failure: the last answer stands.
+  /// Asks each group's server who owns it. Silent on failure.
   Future<void> refreshOwner() async {
-    final token = _deviceToken;
-    final own = deviceId;
-    if (token == null || own == null || _baseUrl == null) return;
-    try {
-      final owner = await _client().groupOwner(token);
-      final isOwner = !owner.known || owner.ownerDeviceId == own;
-      if (isOwner != _isOwner) {
-        _isOwner = isOwner;
-        notifyListeners();
-      }
-    } catch (_) {
-      // Offline, or revoked: the sync status says so.
-    }
+    await Future.wait([for (final s in _sessions.values) s.refreshOwner()]);
   }
 
-  /// Maps a failed owner-only call, and forgets the role on a 403.
-  GroupActionException _ownerActionError(Object e) {
-    if (e is BackendException && e.statusCode == 403) {
-      _isOwner = false;
-      notifyListeners();
-      return GroupActionException(GroupActionError.notOwner);
-    }
-    // A refused claim: the owner is alive after all. Nothing to forget — this device
-    // never had the role — so [_isOwner] is left alone.
-    if (e is BackendException && e.statusCode == 409) {
-      return GroupActionException(GroupActionError.ownerActive);
-    }
-    return GroupActionException(
-        e is BackendException ? GroupActionError.server : GroupActionError.unreachable);
-  }
-
-  /// Leaves the group: revokes this device on the server when it can, and in any
-  /// case turns shared games back into local ones on this device.
+  /// Leaves every group (the single-group screens' Leave, and clearing the server).
   Future<void> leave() async {
-    final m = _membership;
-    final token = _deviceToken;
-    await _stop();
-    if (m != null && token != null && _baseUrl != null) {
-      try {
-        await _client().revokeDevice(token, m.deviceId);
-      } catch (_) {
-        // Offline or already revoked: leaving locally must still work.
-      }
+    for (final groupId in [..._sessions.keys]) {
+      await leaveGroup(groupId);
     }
-    await _forget(m);
   }
 
-  /// Turns [m]'s shared games back into local ones, forgets its token, and
-  /// leaves this provider outside any group. Nothing is sent to the server.
-  Future<void> _forget(SyncMembership? m) async {
-    if (m != null) {
-      await _store.leave(m.groupId);
-      await _credentials.clear(m.groupId);
-    }
-    _membership = null;
-    _deviceToken = null;
-    _shareToken = null;
-    _isOwner = false;
-    _deviceLabel = null;
-    _status = SyncStatus.off;
-    _pending = 0;
-    _rejected = 0;
-    notifyListeners();
+  /// Leaves [groupId]: revokes this device there when the server answers, and
+  /// in any case turns that group's shared games back into local ones. Every
+  /// other group, and a pass of it under way, is left as it was.
+  Future<void> leaveGroup(String groupId) async {
+    final s = _sessions[groupId];
+    if (s == null) return;
+    s._closed = true;
+    await s._stop();
+    await _revoke(s._deviceToken, s.deviceId);
+    await _drop(s);
+  }
+
+  /// Forgets [s]: its shared games become local ones, its token goes. Nothing
+  /// is sent to the server.
+  Future<void> _drop(GroupSession s) async {
+    s._closed = true;
+    await s._stop();
+    if (_sessions[s.groupId] == s) _sessions.remove(s.groupId);
+    await _store.leave(s.groupId);
+    await _credentials.clear(s.groupId);
+    if (_sessions.isEmpty) await _detach();
+    _changed();
     await onRemoteChange?.call();
   }
 
-  /// Whether a sync pass may run under the current token. One moved from the
-  /// pre-v23 keys (`SyncCredentials.needsGroupCheck`) names no group: a database
-  /// imported on the old version may be another group's than the token. So
-  /// before anything is pulled or pushed under it, `GET /groups/me` says which
-  /// group it is — once; a match is remembered. Another group's token is treated
-  /// as no token at all, as `reconcileMemberships` does: the group is left on
-  /// this device (its games stay, as local ones) and the token forgotten. No
-  /// answer leaves the pass undone, to be tried again.
-  Future<bool> _tokenGroupConfirmed() async {
-    final m = _membership;
-    final token = _deviceToken;
-    if (m == null || token == null) return false;
-    if (!await _credentials.needsGroupCheck(m.groupId)) return true;
-    if (_baseUrl == null) return false;
-    final String tokenGroup;
-    try {
-      tokenGroup = await _client().groupIdOf(token);
-    } on BackendException catch (e) {
-      _status = e.statusCode == 401 ? SyncStatus.unauthorized : SyncStatus.error;
-      return false;
-    } catch (_) {
-      _status = SyncStatus.offline;
-      return false;
-    }
-    if (_membership?.groupId != m.groupId) return false; // switched meanwhile: not this pass's
-    if (tokenGroup == m.groupId) {
-      await _credentials.markGroupChecked(m.groupId);
-      return true;
-    }
-    await _stop();
-    await _forget(m);
-    return false;
+  // ── The nickname ──────────────────────────────────────────────────────────
+
+  Future<void> _saveNickname(String label) async {
+    _nickname = label;
+    await _credentials.saveNickname(label);
   }
 
-  Future<void> rotateShareToken() async {
-    final token = _deviceToken;
-    final group = groupId;
-    if (token == null || group == null || _baseUrl == null) return;
-    try {
-      _shareToken = await _client().rotateShareToken(token);
-    } catch (e) {
-      throw _ownerActionError(e);
-    }
-    await _credentials.saveShareToken(group, _shareToken!);
-    notifyListeners();
+  /// A devices list named this device [label]: the nickname, if the device
+  /// holds none yet — an install from before it was kept.
+  Future<void> _learnNickname(String label) async {
+    if (_nickname == null) await _saveNickname(label);
   }
 
-  /// The group's active devices, this one included. Refreshes [isOwner] and
-  /// [deviceLabel] from this device's own entry — the label only when no rename
-  /// completed while the list was on its way, since the list may predate it.
-  Future<List<GroupDevice>> devices() async {
-    final token = _deviceToken;
-    if (token == null || _baseUrl == null) return const [];
-    final renames = _renames;
-    try {
-      final list = await _client().listDevices(token);
-      final own = list.where((d) => d.id == deviceId).firstOrNull;
-      if (own != null) {
-        final isOwner = own.isOwner ?? true;
-        final label = renames == _renames ? own.label : _deviceLabel;
-        if (isOwner != _isOwner || label != _deviceLabel) {
-          _isOwner = isOwner;
-          _deviceLabel = label;
-          notifyListeners();
-        }
-      }
-      return list;
-    } on BackendException {
-      throw GroupActionException(GroupActionError.server);
-    } catch (_) {
-      throw GroupActionException(GroupActionError.unreachable);
-    }
-  }
-
-  /// Reads [deviceLabel] from the server when it is not known yet — after a
-  /// restart. Called on start and resume, after each successful sync while the
-  /// label is unknown, and when Settings → Group opens; one request at a time.
-  /// Silent on failure: the next of those tries again.
+  /// Reads the nickname from a server when the device holds none — an install
+  /// upgraded from when it was kept in memory only. Also tried after each
+  /// successful pass while unknown. Silent on failure.
   Future<void> refreshDeviceLabel() async {
-    if (_deviceLabel != null || _loadingLabel || !_active) return;
-    _loadingLabel = true;
-    try {
-      await devices();
-    } catch (_) {
-      // Offline, or revoked: the sync status says so.
-    } finally {
-      _loadingLabel = false;
-    }
+    if (_nickname != null) return;
+    await Future.wait([
+      for (final s in _sessions.values)
+        if (s.canReach) s._syncLabel(),
+    ]);
   }
 
-  /// Renames this device in its group — the name the other members see in
+  /// Renames this device in every group — the name the other members see in
   /// their devices list. [label] is trimmed; the server refuses a blank one, one
-  /// over 64 code points, or one with a control character. Changes no synced row.
+  /// over 64 code points, or one with a control character, and nothing is then
+  /// stored. A group that cannot be reached gets it at its next successful
+  /// pass. Changes no synced row.
   Future<void> renameDevice(String label) async {
-    final token = _deviceToken;
-    if (token == null || _baseUrl == null) {
+    final name = label.trim();
+    if (_baseUrl == null || _sessions.isEmpty) {
       throw GroupActionException(GroupActionError.unreachable);
     }
-    try {
-      _deviceLabel = await _client().renameDevice(token, label.trim());
-    } catch (e) {
-      throw _settingsError(e);
+    for (final s in [..._sessions.values]) {
+      try {
+        await s._sendLabel(name);
+      } on BackendException catch (e) {
+        // The name itself is refused: it would be everywhere.
+        if (e.statusCode == 422) throw _settingsError(e);
+      } catch (_) {
+        // Unreachable: retried by that group's next pass.
+      }
     }
     _renames++;
-    notifyListeners();
+    await _saveNickname(name);
+    _changed();
   }
 
-  /// Shuts another device out of the group — a lost or sold phone. The owner's
-  /// only. The server rotates the invite code at the same time, since that device
-  /// knew it; the new code replaces the stored one. This device leaves through
-  /// [leave].
-  Future<void> revokeDevice(String deviceId) async {
-    final token = _deviceToken;
-    final group = groupId;
-    if (token == null || group == null || _baseUrl == null || deviceId == this.deviceId) {
-      return;
-    }
-    final String? newShareToken;
-    try {
-      newShareToken = await _client().revokeDevice(token, deviceId);
-    } catch (e) {
-      throw _ownerActionError(e);
-    }
-    if (newShareToken != null) {
-      _shareToken = newShareToken;
-      await _credentials.saveShareToken(group, newShareToken);
-    }
-    notifyListeners();
-  }
-
-  /// Hands the owner role to another device of the group. The owner's only; this
-  /// device is an ordinary member afterwards.
-  Future<void> transferOwnership(String deviceId) async {
-    final token = _deviceToken;
-    if (token == null || _baseUrl == null || deviceId == this.deviceId) return;
-    try {
-      await _client().transferOwnership(token, deviceId);
-    } catch (e) {
-      throw _ownerActionError(e);
-    }
-    _isOwner = false;
-    notifyListeners();
-  }
-
-  /// Takes the owner role over from an owner device the server reports dormant —
-  /// a phone that uninstalled the app never leaves the group by itself, and the
-  /// invite code it left behind could otherwise never be renewed. The server
-  /// refuses (409, [GroupActionError.ownerActive]) while that device is still
-  /// about, so the role is never flipped here on a guess.
-  Future<void> claimOwnership() async {
-    final token = _deviceToken;
-    if (token == null || _baseUrl == null) return;
-    try {
-      await _client().claimOwnership(token);
-    } catch (e) {
-      throw _ownerActionError(e);
-    }
-    _isOwner = true;
-    notifyListeners();
-  }
-
-  // ── Settings and usage ────────────────────────────────────────────────────
-
-  /// True when a call to the server is possible at all: a server URL is set and
-  /// this device is in a group. Nothing below makes a request otherwise.
-  bool get canReachGroup => _baseUrl != null && isJoined;
-
-  /// The group's comment style and language, and its LLM usage this month —
-  /// fetched fresh each time, nothing kept on the device.
-  Future<({GroupSettings settings, GroupUsage usage})> groupSettings() async {
-    if (!canReachGroup) throw GroupActionException(GroupActionError.unreachable);
-    final client = _client();
-    final token = _deviceToken!;
-    try {
-      final settings = await client.groupSettings(token);
-      return (settings: settings, usage: await client.groupUsage(token));
-    } catch (e) {
-      throw _settingsError(e);
-    }
-  }
-
-  /// Changes the group's comment style and/or language — open to every member.
-  /// Returns what the server now holds.
-  Future<GroupSettings> updateGroupSettings({String? commentStyle, String? commentLanguage}) async {
-    if (!canReachGroup) throw GroupActionException(GroupActionError.unreachable);
-    try {
-      return await _client().updateGroupSettings(
-        _deviceToken!,
-        commentStyle: commentStyle,
-        commentLanguage: commentLanguage,
-      );
-    } catch (e) {
-      throw _settingsError(e);
-    }
-  }
-
-  /// Whether [game]'s analysis goes through the group: it is shared with the
-  /// group this device is in, and the server can be reached.
-  bool analysesThroughGroup({required String? gameGroupId, required String? gameUuid}) =>
-      canReachGroup && gameUuid != null && gameGroupId != null && gameGroupId == groupId;
-
-  /// The analysis of a game shared with this group, billed to the group's budget
-  /// and written in its language — and in its style when [payload] names no voice.
-  ///
-  /// A 404 is a game the server does not hold yet (its share not pushed): one
-  /// sync, then one retry. Any other failure is the caller's, as a
-  /// [BackendException] with its status.
-  Future<({String content, String? model})> gameAnalysis(
-    String gameUuid,
-    Map<String, dynamic> payload,
-  ) async {
-    if (!canReachGroup) throw GroupActionException(GroupActionError.unreachable);
-    try {
-      return await _client().groupGameAnalysis(_deviceToken!, gameUuid, payload);
-    } on BackendException catch (e) {
-      if (e.statusCode != 404) rethrow;
-    }
-    await syncNow();
-    return _client().groupGameAnalysis(_deviceToken!, gameUuid, payload);
-  }
+  // ── A game's group ────────────────────────────────────────────────────────
 
   static GroupActionException _settingsError(Object e) => GroupActionException(switch (e) {
         BackendException(statusCode: 429) => GroupActionError.rateLimited,
@@ -659,135 +526,112 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
         _ => GroupActionError.unreachable,
       });
 
-  /// Shares a local game with the group. Refused up front when a player name is
-  /// one the server would reject.
-  Future<void> shareGame(int gameId) async {
-    final m = _membership;
-    if (m == null) return;
-    final invalid = await _store.unsyncablePlayerNames(gameId);
-    if (invalid.isNotEmpty) {
-      throw GroupActionException(GroupActionError.invalidPlayerNames, invalid);
-    }
-    await _store.shareGame(gameId, m.groupId);
-    scheduleSync();
-  }
+  /// Whether a game's analysis goes through its group: shared with a group
+  /// this device is in, and the server can be reached.
+  bool analysesThroughGroup({required String? gameGroupId, required String? gameUuid}) =>
+      gameUuid != null && (session(gameGroupId)?.canReach ?? false);
+
+  /// The analysis of a game shared with [groupId] ([GroupSession.gameAnalysis]).
+  Future<({String content, String? model})> gameAnalysis(
+    String groupId,
+    String gameUuid,
+    Map<String, dynamic> payload,
+  ) =>
+      (session(groupId) ?? (throw GroupActionException(GroupActionError.unreachable)))
+          .gameAnalysis(gameUuid, payload);
+
+  /// Shares a local game with [groupId] ([GroupSession.shareGame]); nothing
+  /// when this device is not in it.
+  Future<void> shareGame(int gameId, String groupId) async =>
+      session(groupId)?.shareGame(gameId);
 
   // ── Loop ──────────────────────────────────────────────────────────────────
 
-  /// Asks for a sync soon, coalescing bursts of writes into one pass.
+  /// Asks every group for a pass soon.
   void scheduleSync([Duration delay = const Duration(seconds: 1)]) {
-    if (!_active) return;
-    _debounce?.cancel();
-    _debounce = Timer(delay, syncNow);
+    for (final s in _sessions.values) {
+      s.scheduleSync(delay);
+    }
   }
 
-  bool get _active => _baseUrl != null && isJoined;
-
+  /// A pass of every group, side by side.
   Future<void> syncNow() async {
-    if (!_active) return;
-    if (_running) {
-      _rerun = true;
-      return;
-    }
-    _running = true;
-    _status = SyncStatus.syncing;
-    notifyListeners();
-    try {
-      do {
-        _rerun = false;
-        final gen = _generation;
-        final confirmed = await _tokenGroupConfirmed();
-        // A switch, a leave or a server change meanwhile: this pass is not
-        // theirs (the restart queued one for a new group, which reruns).
-        if (gen != _generation || !_active) continue;
-        if (!confirmed) break;
-        final result =
-            await SyncEngine(_store, _client(), _deviceToken!, _membership!.groupId).run();
-        // The group changed under this pass (a 401 from the revoked old token,
-        // say): say nothing about it; the restart queued a pass for the new one.
-        if (gen != _generation) continue;
-        for (final e in result.events) {
-          _events.add(e);
-        }
-        if (result.pulled > 0 || result.events.isNotEmpty) {
-          await onRemoteChange?.call();
-        }
-        _status = switch (result.failure) {
-          null => SyncStatus.idle,
-          SyncFailure.unreachable => SyncStatus.offline,
-          SyncFailure.unauthorized => SyncStatus.unauthorized,
-          SyncFailure.server => SyncStatus.error,
-        };
-        if (result.failure == null) {
-          _lastSyncAt = DateTime.now();
-          // The server answers again: fetch a nickname an offline start missed.
-          if (_deviceLabel == null) unawaited(refreshDeviceLabel());
-        }
-        if (result.failure != null) break;
-      } while (_rerun && _active);
-      final gen = _generation;
-      final pending = await _store.pendingCount();
-      final rejected = await _store.rejectedCount();
-      if (gen == _generation) {
-        _pending = pending;
-        _rejected = rejected;
-      }
-    } finally {
-      _running = false;
-      notifyListeners();
-    }
+    await Future.wait([for (final s in [..._sessions.values]) s.syncNow()]);
   }
 
-  Future<void> _restart() async {
-    await _stop();
-    if (!_active) {
-      _status = SyncStatus.off;
-      notifyListeners();
-      return;
-    }
-    _status = SyncStatus.idle;
+  /// A local write queued changes: the groups that have some go, once a burst
+  /// of writes has settled.
+  void _scheduleWake() {
+    _wake?.cancel();
+    _wake = Timer(const Duration(seconds: 1), () async {
+      if (_sessions.isEmpty) return;
+      for (final groupId in await _store.groupsWithPending()) {
+        unawaited(_sessions[groupId]?.syncNow());
+      }
+    });
+  }
+
+  void _attach() {
+    if (_attached) return;
+    _attached = true;
     WidgetsBinding.instance.addObserver(this);
-    _poll = Timer.periodic(pollInterval, (_) => syncNow());
     // Local writes: Drift reports the tables a repository statement touched.
     _localWrites = _db
         .tableUpdates(TableUpdateQuery.onAllTables([
           _db.games, _db.rounds, _db.scores, _db.gamePlayers, //
           _db.players, _db.gameTypes, _db.gameAnalyses,
         ]))
-        .listen((_) => scheduleSync());
-    if (enableStream) {
-      _stream = SyncStream(_client(), _deviceToken!, () => scheduleSync(Duration.zero))..start();
-    }
-    notifyListeners();
-    unawaited(refreshOwner());
-    unawaited(refreshDeviceLabel());
-    unawaited(syncNow());
+        .listen((_) => _scheduleWake());
   }
 
-  Future<void> _stop() async {
-    _generation++;
+  Future<void> _detach() async {
+    if (!_attached) return;
+    _attached = false;
     WidgetsBinding.instance.removeObserver(this);
-    _poll?.cancel();
-    _debounce?.cancel();
+    _wake?.cancel();
     await _localWrites?.cancel();
     _localWrites = null;
-    await _stream?.stop();
-    _stream = null;
+  }
+
+  /// Stops every session, and starts them again on the current server.
+  Future<void> _restart() async {
+    for (final s in _sessions.values) {
+      await s._stop();
+    }
+    await _detach();
+    if (_baseUrl == null || _sessions.isEmpty) {
+      for (final s in _sessions.values) {
+        s._status = SyncStatus.off;
+      }
+      _changed();
+      return;
+    }
+    _attach();
+    for (final s in _sessions.values) {
+      s._start();
+    }
+    _changed();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      scheduleSync(Duration.zero);
-      unawaited(refreshOwner());
-      unawaited(refreshDeviceLabel());
+    if (state != AppLifecycleState.resumed) return;
+    for (final s in _sessions.values) {
+      s.scheduleSync(Duration.zero);
+      unawaited(s.refreshOwner());
     }
   }
 
   @override
   void dispose() {
-    unawaited(_stop());
+    _disposed = true;
+    for (final s in _sessions.values) {
+      s._closed = true;
+      unawaited(s._stop());
+    }
+    unawaited(_detach());
     _events.close();
     super.dispose();
   }
 }
+

@@ -224,7 +224,8 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
     if (confirm != true || !mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
-      await group.shareGame(game.id!);
+      // Into the group the dialog named (the multi-group UI adds a choice).
+      await group.shareGame(game.id!, group.groupId!);
       await gameProvider.loadGame(game.id!);
       messenger.showSnackBar(SnackBar(content: Text(l10n.gameSharedDone)));
     } on GroupActionException catch (e) {

@@ -732,6 +732,8 @@
 
   "groupErrorOwnerActive": "Grubun sahibi yakında görüldü: sahiplik talep edilemez.",
 
+  "groupErrorTooManyGroups": "Bu cihaz zaten en fazla sayıda gruptadır ({max}). Önce birinden ayrılın.",
+
   "groupCreatedOwnerExplain": "Grup oluşturuldu. Bu cihaz sahibi; rol Cihazlarda başka birine verilebilir.",
   "boardEliminated": "Elendi",
   "soundsSection": "Sesler",

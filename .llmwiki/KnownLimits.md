@@ -2,7 +2,7 @@
 
 > Scope: what is deliberately deferred, and what is simply missing.
 > Related: [[Architecture]] · [[Sync]] · [[Security]] · [[Testing]] · [[Web]]
-> Updated: 2026-09-19
+> Updated: 2026-11-25
 
 ## Facts
 
@@ -22,6 +22,10 @@
     The device list and revoking another device shipped on 2026-09-14 (Settings → Group →
     Devices); the comment style, language and usage on 2026-09-19 (Settings → Group →
     Comments and usage), without a budget control.
+
+    > **Status: Outdated** (2026-11-25) — the sync layer holds up to five groups per
+    > install (`GroupProvider`, one `GroupSession` each, [[Sync]] *Several groups*); the
+    > screens still show one, the first joined, until `wip/todo/2026-11-25-multi-group-ui.md`.
   - *Row-level LWW*: two devices editing different fields of one row concurrently keep one
     edit, the server's rule. Scores are one row each, so this rarely shows.
   - *No sync in the background*: only while the app (or the PWA tab) is open.
@@ -45,6 +49,12 @@
   > `test/migration_v5_to_v10_test.dart`. See [[DataLayer]].
 - **Multi-group per device.** The schema supports it (`group_id` per row); the UX was not
   designed, so one device maps to one group.
+
+  > **Status: Outdated** (2026-11-25) — designed (the user's ten decisions,
+  > `wip/todo/2026-11-17-belong-to-several-groups.md`); storage (schema v23) and the
+  > per-group sync sessions are in; the UI is the last step. Five groups at most, refused
+  > client-side (`GroupActionError.tooManyGroups`): the server cannot tell two device rows
+  > are one install.
 
 ### Missing rather than deferred
 

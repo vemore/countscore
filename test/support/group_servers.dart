@@ -100,6 +100,106 @@ class GroupServers {
       };
 }
 
+/// The id of group [n] on a [MultiGroupServer].
+String groupIdOf(int n) => '${'$n' * 8}-0000-4000-8000-000000000000';
+
+/// This device's id in group [n] on a [MultiGroupServer].
+String deviceIdOf(int n) => '${'$n' * 8}-1111-4111-8111-111111111111';
+
+/// One backend holding several groups, told apart by the device token: the
+/// invite code `invite-<n>` joins group [groupIdOf] n as device [deviceIdOf] n,
+/// token `token-<n>`. Pulls bring nothing, pushes are applied. Every request is
+/// kept in [seen].
+class MultiGroupServer {
+  final seen = <http.BaseRequest>[];
+
+  /// Device tokens the server refuses (401): devices the owner revoked.
+  final revokedTokens = <String>{};
+
+  /// Device tokens whose requests drop the connection: that group unreachable.
+  final down = <String>{};
+
+  /// The name the server holds for each device token.
+  final labels = <String, String>{};
+
+  /// Answers a request itself before the defaults; null lets the default answer.
+  Future<http.Response?> Function(http.BaseRequest request)? intercept;
+
+  MockClient get client => MockClient((request) async {
+        seen.add(request);
+        final custom = await intercept?.call(request);
+        if (custom != null) return custom;
+        http.Response json(Object body, [int status = 200]) =>
+            http.Response.bytes(utf8.encode(jsonEncode(body)), status);
+        final bearer = request.headers['Authorization']?.replaceFirst('Bearer ', '');
+        if (bearer != null && down.contains(bearer)) {
+          throw http.ClientException('connection dropped');
+        }
+        if (bearer != null && revokedTokens.contains(bearer)) {
+          return json({'detail': 'revoked'}, 401);
+        }
+        final n = bearer == null ? 0 : int.parse(bearer.split('-').last);
+        switch (request.url.path) {
+          case '/groups/join':
+            final body = jsonDecode(request.body) as Map<String, dynamic>;
+            final share = body['share_token'] as String;
+            final joined = int.parse(share.split('-').last);
+            labels['token-$joined'] = body['device_label'] as String;
+            return json({
+              'group': {'id': groupIdOf(joined), 'name': 'Groupe $joined', 'share_token': share},
+              'device': {
+                'id': deviceIdOf(joined),
+                'token': 'token-$joined',
+                'label': body['device_label'],
+              },
+            });
+          case '/groups/me':
+            return json({'id': groupIdOf(n), 'owner_device_id': deviceIdOf(n)});
+          case '/groups/me/devices':
+            return json({
+              'devices': [
+                {
+                  'id': deviceIdOf(n),
+                  'label': labels[bearer],
+                  'joined_at': '2026-11-25T10:00:00Z',
+                  'last_seen_at': '2026-11-25T10:00:00Z',
+                  'is_owner': true,
+                  'dormant': false,
+                },
+              ],
+            });
+          case '/groups/devices/me':
+            labels[bearer!] = jsonDecode(request.body)['label'] as String;
+            return json({'id': deviceIdOf(n), 'label': labels[bearer]});
+          case '/sync/pull':
+            return json({'deltas': [], 'server_seq_max': 0, 'has_more': false});
+          case '/sync/push':
+            final deltas = (jsonDecode(request.body)['deltas'] as List);
+            return json({
+              'results': [
+                for (var i = 0; i < deltas.length; i++)
+                  {'status': 'applied', 'server_seq': i + 1, 'reason': null},
+              ],
+            });
+        }
+        if (request.url.path.endsWith('/revoke')) return http.Response('', 204);
+        return json(<String, dynamic>{});
+      });
+
+  /// The requests made with group [n]'s token to [path].
+  Iterable<http.BaseRequest> calls(int n, String path) => seen.where((r) =>
+      r.url.path == path && r.headers['Authorization'] == 'Bearer token-$n');
+}
+
+/// Queues one change for [groupId] already prepared — stamped, with its
+/// payload — as a pass that lost its answer leaves it: the next push sends it.
+Future<void> addPreparedChange(AppDatabase db, String groupId) => db.customStatement(
+      'INSERT INTO outbox (entity_type, entity_uuid, op, payload, client_lamport, created_at, group_id) '
+      "VALUES ('game', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'upsert', "
+      '\'{"uuid":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","payload":{}}\', 1, 0, ?)',
+      [groupId],
+    );
+
 /// Lets the sync pass [GroupProvider] starts on its own finish.
 Future<void> idle(GroupProvider group) async {
   for (var i = 0; i < 100; i++) {

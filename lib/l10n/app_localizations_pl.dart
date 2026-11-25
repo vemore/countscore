@@ -1594,6 +1594,11 @@ class AppLocalizationsPl extends AppLocalizations {
       'Właściciel grupy był niedawno widzany: nie można przejąć własności.';
 
   @override
+  String groupErrorTooManyGroups(int max) {
+    return 'To urządzenie należy już do maksymalnej liczby grup ($max). Najpierw opuść jedną z nich.';
+  }
+
+  @override
   String get groupCreatedOwnerExplain =>
       'Grupa utworzona. To urządzenie jest jej właścicielem; rola może być przekazana innej w Urządzenia.';
 

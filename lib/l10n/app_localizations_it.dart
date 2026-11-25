@@ -1590,6 +1590,11 @@ class AppLocalizationsIt extends AppLocalizations {
       'Il proprietario del gruppo è stato visto di recente: la proprietà non può essere reclamata.';
 
   @override
+  String groupErrorTooManyGroups(int max) {
+    return 'Questo dispositivo è già nel numero massimo di gruppi ($max). Esci prima da uno.';
+  }
+
+  @override
   String get groupCreatedOwnerExplain =>
       'Gruppo creato. Questo dispositivo lo possiede; il ruolo può essere affidato a un altro in Dispositivi.';
 

@@ -1581,6 +1581,11 @@ class AppLocalizationsHi extends AppLocalizations {
       'समूह का स्वामी हाल ही में सक्रिय था: स्वामित्व नहीं लिया जा सकता।';
 
   @override
+  String groupErrorTooManyGroups(int max) {
+    return 'यह डिवाइस पहले से ही अधिकतम संख्या में समूहों ($max) में है। पहले किसी एक को छोड़ें।';
+  }
+
+  @override
   String get groupCreatedOwnerExplain =>
       'समूह बन गया। यह डिवाइस इसका स्वामी है; यह भूमिका “डिवाइस” में किसी दूसरे को सौंपी जा सकती है।';
 

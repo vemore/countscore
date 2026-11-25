@@ -94,6 +94,26 @@ class SyncEngine {
     }
   }
 
+  /// Raises the group's clock past every lamport its log holds, from the first
+  /// seq. Reads only: nothing is applied and the cursor stays. A pull from the
+  /// cursor would not do — a clock that went back with its cursor (a whole
+  /// database restored) is lifted by the pull every pass starts with and
+  /// reuses nothing; one behind a cursor that did not (`lamport_reused`) has
+  /// its lost lamports *before* the cursor. Rare enough to read the log whole.
+  Future<void> _raiseClockPastLog() async {
+    var since = 0;
+    var max = 0;
+    while (true) {
+      final page = await _client.pull(_deviceToken, since);
+      for (final d in page.deltas) {
+        if (d.clientLamport > max) max = d.clientLamport;
+      }
+      if (!page.hasMore || page.deltas.isEmpty) break;
+      since = page.serverSeqMax;
+    }
+    await _store.raiseLamport(_groupId, max);
+  }
+
   /// Returns true when a conflict was resolved locally and the resolution still
   /// has to be pushed after a fresh pull.
   Future<bool> _pushAll(List<SyncEvent> events) async {
@@ -153,6 +173,19 @@ class SyncEngine {
         // `parent_missing` for good.
         await _store.markSuperseded(d);
         await _pullAll();
+        return true;
+      case 'lamport_reused':
+        // This device logged another delta under that lamport already: its
+        // clock is behind its own log. The clock is raised past every
+        // lamport the log holds, the delta stamped again after it, and pushed
+        // again by this pass. A second refusal in a row is rejected: the scan
+        // did not reach the reused lamport, and looping would not either.
+        if (d.previousReason == reason) {
+          await _store.markRejected(d, reason);
+          return true;
+        }
+        await _store.markRestamp(d, reason);
+        await _raiseClockPastLog();
         return true;
       case 'parent_missing':
         // The parent went in an earlier batch that failed, or is still queued.

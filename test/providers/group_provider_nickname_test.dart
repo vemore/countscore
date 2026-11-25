@@ -1,7 +1,8 @@
-// GroupProvider.deviceLabel: this device's nickname in its group, held in memory
-// and read back from the devices list. A list that left before a rename must not
-// put the old name back, and a start with the server unreachable must not leave
-// the nickname unknown for good.
+// The nickname: one for every group, kept on the device (SyncCredentials),
+// used to create and join each group, sent to every membership by a rename and
+// again to a group that missed it (wip/done/2026-11-25-the-stored-nickname-is-
+// not-read-by-group-provider.md). A list that left before a rename must not put
+// the old name back, and a start with the server unreachable knows the nickname.
 
 import 'dart:async';
 import 'dart:convert';
@@ -14,6 +15,9 @@ import 'package:http/testing.dart';
 import 'package:countscore/providers/group_provider.dart';
 import 'package:countscore/services/drift/database.dart';
 import 'package:countscore/services/sync/sync_credentials.dart';
+import 'package:countscore/services/sync/sync_store.dart';
+
+import '../support/group_servers.dart' show MultiGroupServer, groupIdOf, deviceIdOf;
 
 const _own = '33333333-3333-4333-8333-333333333333';
 
@@ -113,14 +117,18 @@ void main() {
     // ...and the stale answer leaves the new name alone.
     expect(group.deviceLabel, 'New');
 
-    // A list that leaves after the rename is trusted again.
+    // A list that disagrees afterwards is a group that missed the nickname:
+    // the device's own wins, and goes out again with the next pass.
     server.devicesGate = null;
     server.serverLabel = 'Renamed elsewhere';
     await group.devices();
-    expect(group.deviceLabel, 'Renamed elsewhere');
+    expect(group.deviceLabel, 'New');
+    await group.syncNow();
+    await _idle(group);
+    expect(server.serverLabel, 'New');
   });
 
-  test('a nickname missed at an offline start is read after the next successful sync',
+  test('after a restart with the server unreachable, the nickname is the one last saved',
       () async {
     final db = AppDatabase.forTesting(NativeDatabase.memory());
     addTearDown(db.close);
@@ -130,22 +138,119 @@ void main() {
     await first.updateBackend('https://countscore.example.com');
     await first.createGroup('Famille', 'Alice');
     await _idle(first);
+    await first.renameDevice('Alicia');
     first.dispose();
+    expect(await credentials.nickname(), 'Alicia');
 
-    // A restart: the membership is on disk, the nickname only in memory.
-    server.devicesDown = true;
-    final calls = server.devicesCalls;
-    final group = _provider(db, credentials, server);
+    // A restart, offline: nothing answers, and nothing needs to.
+    final group = GroupProvider(
+      db: db,
+      credentials: credentials,
+      httpClient: MockClient((_) async => throw http.ClientException('offline')),
+      enableStream: false,
+      pollInterval: const Duration(hours: 1),
+    );
     addTearDown(group.dispose);
     await group.updateBackend('https://countscore.example.com');
+    expect(group.deviceLabel, 'Alicia');
     await _idle(group);
-    expect(group.isJoined, isTrue);
-    expect(server.devicesCalls, greaterThan(calls), reason: 'asked on start');
-    expect(group.deviceLabel, isNull);
+    expect(group.status, SyncStatus.offline);
+    expect(group.deviceLabel, 'Alicia');
+  });
 
-    server.devicesDown = false;
-    await group.syncNow();
+  test('an install that never stored a nickname learns it from the devices list', () async {
+    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(db.close);
+    final credentials = MemorySyncCredentials();
+    // A membership from before the nickname was kept: token, no nickname.
+    await SyncStore(db).join((
+      groupId: groupIdOf(1),
+      groupName: 'Famille',
+      shareToken: 'invite-1',
+      deviceId: deviceIdOf(1),
+      deviceToken: 'token-1',
+    ));
+    await credentials.save(groupIdOf(1), deviceToken: 'token-1', shareToken: 'invite-1');
+    final server = MultiGroupServer()..labels['token-1'] = 'Alice';
+    final group = _multi(db, credentials, server);
+    addTearDown(group.dispose);
+
+    await group.updateBackend('https://countscore.example.com');
     await _idle(group);
+    await pumpEventQueue();
+
     expect(group.deviceLabel, 'Alice');
+    expect(await credentials.nickname(), 'Alice');
+  });
+
+  group('several groups', () {
+    late AppDatabase db;
+    late MemorySyncCredentials credentials;
+    late MultiGroupServer server;
+    late GroupProvider group;
+
+    setUp(() async {
+      db = AppDatabase.forTesting(NativeDatabase.memory());
+      credentials = MemorySyncCredentials();
+      server = MultiGroupServer();
+      group = _multi(db, credentials, server);
+      await group.updateBackend('https://countscore.example.com');
+      await group.joinGroup('invite-1', 'Alice');
+      await group.joinGroup('invite-2', group.nickname!);
+      await _idle(group);
+    });
+
+    tearDown(() async {
+      group.dispose();
+      await db.close();
+    });
+
+    test('set once, it is what each group was joined with', () async {
+      expect(server.labels, {'token-1': 'Alice', 'token-2': 'Alice'});
+      expect(await credentials.nickname(), 'Alice');
+    });
+
+    test('a rename reaches every membership, and one that failed goes at its next pass',
+        () async {
+      server.down.add('token-2');
+      await group.renameDevice(' Bob ');
+
+      expect(group.deviceLabel, 'Bob');
+      expect(await credentials.nickname(), 'Bob', reason: 'stored once, for every group');
+      expect(server.labels, {'token-1': 'Bob', 'token-2': 'Alice'});
+
+      server.down.remove('token-2');
+      await group.session(groupIdOf(2))!.syncNow();
+      await _idle(group);
+      await pumpEventQueue();
+      expect(server.labels['token-2'], 'Bob');
+    });
+
+    test('a name the server refuses is stored nowhere', () async {
+      server.intercept = (request) async => request.url.path == '/groups/devices/me'
+          ? http.Response('{"detail":"invalid"}', 422)
+          : null;
+      await expectLater(group.renameDevice('Bad'), throwsA(isA<GroupActionException>()));
+      expect(group.deviceLabel, 'Alice');
+      expect(await credentials.nickname(), 'Alice');
+    });
+
+    test('joining under another name renames the groups already joined', () async {
+      await group.joinGroup('invite-3', 'Ali');
+      await _idle(group);
+      await pumpEventQueue();
+
+      expect(group.nickname, 'Ali');
+      expect(server.labels, {'token-1': 'Ali', 'token-2': 'Ali', 'token-3': 'Ali'});
+    });
   });
 }
+
+GroupProvider _multi(AppDatabase db, SyncCredentials credentials, MultiGroupServer server) =>
+    GroupProvider(
+      db: db,
+      credentials: credentials,
+      httpClient: server.client,
+      enableStream: false,
+      pollInterval: const Duration(hours: 1),
+    );

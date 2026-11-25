@@ -2,7 +2,7 @@
 
 > Scope: the Flutter app's own structure — entry point, state, screens, models.
 > Related: [[DataLayer]] · [[Schema]] · [[I18n]] · [[Web]] · [[Testing]]
-> Updated: 2026-11-18
+> Updated: 2026-11-25
 
 ## Facts
 
@@ -42,7 +42,7 @@ whether the connected features exist; the third starts the review prompt's clock
 | `game_type_provider.dart` | Game-type list CRUD, `getGameTypeById`. The 23 built-in types are rows like any other; their *displayed* name comes from `lib/utils/game_type_name.dart`, not from the row. |
 | `settings_provider.dart` | Wakelock toggle, *Game sounds* (key `gameSounds`, off by default, the one `GameSounds` reads) and the board's layout, `BoardView` (`lanes` or `rows`, key `boardView`, app-wide) — all SharedPreferences-backed, read by `ready` — and DB export/import. The **only** caller of `DatabaseService` for I/O. Exposes `supportsDbExportImport => !kIsWeb`. |
 | `theme_provider.dart` | `ThemeMode` only, persisted to SharedPreferences under `themeMode` as `ThemeMode.name`. `load()` is called from `main()` before `runApp`. |
-| `group_provider.dart` | Group membership and the sync loop — create/join/leave/rotate, the device list and `revokeDevice`, `shareGame`, `syncNow`, `SyncStatus`, and a `SyncEvent` stream shown as snackbars by `_SyncEventListener` in `main.dart`. A `ChangeNotifierProxyProvider` over `BackendProvider`: runs only with a URL **and** a device token. Its stored membership is read by the first `updateBackend`, which the proxy makes on creation; `loaded` completes then, and until it does `isJoined` reads false. Calls `GameProvider.refreshFromSync` after remote changes. See [[Sync]]. |
+| `group_provider.dart` | The groups this device is in, one `GroupSession` each (`group_session.dart`, a `part` of it: token, WebSocket, poll and debounce timers, status, counts, owner flag, generation), and what they share: the server, the nickname, the local-write trigger, the lifecycle, a `SyncEvent` stream shown as snackbars by `_SyncEventListener` in `main.dart`. `memberships` and `session(groupId)` are the explicit API — a game's analysis, its share and its rematch go to its own group; `groupName`, `status` (the worst), `pendingChanges` (the sum) and the owner actions are a single-group compatibility layer over the first group joined, until the multi-group UI. At most `maxGroups` (5). A `ChangeNotifierProxyProvider` over `BackendProvider`: runs only with a URL **and** a device token. Its stored memberships are read by the first `updateBackend`, which the proxy makes on creation; `loaded` completes then, and until it does `isJoined` reads false. Calls `GameProvider.refreshFromSync` after remote changes. See [[Sync]]. |
 | `backend_provider.dart` | The self-hosted backend base URL, SharedPreferences key `backendUrl`, **no default**. `check()` validates and canonicalises what the user typed; `isConfigured` gates every connected feature. `load()` is called from `main()` before `runApp`. |
 
 ### Screens — `lib/screens/`
@@ -150,8 +150,9 @@ on the device: each visit reads the server again. It calls nothing without a ser
 a device token (`GroupProvider.canReachGroup`). The budget is shown, never edited — see
 [[Sync]].
 
-`game_analysis_screen` sends a game shared with the device's group through
-`GroupProvider.gameAnalysis` (`POST /groups/me/games/{uuid}/comments`, device token) and any
+`game_analysis_screen` sends a game shared with a group this device is in through
+`GroupProvider.gameAnalysis` with the game's `groupId` (`POST /groups/me/games/{uuid}/comments`,
+that group's device token) and any
 other game to `BackendClient.gameAnalysis` (the stateless endpoint): same payload, but the
 group's budget, language and — when no voice was ever picked, which the screen shows as no
 chip selected and the `analysisStyleGroupDefault` hint — the group's style apply. A 409 is
@@ -477,8 +478,8 @@ screen listing game types calls it, since the repository returns them unordered 
 (the standings' button, and a finished game's menu entry on the home screen, where an
 unfinished game shows the same action as "New with same players"). It calls
 `GameProvider.playAgain` — `createGame` with the source's type, win rule and players in
-`orderIndex` order, nothing else read or written on the source — shares the new game if the
-source was shared, and opens its board with `pushAndRemoveUntil(isFirst)`, so back returns
+`orderIndex` order, nothing else read or written on the source — shares the new game with the
+source's group if this device is still in it, and opens its board with `pushAndRemoveUntil(isFirst)`, so back returns
 to the game list. The new game is named by `nextGameName`: `Skyjo 3` → `Skyjo 4`.
 `StandingsScreen` and `HomeScreen` take an optional `boardBuilder`, for tests only, as the
 board's `analysisRepo` is.

@@ -10,7 +10,8 @@ import '../providers/group_provider.dart';
 /// The one path behind "Play again" on the end-of-game ranking and on a game's
 /// menu in the home list: same type, same win rule, same players in the same
 /// order (`GameProvider.playAgain`). [source] is not modified. A rematch of a
-/// shared game is shared too — its players already are.
+/// shared game is shared too, with the same group — its players already are —
+/// as long as this device is still in it.
 ///
 /// The new board replaces everything above the home screen, so back from it
 /// returns to the game list rather than to the previous game's ranking.
@@ -25,9 +26,10 @@ Future<void> playAgain(
 
   final newGameId =
       await gameProvider.playAgain(source, nextGameName(source.name));
-  if (source.isShared && group.isJoined) {
+  final sourceGroup = source.groupId;
+  if (sourceGroup != null && group.session(sourceGroup) != null) {
     try {
-      await group.shareGame(newGameId);
+      await group.shareGame(newGameId, sourceGroup);
     } on GroupActionException {
       // Names the server refuses: the new game stays local.
     }

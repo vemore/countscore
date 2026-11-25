@@ -838,6 +838,8 @@
 
   "groupErrorOwnerActive": "Właściciel grupy był niedawno widzany: nie można przejąć własności.",
 
+  "groupErrorTooManyGroups": "To urządzenie należy już do maksymalnej liczby grup ({max}). Najpierw opuść jedną z nich.",
+
   "groupCreatedOwnerExplain": "Grupa utworzona. To urządzenie jest jej właścicielem; rola może być przekazana innej w Urządzenia.",
 
   "boardEliminated": "Wyeliminowany",

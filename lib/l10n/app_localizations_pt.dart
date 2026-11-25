@@ -1583,6 +1583,11 @@ class AppLocalizationsPt extends AppLocalizations {
       'O proprietário do grupo deu sinal recentemente: não é possível assumir a propriedade.';
 
   @override
+  String groupErrorTooManyGroups(int max) {
+    return 'Este dispositivo já está no número máximo de grupos ($max). Saia de um primeiro.';
+  }
+
+  @override
   String get groupCreatedOwnerExplain =>
       'Grupo criado. Este dispositivo é o proprietário; esse papel pode ser passado para outro em Dispositivos.';
 

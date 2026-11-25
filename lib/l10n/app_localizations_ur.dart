@@ -1584,6 +1584,11 @@ class AppLocalizationsUr extends AppLocalizations {
       'گروپ کے مالک کو حالیہ میں دیکھا گیا: مالک ہونے کا دعویٰ نہیں کیا جا سکتا۔';
 
   @override
+  String groupErrorTooManyGroups(int max) {
+    return 'یہ آلہ پہلے ہی گروپوں کی زیادہ سے زیادہ تعداد ($max) میں ہے۔ پہلے کسی ایک کو چھوڑیں۔';
+  }
+
+  @override
   String get groupCreatedOwnerExplain =>
       'گروپ بنایا گیا۔ یہ ڈیوائس اس کی مالک ہے؛ یہ کردار ڈیوائسز میں دوسری کو سونپا جا سکتا ہے۔';
 

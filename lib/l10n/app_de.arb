@@ -703,6 +703,8 @@
 
   "groupErrorOwnerActive": "Der Eigentümer der Gruppe war kürzlich aktiv: Das Eigentum kann nicht übernommen werden.",
 
+  "groupErrorTooManyGroups": "Dieses Gerät ist bereits in der maximalen Anzahl von Gruppen ({max}). Verlasse zuerst eine.",
+
   "groupCreatedOwnerExplain": "Gruppe erstellt. Dieses Gerät ist ihr Eigentümer; diese Rolle kann unter „Geräte“ an ein anderes übergeben werden.",
   "boardEliminated": "Ausgeschieden",
   "soundsSection": "Töne",

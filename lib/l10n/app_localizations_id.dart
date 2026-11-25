@@ -1585,6 +1585,11 @@ class AppLocalizationsId extends AppLocalizations {
       'Pemilik grup telah terlihat baru-baru ini: kepemilikan tidak dapat diklaim.';
 
   @override
+  String groupErrorTooManyGroups(int max) {
+    return 'Perangkat ini sudah berada di jumlah grup maksimum ($max). Keluar dari salah satunya dulu.';
+  }
+
+  @override
   String get groupCreatedOwnerExplain =>
       'Grup dibuat. Perangkat ini memilikinya; peran dapat diserahkan ke perangkat lain di Perangkat.';
 

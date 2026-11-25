@@ -193,9 +193,10 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
       playerColorsMap,
     );
 
-    if (group.isJoined && _shareWithGroup) {
+    final shareInto = group.groupId; // the group the switch named
+    if (shareInto != null && _shareWithGroup) {
       try {
-        await group.shareGame(gameId);
+        await group.shareGame(gameId, shareInto);
       } on GroupActionException catch (e) {
         // The game exists either way; it just stays local.
         messenger.showSnackBar(SnackBar(

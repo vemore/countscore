@@ -730,6 +730,8 @@
 
   "groupErrorOwnerActive": "Chủ sở hữu nhóm đã thấy gần đây: không thể yêu cầu quyền sở hữu.",
 
+  "groupErrorTooManyGroups": "Thiết bị này đã ở trong số nhóm tối đa ({max}). Hãy rời một nhóm trước.",
+
   "groupCreatedOwnerExplain": "Nhóm được tạo. Thiết bị này sở hữu nó; vai trò có thể được chuyển giao cho thiết bị khác trong Thiết bị.",
   "boardEliminated": "Bị loại",
   "soundsSection": "Âm thanh",

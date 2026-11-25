@@ -2647,6 +2647,12 @@ abstract class AppLocalizations {
   /// **'Le propriétaire du groupe s\'est manifesté récemment : la propriété ne peut pas être reprise.'**
   String get groupErrorOwnerActive;
 
+  /// Error when creating or joining a group while this device is already in the most groups it may be in
+  ///
+  /// In fr, this message translates to:
+  /// **'Cet appareil est déjà dans le nombre maximal de groupes ({max}). Quittez-en un d\'abord.'**
+  String groupErrorTooManyGroups(int max);
+
   /// Snackbar shown after a group is created: the owner role lives on this device and can be handed over
   ///
   /// In fr, this message translates to:

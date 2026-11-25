@@ -1565,6 +1565,11 @@ class AppLocalizationsKo extends AppLocalizations {
   String get groupErrorOwnerActive => '그룹의 소유자가 최근에 활동했습니다: 소유권을 청구할 수 없습니다.';
 
   @override
+  String groupErrorTooManyGroups(int max) {
+    return '이 기기는 이미 최대 그룹 수($max)에 참여하고 있습니다. 먼저 하나에서 나가세요.';
+  }
+
+  @override
   String get groupCreatedOwnerExplain =>
       '그룹이 만들어졌습니다. 이 기기가 소유하고 있습니다. 이 역할은 기기의 다른 부분에서 위임할 수 있습니다.';
 

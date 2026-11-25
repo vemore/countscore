@@ -1639,6 +1639,11 @@ class AppLocalizationsAr extends AppLocalizations {
       'ظهر مالك المجموعة مؤخرًا: لا يمكن تولّي الملكية.';
 
   @override
+  String groupErrorTooManyGroups(int max) {
+    return 'هذا الجهاز موجود بالفعل في الحد الأقصى لعدد المجموعات ($max). غادر إحداها أولًا.';
+  }
+
+  @override
   String get groupCreatedOwnerExplain =>
       'تم إنشاء المجموعة. هذا الجهاز هو مالكها؛ ويمكن تسليم هذا الدور إلى جهاز آخر من «الأجهزة».';
 

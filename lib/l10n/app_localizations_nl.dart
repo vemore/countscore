@@ -1591,6 +1591,11 @@ class AppLocalizationsNl extends AppLocalizations {
       'De eigenaar van de groep is onlangs gezien: eigenaarschap kan niet worden geclaimd.';
 
   @override
+  String groupErrorTooManyGroups(int max) {
+    return 'Dit apparaat zit al in het maximale aantal groepen ($max). Verlaat er eerst een.';
+  }
+
+  @override
   String get groupCreatedOwnerExplain =>
       'Groep gemaakt. Dit apparaat is eigenaar; de rol kan op een ander apparaat worden overgedragen in Apparaten.';
 

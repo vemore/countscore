@@ -585,11 +585,13 @@ jobs:
 
       # SYNC_TEST_REQUIRED turns the test's skip-without-URL into a failure, so this
       # job cannot pass green having run nothing.
-      - name: Two-device sync test
+      - name: Sync tests through a real server (two devices, one device in two groups)
         env:
           SYNC_BACKEND_URL: http://127.0.0.1:8765
           SYNC_TEST_REQUIRED: "true"
-        run: scripts/retry_sqlite3_hash.sh flutter test test/sync/sync_two_devices_test.dart
+        run: >-
+          scripts/retry_sqlite3_hash.sh flutter test test/sync/sync_two_devices_test.dart
+          test/sync/sync_multi_group_backend_test.dart
 
       - name: Backend log
         if: failure()

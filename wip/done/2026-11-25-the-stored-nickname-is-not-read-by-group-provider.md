@@ -1,5 +1,7 @@
 # The nickname stored on the device is not read by GroupProvider
 
+**Status:** done (2026-11-25) — closed by feat/multi-group-sync-sessions. The nickname is saved on create, join and rename, read on start (known offline), offered in the create and join dialogs, and sent to every membership; a group that missed it gets it after its next successful pass. A devices list's label is saved only when the device holds none — otherwise the device's nickname wins and is sent back (`.llmwiki/MultiGroup.md`, *Decisions & History*). `privacy_policy.md` item 6 and v2.14 say it is stored on the device.
+
 - **Noted:** 2026-11-25 — feat/multi-group-storage (step 2 of `2026-11-17-belong-to-several-groups.md`)
 - **Theme:** multi-group-sync
 - **Area:** app

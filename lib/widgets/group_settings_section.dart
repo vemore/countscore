@@ -19,6 +19,7 @@ String groupActionErrorText(AppLocalizations l10n, GroupActionException e) => sw
       GroupActionError.invalidPlayerNames => l10n.invalidPlayerNamesForSync(e.detail.join(', ')),
       GroupActionError.notOwner => l10n.groupErrorNotOwner,
       GroupActionError.ownerActive => l10n.groupErrorOwnerActive,
+      GroupActionError.tooManyGroups => l10n.groupErrorTooManyGroups(GroupProvider.maxGroups),
     };
 
 /// Settings → Group: create or join a group, show its invite code and devices,
@@ -92,12 +93,13 @@ class _GroupSettingsSectionState extends State<GroupSettingsSection> {
   }
 
   /// The nickname field, first in the create and join dialogs and alone in the
-  /// rename one. It starts empty on joining: a pre-filled default was left as it
-  /// was, and a group's devices could no longer be told apart.
-  _Field _nicknameField(AppLocalizations l10n, {String initial = ''}) => (
+  /// rename one. It starts with the nickname this device already goes by — one
+  /// for every group — and empty before any: a pre-filled default was left as
+  /// it was, and a group's devices could no longer be told apart.
+  _Field _nicknameField(AppLocalizations l10n, {String? initial}) => (
         key: const Key('group_nickname_field'),
         label: l10n.groupNicknameLabel,
-        initial: initial,
+        initial: initial ?? context.read<GroupProvider>().nickname ?? '',
         hint: null,
         helper: l10n.groupNicknameHint,
       );

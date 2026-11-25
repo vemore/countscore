@@ -27,7 +27,10 @@ import 'package:countscore/repositories/drift/drift_repositories.dart';
 import 'package:countscore/screens/home_screen.dart';
 import 'package:countscore/screens/standings_screen.dart';
 import 'package:countscore/services/drift/database.dart';
+import 'package:countscore/services/sync/sync_credentials.dart';
 import 'package:countscore/utils/play_again.dart';
+
+import '../support/group_servers.dart' show MultiGroupServer, groupIdOf;
 
 const _boardKey = Key('test_board');
 
@@ -54,15 +57,18 @@ void main() {
 
   tearDown(() => db.close());
 
-  Widget wrap(Widget home) {
+  Widget wrap(Widget home, {GroupProvider? group}) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<GameProvider>.value(value: games),
         ChangeNotifierProvider<GameTypeProvider>.value(value: gameTypes),
         ChangeNotifierProvider<BackendProvider>(
             create: (_) => BackendProvider(null)),
-        ChangeNotifierProvider<GroupProvider>(
-            create: (_) => GroupProvider(db: db, enableStream: false)),
+        if (group != null)
+          ChangeNotifierProvider<GroupProvider>.value(value: group)
+        else
+          ChangeNotifierProvider<GroupProvider>(
+              create: (_) => GroupProvider(db: db, enableStream: false)),
       ],
       child: MaterialApp(
         localizationsDelegates: const [
@@ -131,6 +137,52 @@ void main() {
     expect(stored.isFinished, isTrue);
     expect(stored.gameTypeId, source.gameTypeId);
   }
+
+  testWidgets("a rematch of a shared game is shared with that game's group", (tester) async {
+    // In two groups; the game is the second one's, not the first joined.
+    final server = MultiGroupServer();
+    final group = GroupProvider(
+      db: db,
+      credentials: MemorySyncCredentials(),
+      httpClient: server.client,
+      enableStream: false,
+      pollInterval: const Duration(hours: 1),
+    );
+    final source = await tester.runAsync(() async {
+      await group.updateBackend('https://countscore.example.com');
+      await group.joinGroup('invite-1', 'Phone');
+      await group.joinGroup('invite-2', 'Phone');
+      final game = await aFinishedGame();
+      await group.shareGame(game.id!, groupIdOf(2));
+      await games.loadGame(game.id!);
+      return games.currentGame!;
+    });
+    expect(source!.groupId, groupIdOf(2));
+
+    await tester.pumpWidget(wrap(
+      Builder(
+        builder: (context) => TextButton(
+          onPressed: () => playAgain(context, source, board: _board),
+          child: const Text('again'),
+        ),
+      ),
+      group: group,
+    ));
+    await tester.runAsync(() async {
+      await tester.tap(find.text('again'));
+      for (var i = 0; i < 20 && find.byKey(_boardKey).evaluate().isEmpty; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+        await tester.pump();
+      }
+    });
+    await tester.pumpAndSettle();
+
+    final copy = await tester.runAsync(() => theNewGame(source));
+    expect(copy!.groupId, groupIdOf(2));
+
+    await tester.pumpWidget(const SizedBox());
+    group.dispose();
+  });
 
   testWidgets('the standings offer Play again, which opens the new game',
       (tester) async {

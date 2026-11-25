@@ -418,6 +418,7 @@
   "groupDeviceClaimOwnerConfirm": "\"{label}\" is eigenaar van de groep maar is al lange tijd niet gezien. Neem eigenaarschap op dit apparaat over?",
   "groupDeviceOwnerClaimed": "Dit apparaat is nu eigenaar van de groep.",
   "groupErrorOwnerActive": "De eigenaar van de groep is onlangs gezien: eigenaarschap kan niet worden geclaimd.",
+  "groupErrorTooManyGroups": "Dit apparaat zit al in het maximale aantal groepen ({max}). Verlaat er eerst een.",
   "groupCreatedOwnerExplain": "Groep gemaakt. Dit apparaat is eigenaar; de rol kan op een ander apparaat worden overgedragen in Apparaten.",
   "boardEliminated": "Geëlimineerd",
   "soundsSection": "Geluiden",
