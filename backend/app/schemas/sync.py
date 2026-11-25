@@ -14,13 +14,20 @@ EntityType = Literal[
 DeltaOp = Literal["upsert", "delete"]
 DeltaStatus = Literal["applied", "merged_lww", "rejected", "duplicate"]
 
+# change_log.client_lamport and server_seq are BIGINT: past this a query cannot bind the
+# value at all, and the request failed with a 500 rather than a 422.
+BIGINT_MAX = 2**63 - 1
+
 
 class DeltaIn(BaseModel):
-    entity_type: EntityType
+    # A plain string, not ``EntityType``: an entity this server does not know — one a
+    # newer app added — is one rejected delta (``unknown entity type``), not a 422 that
+    # refuses the whole batch with it. Bounded like ``change_log.entity_type``.
+    entity_type: str = Field(min_length=1, max_length=32)
     entity_uuid: uuid.UUID
     op: DeltaOp
     payload: dict[str, Any] = Field(default_factory=dict)
-    client_lamport: int = Field(ge=0)
+    client_lamport: int = Field(ge=0, le=BIGINT_MAX)
 
 
 class DeltaOut(BaseModel):

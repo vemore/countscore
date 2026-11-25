@@ -3,9 +3,13 @@
 Apply order on push:
 1. Lock: the group row is read FOR UPDATE, so pushes to one group are serialised and
    ``groups.last_server_seq`` hands out each sequence number exactly once.
-2. Dedup: skip deltas whose (origin_device_id, client_lamport) is already in change_log.
-3. Materialize, inside a savepoint per delta: check that the entity and every parent it
-   names belong to the caller's group, then apply with row-level LWW — the highest
+2. Dedup: a delta whose (origin_device_id, client_lamport) is already in change_log is a
+   ``duplicate`` when it is the logged delta again (a network retry), and is rejected
+   ``lamport_reused`` when it carries something else under that lamport (a device
+   restored from a backup re-stamping lamports it had already used).
+3. Materialize, inside a savepoint per delta: check every value's JSON type against its
+   column, that the entity and every parent it names belong to the caller's group, then
+   apply with row-level LWW — the highest
    (client_lamport, origin_device_id) wins the whole entity, and a losing delta is
    discarded with status=merged_lww. A delete always wins: a tombstoned entity ignores
    every later upsert.
@@ -23,6 +27,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import logging
+import re
 import uuid
 from datetime import UTC, datetime
 from typing import Any
@@ -36,9 +41,19 @@ from fastapi import (
     WebSocketDisconnect,
     status,
 )
-from sqlalchemy import Column, DateTime, select
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    Column,
+    DateTime,
+    Integer,
+    String,
+    TypeDecorator,
+    Uuid,
+    select,
+)
 from sqlalchemy import inspect as sa_inspect
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import DataError, DBAPIError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.base import ReadOnlyColumnCollection
 from sqlmodel import SQLModel, col
@@ -59,6 +74,7 @@ from app.models import (
     Score,
 )
 from app.schemas.sync import (
+    BIGINT_MAX,
     DeltaIn,
     DeltaOut,
     DeltaResult,
@@ -87,7 +103,24 @@ REASON_SCORE_EXISTS = "score_exists"
 REASON_NAME_TAKEN = "name_taken"
 REASON_BUILTIN_KEY_TAKEN = "builtin_key_taken"
 REASON_ANALYSIS_EXISTS = "analysis_exists"
+# The device already used this client_lamport for another delta. A true retry carries
+# the logged delta again and is a ``duplicate``; anything else under a used lamport is a
+# device whose clock went back — restored from a backup — and must re-stamp past it.
+REASON_LAMPORT_REUSED = "lamport_reused"
+REASON_UNKNOWN_ENTITY = "unknown entity type"
 REASON_INTEGRITY = "integrity constraint violation"
+# A value the database refused that no check above caught. A backstop, like
+# REASON_INTEGRITY: it keeps one delta from turning the whole push into a 500.
+REASON_INVALID_VALUE = "invalid value"
+
+_INT32 = (-(2**31), 2**31 - 1)
+_INT64 = (-BIGINT_MAX - 1, BIGINT_MAX)
+# What DateTime columns accept: ISO 8601 as Dart's ``toIso8601String`` writes it, the only
+# shape every client can parse back. Python's ``fromisoformat`` also takes week dates and
+# other forms the app's ``DateTime.parse`` throws on — on every device that pulls them.
+_TIMESTAMP = re.compile(
+    r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,6})?(?:Z|[+-][0-9]{2}:[0-9]{2})?"
+)
 
 # Map entity_type → SQLModel class. Limiting writes to known types is part of the
 # auth boundary: a malicious client cannot trick us into writing to arbitrary tables.
@@ -155,6 +188,90 @@ def _coerce_payload(cls: type[SQLModel], payload: dict) -> dict:
                     continue
         out[key] = value
     return out
+
+
+def _is_timestamp(value: str) -> bool:
+    if _TIMESTAMP.fullmatch(value) is None:
+        return False
+    try:
+        datetime.fromisoformat(value)
+    except ValueError:  # matches the shape, names no real instant: month 13, hour 25
+        return False
+    return True
+
+
+def _value_problem(cls: type[SQLModel], payload: dict) -> str | None:
+    """Why a value cannot go into its column, or None when every value fits.
+
+    A value of the wrong JSON type used to reach the driver: a string in a boolean column
+    or a number in a timestamp one failed the whole push with a 500, and a client retries
+    that same batch for ever. A malformed timestamp was dropped from the row but kept in
+    the log, so every device that pulled it threw. Null is left to the NOT NULL backstop.
+    """
+    columns = _columns(cls)
+    for key, value in _client_payload(cls, payload).items():
+        if value is None:
+            continue
+        column_type = columns[key].type
+        if isinstance(column_type, TypeDecorator):  # SQLModel's AutoString wraps a String
+            column_type = column_type.impl_instance
+        if isinstance(column_type, Boolean):
+            if not isinstance(value, bool):
+                return f"{key} must be a boolean"
+        elif isinstance(column_type, Integer):  # BigInteger included
+            if not isinstance(value, int) or isinstance(value, bool):
+                return f"{key} must be an integer"
+            low, high = _INT64 if isinstance(column_type, BigInteger) else _INT32
+            if not low <= value <= high:
+                return f"{key} out of bounds ({low}..{high})"
+        elif isinstance(column_type, DateTime):
+            if not isinstance(value, str) or not _is_timestamp(value):
+                return f"{key} must be an ISO 8601 timestamp"
+        elif isinstance(column_type, Uuid):
+            # Every uuid a client sets names a parent; a malformed one names none.
+            if not isinstance(value, str) or _as_uuid(value) is None:
+                return REASON_PARENT_MISSING
+        elif isinstance(column_type, String):  # Text and AutoString included
+            if not isinstance(value, str):
+                return f"{key} must be a string"
+            # Postgres refuses both in a text column and in the jsonb log.
+            if "\x00" in value:
+                return f"{key} contains a NUL character"
+            try:
+                value.encode("utf-8")
+            except UnicodeEncodeError:  # a lone surrogate, "\ud800"
+                return f"{key} is not valid UTF-8"
+    return None
+
+
+def _canonical(delta: DeltaIn) -> DeltaIn:
+    """The delta as the server applies, logs and compares it.
+
+    A player's ``name_normalized`` is derived here from its ``name`` rather than taken
+    from the client: it is what ``name_taken`` compares, and a payload whose two fields
+    disagree — or a rename that leaves the stale one behind — would otherwise let two
+    live players share a name. ``lower(trim(name))`` as ``normalizeName`` in
+    ``lib/services/sync/sync_ids.dart``.
+    """
+    if delta.entity_type != "player":
+        return delta
+    payload = dict(delta.payload)
+    name = payload.get("name")
+    if isinstance(name, str):
+        payload["name_normalized"] = name.strip().lower()
+    else:
+        payload.pop("name_normalized", None)
+    return delta.model_copy(update={"payload": payload})
+
+
+def _is_logged_delta(logged: ChangeLog, delta: DeltaIn) -> bool:
+    """Whether ``delta`` is the very delta ``logged`` recorded — a network retry."""
+    return (
+        logged.entity_type == delta.entity_type
+        and logged.entity_uuid == delta.entity_uuid
+        and logged.op == delta.op
+        and logged.payload == _logged_payload(delta)
+    )
 
 
 def _as_uuid(value: Any) -> uuid.UUID | None:
@@ -279,7 +396,7 @@ async def _apply_delta(
 ) -> DeltaResult:
     cls = _ENTITY_MAP.get(delta.entity_type)
     if cls is None:
-        return _rejected("unknown entity type")
+        return _rejected(REASON_UNKNOWN_ENTITY)
 
     # Bound the values before anything reaches a column. Placed ahead of the game_player
     # branch so both apply paths are covered by one check.
@@ -287,9 +404,14 @@ async def _apply_delta(
     if reason is not None:
         return _rejected(reason)
 
-    # GamePlayer has a composite PK and no uuid; we handle it specially.
+    # GamePlayer has a composite PK and no uuid; we handle it specially. Its two uuids
+    # are checked there, and its two integers by the bounds above.
     if delta.entity_type == "game_player":
         return await _apply_game_player(session, auth, delta, server_seq)
+
+    reason = _value_problem(cls, delta.payload)
+    if reason is not None:
+        return _rejected(reason)
 
     group_id = auth.group.id
     has_group_col = "group_id" in _columns(cls)
@@ -406,12 +528,28 @@ async def _apply_game_player(
     return DeltaResult(delta_idx=-1, status="applied", server_seq=server_seq)
 
 
-def _logged_payload(delta: DeltaIn) -> dict[str, Any]:
-    """What other devices pull: the payload's known client columns, JSON as sent."""
-    cls = _ENTITY_MAP[delta.entity_type]
+def _logged_payload(delta: DeltaIn) -> dict[str, Any] | None:
+    """What other devices pull: the payload's known client columns, JSON as sent.
+
+    None for an entity type this server does not know, which it never logs.
+    """
+    cls = _ENTITY_MAP.get(delta.entity_type)
+    if cls is None:
+        return None
     if delta.entity_type == "game_player":
         return {k: v for k, v in delta.payload.items() if k in _columns(cls)}
     return _client_payload(cls, delta.payload)
+
+
+def _refused_value(error: DBAPIError) -> bool:
+    """Whether the database refused a value, rather than failed.
+
+    asyncpg's errors reach SQLAlchemy as a generic ``DBAPIError`` carrying the SQLSTATE,
+    never as ``DataError``: class 22 is "data exception" — a NUL byte (22021), a
+    parameter the driver could not encode (22000), a number out of range (22003).
+    """
+    sqlstate = str(getattr(error.orig, "sqlstate", None) or "")
+    return isinstance(error, DataError) or sqlstate.startswith("22")
 
 
 def _enforce_push_rate_limit(device_id: uuid.UUID) -> None:
@@ -452,18 +590,28 @@ async def push(
     assert group is not None  # require_device just loaded it
     next_seq = group.last_server_seq + 1
 
-    for idx, delta in enumerate(body.deltas):
-        # Idempotence: skip already-applied (device, lamport) pairs.
+    for idx, raw_delta in enumerate(body.deltas):
+        delta = _canonical(raw_delta)
+        # Idempotence: a (device, lamport) pair already logged is answered from the log.
         dup = await session.execute(
-            select(col(ChangeLog.server_seq)).where(
+            select(ChangeLog).where(
                 col(ChangeLog.origin_device_id) == auth.device.id,
                 col(ChangeLog.client_lamport) == delta.client_lamport,
             )
         )
-        dup_seq = dup.scalar()
-        if dup_seq is not None:
-            results.append(DeltaResult(delta_idx=idx, status="duplicate", server_seq=dup_seq))
-            max_seq = max(max_seq, dup_seq)
+        logged = dup.scalar_one_or_none()
+        if logged is not None:
+            if _is_logged_delta(logged, delta):
+                results.append(
+                    DeltaResult(delta_idx=idx, status="duplicate", server_seq=logged.server_seq)
+                )
+                max_seq = max(max_seq, logged.server_seq)
+            else:
+                # Not a retry: the device's clock went back. Answering `duplicate` here
+                # told it a write it never made had been kept, and the edit was lost.
+                outcome = _rejected(REASON_LAMPORT_REUSED)
+                outcome.delta_idx = idx
+                results.append(outcome)
             continue
 
         savepoint = await session.begin_nested()
@@ -477,7 +625,7 @@ async def push(
                         entity_type=delta.entity_type,
                         entity_uuid=delta.entity_uuid,
                         op=delta.op,
-                        payload=_logged_payload(delta),
+                        payload=_logged_payload(delta) or {},
                         client_lamport=delta.client_lamport,
                         server_seq=next_seq,
                     )
@@ -492,6 +640,15 @@ async def push(
             # raw newline would forge a log line.
             logger.warning("delta rejected on integrity error: %r", e.orig)
             outcome = _rejected(REASON_INTEGRITY)
+        except DBAPIError as e:
+            # A value the database refused that _value_problem let through: same
+            # isolation. Anything else — a lost connection, a timeout — is not the
+            # delta's fault, and still fails the request.
+            if not _refused_value(e):
+                raise
+            await savepoint.rollback()
+            logger.warning("delta rejected on data error: %r", e.orig)
+            outcome = _rejected(REASON_INVALID_VALUE)
 
         outcome.delta_idx = idx
         if outcome.status in ("applied", "merged_lww"):
@@ -509,7 +666,7 @@ async def push(
 
 @router.get("/pull", response_model=PullResponse)
 async def pull(
-    since_seq: int = Query(default=0, ge=0),
+    since_seq: int = Query(default=0, ge=0, le=BIGINT_MAX),
     limit: int = Query(default=500, ge=1, le=2000),
     auth: AuthContext = Depends(require_device),
     session: AsyncSession = Depends(get_session),

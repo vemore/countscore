@@ -2,7 +2,7 @@
 
 > Scope: the offline-first sharing protocol — server and Flutter client.
 > Related: [[Api]] · [[Schema]] · [[Backend]] · [[KnownLimits]]
-> Updated: 2026-11-24
+> Updated: 2026-11-25
 
 ## Facts
 
@@ -44,10 +44,23 @@ field**, ordered lexicographically by `(client_lamport, origin_device_id)`.
 1. The group row is read `FOR UPDATE`: pushes to one group run one at a time, and
    `groups.last_server_seq` hands out each `server_seq` once. `(group_id, server_seq)` is
    unique in `change_log`.
-2. Dedup on `(origin_device_id, client_lamport)` → `duplicate`, with the original seq.
-3. Each remaining delta runs in **its own savepoint**. A rejection — or an `IntegrityError`
-   the pre-checks missed — undoes that delta alone; the rest of the batch keeps its rows,
-   its log entries and its seqs. Rejected deltas consume no seq.
+2. Dedup on `(origin_device_id, client_lamport)`. The logged delta again — same
+   `entity_type`, `entity_uuid`, `op` and logged payload — is `duplicate`, with the original
+   seq: a network retry. **Anything else under a used lamport is rejected `lamport_reused`**
+   (since 2026-11-25; `duplicate` before), consuming no seq: a device whose clock went back,
+   restored from a backup. The client is told so rather than told its edit was kept; see
+   *Decisions & History*. No client handles the code yet — it falls into *anything else*
+   in the table under **The client** (`wip/todo/2026-11-25-client-restamps-on-lamport-reused.md`).
+3. Each remaining delta runs in **its own savepoint**. A rejection — or an `IntegrityError`,
+   or a value the database refuses (SQLSTATE class 22, `invalid value`) that the pre-checks
+   missed — undoes that delta alone; the rest of the batch keeps its rows, its log entries
+   and its seqs. Rejected deltas consume no seq. Every value is checked against its
+   column's type first (`_value_problem`: a boolean, an integer within INTEGER or BIGINT,
+   an ISO 8601 timestamp as Dart writes it, a uuid, a string with no NUL and no lone
+   surrogate) — each of those reached the driver and failed the whole push with a 500
+   until 2026-11-25. The request's own shape (envelope keys, `op`, a uuid `entity_uuid`, a
+   lamport within BIGINT, ≤ 500 deltas) is a 422 for the whole batch; an unknown
+   `entity_type` is one rejected delta. Every case: `backend/tests/test_sync_adversarial.py`.
 4. **Group scoping.** An existing uuid of another group is `rejected` (`not in group`);
    every parent a payload names must be in the caller's group (`parent_missing`).
 5. **A delete wins.** An upsert on a tombstoned row, or on a uuid the group's log holds a
@@ -55,7 +68,9 @@ field**, ordered lexicographically by `(client_lamport, origin_device_id)`.
    set `deleted_at`, `group_id`, `id`, `created_at` or `updated_at`.
 6. Unique rules (round number, score slot, player and game-type names, one analysis per
    game) apply to **live rows only** and are checked before the write, so a clash comes
-   back as a stable reason code rather than a driver error — codes in [[Api]].
+   back as a stable reason code rather than a driver error — codes in [[Api]]. A player's
+   `name_normalized` is the server's, `lower(trim(name))` (`_canonical`), whatever the
+   payload says (since 2026-11-25).
 7. The log stores the payload's known client columns only; that is what other devices pull.
 
 Synced entities: `player`, `game_type` (with `rules` and `rules_slug` since v13, `builtin_key` since v14, `keypad_shortcut` since v21, `max_rounds` since v22), `game`,
@@ -105,7 +120,8 @@ reads it while the key is set. See [[Schema]] and [[I18n]].
 - `client_lamport` is a monotone integer per device, a logical clock. On write:
   `lamport = max(local_max, last_server_seq_received) + 1`.
 - **Idempotence**: the server deduplicates on `(origin_device_id, client_lamport)`. A
-  network retry of the same delta is a no-op.
+  network retry of the same delta is a no-op; another delta under a used lamport is
+  `lamport_reused` (step 2 of the push above).
 
 ### The keypad shortcut travels only well formed (since 2026-09-24)
 
@@ -436,6 +452,30 @@ closed with 1013 before `accept()`. The counter is process memory too (`_open_st
 
 ## Decisions & History
 
+- **A reused lamport is refused, not deduplicated (2026-11-25, `test/sync-adversarial-api`).**
+  Dedup answered `duplicate` to anything under a logged `(device, lamport)`, so a device
+  restored from a backup, re-stamping lamports it had already used, lost each new edit and
+  recorded it as sent. Three answers were weighed. Keeping `duplicate` is the silent loss.
+  Applying the new payload under a fresh server-side lamport would break the order the
+  pulling devices compute from `(client_lamport, origin_device_id)` — the server does not
+  own that clock. Chosen: compare with the logged delta, keep `duplicate` for a true retry,
+  and answer `rejected` / `lamport_reused` otherwise, so only the client re-stamps. An
+  existing client files the code under *anything else*: rejected and counted in Settings
+  rather than marked sent — the edit is still not on the server, but it is visible, and the
+  row's next local edit is stamped after a pull, which raises `last_lamport` past every
+  lamport seen, this device's own included. That is also why a pull-first pass rarely
+  reuses one at all. No change to `DeltaResult` (no hint of the lamport to pass): the pull
+  already carries it. The client side: `wip/todo/2026-11-25-client-restamps-on-lamport-reused.md`.
+- **Values are checked against their column before the driver sees them (2026-11-25).**
+  The adversarial suite found five pushes that answered 500 — a string in a boolean column,
+  a number in a timestamp one, a lamport or `since_seq` past BIGINT, and on Postgres a NUL
+  byte or a lone surrogate — and a 500 is worse than a rejection for this client: it resends
+  the same batch on every pass, so one bad row stalls the outbox for good. A malformed
+  timestamp string was worse still: dropped from the row, kept in the log, and thrown on by
+  `DateTime.parse` on every device that pulled it. The timestamp shape is Dart's, not
+  Python's `fromisoformat`, which also takes week dates the app cannot read. An integer 0 or
+  1 in a boolean column used to be stored as a boolean and logged as a number the app reads
+  as false; it is refused now. The client sends none of these.
 - **`max_rounds` follows `keypad_shortcut`, not `rules_slug` (2026-11-17, `feat/max-rounds-chouineurs`).**
   A null is pushed as a clear because emptying the field is a choice, unlike a wiped slug;
   an absent key is "no opinion", so an older peer cannot clear it. The seed is derived for a

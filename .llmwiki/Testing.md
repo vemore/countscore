@@ -219,8 +219,15 @@ carried on `/sync/pull`; `game_types.max_rounds` round-tripped, kept when an old
 omits it, refused at 0, 1000, a string or a boolean) · `test_sync.py` (push/pull,
 idempotence, round conflicts, payload bounds, player-name allow-list, and row-level LWW
 between two devices — SQLite in memory, `pg_notify` stubbed) ·
+`test_sync_adversarial.py` (one test per stale, replayed or hostile input — cross-group
+uuids and parents, a revoked device beside the same install's device in another group,
+lamport reuse after a restore, tombstones, renames that collide, every malformed envelope
+and value, batch and cursor bounds, leave and re-join; each asserts the answer **and**,
+through `_world`, that no row, no `server_seq` and nothing in any pull changed) ·
 `test_sync_ws_integration.py` (WS handshake + push → NOTIFY → new_seq → pull on a **real
-Postgres** via testcontainers) · `test_comments.py` (mocked Anthropic, rate limit, budget,
+Postgres** via testcontainers; plus the adversarial cases only Postgres shows — a NUL byte,
+a lone surrogate, the class-22 backstop, a retry compared after a jsonb round trip, two
+device rows of one install pushing to two groups at once) · `test_comments.py` (mocked Anthropic, rate limit, budget,
 prompt injection) · `test_game_analysis.py` (the route on **both** paths, bounds,
 clipping, name filtering, injection through a player name *and* through the game type, and
 the prompt builder) · `test_group_analysis.py` (a shared game's analysis through the group

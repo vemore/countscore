@@ -1,5 +1,15 @@
 # The sync API is tested on the nominal path, not against stale, replayed or hostile input
 
+**Status:** done (2026-11-25) — closed by test/sync-adversarial-api. Every case has a test in
+`backend/tests/test_sync_adversarial.py` (the Postgres-only ones at the end of
+`test_sync_ws_integration.py`). Fixed on the way: a reused lamport with another payload is
+rejected `lamport_reused` instead of `duplicate`; a value of the wrong JSON type, a lamport
+or `since_seq` past BIGINT, a NUL byte or a lone surrogate is one rejected delta or a 422
+instead of a 500; an unknown `entity_type` is one rejected delta instead of a 422 for the
+batch; a player's `name_normalized` is derived by the server. The push cap is 500, not 100
+as written below (the app batches 100). Client side: `wip/todo/2026-11-25-client-restamps-on-lamport-reused.md`;
+found on the way: `wip/todo_nr/2026-11-25-a-child-pushed-under-a-deleted-game-is-applied.md`.
+
 - **Noted:** 2026-11-25 — planning multi-group (`2026-11-17-belong-to-several-groups.md`)
 - **Theme:** sync-robustness
 - **Area:** backend
