@@ -396,15 +396,25 @@ off (since 2026-09-24).
 | Server answer | Client does |
 |---|---|
 | `applied`, `duplicate` | done; its lamport becomes the entity's known version |
-| `merged_lww` | done; the winner arrives with the next pull |
+| `merged_lww` | done; its lamport becomes the entity's known version (`markMerged`, since 2026-11-25: the server logs the losing delta, so the next pull returns it); the winner arrives with the next pull |
 | `round_number_taken` | pull, move the round to max+1, push again; `RoundRenumbered` → snackbar |
 | `score_exists`, `analysis_exists` | done; the pull adopts the server's uuid for that cell |
 | `parent_missing` | retried once, rejected the second time |
 | `lamport_reused` | every such delta of the batch collected; the group's log read **once** from seq 0 for its highest lamport (nothing applied, cursor kept) and the clock raised past it; only then each stamp cleared, so each is stamped again and pushed again in the same pass. A scan that fails leaves the rows as they were, for the next pass to do it all again; a second refusal after a scan that succeeded is rejected (since 2026-11-25) |
 | anything else | rejected, counted in Settings |
 
-**Pull** (`SyncStore.applyPulled`, one transaction per page). Own deltas skipped. Upserts
-are applied only when `(client_lamport, origin_device_id)` beats `entity_versions`; a delete
+**Pull** (`SyncStore.applyPulled`, one transaction per page). This device's own deltas
+are skipped when the database holds them (`_holdsOwn`): their version, or a later one of
+its own, is in `entity_versions` — `markSent` and `markMerged` record it for every answer
+under which the server logs a delta, `merged_lww` included —, or this group's outbox holds
+the same delta prepared and unsent (same lamport, type and server uuid, not rejected) — an
+answer that was lost. One it holds neither way is from a database that went back in time, a
+restored backup or Settings → Import, cursor and clock with it: applied by the rules below,
+like another device's (since 2026-11-25). A pulled game upsert that lands on a game this
+database holds as a local one (restored from before it was shared, or a group left then
+joined again) moves the game and its live rows into the group, as sharing does, under
+suppression (`_moveGameInto`). Every other upsert is
+applied only when `(client_lamport, origin_device_id)` beats `entity_versions`; a delete
 always applies, tombstones the row and its children, and drops pending outbox rows for it.
 A pulled player or game type links to the local one of the same name or is created. A
 pulled `game_type` delete tombstones the linked local row — unless a live game still plays
@@ -467,6 +477,10 @@ One `GroupSession` per membership, at most five, one server and one nickname for
 > delta.origin_device_id)` is greater than the pair last applied for that entity, and
 > discard it entirely otherwise. This is client design, not an implemented fact — there is
 > no client.
+>
+> **Status: Outdated** (2026-11-25) — step (a) is not the rule either: an own delta is
+> skipped only when the database holds it, and one it does not (a restored backup, an
+> import) is applied like another device's. See **Pull** under *The client*.
 
 ### WebSocket — signal only
 
@@ -514,6 +528,44 @@ closed with 1013 before `accept()`. The counter is process memory too (`_open_st
 
 ## Decisions & History
 
+- **A restored database applies the own deltas it never stamped (2026-11-25,
+  `fix/restored-device-own-deltas`).** The pull skipped every delta whose origin was this
+  device, on the assumption that the database had sent it. A restored backup or an import
+  brings back its cursor and clock, so the next pull returns the edits this device pushed
+  since — and skipped them: the rows stayed old here, and the row's next local edit, stamped
+  past the log, pushed the old values back over the group's. Two fixes were weighed.
+  *Marking a restore* and applying own deltas on the first pull after it was rejected: an
+  import can set a flag, but an Android auto-backup restore or a copied file cannot be seen
+  from inside the database, and the pull after it would still need a test for the own
+  deltas it does hold. Chosen: the test alone, with no flag and no schema change — an own
+  delta is skipped when `entity_versions` holds its version or a later one of this device's,
+  or when this group's outbox holds the same delta prepared and unsent (lamport, type and
+  server uuid; not rejected): a row whose answer was lost keeps its lamport, perhaps with a
+  newer local edit queued behind it. Sent rows are left out, so the read stays on the
+  `(group_id, sent_at)` index — which holds only because every answer under which the
+  server logs a delta records its version: `markSent` for `applied` and `duplicate`, and
+  `markMerged` for `merged_lww`, which the server logs too. The independent review of #293
+  found that `merged_lww` recorded nothing: the losing edit came back on the next pull, not
+  held, and beat the lower-lamport delete that had won (a removed player back on this device
+  only). Anything else is applied as another device's delta would be: an upsert by LWW, a
+  delete always. A version learnt from another device does not make an own delta "held", or
+  a delete made offline after that device's write would be lost here. Lamports are per
+  group, so the outbox test is per group. The same review found a game shared after the
+  backup coming back half-shared — the game row and its older rounds local, the newer ones
+  in the group — so a pulled game upsert on a local game moves it and its live rows into the
+  group (`_moveGameInto`, shared with `shareGame`). Real-server tests:
+  `test/sync/sync_multi_group_backend_test.dart`, *a restored database* and *merged_lww*.
+  **With `wip/todo_nr/2026-11-25-an-imported-database-keeps-another-devices-id.md`** (a
+  database exported on X and imported on Y keeps X's `device_id`): X's later deltas used
+  to be skipped on Y as Y's own, all of them; now each is applied unless Y holds its version
+  or a later one of "its own" (Y's pushes, recorded under X's id), or Y's outbox holds the
+  very same delta unsent. Matching the uuid and type, not the lamport alone, matters here:
+  both devices stamp from the same restored clock, so their lamports overlap, and a lamport
+  match would hide X's edit behind an unrelated one of Y's. Still partial — an X edit of an
+  entity Y pushed later under a higher lamport stays hidden — and the entry stays open: its
+  fix (take the token's device id, cursor back to 0) is still needed. That fix must reckon
+  with this one: its replay from 0 returns Y's own pushes, which `markSent` recorded under
+  X's id, and `_holdsOwn` matches a version by the membership's device id.
 - **A reused lamport is refused, not deduplicated (2026-11-25, `test/sync-adversarial-api`).**
   Dedup answered `duplicate` to anything under a logged `(device, lamport)`, so a device
   restored from a backup, re-stamping lamports it had already used, lost each new edit and

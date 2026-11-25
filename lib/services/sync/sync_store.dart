@@ -288,27 +288,31 @@ class SyncStore {
   /// triggers enqueue each row as its `group_id` changes.
   Future<void> shareGame(int gameId, String groupId) async {
     await _db.transaction(() async {
-      await _db.customStatement(
-          'UPDATE games SET group_id = ? WHERE id = ? AND group_id IS NULL',
-          [groupId, gameId]);
-      for (final table in ['game_players', 'rounds', 'game_analyses']) {
-        await _db.customStatement(
-          'UPDATE $table SET group_id = ? WHERE gameId = ? AND group_id IS NULL '
-          'AND deleted_at IS NULL',
-          [groupId, gameId],
-        );
-      }
-      await _db.customStatement(
-        'UPDATE scores SET group_id = ? WHERE group_id IS NULL AND deleted_at IS NULL '
-        'AND roundId IN (SELECT id FROM rounds WHERE gameId = ?)',
-        [groupId, gameId],
-      );
+      await _moveGameInto(gameId, groupId);
       // A local tombstone under a game that was never shared has nothing to tell.
       await _db.customStatement(
           'DELETE FROM scores WHERE group_id IS NULL AND deleted_at IS NOT NULL '
           'AND roundId IN (SELECT id FROM rounds WHERE gameId = ?)',
           [gameId]);
     });
+  }
+
+  /// Sets [groupId] on a local game and on its live rows that have none.
+  Future<void> _moveGameInto(int gameId, String groupId) async {
+    await _db.customStatement(
+        'UPDATE games SET group_id = ? WHERE id = ? AND group_id IS NULL', [groupId, gameId]);
+    for (final table in ['game_players', 'rounds', 'game_analyses']) {
+      await _db.customStatement(
+        'UPDATE $table SET group_id = ? WHERE gameId = ? AND group_id IS NULL '
+        'AND deleted_at IS NULL',
+        [groupId, gameId],
+      );
+    }
+    await _db.customStatement(
+      'UPDATE scores SET group_id = ? WHERE group_id IS NULL AND deleted_at IS NULL '
+      'AND roundId IN (SELECT id FROM rounds WHERE gameId = ?)',
+      [groupId, gameId],
+    );
   }
 
   Future<String?> groupOfGame(int gameId) async {
@@ -447,8 +451,24 @@ class SyncStore {
     });
   }
 
-  /// The server kept a newer write, or the conflict is resolved some other way:
-  /// done, but the version stays whatever the winner's pull will bring.
+  /// The server answered `merged_lww`: a newer write, or a delete, holds the
+  /// entity. Done — and the server **logs** the losing delta all the same
+  /// (`backend/app/routes/sync.py`, `push`), so the next pull returns it as
+  /// this device's own: its version is recorded, as [markSent] does, so the
+  /// pull knows it holds it ([_holdsOwn]) rather than applying it over the
+  /// winner — a delete pulled just before, say. The winner, whose pair beats
+  /// this one on the server, still beats it here.
+  Future<void> markMerged(PreparedDelta d, String deviceId) async {
+    await _db.transaction(() async {
+      await _db.customStatement(
+          'UPDATE outbox SET sent_at = ? WHERE id = ?', [_nowMs(), d.outboxId]);
+      await _recordVersion(d.groupId, d.entityType, d.entityUuid, d.lamport, deviceId);
+    });
+  }
+
+  /// The conflict is resolved some other way (a renumbered round, an adopted
+  /// cell or row): done, and nothing was logged, so the version stays whatever
+  /// the pull brings.
   Future<void> markSuperseded(PreparedDelta d) => _db.customStatement(
       'UPDATE outbox SET sent_at = ? WHERE id = ?', [_nowMs(), d.outboxId]);
 
@@ -894,14 +914,16 @@ class SyncStore {
   /// Null when applied, [_skip] when there is nothing to do, otherwise the reason
   /// the delta has to wait.
   Future<String?> _applyOne(SyncMembership m, PulledDelta d) async {
-    if (d.originDeviceId == m.deviceId) {
-      await _recordVersion(m.groupId, d.entityType, d.entityUuid, d.clientLamport, d.originDeviceId);
-      return _skip;
-    }
     final version = await _db.customSelect(
       'SELECT lamport, origin_device_id FROM entity_versions WHERE entity_type = ? AND entity_uuid = ?',
       variables: [Variable(d.entityType), Variable(d.entityUuid)],
     ).getSingleOrNull();
+    if (d.originDeviceId == m.deviceId && await _holdsOwn(m, d, version)) {
+      await _recordVersion(m.groupId, d.entityType, d.entityUuid, d.clientLamport, d.originDeviceId);
+      return _skip;
+    }
+    // Another device's delta — or one of this device's that this database never
+    // stamped (a restored backup, an import): applied by the same rules.
     if (d.op == 'upsert' && version != null) {
       final lamport = version.data['lamport'] as int;
       final origin = version.data['origin_device_id'] as String;
@@ -934,6 +956,54 @@ class SyncStore {
       );
     }
     return null;
+  }
+
+  /// Whether this database already holds [d], a delta this device logged in
+  /// [m]'s group — the usual case, skipped: the row has it, or something newer.
+  ///
+  /// It does when it recorded the delta's version, or a later one of its own
+  /// ([markSent], [markMerged]); or when this group's outbox holds the delta
+  /// prepared and unsent — same lamport, type and server uuid, not rejected:
+  /// the answer was lost, and a newer local edit may be queued behind it.
+  /// Lamports are per group, so another group's outbox says nothing. Every
+  /// delta the server logs is answered `applied`, `duplicate` or `merged_lww`,
+  /// and each of those records its version, so only the unsent rows are read,
+  /// through the `(group_id, sent_at)` index.
+  ///
+  /// A database that does neither went back in time — a restored backup or an
+  /// import, its cursor and clock with it — and the edits this device made
+  /// since are in the log alone: they are applied like any other device's, or
+  /// its next local edit of the row would push the old values back over the
+  /// group's.
+  ///
+  /// The version test is the cheap one (a primary-key read), and spares a
+  /// delete this device sent a second run through its `_apply…` branch; an
+  /// upsert it sent would lose on the usual comparison below anyway.
+  ///
+  /// A version recorded from another device, even a higher one, does not
+  /// count: an upsert then loses on the usual comparison anyway, and a delete
+  /// wins regardless — this device may have deleted the row offline, after
+  /// the other's write, and the restored database still holds it live.
+  Future<bool> _holdsOwn(SyncMembership m, PulledDelta d, QueryRow? version) async {
+    if (version != null &&
+        version.data['origin_device_id'] == m.deviceId &&
+        (version.data['lamport'] as int) >= d.clientLamport) {
+      return true;
+    }
+    final stamped = await _db.customSelect(
+      'SELECT payload FROM outbox WHERE group_id = ? AND sent_at IS NULL '
+      'AND rejected_at IS NULL AND client_lamport = ? AND entity_type = ?',
+      variables: [Variable(m.groupId), Variable(d.clientLamport), Variable(d.entityType)],
+    ).get();
+    // The same delta, not merely the same lamport: a database imported from
+    // another device of the group stamps from that device's clock, and its
+    // lamports overlap that device's own later ones. The uuid is the one the
+    // server knows, kept in the prepared payload (`preparePush`).
+    for (final row in stamped) {
+      final stored = jsonDecode(row.data['payload'] as String) as Map<String, dynamic>;
+      if (stored['uuid'] == d.entityUuid) return true;
+    }
+    return false;
   }
 
   Future<String?> _applyPlayer(String groupId, PulledDelta d) async {
@@ -1151,6 +1221,14 @@ class SyncStore {
     };
     if (existing != null) {
       await _update('games', existing, values);
+      // The group's game, held here as a local one: a database restored from
+      // before this device shared it (or a group left, then joined again). It
+      // joins the group with its live rows, as `shareGame` would, or its older
+      // rounds and scores would stay local beside the newer ones pulled into
+      // the group. Capture is suppressed: a restored database's rows are the
+      // group's already (a row made while the game was local reaches the group
+      // with its next edit).
+      await _moveGameInto(existing, groupId);
       return null;
     }
     final started = p['started_at'] as String?;

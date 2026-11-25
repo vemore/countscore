@@ -121,7 +121,10 @@ void main() {
           http.Response(jsonEncode(body), status, headers: {'content-type': 'application/json'});
       Map<String, dynamic> logged(int seq, int lamport, String origin) => {
             'server_seq': seq,
-            'entity_type': seq == 1 ? 'game' : 'something_later',
+            // A type this version does not apply: since a restored database
+            // applies its own deltas it never stamped (sync_store.dart,
+            // `_holdsOwn`), a `game` here would land as a second game.
+            'entity_type': 'something_later',
             'entity_uuid': '${'$seq' * 8}-3333-4333-8333-333333333333',
             'op': 'upsert',
             'payload': <String, dynamic>{},
