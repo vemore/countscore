@@ -405,8 +405,7 @@ async def test_a_network_retry_of_the_logged_delta_is_still_a_duplicate(client, 
         headers,
         # Keys the server does not know are not logged, so they do not make it another delta.
         _delta("game", game, 1, name="G", ended_at="2026-11-25T10:00:00.000Z", extra=1),
-        # The server derives name_normalized: a client value it ignores is no difference.
-        _delta("player", player, 2, name="Zoé", name_normalized="ZOÉ"),
+        _delta("player", player, 2, name="Zoé", name_normalized="zoé"),
         _delta("game", game, 3, op="delete"),
     )
 
@@ -415,6 +414,66 @@ async def test_a_network_retry_of_the_logged_delta_is_still_a_duplicate(client, 
     assert retry["server_seq_max"] == 3
     assert await _world(session_factory) == before
     assert first["server_seq_max"] == 3
+
+
+async def test_a_retry_that_spans_a_deploy_is_still_a_duplicate(client, session_factory):
+    """The log holds what the server of the day logged. A retry answered by a newer one
+    is compared with that payload re-canonicalised, on the keys it holds: an older
+    server's player row (its client ``name_normalized`` as sent) and a column it did not
+    know yet (``max_rounds``, a row logged before v22) are still the same delta."""
+    from app.models import ChangeLog, Group
+
+    body, headers = await _group(client)
+    group_id, device_id = uuid.UUID(body["group"]["id"]), uuid.UUID(body["device"]["id"])
+    player, game_type = uuid.uuid4(), uuid.uuid4()
+    type_payload = {"name": "Chouineurs", "icon_code_point": 1, "card_color_value": 1}
+    async with session_factory() as s:
+        # As an older server logged them: the client's contradicting name_normalized kept,
+        # and no max_rounds key at all.
+        s.add(
+            ChangeLog(
+                group_id=group_id,
+                origin_device_id=device_id,
+                entity_type="player",
+                entity_uuid=player,
+                op="upsert",
+                payload={"name": "Bob", "name_normalized": "zzz"},
+                client_lamport=1,
+                server_seq=1,
+            )
+        )
+        s.add(
+            ChangeLog(
+                group_id=group_id,
+                origin_device_id=device_id,
+                entity_type="game_type",
+                entity_uuid=game_type,
+                op="upsert",
+                payload=type_payload,
+                client_lamport=2,
+                server_seq=2,
+            )
+        )
+        (await s.get(Group, group_id)).last_server_seq = 2
+        await s.commit()
+    before = await _world(session_factory)
+
+    retry = await _push(
+        client,
+        headers,
+        _delta("player", player, 1, name="Bob", name_normalized="zzz"),
+        _delta("game_type", game_type, 2, **type_payload, max_rounds=None),
+    )
+    other = await _push(
+        client,
+        headers,
+        _delta("game_type", game_type, 2, **{**type_payload, "name": "Other"}, max_rounds=None),
+    )
+
+    assert _statuses(retry) == [("duplicate", None)] * 2
+    assert [r["server_seq"] for r in retry["results"]] == [1, 2]
+    assert _statuses(other) == [("rejected", "lamport_reused")]
+    assert await _world(session_factory) == before
 
 
 async def test_a_lower_lamport_than_stored_is_merged_lww_and_changes_no_row(
@@ -532,11 +591,11 @@ async def test_a_player_renamed_onto_a_name_held_in_the_group_is_name_taken(
         {"name": "Bob", "name_normalized": "not-bob"},  # one that disagrees with the name
     ],
 )
-async def test_a_player_name_normalized_is_the_servers_not_the_clients(
+async def test_a_stale_or_contradicting_name_normalized_is_derived_by_the_server(
     client, session_factory, payload
 ):
-    """The unique rule compares ``name_normalized``. Taken from the client, a payload that
-    left it stale or contradicted the name put two live "Bob" in one group."""
+    """The unique rule compares ``name_normalized``. Taken from the client as is, a
+    payload that left it stale or contradicted the name put two live "Bob" in one group."""
     from app.models import Player
 
     _body, headers = await _group(client)
@@ -553,6 +612,92 @@ async def test_a_player_name_normalized_is_the_servers_not_the_clients(
     body = await _push(client, headers, _delta("player", alice, 3, **payload))
 
     assert _statuses(body) == [("rejected", "name_taken")]
+    assert await _world(session_factory) == before
+
+
+# name → normalizeName (lib/services/sync/sync_ids.dart) on the Dart VM: code by code, so
+# no final sigma, and "İ" to one "i". Python's lower() gives "σοφος" and "i̇" instead.
+_TURKISH_32 = "İ" + "a" * 31
+
+
+@pytest.mark.parametrize(
+    ("held", "pushed", "status"),
+    [
+        # Greek capitals and a final sigma: two players to the app, so two here.
+        (("ΣΟΦΟΣ", "σοφοσ"), ("Σοφος", "σοφος"), ("applied", None)),
+        (("Σοφος", "σοφος"), ("ΣΟΦΟΣ", "σοφοσ"), ("applied", None)),
+        # The same name to the app is the same name here.
+        (("ΣΟΦΟΣ", "σοφοσ"), ("Σοφοσ", "σοφοσ"), ("rejected", "name_taken")),
+        # A Turkish dotted capital in a name of 32: 32 once lowered, as the app counts.
+        (("Bob", "bob"), (_TURKISH_32, "i" + "a" * 31), ("applied", None)),
+        (("Iaaa", "iaaa"), ("İaaa", "iaaa"), ("rejected", "name_taken")),
+        # The PWA lowers through JavaScript, which keeps the dot: the same name too.
+        (("İaaa", "i̇aaa"), ("Iaaa", "iaaa"), ("applied", None)),
+    ],
+)
+async def test_name_normalized_agrees_with_the_app_on_greek_and_turkish(
+    client, session_factory, held, pushed, status
+):
+    """The server keeps the app's own lowercasing when it is one of ``name``, so names a
+    device holds apart are not ``name_taken`` here, and names it merges are."""
+    from app.models import Player
+
+    _body, headers = await _group(client)
+    first, second = uuid.uuid4(), uuid.uuid4()
+    setup = await _push(
+        client, headers, _delta("player", first, 1, name=held[0], name_normalized=held[1])
+    )
+    assert _statuses(setup) == [("applied", None)]
+    before = await _world(session_factory)
+
+    body = await _push(
+        client, headers, _delta("player", second, 2, name=pushed[0], name_normalized=pushed[1])
+    )
+
+    assert _statuses(body) == [status]
+    if status[0] == "applied":
+        assert (await _get(session_factory, Player, second)).name_normalized == pushed[1]
+    else:
+        assert await _world(session_factory) == before
+
+
+@pytest.mark.parametrize(
+    ("name", "derived"),
+    [("ΣΟΦΟΣ", "σοφοσ"), ("Σοφος", "σοφος"), (_TURKISH_32, "i" + "a" * 31), (" Zoé ", "zoé")],
+)
+async def test_a_derived_name_normalized_is_the_dart_vms(client, session_factory, name, derived):
+    """Derived only when the payload sends none (or a contradicting one): as the Android
+    app would have computed it, and never longer than the name."""
+    from app.models import Player
+
+    _body, headers = await _group(client)
+    player = uuid.uuid4()
+    body = await _push(client, headers, _delta("player", player, 1, name=name))
+    assert _statuses(body) == [("applied", None)]
+    assert (await _get(session_factory, Player, player)).name_normalized == derived
+
+
+async def test_a_byte_order_mark_never_reaches_name_normalized(client, session_factory):
+    """Dart's trim drops a BOM and Python's strip does not; the app trims the name before
+    sending it, and the player-name allow-list refuses a BOM left in one, so the two trim
+    sets never meet a stored name. As the app sends a name typed with a leading BOM:"""
+    from app.models import Player
+
+    _body, headers = await _group(client)
+    player = uuid.uuid4()
+    body = await _push(
+        client, headers, _delta("player", player, 1, name="Zoé", name_normalized="zoé")
+    )
+    assert _statuses(body) == [("applied", None)]
+    assert (await _get(session_factory, Player, player)).name_normalized == "zoé"
+    before = await _world(session_factory)
+
+    raw = await _push(
+        client,
+        headers,
+        _delta("player", uuid.uuid4(), 2, name="﻿Zoé", name_normalized="zoé"),
+    )
+    assert _statuses(raw) == [("rejected", "name contains disallowed characters")]
     assert await _world(session_factory) == before
 
 
@@ -836,6 +981,9 @@ async def test_extra_keys_are_neither_stored_nor_logged(client, session_factory)
         ("game", {"name": "G", "ended_at": {"at": 1}}, "must be an ISO 8601 timestamp"),
         ("game", {"name": "G", "started_at": "yesterday"}, "must be an ISO 8601 timestamp"),
         ("game", {"name": "G", "started_at": "2026-W48-3"}, "must be an ISO 8601 timestamp"),
+        # No zone: every pulling device would read it in its own local time.
+        ("game", {"name": "G", "ended_at": "2026-11-25T10:00:00"}, "ISO 8601 timestamp"),
+        ("game", {"name": "G", "ended_at": "2026-11-25T10:00:00.000"}, "ISO 8601 timestamp"),
         ("game", {"name": "G", "started_at": "2026-13-01T00:00:00Z"}, "ISO 8601 timestamp"),
         # Fullwidth digits: Unicode digits, not the ASCII ones a timestamp is made of.
         (
@@ -908,7 +1056,6 @@ async def test_a_value_of_the_wrong_json_type_is_rejected_not_a_500(
         "2026-11-25T10:00:00.123456Z",  # with microseconds
         "2026-11-25T10:00:00+00:00",
         "2026-11-25T11:00:00.5+01:00",
-        "2026-11-25T10:00:00",
     ],
 )
 async def test_every_timestamp_the_app_writes_is_accepted(client, session_factory, stamp):

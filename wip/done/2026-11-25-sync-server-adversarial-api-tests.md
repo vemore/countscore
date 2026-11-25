@@ -6,7 +6,8 @@
 rejected `lamport_reused` instead of `duplicate`; a value of the wrong JSON type, a lamport
 or `since_seq` past BIGINT, a NUL byte or a lone surrogate is one rejected delta or a 422
 instead of a 500; an unknown `entity_type` is one rejected delta instead of a 422 for the
-batch; a player's `name_normalized` is derived by the server. The push cap is 500, not 100
+batch; a player's `name_normalized` that is absent or not a lowercasing of its name is
+derived by the server. The push cap is 500, not 100
 as written below (the app batches 100). Client side: `wip/todo/2026-11-25-client-restamps-on-lamport-reused.md`;
 found on the way: `wip/todo_nr/2026-11-25-a-child-pushed-under-a-deleted-game-is-applied.md`.
 

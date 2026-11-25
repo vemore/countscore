@@ -28,6 +28,7 @@ import asyncio
 import contextlib
 import logging
 import re
+import unicodedata
 import uuid
 from datetime import UTC, datetime
 from typing import Any
@@ -118,8 +119,10 @@ _INT64 = (-BIGINT_MAX - 1, BIGINT_MAX)
 # What DateTime columns accept: ISO 8601 as Dart's ``toIso8601String`` writes it, the only
 # shape every client can parse back. Python's ``fromisoformat`` also takes week dates and
 # other forms the app's ``DateTime.parse`` throws on — on every device that pulls them.
+# The zone is required: without one, each pulling device reads its own local time. The
+# app sends UTC with a ``Z`` (``_isoUtc``, lib/services/sync/sync_store.dart).
 _TIMESTAMP = re.compile(
-    r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,6})?(?:Z|[+-][0-9]{2}:[0-9]{2})?"
+    r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,6})?(?:Z|[+-][0-9]{2}:[0-9]{2})"
 )
 
 # Map entity_type → SQLModel class. Limiting writes to known types is part of the
@@ -244,34 +247,81 @@ def _value_problem(cls: type[SQLModel], payload: dict) -> str | None:
     return None
 
 
+def _name_fold(value: str) -> str:
+    """What every lowercasing of a name has in common, to tell a variant from another name.
+
+    The app's ``normalizeName`` (``lib/services/sync/sync_ids.dart``) is Dart's
+    ``trim().toLowerCase()``, and it differs by platform and from Python's ``lower``:
+    Python and JavaScript (the PWA) apply the final-sigma rule and turn "İ" into "i"
+    plus a combining dot above, while the Dart VM maps code by code ("ΣΟΦΟΣ" → "σοφοσ",
+    "İ" → "i"). Casefolding merges the sigmas; dropping a dot above left free after NFC
+    merges the two "i". A dot above that composes with its letter ("ż") is kept.
+    """
+    return unicodedata.normalize("NFC", value.casefold()).replace("̇", "")
+
+
+def _derived_name_normalized(name: str) -> str:
+    """``normalizeName`` as the Dart VM computes it, for a payload that sent none.
+
+    Code by code, so no final sigma, and "İ" to a single "i", so the value never outgrows
+    the name. Trimmed of spaces only: the player-name allow-list admits no other
+    whitespace, so Dart's and Python's different trim sets never meet a stored name.
+    """
+    return "".join("i" if c == "İ" else c.lower() for c in name.strip(" "))
+
+
 def _canonical(delta: DeltaIn) -> DeltaIn:
     """The delta as the server applies, logs and compares it.
 
-    A player's ``name_normalized`` is derived here from its ``name`` rather than taken
-    from the client: it is what ``name_taken`` compares, and a payload whose two fields
-    disagree — or a rename that leaves the stale one behind — would otherwise let two
-    live players share a name. ``lower(trim(name))`` as ``normalizeName`` in
-    ``lib/services/sync/sync_ids.dart``.
+    A player's ``name_normalized`` is what ``name_taken`` compares. The client's value is
+    kept when it is a lowercasing of ``name`` — each platform's own, see ``_name_fold`` —
+    so two names a device holds apart stay apart here ("ΣΟΦΟΣ" and "Σοφος" are two
+    players to the app). It is derived from ``name`` when absent or contradicting: a
+    rename that left the stale one behind, or one naming someone else, let two live
+    players share a name.
     """
     if delta.entity_type != "player":
         return delta
     payload = dict(delta.payload)
     name = payload.get("name")
     if isinstance(name, str):
-        payload["name_normalized"] = name.strip().lower()
+        sent = payload.get("name_normalized")
+        # Compared with the trimmed name, so a value that kept the name's spaces is not one.
+        if not isinstance(sent, str) or _name_fold(sent) != _name_fold(name.strip(" ")):
+            payload["name_normalized"] = _derived_name_normalized(name)
     else:
         payload.pop("name_normalized", None)
     return delta.model_copy(update={"payload": payload})
 
 
 def _is_logged_delta(logged: ChangeLog, delta: DeltaIn) -> bool:
-    """Whether ``delta`` is the very delta ``logged`` recorded — a network retry."""
-    return (
-        logged.entity_type == delta.entity_type
-        and logged.entity_uuid == delta.entity_uuid
-        and logged.op == delta.op
-        and logged.payload == _logged_payload(delta)
+    """Whether ``delta`` is the very delta ``logged`` recorded — a network retry.
+
+    The logged payload goes through today's ``_canonical`` again, and only the keys it
+    holds are compared: a retry that spans a deploy — one that canonicalises otherwise,
+    or logs a column the older server did not know — is still the same delta.
+    """
+    if (logged.entity_type, logged.entity_uuid, logged.op) != (
+        delta.entity_type,
+        delta.entity_uuid,
+        delta.op,
+    ):
+        return False
+    then = _logged_payload(
+        _canonical(
+            DeltaIn.model_construct(
+                entity_type=logged.entity_type,
+                entity_uuid=logged.entity_uuid,
+                op=logged.op,
+                payload=dict(logged.payload),
+                client_lamport=logged.client_lamport,
+            )
+        )
     )
+    now = _logged_payload(delta)
+    if then is None or now is None:
+        return False
+    return all(key in now and now[key] == value for key, value in then.items())
 
 
 def _as_uuid(value: Any) -> uuid.UUID | None:

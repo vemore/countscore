@@ -45,8 +45,10 @@ field**, ordered lexicographically by `(client_lamport, origin_device_id)`.
    `groups.last_server_seq` hands out each `server_seq` once. `(group_id, server_seq)` is
    unique in `change_log`.
 2. Dedup on `(origin_device_id, client_lamport)`. The logged delta again — same
-   `entity_type`, `entity_uuid`, `op` and logged payload — is `duplicate`, with the original
-   seq: a network retry. **Anything else under a used lamport is rejected `lamport_reused`**
+   `entity_type`, `entity_uuid` and `op`, and every key of the logged payload (passed
+   through today's `_canonical` again) equal in the new one — is `duplicate`, with the
+   original seq: a network retry, even one answered by a newer server that logs a column
+   the older one did not (`_is_logged_delta`). **Anything else under a used lamport is rejected `lamport_reused`**
    (since 2026-11-25; `duplicate` before), consuming no seq: a device whose clock went back,
    restored from a backup. The client is told so rather than told its edit was kept; see
    *Decisions & History*. No client handles the code yet — it falls into *anything else*
@@ -56,7 +58,8 @@ field**, ordered lexicographically by `(client_lamport, origin_device_id)`.
    missed — undoes that delta alone; the rest of the batch keeps its rows, its log entries
    and its seqs. Rejected deltas consume no seq. Every value is checked against its
    column's type first (`_value_problem`: a boolean, an integer within INTEGER or BIGINT,
-   an ISO 8601 timestamp as Dart writes it, a uuid, a string with no NUL and no lone
+   an ISO 8601 timestamp as Dart writes it, with `Z` or `±hh:mm` — without one, each
+   pulling device would read its own local time —, a uuid, a string with no NUL and no lone
    surrogate) — each of those reached the driver and failed the whole push with a 500
    until 2026-11-25. The request's own shape (envelope keys, `op`, a uuid `entity_uuid`, a
    lamport within BIGINT, ≤ 500 deltas) is a 422 for the whole batch; an unknown
@@ -69,8 +72,12 @@ field**, ordered lexicographically by `(client_lamport, origin_device_id)`.
 6. Unique rules (round number, score slot, player and game-type names, one analysis per
    game) apply to **live rows only** and are checked before the write, so a clash comes
    back as a stable reason code rather than a driver error — codes in [[Api]]. A player's
-   `name_normalized` is the server's, `lower(trim(name))` (`_canonical`), whatever the
-   payload says (since 2026-11-25).
+   `name_normalized` (since 2026-11-25, `_canonical`) is the client's when it is a
+   lowercasing of the trimmed `name` — equal after casefold, NFC and dropping a free
+   combining dot above — and otherwise derived as the Dart VM's `normalizeName` would:
+   code by code, no final sigma, "İ" → "i". The app's lowercasing differs by platform
+   (the VM vs JavaScript in the PWA) and from Python's `lower`; keeping its own value is
+   what keeps "ΣΟΦΟΣ" and "Σοφος" two players here as on the device.
 7. The log stores the payload's known client columns only; that is what other devices pull.
 
 Synced entities: `player`, `game_type` (with `rules` and `rules_slug` since v13, `builtin_key` since v14, `keypad_shortcut` since v21, `max_rounds` since v22), `game`,
@@ -478,6 +485,14 @@ closed with 1013 before `accept()`. The counter is process memory too (`_open_st
   Python's `fromisoformat`, which also takes week dates the app cannot read. An integer 0 or
   1 in a boolean column used to be stored as a boolean and logged as a number the app reads
   as false; it is refused now. The client sends none of these.
+- **`name_normalized`: the app's own when plausible, derived otherwise (2026-11-25).** A
+  first cut derived it always with Python's `strip().lower()`; the independent review of
+  #291 found that this is not the app's `normalizeName` — Python applies the final sigma
+  and turns "İ" into two code points, the Dart VM does neither, the PWA (JavaScript) does
+  both — so "ΝΙΚΟΣ" and a new "Νικος", two players on the device, became `name_taken`, and
+  a 32-character name with "İ" outgrew its column. Replicating Dart exactly was rejected:
+  there are two Darts. The server keeps the client's value when it folds to the name, and
+  derives the VM's only when it is absent or names someone else.
 - **`max_rounds` follows `keypad_shortcut`, not `rules_slug` (2026-11-17, `feat/max-rounds-chouineurs`).**
   A null is pushed as a clear because emptying the field is a choice, unlike a wiped slug;
   an absent key is "no opinion", so an older peer cannot clear it. The seed is derived for a

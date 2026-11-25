@@ -57,7 +57,8 @@ Internals: `_apply_delta`, `_apply_game_player`, `_owned_by`, `_check_parents`,
 Entity types: `player`, `game_type`, `game`, `game_player`, `round`, `score`,
 `game_analysis`. Per-delta status: `applied`, `merged_lww`, `duplicate`, `rejected`.
 `duplicate` (with the original `server_seq`) answers only the logged delta sent again — same
-`entity_type`, `entity_uuid`, `op` and logged payload. A rejected delta carries a `reason`
+`entity_type`, `entity_uuid` and `op`, and every key the log holds for it equal ([[Sync]],
+push step 2). A rejected delta carries a `reason`
 and no `server_seq`; the conflict codes a client branches on are constants at the top of
 `app/routes/sync.py`:
 
@@ -79,9 +80,9 @@ Bounds failures keep their prose (`value out of bounds (…)`, `comment longer t
 characters`, …) — see `app/services/delta_bounds.py`. So do type failures
 (`_value_problem`, `app/routes/sync.py`): `<key> must be a boolean`, `must be an integer`,
 `out of bounds (…)` past INTEGER or BIGINT, `must be an ISO 8601 timestamp` (Dart's
-`toIso8601String` shape), `must be a string`, `contains a NUL character`, `is not valid
-UTF-8`. A player's `name_normalized` is derived from `name` by the server, never taken from
-the payload. A `game_type` payload's
+`toIso8601String` shape, `Z` or `±hh:mm` required), `must be a string`, `contains a NUL
+character`, `is not valid UTF-8`. A player's `name_normalized` is the client's when it is a
+lowercasing of `name`, and derived by the server otherwise ([[Sync]], push step 6). A `game_type` payload's
 `keypad_shortcut` (since `0006_game_type_keypad_shortcut`, 2026-09-24) must be the client's
 closed JSON shape, or the delta is rejected with a reason that starts `keypad_shortcut`
 (`keypad_shortcut_problem`; [[Sync]]).
