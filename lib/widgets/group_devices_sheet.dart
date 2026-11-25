@@ -7,20 +7,23 @@ import '../providers/group_provider.dart';
 import '../services/backend_client.dart';
 import 'group_settings_section.dart' show groupActionErrorText;
 
-/// Settings → Group → Devices: the group's devices, the one that owns the group,
+/// Settings → Groups → a group → Devices: that group's devices, the one that owns the group,
 /// and — for the owner only — a way to shut one out or hand the group over.
 ///
 /// This device is marked and offers no revoke — leaving is the section's own
 /// button, which also turns shared games back into local ones. A member that is
 /// not the owner sees the list and nothing to act on.
 class GroupDevicesSheet extends StatefulWidget {
-  const GroupDevicesSheet({super.key});
+  const GroupDevicesSheet({super.key, required this.groupId});
 
-  static Future<void> show(BuildContext context) => showModalBottomSheet<void>(
+  /// The group whose devices are listed; one sheet per group.
+  final String groupId;
+
+  static Future<void> show(BuildContext context, String groupId) => showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
         showDragHandle: true,
-        builder: (_) => const GroupDevicesSheet(),
+        builder: (_) => GroupDevicesSheet(groupId: groupId),
       );
 
   @override
@@ -35,12 +38,17 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
   @override
   void initState() {
     super.initState();
-    _devices = context.read<GroupProvider>().devices();
+    _devices = _load();
   }
+
+  /// The group's session, or null once this device has left it.
+  GroupSession? get _session => context.read<GroupProvider>().session(widget.groupId);
+
+  Future<List<GroupDevice>> _load() async => await _session?.devices() ?? const [];
 
   Future<void> _revoke(GroupDevice device) async {
     final l10n = AppLocalizations.of(context)!;
-    final group = context.read<GroupProvider>();
+    final session = _session;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -58,14 +66,14 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
     );
     if (confirmed != true || !mounted) return;
     await _act(
-      () => group.revokeDevice(device.id),
+      () async => session?.revokeDevice(device.id),
       done: l10n.groupDeviceRevoked(device.label),
     );
   }
 
   Future<void> _makeOwner(GroupDevice device) async {
     final l10n = AppLocalizations.of(context)!;
-    final group = context.read<GroupProvider>();
+    final session = _session;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -83,7 +91,7 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
     );
     if (confirmed != true || !mounted) return;
     await _act(
-      () => group.transferOwnership(device.id),
+      () async => session?.transferOwnership(device.id),
       done: l10n.groupDeviceOwnerChanged(device.label),
     );
   }
@@ -93,7 +101,7 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
   /// refuses while that device has been seen inside its dormancy window.
   Future<void> _claimOwnership(GroupDevice device) async {
     final l10n = AppLocalizations.of(context)!;
-    final group = context.read<GroupProvider>();
+    final session = _session;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -110,14 +118,13 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
       ),
     );
     if (confirmed != true || !mounted) return;
-    await _act(group.claimOwnership, done: l10n.groupDeviceOwnerClaimed);
+    await _act(() async => session?.claimOwnership(), done: l10n.groupDeviceOwnerClaimed);
   }
 
   /// Runs an owner action, then reloads the list — on failure too, since a
   /// refusal usually means the owner changed meanwhile.
   Future<void> _act(Future<void> Function() action, {required String done}) async {
     final l10n = AppLocalizations.of(context)!;
-    final group = context.read<GroupProvider>();
     setState(() => _busy = true);
     try {
       await action();
@@ -125,7 +132,7 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
     } on GroupActionException catch (e) {
       _message = (text: groupActionErrorText(l10n, e), error: true);
     } finally {
-      _devices = group.devices();
+      _devices = _load();
       if (mounted) setState(() => _busy = false);
     }
   }
@@ -164,9 +171,9 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final group = context.watch<GroupProvider>();
-    final ownId = group.deviceId;
-    final isOwner = group.isOwner;
+    final session = context.watch<GroupProvider>().session(widget.groupId);
+    final ownId = session?.deviceId;
+    final isOwner = session?.isOwner ?? false;
     final dateFormat = DateFormat.yMMMd(l10n.localeName).add_Hm();
     final message = _message;
 
@@ -178,6 +185,7 @@ class _GroupDevicesSheetState extends State<GroupDevicesSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(l10n.groupDevices, style: theme.textTheme.titleLarge),
+            if (session != null) Text(session.groupName, style: theme.textTheme.titleSmall),
             const SizedBox(height: 4),
             Text(
               isOwner ? l10n.groupDevicesExplain : l10n.groupDevicesExplainMember,

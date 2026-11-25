@@ -9,7 +9,7 @@ import '../l10n/app_localizations.dart';
 import '../providers/backend_provider.dart';
 import '../providers/group_provider.dart';
 import '../utils/config_link.dart';
-import 'replace_config_dialog.dart' show currentGroupLabel;
+import 'replace_config_dialog.dart' show groupLabel;
 
 /// Settings → *Share by QR code*: a QR code carrying this device's server and,
 /// when it is in a group, the group's invite code, as the link
@@ -21,7 +21,7 @@ import 'replace_config_dialog.dart' show currentGroupLabel;
 /// The sheet asks for it once and keeps it (SharedPreferences
 /// [ConfigShareSheet.prefsKey]); in the PWA it starts from the app's own address.
 class ConfigShareSheet extends StatefulWidget {
-  const ConfigShareSheet({super.key, this.runningPwaBase});
+  const ConfigShareSheet({super.key, this.runningPwaBase, this.groupId});
 
   /// Where the web app address is kept on this device.
   static const prefsKey = 'pwaBaseUrl';
@@ -30,12 +30,19 @@ class ConfigShareSheet extends StatefulWidget {
   /// the address field while none is stored. Null off the web.
   final String? runningPwaBase;
 
-  static Future<void> show(BuildContext context) => showModalBottomSheet<void>(
+  /// The group whose invite code the QR carries — a group's own *Share by QR
+  /// code*. Null from Settings → Server: then the one group this device is in,
+  /// and the server alone in none or in several.
+  final String? groupId;
+
+  static Future<void> show(BuildContext context, {String? groupId}) =>
+      showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
         showDragHandle: true,
         builder: (_) => ConfigShareSheet(
           runningPwaBase: kIsWeb ? pwaBaseFromUri(Uri.base) : null,
+          groupId: groupId,
         ),
       );
 
@@ -113,7 +120,13 @@ class _ConfigShareSheetState extends State<ConfigShareSheet> {
     final theme = Theme.of(context);
     final server = context.watch<BackendProvider>().baseUrl;
     final group = context.watch<GroupProvider>();
-    final invite = group.isJoined ? group.shareToken : null;
+    final groups = group.memberships;
+    final shared = widget.groupId != null
+        ? group.session(widget.groupId)
+        : groups.length == 1
+            ? groups.single
+            : null;
+    final invite = shared?.shareToken;
     final base = _base;
     final link = server == null || base == null
         ? null
@@ -133,7 +146,7 @@ class _ConfigShareSheetState extends State<ConfigShareSheet> {
             else
               Text(invite == null
                   ? l10n.configShareExplainServer
-                  : l10n.configShareExplainGroup(currentGroupLabel(l10n, group))),
+                  : l10n.configShareExplainGroup(groupLabel(l10n, shared!))),
             const SizedBox(height: 16),
             if (link != null) ...[
               Center(

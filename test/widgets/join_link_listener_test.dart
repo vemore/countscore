@@ -89,7 +89,7 @@ Future<void> _expectUntouched(_Harness h) async {
   expect(h.backend.baseUrl, _oldServer);
   expect((await SharedPreferences.getInstance()).getString('backendUrl'), _oldServer);
   expect(h.group.isJoined, isTrue);
-  expect(h.group.token, 'old-invite');
+  expect(h.group.shareToken, 'old-invite');
   expect(h.group.calls, isEmpty, reason: 'no join, leave or server change');
 }
 

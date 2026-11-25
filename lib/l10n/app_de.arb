@@ -370,8 +370,6 @@
 
   "shareTokenHint": "Füge den Code ein, den dir ein Gruppenmitglied geschickt hat",
 
-  "groupCurrent": "Gruppe: {name}",
-
   "shareTokenExplain": "Sende diesen Code an die Geräte, die der Gruppe beitreten sollen. Wer ihn hat, kann beitreten.",
 
   "shareTokenCopy": "Code kopieren",
@@ -384,13 +382,9 @@
 
   "groupLeave": "Gruppe verlassen",
 
-  "groupLeaveConfirm": "Dieses Gerät verlässt die Gruppe. Geteilte Spiele bleiben auf diesem Gerät, werden aber nicht mehr synchronisiert.",
-
   "groupLeft": "Gruppe verlassen",
 
   "groupJoined": "Gruppe beigetreten",
-
-  "clearServerLeavesGroup": "Wenn du den Server löschst, verlässt du die Gruppe. Geteilte Spiele bleiben auf diesem Gerät.",
 
   "syncNow": "Jetzt synchronisieren",
 
@@ -732,7 +726,6 @@
   "replaceConfigCurrent": "Aktuell: {value}",
   "replaceConfigNew": "Neu: {value}",
   "replaceConfigInvite": "Einladungscode {code}",
-  "replaceConfigLeavesGroup": "Dieses Gerät verlässt die Gruppe {name}. Die Spiele bleiben auf diesem Gerät.",
   "replaceConfigConfirm": "Ersetzen",
   "replaceConfigUnsynced": "{count, plural, =1{1 Änderung auf diesem Gerät hat die Gruppe noch nicht erreicht. Wenn du jetzt gehst, wird die Gruppe sie nie erhalten.} other{{count} Änderungen auf diesem Gerät haben die Gruppe noch nicht erreicht. Wenn du jetzt gehst, wird die Gruppe sie nie erhalten.}}",
   "replaceConfigLeaveAnyway": "Trotzdem verlassen",
@@ -749,5 +742,19 @@
   "gameRulesEndOrMaxRounds": "{count, plural, one{{condition}, oder spätestens nach {count} Runde} other{{condition}, oder spätestens nach {count} Runden}}",
   "boardRoundProgress": "Runde {current} von {total}",
   "gameTypeNameChouineurs": "Chouineurs",
-  "gameTypeNameChouineursSortKey": "Chouineurs"
+  "gameTypeNameChouineursSortKey": "Chouineurs",
+  "groupsSection": "Gruppen",
+  "groupsMaxReached": "Maximale Anzahl an Gruppen erreicht ({max}): Verlasse eine, um eine andere zu erstellen oder beizutreten.",
+  "groupLeaveConfirmNamed": "Dieses Gerät verlässt die Gruppe {name}. Geteilte Spiele bleiben auf diesem Gerät, werden aber nicht mehr synchronisiert. Deine anderen Gruppen bleiben unverändert.",
+  "clearServerLeavesGroups": "{count, plural, one{Den Server zu löschen verlässt die Gruppe. Geteilte Spiele bleiben auf diesem Gerät.} other{Den Server zu löschen verlässt alle {count} Gruppen. Geteilte Spiele bleiben auf diesem Gerät.}}",
+  "replaceConfigLeavesGroups": "{count, plural, one{Dieses Gerät verlässt die Gruppe {names}. Seine Spiele bleiben auf diesem Gerät.} other{Dieses Gerät verlässt seine {count} Gruppen: {names}. Seine Spiele bleiben auf diesem Gerät.}}",
+  "joinGroupTooTitle": "Auch dieser Gruppe beitreten?",
+  "joinGroupTooBody": "Dieses Gerät tritt der Gruppe mit dem Einladungscode {code} auf demselben Server bei. Es bleibt in deinen aktuellen Gruppen: {groups}.",
+  "joinGroupTooConfirm": "Beitreten",
+  "joinLinkAlreadyMember": "Dieses Gerät ist bereits in der Gruppe {name}: Es ändert sich nichts.",
+  "newGameShareWith": "Teilen mit",
+  "newGameLocalOnly": "Nur dieses Gerät",
+  "newGameLocalSubtitle": "Das Spiel bleibt auf diesem Gerät.",
+  "shareGameChooseGroup": "Mit welcher Gruppe soll dieses Spiel geteilt werden? Das Spiel, seine Spieler, Punkte und Kommentare werden dorthin gesendet. Das Teilen kann nicht rückgängig gemacht werden.",
+  "gameSharedWith": "Geteilt mit {name}"
 }

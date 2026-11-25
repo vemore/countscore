@@ -183,7 +183,7 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(seen.map((r) => r.url.path), contains('/groups'));
-    expect(find.text('Group: Famille'), findsOneWidget);
+    expect(tester.widget<Text>(find.byKey(const Key('group_name'))).data, 'Famille');
     expect(find.byKey(const Key('group_share_token')), findsOneWidget);
 
     // Stop the poll timer before the binding checks for pending timers.
@@ -233,7 +233,7 @@ void main() {
     final group = await _pumpSection(tester, seen);
     await _createGroup(tester);
 
-    expect(group.isOwner, isTrue);
+    expect(group.memberships.single.isOwner, isTrue);
     expect(find.byKey(const Key('group_rotate_share_token')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('group_devices')));
@@ -252,7 +252,7 @@ void main() {
 
     // The server said another device owns the group.
     expect(seen.map((r) => r.url.path), contains('/groups/me'));
-    expect(group.isOwner, isFalse);
+    expect(group.memberships.single.isOwner, isFalse);
     expect(find.byKey(const Key('group_rotate_share_token')), findsNothing);
 
     await tester.tap(find.byKey(const Key('group_devices')));
@@ -287,7 +287,7 @@ void main() {
     final put = seen.lastWhere((r) => r.url.path == '/groups/me/owner') as http.Request;
     expect(put.method, 'PUT');
     expect(jsonDecode(put.body), {'device_id': _lost});
-    expect(group.isOwner, isFalse);
+    expect(group.memberships.single.isOwner, isFalse);
     expect(find.text('“Lost phone” now owns the group.'), findsOneWidget);
     expect(find.byKey(const Key('group_device_revoke_$_lost')), findsNothing);
 
@@ -304,7 +304,7 @@ void main() {
     final group = await _pumpSection(tester, seen, owner: _lost, dormantOwner: true);
     await _createGroup(tester);
 
-    expect(group.isOwner, isFalse);
+    expect(group.memberships.single.isOwner, isFalse);
     await tester.tap(find.byKey(const Key('group_devices')));
     await _settle(tester);
 
@@ -316,7 +316,7 @@ void main() {
     expect(tester.takeException(), isNull);
     final claim = seen.lastWhere((r) => r.url.path == '/groups/me/owner/claim');
     expect(claim.method, 'POST');
-    expect(group.isOwner, isTrue);
+    expect(group.memberships.single.isOwner, isTrue);
     expect(find.text('This device now owns the group.'), findsOneWidget);
     // With the role in hand, the owner actions are back on the other device.
     expect(find.byKey(const Key('group_device_revoke_$_lost')), findsOneWidget);
@@ -348,7 +348,7 @@ void main() {
     await _settle(tester);
 
     expect(tester.takeException(), isNull);
-    expect(group.isOwner, isFalse);
+    expect(group.memberships.single.isOwner, isFalse);
     expect(
       find.text("The group's owner has been seen recently: ownership cannot be claimed."),
       findsOneWidget,
@@ -363,7 +363,7 @@ void main() {
     final group = await _pumpSection(tester, seen, owner: null);
     await _createGroup(tester);
 
-    expect(group.isOwner, isTrue);
+    expect(group.memberships.single.isOwner, isTrue);
     expect(find.byKey(const Key('group_rotate_share_token')), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox());
@@ -396,7 +396,7 @@ void main() {
     final patch = seen.lastWhere((r) => r.url.path == '/groups/devices/me') as http.Request;
     expect(patch.method, 'PATCH');
     expect(jsonDecode(patch.body), {'label': 'Alice B'});
-    expect(group.deviceLabel, 'Alice B');
+    expect(group.nickname, 'Alice B');
     expect(find.text('Your nickname: Alice B'), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox());

@@ -2,7 +2,7 @@
 
 > Scope: production topology and environment. For the procedure, use the `backend-deploy` skill.
 > Related: [[Backend]] · [[Security]] · [[Web]] · [[LlmProviders]]
-> Updated: 2026-11-19
+> Updated: 2026-11-25
 
 ## Facts
 
@@ -197,7 +197,7 @@ A dump still holds the whole database — every group's `share_token` in clear, 
 games, rounds, scores, player names, analyses and comments, the `change_log` payloads, device
 labels and `last_seen_at` (device tokens only as argon2 hashes). Encryption moves the secret
 from the backup files to the private key: **a leaked private key is a leaked backup.** Then
-rotate every group's invite code from that group's owner device (Settings → Group → *New
+rotate every group's invite code from that group's owner device (Settings → Groups → *New
 code*, or `POST /groups/me/rotate-share-token`; only the owner may rotate, any other device
 gets a 403 — [[Api]]) and re-share it; devices already joined are unaffected.
 

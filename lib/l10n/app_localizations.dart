@@ -1411,12 +1411,6 @@ abstract class AppLocalizations {
   /// **'Collez le code reçu d\'un membre du groupe'**
   String get shareTokenHint;
 
-  /// Shows which group this device is in
-  ///
-  /// In fr, this message translates to:
-  /// **'Groupe : {name}'**
-  String groupCurrent(String name);
-
   /// Explains what to do with the invite code
   ///
   /// In fr, this message translates to:
@@ -1453,12 +1447,6 @@ abstract class AppLocalizations {
   /// **'Quitter le groupe'**
   String get groupLeave;
 
-  /// Confirmation before leaving the group
-  ///
-  /// In fr, this message translates to:
-  /// **'Cet appareil quitte le groupe. Les parties partagées restent sur cet appareil mais ne seront plus synchronisées.'**
-  String get groupLeaveConfirm;
-
   /// Snackbar after leaving the group
   ///
   /// In fr, this message translates to:
@@ -1470,12 +1458,6 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Groupe rejoint'**
   String get groupJoined;
-
-  /// Confirmation when clearing the server URL while in a group
-  ///
-  /// In fr, this message translates to:
-  /// **'Effacer le serveur fait quitter le groupe. Les parties partagées restent sur cet appareil.'**
-  String get clearServerLeavesGroup;
 
   /// Button: sync with the server now
   ///
@@ -2815,12 +2797,6 @@ abstract class AppLocalizations {
   /// **'code d\'invitation {code}'**
   String replaceConfigInvite(String code);
 
-  /// Warning in the replace configuration dialog when accepting makes this device leave its current group
-  ///
-  /// In fr, this message translates to:
-  /// **'Cet appareil va quitter le groupe {name}. Ses parties restent sur cet appareil.'**
-  String replaceConfigLeavesGroup(String name);
-
   /// Confirm button of the replace configuration dialog
   ///
   /// In fr, this message translates to:
@@ -2916,6 +2892,90 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Chouineurs'**
   String get gameTypeNameChouineursSortKey;
+
+  /// Settings section title over the list of groups this device is in; also the heading of the current groups in the replace-configuration dialog when there are several
+  ///
+  /// In fr, this message translates to:
+  /// **'Groupes'**
+  String get groupsSection;
+
+  /// Settings → Groups, in place of the Create and Join buttons once this device is in the most groups it may be in
+  ///
+  /// In fr, this message translates to:
+  /// **'Nombre maximal de groupes atteint ({max}) : quittez-en un pour en créer ou en rejoindre un autre.'**
+  String groupsMaxReached(int max);
+
+  /// Confirmation before leaving one group from its card in Settings → Groups; name is the group name
+  ///
+  /// In fr, this message translates to:
+  /// **'Cet appareil quitte le groupe {name}. Ses parties partagées restent sur cet appareil mais ne seront plus synchronisées. Vos autres groupes ne changent pas.'**
+  String groupLeaveConfirmNamed(String name);
+
+  /// Confirmation before clearing the server URL while this device is in groups: every group is left; count is how many
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, one{Effacer le serveur fait quitter le groupe. Les parties partagées restent sur cet appareil.} other{Effacer le serveur fait quitter les {count} groupes. Les parties partagées restent sur cet appareil.}}'**
+  String clearServerLeavesGroups(int count);
+
+  /// Replace-configuration dialog, a configuration of another server: every group this device is in will be left. count is how many, names their names separated by commas
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, one{Cet appareil va quitter le groupe {names}. Ses parties restent sur cet appareil.} other{Cet appareil va quitter ses {count} groupes : {names}. Ses parties restent sur cet appareil.}}'**
+  String replaceConfigLeavesGroups(int count, String names);
+
+  /// Title of the dialog a configuration QR code opens when it names a group on the server this device already uses, while it is in other groups
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejoindre aussi ce groupe ?'**
+  String get joinGroupTooTitle;
+
+  /// Body of the join-this-group-too dialog; code is the invite code from the QR code, groups the names of the groups this device is in, separated by commas
+  ///
+  /// In fr, this message translates to:
+  /// **'Cet appareil va rejoindre le groupe du code d\'invitation {code}, sur le même serveur. Il reste dans vos groupes actuels : {groups}.'**
+  String joinGroupTooBody(String code, String groups);
+
+  /// Button of the join-this-group-too dialog that joins the group
+  ///
+  /// In fr, this message translates to:
+  /// **'Rejoindre'**
+  String get joinGroupTooConfirm;
+
+  /// Snackbar when a configuration QR code names a group this device is already in; name is the group name
+  ///
+  /// In fr, this message translates to:
+  /// **'Cet appareil est déjà dans le groupe {name} : rien ne change.'**
+  String joinLinkAlreadyMember(String name);
+
+  /// New game screen, label over the choice of where the game goes when this device is in several groups: this device only, or one of the groups
+  ///
+  /// In fr, this message translates to:
+  /// **'Partager avec'**
+  String get newGameShareWith;
+
+  /// New game screen, the choice that keeps the game local, shared with no group
+  ///
+  /// In fr, this message translates to:
+  /// **'Cet appareil seulement'**
+  String get newGameLocalOnly;
+
+  /// New game screen, under the group choice when the game is kept local
+  ///
+  /// In fr, this message translates to:
+  /// **'La partie reste sur cet appareil.'**
+  String get newGameLocalSubtitle;
+
+  /// Board menu, sharing a local game while this device is in several groups: the question above the list of groups
+  ///
+  /// In fr, this message translates to:
+  /// **'Avec quel groupe partager cette partie ? La partie, ses joueurs, scores et commentaires y seront envoyés. Le partage ne peut pas être annulé.'**
+  String get shareGameChooseGroup;
+
+  /// Tooltip of the group badge on a shared game's card and board; name is the group name
+  ///
+  /// In fr, this message translates to:
+  /// **'Partagée avec {name}'**
+  String gameSharedWith(String name);
 }
 
 class _AppLocalizationsDelegate

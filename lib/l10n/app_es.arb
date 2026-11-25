@@ -370,8 +370,6 @@
 
   "shareTokenHint": "Pega el código que te envió un miembro del grupo",
 
-  "groupCurrent": "Grupo: {name}",
-
   "shareTokenExplain": "Envía este código a los dispositivos que deban unirse al grupo. Cualquiera que lo tenga puede unirse.",
 
   "shareTokenCopy": "Copiar código",
@@ -384,13 +382,9 @@
 
   "groupLeave": "Salir del grupo",
 
-  "groupLeaveConfirm": "Este dispositivo sale del grupo. Las partidas compartidas se quedan en este dispositivo, pero dejarán de sincronizarse.",
-
   "groupLeft": "Has salido del grupo",
 
   "groupJoined": "Te has unido al grupo",
-
-  "clearServerLeavesGroup": "Borrar el servidor hace salir del grupo. Las partidas compartidas se quedan en este dispositivo.",
 
   "syncNow": "Sincronizar",
 
@@ -732,7 +726,6 @@
   "replaceConfigCurrent": "Actual: {value}",
   "replaceConfigNew": "Nuevo: {value}",
   "replaceConfigInvite": "código de invitación {code}",
-  "replaceConfigLeavesGroup": "Este dispositivo saldrá del grupo {name}. Sus partidas se quedarán en este dispositivo.",
   "replaceConfigConfirm": "Reemplazar",
   "replaceConfigUnsynced": "{count, plural, =1{1 cambio de este dispositivo aún no ha alcanzado el grupo. Si te vas ahora, el grupo nunca lo recibirá.} other{{count} cambios de este dispositivo aún no han alcanzado el grupo. Si te vas ahora, el grupo nunca los recibirá.}}",
   "replaceConfigLeaveAnyway": "Salir de todas formas",
@@ -749,5 +742,19 @@
   "gameRulesEndOrMaxRounds": "{count, plural, one{{condition}, o tras {count} ronda} other{{condition}, o tras {count} rondas}}",
   "boardRoundProgress": "Ronda {current} de {total}",
   "gameTypeNameChouineurs": "Chouineurs",
-  "gameTypeNameChouineursSortKey": "Chouineurs"
+  "gameTypeNameChouineursSortKey": "Chouineurs",
+  "groupsSection": "Grupos",
+  "groupsMaxReached": "Número máximo de grupos alcanzado ({max}): sal de uno para crear o unirte a otro.",
+  "groupLeaveConfirmNamed": "Este dispositivo sale del grupo {name}. Sus partidas compartidas se quedan en este dispositivo, pero dejarán de sincronizarse. Tus otros grupos no cambian.",
+  "clearServerLeavesGroups": "{count, plural, one{Borrar el servidor hace salir del grupo. Las partidas compartidas se quedan en este dispositivo.} other{Borrar el servidor hace salir de los {count} grupos. Las partidas compartidas se quedan en este dispositivo.}}",
+  "replaceConfigLeavesGroups": "{count, plural, one{Este dispositivo saldrá del grupo {names}. Sus partidas se quedarán en este dispositivo.} other{Este dispositivo saldrá de sus {count} grupos: {names}. Sus partidas se quedarán en este dispositivo.}}",
+  "joinGroupTooTitle": "¿Unirse también a este grupo?",
+  "joinGroupTooBody": "Este dispositivo se unirá al grupo del código de invitación {code}, en el mismo servidor. Se mantiene en tus grupos actuales: {groups}.",
+  "joinGroupTooConfirm": "Unirse",
+  "joinLinkAlreadyMember": "Este dispositivo ya está en el grupo {name}: no cambia nada.",
+  "newGameShareWith": "Compartir con",
+  "newGameLocalOnly": "Solo este dispositivo",
+  "newGameLocalSubtitle": "La partida se queda en este dispositivo.",
+  "shareGameChooseGroup": "¿Con qué grupo compartir esta partida? La partida, sus jugadores, puntuaciones y comentarios se enviarán allí. No se puede deshacer.",
+  "gameSharedWith": "Compartida con {name}"
 }

@@ -370,8 +370,6 @@
 
   "shareTokenHint": "Cole o código enviado por um membro do grupo",
 
-  "groupCurrent": "Grupo: {name}",
-
   "shareTokenExplain": "Envie este código aos dispositivos que devem entrar no grupo. Quem o tiver pode entrar.",
 
   "shareTokenCopy": "Copiar código",
@@ -384,13 +382,9 @@
 
   "groupLeave": "Sair do grupo",
 
-  "groupLeaveConfirm": "Este dispositivo sai do grupo. Os jogos partilhados ficam neste dispositivo, mas deixam de ser sincronizados.",
-
   "groupLeft": "Saiu do grupo",
 
   "groupJoined": "Entrou no grupo",
-
-  "clearServerLeavesGroup": "Apagar o servidor faz sair do grupo. Os jogos partilhados ficam neste dispositivo.",
 
   "syncNow": "Sincronizar",
 
@@ -731,7 +725,6 @@
   "replaceConfigCurrent": "Atual: {value}",
   "replaceConfigNew": "Novo: {value}",
   "replaceConfigInvite": "código de convite {code}",
-  "replaceConfigLeavesGroup": "Este dispositivo vai sair do grupo {name}. Os seus jogos ficam neste dispositivo.",
   "replaceConfigConfirm": "Substituir",
   "replaceConfigUnsynced": "{count, plural, =1{1 alteração neste dispositivo ainda não chegou ao grupo. Se sair agora, o grupo nunca a receberá.} other{{count} alterações neste dispositivo ainda não chegaram ao grupo. Se sair agora, o grupo nunca as receberá.}}",
   "replaceConfigLeaveAnyway": "Sair assim mesmo",
@@ -748,5 +741,19 @@
   "gameRulesEndOrMaxRounds": "{count, plural, one{{condition}, ou após {count} rodada} other{{condition}, ou após {count} rodadas}}",
   "boardRoundProgress": "Rodada {current} de {total}",
   "gameTypeNameChouineurs": "Chouineurs",
-  "gameTypeNameChouineursSortKey": "Chouineurs"
+  "gameTypeNameChouineursSortKey": "Chouineurs",
+  "groupsSection": "Grupos",
+  "groupsMaxReached": "Número máximo de grupos atingido ({max}): saia de um para criar ou entrar em outro.",
+  "groupLeaveConfirmNamed": "Este dispositivo sai do grupo {name}. Os jogos partilhados ficam neste dispositivo, mas deixam de ser sincronizados. Os seus outros grupos não mudam.",
+  "clearServerLeavesGroups": "{count, plural, one{Apagar o servidor faz sair do grupo. Os jogos partilhados ficam neste dispositivo.} other{Apagar o servidor faz sair dos {count} grupos. Os jogos partilhados ficam neste dispositivo.}}",
+  "replaceConfigLeavesGroups": "{count, plural, one{Este dispositivo vai sair do grupo {names}. Os jogos continuam neste dispositivo.} other{Este dispositivo vai sair dos seus {count} grupos: {names}. Os jogos continuam neste dispositivo.}}",
+  "joinGroupTooTitle": "Entrar também neste grupo?",
+  "joinGroupTooBody": "Este dispositivo vai entrar no grupo do código de convite {code}, no mesmo servidor. Continua nos grupos atuais: {groups}.",
+  "joinGroupTooConfirm": "Entrar",
+  "joinLinkAlreadyMember": "Este dispositivo já está no grupo {name}: nada muda.",
+  "newGameShareWith": "Partilhar com",
+  "newGameLocalOnly": "Só neste dispositivo",
+  "newGameLocalSubtitle": "O jogo fica neste dispositivo.",
+  "shareGameChooseGroup": "Com qual grupo partilhar este jogo? O jogo, os seus jogadores, pontuações e comentários serão enviados para lá. A partilha não pode ser anulada.",
+  "gameSharedWith": "Partilhado com {name}"
 }

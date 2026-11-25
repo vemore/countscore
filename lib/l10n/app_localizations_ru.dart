@@ -736,11 +736,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get shareTokenHint => 'Вставьте код, присланный участником группы';
 
   @override
-  String groupCurrent(String name) {
-    return 'Группа: $name';
-  }
-
-  @override
   String get shareTokenExplain =>
       'Отправьте этот код устройствам, которые должны присоединиться. Любой, у кого он есть, может войти в группу.';
 
@@ -761,18 +756,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get groupLeave => 'Покинуть группу';
 
   @override
-  String get groupLeaveConfirm =>
-      'Это устройство покинет группу. Общие партии останутся на нём, но больше не будут синхронизироваться.';
-
-  @override
   String get groupLeft => 'Вы покинули группу';
 
   @override
   String get groupJoined => 'Вы в группе';
-
-  @override
-  String get clearServerLeavesGroup =>
-      'Если удалить сервер, устройство покинет группу. Общие партии останутся на нём.';
 
   @override
   String get syncNow => 'Синхронизировать';
@@ -1719,11 +1706,6 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String replaceConfigLeavesGroup(String name) {
-    return 'Это устройство покинет группу $name. Его партии останутся на устройстве.';
-  }
-
-  @override
   String get replaceConfigConfirm => 'Заменить';
 
   @override
@@ -1811,4 +1793,85 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get gameTypeNameChouineursSortKey => 'Chouineurs';
+
+  @override
+  String get groupsSection => 'Группы';
+
+  @override
+  String groupsMaxReached(int max) {
+    return 'Достигнуто максимальное число групп ($max): выйдите из одной, чтобы создать или присоединиться к другой.';
+  }
+
+  @override
+  String groupLeaveConfirmNamed(String name) {
+    return 'Это устройство покинет группу $name. Его общие партии останутся на нём, но больше не будут синхронизироваться. Остальные ваши группы не изменятся.';
+  }
+
+  @override
+  String clearServerLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Удаление сервера приведёт к выходу из $count групп. Общие партии останутся на этом устройстве.',
+      many:
+          'Удаление сервера приведёт к выходу из $count групп. Общие партии останутся на этом устройстве.',
+      few:
+          'Удаление сервера приведёт к выходу из $count групп. Общие партии останутся на этом устройстве.',
+      one:
+          'Удаление сервера приведёт к выходу из $count группы. Общие партии останутся на этом устройстве.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String replaceConfigLeavesGroups(int count, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Это устройство покинет $count групп: $names. Его партии останутся на устройстве.',
+      many:
+          'Это устройство покинет $count групп: $names. Его партии останутся на устройстве.',
+      few:
+          'Это устройство покинет $count группы: $names. Его партии останутся на устройстве.',
+      one:
+          'Это устройство покинет группу $names. Его партии останутся на устройстве.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get joinGroupTooTitle => 'Присоединиться и к этой группе?';
+
+  @override
+  String joinGroupTooBody(String code, String groups) {
+    return 'Это устройство присоединится к группе по коду приглашения $code на том же сервере. Оно останется в ваших текущих группах: $groups.';
+  }
+
+  @override
+  String get joinGroupTooConfirm => 'Присоединиться';
+
+  @override
+  String joinLinkAlreadyMember(String name) {
+    return 'Это устройство уже в группе $name: ничего не меняется.';
+  }
+
+  @override
+  String get newGameShareWith => 'Поделиться с';
+
+  @override
+  String get newGameLocalOnly => 'Только на этом устройстве';
+
+  @override
+  String get newGameLocalSubtitle => 'Партия останется на этом устройстве.';
+
+  @override
+  String get shareGameChooseGroup =>
+      'С какой группой поделиться этой партией? Партия, её игроки, очки и комментарии будут отправлены в неё. Отменить это нельзя.';
+
+  @override
+  String gameSharedWith(String name) {
+    return 'Общая с группой $name';
+  }
 }

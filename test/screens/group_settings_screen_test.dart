@@ -23,6 +23,7 @@ import 'package:countscore/widgets/group_settings_section.dart';
 
 const _url = 'https://countscore.example.com';
 const _own = '33333333-3333-4333-8333-333333333333';
+const _groupId = '11111111-1111-4111-8111-111111111111';
 
 /// A server holding one group's settings, which PATCH changes — so a second visit
 /// reads back what the first one wrote, as after a restart.
@@ -130,7 +131,7 @@ void main() {
   testWidgets('shows the style, the language and the usage from the server', (tester) async {
     final server = _Server();
     final group = (await tester.runAsync(() => _provider(server)))!;
-    await _pump(tester, group, const GroupSettingsScreen());
+    await _pump(tester, group, const GroupSettingsScreen(groupId: _groupId));
     await _settle(tester);
 
     expect(_chip(tester, 'narrative').selected, isTrue);
@@ -145,7 +146,7 @@ void main() {
       (tester) async {
     final server = _Server();
     final group = (await tester.runAsync(() => _provider(server)))!;
-    await _pump(tester, group, const GroupSettingsScreen());
+    await _pump(tester, group, const GroupSettingsScreen(groupId: _groupId));
     await _settle(tester);
 
     await tester.tap(find.byKey(const Key('group_comment_style_humorous')));
@@ -168,7 +169,7 @@ void main() {
 
     // A fresh visit — as after a restart — shows what the server now holds.
     await _pump(tester, group, const SizedBox());
-    await _pump(tester, group, const GroupSettingsScreen());
+    await _pump(tester, group, const GroupSettingsScreen(groupId: _groupId));
     await _settle(tester);
     expect(_chip(tester, 'humorous').selected, isTrue);
     expect(find.text('English'), findsOneWidget);
@@ -179,7 +180,7 @@ void main() {
   testWidgets('a refused change keeps what the server holds and says why', (tester) async {
     final server = _Server();
     final group = (await tester.runAsync(() => _provider(server)))!;
-    await _pump(tester, group, const GroupSettingsScreen());
+    await _pump(tester, group, const GroupSettingsScreen(groupId: _groupId));
     await _settle(tester);
 
     server.failStatus = 500;
@@ -198,7 +199,7 @@ void main() {
     final server = _Server();
     final group = (await tester.runAsync(() => _provider(server)))!;
     server.failStatus = 503;
-    await _pump(tester, group, const GroupSettingsScreen());
+    await _pump(tester, group, const GroupSettingsScreen(groupId: _groupId));
     await _settle(tester);
 
     expect(find.byKey(const Key('group_settings_retry')), findsOneWidget);
@@ -219,7 +220,7 @@ void main() {
       return g;
     }))!;
     server.seen.clear();
-    await _pump(tester, group, const GroupSettingsScreen(), url: null);
+    await _pump(tester, group, const GroupSettingsScreen(groupId: _groupId), url: null);
     await _settle(tester);
 
     expect(server.seen, isEmpty);
@@ -232,7 +233,7 @@ void main() {
       (tester) async {
     final server = _Server();
     final group = (await tester.runAsync(() => _provider(server, joined: false)))!;
-    await _pump(tester, group, const GroupSettingsScreen());
+    await _pump(tester, group, const GroupSettingsScreen(groupId: _groupId));
     await _settle(tester);
     expect(server.settingsCalls, isEmpty);
     expect(server.seen.where((r) => r.url.path == '/groups/me'), isEmpty);

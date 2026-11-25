@@ -76,6 +76,41 @@ void main() {
         [for (final n in [1, 2, 3, 4, 5]) groupIdOf(n)]);
   });
 
+  // The configuration QR on the server this device uses (decision 7): joined
+  // beside the others, never in place of them.
+  test('a shared configuration of the same server adds its group, and leaves none', () async {
+    await joinAll([1, 2]);
+    await addPreparedChange(db, groupIdOf(1));
+    server.seen.clear();
+
+    final c = await group.prepareJoin(_server, 'invite-3', 'Phone');
+    expect(c.sameGroup, isFalse);
+    await group.completeJoin(c);
+    await idle(group);
+
+    expect([for (final s in group.memberships) s.groupId],
+        [groupIdOf(1), groupIdOf(2), groupIdOf(3)]);
+    expect(server.seen.where((r) => r.url.path.endsWith('/revoke')), isEmpty,
+        reason: 'no group is left');
+    expect(await credentials.deviceToken(groupIdOf(1)), 'token-1');
+    expect(server.calls(3, '/sync/pull'), isNotEmpty, reason: 'the new group syncs');
+  });
+
+  test('a shared configuration of the same server is refused as a sixth group', () async {
+    await joinAll([1, 2, 3, 4, 5]);
+
+    final c = await group.prepareJoin(_server, 'invite-6', 'Phone');
+    await expectLater(
+      group.completeJoin(c),
+      throwsA(isA<GroupActionException>()
+          .having((e) => e.error, 'error', GroupActionError.tooManyGroups)),
+    );
+    expect(group.memberships, hasLength(GroupProvider.maxGroups));
+    expect(await credentials.deviceToken(groupIdOf(6)), isNull);
+    expect(server.calls(6, '/groups/me/devices/${deviceIdOf(6)}/revoke'), hasLength(1),
+        reason: 'the registration the join made is withdrawn');
+  });
+
   test('at five, a code this device holds joins its group again, but never a sixth', () async {
     await joinAll([1, 2, 3, 4, 5]);
     final five = [for (final n in [1, 2, 3, 4, 5]) groupIdOf(n)];

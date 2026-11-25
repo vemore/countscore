@@ -42,7 +42,7 @@ whether the connected features exist; the third starts the review prompt's clock
 | `game_type_provider.dart` | Game-type list CRUD, `getGameTypeById`. The 23 built-in types are rows like any other; their *displayed* name comes from `lib/utils/game_type_name.dart`, not from the row. |
 | `settings_provider.dart` | Wakelock toggle, *Game sounds* (key `gameSounds`, off by default, the one `GameSounds` reads) and the board's layout, `BoardView` (`lanes` or `rows`, key `boardView`, app-wide) — all SharedPreferences-backed, read by `ready` — and DB export/import. The **only** caller of `DatabaseService` for I/O. Exposes `supportsDbExportImport => !kIsWeb`. |
 | `theme_provider.dart` | `ThemeMode` only, persisted to SharedPreferences under `themeMode` as `ThemeMode.name`. `load()` is called from `main()` before `runApp`. |
-| `group_provider.dart` | The groups this device is in, one `GroupSession` each (`group_session.dart`, a `part` of it: token, WebSocket, poll and debounce timers, status, counts, owner flag, generation), and what they share: the server, the nickname, the local-write trigger, the lifecycle, a `SyncEvent` stream shown as snackbars by `_SyncEventListener` in `main.dart`. `memberships` and `session(groupId)` are the explicit API — a game's analysis, its share and its rematch go to its own group; `groupName`, `status` (the worst), `pendingChanges` (the sum) and the owner actions are a single-group compatibility layer over the first group joined, until the multi-group UI. At most `maxGroups` (5). A `ChangeNotifierProxyProvider` over `BackendProvider`: runs only with a URL **and** a device token. Its stored memberships are read by the first `updateBackend`, which the proxy makes on creation; `loaded` completes then, and until it does `isJoined` reads false. Calls `GameProvider.refreshFromSync` after remote changes. See [[Sync]]. |
+| `group_provider.dart` | The groups this device is in, one `GroupSession` each (`group_session.dart`, a `part` of it: token, WebSocket, poll and debounce timers, status, counts, owner flag, generation), and what they share: the server, the nickname, the local-write trigger, the lifecycle, a `SyncEvent` stream shown as snackbars by `_SyncEventListener` in `main.dart`. `memberships` and `session(groupId)` are the API every screen reads — a game's analysis, its share and its rematch go to its own group, and each group's card in Settings → Groups to its session; `status` (the worst), `pendingChanges` (the sum) and `isJoined` sum every group up. At most `maxGroups` (5), `canJoinMore` below it. A `ChangeNotifierProxyProvider` over `BackendProvider`: runs only with a URL **and** a device token. Its stored memberships are read by the first `updateBackend`, which the proxy makes on creation; `loaded` completes then, and until it does `isJoined` reads false. Calls `GameProvider.refreshFromSync` after remote changes. See [[Sync]]. |
 | `backend_provider.dart` | The self-hosted backend base URL, SharedPreferences key `backendUrl`, **no default**. `check()` validates and canonicalises what the user typed; `isConfigured` gates every connected feature. `load()` is called from `main()` before `runApp`. |
 
 ### Screens — `lib/screens/`
@@ -141,13 +141,13 @@ they first appear walking back from the latest game — so the latest game shows
 board's colours and the filter never recolours anyone. Tests:
 `test/models/player_stats_test.dart`, `test/screens/player_stats_screen_test.dart`.
 
-`group_settings_screen` is Settings → Group → *Comments and usage*, reached only from the
-Group section once the device is in a group: the group's comment style (three chips,
+`group_settings_screen` is Settings → Groups → a group → *Comments and usage*
+(`GroupSettingsScreen(groupId)`), reached from that group's card: the group's comment style (three chips,
 `narrative` · `humorous` · `analytical`) and language (the app's ten, by endonym), read from
 `GET /groups/me` and written back at once with `PATCH /groups/me/settings`, and the month's
 LLM spending from `GET /groups/me/usage`, in US dollars against the budget. Nothing is kept
 on the device: each visit reads the server again. It calls nothing without a server URL and
-a device token (`GroupProvider.canReachGroup`). The budget is shown, never edited — see
+that group's device token (`GroupSession.canReach`). The budget is shown, never edited — see
 [[Sync]].
 
 `game_analysis_screen` sends a game shared with a group this device is in through
@@ -208,8 +208,10 @@ choice of win rule; the players in **seat order** (`seat_order_list.dart`), colo
 player shows one colour here and on the board — with *Add a player* opening the "who's
 playing" sheet (`player_picker_sheet.dart`); and a full-width *Start · N players* in the
 `bottomNavigationBar`, enabled from two players. The seat order written is the list's order
-(`orderIndex`). `boardBuilder` replaces the board in tests. The *Share with the group*
-switch stays, under the players, while the device is in a group. Both sheets (players, *All
+(`orderIndex`). `boardBuilder` replaces the board in tests. Under the players, where the
+game goes: nothing in no group, the *Share with the group* switch in one, and in several a
+chip per group beside *This device only*, starting on the last group used ([[MultiGroup]],
+*Where a game goes*). Both sheets (players, *All
 games*) drop the focus before they open: a modal route gives focus back on close, and the
 name field's keyboard would come back up over the players just picked.
 
@@ -301,15 +303,19 @@ Seventeen components shared out of the screens:
   side by side under it (not `AlertDialog` actions, which stack once a label no longer
   fits); labels scale down rather than wrap, so nothing moves between two taps
   (`wip/done/2026-09-25-the-turn-timer-dialog-changes-shape-while-it-runs.md`).
-- `group_settings_section.dart` — Settings → Group: create or join a group, show its invite
-  code, leave it, and show where sync stands; usable only once a server URL is set. *New
-  code* is shown to the group's owner only; *Comments and usage* opens
-  `group_settings_screen`.
-- `config_share_sheet.dart` — Settings → Server (and Group) → *Share by QR code*: the QR of
+- `group_settings_section.dart` — Settings → Groups: the one nickname, a card per group (its
+  status, invite code, devices, comments and usage, *New code* for its owner, its own
+  *Leave*), and *Create* and *Join* below five groups; usable only once a server URL is set
+  ([[MultiGroup]]).
+- `group_badge.dart` — `GroupBadge`, a shared game's group as a small label with its name, on
+  the game cards, the Resume card and the board's title; `share_group_dialog.dart` —
+  `showShareGroupDialog`, which group the board shares a local game with.
+- `config_share_sheet.dart` — Settings → Server (and a group's card) → *Share by QR code*: the QR of
   the configuration link, drawn locally with the `qr` package, and the web app address it
   needs; `replace_config_dialog.dart` — `showReplaceConfigDialog`, the shared "replace the
   configuration?" question a scanned link opens. Both in [[ConfigShare]].
-- `group_devices_sheet.dart` — Settings → Group → Devices: the group's devices, this one and
+- `group_devices_sheet.dart` — Settings → Groups → a group → Devices
+  (`GroupDevicesSheet(groupId)`): that group's devices, this one and
   the owner marked; the owner alone gets revoke and *Make owner* on the others ([[Sync]]).
 - `pwa_update_listener.dart` — `PwaUpdateListener`, wrapped around every screen by
   `MaterialApp.builder` in `main.dart`: on the web, once the service worker has a deploy's

@@ -713,11 +713,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get shareTokenHint => '粘贴群组成员发给您的邀请码';
 
   @override
-  String groupCurrent(String name) {
-    return '群组：$name';
-  }
-
-  @override
   String get shareTokenExplain => '把此邀请码发给要加入群组的设备。任何拿到它的人都可以加入。';
 
   @override
@@ -736,16 +731,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get groupLeave => '退出群组';
 
   @override
-  String get groupLeaveConfirm => '本设备将退出群组。共享的对局仍保留在本设备上，但不再同步。';
-
-  @override
   String get groupLeft => '已退出群组';
 
   @override
   String get groupJoined => '已加入群组';
-
-  @override
-  String get clearServerLeavesGroup => '清除服务器会退出群组。共享的对局仍保留在本设备上。';
 
   @override
   String get syncNow => '立即同步';
@@ -1622,11 +1611,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String replaceConfigLeavesGroup(String name) {
-    return '本设备将退出群组 $name。游戏将保留在本设备上。';
-  }
-
-  @override
   String get replaceConfigConfirm => '替换';
 
   @override
@@ -1699,4 +1683,70 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get gameTypeNameChouineursSortKey => 'Chouineurs';
+
+  @override
+  String get groupsSection => '群组';
+
+  @override
+  String groupsMaxReached(int max) {
+    return '已达到群组数上限（$max）：请先退出一个群组，才能创建或加入其他群组。';
+  }
+
+  @override
+  String groupLeaveConfirmNamed(String name) {
+    return '本设备将退出群组“$name”。其共享的对局仍保留在本设备上，但不再同步。您的其他群组不受影响。';
+  }
+
+  @override
+  String clearServerLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '清除服务器将退出全部 $count 个群组。共享的对局仍保留在本设备上。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String replaceConfigLeavesGroups(int count, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '本设备将退出 $count 个群组：$names。其对局仍保留在本设备上。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get joinGroupTooTitle => '同时加入此群组？';
+
+  @override
+  String joinGroupTooBody(String code, String groups) {
+    return '本设备将加入邀请码 $code 对应的群组，该群组位于同一服务器。本设备将保留在您当前的群组中：$groups。';
+  }
+
+  @override
+  String get joinGroupTooConfirm => '加入';
+
+  @override
+  String joinLinkAlreadyMember(String name) {
+    return '本设备已在群组“$name”中：无需更改。';
+  }
+
+  @override
+  String get newGameShareWith => '分享给';
+
+  @override
+  String get newGameLocalOnly => '仅本设备';
+
+  @override
+  String get newGameLocalSubtitle => '此对局将保留在本设备上。';
+
+  @override
+  String get shareGameChooseGroup => '要与哪个群组分享此对局？对局、玩家、分数和评论都将发送到该群组。分享后无法撤销。';
+
+  @override
+  String gameSharedWith(String name) {
+    return '已与$name分享';
+  }
 }

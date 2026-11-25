@@ -735,11 +735,6 @@ class AppLocalizationsPl extends AppLocalizations {
   String get shareTokenHint => 'Wklej kod przesłany przez członka grupy';
 
   @override
-  String groupCurrent(String name) {
-    return 'Grupa: $name';
-  }
-
-  @override
   String get shareTokenExplain =>
       'Wyślij ten kod do urządzeń, które mają dołączyć do grupy. Każdy, kto go ma, może dołączyć.';
 
@@ -760,18 +755,10 @@ class AppLocalizationsPl extends AppLocalizations {
   String get groupLeave => 'Opuść grupę';
 
   @override
-  String get groupLeaveConfirm =>
-      'To urządzenie opuszcza grupę. Udostępniane gry pozostają na tym urządzeniu, ale nie będą już synchronizowane.';
-
-  @override
   String get groupLeft => 'Grupa opuszczona';
 
   @override
   String get groupJoined => 'Grupa dołączona';
-
-  @override
-  String get clearServerLeavesGroup =>
-      'Wyczyszczenie serwera powoduje opuszczenie grupy. Udostępniane gry pozostają na tym urządzeniu.';
 
   @override
   String get syncNow => 'Synchronizuj teraz';
@@ -1694,11 +1681,6 @@ class AppLocalizationsPl extends AppLocalizations {
   }
 
   @override
-  String replaceConfigLeavesGroup(String name) {
-    return 'To urządzenie opuści grupę $name. Jego gry pozostają na tym urządzeniu.';
-  }
-
-  @override
   String get replaceConfigConfirm => 'Zastąp';
 
   @override
@@ -1780,4 +1762,84 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get gameTypeNameChouineursSortKey => 'Chouineurs';
+
+  @override
+  String get groupsSection => 'Grupy';
+
+  @override
+  String groupsMaxReached(int max) {
+    return 'Osiągnięto maksymalną liczbę grup ($max): opuść jedną, aby utworzyć lub dołączyć do innej.';
+  }
+
+  @override
+  String groupLeaveConfirmNamed(String name) {
+    return 'To urządzenie opuszcza grupę $name. Jego udostępniane gry pozostają na tym urządzeniu, ale nie będą już synchronizowane. Pozostałe grupy się nie zmieniają.';
+  }
+
+  @override
+  String clearServerLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Wyczyszczenie serwera powoduje opuszczenie $count grup. Udostępniane gry pozostają na tym urządzeniu.',
+      many:
+          'Wyczyszczenie serwera powoduje opuszczenie $count grup. Udostępniane gry pozostają na tym urządzeniu.',
+      few:
+          'Wyczyszczenie serwera powoduje opuszczenie $count grup. Udostępniane gry pozostają na tym urządzeniu.',
+      one: 'Wyczyszczenie serwera powoduje opuszczenie grupy. Udostępniane gry pozostają na tym urządzeniu.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String replaceConfigLeavesGroups(int count, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'To urządzenie opuści $count grup: $names. Jego gry pozostają na tym urządzeniu.',
+      many:
+          'To urządzenie opuści $count grup: $names. Jego gry pozostają na tym urządzeniu.',
+      few:
+          'To urządzenie opuści $count grupy: $names. Jego gry pozostają na tym urządzeniu.',
+      one:
+          'To urządzenie opuści grupę $names. Jego gry pozostają na tym urządzeniu.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get joinGroupTooTitle => 'Dołączyć też do tej grupy?';
+
+  @override
+  String joinGroupTooBody(String code, String groups) {
+    return 'To urządzenie dołączy do grupy z kodem zaproszenia $code, na tym samym serwerze. Pozostanie w swoich obecnych grupach: $groups.';
+  }
+
+  @override
+  String get joinGroupTooConfirm => 'Dołącz';
+
+  @override
+  String joinLinkAlreadyMember(String name) {
+    return 'To urządzenie jest już w grupie $name: nic się nie zmienia.';
+  }
+
+  @override
+  String get newGameShareWith => 'Udostępnij';
+
+  @override
+  String get newGameLocalOnly => 'Tylko na tym urządzeniu';
+
+  @override
+  String get newGameLocalSubtitle => 'Gra pozostanie na tym urządzeniu.';
+
+  @override
+  String get shareGameChooseGroup =>
+      'Z którą grupą udostępnić tę grę? Gra, jej gracze, wyniki i komentarze zostaną do niej wysłane. Udostępniania nie można cofnąć.';
+
+  @override
+  String gameSharedWith(String name) {
+    return 'Udostępniona w grupie $name';
+  }
 }

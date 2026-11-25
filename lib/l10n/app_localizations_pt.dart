@@ -733,11 +733,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get shareTokenHint => 'Cole o código enviado por um membro do grupo';
 
   @override
-  String groupCurrent(String name) {
-    return 'Grupo: $name';
-  }
-
-  @override
   String get shareTokenExplain =>
       'Envie este código aos dispositivos que devem entrar no grupo. Quem o tiver pode entrar.';
 
@@ -758,18 +753,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get groupLeave => 'Sair do grupo';
 
   @override
-  String get groupLeaveConfirm =>
-      'Este dispositivo sai do grupo. Os jogos partilhados ficam neste dispositivo, mas deixam de ser sincronizados.';
-
-  @override
   String get groupLeft => 'Saiu do grupo';
 
   @override
   String get groupJoined => 'Entrou no grupo';
-
-  @override
-  String get clearServerLeavesGroup =>
-      'Apagar o servidor faz sair do grupo. Os jogos partilhados ficam neste dispositivo.';
 
   @override
   String get syncNow => 'Sincronizar';
@@ -1683,11 +1670,6 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String replaceConfigLeavesGroup(String name) {
-    return 'Este dispositivo vai sair do grupo $name. Os seus jogos ficam neste dispositivo.';
-  }
-
-  @override
   String get replaceConfigConfirm => 'Substituir';
 
   @override
@@ -1765,4 +1747,76 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get gameTypeNameChouineursSortKey => 'Chouineurs';
+
+  @override
+  String get groupsSection => 'Grupos';
+
+  @override
+  String groupsMaxReached(int max) {
+    return 'Número máximo de grupos atingido ($max): saia de um para criar ou entrar em outro.';
+  }
+
+  @override
+  String groupLeaveConfirmNamed(String name) {
+    return 'Este dispositivo sai do grupo $name. Os jogos partilhados ficam neste dispositivo, mas deixam de ser sincronizados. Os seus outros grupos não mudam.';
+  }
+
+  @override
+  String clearServerLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Apagar o servidor faz sair dos $count grupos. Os jogos partilhados ficam neste dispositivo.',
+      one: 'Apagar o servidor faz sair do grupo. Os jogos partilhados ficam neste dispositivo.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String replaceConfigLeavesGroups(int count, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Este dispositivo vai sair dos seus $count grupos: $names. Os jogos continuam neste dispositivo.',
+      one:
+          'Este dispositivo vai sair do grupo $names. Os jogos continuam neste dispositivo.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get joinGroupTooTitle => 'Entrar também neste grupo?';
+
+  @override
+  String joinGroupTooBody(String code, String groups) {
+    return 'Este dispositivo vai entrar no grupo do código de convite $code, no mesmo servidor. Continua nos grupos atuais: $groups.';
+  }
+
+  @override
+  String get joinGroupTooConfirm => 'Entrar';
+
+  @override
+  String joinLinkAlreadyMember(String name) {
+    return 'Este dispositivo já está no grupo $name: nada muda.';
+  }
+
+  @override
+  String get newGameShareWith => 'Partilhar com';
+
+  @override
+  String get newGameLocalOnly => 'Só neste dispositivo';
+
+  @override
+  String get newGameLocalSubtitle => 'O jogo fica neste dispositivo.';
+
+  @override
+  String get shareGameChooseGroup =>
+      'Com qual grupo partilhar este jogo? O jogo, os seus jogadores, pontuações e comentários serão enviados para lá. A partilha não pode ser anulada.';
+
+  @override
+  String gameSharedWith(String name) {
+    return 'Partilhado com $name';
+  }
 }

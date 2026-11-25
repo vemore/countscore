@@ -720,11 +720,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get shareTokenHint => 'グループのメンバーから届いたコードを貼り付けてください';
 
   @override
-  String groupCurrent(String name) {
-    return 'グループ：$name';
-  }
-
-  @override
   String get shareTokenExplain =>
       'グループに参加する端末にこのコードを送ってください。コードを知っている人は誰でも参加できます。';
 
@@ -745,18 +740,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get groupLeave => 'グループを退出';
 
   @override
-  String get groupLeaveConfirm =>
-      'この端末はグループを退出します。共有したゲームは端末に残りますが、同期されなくなります。';
-
-  @override
   String get groupLeft => 'グループを退出しました';
 
   @override
   String get groupJoined => 'グループに参加しました';
-
-  @override
-  String get clearServerLeavesGroup =>
-      'サーバーを消去するとグループを退出します。共有したゲームはこの端末に残ります。';
 
   @override
   String get syncNow => '今すぐ同期';
@@ -1639,11 +1626,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String replaceConfigLeavesGroup(String name) {
-    return 'このデバイスはグループ $name を退出します。ゲームはこのデバイスに残ります。';
-  }
-
-  @override
   String get replaceConfigConfirm => '置き換え';
 
   @override
@@ -1716,4 +1698,71 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get gameTypeNameChouineursSortKey => 'Chouineurs';
+
+  @override
+  String get groupsSection => 'グループ';
+
+  @override
+  String groupsMaxReached(int max) {
+    return 'グループ数の上限（$max）に達しました。別のグループを作成または参加するには、いずれかを退出してください。';
+  }
+
+  @override
+  String groupLeaveConfirmNamed(String name) {
+    return 'この端末はグループ「$name」を退出します。共有したゲームは端末に残りますが、同期されなくなります。他のグループは変わりません。';
+  }
+
+  @override
+  String clearServerLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'サーバーを消去すると、$count 件のグループをすべて退出します。共有したゲームはこの端末に残ります。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String replaceConfigLeavesGroups(int count, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'この端末は $count 件のグループ（$names）を退出します。ゲームはこの端末に残ります。',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get joinGroupTooTitle => 'このグループにも参加しますか？';
+
+  @override
+  String joinGroupTooBody(String code, String groups) {
+    return 'この端末は、招待コード $code のグループに、同じサーバー上で参加します。現在のグループ（$groups）にはそのまま残ります。';
+  }
+
+  @override
+  String get joinGroupTooConfirm => '参加';
+
+  @override
+  String joinLinkAlreadyMember(String name) {
+    return 'この端末はすでにグループ「$name」に参加しています。変更はありません。';
+  }
+
+  @override
+  String get newGameShareWith => '共有先';
+
+  @override
+  String get newGameLocalOnly => 'この端末のみ';
+
+  @override
+  String get newGameLocalSubtitle => 'ゲームはこの端末に残ります。';
+
+  @override
+  String get shareGameChooseGroup =>
+      'このゲームをどのグループと共有しますか？ゲーム、プレイヤー、スコア、コメントがそこに送信されます。共有は取り消せません。';
+
+  @override
+  String gameSharedWith(String name) {
+    return '$name と共有済み';
+  }
 }

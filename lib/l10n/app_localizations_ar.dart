@@ -734,11 +734,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get shareTokenHint => 'الصق الرمز الذي أرسله إليك أحد أعضاء المجموعة';
 
   @override
-  String groupCurrent(String name) {
-    return 'المجموعة: $name';
-  }
-
-  @override
   String get shareTokenExplain =>
       'أرسل هذا الرمز إلى الأجهزة التي ينبغي أن تنضم إلى المجموعة. يمكن لأي شخص يملكه الانضمام.';
 
@@ -759,18 +754,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get groupLeave => 'مغادرة المجموعة';
 
   @override
-  String get groupLeaveConfirm =>
-      'سيغادر هذا الجهاز المجموعة. تبقى الألعاب المشتركة على هذا الجهاز لكنها لن تُزامَن بعد الآن.';
-
-  @override
   String get groupLeft => 'غادرت المجموعة';
 
   @override
   String get groupJoined => 'انضممت إلى المجموعة';
-
-  @override
-  String get clearServerLeavesGroup =>
-      'مسح الخادم يعني مغادرة المجموعة. تبقى الألعاب المشتركة على هذا الجهاز.';
 
   @override
   String get syncNow => 'مزامنة الآن';
@@ -1738,11 +1725,6 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String replaceConfigLeavesGroup(String name) {
-    return 'سيترك هذا الجهاز المجموعة $name. تبقى الألعاب على هذا الجهاز.';
-  }
-
-  @override
   String get replaceConfigConfirm => 'استبدال';
 
   @override
@@ -1833,4 +1815,85 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get gameTypeNameChouineursSortKey => 'Chouineurs';
+
+  @override
+  String get groupsSection => 'المجموعات';
+
+  @override
+  String groupsMaxReached(int max) {
+    return 'بلغت الحد الأقصى لعدد المجموعات ($max): غادر إحداها لإنشاء مجموعة أخرى أو الانضمام إليها.';
+  }
+
+  @override
+  String groupLeaveConfirmNamed(String name) {
+    return 'سيغادر هذا الجهاز المجموعة $name. تبقى ألعابها المشتركة على هذا الجهاز لكنها لن تُزامَن بعد الآن. مجموعاتك الأخرى لن تتغير.';
+  }
+
+  @override
+  String clearServerLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'مسح الخادم يعني مغادرة $count مجموعة. تبقى الألعاب المشتركة على هذا الجهاز.',
+      many:
+          'مسح الخادم يعني مغادرة $count مجموعة. تبقى الألعاب المشتركة على هذا الجهاز.',
+      few:
+          'مسح الخادم يعني مغادرة $count مجموعات. تبقى الألعاب المشتركة على هذا الجهاز.',
+      two: 'مسح الخادم يعني مغادرة المجموعتين. تبقى الألعاب المشتركة على هذا الجهاز.',
+      one: 'مسح الخادم يعني مغادرة المجموعة. تبقى الألعاب المشتركة على هذا الجهاز.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String replaceConfigLeavesGroups(int count, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'سيغادر هذا الجهاز $count مجموعة: $names. تبقى ألعابه على هذا الجهاز.',
+      many:
+          'سيغادر هذا الجهاز $count مجموعة: $names. تبقى ألعابه على هذا الجهاز.',
+      few:
+          'سيغادر هذا الجهاز $count مجموعات: $names. تبقى ألعابه على هذا الجهاز.',
+      two: 'سيغادر هذا الجهاز المجموعتين: $names. تبقى ألعابه على هذا الجهاز.',
+      one: 'سيغادر هذا الجهاز المجموعة $names. تبقى ألعابه على هذا الجهاز.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get joinGroupTooTitle => 'هل تريد الانضمام إلى هذه المجموعة أيضًا؟';
+
+  @override
+  String joinGroupTooBody(String code, String groups) {
+    return 'سينضم هذا الجهاز إلى المجموعة ذات رمز الدعوة $code، على الخادم نفسه. يبقى في مجموعاتك الحالية: $groups.';
+  }
+
+  @override
+  String get joinGroupTooConfirm => 'انضمام';
+
+  @override
+  String joinLinkAlreadyMember(String name) {
+    return 'هذا الجهاز موجود بالفعل في المجموعة $name: لا يتغير شيء.';
+  }
+
+  @override
+  String get newGameShareWith => 'مشاركة مع';
+
+  @override
+  String get newGameLocalOnly => 'هذا الجهاز فقط';
+
+  @override
+  String get newGameLocalSubtitle => 'تبقى اللعبة على هذا الجهاز.';
+
+  @override
+  String get shareGameChooseGroup =>
+      'مع أي مجموعة تريد مشاركة هذه اللعبة؟ ستُرسل إليها اللعبة ولاعبوها ونتائجها وتعليقاتها. لا يمكن التراجع عن المشاركة.';
+
+  @override
+  String gameSharedWith(String name) {
+    return 'مشتركة مع $name';
+  }
 }

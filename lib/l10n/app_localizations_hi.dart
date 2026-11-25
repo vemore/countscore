@@ -732,11 +732,6 @@ class AppLocalizationsHi extends AppLocalizations {
   String get shareTokenHint => 'समूह के किसी सदस्य से मिला कोड चिपकाएँ';
 
   @override
-  String groupCurrent(String name) {
-    return 'समूह: $name';
-  }
-
-  @override
   String get shareTokenExplain =>
       'यह कोड उन उपकरणों को भेजें जिन्हें समूह में शामिल होना है। जिसके पास यह कोड है, वह शामिल हो सकता है।';
 
@@ -757,18 +752,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get groupLeave => 'समूह छोड़ें';
 
   @override
-  String get groupLeaveConfirm =>
-      'यह उपकरण समूह छोड़ देगा। साझा किए गए खेल इसी उपकरण पर रहेंगे, पर अब सिंक नहीं होंगे।';
-
-  @override
   String get groupLeft => 'समूह छोड़ दिया';
 
   @override
   String get groupJoined => 'समूह में शामिल हो गए';
-
-  @override
-  String get clearServerLeavesGroup =>
-      'सर्वर हटाने से समूह छूट जाएगा। साझा किए गए खेल इसी उपकरण पर रहेंगे।';
 
   @override
   String get syncNow => 'अभी सिंक करें';
@@ -1681,11 +1668,6 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String replaceConfigLeavesGroup(String name) {
-    return 'यह डिवाइस समूह $name छोड़ेगा। इसके खेल इसी डिवाइस पर रहेंगे।';
-  }
-
-  @override
   String get replaceConfigConfirm => 'बदलें';
 
   @override
@@ -1763,4 +1745,76 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get gameTypeNameChouineursSortKey => 'Chouineurs';
+
+  @override
+  String get groupsSection => 'समूह';
+
+  @override
+  String groupsMaxReached(int max) {
+    return 'समूहों की अधिकतम संख्या पहुँच गई ($max)। नया बनाने या किसी और से जुड़ने के लिए एक समूह छोड़ें।';
+  }
+
+  @override
+  String groupLeaveConfirmNamed(String name) {
+    return 'यह उपकरण समूह $name छोड़ देगा। इसके साझा किए गए खेल इसी उपकरण पर रहेंगे, पर अब सिंक नहीं होंगे। आपके बाकी समूह नहीं बदलेंगे।';
+  }
+
+  @override
+  String clearServerLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'सर्वर हटाने से सभी $count समूह छूट जाएँगे। साझा किए गए खेल इसी उपकरण पर रहेंगे।',
+      one:
+          'सर्वर हटाने से समूह छूट जाएगा। साझा किए गए खेल इसी उपकरण पर रहेंगे।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String replaceConfigLeavesGroups(int count, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'यह उपकरण अपने $count समूह छोड़ देगा: $names। इसके खेल इसी उपकरण पर रहेंगे।',
+      one: 'यह उपकरण समूह $names छोड़ देगा। इसके खेल इसी उपकरण पर रहेंगे।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get joinGroupTooTitle => 'क्या इस समूह में भी शामिल हों?';
+
+  @override
+  String joinGroupTooBody(String code, String groups) {
+    return 'यह उपकरण आमंत्रण कोड $code वाले समूह में शामिल हो जाएगा, उसी सर्वर पर। यह अपने मौजूदा समूहों में बना रहेगा: $groups।';
+  }
+
+  @override
+  String get joinGroupTooConfirm => 'शामिल हों';
+
+  @override
+  String joinLinkAlreadyMember(String name) {
+    return 'यह उपकरण पहले से समूह $name में है: कुछ नहीं बदलेगा।';
+  }
+
+  @override
+  String get newGameShareWith => 'इनके साथ साझा करें';
+
+  @override
+  String get newGameLocalOnly => 'केवल यह उपकरण';
+
+  @override
+  String get newGameLocalSubtitle => 'खेल इसी उपकरण पर रहेगा।';
+
+  @override
+  String get shareGameChooseGroup =>
+      'यह खेल किस समूह के साथ साझा किया जाए? खेल, इसके खिलाड़ी, स्कोर और टिप्पणियाँ वहाँ भेजे जाएँगे। साझा करना वापस नहीं लिया जा सकता।';
+
+  @override
+  String gameSharedWith(String name) {
+    return '$name के साथ साझा किया गया';
+  }
 }

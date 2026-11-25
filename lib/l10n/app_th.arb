@@ -427,8 +427,6 @@
 
   "shareTokenHint": "วางโค้ดที่สมาชิกกลุ่มส่ง",
 
-  "groupCurrent": "กลุ่ม: {name}",
-
   "shareTokenExplain": "ส่งโค้ดนี้ไปยังอุปกรณ์ที่ควรเข้าร่วมกลุ่ม ใครที่มีโค้ดนี้ก็สามารถเข้าร่วมได้",
 
   "shareTokenCopy": "คัดลอกโค้ด",
@@ -441,13 +439,9 @@
 
   "groupLeave": "ออกจากกลุ่ม",
 
-  "groupLeaveConfirm": "อุปกรณ์นี้ออกจากกลุ่ม เกมที่แชร์จะอยู่บนอุปกรณ์นี้แต่จะไม่ซิงค์อีกต่อไป",
-
   "groupLeft": "ออกจากกลุ่มแล้ว",
 
   "groupJoined": "เข้าร่วมกลุ่มแล้ว",
-
-  "clearServerLeavesGroup": "ล้างเซิร์ฟเวอร์ออกจากกลุ่ม เกมที่แชร์จะอยู่บนอุปกรณ์นี้",
 
   "syncNow": "ซิงค์ตอนนี้",
 
@@ -899,8 +893,6 @@
 
   "replaceConfigInvite": "โค้ดเชิญ {code}",
 
-  "replaceConfigLeavesGroup": "อุปกรณ์นี้จะออกจากกลุ่ม {name} เกมของมันจะอยู่บนอุปกรณ์นี้",
-
   "replaceConfigConfirm": "แทนที่",
 
   "replaceConfigUnsynced": "{count, plural, =1{1 การเปลี่ยนแปลงบนอุปกรณ์นี้ยังไม่ได้ถึงกลุ่ม หากคุณออกตอนนี้ กลุ่มจะไม่รับมันเลย} other{{count} การเปลี่ยนแปลงบนอุปกรณ์นี้ยังไม่ได้ถึงกลุ่ม หากคุณออกตอนนี้ กลุ่มจะไม่รับมันเลย}}",
@@ -923,5 +915,19 @@
   "gameRulesEndOrMaxRounds": "{count, plural, one{{condition} หรือหลังจาก {count} รอบ} other{{condition} หรือหลังจาก {count} รอบ}}",
   "boardRoundProgress": "รอบ {current}/{total}",
   "gameTypeNameChouineurs": "Chouineurs",
-  "gameTypeNameChouineursSortKey": "Chouineurs"
+  "gameTypeNameChouineursSortKey": "Chouineurs",
+  "groupsSection": "กลุ่ม",
+  "groupsMaxReached": "อุปกรณ์นี้อยู่ในกลุ่มครบจำนวนสูงสุดแล้ว ({max}) ออกจากกลุ่มหนึ่งก่อนเพื่อสร้างหรือเข้าร่วมกลุ่มอื่น",
+  "groupLeaveConfirmNamed": "อุปกรณ์นี้จะออกจากกลุ่ม {name} เกมที่แชร์จะอยู่บนอุปกรณ์นี้แต่จะไม่ซิงค์อีกต่อไป กลุ่มอื่นของคุณไม่เปลี่ยนแปลง",
+  "clearServerLeavesGroups": "{count, plural, other{การล้างเซิร์ฟเวอร์จะทำให้ออกจาก {count} กลุ่ม เกมที่แชร์จะยังอยู่บนอุปกรณ์นี้}}",
+  "replaceConfigLeavesGroups": "{count, plural, other{อุปกรณ์นี้จะออกจาก {count} กลุ่ม ได้แก่ {names} เกมยังคงอยู่บนอุปกรณ์นี้}}",
+  "joinGroupTooTitle": "เข้าร่วมกลุ่มนี้ด้วยหรือไม่?",
+  "joinGroupTooBody": "อุปกรณ์นี้จะเข้าร่วมกลุ่มของโค้ดเชิญ {code} บนเซิร์ฟเวอร์เดียวกัน และยังคงอยู่ในกลุ่มปัจจุบันของคุณ: {groups}",
+  "joinGroupTooConfirm": "เข้าร่วม",
+  "joinLinkAlreadyMember": "อุปกรณ์นี้อยู่ในกลุ่ม {name} แล้ว ไม่มีอะไรเปลี่ยนแปลง",
+  "newGameShareWith": "แชร์กับ",
+  "newGameLocalOnly": "เฉพาะอุปกรณ์นี้",
+  "newGameLocalSubtitle": "เกมจะอยู่บนอุปกรณ์นี้",
+  "shareGameChooseGroup": "จะแชร์เกมนี้กับกลุ่มไหน เกม ผู้เล่น คะแนน และความเห็นจะถูกส่งไปที่นั่น การแชร์ไม่สามารถยกเลิกได้",
+  "gameSharedWith": "แชร์กับ {name} แล้ว"
 }

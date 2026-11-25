@@ -8,7 +8,7 @@ import '../providers/group_provider.dart';
 import '../services/backend_client.dart';
 import '../widgets/group_settings_section.dart' show groupActionErrorText;
 
-/// Settings → Group → *Comments and usage*: the group's comment style and
+/// Settings → Groups → a group → *Comments and usage*: that group's comment style and
 /// language, which every member may change, and what the group spent on the LLM
 /// this month. Everything lives on the server: the screen reads it fresh on each
 /// visit and writes each change straight back, so nothing is stored on the device.
@@ -16,7 +16,10 @@ import '../widgets/group_settings_section.dart' show groupActionErrorText;
 /// The monthly budget is shown, never edited: the server keeps it for the owner
 /// alone, and [BackendClient.updateGroupSettings] cannot send it.
 class GroupSettingsScreen extends StatefulWidget {
-  const GroupSettingsScreen({super.key});
+  const GroupSettingsScreen({super.key, required this.groupId});
+
+  /// The group whose comments and usage are shown; one screen per group.
+  final String groupId;
 
   /// The comment styles `PATCH /groups/me/settings` accepts.
   static const styles = ['narrative', 'humorous', 'analytical'];
@@ -68,9 +71,10 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
+  GroupSession? get _session => context.read<GroupProvider>().session(widget.groupId);
+
   bool get _reachable =>
-      context.read<BackendProvider>().isConfigured &&
-      context.read<GroupProvider>().canReachGroup;
+      context.read<BackendProvider>().isConfigured && (_session?.canReach ?? false);
 
   Future<void> _load() async {
     if (!mounted || !_reachable) return;
@@ -79,7 +83,9 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
       _error = null;
     });
     try {
-      final result = await context.read<GroupProvider>().groupSettings();
+      final session = _session;
+      if (session == null) return;
+      final result = await session.groupSettings();
       if (!mounted) return;
       setState(() {
         _settings = result.settings;
@@ -98,7 +104,9 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
     final scheme = Theme.of(context).colorScheme;
     setState(() => _saving = true);
     try {
-      final saved = await context.read<GroupProvider>().updateGroupSettings(
+      final session = _session;
+      if (session == null) return;
+      final saved = await session.updateGroupSettings(
         commentStyle: style,
         commentLanguage: language,
       );
@@ -136,12 +144,12 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final configured = context.watch<BackendProvider>().isConfigured;
-    final group = context.watch<GroupProvider>();
+    final session = context.watch<GroupProvider>().session(widget.groupId);
 
     final Widget body;
     if (!configured) {
       body = _Message(l10n.groupNeedsServer);
-    } else if (!group.canReachGroup) {
+    } else if (!(session?.canReach ?? false)) {
       body = _Message(l10n.groupDescription);
     } else if (_settings == null) {
       body = _error == null || _loading
@@ -159,7 +167,18 @@ class _GroupSettingsScreenState extends State<GroupSettingsScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.groupSettingsTitle)),
+      appBar: AppBar(
+        title: Text(l10n.groupSettingsTitle),
+        bottom: session == null
+            ? null
+            : PreferredSize(
+                preferredSize: const Size.fromHeight(24),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(session.groupName, key: const Key('group_settings_group')),
+                ),
+              ),
+      ),
       body: SafeArea(child: body),
     );
   }

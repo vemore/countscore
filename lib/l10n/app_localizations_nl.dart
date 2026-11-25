@@ -732,11 +732,6 @@ class AppLocalizationsNl extends AppLocalizations {
       'Plak de code die een groeplid je heeft gestuurd';
 
   @override
-  String groupCurrent(String name) {
-    return 'Groep: $name';
-  }
-
-  @override
   String get shareTokenExplain =>
       'Stuur deze code naar de apparaten die de groep moeten toetreden. Iedereen die hem heeft kan toetreden.';
 
@@ -757,18 +752,10 @@ class AppLocalizationsNl extends AppLocalizations {
   String get groupLeave => 'Groep verlaten';
 
   @override
-  String get groupLeaveConfirm =>
-      'Dit apparaat verlaat de groep. Gedeelde spellen blijven op dit apparaat maar worden niet meer gesynchroniseerd.';
-
-  @override
   String get groupLeft => 'Groep verlaten';
 
   @override
   String get groupJoined => 'Groep toegetreden';
-
-  @override
-  String get clearServerLeavesGroup =>
-      'Server wissen verlaat de groep. Gedeelde spellen blijven op dit apparaat.';
 
   @override
   String get syncNow => 'Nu synchroniseren';
@@ -1691,11 +1678,6 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String replaceConfigLeavesGroup(String name) {
-    return 'Dit apparaat verlaat de groep $name. De spellen blijven op dit apparaat.';
-  }
-
-  @override
   String get replaceConfigConfirm => 'Vervangen';
 
   @override
@@ -1773,4 +1755,76 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get gameTypeNameChouineursSortKey => 'Chouineurs';
+
+  @override
+  String get groupsSection => 'Groepen';
+
+  @override
+  String groupsMaxReached(int max) {
+    return 'Maximaal aantal groepen bereikt ($max): verlaat er een om een andere aan te maken of toe te treden.';
+  }
+
+  @override
+  String groupLeaveConfirmNamed(String name) {
+    return 'Dit apparaat verlaat de groep $name. De gedeelde spellen blijven op dit apparaat maar worden niet meer gesynchroniseerd. Je andere groepen blijven ongewijzigd.';
+  }
+
+  @override
+  String clearServerLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Server wissen verlaat de $count groepen. Gedeelde spellen blijven op dit apparaat.',
+      one: 'Server wissen verlaat de groep. Gedeelde spellen blijven op dit apparaat.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String replaceConfigLeavesGroups(int count, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Dit apparaat verlaat zijn $count groepen: $names. De spellen blijven op dit apparaat.',
+      one:
+          'Dit apparaat verlaat de groep $names. De spellen blijven op dit apparaat.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get joinGroupTooTitle => 'Deze groep ook toetreden?';
+
+  @override
+  String joinGroupTooBody(String code, String groups) {
+    return 'Dit apparaat treedt toe tot de groep met uitnodigingscode $code, op dezelfde server. Het blijft in je huidige groepen: $groups.';
+  }
+
+  @override
+  String get joinGroupTooConfirm => 'Toetreden';
+
+  @override
+  String joinLinkAlreadyMember(String name) {
+    return 'Dit apparaat zit al in de groep $name: er verandert niets.';
+  }
+
+  @override
+  String get newGameShareWith => 'Delen met';
+
+  @override
+  String get newGameLocalOnly => 'Alleen op dit apparaat';
+
+  @override
+  String get newGameLocalSubtitle => 'Het spel blijft op dit apparaat.';
+
+  @override
+  String get shareGameChooseGroup =>
+      'Met welke groep dit spel delen? Het spel, de spelers, scores en opmerkingen worden ernaartoe gestuurd. Delen kan niet ongedaan gemaakt worden.';
+
+  @override
+  String gameSharedWith(String name) {
+    return 'Gedeeld met $name';
+  }
 }

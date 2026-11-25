@@ -59,7 +59,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ));
   }
 
-  /// Clearing the server while in a group leaves the group, after asking.
+  /// Clearing the server while in groups leaves every one, after asking.
   Future<bool> _clearServer() async {
     final l10n = AppLocalizations.of(context)!;
     final group = context.read<GroupProvider>();
@@ -73,7 +73,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         builder: (context) => AlertDialog(
           title: Text(l10n.confirmation),
           content: Text(
-            pending > 0 ? l10n.replaceConfigUnsynced(pending) : l10n.clearServerLeavesGroup,
+            pending > 0
+                ? l10n.replaceConfigUnsynced(pending)
+                : l10n.clearServerLeavesGroups(group.memberships.length),
             key: const Key('clear_server_question'),
           ),
           actions: [
@@ -256,8 +258,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(),
 
-          // Section Groupe — sous le serveur, dont elle dépend.
-          _SectionTitle(l10n.groupSection),
+          // Section Groupes — sous le serveur, dont elle dépend.
+          _SectionTitle(l10n.groupsSection),
           const GroupSettingsSection(),
           const Divider(),
 

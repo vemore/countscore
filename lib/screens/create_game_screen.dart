@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -8,6 +10,7 @@ import '../providers/game_type_provider.dart';
 import '../providers/group_provider.dart';
 import '../utils/game_over_rule.dart';
 import '../utils/game_type_name.dart';
+import '../utils/last_game_group.dart';
 import '../utils/play_again.dart';
 import '../utils/player_colors.dart';
 import '../utils/recent_game_types.dart';
@@ -50,8 +53,16 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
   Map<String, int?> _colorValues = {};
   LastGamePlayers? _lastGame;
 
-  // On by default while this device is in a group — the user's design choice.
+  // In one group: the switch, on by default — the user's design choice.
   bool _shareWithGroup = true;
+
+  /// In several groups: the chip the user tapped, a group id or [_local];
+  /// null until then, when the selector shows [LastGameGroup.pick].
+  String? _picked;
+  static const _local = '';
+
+  /// The group the last game was created in ([LastGameGroup]).
+  String? _lastGroup;
 
   @override
   void initState() {
@@ -59,6 +70,20 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
     _loadData().whenComplete(() {
       if (mounted) setState(() => _loaded = true);
     });
+    LastGameGroup.read().then((id) {
+      if (mounted) setState(() => _lastGroup = id);
+    });
+  }
+
+  /// The group the new game goes to, as the switch or the selector shows it;
+  /// null for a local game.
+  String? _targetGroup(GroupProvider group) {
+    final ids = [for (final s in group.memberships) s.groupId];
+    if (ids.isEmpty) return null;
+    if (ids.length == 1) return _shareWithGroup ? ids.single : null;
+    if (_picked == _local) return null;
+    if (_picked != null && ids.contains(_picked)) return _picked;
+    return LastGameGroup.pick(_lastGroup, ids);
   }
 
   Future<void> _loadData() async {
@@ -193,8 +218,9 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
       playerColorsMap,
     );
 
-    final shareInto = group.groupId; // the group the switch named
-    if (shareInto != null && _shareWithGroup) {
+    final shareInto = _targetGroup(group); // the group the selector named
+    if (shareInto != null) {
+      unawaited(LastGameGroup.write(shareInto));
       try {
         await group.shareGame(gameId, shareInto);
       } on GroupActionException catch (e) {
@@ -330,22 +356,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
               onTap: _pickPlayers,
             ),
             Consumer<GroupProvider>(
-              builder: (context, group, child) {
-                if (!group.isJoined) return const SizedBox.shrink();
-                return Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: SwitchListTile(
-                    key: const Key('create_share_with_group'),
-                    contentPadding: EdgeInsets.zero,
-                    secondary: const Icon(Icons.cloud_upload_outlined),
-                    title: Text(l10n.shareWithGroup),
-                    subtitle:
-                        Text(l10n.shareWithGroupSubtitle(group.groupName ?? '')),
-                    value: _shareWithGroup,
-                    onChanged: (value) => setState(() => _shareWithGroup = value),
-                  ),
-                );
-              },
+              builder: (context, group, child) => _groupChoice(context, group),
             ),
           ],
         ),
@@ -368,6 +379,71 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// Where the game goes: nothing in no group; in one, today's switch; in
+  /// several, a chip per group beside *This device only* (decision 5).
+  Widget _groupChoice(BuildContext context, GroupProvider group) {
+    final l10n = AppLocalizations.of(context)!;
+    final groups = group.memberships;
+    if (groups.isEmpty) return const SizedBox.shrink();
+    if (groups.length == 1) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: SwitchListTile(
+          key: const Key('create_share_with_group'),
+          contentPadding: EdgeInsets.zero,
+          secondary: const Icon(Icons.cloud_upload_outlined),
+          title: Text(l10n.shareWithGroup),
+          subtitle: Text(l10n.shareWithGroupSubtitle(groups.single.groupName)),
+          value: _shareWithGroup,
+          onChanged: (value) => setState(() => _shareWithGroup = value),
+        ),
+      );
+    }
+    final target = _targetGroup(group);
+    final theme = Theme.of(context);
+    return Padding(
+      key: const Key('create_group_choice'),
+      padding: const EdgeInsets.only(top: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _Overline(l10n.newGameShareWith),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              ChoiceChip(
+                key: const Key('create_group_local'),
+                avatar: const Icon(Icons.smartphone, size: 18),
+                label: Text(l10n.newGameLocalOnly),
+                selected: target == null,
+                onSelected: (_) => setState(() => _picked = _local),
+              ),
+              for (final g in groups)
+                ChoiceChip(
+                  key: Key('create_group_${g.groupId}'),
+                  avatar: const Icon(Icons.group_outlined, size: 18),
+                  label: Text(g.groupName),
+                  selected: target == g.groupId,
+                  onSelected: (_) => setState(() => _picked = g.groupId),
+                ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            target == null
+                ? l10n.newGameLocalSubtitle
+                : l10n.shareWithGroupSubtitle(group.session(target)!.groupName),
+            key: const Key('create_group_choice_hint'),
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+          ),
+        ],
       ),
     );
   }

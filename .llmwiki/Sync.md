@@ -245,10 +245,10 @@ another whose board is open.
 Sync runs only while a server URL is configured **and** the device holds a device token —
 the user's design. A device may be in up to five groups since 2026-11-25: the storage keeps
 them apart since schema v23, and `GroupProvider` runs one sync session per membership — see
-**Several groups** below. The screens still show one group, the first joined, until
-`wip/todo/2026-11-25-multi-group-ui.md`.
+**Several groups** below. The screens show every group since `feat/multi-group-ui`
+([[MultiGroup]]).
 
-**Joining.** Settings → Group creates a group (`POST /groups`) or joins one with a pasted
+**Joining.** Settings → Groups creates a group (`POST /groups`) or joins one with a pasted
 `share_token` (`POST /groups/join`). The device token and share token go to
 `flutter_secure_storage` (`sync_credentials.dart`), **keyed by group id** since v23
 (`sync.group.<id>.deviceToken`, `….shareToken`); group id, name and device id go to a
@@ -289,7 +289,7 @@ group's queue pushed under it. `test/sync/sync_reconcile_test.dart`.
 the server and the invite code, and a scanned one opens a "replace the configuration?" dialog
 that leaves and joins through `GroupProvider`: [[ConfigShare]].
 
-**Removing another device.** Settings → Group → *Devices* (`group_devices_sheet.dart`) lists
+**Removing another device.** Settings → Groups → *Devices* (`group_devices_sheet.dart`) lists
 `GET /groups/me/devices`, marks the owner, and — on the owner only — offers a revoke and a
 hand-over (*Make owner*, `PUT /groups/me/owner`) on every device but this one; this one leaves
 instead. A member that is not the owner sees the list and no action, with one exception: when
@@ -299,7 +299,7 @@ is what an uninstalled app looks like — that row offers *Claim ownership*
 (`GroupActionError.ownerActive`) is shown as a message and `isOwner` is not flipped on a
 guess; a server that predates the field sends no `dormant` and the action never appears.
 Creating a group says in one line that the role lives on this device and can be handed over
-(`groupCreatedOwnerExplain`). Settings → Group hides *New code* from a member. `GroupProvider.isOwner` is held in memory, never in the database:
+(`groupCreatedOwnerExplain`). Settings → Groups hides *New code* from a member. `GroupProvider.isOwner` is held in memory, never in the database:
 true after creating, false after joining, then refreshed from `owner_device_id`
 (`GET /groups/me`) on every start and resume, from `is_owner` whenever the list loads, and
 dropped on any 403. A server that predates owners sends neither field; every device then
@@ -332,7 +332,7 @@ answer (a counter bumped by each rename). The fields stop at 64 **code points**,
 server counts (`maxLength` would count grapheme clusters); an unchanged nickname sends
 nothing. A rename changes no synced row.
 
-**Comment settings and usage.** Settings → Group → *Comments and usage*
+**Comment settings and usage.** Settings → Groups → *Comments and usage*
 (`group_settings_screen.dart`) shows the group's `comment_style` and `comment_language` from
 `GET /groups/me` and changes them with `PATCH /groups/me/settings` — every member may — and
 the month's spending from `GET /groups/me/usage`. `BackendClient.updateGroupSettings` has no

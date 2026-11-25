@@ -16,16 +16,13 @@
   > **Status: Outdated** (2026-09-13) — written; see [[Sync]]. What it knowingly leaves out
   > is listed under **Group sync** below.
 - **Group sync — deliberate limits of v1** (2026-09-13):
-  - *One group per device*. Group comments reach the app as the analysis of a shared game
-    since 2026-09-19 (`wip/done/2026-09-19-group-comment-settings-shape-nothing-the-app-shows.md`);
-    the board shows no group comment of its own.
-    The device list and revoking another device shipped on 2026-09-14 (Settings → Group →
-    Devices); the comment style, language and usage on 2026-09-19 (Settings → Group →
-    Comments and usage), without a budget control.
-
-    > **Status: Outdated** (2026-11-25) — the sync layer holds up to five groups per
-    > install (`GroupProvider`, one `GroupSession` each, [[Sync]] *Several groups*); the
-    > screens still show one, the first joined, until `wip/todo/2026-11-25-multi-group-ui.md`.
+  - *At most five groups per device* (`GroupProvider.maxGroups`), refused client-side:
+    the server cannot tell two device rows are one install. One server and one nickname for
+    all of them; a game belongs to one group for good ([[MultiGroup]]). Group comments reach
+    the app as the analysis of a shared game since 2026-09-19
+    (`wip/done/2026-09-19-group-comment-settings-shape-nothing-the-app-shows.md`); the board
+    shows no group comment of its own. The comment style, language and usage are per group
+    (Settings → Groups → a group → Comments and usage), without a budget control.
   - *Row-level LWW*: two devices editing different fields of one row concurrently keep one
     edit, the server's rule. Scores are one row each, so this rarely shows.
   - *No sync in the background*: only while the app (or the PWA tab) is open.
@@ -47,15 +44,6 @@
   > **Status: Outdated** (2026-09-13) — production ships sqflite **v5** (1.0.1). The next
   > release migrates v5 → v10 and turns Drift on together; covered by
   > `test/migration_v5_to_v10_test.dart`. See [[DataLayer]].
-- **Multi-group per device.** The schema supports it (`group_id` per row); the UX was not
-  designed, so one device maps to one group.
-
-  > **Status: Outdated** (2026-11-25) — designed (the user's ten decisions,
-  > `wip/todo/2026-11-17-belong-to-several-groups.md`); storage (schema v23) and the
-  > per-group sync sessions are in; the UI is the last step. Five groups at most, refused
-  > client-side (`GroupActionError.tooManyGroups`): the server cannot tell two device rows
-  > are one install.
-
 ### Missing rather than deferred
 
 - **No e2e or release-artifact coverage in CI.** `.github/workflows/ci.yml` proves a fresh
@@ -105,3 +93,7 @@
 - **This page is not a backlog.** It records limits so that a session does not rediscover
   them. Actionable work with a plan attached belongs in `wip/todo/` or `wip/todo_nr/`, and moves to
   `wip/done/` once it is closed (`wip/README.md`).
+- **The one-group limit is gone (2026-11-25, `feat/multi-group-ui`).** It was a deliberate v1
+  limit from 2026-09-13; the multi-group plan (`wip/done/2026-11-17-belong-to-several-groups.md`)
+  lifted it in four pull requests, the UI last. Its entry is removed rather than marked
+  outdated: what holds now is the five-group cap above.

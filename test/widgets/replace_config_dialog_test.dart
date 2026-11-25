@@ -88,6 +88,14 @@ Future<void> _confirm(WidgetTester tester, {String? nickname}) async {
 
 final _leaveQuestion = find.byKey(const Key('replace_config_leave_question'));
 
+/// Confirms the "join this group too?" dialog.
+Future<void> _joinToo(WidgetTester tester, {required String nickname}) async {
+  await tester.enterText(find.byKey(const Key('replace_config_nickname')), nickname);
+  await tester.pump();
+  await tester.tap(find.byKey(const Key('join_group_too_confirm')));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets('shows the current and the new server and group', (tester) async {
     await _pump(
@@ -274,14 +282,15 @@ void main() {
       const ConfigLink(server: _oldServer, invite: 'rotated-code'),
       group: FakeGroupProvider(joined: true, pending: 4, joinGroupId: 'group-old'),
     );
-    await _confirm(tester, nickname: 'Tablet');
+    await _joinToo(tester, nickname: 'Tablet');
 
     expect(_leaveQuestion, findsNothing, reason: 'nothing is left: no warning');
     expect(h.calls, ['prepare rotated-code on $_oldServer as Tablet', 'keep']);
     expect(h.result, ReplaceConfigResult.unchanged);
-    expect(h.group.isJoined, isTrue);
+    expect(h.group.memberships, hasLength(1));
     expect(h.group.shareToken, 'rotated-code');
-    expect(find.text('This device already uses this configuration'), findsOneWidget);
+    expect(find.text('This device is already in the group Famille: nothing changes.'),
+        findsOneWidget);
   });
 
   testWidgets('the same group under another server URL says the configuration changed',
@@ -332,7 +341,7 @@ void main() {
     testWidgets('"Leave anyway" goes on', (tester) async {
       final h = await _pump(
         tester,
-        const ConfigLink(server: _oldServer, invite: _invite),
+        const ConfigLink(server: _newServer, invite: _invite),
         group: FakeGroupProvider(joined: true, pending: 1),
       );
       await _confirm(tester, nickname: 'Tablet');
@@ -343,9 +352,9 @@ void main() {
 
       expect(h.result, ReplaceConfigResult.applied);
       expect(h.calls, [
-        'prepare $_invite on $_oldServer as Tablet',
+        'prepare $_invite on $_newServer as Tablet',
         'leave',
-        'adopt group-new on $_oldServer',
+        'adopt group-new on $_newServer',
       ]);
     });
 
@@ -377,24 +386,6 @@ void main() {
       expect(h.calls.first, 'leave');
     });
 
-    testWidgets('same server, another group: says the group is left before leaving it',
-        (tester) async {
-      final h = await _pump(
-        tester,
-        const ConfigLink(server: _oldServer, invite: _invite),
-        group: FakeGroupProvider(joined: true, pending: 0),
-      );
-      expect(find.byKey(const Key('replace_config_leaves_group')), findsNothing,
-          reason: 'may be the same group: only the server can tell');
-      await _confirm(tester, nickname: 'Tablet');
-
-      expect(_text(tester, 'replace_config_leave_question'),
-          'This device will leave the group Famille. Its games stay on this device.');
-      await tester.tap(find.byKey(const Key('replace_config_leave_anyway')));
-      await tester.pumpAndSettle();
-      expect(h.calls.skip(1), ['leave', 'adopt group-new on $_oldServer']);
-    });
-
     testWidgets('no warning when no group is left', (tester) async {
       final h = await _pump(
         tester,
@@ -420,7 +411,92 @@ void main() {
 
     expect(find.byType(AlertDialog), findsNothing);
     expect(h.result, ReplaceConfigResult.unchanged);
-    expect(find.text('This device already uses this configuration'), findsOneWidget);
+    expect(find.text('This device is already in the group Famille: nothing changes.'),
+        findsOneWidget);
     expect(h.calls, isEmpty);
+  });
+
+  // The three cases of a group link (wip/done/2026-11-25-multi-group-ui.md,
+  // decisions 4 and 7 of the multi-group plan).
+  group('a group link while in groups', () {
+    FakeGroupProvider twoGroups({int pending = 0}) =>
+        FakeGroupProvider(joined: true, pending: pending)..addGroup('group-amis', 'Amis', 'amis-invite');
+
+    testWidgets('same server, another group: "join this group too?", nothing left',
+        (tester) async {
+      final group = twoGroups();
+      final h = await _pump(tester, const ConfigLink(server: _oldServer, invite: _invite), group: group);
+
+      expect(find.byType(ReplaceConfigDialog), findsNothing);
+      expect(find.text('Join this group too?'), findsOneWidget);
+      expect(
+        _text(tester, 'join_group_too_body'),
+        'This device will join the group of invite code $_invite, on the same server. '
+        'It stays in your current groups: Famille, Amis.',
+      );
+      await _joinToo(tester, nickname: ' Tablet ');
+
+      expect(h.result, ReplaceConfigResult.applied);
+      expect(h.calls, ['prepare $_invite on $_oldServer as Tablet', 'adopt group-new on $_oldServer']);
+      expect(_leaveQuestion, findsNothing);
+      expect([for (final s in group.memberships) s.groupId], ['group-old', 'group-amis', 'group-new']);
+      expect(h.backend.baseUrl, _oldServer);
+      expect(find.text('Joined the group'), findsOneWidget);
+    });
+
+    testWidgets('same server, cancelled: nothing is joined', (tester) async {
+      final h = await _pump(tester, const ConfigLink(server: _oldServer, invite: _invite),
+          group: twoGroups());
+      await tester.tap(find.byKey(const Key('replace_config_cancel')));
+      await tester.pumpAndSettle();
+
+      expect(h.result, ReplaceConfigResult.cancelled);
+      expect(h.calls, isEmpty);
+      expect(h.group.memberships, hasLength(2));
+    });
+
+    testWidgets('same server, a group already joined: nothing changes, and it says so',
+        (tester) async {
+      final h = await _pump(tester, const ConfigLink(server: _oldServer, invite: 'amis-invite'),
+          group: twoGroups());
+
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(h.result, ReplaceConfigResult.unchanged);
+      expect(h.calls, isEmpty, reason: 'no request at all');
+      expect(find.text('This device is already in the group Amis: nothing changes.'),
+          findsOneWidget);
+    });
+
+    testWidgets('same server at five groups: refused before any request', (tester) async {
+      final group = twoGroups();
+      for (final n in [3, 4, 5]) {
+        group.addGroup('group-$n', 'Groupe $n', 'invite-$n');
+      }
+      final h = await _pump(tester, const ConfigLink(server: _oldServer, invite: _invite), group: group);
+
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(h.result, ReplaceConfigResult.joinFailed);
+      expect(h.calls, isEmpty);
+      expect(find.textContaining('maximum number of groups (5)'), findsOneWidget);
+    });
+
+    testWidgets('another server: the replace dialog names every group, and all are left',
+        (tester) async {
+      final group = twoGroups();
+      final h = await _pump(tester, const ConfigLink(server: _newServer, invite: _invite), group: group);
+
+      expect(find.byType(ReplaceConfigDialog), findsOneWidget);
+      expect(_text(tester, 'replace_config_group_current'), 'Now: Famille, Amis');
+      expect(
+        _text(tester, 'replace_config_leaves_group'),
+        'This device will leave its 2 groups: Famille, Amis. Its games stay on this device.',
+      );
+      await _confirm(tester, nickname: 'Tablet');
+
+      expect(h.result, ReplaceConfigResult.applied);
+      expect(h.calls, ['prepare $_invite on $_newServer as Tablet', 'leave', 'adopt group-new on $_newServer']);
+      expect([for (final s in group.memberships) s.groupId], ['group-new']);
+      expect(h.backend.baseUrl, _newServer);
+    });
   });
 }

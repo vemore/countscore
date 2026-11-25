@@ -370,8 +370,6 @@
 
   "shareTokenHint": "グループのメンバーから届いたコードを貼り付けてください",
 
-  "groupCurrent": "グループ：{name}",
-
   "shareTokenExplain": "グループに参加する端末にこのコードを送ってください。コードを知っている人は誰でも参加できます。",
 
   "shareTokenCopy": "コードをコピー",
@@ -384,13 +382,9 @@
 
   "groupLeave": "グループを退出",
 
-  "groupLeaveConfirm": "この端末はグループを退出します。共有したゲームは端末に残りますが、同期されなくなります。",
-
   "groupLeft": "グループを退出しました",
 
   "groupJoined": "グループに参加しました",
-
-  "clearServerLeavesGroup": "サーバーを消去するとグループを退出します。共有したゲームはこの端末に残ります。",
 
   "syncNow": "今すぐ同期",
 
@@ -732,7 +726,6 @@
   "replaceConfigCurrent": "現在：{value}",
   "replaceConfigNew": "新規：{value}",
   "replaceConfigInvite": "招待コード {code}",
-  "replaceConfigLeavesGroup": "このデバイスはグループ {name} を退出します。ゲームはこのデバイスに残ります。",
   "replaceConfigConfirm": "置き換え",
   "replaceConfigUnsynced": "{count, plural, other{このデバイスの{count}件の変更がまだグループに到達していません。今離脱するとグループはこれらを受け取りません。}}",
   "replaceConfigLeaveAnyway": "それでも退出",
@@ -749,5 +742,19 @@
   "gameRulesEndOrMaxRounds": "{count, plural, other{{condition}（または{count}ラウンド後に終了）}}",
   "boardRoundProgress": "ラウンド {current}/{total}",
   "gameTypeNameChouineurs": "Chouineurs",
-  "gameTypeNameChouineursSortKey": "Chouineurs"
+  "gameTypeNameChouineursSortKey": "Chouineurs",
+  "groupsSection": "グループ",
+  "groupsMaxReached": "グループ数の上限（{max}）に達しました。別のグループを作成または参加するには、いずれかを退出してください。",
+  "groupLeaveConfirmNamed": "この端末はグループ「{name}」を退出します。共有したゲームは端末に残りますが、同期されなくなります。他のグループは変わりません。",
+  "clearServerLeavesGroups": "{count, plural, other{サーバーを消去すると、{count} 件のグループをすべて退出します。共有したゲームはこの端末に残ります。}}",
+  "replaceConfigLeavesGroups": "{count, plural, other{この端末は {count} 件のグループ（{names}）を退出します。ゲームはこの端末に残ります。}}",
+  "joinGroupTooTitle": "このグループにも参加しますか？",
+  "joinGroupTooBody": "この端末は、招待コード {code} のグループに、同じサーバー上で参加します。現在のグループ（{groups}）にはそのまま残ります。",
+  "joinGroupTooConfirm": "参加",
+  "joinLinkAlreadyMember": "この端末はすでにグループ「{name}」に参加しています。変更はありません。",
+  "newGameShareWith": "共有先",
+  "newGameLocalOnly": "この端末のみ",
+  "newGameLocalSubtitle": "ゲームはこの端末に残ります。",
+  "shareGameChooseGroup": "このゲームをどのグループと共有しますか？ゲーム、プレイヤー、スコア、コメントがそこに送信されます。共有は取り消せません。",
+  "gameSharedWith": "{name} と共有済み"
 }

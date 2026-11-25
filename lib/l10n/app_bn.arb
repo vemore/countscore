@@ -425,8 +425,6 @@
 
   "shareTokenHint": "একজন গ্রুপ সদস্য যে কোডটি পাঠিয়েছে তা পেস্ট করুন",
 
-  "groupCurrent": "গ্রুপ: {name}",
-
   "shareTokenExplain": "এই কোডটি সেই ডিভাইসগুলিতে পাঠান যা গ্রুপে যোগদান করা উচিত। যে কেউ যার কাছে এটি আছে তারা যোগদান করতে পারে।",
 
   "shareTokenCopy": "কোড কপি করুন",
@@ -439,13 +437,9 @@
 
   "groupLeave": "গ্রুপ ছেড়ে যান",
 
-  "groupLeaveConfirm": "এই ডিভাইস গ্রুপ ছেড়ে যায়। ভাগ করা খেলা এই ডিভাইসে থাকে তবে আর সিঙ্ক করবে না।",
-
   "groupLeft": "গ্রুপ ছেড়ে গেছে",
 
   "groupJoined": "গ্রুপে যোগ দিয়েছে",
-
-  "clearServerLeavesGroup": "সার্ভার সাফ করা গ্রুপ ছেড়ে যায়। ভাগ করা খেলা এই ডিভাইসে থাকে।",
 
   "syncNow": "এখনই সিঙ্ক করুন",
 
@@ -893,8 +887,6 @@
 
   "replaceConfigInvite": "আমন্ত্রণ কোড {code}",
 
-  "replaceConfigLeavesGroup": "এই ডিভাইস গ্রুপ {name} ছেড়ে যাবে। এর খেলা এই ডিভাইসে থাকে।",
-
   "replaceConfigConfirm": "প্রতিস্থাপন করুন",
 
   "replaceConfigUnsynced": "{count, plural, =1{এই ডিভাইসে 1 পরিবর্তন এখনও গ্রুপে পৌঁছায়নি। আপনি এখন চলে গেলে, গ্রুপ এটি কখনই পাবে না।} other{এই ডিভাইসে {count} পরিবর্তন এখনও গ্রুপে পৌঁছায়নি। আপনি এখন চলে গেলে, গ্রুপ এটি কখনই পাবে না।}}",
@@ -917,5 +909,20 @@
   "gameRulesEndOrMaxRounds": "{count, plural, one{{condition}, অথবা {count} রাউন্ড পরে} other{{condition}, অথবা {count} রাউন্ড পরে}}",
   "boardRoundProgress": "রাউন্ড {current}/{total}",
   "gameTypeNameChouineurs": "Chouineurs",
-  "gameTypeNameChouineursSortKey": "Chouineurs"
+  "gameTypeNameChouineursSortKey": "Chouineurs",
+
+  "groupsSection": "গ্রুপ",
+  "groupsMaxReached": "সর্বোচ্চ সংখ্যক গ্রুপে ({max}) এই ডিভাইস আছে। অন্যটিতে তৈরি বা যোগ দিতে আগে একটি ছেড়ে দিন।",
+  "groupLeaveConfirmNamed": "এই ডিভাইস গ্রুপ {name} ছেড়ে যায়। এর ভাগ করা খেলা এই ডিভাইসে থাকে তবে আর সিঙ্ক হবে না। আপনার অন্য গ্রুপগুলি অপরিবর্তিত থাকে।",
+  "clearServerLeavesGroups": "{count, plural, one{সার্ভার সাফ করলে গ্রুপ ছেড়ে যাওয়া হয়। ভাগ করা খেলা এই ডিভাইসে থাকে।} other{সার্ভার সাফ করলে {count}টি গ্রুপ ছেড়ে যাওয়া হয়। ভাগ করা খেলা এই ডিভাইসে থাকে।}}",
+  "replaceConfigLeavesGroups": "{count, plural, one{এই ডিভাইস গ্রুপ {names} ছেড়ে যাবে। এর খেলাগুলি এই ডিভাইসে থাকে।} other{এই ডিভাইস তার {count}টি গ্রুপ ছেড়ে যাবে: {names}। এর খেলাগুলি এই ডিভাইসে থাকে।}}",
+  "joinGroupTooTitle": "এই গ্রুপেও যোগ দেবেন?",
+  "joinGroupTooBody": "এই ডিভাইস একই সার্ভারের আমন্ত্রণ কোড {code}-এর গ্রুপে যোগ দেবে। এটি আপনার বর্তমান গ্রুপে থাকবে: {groups}।",
+  "joinGroupTooConfirm": "যোগ দিন",
+  "joinLinkAlreadyMember": "এই ডিভাইস ইতিমধ্যে গ্রুপ {name}-এ আছে: কিছু পরিবর্তন হয়নি।",
+  "newGameShareWith": "এর সাথে শেয়ার করুন",
+  "newGameLocalOnly": "শুধু এই ডিভাইস",
+  "newGameLocalSubtitle": "খেলাটি এই ডিভাইসে থাকবে।",
+  "shareGameChooseGroup": "এই খেলাটি কোন গ্রুপের সাথে শেয়ার করা হবে? খেলা, খেলোয়াড়, স্কোর ও মন্তব্য সেখানে পাঠানো হবে। শেয়ারিং পূর্বাবস্থায় ফেরানো যায় না।",
+  "gameSharedWith": "{name}-এর সাথে শেয়ার করা হয়েছে"
 }

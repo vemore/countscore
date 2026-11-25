@@ -425,8 +425,6 @@
 
   "shareTokenHint": "Wklej kod przesłany przez członka grupy",
 
-  "groupCurrent": "Grupa: {name}",
-
   "shareTokenExplain": "Wyślij ten kod do urządzeń, które mają dołączyć do grupy. Każdy, kto go ma, może dołączyć.",
 
   "shareTokenCopy": "Skopiuj kod",
@@ -439,13 +437,9 @@
 
   "groupLeave": "Opuść grupę",
 
-  "groupLeaveConfirm": "To urządzenie opuszcza grupę. Udostępniane gry pozostają na tym urządzeniu, ale nie będą już synchronizowane.",
-
   "groupLeft": "Grupa opuszczona",
 
   "groupJoined": "Grupa dołączona",
-
-  "clearServerLeavesGroup": "Wyczyszczenie serwera powoduje opuszczenie grupy. Udostępniane gry pozostają na tym urządzeniu.",
 
   "syncNow": "Synchronizuj teraz",
 
@@ -894,8 +888,6 @@
 
   "replaceConfigInvite": "kod zaproszenia {code}",
 
-  "replaceConfigLeavesGroup": "To urządzenie opuści grupę {name}. Jego gry pozostają na tym urządzeniu.",
-
   "replaceConfigConfirm": "Zastąp",
 
   "replaceConfigUnsynced": "{count, plural, =1{1 zmiana na tym urządzeniu nie dotarła jeszcze do grupy. Jeśli teraz opuścisz, grupa nigdy jej nie otrzyma.} other{{count} zmian na tym urządzeniu nie dotarły jeszcze do grupy. Jeśli teraz opuścisz, grupa nigdy ich nie otrzyma.}}",
@@ -918,5 +910,33 @@
   "gameRulesEndOrMaxRounds": "{count, plural, one{{condition} lub po {count} rundzie} few{{condition} lub po {count} rundach} many{{condition} lub po {count} rundach} other{{condition} lub po {count} rundach}}",
   "boardRoundProgress": "Runda {current} z {total}",
   "gameTypeNameChouineurs": "Chouineurs",
-  "gameTypeNameChouineursSortKey": "Chouineurs"
+  "gameTypeNameChouineursSortKey": "Chouineurs",
+
+  "groupsSection": "Grupy",
+
+  "groupsMaxReached": "Osiągnięto maksymalną liczbę grup ({max}): opuść jedną, aby utworzyć lub dołączyć do innej.",
+
+  "groupLeaveConfirmNamed": "To urządzenie opuszcza grupę {name}. Jego udostępniane gry pozostają na tym urządzeniu, ale nie będą już synchronizowane. Pozostałe grupy się nie zmieniają.",
+
+  "clearServerLeavesGroups": "{count, plural, one{Wyczyszczenie serwera powoduje opuszczenie grupy. Udostępniane gry pozostają na tym urządzeniu.} few{Wyczyszczenie serwera powoduje opuszczenie {count} grup. Udostępniane gry pozostają na tym urządzeniu.} many{Wyczyszczenie serwera powoduje opuszczenie {count} grup. Udostępniane gry pozostają na tym urządzeniu.} other{Wyczyszczenie serwera powoduje opuszczenie {count} grup. Udostępniane gry pozostają na tym urządzeniu.}}",
+
+  "replaceConfigLeavesGroups": "{count, plural, one{To urządzenie opuści grupę {names}. Jego gry pozostają na tym urządzeniu.} few{To urządzenie opuści {count} grupy: {names}. Jego gry pozostają na tym urządzeniu.} many{To urządzenie opuści {count} grup: {names}. Jego gry pozostają na tym urządzeniu.} other{To urządzenie opuści {count} grup: {names}. Jego gry pozostają na tym urządzeniu.}}",
+
+  "joinGroupTooTitle": "Dołączyć też do tej grupy?",
+
+  "joinGroupTooBody": "To urządzenie dołączy do grupy z kodem zaproszenia {code}, na tym samym serwerze. Pozostanie w swoich obecnych grupach: {groups}.",
+
+  "joinGroupTooConfirm": "Dołącz",
+
+  "joinLinkAlreadyMember": "To urządzenie jest już w grupie {name}: nic się nie zmienia.",
+
+  "newGameShareWith": "Udostępnij",
+
+  "newGameLocalOnly": "Tylko na tym urządzeniu",
+
+  "newGameLocalSubtitle": "Gra pozostanie na tym urządzeniu.",
+
+  "shareGameChooseGroup": "Z którą grupą udostępnić tę grę? Gra, jej gracze, wyniki i komentarze zostaną do niej wysłane. Udostępniania nie można cofnąć.",
+
+  "gameSharedWith": "Udostępniona w grupie {name}"
 }
