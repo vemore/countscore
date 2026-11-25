@@ -1,5 +1,7 @@
 # A sync pass running across a group switch reports "unauthorized" until the next poll
 
+**Status:** done (2026-11-25) — closed by fix/sync-generation. `GroupProvider._generation`, bumped by `_stop`; a pass whose generation changed writes no status, pending count or events, and the queued rerun runs. Tested in `test/providers/group_provider_generation_test.dart`.
+
 - **Noted:** 2026-09-26 — second independent review of [vemore/countscore#236](https://github.com/vemore/countscore/pull/236) (item 3)
 - **Theme:** groups-v2
 - **Area:** app
