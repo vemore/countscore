@@ -50,7 +50,7 @@ Load this file first. Then read only the pages your task touches.
 |---|---|---|
 | [[Backend]] | Stack, module layout, settings, device-token auth | 2026-09-14 |
 | [[Api]] | Every endpoint, its auth requirement and its failure modes | 2026-11-25 |
-| [[Sync]] | Delta-log + row-level LWW, dedup and `lamport_reused`, the Flutter client (per-group queue and credentials, import reconciliation), null rules, group owner, WebSocket | 2026-11-25 |
+| [[Sync]] | Delta-log + row-level LWW, dedup and `lamport_reused`, the Flutter client (per-group queue and credentials, import reconciliation, restored own deltas), null rules, group owner, WebSocket | 2026-11-25 |
 | [[LlmProviders]] | The analysis prompt — nine voices, twenty languages, the game-type registry — the pluggable provider factory, the separate Claude path, the report control | 2026-11-17 |
 
 ## Operations

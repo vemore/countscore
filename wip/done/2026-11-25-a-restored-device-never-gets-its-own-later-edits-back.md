@@ -1,5 +1,7 @@
 # A device restored from a backup never gets its own later edits back
 
+**Status:** done (2026-11-25) — closed by fix/restored-device-own-deltas. `SyncStore._applyOne` skips an own delta only when the database holds it (`_holdsOwn`): `entity_versions` has its version or a later one of this device's (recorded on `applied`, `duplicate` and now `merged_lww`, which the server logs too), or this group's outbox holds the same delta unsent (in flight, its answer lost). A pulled game upsert on a game held locally moves it and its rows into the group. Any other own delta is applied like another device's — the first fix below, with the outbox test added for the lost answer; no restore flag, which an auto-backup restore could not set (`.llmwiki/Sync.md`, *Decisions & History*). Tested through a real server (`sync_multi_group_backend_test.dart`, *a restored database*) and in `sync_store_test.dart`.
+
 - **Noted:** 2026-11-25 — feat/multi-group-sync-sessions, testing `lamport_reused` through a real server
 - **Theme:** sync-robustness
 - **Area:** app

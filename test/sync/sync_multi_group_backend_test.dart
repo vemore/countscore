@@ -1,7 +1,9 @@
 // One device in two groups, through a real server
 // (wip/done/2026-11-25-multi-group-sync-sessions.md): X is in A and B, Y in A,
 // Z in B. And the client's answer to `lamport_reused`
-// (wip/done/2026-11-25-client-restamps-on-lamport-reused.md). Skipped unless
+// (wip/done/2026-11-25-client-restamps-on-lamport-reused.md), and what a
+// database restored from a backup gets back of its own edits
+// (wip/done/2026-11-25-a-restored-device-never-gets-its-own-later-edits-back.md). Skipped unless
 // SYNC_BACKEND_URL points at a running backend, as sync_two_devices_test.dart
 // (.llmwiki/Testing.md, "Group sync against a local backend"):
 //
@@ -39,8 +41,17 @@ class _Recorder extends http.BaseClient {
   final _inner = http.Client();
   final reasons = <String>[];
 
+  /// Run once, just before the next push reaches the server: another device's
+  /// write landing between this device's pull and its push.
+  Future<void> Function()? beforeNextPush;
+
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    if (request.url.path.endsWith('/sync/push') && beforeNextPush != null) {
+      final hook = beforeNextPush!;
+      beforeNextPush = null;
+      await hook();
+    }
     final response = await _inner.send(request);
     if (!request.url.path.endsWith('/sync/push')) return response;
     final bytes = await response.stream.toBytes();
@@ -54,7 +65,20 @@ class _Recorder extends http.BaseClient {
 }
 
 class _Device {
-  _Device() : db = AppDatabase.forTesting(NativeDatabase.memory()) {
+  _Device() {
+    _open(AppDatabase.forTesting(NativeDatabase.memory()));
+  }
+
+  late AppDatabase db;
+  late SyncStore store;
+  late DriftGameRepository games;
+  late DriftPlayerRepository players;
+  late DriftRoundRepository rounds;
+  late DriftScoreRepository scores;
+  late DriftGameTypeRepository gameTypes;
+
+  void _open(AppDatabase database) {
+    db = database;
     store = SyncStore(db);
     games = DriftGameRepository(db);
     players = DriftPlayerRepository(db);
@@ -63,13 +87,34 @@ class _Device {
     gameTypes = DriftGameTypeRepository(db);
   }
 
-  final AppDatabase db;
-  late final SyncStore store;
-  late final DriftGameRepository games;
-  late final DriftPlayerRepository players;
-  late final DriftRoundRepository rounds;
-  late final DriftScoreRepository scores;
-  late final DriftGameTypeRepository gameTypes;
+  /// Where [backup] put its copies; deleted by [close], after the database.
+  final _tempDirs = <Directory>[];
+
+  Future<void> close() async {
+    await db.close();
+    for (final dir in _tempDirs) {
+      await dir.delete(recursive: true);
+    }
+  }
+
+  /// A copy of the whole database as it is now — a backup, or an export.
+  Future<File> backup() async {
+    final dir = await Directory.systemTemp.createTemp('countscore_backup_');
+    _tempDirs.add(dir);
+    final file = File('${dir.path}/backup.db');
+    await db.customStatement('VACUUM INTO ?', [file.path]);
+    return file;
+  }
+
+  /// The database goes back to [backup], cursor and clock with it, as a
+  /// restored backup or Settings → Import leaves it. The tokens stay: they
+  /// live in secure storage, not in the database.
+  Future<void> restore(File backup) async {
+    await db.close();
+    final copy = await backup.copy('${backup.parent.path}/restored.db');
+    _open(AppDatabase.forTesting(NativeDatabase(copy)));
+  }
+
   final memberships = <String, GroupMembership>{};
   final recorder = _Recorder();
 
@@ -150,9 +195,9 @@ void main() {
   });
 
   tearDown(() async {
-    await x.db.close();
-    await y.db.close();
-    await z.db.close();
+    await x.close();
+    await y.close();
+    await z.close();
   });
 
   /// Alice plays in A (with Bob) and in B (with Carol): one local row on X,
@@ -318,6 +363,191 @@ void main() {
       expect(await x.store.pendingCount(groupId: a), 0);
       expect(await x.store.rejectedCount(), 0);
       expect(await y.colourOf('Alice'), 0xFFE91E63, reason: 'the edit reached the group');
+    });
+  });
+
+  // wip/done/2026-11-25-a-restored-device-never-gets-its-own-later-edits-back.md
+  group('a restored database', () {
+    Future<Game> gameOn(_Device d, int id) async => (await d.games.getById(id))!;
+
+    Future<Game> gameNamed(_Device d, String name) async =>
+        (await d.games.getAll()).singleWhere((g) => g.name == name);
+
+    test('gets back the edit it pushed after the backup, and its next edit keeps it',
+        () async {
+      final (inA, _) = await aliceInBoth();
+      final backup = await x.backup();
+
+      // After the backup: X renames the game and the group takes it.
+      await x.games.update((await gameOn(x, inA)).copyWith(name: 'Mardi soir'));
+      await x.syncOk(a);
+      await y.syncOk(a);
+      expect(await y.gameNames(), ['Mardi soir']);
+
+      // The database goes back to the copy, cursor and clock with it.
+      await x.restore(backup);
+      expect((await gameOn(x, inA)).name, 'Mardi A');
+
+      await x.syncOk(a);
+      expect((await gameOn(x, inA)).name, 'Mardi soir', reason: 'its own edit, back from the log');
+
+      // The next local edit of that row is built from the row as it now is.
+      await x.games.update((await gameOn(x, inA)).copyWith(isLowestScoreWins: false));
+      await x.syncOk(a);
+      await y.syncOk(a);
+      final onY = await gameNamed(y, 'Mardi soir');
+      expect(onY.isLowestScoreWins, isFalse, reason: 'the new edit reached Y');
+      expect(await y.gameNames(), ['Mardi soir'], reason: 'and did not undo the rename');
+      expect(await x.store.pendingCount(), 0);
+      expect(await x.store.rejectedCount(), 0);
+    });
+
+    test('gets back a delete it pushed after the backup', () async {
+      final (inA, _) = await aliceInBoth();
+      final backup = await x.backup();
+
+      await x.games.delete(inA);
+      await x.syncOk(a);
+      await y.syncOk(a);
+      expect(await y.gameNames(), isEmpty);
+
+      await x.restore(backup);
+      expect(await x.gameNames(), ['Mardi A', 'Mardi B']);
+      await x.syncOk(a);
+      await x.syncOk(b);
+      expect(await x.gameNames(), ['Mardi B']);
+      await y.syncOk(a);
+      expect(await y.gameNames(), isEmpty);
+    });
+
+    test('a device never restored keeps a local edit over its own older delta', () async {
+      final (inA, _) = await aliceInBoth();
+      await x.games.update((await gameOn(x, inA)).copyWith(name: 'Un'));
+      await x.syncOk(a);
+
+      // The cursor trails this device's own push: the next pull returns "Un",
+      // older than the edit still queued.
+      await x.games.update((await gameOn(x, inA)).copyWith(name: 'Deux'));
+      await x.syncOk(a);
+      await y.syncOk(a);
+
+      expect((await gameOn(x, inA)).name, 'Deux');
+      expect(await y.gameNames(), ['Deux']);
+    });
+
+    test('two groups: each gets back its own, in its own order, and neither disturbs '
+        'the other', () async {
+      final (inA, inB) = await aliceInBoth();
+      final backup = await x.backup();
+
+      // After the backup: X renames its game in each group; then Z renames
+      // B's again, after X.
+      await x.games.update((await gameOn(x, inA)).copyWith(name: 'Mardi A soir'));
+      await x.games.update((await gameOn(x, inB)).copyWith(name: 'Mardi B soir'));
+      await x.syncOk(a);
+      await x.syncOk(b);
+      await z.syncOk(b);
+      await z.games.update((await gameNamed(z, 'Mardi B soir')).copyWith(name: 'Mardi B chez Z'));
+      await z.syncOk(b);
+
+      await x.restore(backup);
+      await x.syncOk(b);
+      expect((await gameOn(x, inB)).name, 'Mardi B chez Z', reason: "Z's later write wins");
+      expect((await gameOn(x, inA)).name, 'Mardi A', reason: "A's pull has not run");
+      await x.syncOk(a);
+      expect((await gameOn(x, inA)).name, 'Mardi A soir');
+      expect((await gameOn(x, inB)).name, 'Mardi B chez Z');
+
+      // X's next edit in A reaches Y with the rename; B is not touched.
+      await x.games.update((await gameOn(x, inA)).copyWith(isLowestScoreWins: false));
+      expect(await x.store.pendingCount(groupId: b), 0);
+      await x.syncOk(a);
+      await x.syncOk(b);
+      await y.syncOk(a);
+      await z.syncOk(b);
+      final onY = await gameNamed(y, 'Mardi A soir');
+      expect(onY.isLowestScoreWins, isFalse);
+      final onZ = await gameNamed(z, 'Mardi B chez Z');
+      expect(onZ.isLowestScoreWins, isTrue);
+      expect(await z.gameNames(), ['Mardi B chez Z']);
+      expect(await x.store.rejectedCount(), 0);
+    });
+
+    test('a game shared after the backup comes back shared whole, its older rows too',
+        () async {
+      await aliceInBoth();
+      // A game X plays locally when the backup is taken, shared only after it.
+      final later = await x.game('Jeudi', ['Alice', 'Bob']);
+      final backup = await x.backup();
+
+      await x.store.shareGame(later, a);
+      final round2 = await x.rounds.create(Round(gameId: later, roundNumber: 2));
+      for (final p in await x.players.getByGame(later)) {
+        await x.scores.create(Score(playerId: p.id!, roundId: round2, value: 3));
+      }
+      await x.syncOk(a);
+      await y.syncOk(a);
+
+      await x.restore(backup);
+      expect((await x.games.getById(later))!.groupId, isNull, reason: 'local in the backup');
+      await x.syncOk(a);
+
+      Future<List<Object?>> groupsOf(String sql) async => [
+            for (final r in await x.db.customSelect(sql, variables: [Variable(later)]).get())
+              r.data['group_id'],
+          ];
+      expect((await x.games.getById(later))!.groupId, a);
+      expect(await groupsOf('SELECT group_id FROM rounds WHERE gameId = ?'), [a, a]);
+      expect(await groupsOf('SELECT group_id FROM game_players WHERE gameId = ?'), [a, a]);
+      expect(
+          await groupsOf('SELECT s.group_id FROM scores s JOIN rounds r ON r.id = s.roundId '
+              'WHERE r.gameId = ? AND s.deleted_at IS NULL'),
+          [a, a, a, a]);
+
+      // An edit of the round the backup already held reaches Y.
+      final round1 = (await x.rounds.getByGame(later)).firstWhere((r) => r.roundNumber == 1);
+      await x.rounds.updateComment(round1.id!, 'Belle manche');
+      await x.syncOk(a);
+      await y.syncOk(a);
+      final onY = await gameNamed(y, 'Jeudi');
+      final rounds = await y.rounds.getByGame(onY.id!);
+      expect(rounds.firstWhere((r) => r.roundNumber == 1).comment, 'Belle manche');
+      expect(await x.store.pendingCount(), 0);
+      expect(await x.store.rejectedCount(), 0);
+    });
+  });
+
+  group('merged_lww', () {
+    Future<Game> gameNamed(_Device d, String name) async =>
+        (await d.games.getAll()).singleWhere((g) => g.name == name);
+
+    test('an edit the server logs as merged_lww does not undo the delete that beat it',
+        () async {
+      final (inA, _) = await aliceInBoth();
+      // X's clock is well ahead of Y's — X has been busy elsewhere.
+      await x.db.customStatement(
+          'UPDATE sync_state SET last_lamport = last_lamport + 50 WHERE group_id = ?', [a]);
+      final aliceOnX = (await x.players.getByGame(inA)).firstWhere((p) => p.name == 'Alice');
+      await x.db.customStatement(
+          'UPDATE game_players SET colorValue = ?, updated_at = ? WHERE id = ?',
+          [0xFF4CAF50, DateTime.now().millisecondsSinceEpoch, aliceOnX.id]);
+
+      // Between X's pull and X's push, Y removes Alice from the game.
+      x.recorder.beforeNextPush = () async {
+        final onY = await gameNamed(y, 'Mardi A');
+        final aliceOnY = (await y.players.getByGame(onY.id!)).firstWhere((p) => p.name == 'Alice');
+        await y.players.delete(aliceOnY.id!);
+        await y.syncOk(a);
+      };
+      await x.syncOk(a);
+      expect(x.recorder.beforeNextPush, isNull, reason: 'Y pushed first');
+
+      // The next pull returns Y's delete, then X's own losing edit.
+      await x.syncOk(a);
+      expect([for (final p in await x.players.getByGame(inA)) p.name], ['Bob']);
+      expect(await x.store.pendingCount(), 0);
+      // Y, pulling X's losing edit as another device's, is not checked here:
+      // wip/todo_nr/2026-11-25-a-pulled-membership-upsert-undoes-a-delete.md.
     });
   });
 }

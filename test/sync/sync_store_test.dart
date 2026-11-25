@@ -975,11 +975,152 @@ void main() {
       expect(await games.getAll(), isEmpty);
     });
 
-    test('this device\'s own deltas are skipped', () async {
-      final m = await joined();
-      await store.applyPulled(
-          m, [_delta('game', 'eeeeeeee-0000-4000-8000-000000000002', 1, 1, {'name': 'G'}, origin: _me)], 1);
-      expect(await games.getAll(), isEmpty);
+    group('this device\'s own deltas', () {
+      /// A shared game whose push has been prepared; [answered] marks it sent.
+      /// Returns the game's delta and the game's id.
+      Future<(PreparedDelta, int)> pushedGame(SyncMembership m, {required bool answered}) async {
+        final g = await localGame();
+        await store.shareGame(g.game, m.groupId);
+        final prepared = await store.preparePush(m);
+        if (answered) {
+          for (final d in prepared) {
+            await store.markSent(d, m.deviceId);
+          }
+        }
+        return (prepared.singleWhere((d) => d.entityType == 'game'), g.game);
+      }
+
+      /// [d] as the server's log hands it back to this device.
+      PulledDelta back(PreparedDelta d, int seq) =>
+          _delta(d.entityType, d.entityUuid, d.lamport, seq, d.payload, origin: _me);
+
+      test('a pushed one returning under a newer local edit is skipped; the edit stays queued',
+          () async {
+        final m = await joined();
+        final (sent, id) = await pushedGame(m, answered: true);
+        await games.update((await games.getById(id))!.copyWith(name: 'Mardi soir'));
+
+        final report = await store.applyPulled(m, [back(sent, 1)], 1);
+
+        expect(report.applied, 0);
+        expect((await games.getById(id))!.name, 'Mardi soir');
+        expect((await outbox()).where((r) => r['entity_type'] == 'game'), hasLength(1),
+            reason: 'the rename is still to be sent');
+      });
+
+      test('a delete it sent is not applied again when it comes back', () async {
+        final m = await joined();
+        final (_, id) = await pushedGame(m, answered: true);
+        await games.delete(id);
+        final delete = (await store.preparePush(m)).singleWhere((d) => d.entityType == 'game');
+        await store.markSent(delete, m.deviceId);
+
+        final report = await store.applyPulled(m, [back(delete, 1)], 1);
+
+        expect(delete.op, 'delete');
+        expect(report.applied, 0, reason: 'nothing applied, nothing to reload');
+        expect(await games.getAll(), isEmpty);
+      });
+
+      test('one whose answer was lost is skipped too: its lamport is stamped here', () async {
+        final m = await joined();
+        final (inFlight, id) = await pushedGame(m, answered: false);
+        await games.update((await games.getById(id))!.copyWith(name: 'Mardi soir'));
+
+        await store.applyPulled(m, [back(inFlight, 1)], 1);
+
+        expect((await games.getById(id))!.name, 'Mardi soir');
+      });
+
+      test('one this database never stamped is applied: a restored backup', () async {
+        final m = await joined();
+        await store.applyPulled(m, [
+          _delta('game', 'eeeeeeee-0000-4000-8000-000000000002', 7, 1, {'name': 'G'}, origin: _me),
+        ], 1);
+
+        expect((await games.getAll()).single.name, 'G');
+        expect((await store.membership())!.lastLamport, 7, reason: 'the next stamp comes after');
+        expect(await outbox(), isEmpty, reason: 'applied under suppression');
+      });
+
+      test('an older one never stamped here loses to the newer version this database holds',
+          () async {
+        final m = await joined();
+        const uuid = 'eeeeeeee-0000-4000-8000-000000000003';
+        await store.applyPulled(m, [_delta('game', uuid, 9, 1, {'name': 'Nouveau'})], 1);
+        await store.applyPulled(
+            m, [_delta('game', uuid, 5, 2, {'name': 'Ancien'}, origin: _me)], 2);
+
+        expect((await games.getAll()).single.name, 'Nouveau');
+      });
+
+      test('a delete never stamped here wins over a higher version from another device',
+          () async {
+        // This device deleted the game offline, after the other's write it had
+        // not pulled yet; the server logged both, and the delete wins there.
+        final m = await joined();
+        const uuid = 'eeeeeeee-0000-4000-8000-000000000005';
+        await store.applyPulled(m, [_delta('game', uuid, 9, 1, {'name': 'Ailleurs'})], 1);
+        await store.applyPulled(m, [_delta('game', uuid, 5, 2, {}, op: 'delete', origin: _me)], 2);
+
+        expect(await games.getAll(), isEmpty);
+      });
+
+      test('an edit answered merged_lww, logged all the same, does not undo the delete that beat it',
+          () async {
+        final m = await joined();
+        final (_, id) = await pushedGame(m, answered: true);
+        final alice = (await players.getByGame(id)).firstWhere((p) => p.name == 'Alice');
+        await db.customStatement(
+            'UPDATE game_players SET colorValue = 4283215696 WHERE id = ?', [alice.id]);
+        final edit = (await store.preparePush(m)).single;
+        expect(edit.entityType, 'game_player');
+        // Another device removed Alice first, under a lower lamport: the delete wins.
+        await store.markMerged(edit, m.deviceId);
+
+        await store.applyPulled(m, [
+          _delta('game_player', edit.entityUuid, 1, 1,
+              {'game_id': edit.payload['game_id'], 'player_id': edit.payload['player_id']},
+              op: 'delete'),
+          back(edit, 2),
+        ], 2);
+
+        expect([for (final p in await players.getByGame(id)) p.name], ['Bob']);
+      });
+
+      test('an unsent row of the same lamport but another entity does not hide it', () async {
+        final m = await joined();
+        final (inFlight, _) = await pushedGame(m, answered: false);
+
+        await store.applyPulled(m, [
+          _delta('game', 'eeeeeeee-0000-4000-8000-000000000006', inFlight.lamport, 1,
+              {'name': 'Importée'}, origin: _me),
+        ], 1);
+
+        expect([for (final g in await games.getAll()) g.name], contains('Importée'));
+      });
+
+      test('a lamport stamped in another group does not hide one of this group', () async {
+        const groupB = '44444444-4444-4444-8444-444444444444';
+        final m = await joined();
+        await store.join((
+          groupId: groupB,
+          groupName: 'Club',
+          shareToken: 'unused',
+          deviceId: '55555555-5555-4555-8555-555555555555',
+          deviceToken: 'unused',
+        ));
+        final b = (await store.membership(groupB))!;
+        // B stamps a lamport, and the answer is still awaited; A stamped none.
+        final (inB, _) = await pushedGame(b, answered: false);
+
+        await store.applyPulled(m, [
+          _delta('game', 'eeeeeeee-0000-4000-8000-000000000004', inB.lamport, 1, {'name': 'Dans A'},
+              origin: _me),
+        ], 1);
+
+        expect([for (final g in await games.getAll()) g.name], contains('Dans A'));
+      });
     });
 
     test('the same score cell adopts the server identity', () async {

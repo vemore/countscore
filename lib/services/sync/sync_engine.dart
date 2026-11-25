@@ -162,8 +162,9 @@ class SyncEngine {
             progress = true;
           case 'merged_lww':
             // A newer write, or a delete, already holds the entity. The winner
-            // comes back on the next pull.
-            await _store.markSuperseded(d);
+            // comes back on the next pull; so does this delta, logged anyway,
+            // and its recorded version keeps it from being applied then.
+            await _store.markMerged(d, m.deviceId);
             progress = true;
           default:
             if (r.reason == _lamportReused) {
