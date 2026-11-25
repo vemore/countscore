@@ -44,13 +44,13 @@ a `groupId`, and `group_links` is keyed by group. What assumes one group:
 10. Sync status per group in Settings, the worst of them wherever one status is shown.
 
 **Plan — one pull request each, in this order:**
-- `wip/todo_nr/2026-09-26-a-sync-pass-running-across-a-group-switch-reports-unauthorized.md`
+- `wip/todo/2026-09-26-a-sync-pass-running-across-a-group-switch-reports-unauthorized.md`
   (prerequisite);
-- `wip/todo_nr/2026-11-25-sync-server-adversarial-api-tests.md` (in parallel with the above:
+- `wip/todo/2026-11-25-sync-server-adversarial-api-tests.md` (in parallel with the above:
   the server is shared, and hardened before it serves several groups per install);
-- `wip/todo_nr/2026-11-25-multi-group-storage.md`;
-- `wip/todo_nr/2026-11-25-multi-group-sync-sessions.md`;
-- `wip/todo_nr/2026-11-25-multi-group-ui.md`.
+- `wip/todo/2026-11-25-multi-group-storage.md`;
+- `wip/todo/2026-11-25-multi-group-sync-sessions.md`;
+- `wip/todo/2026-11-25-multi-group-ui.md`.
 
 This entry closes with the last of them.
 
