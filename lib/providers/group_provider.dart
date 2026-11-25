@@ -291,12 +291,19 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
     if (_baseUrl == null) throw GroupActionException(GroupActionError.unreachable);
     // Before the server: a refused create or join leaves every group as it
     // was, and a sixth registration would be a device row nobody uses. A code
-    // this device already holds names a group it is in.
-    if (_sessions.length >= maxGroups &&
-        !_sessions.values.any((s) => shareToken != null && s.shareToken == shareToken)) {
+    // this device holds for one of its groups is let through: it most likely
+    // names that group again, and only the answer says which group it is.
+    final full = _sessions.length >= maxGroups;
+    if (full && !_sessions.values.any((s) => shareToken != null && s.shareToken == shareToken)) {
       throw GroupActionException(GroupActionError.tooManyGroups);
     }
-    await _adopt(await _register(call), owner: owner, label: label);
+    final m = await _register(call);
+    if (full && !_sessions.containsKey(m.groupId)) {
+      // A new group after all: its registration is withdrawn, nothing kept.
+      await _revoke(m.deviceToken, m.deviceId);
+      throw GroupActionException(GroupActionError.tooManyGroups);
+    }
+    await _adopt(m, owner: owner, label: label);
   }
 
   /// Runs a create or join call, mapping its failures. Changes nothing here.
@@ -496,22 +503,39 @@ class GroupProvider with ChangeNotifier, WidgetsBindingObserver {
   /// Renames this device in every group — the name the other members see in
   /// their devices list. [label] is trimmed; the server refuses a blank one, one
   /// over 64 code points, or one with a control character, and nothing is then
-  /// stored. A group that cannot be reached gets it at its next successful
-  /// pass. Changes no synced row.
+  /// stored. So is a rename no group took because a server answered with an
+  /// error (429, 401, 5xx): the error is the caller's. A group that cannot be
+  /// reached, or answered an error while another took the name, gets it at its
+  /// next successful pass. Changes no synced row.
   Future<void> renameDevice(String label) async {
     final name = label.trim();
     if (_baseUrl == null || _sessions.isEmpty) {
       throw GroupActionException(GroupActionError.unreachable);
     }
+    final previous = _nickname;
+    // Set first: a pass that checks its label meanwhile (`_syncLabel`) sends
+    // the new name, never the old one back.
+    _nickname = name;
+    var accepted = 0;
+    Object? refusal;
     for (final s in [..._sessions.values]) {
       try {
         await s._sendLabel(name);
+        accepted++;
       } on BackendException catch (e) {
-        // The name itself is refused: it would be everywhere.
-        if (e.statusCode == 422) throw _settingsError(e);
+        if (e.statusCode == 422) {
+          // The name itself is refused: it would be everywhere.
+          _nickname = previous;
+          throw _settingsError(e);
+        }
+        refusal ??= e;
       } catch (_) {
         // Unreachable: retried by that group's next pass.
       }
+    }
+    if (accepted == 0 && refusal != null) {
+      _nickname = previous;
+      throw _settingsError(refusal);
     }
     _renames++;
     await _saveNickname(name);

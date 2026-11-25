@@ -122,6 +122,9 @@ class MultiGroupServer {
   /// The name the server holds for each device token.
   final labels = <String, String>{};
 
+  /// Invite codes that join another group than their number says.
+  final joinsTo = <String, int>{};
+
   /// Answers a request itself before the defaults; null lets the default answer.
   Future<http.Response?> Function(http.BaseRequest request)? intercept;
 
@@ -143,7 +146,7 @@ class MultiGroupServer {
           case '/groups/join':
             final body = jsonDecode(request.body) as Map<String, dynamic>;
             final share = body['share_token'] as String;
-            final joined = int.parse(share.split('-').last);
+            final joined = joinsTo[share] ?? int.parse(share.split('-').last);
             labels['token-$joined'] = body['device_label'] as String;
             return json({
               'group': {'id': groupIdOf(joined), 'name': 'Groupe $joined', 'share_token': share},

@@ -101,63 +101,105 @@ void main() {
   });
 
   group('lamport_reused (a clock behind its own log)', () {
-    /// A server whose log holds this device's own delta at lamport 40 and
-    /// another device's at 41, past this device's restored clock, so a pull
-    /// from the start returns both. It answers the `game` delta
-    /// `lamport_reused` [reused] times, then `applied`, and records every
-    /// lamport pushed for it in [gameLamports].
-    SyncEngine engine(int reused, List<int> gameLamports) {
-      var refusals = 0;
-      http.Response json(Object body) =>
-          http.Response(jsonEncode(body), 200, headers: {'content-type': 'application/json'});
+    /// A server whose log holds this device's own delta at lamport 40 (seq 1)
+    /// and another device's at 41 (seq 2), past this device's restored clock,
+    /// one per page. It answers each delta whose type is in [refuse]
+    /// `lamport_reused` [reused] times per type, then `applied`, and records
+    /// every lamport pushed for a `game` in [gameLamports]. [scans] counts the
+    /// reads of the log from seq 0; with [failScanOnce] the second page of the
+    /// first such read answers 500.
+    SyncEngine engine(
+      int reused,
+      List<int> gameLamports, {
+      Set<String> refuse = const {'game'},
+      List<int>? scans,
+      bool failScanOnce = false,
+    }) {
+      final refusals = <String, int>{};
+      var failed = false;
+      http.Response json(Object body, [int status = 200]) =>
+          http.Response(jsonEncode(body), status, headers: {'content-type': 'application/json'});
+      Map<String, dynamic> logged(int seq, int lamport, String origin) => {
+            'server_seq': seq,
+            'entity_type': seq == 1 ? 'game' : 'something_later',
+            'entity_uuid': '${'$seq' * 8}-3333-4333-8333-333333333333',
+            'op': 'upsert',
+            'payload': <String, dynamic>{},
+            'client_lamport': lamport,
+            'origin_device_id': origin,
+          };
       final client = MockClient((request) async {
         if (request.url.path.endsWith('/sync/pull')) {
           final since = int.parse(request.url.queryParameters['since_seq'] ?? '0');
-          return json({
-            'deltas': [
-              if (since < 2) ...[
-                {
-                  'server_seq': 1,
-                  'entity_type': 'game',
-                  'entity_uuid': '33333333-3333-4333-8333-333333333333',
-                  'op': 'upsert',
-                  'payload': <String, dynamic>{},
-                  'client_lamport': 40,
-                  'origin_device_id': _me,
-                },
-                {
-                  'server_seq': 2,
-                  'entity_type': 'something_later',
-                  'entity_uuid': '44444444-4444-4444-8444-444444444444',
-                  'op': 'upsert',
-                  'payload': <String, dynamic>{},
-                  'client_lamport': 41,
-                  'origin_device_id': '55555555-5555-4555-8555-555555555555',
-                },
-              ],
-            ],
-            'server_seq_max': 2,
-            'has_more': false,
+          if (since == 0) scans?.add(1);
+          if (since == 1 && failScanOnce && !failed) {
+            failed = true;
+            return json({'detail': 'down'}, 500);
+          }
+          return json(switch (since) {
+            0 => {'deltas': [logged(1, 40, _me)], 'server_seq_max': 1, 'has_more': true},
+            1 => {
+                'deltas': [logged(2, 41, '55555555-5555-4555-8555-555555555555')],
+                'server_seq_max': 2,
+                'has_more': false,
+              },
+            _ => {'deltas': [], 'server_seq_max': since, 'has_more': false},
           });
         }
         final deltas = ((jsonDecode(request.body) as Map)['deltas'] as List).cast<Map>();
         return json({
           'results': [
             for (final d in deltas)
-              if (d['entity_type'] == 'game') ...[
-                () {
-                  gameLamports.add(d['client_lamport'] as int);
-                  return refusals++ < reused
-                      ? {'status': 'rejected', 'server_seq': null, 'reason': 'lamport_reused'}
-                      : {'status': 'applied', 'server_seq': 3, 'reason': null};
-                }(),
-              ] else
-                {'status': 'applied', 'server_seq': 3, 'reason': null},
+              () {
+                final type = d['entity_type'] as String;
+                if (type == 'game') gameLamports.add(d['client_lamport'] as int);
+                final n = refusals[type] = (refusals[type] ?? 0) + 1;
+                return refuse.contains(type) && n <= reused
+                    ? {'status': 'rejected', 'server_seq': null, 'reason': 'lamport_reused'}
+                    : {'status': 'applied', 'server_seq': 3, 'reason': null};
+              }(),
           ],
         });
       });
       return SyncEngine(store, BackendClient('https://example.test', httpClient: client), 'tok', _group);
     }
+
+    test('a scan that fails is not a refusal: the next pass scans again, and it is applied',
+        () async {
+      await engine(0, []).run();
+      await db.customStatement('UPDATE sync_state SET last_lamport = 0');
+      await db.customStatement("UPDATE games SET name = 'Mercredi'");
+
+      final lamports = <int>[];
+      final server = engine(1, lamports, failScanOnce: true);
+      expect((await server.run()).failure, SyncFailure.server, reason: 'the scan broke off');
+      expect(await store.rejectedCount(), 0);
+      expect(await store.pendingCount(), 1, reason: 'the row left as it was');
+
+      // The same server: the edit is refused again under the same lamport.
+      final second = engine(1, lamports);
+      expect((await second.run()).failure, isNull);
+
+      expect(await store.rejectedCount(), 0, reason: 'a failed scan is not a first refusal');
+      expect(await store.pendingCount(), 0);
+      expect(lamports.first, lamports[1], reason: 'pushed again as it was prepared');
+      expect(lamports.last, greaterThan(41));
+    });
+
+    test('a batch of several refusals reads the log once', () async {
+      await engine(0, []).run();
+      await db.customStatement('UPDATE sync_state SET last_lamport = 0');
+      await db.customStatement("UPDATE games SET name = 'Mercredi'");
+      await db.customStatement('UPDATE players SET colorValue = 4283215696');
+
+      final scans = <int>[];
+      final result = await engine(1, [], refuse: {'game', 'player'}, scans: scans).run();
+
+      expect(result.failure, isNull);
+      expect(scans, hasLength(1), reason: 'one scan for the whole batch');
+      expect(await store.rejectedCount(), 0);
+      expect(await store.pendingCount(), 0);
+    });
 
     test('a whole database restored reuses nothing: the first pull lifts the clock', () async {
       await engine(0, []).run();

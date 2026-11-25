@@ -235,6 +235,53 @@ void main() {
       expect(await credentials.nickname(), 'Alice');
     });
 
+    test('a rename no group took for a server error is the caller\'s, and stored nowhere',
+        () async {
+      server.intercept = (request) async => request.url.path == '/groups/devices/me'
+          ? http.Response('{"detail":"slow down"}', 429)
+          : null;
+      await expectLater(
+        group.renameDevice('Bob'),
+        throwsA(isA<GroupActionException>()
+            .having((e) => e.error, 'error', GroupActionError.rateLimited)),
+      );
+      expect(group.deviceLabel, 'Alice');
+      expect(await credentials.nickname(), 'Alice');
+    });
+
+    test('a rename one group took is kept; the group that answered an error gets it later',
+        () async {
+      server.intercept = (request) async => request.url.path == '/groups/devices/me' &&
+              request.headers['Authorization'] == 'Bearer token-2'
+          ? http.Response('{"detail":"down"}', 503)
+          : null;
+      await group.renameDevice('Bob');
+      expect(await credentials.nickname(), 'Bob');
+      expect(server.labels, {'token-1': 'Bob', 'token-2': 'Alice'});
+
+      server.intercept = null;
+      await group.session(groupIdOf(2))!.syncNow();
+      await _idle(group);
+      await pumpEventQueue();
+      expect(server.labels['token-2'], 'Bob');
+    });
+
+    test('while a rename is on its way the new name is the one held, and a refusal restores',
+        () async {
+      final gate = Completer<void>();
+      server.intercept = (request) async {
+        if (request.url.path != '/groups/devices/me') return null;
+        await gate.future;
+        return http.Response('{"detail":"invalid"}', 422);
+      };
+      final rename = group.renameDevice('Bob');
+      await pumpEventQueue();
+      expect(group.nickname, 'Bob', reason: "a pass meanwhile sends this one, not 'Alice'");
+      gate.complete();
+      await expectLater(rename, throwsA(isA<GroupActionException>()));
+      expect(group.nickname, 'Alice');
+    });
+
     test('joining under another name renames the groups already joined', () async {
       await group.joinGroup('invite-3', 'Ali');
       await _idle(group);

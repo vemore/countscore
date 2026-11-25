@@ -5,6 +5,7 @@
 
 import 'dart:async';
 
+import 'package:drift/drift.dart' show Variable;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -73,6 +74,71 @@ void main() {
     expect(server.seen, isEmpty, reason: 'no device row the install would not use');
     expect([for (final s in group.memberships) s.groupId],
         [for (final n in [1, 2, 3, 4, 5]) groupIdOf(n)]);
+  });
+
+  test('at five, a code this device holds joins its group again, but never a sixth', () async {
+    await joinAll([1, 2, 3, 4, 5]);
+    final five = [for (final n in [1, 2, 3, 4, 5]) groupIdOf(n)];
+
+    // The code of group 3: a new registration with a group already joined.
+    await group.joinGroup('invite-3', 'Phone');
+    await idle(group);
+    expect([for (final s in group.memberships) s.groupId], unorderedEquals(five));
+
+    // A held code that the server resolves to a new group: refused once the
+    // answer names it, the new registration withdrawn, nothing kept.
+    server.joinsTo['invite-4'] = 6;
+    await expectLater(
+      group.joinGroup('invite-4', 'Phone'),
+      throwsA(isA<GroupActionException>()
+          .having((e) => e.error, 'error', GroupActionError.tooManyGroups)),
+    );
+    expect([for (final s in group.memberships) s.groupId], unorderedEquals(five));
+    expect(await credentials.deviceToken(groupIdOf(6)), isNull);
+    expect(server.calls(6, '/groups/me/devices/${deviceIdOf(6)}/revoke'), hasLength(1));
+  });
+
+  test('leaveGroup(A) keeps B: its game, links, credentials and sync', () async {
+    await joinAll([1, 2]);
+    final games = DriftGameRepository(db);
+    final players = DriftPlayerRepository(db);
+    final inA = await games.create(Game(name: 'Mardi A', isLowestScoreWins: true, gameTypeId: 1));
+    await players.create(Player(gameId: inA, name: 'Alice', orderIndex: 0));
+    final inB = await games.create(Game(name: 'Mardi B', isLowestScoreWins: true, gameTypeId: 1));
+    await players.create(Player(gameId: inB, name: 'Alice', orderIndex: 0));
+    await group.shareGame(inA, groupIdOf(1));
+    await group.shareGame(inB, groupIdOf(2));
+    await group.syncNow();
+    await idle(group);
+    Future<int> links(String groupId) async => (await db
+            .customSelect('SELECT COUNT(*) AS c FROM group_links WHERE group_id = ?',
+                variables: [Variable(groupId)])
+            .getSingle())
+        .data['c'] as int;
+    final linksInB = await links(groupIdOf(2));
+    expect(linksInB, greaterThan(0));
+    server.seen.clear();
+
+    await group.leaveGroup(groupIdOf(1));
+
+    expect([for (final s in group.memberships) s.groupId], [groupIdOf(2)]);
+    expect(server.calls(1, '/groups/me/devices/${deviceIdOf(1)}/revoke'), hasLength(1));
+    expect(server.calls(2, '/groups/me/devices/${deviceIdOf(2)}/revoke'), isEmpty);
+    expect((await games.getById(inA))!.groupId, isNull, reason: 'a local game now');
+    expect((await games.getById(inB))!.groupId, groupIdOf(2));
+    expect(await links(groupIdOf(1)), 0);
+    expect(await links(groupIdOf(2)), linksInB, reason: 'Alice is still linked in B');
+    expect(await players.getAllNames(), contains('Alice'));
+    expect(await credentials.deviceToken(groupIdOf(1)), isNull);
+    expect(await credentials.deviceToken(groupIdOf(2)), 'token-2');
+
+    // B syncs on.
+    await DriftRoundRepository(db).create(Round(gameId: inB, roundNumber: 1));
+    await group.syncNow();
+    await idle(group);
+    expect(server.calls(2, '/sync/push'), isNotEmpty);
+    expect(group.session(groupIdOf(2))!.status, SyncStatus.idle);
+    expect(group.pendingChanges, 0);
   });
 
   test('revoked in one group, the device keeps syncing in the other', () async {

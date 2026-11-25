@@ -321,8 +321,10 @@ joined —, on rename, and learnt from a devices list only by an install that ho
 (one from when it was kept in memory); read on start, so it is known offline. Settings →
 Group shows it (`groupNicknameCurrent`) with an edit button (`group_nickname_edit`) that
 reuses the field and calls `GroupProvider.renameDevice`: `PATCH /groups/devices/me` with each
-group's token. A 422 refuses the name and nothing is stored; a group that cannot be reached
-gets it later. Each `GroupSession` remembers what its server holds (`_labelOnServer`, from
+group's token. The new name is held from the start, so a pass meanwhile cannot send the old
+one back. A 422 refuses the name, and so does an error from every group (429, 401, 5xx,
+shown as the matching message): the old one is restored and nothing is stored. A group
+that cannot be reached, or answered an error while another took the name, gets it later. Each `GroupSession` remembers what its server holds (`_labelOnServer`, from
 the join, a rename's answer or its devices list), reads it once after a start, and after
 each successful pass sends the nickname where the two differ — a failed rename, or one lost
 to a restart. A list that left before a rename completed is not taken for the server's
@@ -397,7 +399,7 @@ off (since 2026-09-24).
 | `round_number_taken` | pull, move the round to max+1, push again; `RoundRenumbered` → snackbar |
 | `score_exists`, `analysis_exists` | done; the pull adopts the server's uuid for that cell |
 | `parent_missing` | retried once, rejected the second time |
-| `lamport_reused` | the stamp cleared, the group's log read from seq 0 for its highest lamport (nothing applied, cursor kept), stamped again past it and pushed again in the same pass; a second one in a row is rejected (since 2026-11-25) |
+| `lamport_reused` | every such delta of the batch collected; the group's log read **once** from seq 0 for its highest lamport (nothing applied, cursor kept) and the clock raised past it; only then each stamp cleared, so each is stamped again and pushed again in the same pass. A scan that fails leaves the rows as they were, for the next pass to do it all again; a second refusal after a scan that succeeded is rejected (since 2026-11-25) |
 | anything else | rejected, counted in Settings |
 
 **Pull** (`SyncStore.applyPulled`, one transaction per page). Own deltas skipped. Upserts
@@ -535,7 +537,11 @@ closed with 1013 before `accept()`. The counter is process memory too (`_open_st
   and then the lamports it missed are *before* the cursor, where a pull does not look. So the
   engine pages through the group's log from seq 0 for its highest lamport, applying nothing
   and moving no cursor, then stamps again. A whole-log read is acceptable for an event this
-  rare; a second refusal in a row is rejected rather than looped.
+  rare; a second refusal in a row is rejected rather than looped. The independent review of
+  #292 found two holes in the first cut, both fixed there: the stamp was cleared *before*
+  the scan, so a scan cut short left the clock low, the next stamp was refused again and
+  the edit rejected for good — the scan now comes first and a failed one changes nothing;
+  and a batch of 100 refused deltas read the log 100 times — once per batch now.
 - **Values are checked against their column before the driver sees them (2026-11-25).**
   The adversarial suite found five pushes that answered 500 — a string in a boolean column,
   a number in a timestamp one, a lamport or `since_seq` past BIGINT, and on Postgres a NUL

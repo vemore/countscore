@@ -14,10 +14,13 @@ local-write listener, the lifecycle observer and the event stream. Each runs `Sy
 for its own group; two groups' passes run side by side, their transactions serialised by
 Drift. The user's decisions are in `wip/todo/2026-11-17-belong-to-several-groups.md`.
 
-- **At most `GroupProvider.maxGroups` (5)**, refused before any request
-  (`GroupActionError.tooManyGroups`, `groupErrorTooManyGroups`): the server cannot tell two
-  device rows are one install. An invite code this device already holds for a group is let
-  through — it names a group it is in.
+- **At most `GroupProvider.maxGroups` (5)** (`GroupActionError.tooManyGroups`,
+  `groupErrorTooManyGroups`): the server cannot tell two device rows are one install. At five,
+  a create, and a join whose code matches none of the invite codes this device holds, are
+  refused before any request. A join with a held code goes to the server, since only its
+  answer names the group: the group already joined takes the new registration; a new one
+  (the code moved to another group) is refused then, its registration revoked and nothing
+  kept. A group's rotated code that this device does not hold yet is refused at five.
 - **Create and join add a membership**; the same group joined again takes the new
   registration and revokes the old one. **The configuration QR still replaces**
   (`completeJoin` leaves every group first, unless the code is a group already joined): the
