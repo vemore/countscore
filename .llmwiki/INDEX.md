@@ -48,8 +48,8 @@ Load this file first. Then read only the pages your task touches.
 | Page | Summary | Updated |
 |---|---|---|
 | [[Backend]] | Stack, module layout, settings, device-token auth | 2026-09-14 |
-| [[Api]] | Every endpoint, its auth requirement and its failure modes | 2026-11-19 |
-| [[Sync]] | Delta-log + row-level LWW, the Flutter client (per-group queue and credentials, import reconciliation), null rules, group owner, WebSocket | 2026-11-25 |
+| [[Api]] | Every endpoint, its auth requirement and its failure modes | 2026-11-25 |
+| [[Sync]] | Delta-log + row-level LWW, dedup and `lamport_reused`, the Flutter client (per-group queue and credentials, import reconciliation), null rules, group owner, WebSocket | 2026-11-25 |
 | [[LlmProviders]] | The analysis prompt — nine voices, twenty languages, the game-type registry — the pluggable provider factory, the separate Claude path, the report control | 2026-11-17 |
 
 ## Operations
@@ -61,8 +61,8 @@ Load this file first. Then read only the pages your task touches.
 | [[Hooks]] | What Claude Code refuses mechanically, why each rule left CLAUDE.md, recovering from a stale branch | 2026-09-19 |
 | [[Documentation]] | Which documents a change implicates (wiki, README, the three privacy documents), the wiki lint pass, the CLAUDE.md budget | 2026-09-26 |
 | [[ParallelDelivery]] | Protection on main, worktrees, cleanup, one PR per theme, serial squash merges, refinement, lanes A–D, model routing, the reviewer, "merged, not deployed", metrics | 2026-09-26 |
-| [[Security]] | Defended surfaces (the group owner among them), and the security debt that is knowingly open | 2026-09-26 |
-| [[Testing]] | Unit, Drift, migration, e2e web and device, backend pytest; CI jobs and `scope`, and the extra gates (alembic, audit, binaries, privacy page) | 2026-11-25 |
+| [[Security]] | Defended surfaces (the group owner among them), and the security debt that is knowingly open | 2026-11-25 |
+| [[Testing]] | Unit, Drift, migration, e2e web and device, backend pytest (the adversarial sync suite among them); CI jobs and `scope`, and the extra gates | 2026-11-25 |
 | [[Release]] | Play signing, publishing through the Play API, target API, 2026 policy constraints, cadence, the pruning pass | 2026-11-19 |
 | [[StoreListing]] | The 20 store locales and their keywords, category and tags, generated icon, feature graphic and screenshots, text limits, acquisition baseline | 2026-10-04 |
 

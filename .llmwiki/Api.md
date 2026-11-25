@@ -2,7 +2,7 @@
 
 > Scope: the HTTP and WebSocket surface. Source of truth is `backend/app/routes/`.
 > Related: [[Backend]] · [[Sync]] · [[LlmProviders]] · [[Security]]
-> Updated: 2026-11-19
+> Updated: 2026-11-25
 
 ## Facts
 
@@ -45,32 +45,44 @@ left there is nothing to decide. Both run under the same row lock. No schema cha
 
 | Method | Path | Auth | Notes |
 |---|---|---|---|
-| POST | `/push` | device | Max **500 deltas** per request. Values bounded per entity. Serialised per group (row lock); one savepoint per delta. **429** + `Retry-After` past `SYNC_PUSH_RL_PER_MINUTE` / `_PER_HOUR` (60 / 1200) calls per device — in-memory, keyed by device id. |
-| GET | `/pull?since_seq=N` | device | |
+| POST | `/push` | device | Max **500 deltas** per request. Values bounded per entity and type-checked per column. Serialised per group (row lock); one savepoint per delta. **422** for the whole request on a malformed envelope: a missing key, an `op` other than `upsert`/`delete`, an `entity_uuid` that is not a uuid, a `client_lamport` outside 0..2⁶³−1, a payload that is not an object, more than 500 deltas. An unknown `entity_type` (a string of 1 to 32) is one rejected delta instead, so a newer app's batch still lands. **429** + `Retry-After` past `SYNC_PUSH_RL_PER_MINUTE` / `_PER_HOUR` (60 / 1200) calls per device — in-memory, keyed by device id. |
+| GET | `/pull?since_seq=N&limit=L` | device | `since_seq` 0..2⁶³−1 (default 0), `limit` 1..2000 (default 500); **422** outside — a `since_seq` past BIGINT answered 500 until 2026-11-25. |
 | POST | `/ws-ticket` | device | Mints a single-use ticket, 60 s TTL, for the stream below. |
 | WS | `/stream?ticket=…` | ticket | Signal only — see [[Sync]]. 1008 on a bad ticket or a revoked device; 1013 past `MAX_STREAMS_PER_DEVICE` (3) open streams; 1012 when the shared LISTEN connection drops. |
 
 Internals: `_apply_delta`, `_apply_game_player`, `_owned_by`, `_check_parents`,
-`_check_unique`, `_was_deleted`, `_coerce_payload`, `_logged_payload`.
+`_check_unique`, `_was_deleted`, `_coerce_payload`, `_logged_payload`, `_value_problem`,
+`_canonical`, `_is_logged_delta`, `_refused_value`.
 
 Entity types: `player`, `game_type`, `game`, `game_player`, `round`, `score`,
-`game_analysis`. Per-delta status: `applied`, `merged_lww`, `duplicate`, `rejected`. A
-rejected delta carries a `reason`; the conflict codes a client branches on are constants at
-the top of `app/routes/sync.py`:
+`game_analysis`. Per-delta status: `applied`, `merged_lww`, `duplicate`, `rejected`.
+`duplicate` (with the original `server_seq`) answers only the logged delta sent again — same
+`entity_type`, `entity_uuid` and `op`, and every key the log holds for it equal ([[Sync]],
+push step 2). A rejected delta carries a `reason`
+and no `server_seq`; the conflict codes a client branches on are constants at the top of
+`app/routes/sync.py`:
 
 | Reason | When |
 |---|---|
+| `lamport_reused` | This device already logged **another** delta under this `client_lamport` — its clock went back (a restored backup). Re-stamp past the device's lamports and push again. Since 2026-11-25; `duplicate` before, which dropped the payload. |
 | `not in group` | The entity uuid exists and belongs to another group |
-| `parent_missing` | A named parent (`game_id`, `round_id`, `player_id`, `game_type_id`) is absent or in another group — the two are indistinguishable on purpose |
+| `parent_missing` | A named parent (`game_id`, `round_id`, `player_id`, `game_type_id`) is absent, in another group, or not a uuid — the first two are indistinguishable on purpose |
+| `unknown entity type` | `entity_type` is none of the seven above |
 | `round_number_taken` | Another live round of the game has that number |
 | `score_exists` | Another live score exists for that player and round |
 | `name_taken` | Another live player (normalised name) or game type (name) of the group |
 | `builtin_key_taken` | Another live game type of the group already claims that `builtin_key` |
 | `analysis_exists` | The game already has another live analysis |
-| `integrity constraint violation` | Anything the pre-checks missed, e.g. a NOT NULL column absent on create |
+| `integrity constraint violation` | Anything the pre-checks missed, e.g. a NOT NULL column absent on create, or nulled on update |
+| `invalid value` | A value the database refused (SQLSTATE class 22) that the type checks missed — a backstop, like the line above |
 
 Bounds failures keep their prose (`value out of bounds (…)`, `comment longer than 500
-characters`, …) — see `app/services/delta_bounds.py`. A `game_type` payload's
+characters`, …) — see `app/services/delta_bounds.py`. So do type failures
+(`_value_problem`, `app/routes/sync.py`): `<key> must be a boolean`, `must be an integer`,
+`out of bounds (…)` past INTEGER or BIGINT, `must be an ISO 8601 timestamp` (Dart's
+`toIso8601String` shape, `Z` or `±hh:mm` required), `must be a string`, `contains a NUL
+character`, `is not valid UTF-8`. A player's `name_normalized` is the client's when it is a
+lowercasing of `name`, and derived by the server otherwise ([[Sync]], push step 6). A `game_type` payload's
 `keypad_shortcut` (since `0006_game_type_keypad_shortcut`, 2026-09-24) must be the client's
 closed JSON shape, or the delta is rejected with a reason that starts `keypad_shortcut`
 (`keypad_shortcut_problem`; [[Sync]]).
@@ -119,6 +131,13 @@ even with `EXPOSE_DOCS` off, so turning them on cannot break a deploy that start
 
 ## Decisions & History
 
+- **`/sync/push` holds whatever a client sends (2026-11-25).** `test/sync-adversarial-api`,
+  before one install may belong to several groups. A value answers per delta, the
+  request's shape answers per request: a 500 made the app resend the same batch for ever,
+  and a 422 for a whole batch over one unknown entity would do the same to a newer app
+  against an older server — hence `entity_type` became a plain string. `lamport_reused` is
+  a new reason, not a new status: an app that predates it treats it as any other
+  rejection. Why the code, and not a silent `duplicate` or a server-side re-stamp: [[Sync]].
 - **A device names itself, and can rename itself (2026-09-24).** `feat/group-nickname-and-rename`:
   production held two live devices both called "Mon appareil", because the join and create
   dialogs pre-filled the name and everyone left it. The dialogs now ask for a nickname first,
