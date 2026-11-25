@@ -1270,6 +1270,8 @@ class SyncStore {
   /// A uuid seen before with no row nor alias was merged before v24 kept
   /// aliases: it still reaches the live row while the pair holds no tombstone
   /// — no player was removed and added back since —, and nothing otherwise.
+  /// So does the delete of a uuid never seen (added and removed on another
+  /// device before it synced): a membership added back here outlives it.
   Future<String?> _applyGamePlayer(String groupId, PulledDelta d, {required bool seen}) async {
     final gameUuid = d.payload['game_id'] as String?;
     final playerRemote = d.payload['player_id'] as String?;
@@ -1288,7 +1290,7 @@ class SyncStore {
     /// The pair's live row when the delta may be merged into it, remembered.
     Future<int?> merged() async {
       if (gameId == null || playerId == null) return null;
-      if (seen) {
+      if (seen || d.op == 'delete') {
         final removed = await _db.customSelect(
           'SELECT 1 FROM game_players WHERE gameId = ? AND player_id = ? '
           'AND deleted_at IS NOT NULL LIMIT 1',

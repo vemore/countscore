@@ -1064,6 +1064,35 @@ void main() {
         expect((await players.getByGame(game.id!)).single.colorValue, 0xFF2196F3);
       });
 
+      test('added back here, then the delete of a membership never seen (added and removed '
+          'elsewhere before a sync) leaves her', () async {
+        final m = await joined();
+        await pullGameFromOther(m);
+        const back = 'aaaaaaaa-0000-4000-8000-000000000006';
+        await store.applyPulled(m, [
+          _delta('game_player', membership, 6, 6, keys, op: 'delete'),
+          _delta('game_player', back, 7, 7, {...keys, 'order_index': 1}),
+        ], 7);
+
+        await store.applyPulled(m, [
+          _delta('game_player', 'aaaaaaaa-0000-4000-8000-00000000000a', 9, 8, keys, op: 'delete'),
+        ], 8);
+
+        expect(await names(), ['Alice']);
+      });
+
+      test('the delete of a membership never seen still removes her while nobody was '
+          'removed: the same player added on two devices', () async {
+        final m = await joined();
+        await pullGameFromOther(m);
+
+        await store.applyPulled(m, [
+          _delta('game_player', 'aaaaaaaa-0000-4000-8000-00000000000a', 9, 6, keys, op: 'delete'),
+        ], 6);
+
+        expect(await names(), isEmpty);
+      });
+
       test('one merged into this device\'s, then removed, is not brought back by a stale edit',
           () async {
         final m = await joined();

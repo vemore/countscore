@@ -271,7 +271,7 @@ every group (`sync.nickname`, kept when a group is cleared): *The nickname* belo
 group (`GroupProvider.leaveGroup`; `leave()` leaves every group) revokes the device there when
 the server answers, then
 `SyncStore.leave(groupId)` turns that group's shared rows back into local ones and deletes
-that group's `outbox`, `group_links`, `entity_versions`, `sync_inbox` and `sync_state` rows,
+that group's `outbox`, `group_links`, `entity_versions`, `game_player_aliases`, `sync_inbox` and `sync_state` rows,
 and nothing of another group's. Tombstones with nobody left to inform go for good, game types
 among them: a game-type tombstone no game points at is deleted, or it would hold its
 `builtin_key` reserved against the seed for ever — unless another group still links it (a
@@ -431,8 +431,9 @@ tombstoned one changes nothing, whatever its lamport, and a delete of one leaves
 added back since alone. A player removed and added back is a new membership under a new uuid
 ([[Schema]]), inserted beside the tombstone. A uuid never seen here is merged into the pair's
 live row — the same player added on two devices, each under its own uuid — and the alias
-kept, or, with none, inserted. A uuid seen with no row nor alias (merged before v24) reaches
-the live row only while the pair holds no tombstone. A score pulled for a player whose
+kept, or, with none, inserted. A uuid seen with no row nor alias (merged before v24), and the
+delete of a uuid never seen (added and removed elsewhere before a sync), reach the live row
+only while the pair holds no tombstone. A score pulled for a player whose
 membership was removed, with none live, is dropped rather than queued: a membership added
 back later pushes its own scores after itself.
 **A pre-v24 device in the group** still revives the tombstoned row when it pulls a membership
