@@ -75,7 +75,7 @@ void main() {
         headers: {'content-type': 'application/json'},
       );
     });
-    return SyncEngine(store, BackendClient('https://example.test', httpClient: client), 'tok');
+    return SyncEngine(store, BackendClient('https://example.test', httpClient: client), 'tok', _group);
   }
 
   test('builtin_key_taken is resolved by adopting the server row, not rejected',

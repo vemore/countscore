@@ -2,7 +2,7 @@
 
 > Scope: how the app reaches SQLite — Drift, the sqflite bootstrap, repositories, codegen.
 > Related: [[Schema]] · [[MobileApp]] · [[Web]] · [[Testing]] · [[Sync]]
-> Updated: 2026-11-17
+> Updated: 2026-11-25
 
 ## Facts
 
@@ -48,6 +48,9 @@ All three remaining roles are inside `lib/services/database_service.dart` (1468 
 `lib/repositories/` holds **seven abstract interfaces only** — game, player, round, score,
 game_type, player_stats, game_analysis. The single set of implementations is
 `lib/repositories/drift/drift_repositories.dart` (921 l.).
+
+`_isLinked` (whether a player or game type has a group link, so its delete is a tombstone)
+reads `LIMIT 1`: since schema v23 a row can be linked into several groups, one link each.
 
 `DriftGameTypeRepository.update` builds its assignment list from `GameType.toMap()`, so a
 new column reaches it for free — unlike `DriftGameRepository.update`, which lists its

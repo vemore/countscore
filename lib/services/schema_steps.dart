@@ -11,6 +11,7 @@ library;
 import '../l10n/app_localizations.dart';
 import '../models/game_type.dart';
 import '../utils/game_type_name.dart';
+import 'sync/sync_schema.dart';
 import 'uuid.dart';
 
 /// Runs one statement, with optional positional arguments. `Database.execute`
@@ -647,4 +648,60 @@ Future<void> applyV22(
   await execute('INSERT OR REPLACE INTO sync_flags (id, suppress) VALUES '
       '(1, COALESCE((SELECT suppress FROM temp.v22_sync_flag), 0))');
   await execute('DROP TABLE temp.v22_sync_flag');
+}
+
+/// The sync bookkeeping tables that tell groups apart from schema v23.
+const syncTablesByGroup = ['outbox', 'sync_inbox', 'entity_versions'];
+
+/// Schema v23, shared by both engines and by both fresh-install paths: the sync
+/// queue tells groups apart, so a device can belong to several
+/// (`wip/todo/2026-11-17-belong-to-several-groups.md`, step 2).
+///
+/// 1. `group_id TEXT` on [syncTablesByGroup]. Nullable, as an added column
+///    must be; nothing writes a NULL there from v23 on.
+/// 2. **Only for a table this run added the column to**, a back-fill from the
+///    one membership an upgraded install can have — before v23 `join` emptied
+///    `sync_state` and `leave` emptied every sync table, so whatever is queued
+///    belongs to that group. A row no membership claims (none was ever made,
+///    or a legacy `sync_state` row without a device) could never be pushed,
+///    pulled or counted: it goes. On a replay the column is there, and
+///    nothing is re-attributed to whichever group happens to come first.
+/// 3. Indexes on `(group_id, …)`, for the per-group reads of `SyncStore`.
+/// 4. The capture triggers rewritten to queue for a group
+///    ([syncV23CaptureStatements]): a player or game type linked into two
+///    groups is queued once for each.
+///
+/// `entity_versions` keeps its key `(entity_type, entity_uuid)`: the uuid is
+/// the one the server knows, and the server refuses a uuid another group
+/// already holds, so one entity is never in two groups' versions.
+///
+/// Idempotent: each column is checked before it is added, the back-fill runs
+/// only with it, and the indexes and triggers are `IF NOT EXISTS` (the triggers
+/// dropped first).
+Future<void> applyV23(
+  SqlExecutor execute,
+  Future<Set<String>> Function(String table) columnsOf,
+) async {
+  final added = <String>[];
+  for (final table in syncTablesByGroup) {
+    if ((await columnsOf(table)).contains('group_id')) continue;
+    await execute('ALTER TABLE $table ADD COLUMN group_id TEXT');
+    added.add(table);
+  }
+  for (final table in added) {
+    await execute(
+      'UPDATE $table SET group_id = (SELECT group_id FROM sync_state '
+      'WHERE device_id IS NOT NULL ORDER BY rowid LIMIT 1) WHERE group_id IS NULL',
+    );
+    await execute('DELETE FROM $table WHERE group_id IS NULL');
+  }
+  await execute('CREATE INDEX IF NOT EXISTS idx_outbox_group_unsent '
+      'ON outbox(group_id, sent_at, id)');
+  await execute('CREATE INDEX IF NOT EXISTS idx_sync_inbox_group_seq '
+      'ON sync_inbox(group_id, server_seq)');
+  await execute('CREATE INDEX IF NOT EXISTS idx_entity_versions_group '
+      'ON entity_versions(group_id)');
+  for (final statement in syncV23CaptureStatements) {
+    await execute(statement);
+  }
 }

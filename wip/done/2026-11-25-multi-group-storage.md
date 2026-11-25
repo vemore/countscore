@@ -1,5 +1,7 @@
 # Sync storage holds one membership, and its queue cannot tell groups apart
 
+**Status:** done (2026-11-25) — closed by feat/multi-group-storage. Schema v23 (`applyV23`, both engines): `group_id` on `outbox`, `sync_inbox` and `entity_versions`, back-filled from the one membership, and capture triggers that queue a player or game type once per linked group; `SyncStore` and `SyncEngine` work per group, `join` adds and `leave(groupId)` purges one group only; credentials keyed by group id with the old pair moved on first read; `reconcileMemberships` settles an import on start. The nickname is stored (`SyncCredentials.nickname`) but not yet read by `GroupProvider`: `wip/todo_nr/2026-11-25-the-stored-nickname-is-not-read-by-group-provider.md`.
+
 - **Noted:** 2026-11-25 — step 2 of `2026-11-17-belong-to-several-groups.md` (decisions there)
 - **Theme:** multi-group-storage
 - **Area:** app

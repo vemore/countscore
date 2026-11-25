@@ -37,8 +37,8 @@ Load this file first. Then read only the pages your task touches.
 | Page | Summary | Updated |
 |---|---|---|
 | [[MobileApp]] | `lib/` layout, providers, screens, widgets, services and `utils/`, the compact landscape layout, the dynamic-icon constraint | 2026-11-17 |
-| [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-11-17 |
-| [[Schema]] | Schema v22: the twelve tables, `builtin_key` and its unique index, `max_rounds`, sync bookkeeping and triggers, tombstones, the migration chain and its repair steps | 2026-11-17 |
+| [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-11-25 |
+| [[Schema]] | Schema v23: the twelve tables, `builtin_key` and its unique index, `max_rounds`, per-group sync bookkeeping and triggers, tombstones, the migration chain | 2026-11-25 |
 | [[ConfigShare]] | The configuration QR: the `#/join` link and its parser, the PWA base, the replace dialog, what opens a link (PWA route, Android deep link) | 2026-09-26 |
 | [[I18n]] | 20 languages × 462 keys, French template, English fallback, localized built-in names and their sort key, the ARB checks, rules as assets | 2026-11-17 |
 | [[Web]] | PWA: sqlite3.wasm on IndexedDB and its flush, committed binaries, `kIsWeb` guards, the CSP, self-hosted fonts, the service worker, GitHub Pages | 2026-11-17 |
@@ -49,7 +49,7 @@ Load this file first. Then read only the pages your task touches.
 |---|---|---|
 | [[Backend]] | Stack, module layout, settings, device-token auth | 2026-09-14 |
 | [[Api]] | Every endpoint, its auth requirement and its failure modes | 2026-11-25 |
-| [[Sync]] | Delta-log + row-level LWW, dedup and `lamport_reused`, the Flutter client (triggers, push/pull, conflicts), per-column null rules, the group owner on screen, WebSocket | 2026-11-25 |
+| [[Sync]] | Delta-log + row-level LWW, dedup and `lamport_reused`, the Flutter client (per-group queue and credentials, import reconciliation), null rules, group owner, WebSocket | 2026-11-25 |
 | [[LlmProviders]] | The analysis prompt — nine voices, twenty languages, the game-type registry — the pluggable provider factory, the separate Claude path, the report control | 2026-11-17 |
 
 ## Operations

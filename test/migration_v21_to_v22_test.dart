@@ -131,7 +131,7 @@ void main() {
     final db = await DatabaseService.instance.openForTesting(path);
     addTearDown(db.close);
 
-    expect(await db.getVersion(), 22);
+    expect(await db.getVersion(), DatabaseService.schemaVersion);
     final columns = {
       for (final r in await db.rawQuery('PRAGMA table_info(game_types)'))
         r['name'] as String,
@@ -156,7 +156,7 @@ void main() {
     expectMigrated([for (final r in rows) r.data]);
     expect(await db.customSelect('SELECT * FROM outbox').get(), isEmpty);
     final version = await db.customSelect('PRAGMA user_version').getSingle();
-    expect(version.data.values.single, 22);
+    expect(version.data.values.single, DatabaseService.schemaVersion);
   });
 
   test('replaying the step changes nothing, and inserts nothing', () async {

@@ -34,6 +34,9 @@ class GroupServers {
   /// The status `POST /groups` answers.
   int createStatus = 200;
 
+  /// The status `GET /groups/me` answers.
+  int meStatus = 200;
+
   /// Device tokens the server refuses (401): devices the owner revoked.
   final revokedTokens = <String>{};
 
@@ -67,6 +70,8 @@ class GroupServers {
           case '/groups':
             return json({'detail': 'down'}, createStatus);
           case '/groups/me':
+            final status = meStatus;
+            if (status != 200) return json({'detail': 'down'}, status);
             return json({'id': oldGroupId, 'owner_device_id': oldDeviceId});
           case '/groups/me/devices':
             return json({'devices': []});
@@ -106,11 +111,14 @@ Future<void> idle(GroupProvider group) async {
   }
 }
 
-/// Queues one change for the group, as a local write would, without the table
-/// update that would start a sync: the provider's cached count does not see it.
-Future<void> addUnsyncedChange(AppDatabase db) => db.customStatement(
-      'INSERT INTO outbox (entity_type, entity_uuid, op, payload, client_lamport, created_at) '
-      "VALUES ('game', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'upsert', '{}', 1, 0)",
+/// Queues one change for [groupId] (the old group by default), as a local write
+/// would, without the table update that would start a sync: the provider's
+/// cached count does not see it.
+Future<void> addUnsyncedChange(AppDatabase db, [String groupId = oldGroupId]) =>
+    db.customStatement(
+      'INSERT INTO outbox (entity_type, entity_uuid, op, payload, client_lamport, created_at, group_id) '
+      "VALUES ('game', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'upsert', '{}', 1, 0, ?)",
+      [groupId],
     );
 
 Future<int> outboxCount(AppDatabase db) async =>

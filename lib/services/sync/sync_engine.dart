@@ -35,16 +35,22 @@ class SyncPassResult {
   final int pulled;
 }
 
-/// One sync pass: pull everything new, push everything pending, and resolve the
-/// conflicts the server names. No timers, no sockets — the caller decides when.
+/// One sync pass for one group: pull everything new, push everything pending,
+/// and resolve the conflicts the server names. No timers, no sockets — the
+/// caller decides when.
+///
+/// [_groupId] picks the membership, and with it the cursor, the queue and the
+/// quarantine; [_deviceToken] must be that group's (`SyncCredentials`). The
+/// pass ends quietly when the membership goes while it runs.
 ///
 /// Reason codes are the server's (`backend/app/routes/sync.py`, `REASON_*`).
 class SyncEngine {
-  SyncEngine(this._store, this._client, this._deviceToken);
+  SyncEngine(this._store, this._client, this._deviceToken, this._groupId);
 
   final SyncStore _store;
   final BackendClient _client;
   final String _deviceToken;
+  final String _groupId;
 
   static const _batch = 100;
 
@@ -78,7 +84,7 @@ class SyncEngine {
   Future<int> _pullAll() async {
     var applied = 0;
     while (true) {
-      final m = await _store.membership();
+      final m = await _store.membership(_groupId);
       if (m == null) return applied;
       final page = await _client.pull(_deviceToken, m.lastServerSeq);
       if (page.deltas.isEmpty && page.serverSeqMax <= m.lastServerSeq) return applied;
@@ -93,7 +99,7 @@ class SyncEngine {
   Future<bool> _pushAll(List<SyncEvent> events) async {
     var again = false;
     while (true) {
-      final m = await _store.membership();
+      final m = await _store.membership(_groupId);
       if (m == null) return false;
       final deltas = await _store.preparePush(m, limit: _batch);
       if (deltas.isEmpty) return again;
