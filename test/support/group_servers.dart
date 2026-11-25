@@ -37,10 +37,16 @@ class GroupServers {
   /// Device tokens the server refuses (401): devices the owner revoked.
   final revokedTokens = <String>{};
 
+  /// Answers a request itself (a slow or refused one) before the defaults; null
+  /// from it lets the default answer.
+  Future<http.Response?> Function(http.BaseRequest request)? intercept;
+
   bool _joinedOnce = false;
 
   MockClient get client => MockClient((request) async {
         seen.add(request);
+        final custom = await intercept?.call(request);
+        if (custom != null) return custom;
         http.Response json(Object body, [int status = 200]) =>
             http.Response.bytes(utf8.encode(jsonEncode(body)), status);
         final bearer = request.headers['Authorization']?.replaceFirst('Bearer ', '');
