@@ -776,6 +776,8 @@
 
   "groupErrorOwnerActive": "The group's owner has been seen recently: ownership cannot be claimed.",
 
+  "groupErrorTooManyGroups": "This device is already in the maximum number of groups ({max}). Leave one first.",
+
   "groupCreatedOwnerExplain": "Group created. This device owns it; the role can be handed over to another one in Devices.",
   "boardEliminated": "Eliminated",
   "soundsSection": "Sounds",

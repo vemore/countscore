@@ -1583,6 +1583,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'The group\'s owner has been seen recently: ownership cannot be claimed.';
 
   @override
+  String groupErrorTooManyGroups(int max) {
+    return 'This device is already in the maximum number of groups ($max). Leave one first.';
+  }
+
+  @override
   String get groupCreatedOwnerExplain =>
       'Group created. This device owns it; the role can be handed over to another one in Devices.';
 

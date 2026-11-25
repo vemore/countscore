@@ -61,7 +61,7 @@ class FakeGroupProvider extends GroupProvider {
   int get pendingChanges => joined ? pending : 0;
 
   @override
-  Future<int> countPending() async => joined ? storedPending : 0;
+  Future<int> countPending([String? groupId]) async => joined ? storedPending : 0;
 
   @override
   Future<void> updateBackend(String? baseUrl) async => calls.add('backend $baseUrl');

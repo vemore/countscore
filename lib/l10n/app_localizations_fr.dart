@@ -1587,6 +1587,11 @@ class AppLocalizationsFr extends AppLocalizations {
       'Le propriétaire du groupe s\'est manifesté récemment : la propriété ne peut pas être reprise.';
 
   @override
+  String groupErrorTooManyGroups(int max) {
+    return 'Cet appareil est déjà dans le nombre maximal de groupes ($max). Quittez-en un d\'abord.';
+  }
+
+  @override
   String get groupCreatedOwnerExplain =>
       'Groupe créé. Cet appareil en est propriétaire ; ce rôle peut être confié à un autre dans Appareils.';
 

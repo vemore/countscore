@@ -1585,6 +1585,11 @@ class AppLocalizationsDe extends AppLocalizations {
       'Der Eigentümer der Gruppe war kürzlich aktiv: Das Eigentum kann nicht übernommen werden.';
 
   @override
+  String groupErrorTooManyGroups(int max) {
+    return 'Dieses Gerät ist bereits in der maximalen Anzahl von Gruppen ($max). Verlasse zuerst eine.';
+  }
+
+  @override
   String get groupCreatedOwnerExplain =>
       'Gruppe erstellt. Dieses Gerät ist ihr Eigentümer; diese Rolle kann unter „Geräte“ an ein anderes übergeben werden.';
 

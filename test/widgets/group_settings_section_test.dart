@@ -119,12 +119,13 @@ Future<GroupProvider> _pumpSection(
   String? owner = _own,
   bool dormantOwner = false,
   int claimStatus = 200,
+  SyncCredentials? credentials,
 }) async {
   final db = AppDatabase.forTesting(NativeDatabase.memory());
   addTearDown(db.close);
   final group = GroupProvider(
     db: db,
-    credentials: MemorySyncCredentials(),
+    credentials: credentials ?? MemorySyncCredentials(),
     httpClient: _server(
       seen,
       owner: owner,
@@ -419,6 +420,28 @@ void main() {
 
     await tester.pumpWidget(const SizedBox());
     group.dispose();
+  });
+
+  testWidgets('joining again offers the nickname this device already goes by', (tester) async {
+    final credentials = MemorySyncCredentials();
+    await credentials.saveNickname('Alice');
+    final group = await _pumpSection(tester, [], credentials: credentials);
+    await tester.pump();
+
+    await tester.tap(find.byKey(const Key('group_join')));
+    await tester.pumpAndSettle();
+    final field = find.byKey(const Key('group_nickname_field'));
+    expect(tester.widget<TextField>(field).controller!.text, 'Alice');
+
+    await tester.pumpWidget(const SizedBox());
+    group.dispose();
+  });
+
+  testWidgets('a sixth group is refused with its own message', (tester) async {
+    final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+    final text = groupActionErrorText(
+        l10n, GroupActionException(GroupActionError.tooManyGroups));
+    expect(text, contains('${GroupProvider.maxGroups}'));
   });
 
   testWidgets('the nickname field stops at 64 code points, as the server counts', (tester) async {

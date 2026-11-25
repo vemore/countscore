@@ -1587,6 +1587,11 @@ class AppLocalizationsVi extends AppLocalizations {
       'Chủ sở hữu nhóm đã thấy gần đây: không thể yêu cầu quyền sở hữu.';
 
   @override
+  String groupErrorTooManyGroups(int max) {
+    return 'Thiết bị này đã ở trong số nhóm tối đa ($max). Hãy rời một nhóm trước.';
+  }
+
+  @override
   String get groupCreatedOwnerExplain =>
       'Nhóm được tạo. Thiết bị này sở hữu nó; vai trò có thể được chuyển giao cho thiết bị khác trong Thiết bị.';
 

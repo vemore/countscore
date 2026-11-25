@@ -113,7 +113,7 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
   }
 
   /// Whether the current game's analysis goes through its group: shared with
-  /// the group this device is in, with the server reachable.
+  /// a group this device is in, with the server reachable.
   bool _throughGroup({bool listen = false}) {
     final game = context.read<GameProvider>().currentGame;
     if (game == null || !game.isShared) return false;
@@ -231,7 +231,7 @@ class _GameAnalysisScreenState extends State<GameAnalysisScreen> {
         // sync (a share it refused) is not the group's to pay for: it gets
         // the analysis every unshared game gets.
         try {
-          result = await group.gameAnalysis(game.uuid!, payload);
+          result = await group.gameAnalysis(game.groupId!, game.uuid!, payload);
         } on BackendException catch (e) {
           if (e.statusCode != 404) rethrow;
           result = await stateless.gameAnalysis(payload);

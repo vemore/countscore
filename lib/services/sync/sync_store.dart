@@ -347,6 +347,15 @@ class SyncStore {
 
   static String _inGroup(String? groupId) => groupId == null ? '' : ' AND group_id = ?';
 
+  /// The groups with changes waiting to be pushed: what a local write wakes.
+  Future<Set<String>> groupsWithPending() async => {
+        for (final row in await _db
+            .customSelect('SELECT DISTINCT group_id FROM outbox WHERE sent_at IS NULL '
+                'AND rejected_at IS NULL AND group_id IS NOT NULL')
+            .get())
+          row.data['group_id'] as String,
+      };
+
   /// Turns [m]'s captured outbox rows into deltas — another group's queue is
   /// not read: coalesces several writes to one
   /// entity, builds each payload from the row as it is now, links players and
@@ -445,6 +454,20 @@ class SyncStore {
 
   /// Refused for good; kept so the UI can count it.
   Future<void> markRejected(PreparedDelta d, String reason) => _reject(d.outboxId, reason);
+
+  /// Refused as `lamport_reused`: this device had already logged another delta
+  /// under that lamport (its clock went back — a restored backup). The stamp
+  /// is cleared, so the next [preparePush] stamps it again past
+  /// `sync_state.last_lamport` and rebuilds the payload from the row as it is
+  /// now; the reason is kept, so a second refusal reads as one.
+  Future<void> markRestamp(PreparedDelta d, String reason) => _db.customStatement(
+      'UPDATE outbox SET client_lamport = 0, reject_reason = ? WHERE id = ?',
+      [reason, d.outboxId]);
+
+  /// Lifts [groupId]'s clock to [lamport] at least.
+  Future<void> raiseLamport(String groupId, int lamport) => _db.customStatement(
+      'UPDATE sync_state SET last_lamport = MAX(last_lamport, ?) WHERE group_id = ?',
+      [lamport, groupId]);
 
   /// Refused for now (a parent not yet on the server): stays pending, remembers why.
   Future<void> markRetry(PreparedDelta d, String reason) => _db.customStatement(

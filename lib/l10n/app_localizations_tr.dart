@@ -1586,6 +1586,11 @@ class AppLocalizationsTr extends AppLocalizations {
       'Grubun sahibi yakında görüldü: sahiplik talep edilemez.';
 
   @override
+  String groupErrorTooManyGroups(int max) {
+    return 'Bu cihaz zaten en fazla sayıda gruptadır ($max). Önce birinden ayrılın.';
+  }
+
+  @override
   String get groupCreatedOwnerExplain =>
       'Grup oluşturuldu. Bu cihaz sahibi; rol Cihazlarda başka birine verilebilir.';
 

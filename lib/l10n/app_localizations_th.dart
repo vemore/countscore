@@ -1577,6 +1577,11 @@ class AppLocalizationsTh extends AppLocalizations {
       'เจ้าของกลุ่มเห็นเมื่อเร็ว ๆ นี้: ไม่สามารถเรียกร้องความเป็นเจ้าของได้';
 
   @override
+  String groupErrorTooManyGroups(int max) {
+    return 'อุปกรณ์นี้อยู่ในกลุ่มครบจำนวนสูงสุดแล้ว ($max) โปรดออกจากกลุ่มหนึ่งก่อน';
+  }
+
+  @override
   String get groupCreatedOwnerExplain =>
       'สร้างกลุ่มแล้ว อุปกรณ์นี้เป็นเจ้าของ บทบาทสามารถมอบให้อีกอุปกรณ์ในอุปกรณ์';
 

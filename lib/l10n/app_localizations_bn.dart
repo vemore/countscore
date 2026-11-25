@@ -1587,6 +1587,11 @@ class AppLocalizationsBn extends AppLocalizations {
       'গ্রুপের মালিক সম্প্রতি দেখা গেছে: মালিকানা দাবি করা যায় না।';
 
   @override
+  String groupErrorTooManyGroups(int max) {
+    return 'এই ডিভাইসটি ইতিমধ্যে সর্বোচ্চ সংখ্যক গ্রুপে ($max) আছে। আগে একটি ছেড়ে দিন।';
+  }
+
+  @override
   String get groupCreatedOwnerExplain =>
       'গ্রুপ তৈরি। এই ডিভাইস এর মালিক; ভূমিকা ডিভাইসে হস্তান্তর করা যায়।';
 

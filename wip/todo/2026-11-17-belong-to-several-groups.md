@@ -49,7 +49,7 @@ a `groupId`, and `group_links` is keyed by group. What assumes one group:
 - `wip/todo/2026-11-25-sync-server-adversarial-api-tests.md` (in parallel with the above:
   the server is shared, and hardened before it serves several groups per install);
 - `wip/done/2026-11-25-multi-group-storage.md` (done);
-- `wip/todo/2026-11-25-multi-group-sync-sessions.md`;
+- `wip/done/2026-11-25-multi-group-sync-sessions.md` (done);
 - `wip/todo/2026-11-25-multi-group-ui.md`.
 
 This entry closes with the last of them.

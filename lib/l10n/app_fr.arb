@@ -2570,6 +2570,14 @@
     "description": "Error shown when the server refuses a claim (409) because the owner device has been seen recently"
   },
 
+  "groupErrorTooManyGroups": "Cet appareil est déjà dans le nombre maximal de groupes ({max}). Quittez-en un d'abord.",
+  "@groupErrorTooManyGroups": {
+    "description": "Error when creating or joining a group while this device is already in the most groups it may be in",
+    "placeholders": {
+      "max": {"type": "int", "example": "5"}
+    }
+  },
+
   "groupCreatedOwnerExplain": "Groupe créé. Cet appareil en est propriétaire ; ce rôle peut être confié à un autre dans Appareils.",
   "@groupCreatedOwnerExplain": {
     "description": "Snackbar shown after a group is created: the owner role lives on this device and can be handed over"

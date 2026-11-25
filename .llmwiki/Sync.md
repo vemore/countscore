@@ -51,8 +51,8 @@ field**, ordered lexicographically by `(client_lamport, origin_device_id)`.
    the older one did not (`_is_logged_delta`). **Anything else under a used lamport is rejected `lamport_reused`**
    (since 2026-11-25; `duplicate` before), consuming no seq: a device whose clock went back,
    restored from a backup. The client is told so rather than told its edit was kept; see
-   *Decisions & History*. No client handles the code yet — it falls into *anything else*
-   in the table under **The client** (`wip/todo/2026-11-25-client-restamps-on-lamport-reused.md`).
+   *Decisions & History*. The client stamps the delta again past its log and pushes it again
+   (the answer table under **The client**).
 3. Each remaining delta runs in **its own savepoint**. A rejection — or an `IntegrityError`,
    or a value the database refuses (SQLSTATE class 22, `invalid value`) that the pre-checks
    missed — undoes that delta alone; the rest of the batch keeps its rows, its log entries
@@ -243,10 +243,10 @@ another whose board is open.
 ### The client (since 2026-09-13)
 
 Sync runs only while a server URL is configured **and** the device holds a device token —
-the user's design. One group per device in the app: `GroupProvider` holds one membership.
-The storage under it holds several since schema v23 (`feat/multi-group-storage`, step 2 of
-`wip/todo/2026-11-17-belong-to-several-groups.md`); the per-group sessions and the UI are the
-next steps of that plan.
+the user's design. A device may be in up to five groups since 2026-11-25: the storage keeps
+them apart since schema v23, and `GroupProvider` runs one sync session per membership — see
+**Several groups** below. The screens still show one group, the first joined, until
+`wip/todo/2026-11-25-multi-group-ui.md`.
 
 **Joining.** Settings → Group creates a group (`POST /groups`) or joins one with a pasted
 `share_token` (`POST /groups/join`). The device token and share token go to
@@ -261,9 +261,10 @@ group's), so it is moved with a flag (`sync.group.<id>.unchecked`), and the firs
 under it asks `GET /groups/me` whose it is before pulling or pushing anything: the same group
 clears the flag for good; another group's token is treated as none — the group is left on this
 device, as below, and the token forgotten; no answer leaves the pass undone and the flag set
-(`GroupProvider._tokenGroupConfirmed`). `SyncCredentials.nickname` is the slot for the one nickname of every group
-(`sync.nickname`, kept when a group is cleared); `GroupProvider` neither writes nor reads it
-yet (`wip/todo_nr/2026-11-25-the-stored-nickname-is-not-read-by-group-provider.md`). Leaving revokes the device when the server answers, then
+(`GroupSession._tokenGroupConfirmed`). `SyncCredentials.nickname` holds the one nickname of
+every group (`sync.nickname`, kept when a group is cleared): *The nickname* below. Leaving a
+group (`GroupProvider.leaveGroup`; `leave()` leaves every group) revokes the device there when
+the server answers, then
 `SyncStore.leave(groupId)` turns that group's shared rows back into local ones and deletes
 that group's `outbox`, `group_links`, `entity_versions`, `sync_inbox` and `sync_state` rows,
 and nothing of another group's. Tombstones with nobody left to inform go for good, game types
@@ -307,22 +308,29 @@ the section shows the new invite code at once. The revoked device learns of it o
 request: a 401, shown as `SyncStatus.unauthorized` (its open stream closes with 1008 at the
 next push to the group or the next idle heartbeat, whichever comes first — see *WebSocket*). Its local copies of the games stay where they are.
 
-**A pass across a group switch.** `GroupProvider._stop` bumps a generation counter; a `syncNow` pass that finds it changed after its engine returns (a switch, leave or server change happened meanwhile) writes neither `_status` nor the pending counts nor events, and the loop runs again for the queued `_rerun`, so the new group syncs at once instead of showing `unauthorized` until the next poll. Tested in `test/providers/group_provider_generation_test.dart`.
+**A pass across a group switch.** `GroupSession._stop` bumps that session's generation counter; a `syncNow` pass that finds it changed after its engine returns (its group left, or the server changed, meanwhile) writes neither its status nor its pending counts nor events, and the loop runs again for the queued `_rerun`. Another group's pass is another session: a leave, a join or a refusal in one changes nothing in it. Tested in `test/providers/group_provider_generation_test.dart` and `group_provider_multi_group_test.dart`.
 
-**The nickname.** A device's name in the group (`devices.label`) is what its siblings see in
+**The nickname.** A device's name in a group (`devices.label`) is what its siblings see in
 the devices list. The create and join dialogs ask for it first (`group_nickname_field`,
-`groupNicknameLabel` with the `groupNicknameHint` helper), empty, and OK stays disabled until
-every field holds a non-blank value; the values go out trimmed. Settings → Group shows it
-(`groupNicknameCurrent`) with an edit button (`group_nickname_edit`) that reuses the same field
-and calls `GroupProvider.renameDevice`, i.e. `PATCH /groups/devices/me`. The provider holds the
-label in memory only: set on create and join, from the rename's answer and from this device's
-row whenever the devices list loads, unless a rename completed while that list was in flight
-(a counter bumped by each rename). After a restart `refreshDeviceLabel` reads the list on
-start and resume, after each successful sync while the label is still unknown, and when the
-section opens, so an offline start does not leave it unknown. The dialog fields stop at 64
-**code points**, as the server counts (`maxLength` would count grapheme clusters); an
-unchanged nickname sends nothing; a 422 on rename shows the generic server error, since no
-existing string says "invalid name". A rename changes no synced row.
+`groupNicknameLabel` with the `groupNicknameHint` helper), filled with the nickname this device
+already goes by and empty before any, and OK stays disabled until every field holds a
+non-blank value; the values go out trimmed. **One nickname for every group** (decision 8 of
+the multi-group plan), kept on the device in `SyncCredentials` (`sync.nickname`) since
+2026-11-25: saved on create and join — joining under another name renames the groups already
+joined —, on rename, and learnt from a devices list only by an install that holds none yet
+(one from when it was kept in memory); read on start, so it is known offline. Settings →
+Group shows it (`groupNicknameCurrent`) with an edit button (`group_nickname_edit`) that
+reuses the field and calls `GroupProvider.renameDevice`: `PATCH /groups/devices/me` with each
+group's token. The new name is held from the start, so a pass meanwhile cannot send the old
+one back. A 422 refuses the name, and so does an error from every group (429, 401, 5xx,
+shown as the matching message): the old one is restored and nothing is stored. A group
+that cannot be reached, or answered an error while another took the name, gets it later. Each `GroupSession` remembers what its server holds (`_labelOnServer`, from
+the join, a rename's answer or its devices list), reads it once after a start, and after
+each successful pass sends the nickname where the two differ — a failed rename, or one lost
+to a restart. A list that left before a rename completed is not taken for the server's
+answer (a counter bumped by each rename). The fields stop at 64 **code points**, as the
+server counts (`maxLength` would count grapheme clusters); an unchanged nickname sends
+nothing. A rename changes no synced row.
 
 **Comment settings and usage.** Settings → Group → *Comments and usage*
 (`group_settings_screen.dart`) shows the group's `comment_style` and `comment_language` from
@@ -391,6 +399,7 @@ off (since 2026-09-24).
 | `round_number_taken` | pull, move the round to max+1, push again; `RoundRenumbered` → snackbar |
 | `score_exists`, `analysis_exists` | done; the pull adopts the server's uuid for that cell |
 | `parent_missing` | retried once, rejected the second time |
+| `lamport_reused` | every such delta of the batch collected; the group's log read **once** from seq 0 for its highest lamport (nothing applied, cursor kept) and the clock raised past it; only then each stamp cleared, so each is stamped again and pushed again in the same pass. A scan that fails leaves the rows as they were, for the next pass to do it all again; a second refusal after a scan that succeeded is rejected (since 2026-11-25) |
 | anything else | rejected, counted in Settings |
 
 **Pull** (`SyncStore.applyPulled`, one transaction per page). Own deltas skipped. Upserts
@@ -407,10 +416,18 @@ local lamport is raised past every lamport seen.
 **A game deleted elsewhere while open** closes its board: `GameProvider.refreshFromSync`
 notices the current game is gone and the board pops with a snackbar naming it.
 
-**Triggers** (`GroupProvider`): local writes (Drift table updates, debounced 1 s), the
-WebSocket `new_seq` signal (`sync_stream.dart`, fresh ticket per connection, backoff 1 s →
-60 s), app resume, a 60 s poll, and "Sync now". A 401 shows "no longer accepted"; no answer
-shows "offline" and keeps the outbox.
+**Triggers**, per group (`GroupSession`): a local write that queued a change for it (Drift
+table updates, debounced 1 s, then `SyncStore.groupsWithPending` — a write wakes only the
+groups it queued for), its WebSocket `new_seq` signal (`sync_stream.dart`, fresh ticket per
+connection, backoff 1 s → 60 s), app resume, a 60 s poll, and "Sync now" (every group). A 401
+shows "no longer accepted"; no answer shows "offline" and keeps the outbox. An insert made
+through `_insertRow` is not reported by Drift, so it waits for the next trigger
+(`wip/todo_nr/2026-11-25-a-repository-insert-does-not-wake-sync.md`).
+
+### Several groups (since 2026-11-25)
+
+One `GroupSession` per membership, at most five, one server and one nickname for all:
+[[MultiGroup]].
 
 ### Write path on a device
 
@@ -509,7 +526,22 @@ closed with 1013 before `accept()`. The counter is process memory too (`_open_st
   row's next local edit is stamped after a pull, which raises `last_lamport` past every
   lamport seen, this device's own included. That is also why a pull-first pass rarely
   reuses one at all. No change to `DeltaResult` (no hint of the lamport to pass): the pull
-  already carries it. The client side: `wip/todo/2026-11-25-client-restamps-on-lamport-reused.md`.
+  already carries it. The client side: `wip/done/2026-11-25-client-restamps-on-lamport-reused.md`,
+  below.
+- **`lamport_reused` reads the log from seq 0, not from the cursor (2026-11-25,
+  `feat/multi-group-sync-sessions`).** The entry proposed clearing the stamp and pulling. A
+  real-server test showed why that cannot work: the cursor and the clock live in one
+  `sync_state` row, so a whole database restored brings both back, and the pull the pass
+  starts with lifts the clock past this device's own later deltas before anything is
+  stamped — nothing is reused. The code arises only when the clock is behind its own cursor,
+  and then the lamports it missed are *before* the cursor, where a pull does not look. So the
+  engine pages through the group's log from seq 0 for its highest lamport, applying nothing
+  and moving no cursor, then stamps again. A whole-log read is acceptable for an event this
+  rare; a second refusal in a row is rejected rather than looped. The independent review of
+  #292 found two holes in the first cut, both fixed there: the stamp was cleared *before*
+  the scan, so a scan cut short left the clock low, the next stamp was refused again and
+  the edit rejected for good — the scan now comes first and a failed one changes nothing;
+  and a batch of 100 refused deltas read the log 100 times — once per batch now.
 - **Values are checked against their column before the driver sees them (2026-11-25).**
   The adversarial suite found five pushes that answered 500 — a string in a boolean column,
   a number in a timestamp one, a lamport or `since_seq` past BIGINT, and on Postgres a NUL

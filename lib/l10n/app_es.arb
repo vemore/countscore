@@ -703,6 +703,8 @@
 
   "groupErrorOwnerActive": "El propietario del grupo ha dado señales hace poco: no se puede asumir la propiedad.",
 
+  "groupErrorTooManyGroups": "Este dispositivo ya está en el número máximo de grupos ({max}). Sal primero de uno.",
+
   "groupCreatedOwnerExplain": "Grupo creado. Este dispositivo es su propietario; el rol puede cederse a otro en Dispositivos.",
   "boardEliminated": "Eliminado",
   "soundsSection": "Sonidos",

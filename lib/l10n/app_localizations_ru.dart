@@ -1619,6 +1619,11 @@ class AppLocalizationsRu extends AppLocalizations {
       'Владелец группы недавно выходил на связь: стать владельцем нельзя.';
 
   @override
+  String groupErrorTooManyGroups(int max) {
+    return 'Это устройство уже состоит в максимальном числе групп ($max). Сначала выйдите из одной.';
+  }
+
+  @override
   String get groupCreatedOwnerExplain =>
       'Группа создана. Это устройство — её владелец; роль можно передать другому в разделе «Устройства».';
 

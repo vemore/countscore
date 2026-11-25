@@ -1527,6 +1527,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get groupErrorOwnerActive => '群组所有者最近有活动：无法接管所有权。';
 
   @override
+  String groupErrorTooManyGroups(int max) {
+    return '此设备已加入的群组数已达上限（$max）。请先退出其中一个。';
+  }
+
+  @override
   String get groupCreatedOwnerExplain => '群组已创建。本设备是其所有者；可在“设备”中将该角色移交给其他设备。';
 
   @override

@@ -203,12 +203,16 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
   Future<void> _shareGame(GameProvider gameProvider, GroupProvider group) async {
     final l10n = AppLocalizations.of(context)!;
     final game = gameProvider.currentGame;
-    if (game == null) return;
+    // The group the dialog names, read before it opens (the multi-group UI
+    // adds a choice).
+    final groupId = group.groupId;
+    final groupName = group.groupName;
+    if (game == null || groupId == null) return;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.shareWithGroup),
-        content: Text(l10n.shareGameConfirm(group.groupName ?? '')),
+        content: Text(l10n.shareGameConfirm(groupName ?? '')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -221,10 +225,12 @@ class _GameBoardScreenState extends State<GameBoardScreen> {
         ],
       ),
     );
-    if (confirm != true || !mounted) return;
+    // Left while the dialog was open: the game stays local, as the menu no
+    // longer offers to share it.
+    if (confirm != true || !mounted || group.session(groupId) == null) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
-      await group.shareGame(game.id!);
+      await group.shareGame(game.id!, groupId);
       await gameProvider.loadGame(game.id!);
       messenger.showSnackBar(SnackBar(content: Text(l10n.gameSharedDone)));
     } on GroupActionException catch (e) {

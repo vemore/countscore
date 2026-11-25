@@ -1,6 +1,6 @@
 # Privacy Policy for CountScore
 
-**Last Updated**: November 17, 2026 (v2.13)
+**Last Updated**: November 25, 2026 (v2.14)
 
 **Effective Date**: Applies to CountScore v1.1.0 and later
 
@@ -54,7 +54,8 @@ CountScore stores the following **locally on your device**:
    identifier in the group, and a record of which changes have been sent. The two group
    secrets (this device's access token and the group's invite code) are kept in the
    platform's secure storage (the Android Keystore; encrypted browser storage on the web),
-   not in the database.
+   not in the database, and so is your **nickname** — one for all your groups, offered again
+   when you join another one and kept after you leave a group.
 
 ### Storage technology
 
@@ -409,6 +410,12 @@ requirements. Updates are posted on this page with a new "Last Updated" date, an
 changes are announced through app updates on the Google Play Store.
 
 ### Version History
+
+- **v2.14** (November 25, 2026): Your nickname in your groups is now kept on your device, in
+  secure storage with the group secrets — one nickname for every group you are in — so the
+  app knows it after a restart without asking your server, and offers it when you join
+  another group. A change of nickname is sent to each group this device is in. No new
+  recipient and no new category of information about you.
 
 - **v2.13** (November 17, 2026): A game type can end after a maximum number of rounds (a
   number from 1 to 999, or none), set on the new preset Chouineurs and editable on every

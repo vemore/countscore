@@ -1,5 +1,7 @@
 # The app does not re-stamp a delta the server refuses as `lamport_reused`
 
+**Status:** done (2026-11-25) — closed by feat/multi-group-sync-sessions. `SyncEngine._restamp` collects a batch's refused deltas, reads the group's log once from seq 0 for its highest lamport (`_raiseClockPastLog`, nothing applied, cursor kept), and only then clears their stamps (`markRestamp`) so the pass pushes them again; a failed scan leaves the rows as they were, and a second refusal after a scan that succeeded is rejected. Not `_pullAll()` as proposed below: a pull from the cursor cannot see the lamports a clock behind its cursor missed, and a whole restored database never reuses one (`.llmwiki/Sync.md`, *Decisions & History*). Tested with a `MockClient` (`sync_engine_resolve_test.dart`) and through a real server (`sync_multi_group_backend_test.dart`).
+
 - **Noted:** 2026-11-25 — test/sync-adversarial-api (the server half)
 - **Theme:** sync-robustness
 - **Area:** app

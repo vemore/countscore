@@ -1,5 +1,7 @@
 # GroupProvider runs one sync loop for one group
 
+**Status:** done (2026-11-25) — closed by feat/multi-group-sync-sessions. `GroupProvider` holds one `GroupSession` (`lib/providers/group_session.dart`) per membership — token, stream, timers, status, owner, generation — at most five (`GroupActionError.tooManyGroups`, refused before any request); a local write wakes the groups it queued for; a game's analysis, share and rematch go to its own group; the single-group screens read the first group (status the worst, counts summed) until the UI entry. Tested through a real server (`test/sync/sync_multi_group_backend_test.dart`) and a mock one (`test/providers/group_provider_multi_group_test.dart`); `.llmwiki/MultiGroup.md`.
+
 - **Noted:** 2026-11-25 — step 3 of `2026-11-17-belong-to-several-groups.md` (decisions there)
 - **Theme:** multi-group-sync
 - **Area:** app
