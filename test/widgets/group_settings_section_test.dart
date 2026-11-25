@@ -183,7 +183,7 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(seen.map((r) => r.url.path), contains('/groups'));
-    expect(find.text('Group: Famille'), findsOneWidget);
+    expect(tester.widget<Text>(find.byKey(const Key('group_name'))).data, 'Famille');
     expect(find.byKey(const Key('group_share_token')), findsOneWidget);
 
     // Stop the poll timer before the binding checks for pending timers.
@@ -233,7 +233,7 @@ void main() {
     final group = await _pumpSection(tester, seen);
     await _createGroup(tester);
 
-    expect(group.isOwner, isTrue);
+    expect(group.memberships.single.isOwner, isTrue);
     expect(find.byKey(const Key('group_rotate_share_token')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('group_devices')));
@@ -252,7 +252,7 @@ void main() {
 
     // The server said another device owns the group.
     expect(seen.map((r) => r.url.path), contains('/groups/me'));
-    expect(group.isOwner, isFalse);
+    expect(group.memberships.single.isOwner, isFalse);
     expect(find.byKey(const Key('group_rotate_share_token')), findsNothing);
 
     await tester.tap(find.byKey(const Key('group_devices')));
@@ -287,7 +287,7 @@ void main() {
     final put = seen.lastWhere((r) => r.url.path == '/groups/me/owner') as http.Request;
     expect(put.method, 'PUT');
     expect(jsonDecode(put.body), {'device_id': _lost});
-    expect(group.isOwner, isFalse);
+    expect(group.memberships.single.isOwner, isFalse);
     expect(find.text('“Lost phone” now owns the group.'), findsOneWidget);
     expect(find.byKey(const Key('group_device_revoke_$_lost')), findsNothing);
 
@@ -304,7 +304,7 @@ void main() {
     final group = await _pumpSection(tester, seen, owner: _lost, dormantOwner: true);
     await _createGroup(tester);
 
-    expect(group.isOwner, isFalse);
+    expect(group.memberships.single.isOwner, isFalse);
     await tester.tap(find.byKey(const Key('group_devices')));
     await _settle(tester);
 
@@ -316,7 +316,7 @@ void main() {
     expect(tester.takeException(), isNull);
     final claim = seen.lastWhere((r) => r.url.path == '/groups/me/owner/claim');
     expect(claim.method, 'POST');
-    expect(group.isOwner, isTrue);
+    expect(group.memberships.single.isOwner, isTrue);
     expect(find.text('This device now owns the group.'), findsOneWidget);
     // With the role in hand, the owner actions are back on the other device.
     expect(find.byKey(const Key('group_device_revoke_$_lost')), findsOneWidget);
@@ -348,7 +348,7 @@ void main() {
     await _settle(tester);
 
     expect(tester.takeException(), isNull);
-    expect(group.isOwner, isFalse);
+    expect(group.memberships.single.isOwner, isFalse);
     expect(
       find.text("The group's owner has been seen recently: ownership cannot be claimed."),
       findsOneWidget,
@@ -363,7 +363,7 @@ void main() {
     final group = await _pumpSection(tester, seen, owner: null);
     await _createGroup(tester);
 
-    expect(group.isOwner, isTrue);
+    expect(group.memberships.single.isOwner, isTrue);
     expect(find.byKey(const Key('group_rotate_share_token')), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox());
@@ -396,7 +396,7 @@ void main() {
     final patch = seen.lastWhere((r) => r.url.path == '/groups/devices/me') as http.Request;
     expect(patch.method, 'PATCH');
     expect(jsonDecode(patch.body), {'label': 'Alice B'});
-    expect(group.deviceLabel, 'Alice B');
+    expect(group.nickname, 'Alice B');
     expect(find.text('Your nickname: Alice B'), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox());
@@ -422,19 +422,38 @@ void main() {
     group.dispose();
   });
 
-  testWidgets('joining again offers the nickname this device already goes by', (tester) async {
-    final credentials = MemorySyncCredentials();
-    await credentials.saveNickname('Alice');
-    final group = await _pumpSection(tester, [], credentials: credentials);
-    await tester.pump();
+  // One nickname for every group (decision 8): once the device has one, joining
+  // or creating another group does not ask again, and cannot rename the others.
+  group('with a nickname held', () {
+    testWidgets('join asks only for the invite code and joins under that nickname',
+        (tester) async {
+      final fake = await _pumpWithFake(tester, nickname: 'Alice');
+      await tester.tap(find.byKey(const Key('group_join')));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('group_join')));
-    await tester.pumpAndSettle();
-    final field = find.byKey(const Key('group_nickname_field'));
-    expect(tester.widget<TextField>(field).controller!.text, 'Alice');
+      expect(find.byKey(const Key('group_nickname_field')), findsNothing);
+      await tester.enterText(find.byKey(const Key('group_invite_field')), ' invite-2 ');
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('group_dialog_ok')));
+      await tester.pumpAndSettle();
 
-    await tester.pumpWidget(const SizedBox());
-    group.dispose();
+      expect(fake.joined, [('invite-2', 'Alice')]);
+    });
+
+    testWidgets('create asks only for the group name and creates under that nickname',
+        (tester) async {
+      final fake = await _pumpWithFake(tester, nickname: 'Alice');
+      await tester.tap(find.byKey(const Key('group_create')));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('group_nickname_field')), findsNothing);
+      await tester.enterText(find.byKey(const Key('group_name_field')), 'Amis');
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('group_dialog_ok')));
+      await tester.pumpAndSettle();
+
+      expect(fake.created, [('Amis', 'Alice')]);
+    });
   });
 
   testWidgets('a sixth group is refused with its own message', (tester) async {
@@ -551,8 +570,13 @@ FilledButton _okButton(WidgetTester tester) =>
 
 /// A [GroupProvider] that records what the dialogs hand it and touches no server.
 class _FakeGroupProvider extends GroupProvider {
-  _FakeGroupProvider(AppDatabase db)
+  _FakeGroupProvider(AppDatabase db, this._nickname)
       : super(db: db, credentials: MemorySyncCredentials(), enableStream: false);
+
+  final String? _nickname;
+
+  @override
+  String? get nickname => _nickname;
 
   final created = <(String, String)>[];
   final joined = <(String, String)>[];
@@ -566,10 +590,10 @@ class _FakeGroupProvider extends GroupProvider {
       joined.add((shareToken, deviceLabel));
 }
 
-Future<_FakeGroupProvider> _pumpWithFake(WidgetTester tester) async {
+Future<_FakeGroupProvider> _pumpWithFake(WidgetTester tester, {String? nickname}) async {
   final db = AppDatabase.forTesting(NativeDatabase.memory());
   addTearDown(db.close);
-  final fake = _FakeGroupProvider(db);
+  final fake = _FakeGroupProvider(db, nickname);
   await tester.pumpWidget(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => BackendProvider('https://countscore.example.com')),

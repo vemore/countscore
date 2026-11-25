@@ -398,8 +398,6 @@
 
   "shareTokenHint": "Tempel kode yang dikirim anggota grup kepada Anda",
 
-  "groupCurrent": "Grup: {name}",
-
   "shareTokenExplain": "Kirim kode ini ke perangkat yang harus bergabung dengan grup. Siapa pun yang memilikinya dapat bergabung.",
 
   "shareTokenCopy": "Salin kode",
@@ -412,13 +410,9 @@
 
   "groupLeave": "Tinggalkan grup",
 
-  "groupLeaveConfirm": "Perangkat ini meninggalkan grup. Permainan bersama tetap di perangkat ini tetapi tidak akan lagi disinkronkan.",
-
   "groupLeft": "Meninggalkan grup",
 
   "groupJoined": "Bergabung dengan grup",
-
-  "clearServerLeavesGroup": "Menghapus server meninggalkan grup. Permainan bersama tetap di perangkat ini.",
 
   "syncNow": "Sinkronkan sekarang",
 
@@ -761,7 +755,6 @@
   "replaceConfigCurrent": "Sekarang: {value}",
   "replaceConfigNew": "Baru: {value}",
   "replaceConfigInvite": "kode undangan {code}",
-  "replaceConfigLeavesGroup": "Perangkat ini akan meninggalkan grup {name}. Permainannya tetap di perangkat ini.",
   "replaceConfigConfirm": "Ganti",
   "replaceConfigUnsynced": "{count, plural, =1{1 perubahan di perangkat ini belum mencapai grup. Jika Anda pergi sekarang, grup tidak akan pernah menerimanya.} other{{count} perubahan di perangkat ini belum mencapai grup. Jika Anda pergi sekarang, grup tidak akan pernah menerimanya.}}",
   "replaceConfigLeaveAnyway": "Pergi saja",
@@ -777,5 +770,19 @@
   "gameRulesEndOrMaxRounds": "{count, plural, one{{condition}, atau setelah {count} putaran} other{{condition}, atau setelah {count} putaran}}",
   "boardRoundProgress": "Putaran {current} dari {total}",
   "gameTypeNameChouineurs": "Chouineurs",
-  "gameTypeNameChouineursSortKey": "Chouineurs"
+  "gameTypeNameChouineursSortKey": "Chouineurs",
+  "groupsSection": "Grup",
+  "groupsMaxReached": "Jumlah maksimum grup tercapai ({max}): tinggalkan salah satu untuk membuat atau bergabung dengan grup lain.",
+  "groupLeaveConfirmNamed": "Perangkat ini meninggalkan grup {name}. Permainan bersamanya tetap di perangkat ini tetapi tidak akan lagi disinkronkan. Grup Anda yang lain tidak berubah.",
+  "clearServerLeavesGroups": "{count, plural, other{Menghapus server membuat perangkat ini meninggalkan {count} grup. Permainan bersama tetap di perangkat ini.}}",
+  "replaceConfigLeavesGroups": "{count, plural, other{Perangkat ini akan meninggalkan {count} grup berikut (permainannya tetap di perangkat ini):}}",
+  "joinGroupTooTitle": "Bergabung juga dengan grup ini?",
+  "joinGroupTooBody": "Perangkat ini akan bergabung dengan grup berkode undangan {code}, di server yang sama. Perangkat tetap berada di grup Anda saat ini:",
+  "joinGroupTooConfirm": "Gabung",
+  "joinLinkAlreadyMember": "Perangkat ini sudah berada di grup {name}: tidak ada yang berubah.",
+  "newGameShareWith": "Bagikan dengan",
+  "newGameLocalOnly": "Hanya perangkat ini",
+  "newGameLocalSubtitle": "Permainan tetap di perangkat ini.",
+  "shareGameChooseGroup": "Bagikan permainan ini dengan grup mana? Permainan, pemain, skor, dan komentar akan dikirim ke sana. Berbagi tidak dapat dibatalkan.",
+  "gameSharedWith": "Dibagikan dengan {name}"
 }

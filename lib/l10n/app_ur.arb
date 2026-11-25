@@ -506,8 +506,6 @@
 
   "shareTokenHint": "گروپ کے کسی رکن نے جو ضابطہ بھیجا ہے اسے پیسٹ کریں",
 
-  "groupCurrent": "گروپ: {name}",
-
   "shareTokenExplain": "یہ ضابطہ ان ڈیوائسز کو بھیجیں جو گروپ میں شامل ہونا چاہیں۔ جس کے پاس یہ ہے وہ شامل ہو سکتا ہے۔",
 
   "shareTokenCopy": "ضابطہ کاپی کریں",
@@ -520,14 +518,10 @@
 
   "groupLeave": "گروپ چھوڑیں",
 
-  "groupLeaveConfirm": "یہ ڈیوائس گروپ چھوڑتی ہے۔ مشترکہ گیمز اس ڈیوائس پر رہتے ہیں لیکن اب سنک نہیں ہوں گے۔",
-
   "groupLeft": "گروپ چھوڑ دیا گیا",
 
   "groupJoined": "گروپ میں شامل ہو گئے"
 ,
-
-  "clearServerLeavesGroup": "سرور صاف کرنے سے گروپ چھوڑ دیا جاتا ہے۔ مشترکہ گیمز اس ڈیوائس پر رہتے ہیں۔",
 
   "syncNow": "اب سنک کریں",
 
@@ -979,8 +973,6 @@
 
   "replaceConfigInvite": "مدعو ضابطہ {code}",
 
-  "replaceConfigLeavesGroup": "یہ ڈیوائس گروپ {name} چھوڑ دے گی۔ اس کے گیمز اس ڈیوائس پر رہتے ہیں۔",
-
   "replaceConfigConfirm": "جگہ لے لیں",
 
   "replaceConfigUnsynced": "{count, plural, =1{اس ڈیوائس پر 1 تبدیلی ابھی گروپ تک نہیں پہنچی۔ اگر آپ اب چھوڑتے ہیں، تو گروپ اسے کبھی وصول نہیں کرے گا۔} other{اس ڈیوائس پر {count} تبدیلیاں ابھی گروپ تک نہیں پہنچیں۔ اگر آپ اب چھوڑتے ہیں، تو گروپ انہیں کبھی وصول نہیں کرے گا۔}}",
@@ -1003,5 +995,19 @@
   "gameRulesEndOrMaxRounds": "{count, plural, one{{condition}، یا {count} راؤنڈ کے بعد} other{{condition}، یا {count} راؤنڈز کے بعد}}",
   "boardRoundProgress": "راؤنڈ {current}/{total}",
   "gameTypeNameChouineurs": "Chouineurs",
-  "gameTypeNameChouineursSortKey": "Chouineurs"
+  "gameTypeNameChouineursSortKey": "Chouineurs",
+  "groupsSection": "گروپس",
+  "groupsMaxReached": "گروپس کی زیادہ سے زیادہ تعداد ({max}) پوری ہو چکی ہے: نیا بنانے یا کسی اور میں شامل ہونے کے لیے ایک چھوڑیں۔",
+  "groupLeaveConfirmNamed": "یہ ڈیوائس گروپ {name} چھوڑ دیتی ہے۔ اس کی مشترکہ گیمز اس ڈیوائس پر رہیں گی مگر اب سنک نہیں ہوں گی۔ آپ کے دوسرے گروپ تبدیل نہیں ہوں گے۔",
+  "clearServerLeavesGroups": "{count, plural, one{سرور صاف کرنے سے گروپ چھوڑ دیا جاتا ہے۔ مشترکہ گیمز اس ڈیوائس پر رہتے ہیں۔} other{سرور صاف کرنے سے {count} گروپس چھوڑ دیے جاتے ہیں۔ مشترکہ گیمز اس ڈیوائس پر رہتے ہیں۔}}",
+  "replaceConfigLeavesGroups": "{count, plural, one{یہ ڈیوائس یہ گروپ چھوڑ دے گی (اس کے گیمز اس ڈیوائس پر رہیں گے):} other{یہ ڈیوائس یہ {count} گروپس چھوڑ دے گی (ان کے گیمز اس ڈیوائس پر رہیں گے):}}",
+  "joinGroupTooTitle": "کیا یہ گروپ بھی شامل ہونا ہے؟",
+  "joinGroupTooBody": "یہ ڈیوائس مدعو ضابطہ {code} والے گروپ میں شامل ہو جائے گی، اسی سرور پر۔ یہ اپنے موجودہ گروپس میں رہے گی:",
+  "joinGroupTooConfirm": "شامل ہوں",
+  "joinLinkAlreadyMember": "یہ ڈیوائس پہلے ہی گروپ {name} میں ہے: کچھ تبدیل نہیں ہوا۔",
+  "newGameShareWith": "ساتھ شیئر کریں",
+  "newGameLocalOnly": "صرف اس ڈیوائس",
+  "newGameLocalSubtitle": "گیم اس ڈیوائس پر رہے گی۔",
+  "shareGameChooseGroup": "یہ گیم کس گروپ کے ساتھ شیئر کرنی ہے؟ گیم، اس کے کھلاڑی، اسکورز اور تبصرے وہاں بھیجے جائیں گے۔ شیئرنگ کو کالعدم نہیں کیا جا سکتا۔",
+  "gameSharedWith": "{name} کے ساتھ شیئر کیا گیا"
 }

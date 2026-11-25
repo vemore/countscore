@@ -733,11 +733,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get shareTokenHint => 'Dán mã mà thành viên nhóm gửi cho bạn';
 
   @override
-  String groupCurrent(String name) {
-    return 'Nhóm: $name';
-  }
-
-  @override
   String get shareTokenExplain =>
       'Gửi mã này đến các thiết bị nên tham gia nhóm. Bất kỳ ai có nó đều có thể tham gia.';
 
@@ -758,18 +753,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get groupLeave => 'Rời nhóm';
 
   @override
-  String get groupLeaveConfirm =>
-      'Thiết bị này rời nhóm. Các trò chơi chia sẻ ở lại trên thiết bị này nhưng sẽ không còn đồng bộ.';
-
-  @override
   String get groupLeft => 'Đã rời nhóm';
 
   @override
   String get groupJoined => 'Đã tham gia nhóm';
-
-  @override
-  String get clearServerLeavesGroup =>
-      'Xóa máy chủ sẽ rời nhóm. Các trò chơi chia sẻ ở lại trên thiết bị này.';
 
   @override
   String get syncNow => 'Đồng bộ ngay';
@@ -1687,11 +1674,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String replaceConfigLeavesGroup(String name) {
-    return 'Thiết bị này sẽ rời nhóm $name. Các trò chơi của nó ở lại thiết bị này.';
-  }
-
-  @override
   String get replaceConfigConfirm => 'Thay thế';
 
   @override
@@ -1768,4 +1750,73 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get gameTypeNameChouineursSortKey => 'Chouineurs';
+
+  @override
+  String get groupsSection => 'Nhóm';
+
+  @override
+  String groupsMaxReached(int max) {
+    return 'Đã đạt số nhóm tối đa ($max): rời một nhóm để tạo hoặc tham gia nhóm khác.';
+  }
+
+  @override
+  String groupLeaveConfirmNamed(String name) {
+    return 'Thiết bị này rời nhóm $name. Các trò chơi chia sẻ của nhóm vẫn ở lại trên thiết bị này nhưng sẽ không còn đồng bộ. Các nhóm khác của bạn không thay đổi.';
+  }
+
+  @override
+  String clearServerLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Xóa máy chủ sẽ rời $count nhóm. Các trò chơi chia sẻ ở lại trên thiết bị này.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String replaceConfigLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Thiết bị này sẽ rời $count nhóm sau (các trò chơi vẫn ở lại trên thiết bị này):',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get joinGroupTooTitle => 'Cũng tham gia nhóm này?';
+
+  @override
+  String joinGroupTooBody(String code) {
+    return 'Thiết bị này sẽ tham gia nhóm của mã mời $code, trên cùng máy chủ. Nó vẫn ở trong các nhóm hiện tại:';
+  }
+
+  @override
+  String get joinGroupTooConfirm => 'Tham gia';
+
+  @override
+  String joinLinkAlreadyMember(String name) {
+    return 'Thiết bị này đã ở trong nhóm $name: không có gì thay đổi.';
+  }
+
+  @override
+  String get newGameShareWith => 'Chia sẻ với';
+
+  @override
+  String get newGameLocalOnly => 'Chỉ thiết bị này';
+
+  @override
+  String get newGameLocalSubtitle => 'Trò chơi ở lại trên thiết bị này.';
+
+  @override
+  String get shareGameChooseGroup =>
+      'Chia sẻ trò chơi này với nhóm nào? Trò chơi, người chơi, điểm và bình luận sẽ được gửi đến nhóm đó. Việc chia sẻ không thể hoàn tác.';
+
+  @override
+  String gameSharedWith(String name) {
+    return 'Đã chia sẻ với $name';
+  }
 }

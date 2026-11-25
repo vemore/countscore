@@ -102,27 +102,27 @@ void main() {
     addTearDown(group.dispose);
     await group.updateBackend('https://countscore.example.com');
     await group.createGroup('Famille', '  Alice ');
-    expect(group.deviceLabel, 'Alice');
+    expect(group.nickname, 'Alice');
 
     // The list leaves while the server still says "Old"...
     server.devicesGate = Completer<void>();
-    final list = group.devices();
+    final list = group.memberships.single.devices();
     await pumpEventQueue();
     // ...the rename completes before it comes back...
     await group.renameDevice('  New ');
-    expect(group.deviceLabel, 'New');
+    expect(group.nickname, 'New');
     server.devicesGate!.complete();
     await list;
 
     // ...and the stale answer leaves the new name alone.
-    expect(group.deviceLabel, 'New');
+    expect(group.nickname, 'New');
 
     // A list that disagrees afterwards is a group that missed the nickname:
     // the device's own wins, and goes out again with the next pass.
     server.devicesGate = null;
     server.serverLabel = 'Renamed elsewhere';
-    await group.devices();
-    expect(group.deviceLabel, 'New');
+    await group.memberships.single.devices();
+    expect(group.nickname, 'New');
     await group.syncNow();
     await _idle(group);
     expect(server.serverLabel, 'New');
@@ -152,10 +152,10 @@ void main() {
     );
     addTearDown(group.dispose);
     await group.updateBackend('https://countscore.example.com');
-    expect(group.deviceLabel, 'Alicia');
+    expect(group.nickname, 'Alicia');
     await _idle(group);
     expect(group.status, SyncStatus.offline);
-    expect(group.deviceLabel, 'Alicia');
+    expect(group.nickname, 'Alicia');
   });
 
   test('an install that never stored a nickname learns it from the devices list', () async {
@@ -179,7 +179,7 @@ void main() {
     await _idle(group);
     await pumpEventQueue();
 
-    expect(group.deviceLabel, 'Alice');
+    expect(group.nickname, 'Alice');
     expect(await credentials.nickname(), 'Alice');
   });
 
@@ -215,7 +215,7 @@ void main() {
       server.down.add('token-2');
       await group.renameDevice(' Bob ');
 
-      expect(group.deviceLabel, 'Bob');
+      expect(group.nickname, 'Bob');
       expect(await credentials.nickname(), 'Bob', reason: 'stored once, for every group');
       expect(server.labels, {'token-1': 'Bob', 'token-2': 'Alice'});
 
@@ -231,7 +231,7 @@ void main() {
           ? http.Response('{"detail":"invalid"}', 422)
           : null;
       await expectLater(group.renameDevice('Bad'), throwsA(isA<GroupActionException>()));
-      expect(group.deviceLabel, 'Alice');
+      expect(group.nickname, 'Alice');
       expect(await credentials.nickname(), 'Alice');
     });
 
@@ -245,7 +245,7 @@ void main() {
         throwsA(isA<GroupActionException>()
             .having((e) => e.error, 'error', GroupActionError.rateLimited)),
       );
-      expect(group.deviceLabel, 'Alice');
+      expect(group.nickname, 'Alice');
       expect(await credentials.nickname(), 'Alice');
     });
 

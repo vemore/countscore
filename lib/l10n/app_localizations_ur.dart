@@ -731,11 +731,6 @@ class AppLocalizationsUr extends AppLocalizations {
       'گروپ کے کسی رکن نے جو ضابطہ بھیجا ہے اسے پیسٹ کریں';
 
   @override
-  String groupCurrent(String name) {
-    return 'گروپ: $name';
-  }
-
-  @override
   String get shareTokenExplain =>
       'یہ ضابطہ ان ڈیوائسز کو بھیجیں جو گروپ میں شامل ہونا چاہیں۔ جس کے پاس یہ ہے وہ شامل ہو سکتا ہے۔';
 
@@ -756,18 +751,10 @@ class AppLocalizationsUr extends AppLocalizations {
   String get groupLeave => 'گروپ چھوڑیں';
 
   @override
-  String get groupLeaveConfirm =>
-      'یہ ڈیوائس گروپ چھوڑتی ہے۔ مشترکہ گیمز اس ڈیوائس پر رہتے ہیں لیکن اب سنک نہیں ہوں گے۔';
-
-  @override
   String get groupLeft => 'گروپ چھوڑ دیا گیا';
 
   @override
   String get groupJoined => 'گروپ میں شامل ہو گئے';
-
-  @override
-  String get clearServerLeavesGroup =>
-      'سرور صاف کرنے سے گروپ چھوڑ دیا جاتا ہے۔ مشترکہ گیمز اس ڈیوائس پر رہتے ہیں۔';
 
   @override
   String get syncNow => 'اب سنک کریں';
@@ -1684,11 +1671,6 @@ class AppLocalizationsUr extends AppLocalizations {
   }
 
   @override
-  String replaceConfigLeavesGroup(String name) {
-    return 'یہ ڈیوائس گروپ $name چھوڑ دے گی۔ اس کے گیمز اس ڈیوائس پر رہتے ہیں۔';
-  }
-
-  @override
   String get replaceConfigConfirm => 'جگہ لے لیں';
 
   @override
@@ -1766,4 +1748,75 @@ class AppLocalizationsUr extends AppLocalizations {
 
   @override
   String get gameTypeNameChouineursSortKey => 'Chouineurs';
+
+  @override
+  String get groupsSection => 'گروپس';
+
+  @override
+  String groupsMaxReached(int max) {
+    return 'گروپس کی زیادہ سے زیادہ تعداد ($max) پوری ہو چکی ہے: نیا بنانے یا کسی اور میں شامل ہونے کے لیے ایک چھوڑیں۔';
+  }
+
+  @override
+  String groupLeaveConfirmNamed(String name) {
+    return 'یہ ڈیوائس گروپ $name چھوڑ دیتی ہے۔ اس کی مشترکہ گیمز اس ڈیوائس پر رہیں گی مگر اب سنک نہیں ہوں گی۔ آپ کے دوسرے گروپ تبدیل نہیں ہوں گے۔';
+  }
+
+  @override
+  String clearServerLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'سرور صاف کرنے سے $count گروپس چھوڑ دیے جاتے ہیں۔ مشترکہ گیمز اس ڈیوائس پر رہتے ہیں۔',
+      one: 'سرور صاف کرنے سے گروپ چھوڑ دیا جاتا ہے۔ مشترکہ گیمز اس ڈیوائس پر رہتے ہیں۔',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String replaceConfigLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'یہ ڈیوائس یہ $count گروپس چھوڑ دے گی (ان کے گیمز اس ڈیوائس پر رہیں گے):',
+      one: 'یہ ڈیوائس یہ گروپ چھوڑ دے گی (اس کے گیمز اس ڈیوائس پر رہیں گے):',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get joinGroupTooTitle => 'کیا یہ گروپ بھی شامل ہونا ہے؟';
+
+  @override
+  String joinGroupTooBody(String code) {
+    return 'یہ ڈیوائس مدعو ضابطہ $code والے گروپ میں شامل ہو جائے گی، اسی سرور پر۔ یہ اپنے موجودہ گروپس میں رہے گی:';
+  }
+
+  @override
+  String get joinGroupTooConfirm => 'شامل ہوں';
+
+  @override
+  String joinLinkAlreadyMember(String name) {
+    return 'یہ ڈیوائس پہلے ہی گروپ $name میں ہے: کچھ تبدیل نہیں ہوا۔';
+  }
+
+  @override
+  String get newGameShareWith => 'ساتھ شیئر کریں';
+
+  @override
+  String get newGameLocalOnly => 'صرف اس ڈیوائس';
+
+  @override
+  String get newGameLocalSubtitle => 'گیم اس ڈیوائس پر رہے گی۔';
+
+  @override
+  String get shareGameChooseGroup =>
+      'یہ گیم کس گروپ کے ساتھ شیئر کرنی ہے؟ گیم، اس کے کھلاڑی، اسکورز اور تبصرے وہاں بھیجے جائیں گے۔ شیئرنگ کو کالعدم نہیں کیا جا سکتا۔';
+
+  @override
+  String gameSharedWith(String name) {
+    return '$name کے ساتھ شیئر کیا گیا';
+  }
 }

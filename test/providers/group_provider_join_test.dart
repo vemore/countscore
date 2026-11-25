@@ -90,7 +90,7 @@ void main() {
     expect(revoke.headers['Authorization'], 'Bearer $oldDeviceToken');
     expect(group.groupId, newGroupId);
     expect(group.shareToken, newInvite);
-    expect(group.deviceLabel, 'Tablet');
+    expect(group.nickname, 'Tablet');
     expect(await credentials.deviceToken(group.groupId!), newDeviceToken);
     expect(servers.seen.where((r) => r.url.path == '/sync/pull').single.url.host,
         'new.example.com');
@@ -130,7 +130,7 @@ void main() {
     expect(group.isJoined, isTrue);
     expect(group.groupId, oldGroupId);
     expect(await credentials.deviceToken(group.groupId!), newDeviceToken, reason: 'the new token is kept');
-    expect(group.deviceId, newDeviceId);
+    expect(group.memberships.single.deviceId, newDeviceId);
     expect(group.shareToken, 'fresh-code');
     expect(
       servers.seen.where((r) =>
@@ -177,7 +177,7 @@ void main() {
 
     expect(restored.isJoined, isTrue);
     expect(restored.groupId, oldGroupId);
-    expect(restored.deviceId, newDeviceId);
+    expect(restored.memberships.single.deviceId, newDeviceId);
   });
 
   test('another server reaches the disk with the membership, not after it', () async {

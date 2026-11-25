@@ -1,5 +1,7 @@
 # The interface offers one group: Settings, game creation, game cards and the QR all assume it
 
+**Status:** done (2026-11-25) — closed by feat/multi-group-ui. Settings → Groups is a list (a card per group with its own status, devices, comments and usage, Leave; one nickname; Create and Join hidden at five), the create screen has a Local / group selector defaulting to the last group used (one group keeps the switch), the board asks which group to share with, game cards show a group badge, and the configuration QR on the same server offers "join this group too?" while another server still replaces (and leaves every group). The single-group compatibility layer is gone. Tests: `test/widgets/groups_list_test.dart`, `test/screens/create_game_group_choice_test.dart`, `test/widgets/group_badge_test.dart`, `test/widgets/replace_config_dialog_test.dart` (group `a group link while in groups`), `test/widgets/share_group_dialog_test.dart`, and `integration_test/multi_group_test.dart` against a local backend; screenshots in `wip/assets/2026-11-25-multi-group-ui/` (web, from that e2e run) rather than a device pass.
+
 - **Noted:** 2026-11-25 — step 4 of `2026-11-17-belong-to-several-groups.md` (decisions there)
 - **Theme:** multi-group-ui
 - **Area:** app

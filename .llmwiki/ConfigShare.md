@@ -3,7 +3,7 @@
 > Scope: bringing a device onto the same server and group from a QR code — the link, its
 > encoder and parser, the QR sheet, the shared "replace the configuration?" dialog.
 > Related: [[Sync]] · [[Security]] · [[Deployment]] · [[Web]] · [[MobileApp]]
-> Updated: 2026-11-19
+> Updated: 2026-11-25
 
 ## Facts
 
@@ -36,7 +36,7 @@ route) — which is the GitHub Pages copy when that is the one running ([[Web]])
 ### The sheet — `lib/widgets/config_share_sheet.dart`
 
 *Share by QR code* in Settings → Server (`config_share_open`, enabled once a server is set) and
-in Settings → Group while in a group (`group_share_qr`) opens `ConfigShareSheet`: the QR
+in each group's card of Settings → Groups (`group_share_qr`) opens `ConfigShareSheet`: the QR
 (`ConfigQrCode`, key `config_share_qr`), a *Copy link* button, and the web app address field.
 The QR is drawn on the device by a `CustomPainter` from the `qr` package's module matrix,
 black on white in both themes with the standard 4-module quiet zone, medium error
@@ -46,18 +46,42 @@ instead. *Copy link* confirms on its own button (`configShareLinkCopied`): a sna
 land on the Settings page under the sheet. A stored address read late never overwrites one
 the user has typed or saved meanwhile. Nothing is sent to show it: no new outbound data flow. Tests:
 `test/widgets/config_share_sheet_test.dart` (the QR's data parses back to the server and the
-invite code, with and without a group).
+invite code, with and without a group). From a group's card the QR carries that group's
+invite code (`ConfigShareSheet.show(context, groupId:)`); from Settings → Server, the one
+group's code while the device is in exactly one, and the server alone in none or in several.
 
 ### The replace dialog — `lib/widgets/replace_config_dialog.dart`
 
 `showReplaceConfigDialog(context, ConfigLink)` is what a scanned link opens; it returns a
-`ReplaceConfigResult`. It asks nothing when the device already has that server and that
-invite code (`replaceConfigUnchanged`). Otherwise `ReplaceConfigDialog` shows the current and
-new server and group (`ReplaceConfigPlan`: the new group is known only by its invite code, and
-a current group whose name is not known is shown by its own code, `currentGroupLabel`), says
-the current group will be left when the server changes, and asks for the nickname when a group
-is joined, with the Settings → Group field's limit (`groupFieldFormatter`, 64 code points;
-[[Sync]], *The nickname*). *Cancel* changes nothing.
+`ReplaceConfigResult`. It takes one of three paths (decisions 4 and 7 of
+`wip/done/2026-11-17-belong-to-several-groups.md`):
+
+- **The server this device uses, a group link, and the device already in a group**: no
+  replace dialog. "The server this device uses" is `GroupProvider.baseUrl`, the very value
+  `completeJoin` compares the link's with, so this path can never end in the leave-every-group
+  branch without its question. A code one of its groups holds (`GroupProvider.sessionByInvite`)
+  changes nothing and says so (`joinLinkAlreadyMember`, no request) — unless that group's
+  server refuses this device (`SyncStatus.unauthorized`, revoked): then its own code takes a
+  new registration through `prepareJoin` and `completeJoin`, for that group only. Otherwise
+  `JoinGroupTooDialog` asks "join this group too?" (`joinGroupTooTitle`; `joinGroupTooBody`
+  names the invite code, the groups that stay are listed one per line under it). It asks for
+  a nickname only while the device has none: the one every group shares is used as it is, and
+  renamed from Settings → Groups only (decision 8). *Join* runs `prepareJoin` then
+  `completeJoin`, which adds the group beside the others and leaves nothing (`groupJoined`).
+  Nothing is counted first: at `GroupProvider.maxGroups` only the server's answer tells a
+  newer code of a group already joined (kept as below, `joinLinkAlreadyMember`) from a sixth
+  group, which `completeJoin` refuses (`groupErrorTooManyGroups`), its registration withdrawn.
+- **Another server, or no group yet**: `ReplaceConfigDialog`, as follows.
+- **The same server and no group in the link**: nothing to do (`replaceConfigUnchanged`).
+
+`ReplaceConfigDialog` shows the current and new server and groups (`ReplaceConfigPlan`: the new
+group is known only by its invite code; the current groups are listed one per line
+(`GroupList`, never joined into one string), each by `groupLabel` — its name, or its own code
+when the name is not known), says every current group will be left when the server changes
+(`replaceConfigLeavesGroups`, an ICU plural on their count, the groups listed under it), and
+asks for the nickname when a group is joined, starting from the device's nickname, with the
+Settings → Groups field's limit (`groupFieldFormatter`, 64 code points; [[Sync]], *The
+nickname*). *Cancel* changes nothing.
 
 **A group is joined before anything is left.** On *Replace*, `GroupProvider.prepareJoin`
 registers the device with the link's group on the link's server and changes nothing else; a
@@ -74,13 +98,14 @@ accepted:
   a no) unless sync already reads `unauthorized`, and needs a token at all (`isJoined`): a
   device the owner revoked, or one whose secure storage was lost in a restore, is in the group
   by id only, so it takes the new registration through the path below.
-- **Another group**: before the current one is left, a second question when the first did not
-  already say so (same server) or when changes are waiting to reach it. The count is read then,
+- **Another group, on another server**: before the current groups are left, a second question
+  when changes are waiting to reach them. The count is read then,
   from the outbox (`GroupProvider.countPending`), not from `pendingChanges`, which is only
   recounted at the end of a sync pass and reads 0 on a cold start from a link. *Cancel* there
-  withdraws the new registration (`cancelJoin`). Settings → Group *Leave* and Settings → Server
-  *Clear* (while in a group) ask the same, counted the same way, with the same
-  `replaceConfigUnsynced` string and a *Leave anyway* button; *Cancel* changes nothing. Then `completeJoin` leaves the current group
+  withdraws the new registration (`cancelJoin`). A group card's *Leave* in Settings → Groups
+  (that group's count) and Settings → Server *Clear* (every group's) ask the same, counted the
+  same way, with the same `replaceConfigUnsynced` string and a *Leave anyway* button; *Cancel*
+  changes nothing. Then `completeJoin` leaves every current group
   (revoked on its own server, outbox emptied, [[Sync]] *Joining*), stores the new server URL
   (`BackendProvider.persist`, SharedPreferences `backendUrl`) before the new credentials, adopts
   the new membership and syncs with the new server; the dialog then tells the live
@@ -95,12 +120,16 @@ group is left first, then the URL, then the credentials reach the disk, so a res
 either no group on the old or new server (join again) or the new group on its own server; never
 the new group's token under the old URL.
 
-A link carrying a server alone, another one, leaves the group (a group cannot follow its
+On the same server, `completeJoin` adopts another group beside the others instead, refused
+(`tooManyGroups`, the registration withdrawn) when that would make a sixth; a group this device
+is in under a token the server refuses takes the new registration, and only that group's.
+
+A link carrying a server alone, another one, leaves every group (a group cannot follow its
 server) after the same question, then sets the server. Settings follows a server replaced
 this way: its URL field listens to `BackendProvider`. `GroupProvider.createGroup` and
-`joinGroup` from Settings follow the same rule: the server call first, then any current group
-is left. Tests: `test/widgets/replace_config_dialog_test.dart` (on
-`test/support/fake_group_provider.dart`, and once on the real provider),
+`joinGroup` from Settings add a group beside the others, the server call first. Tests: `test/widgets/replace_config_dialog_test.dart` (on
+`test/support/fake_group_provider.dart`, and once on the real provider; the three cases of
+a group link while in groups are its group `a group link while in groups`),
 `test/providers/group_provider_join_test.dart` (on `test/support/group_servers.dart`).
 
 ### What opens a link
@@ -235,3 +264,10 @@ only a browser runs.
 - **The unsynced count is read when the question is asked (2026-09-26).** `pendingChanges` is
   the count at the end of the last sync pass: 0 on a cold start, which is exactly how a link
   opens the app, and stale for the second a write waits for its debounced sync.
+- **A group link on the same server joins beside the others (2026-11-25,
+  `feat/multi-group-ui`).** The "replace the configuration?" dialog assumed one group per
+  device, so any group link left the current one. With up to five groups (decision 7 of the
+  multi-group plan) a link on the server already in use only adds a group; replacing — and so
+  leaving every group — is kept for another server (decision 4), where the groups cannot
+  follow. The rule lives in `GroupProvider.completeJoin` (same URL or not), not in the dialog
+  alone, so the provider cannot be driven into leaving every group by a same-server join.

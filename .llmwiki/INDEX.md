@@ -39,9 +39,9 @@ Load this file first. Then read only the pages your task touches.
 | [[MobileApp]] | `lib/` layout, providers, screens, widgets, services and `utils/`, the compact landscape layout, the dynamic-icon constraint | 2026-11-25 |
 | [[DataLayer]] | Drift owns runtime CRUD; sqflite survives as a bootstrap migrator | 2026-11-25 |
 | [[Schema]] | Schema v24: the twelve tables, `builtin_key` and its unique index, `max_rounds`, per-group sync bookkeeping, a live-only membership index, tombstones, the migration chain | 2026-11-25 |
-| [[ConfigShare]] | The configuration QR: the `#/join` link and its parser, the PWA base, the replace dialog, what opens a link (PWA route, Android deep link) | 2026-09-26 |
-| [[MultiGroup]] | One device in up to five groups: a sync session per membership, one server and nickname, the worst status shown, a game's own group | 2026-11-25 |
-| [[I18n]] | 20 languages × 463 keys, French template, English fallback, localized built-in names and their sort key, the ARB checks, rules as assets | 2026-11-25 |
+| [[ConfigShare]] | The configuration QR: the `#/join` link and its parser, the PWA base, the replace dialog, what opens a link (PWA route, Android deep link) | 2026-11-25 |
+| [[MultiGroup]] | Up to five groups per device: sessions, one server and nickname, worst status, the Groups list, create selector, group badge | 2026-11-25 |
+| [[I18n]] | 20 languages × 473 keys, French template, English fallback, localized built-in names and their sort key, the ARB checks, rules as assets | 2026-11-25 |
 | [[Web]] | PWA: sqlite3.wasm on IndexedDB and its flush, committed binaries, `kIsWeb` guards, the CSP, self-hosted fonts, the service worker, GitHub Pages | 2026-11-17 |
 
 ## Backend (FastAPI)
@@ -57,14 +57,14 @@ Load this file first. Then read only the pages your task touches.
 
 | Page | Summary | Updated |
 |---|---|---|
-| [[Deployment]] | Synology NAS, Web Station TLS, `deploy_nas.sh` (migrate, swap, verify, roll back), `deploy_web.sh`, the Pages copy of the PWA, environment | 2026-11-19 |
+| [[Deployment]] | Synology NAS, Web Station TLS, `deploy_nas.sh` (migrate, swap, verify, roll back), `deploy_web.sh`, the Pages copy of the PWA, environment | 2026-11-25 |
 | [[AgentEvals]] | `evals/run.sh`: past tasks replayed with `claude -p` in throwaway worktrees, script-checked; when to run them, skill-creator cases per skill | 2026-09-26 |
 | [[Hooks]] | What Claude Code refuses mechanically, why each rule left CLAUDE.md, recovering from a stale branch | 2026-09-19 |
 | [[Documentation]] | Which documents a change implicates (wiki, README, the three privacy documents), the wiki lint pass, the CLAUDE.md budget | 2026-09-26 |
 | [[ParallelDelivery]] | Protection on main, worktrees, cleanup, one PR per theme, serial squash merges, refinement, lanes A–D, model routing, the reviewer, "merged, not deployed", metrics | 2026-09-26 |
 | [[Security]] | Defended surfaces (the group owner among them), and the security debt that is knowingly open | 2026-11-25 |
 | [[Testing]] | Unit, Drift, migration, e2e web and device, backend pytest (the adversarial sync suite among them); CI jobs and `scope`, and the extra gates | 2026-11-25 |
-| [[Release]] | Play signing, publishing through the Play API, target API, 2026 policy constraints, cadence, the pruning pass | 2026-11-19 |
+| [[Release]] | Play signing, publishing through the Play API, target API, 2026 policy constraints, cadence, the pruning pass | 2026-11-25 |
 | [[StoreListing]] | The 20 store locales and their keywords, category and tags, generated icon, feature graphic and screenshots, text limits, acquisition baseline | 2026-10-04 |
 
 ## Procedures live in skills, not here

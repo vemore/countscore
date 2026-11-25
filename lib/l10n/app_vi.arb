@@ -397,8 +397,6 @@
 
   "shareTokenHint": "Dán mã mà thành viên nhóm gửi cho bạn",
 
-  "groupCurrent": "Nhóm: {name}",
-
   "shareTokenExplain": "Gửi mã này đến các thiết bị nên tham gia nhóm. Bất kỳ ai có nó đều có thể tham gia.",
 
   "shareTokenCopy": "Sao chép mã",
@@ -411,13 +409,9 @@
 
   "groupLeave": "Rời nhóm",
 
-  "groupLeaveConfirm": "Thiết bị này rời nhóm. Các trò chơi chia sẻ ở lại trên thiết bị này nhưng sẽ không còn đồng bộ.",
-
   "groupLeft": "Đã rời nhóm",
 
   "groupJoined": "Đã tham gia nhóm",
-
-  "clearServerLeavesGroup": "Xóa máy chủ sẽ rời nhóm. Các trò chơi chia sẻ ở lại trên thiết bị này.",
 
   "syncNow": "Đồng bộ ngay",
 
@@ -759,7 +753,6 @@
   "replaceConfigCurrent": "Bây giờ: {value}",
   "replaceConfigNew": "Mới: {value}",
   "replaceConfigInvite": "mã mời {code}",
-  "replaceConfigLeavesGroup": "Thiết bị này sẽ rời nhóm {name}. Các trò chơi của nó ở lại thiết bị này.",
   "replaceConfigConfirm": "Thay thế",
   "replaceConfigUnsynced": "{count, plural, =1{1 thay đổi trên thiết bị này chưa tới nhóm. Nếu bạn rời đi ngay bây giờ, nhóm sẽ không bao giờ nhận được nó.} other{{count} thay đổi trên thiết bị này chưa tới nhóm. Nếu bạn rời đi ngay bây giờ, nhóm sẽ không bao giờ nhận được chúng.}}",
   "replaceConfigLeaveAnyway": "Rời dù sao đi nữa",
@@ -775,5 +768,19 @@
   "gameRulesEndOrMaxRounds": "{count, plural, one{{condition}, hoặc sau {count} vòng} other{{condition}, hoặc sau {count} vòng}}",
   "boardRoundProgress": "Vòng {current}/{total}",
   "gameTypeNameChouineurs": "Chouineurs",
-  "gameTypeNameChouineursSortKey": "Chouineurs"
+  "gameTypeNameChouineursSortKey": "Chouineurs",
+  "groupsSection": "Nhóm",
+  "groupsMaxReached": "Đã đạt số nhóm tối đa ({max}): rời một nhóm để tạo hoặc tham gia nhóm khác.",
+  "groupLeaveConfirmNamed": "Thiết bị này rời nhóm {name}. Các trò chơi chia sẻ của nhóm vẫn ở lại trên thiết bị này nhưng sẽ không còn đồng bộ. Các nhóm khác của bạn không thay đổi.",
+  "clearServerLeavesGroups": "{count, plural, other{Xóa máy chủ sẽ rời {count} nhóm. Các trò chơi chia sẻ ở lại trên thiết bị này.}}",
+  "replaceConfigLeavesGroups": "{count, plural, other{Thiết bị này sẽ rời {count} nhóm sau (các trò chơi vẫn ở lại trên thiết bị này):}}",
+  "joinGroupTooTitle": "Cũng tham gia nhóm này?",
+  "joinGroupTooBody": "Thiết bị này sẽ tham gia nhóm của mã mời {code}, trên cùng máy chủ. Nó vẫn ở trong các nhóm hiện tại:",
+  "joinGroupTooConfirm": "Tham gia",
+  "joinLinkAlreadyMember": "Thiết bị này đã ở trong nhóm {name}: không có gì thay đổi.",
+  "newGameShareWith": "Chia sẻ với",
+  "newGameLocalOnly": "Chỉ thiết bị này",
+  "newGameLocalSubtitle": "Trò chơi ở lại trên thiết bị này.",
+  "shareGameChooseGroup": "Chia sẻ trò chơi này với nhóm nào? Trò chơi, người chơi, điểm và bình luận sẽ được gửi đến nhóm đó. Việc chia sẻ không thể hoàn tác.",
+  "gameSharedWith": "Đã chia sẻ với {name}"
 }

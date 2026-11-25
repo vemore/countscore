@@ -728,11 +728,6 @@ class AppLocalizationsTh extends AppLocalizations {
   String get shareTokenHint => 'วางโค้ดที่สมาชิกกลุ่มส่ง';
 
   @override
-  String groupCurrent(String name) {
-    return 'กลุ่ม: $name';
-  }
-
-  @override
   String get shareTokenExplain =>
       'ส่งโค้ดนี้ไปยังอุปกรณ์ที่ควรเข้าร่วมกลุ่ม ใครที่มีโค้ดนี้ก็สามารถเข้าร่วมได้';
 
@@ -753,18 +748,10 @@ class AppLocalizationsTh extends AppLocalizations {
   String get groupLeave => 'ออกจากกลุ่ม';
 
   @override
-  String get groupLeaveConfirm =>
-      'อุปกรณ์นี้ออกจากกลุ่ม เกมที่แชร์จะอยู่บนอุปกรณ์นี้แต่จะไม่ซิงค์อีกต่อไป';
-
-  @override
   String get groupLeft => 'ออกจากกลุ่มแล้ว';
 
   @override
   String get groupJoined => 'เข้าร่วมกลุ่มแล้ว';
-
-  @override
-  String get clearServerLeavesGroup =>
-      'ล้างเซิร์ฟเวอร์ออกจากกลุ่ม เกมที่แชร์จะอยู่บนอุปกรณ์นี้';
 
   @override
   String get syncNow => 'ซิงค์ตอนนี้';
@@ -1676,11 +1663,6 @@ class AppLocalizationsTh extends AppLocalizations {
   }
 
   @override
-  String replaceConfigLeavesGroup(String name) {
-    return 'อุปกรณ์นี้จะออกจากกลุ่ม $name เกมของมันจะอยู่บนอุปกรณ์นี้';
-  }
-
-  @override
   String get replaceConfigConfirm => 'แทนที่';
 
   @override
@@ -1757,4 +1739,73 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get gameTypeNameChouineursSortKey => 'Chouineurs';
+
+  @override
+  String get groupsSection => 'กลุ่ม';
+
+  @override
+  String groupsMaxReached(int max) {
+    return 'อุปกรณ์นี้อยู่ในกลุ่มครบจำนวนสูงสุดแล้ว ($max) ออกจากกลุ่มหนึ่งก่อนเพื่อสร้างหรือเข้าร่วมกลุ่มอื่น';
+  }
+
+  @override
+  String groupLeaveConfirmNamed(String name) {
+    return 'อุปกรณ์นี้จะออกจากกลุ่ม $name เกมที่แชร์จะอยู่บนอุปกรณ์นี้แต่จะไม่ซิงค์อีกต่อไป กลุ่มอื่นของคุณไม่เปลี่ยนแปลง';
+  }
+
+  @override
+  String clearServerLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'การล้างเซิร์ฟเวอร์จะทำให้ออกจาก $count กลุ่ม เกมที่แชร์จะยังอยู่บนอุปกรณ์นี้',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String replaceConfigLeavesGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'อุปกรณ์นี้จะออกจาก $count กลุ่มต่อไปนี้ (เกมยังคงอยู่บนอุปกรณ์นี้):',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get joinGroupTooTitle => 'เข้าร่วมกลุ่มนี้ด้วยหรือไม่?';
+
+  @override
+  String joinGroupTooBody(String code) {
+    return 'อุปกรณ์นี้จะเข้าร่วมกลุ่มของโค้ดเชิญ $code บนเซิร์ฟเวอร์เดียวกัน และยังคงอยู่ในกลุ่มปัจจุบันของคุณ:';
+  }
+
+  @override
+  String get joinGroupTooConfirm => 'เข้าร่วม';
+
+  @override
+  String joinLinkAlreadyMember(String name) {
+    return 'อุปกรณ์นี้อยู่ในกลุ่ม $name แล้ว ไม่มีอะไรเปลี่ยนแปลง';
+  }
+
+  @override
+  String get newGameShareWith => 'แชร์กับ';
+
+  @override
+  String get newGameLocalOnly => 'เฉพาะอุปกรณ์นี้';
+
+  @override
+  String get newGameLocalSubtitle => 'เกมจะอยู่บนอุปกรณ์นี้';
+
+  @override
+  String get shareGameChooseGroup =>
+      'จะแชร์เกมนี้กับกลุ่มไหน เกม ผู้เล่น คะแนน และความเห็นจะถูกส่งไปที่นั่น การแชร์ไม่สามารถยกเลิกได้';
+
+  @override
+  String gameSharedWith(String name) {
+    return 'แชร์กับ $name แล้ว';
+  }
 }

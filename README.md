@@ -91,12 +91,16 @@ at your own server in Settings → Server if you want the connected features.
 - **Group sharing** (optional, network, off until you configure a server and join a group):
   create a group or join one with an invite code, then share games with the group's other
   devices — scores entered on one phone appear on the others within seconds, offline edits
-  catch up on reconnect, and players with the same name are merged. New games are shared by
-  default while you are in a group; games you do not share stay on the device. A lost or sold
-  phone can be removed from the group's device list, which also replaces the invite code.
-  Settings shows a QR code carrying the server address and, in a group, its invite code, to
-  set up another device the same way: scan it with the other phone's camera. It opens the
-  web app your server hosts, which asks before replacing that device's server and group; in
+  catch up on reconnect, and players with the same name are merged. One device can be in up
+  to five groups on the same server — family and friends, say — under one nickname; each
+  shared game belongs to one group and shows its name as a badge on its card. New games are
+  shared by default with the group you used last (or the only one), and you can pick another
+  group or keep the game on this device; games you do not share stay on the device. A lost or
+  sold phone can be removed from a group's device list, which also replaces its invite code.
+  Settings shows a QR code carrying the server address and a group's invite code, to set up
+  another device the same way: scan it with the other phone's camera. It opens the web app
+  your server hosts, which offers to join that group too when the device already uses that
+  server, and asks before replacing its server — and leaving its groups — otherwise; in
   an Android browser it first offers to continue in the CountScore app (or its Play Store
   page, when the app is not installed), and the app asks the same question.
   Any member can set the style and language of the group's comments and see how much of its
@@ -284,7 +288,7 @@ your own, and your data stays on it. It exposes:
 Once a server is configured in Settings → Server, the app is a client of every surface
 above except the web app itself: the game analysis goes to `/comments/*` for a game played
 alone, and to the group's comment endpoint for a game shared with a group; creating or
-joining a group (Settings → Group) turns on `/groups/*`, and a group's games then sync
+joining a group (Settings → Groups) turns on `/groups/*`, and a group's games then sync
 through `/sync/push`, `/sync/pull` and the change stream (`lib/services/sync/`). With no
 server configured, none of these calls is made. See `.llmwiki/Architecture.md`.
 
@@ -428,12 +432,12 @@ behalf and receive nothing. The one exception is yours to make: **Report this co
 opens your own email app with a message to the developer, prefilled with the analysis text —
 we receive it only if you press send.
 
-**2, group sharing**: once you have also created or joined a group (Settings → Group), the
+**2, group sharing**: once you have also created or joined a group (Settings → Groups), the
 games you share — their name, type, player names and colours, round comments, scores,
 whether and when you ended them, and analysis — are uploaded to **your** server, which **stores** them with a log of every change,
 and downloaded by the group's other devices. Each device of the group also sees the others'
-names (the nickname each one chose, which it can change in Settings → Group) and when they were last seen, so a lost phone can be recognised and removed. The
-group's comment style and language, if a member changes them (Settings → Group → Comments and
+names (the nickname each one chose, which it can change in Settings → Groups) and when they were last seen, so a lost phone can be recognised and removed. The
+group's comment style and language, if a member changes them (Settings → Groups → Comments and
 usage), are stored there too, with the analyses generated for shared games. Anyone with
 the group's invite code can join, so share it only with the people you mean to — the QR
 code in Settings carries it too. That QR is drawn on the device, and its link keeps the

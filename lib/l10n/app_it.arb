@@ -405,8 +405,6 @@
 
   "shareTokenHint": "Incolla il codice che un membro del gruppo ti ha inviato",
 
-  "groupCurrent": "Gruppo: {name}",
-
   "shareTokenExplain": "Invia questo codice ai dispositivi che dovrebbero unirsi al gruppo. Chiunque lo abbia può unirsi.",
 
   "shareTokenCopy": "Copia codice",
@@ -419,13 +417,9 @@
 
   "groupLeave": "Lascia il gruppo",
 
-  "groupLeaveConfirm": "Questo dispositivo lascia il gruppo. Le partite condivise rimangono su questo dispositivo ma non si sincronizzeranno più.",
-
   "groupLeft": "Hai lasciato il gruppo",
 
   "groupJoined": "Sei entrato nel gruppo",
-
-  "clearServerLeavesGroup": "Cancellare il server fa abbandonare il gruppo. Le partite condivise rimangono su questo dispositivo.",
 
   "syncNow": "Sincronizza ora",
 
@@ -767,7 +761,6 @@
   "replaceConfigCurrent": "Ora: {value}",
   "replaceConfigNew": "Nuovo: {value}",
   "replaceConfigInvite": "codice invito {code}",
-  "replaceConfigLeavesGroup": "Questo dispositivo abbandonerà il gruppo {name}. Le sue partite rimangono su questo dispositivo.",
   "replaceConfigConfirm": "Sostituisci",
   "replaceConfigUnsynced": "{count, plural, =1{1 modifica su questo dispositivo non ha ancora raggiunto il gruppo. Se te ne vai ora, il gruppo non la riceverà mai.} other{{count} modifiche su questo dispositivo non hanno ancora raggiunto il gruppo. Se te ne vai ora, il gruppo non le riceverà mai.}}",
   "replaceConfigLeaveAnyway": "Lascia comunque",
@@ -783,5 +776,19 @@
   "gameRulesEndOrMaxRounds": "{count, plural, one{{condition}, o dopo {count} round} other{{condition}, o dopo {count} round}}",
   "boardRoundProgress": "Round {current} di {total}",
   "gameTypeNameChouineurs": "Chouineurs",
-  "gameTypeNameChouineursSortKey": "Chouineurs"
+  "gameTypeNameChouineursSortKey": "Chouineurs",
+  "groupsSection": "Gruppi",
+  "groupsMaxReached": "Numero massimo di gruppi raggiunto ({max}): esci da uno per crearne o unirti a un altro.",
+  "groupLeaveConfirmNamed": "Questo dispositivo abbandona il gruppo {name}. Le sue partite condivise rimangono su questo dispositivo ma non si sincronizzeranno più. Gli altri tuoi gruppi non cambiano.",
+  "clearServerLeavesGroups": "{count, plural, one{Cancellare il server fa abbandonare il gruppo. Le partite condivise rimangono su questo dispositivo.} other{Cancellare il server fa abbandonare tutti i {count} gruppi. Le partite condivise rimangono su questo dispositivo.}}",
+  "replaceConfigLeavesGroups": "{count, plural, one{Questo dispositivo abbandonerà questo gruppo (le sue partite rimangono su questo dispositivo):} other{Questo dispositivo abbandonerà questi {count} gruppi (le loro partite rimangono su questo dispositivo):}}",
+  "joinGroupTooTitle": "Unirti anche a questo gruppo?",
+  "joinGroupTooBody": "Questo dispositivo entrerà nel gruppo con codice invito {code}, sullo stesso server. Resta nei gruppi attuali:",
+  "joinGroupTooConfirm": "Unisciti",
+  "joinLinkAlreadyMember": "Questo dispositivo è già nel gruppo {name}: non cambia nulla.",
+  "newGameShareWith": "Condividi con",
+  "newGameLocalOnly": "Solo questo dispositivo",
+  "newGameLocalSubtitle": "La partita resta su questo dispositivo.",
+  "shareGameChooseGroup": "Con quale gruppo condividere questa partita? La partita, i suoi giocatori, punteggi e commenti vi verranno inviati. La condivisione non può essere annullata.",
+  "gameSharedWith": "Condivisa con {name}"
 }

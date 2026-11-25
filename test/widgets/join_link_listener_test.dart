@@ -81,15 +81,19 @@ Future<_Harness> _pump(
 final _replaceDialog = find.byType(ReplaceConfigDialog);
 final _anyDialog = find.byType(AlertDialog);
 
-String _text(WidgetTester tester, String key) =>
-    tester.widget<Text>(find.byKey(Key(key))).data!;
+/// The text under [key], one line per [Text].
+String _text(WidgetTester tester, String key) => [
+      for (final t in tester.widgetList<Text>(
+          find.descendant(of: find.byKey(Key(key)), matching: find.byType(Text), matchRoot: true)))
+        t.data!,
+    ].join('\n');
 
 /// The settings a cancelled link must leave as they were.
 Future<void> _expectUntouched(_Harness h) async {
   expect(h.backend.baseUrl, _oldServer);
   expect((await SharedPreferences.getInstance()).getString('backendUrl'), _oldServer);
   expect(h.group.isJoined, isTrue);
-  expect(h.group.token, 'old-invite');
+  expect(h.group.shareToken, 'old-invite');
   expect(h.group.calls, isEmpty, reason: 'no join, leave or server change');
 }
 

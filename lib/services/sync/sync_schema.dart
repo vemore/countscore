@@ -160,7 +160,7 @@ String _op() => "CASE WHEN NEW.deleted_at IS NULL THEN 'upsert' ELSE 'delete' EN
 /// - A game, or a row under one, is queued once, for `NEW.group_id`.
 /// - A player or a game type is queued **once per group it is linked in** — a
 ///   local rename reaches every group (decision 3 of
-///   `wip/todo/2026-11-17-belong-to-several-groups.md`). A rename pulled from
+///   `wip/done/2026-11-17-belong-to-several-groups.md`). A rename pulled from
 ///   one group is applied with `sync_flags.suppress` raised, so it is queued
 ///   for none: it is not relayed to the other groups.
 ///
