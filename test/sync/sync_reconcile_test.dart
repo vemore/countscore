@@ -8,6 +8,7 @@
 
 import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -136,13 +137,22 @@ void main() {
   });
 
   group('GroupProvider on start, after an import', () {
-    GroupProvider provider(GroupServers servers) => GroupProvider(
+    var remoteChanges = 0;
+    setUp(() => remoteChanges = 0);
+
+    GroupProvider provider(GroupServers servers, [SyncCredentials? stored]) => GroupProvider(
           db: db,
-          credentials: credentials,
+          credentials: stored ?? credentials,
           httpClient: servers.client,
+          onRemoteChange: () async => remoteChanges++,
           enableStream: false,
           pollInterval: const Duration(hours: 1),
         );
+
+    Iterable<String> syncCalls(GroupServers servers) => [
+          for (final r in servers.seen)
+            if (r.url.path.startsWith('/sync/')) r.url.path,
+        ];
 
     test('a database naming another group than the token does: no sync under the wrong token',
         () async {
@@ -164,6 +174,82 @@ void main() {
       expect(await store.memberships(), isEmpty);
       expect(await groupOf(inA), isNull, reason: 'kept, as a local game');
       expect(await credentials.groupIds(), isEmpty);
+      expect(remoteChanges, greaterThan(0), reason: 'the games list shows it local');
+    });
+
+    test('a pre-v23 token of another group: the group is left locally, nothing pulled or '
+        'pushed under it', () async {
+      // On the old version this phone was in the old group (its one token
+      // under the two fixed keys), then imported a database of group A. The
+      // upgrade moves that token under A: only the server can tell it is not A's.
+      FlutterSecureStorage.setMockInitialValues({
+        SecureSyncCredentials.legacyDeviceTokenKey: oldDeviceToken,
+        SecureSyncCredentials.legacyShareTokenKey: oldInvite,
+      });
+      final stored = SecureSyncCredentials();
+      await store.join(_membership(_a));
+      final inA = await sharedGame(_a);
+      await addUnsyncedChange(db, _a);
+      final servers = GroupServers();
+      final group = provider(servers, stored);
+      addTearDown(group.dispose);
+
+      await group.updateBackend(oldServer);
+      await idle(group);
+
+      expect(syncCalls(servers), isEmpty, reason: "no pull or push under the old group's token");
+      expect(servers.seen.where((r) => r.url.path == '/groups/me'), isNotEmpty,
+          reason: 'the server was asked whose token it is');
+      expect(group.isJoined, isFalse);
+      expect(group.status, SyncStatus.off);
+      expect(await store.memberships(), isEmpty);
+      expect(await groupOf(inA), isNull, reason: 'kept, as a local game');
+      expect(await count('outbox', _a), 0);
+      expect(await stored.groupIds(), isEmpty);
+      expect(await const FlutterSecureStorage().readAll(), isEmpty,
+          reason: 'the token, its flag and the old keys are all gone');
+      expect(remoteChanges, greaterThan(0));
+    });
+
+    test('a pre-v23 token of the same group is checked once, then syncs', () async {
+      FlutterSecureStorage.setMockInitialValues({
+        SecureSyncCredentials.legacyDeviceTokenKey: oldDeviceToken,
+        SecureSyncCredentials.legacyShareTokenKey: oldInvite,
+      });
+      final stored = SecureSyncCredentials();
+      await store.join(_membership(oldGroupId));
+      final servers = GroupServers();
+      final group = provider(servers, stored);
+      addTearDown(group.dispose);
+
+      await group.updateBackend(oldServer);
+      await idle(group);
+
+      expect(group.isJoined, isTrue);
+      expect(group.status, SyncStatus.idle);
+      expect(syncCalls(servers), contains('/sync/pull'));
+      expect(await stored.needsGroupCheck(oldGroupId), isFalse, reason: 'remembered');
+      expect(await stored.deviceToken(oldGroupId), oldDeviceToken);
+    });
+
+    test('an unanswered check leaves the pass undone, and the membership as it was', () async {
+      FlutterSecureStorage.setMockInitialValues({
+        SecureSyncCredentials.legacyDeviceTokenKey: oldDeviceToken,
+        SecureSyncCredentials.legacyShareTokenKey: oldInvite,
+      });
+      final stored = SecureSyncCredentials();
+      await store.join(_membership(oldGroupId));
+      final servers = GroupServers()..meStatus = 503;
+      final group = provider(servers, stored);
+      addTearDown(group.dispose);
+
+      await group.updateBackend(oldServer);
+      await idle(group);
+
+      expect(syncCalls(servers), isEmpty);
+      expect(group.isJoined, isTrue);
+      expect(group.status, SyncStatus.error);
+      expect(await stored.needsGroupCheck(oldGroupId), isTrue, reason: 'asked again next pass');
     });
 
     test('a database naming the group the token holds syncs as before', () async {

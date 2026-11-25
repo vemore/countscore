@@ -48,9 +48,39 @@ void main() {
     expect(await _stored(), {
       SecureSyncCredentials.deviceTokenKey(_a): 'device-old',
       SecureSyncCredentials.shareTokenKey(_a): 'share-old',
+      SecureSyncCredentials.uncheckedKey(_a): '1',
     });
     expect(await credentials.shareToken(_a), 'share-old');
     expect(await credentials.deviceToken(_b), isNull, reason: 'claimed once, by one group');
+  });
+
+  test('a pair moved from the pre-v23 keys needs a group check, until it is marked', () async {
+    FlutterSecureStorage.setMockInitialValues({
+      SecureSyncCredentials.legacyDeviceTokenKey: 'device-old',
+      SecureSyncCredentials.legacyShareTokenKey: 'share-old',
+    });
+    final credentials = SecureSyncCredentials();
+    await credentials.save(_b, deviceToken: 'device-b', shareToken: 'share-b');
+
+    expect(await credentials.deviceToken(_a), 'device-old');
+    expect(await credentials.needsGroupCheck(_a), isTrue, reason: 'the old pair names no group');
+    expect(await credentials.needsGroupCheck(_b), isFalse, reason: 'saved by a join');
+
+    await credentials.markGroupChecked(_a);
+    expect(await credentials.needsGroupCheck(_a), isFalse);
+    expect(await credentials.groupIds(), {_a, _b});
+  });
+
+  test('clearing a group drops its unchecked flag with its pair', () async {
+    FlutterSecureStorage.setMockInitialValues({
+      SecureSyncCredentials.legacyDeviceTokenKey: 'device-old',
+    });
+    final credentials = SecureSyncCredentials();
+    await credentials.deviceToken(_a);
+
+    await credentials.clear(_a);
+
+    expect(await _stored(), isEmpty);
   });
 
   test('a group that already has a pair keeps it; the legacy one is dropped', () async {

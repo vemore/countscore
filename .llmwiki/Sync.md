@@ -233,7 +233,12 @@ next steps of that plan.
 gets its row replaced: new device id, cursor back to 0, lamport kept). The pre-v23 pair
 (`sync.deviceToken`, `sync.shareToken`) is moved under the first group it is read for, then
 deleted — on start, the one membership an upgraded install has; same code on Android and on
-the web. `SyncCredentials.nickname` is the slot for the one nickname of every group
+the web. That pair names no group (a database imported on the old version may be another
+group's), so it is moved with a flag (`sync.group.<id>.unchecked`), and the first sync pass
+under it asks `GET /groups/me` whose it is before pulling or pushing anything: the same group
+clears the flag for good; another group's token is treated as none — the group is left on this
+device, as below, and the token forgotten; no answer leaves the pass undone and the flag set
+(`GroupProvider._tokenGroupConfirmed`). `SyncCredentials.nickname` is the slot for the one nickname of every group
 (`sync.nickname`, kept when a group is cleared); `GroupProvider` neither writes nor reads it
 yet (`wip/todo_nr/2026-11-25-the-stored-nickname-is-not-read-by-group-provider.md`). Leaving revokes the device when the server answers, then
 `SyncStore.leave(groupId)` turns that group's shared rows back into local ones and deletes
@@ -250,9 +255,11 @@ secure storage holds no token for, or drop ones it does. `reconcileMemberships`
 (`sync_reconcile.dart`), run by `GroupProvider` on start before anything syncs: a group the
 database names — a membership, or a shared row, link or queue entry with no membership — and
 no token is held for is **left locally** (its games stay, as local games); a token for a group
-the database does not name is **forgotten**. Before v23 the one stored token was used for
-whatever group the database named: refused for ever, or another group's queue pushed under it.
-`test/sync/sync_reconcile_test.dart`.
+the database does not name is **forgotten**; a group left this way refreshes the games list.
+It pairs a membership with a token by group id only, so it cannot see that a pre-v23 token
+belongs to another group: the group check above covers that one case. Before v23 the one
+stored token was used for whatever group the database named: refused for ever, or another
+group's queue pushed under it. `test/sync/sync_reconcile_test.dart`.
 
 **Sharing the configuration by QR code (since 2026-09-26).** Settings shows a QR code carrying
 the server and the invite code, and a scanned one opens a "replace the configuration?" dialog
@@ -474,7 +481,10 @@ closed with 1013 before `accept()`. The counter is process memory too (`_open_st
   the server's, which one group alone holds. Credentials are keyed by group id, and the old
   pair is claimed by the one membership on first read. The reconciliation on start is new
   with it: an import used to pair any database with the one token on the device, which is
-  the "sync that 401s for ever" — or worse, a push into the wrong group.
+  the "sync that 401s for ever" — or worse, a push into the wrong group. The review of #290
+  found the one case the reconciliation cannot see — the pre-v23 pair, which names no group,
+  claimed by a group an old-version import brought — hence the one-off `GET /groups/me` check
+  before the first pass under it, rather than trusting the first group read.
 
 - **`max_rounds` follows `keypad_shortcut`, not `rules_slug` (2026-11-17, `feat/max-rounds-chouineurs`).**
   A null is pushed as a clear because emptying the field is a choice, unlike a wiped slug;

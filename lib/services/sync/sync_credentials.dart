@@ -13,7 +13,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 ///
 /// Keyed by group id since schema v23 (`.llmwiki/Sync.md`). The single pair an
 /// older version stored is moved to the first group it is read for, then
-/// deleted: an upgraded install reads it for its one membership on start.
+/// deleted: an upgraded install reads it for its one membership on start. That
+/// pair names no group, though — a database imported on the old version may be
+/// another group's — so a pair moved that way is flagged until the server has
+/// confirmed its group ([needsGroupCheck], `GroupProvider`).
 abstract class SyncCredentials {
   Future<String?> deviceToken(String groupId);
   Future<String?> shareToken(String groupId);
@@ -26,6 +29,14 @@ abstract class SyncCredentials {
 
   /// Forgets [groupId]'s pair. The nickname stays: it is the device's.
   Future<void> clear(String groupId);
+
+  /// Whether [groupId]'s pair came from the pre-v23 keys and the server has
+  /// not yet said it is that group's. Nothing is pulled or pushed under it
+  /// before ([GroupProvider.syncNow]).
+  Future<bool> needsGroupCheck(String groupId);
+
+  /// The server confirmed [groupId]'s pair: [needsGroupCheck] is false for good.
+  Future<void> markGroupChecked(String groupId);
 
   /// The groups a device token is stored for.
   Future<Set<String>> groupIds();
@@ -52,10 +63,12 @@ class SecureSyncCredentials implements SyncCredentials {
   static const _groupPrefix = 'sync.group.';
   static const _deviceSuffix = '.deviceToken';
   static const _shareSuffix = '.shareToken';
+  static const _uncheckedSuffix = '.unchecked';
   static const _nicknameKey = 'sync.nickname';
 
   static String deviceTokenKey(String groupId) => '$_groupPrefix$groupId$_deviceSuffix';
   static String shareTokenKey(String groupId) => '$_groupPrefix$groupId$_shareSuffix';
+  static String uncheckedKey(String groupId) => '$_groupPrefix$groupId$_uncheckedSuffix';
 
   @override
   Future<String?> deviceToken(String groupId) => _read(deviceTokenKey(groupId), groupId);
@@ -71,13 +84,15 @@ class SecureSyncCredentials implements SyncCredentials {
   }
 
   /// Moves the pre-v23 pair under [groupId], unless that group already has a
-  /// pair, then deletes it. Written before it is deleted, so an interruption
-  /// leaves the token in one place at least. True when a pair was found.
+  /// pair, flagged for a group check; then deletes it. Written before it is
+  /// deleted, so an interruption leaves the token in one place at least. True
+  /// when a pair was found.
   Future<bool> _adoptLegacy(String groupId) async {
     final device = await _storage.read(key: legacyDeviceTokenKey);
     final share = await _storage.read(key: legacyShareTokenKey);
     if (device == null && share == null) return false;
     if (device != null && await _storage.read(key: deviceTokenKey(groupId)) == null) {
+      await _storage.write(key: uncheckedKey(groupId), value: '1');
       await _storage.write(key: deviceTokenKey(groupId), value: device);
       if (share != null) await _storage.write(key: shareTokenKey(groupId), value: share);
     }
@@ -108,7 +123,16 @@ class SecureSyncCredentials implements SyncCredentials {
   Future<void> clear(String groupId) async {
     await _storage.delete(key: deviceTokenKey(groupId));
     await _storage.delete(key: shareTokenKey(groupId));
+    await _storage.delete(key: uncheckedKey(groupId));
   }
+
+  @override
+  Future<bool> needsGroupCheck(String groupId) async =>
+      await _storage.read(key: uncheckedKey(groupId)) != null;
+
+  @override
+  Future<void> markGroupChecked(String groupId) =>
+      _storage.delete(key: uncheckedKey(groupId));
 
   @override
   Future<Set<String>> groupIds() => _groupsWith(const [_deviceSuffix]);
@@ -129,7 +153,8 @@ class SecureSyncCredentials implements SyncCredentials {
   @override
   Future<Set<String>> retainOnly(Set<String> groupIds) async {
     final forgotten =
-        (await _groupsWith(const [_deviceSuffix, _shareSuffix])).difference(groupIds);
+        (await _groupsWith(const [_deviceSuffix, _shareSuffix, _uncheckedSuffix]))
+            .difference(groupIds);
     for (final groupId in forgotten) {
       await clear(groupId);
     }
@@ -149,6 +174,7 @@ class SecureSyncCredentials implements SyncCredentials {
 class MemorySyncCredentials implements SyncCredentials {
   final _device = <String, String>{};
   final _share = <String, String>{};
+  final _unchecked = <String>{};
   String? _nickname;
 
   @override
@@ -175,7 +201,14 @@ class MemorySyncCredentials implements SyncCredentials {
   Future<void> clear(String groupId) async {
     _device.remove(groupId);
     _share.remove(groupId);
+    _unchecked.remove(groupId);
   }
+
+  @override
+  Future<bool> needsGroupCheck(String groupId) async => _unchecked.contains(groupId);
+
+  @override
+  Future<void> markGroupChecked(String groupId) async => _unchecked.remove(groupId);
 
   @override
   Future<Set<String>> groupIds() async => _device.keys.toSet();

@@ -34,6 +34,9 @@ class GroupServers {
   /// The status `POST /groups` answers.
   int createStatus = 200;
 
+  /// The status `GET /groups/me` answers.
+  int meStatus = 200;
+
   /// Device tokens the server refuses (401): devices the owner revoked.
   final revokedTokens = <String>{};
 
@@ -67,6 +70,8 @@ class GroupServers {
           case '/groups':
             return json({'detail': 'down'}, createStatus);
           case '/groups/me':
+            final status = meStatus;
+            if (status != 200) return json({'detail': 'down'}, status);
             return json({'id': oldGroupId, 'owner_device_id': oldDeviceId});
           case '/groups/me/devices':
             return json({'devices': []});
