@@ -69,6 +69,11 @@ field**, ordered lexicographically by `(client_lamport, origin_device_id)`.
 5. **A delete wins.** An upsert on a tombstoned row, or on a uuid the group's log holds a
    delete for, is `merged_lww` and writes nothing, whatever its lamport. A payload cannot
    set `deleted_at`, `group_id`, `id`, `created_at` or `updated_at`.
+   **Except a `game_player`** (`_apply_game_player`): keyed by `(game, player)`, hard-deleted,
+   with no LWW and no delete check, every upsert is `applied` and re-creates the row — an
+   edit that lost to a removal brings the player back into the server's table, which the
+   group commentary reads. The devices keep the removal (*Pull* below);
+   `wip/todo_nr/2026-11-25-the-server-applies-a-membership-upsert-over-its-delete.md`.
 6. Unique rules (round number, score slot, player and game-type names, one analysis per
    game) apply to **live rows only** and are checked before the write, so a clash comes
    back as a stable reason code rather than a driver error — codes in [[Api]]. A player's
@@ -266,7 +271,7 @@ every group (`sync.nickname`, kept when a group is cleared): *The nickname* belo
 group (`GroupProvider.leaveGroup`; `leave()` leaves every group) revokes the device there when
 the server answers, then
 `SyncStore.leave(groupId)` turns that group's shared rows back into local ones and deletes
-that group's `outbox`, `group_links`, `entity_versions`, `sync_inbox` and `sync_state` rows,
+that group's `outbox`, `group_links`, `entity_versions`, `game_player_aliases`, `sync_inbox` and `sync_state` rows,
 and nothing of another group's. Tombstones with nobody left to inform go for good, game types
 among them: a game-type tombstone no game points at is deleted, or it would hold its
 `builtin_key` reserved against the seed for ever — unless another group still links it (a
@@ -419,7 +424,23 @@ always applies, tombstones the row and its children, and drops pending outbox ro
 A pulled player or game type links to the local one of the same name or is created. A
 pulled `game_type` delete tombstones the linked local row — unless a live game still plays
 it, which may be a local game the group never saw, and then the row stays (`_applyGameType`).
-An upsert for a type this device has already tombstoned is ignored, as on the server. A delta
+An upsert for a type this device has already tombstoned is ignored, as on the server.
+**A membership** (`_applyGamePlayer`, since 2026-11-25) is matched by its uuid — its own
+row, or the row it was merged into (`game_player_aliases`, schema v24): an upsert of a
+tombstoned one changes nothing, whatever its lamport, and a delete of one leaves the player
+added back since alone. A player removed and added back is a new membership under a new uuid
+([[Schema]]), inserted beside the tombstone. A uuid never seen here is merged into the pair's
+live row — the same player added on two devices, each under its own uuid — and the alias
+kept, or, with none, inserted. A uuid seen with no row nor alias (merged before v24), and the
+delete of a uuid never seen (added and removed elsewhere before a sync), reach the live row
+only while the pair holds no tombstone. A score pulled for a player whose
+membership was removed, with none live, is dropped rather than queued: a membership added
+back later pushes its own scores after itself.
+**A pre-v24 device in the group** still revives the tombstoned row when it pulls a membership
+added back, under the old uuid; its later edit or removal of that player goes out under that
+uuid, which v24 devices hold as a tombstone and ignore. Nothing on the v24 side can tell that
+from a stale edit, so the devices disagree until it upgrades
+(`wip/todo_nr/2026-11-25-a-pre-v24-device-revives-a-removed-membership.md`). A delta
 whose parent is not local yet waits in `sync_inbox` under its group, replayed after every page
 of that group's pull only. Versions are recorded under the group they were learnt in. The
 local lamport is raised past every lamport seen.
@@ -527,6 +548,14 @@ closed with 1013 before `accept()`. The counter is process memory too (`_open_st
 `cost_cents`), `change_log`, `rate_limits`. Colour columns are `BIGINT`.
 
 ## Decisions & History
+
+- **A pulled membership upsert keeps the delete (2026-11-25, `fix/pulled-membership-keeps-delete`).**
+  `_applyGamePlayer` matched the `(game, player)` row tombstones included and cleared
+  `deleted_at`: an edit the removal had beaten, pulled under a higher lamport (the editing
+  device's clock was ahead), brought the player back on the device that removed it and on no
+  other. The other `_apply…` branches already skipped a tombstone. Leaving it tombstoned meant
+  a player added back needs a new uuid, so v24 lets a second row exist ([[Schema]]); the
+  re-add had in fact never worked on a shared game — the v9 index refused the insert.
 
 - **A restored database applies the own deltas it never stamped (2026-11-25,
   `fix/restored-device-own-deltas`).** The pull skipped every delta whose origin was this

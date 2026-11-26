@@ -7,24 +7,24 @@
 This page was `SchemaV9`, then `SchemaV10` (2026-09-13); each rename after a version
 bump left the name a step behind (v11 the same day, v12–v14 on 2026-09-16, v15 on
 2026-09-18, v16 on 2026-09-19, v17–v18 on 2026-09-20, v19 on 2026-09-22, v20–v21 on
-2026-09-24, v22 on 2026-11-17, v23 on 2026-11-25). Renamed to `Schema` (2026-09-26, `feat/wiki-lint`) so the name never
+2026-09-24, v22 on 2026-11-17, v23 and v24 on 2026-11-25). Renamed to `Schema` (2026-09-26, `feat/wiki-lint`) so the name never
 drifts from the version again; every version to date is still described here.
 
 ## Facts
 
-Schema version **23**, declared in two places that must stay in sync:
-`lib/services/drift/database.dart` (`schemaVersion => 23`) and
+Schema version **24**, declared in two places that must stay in sync:
+`lib/services/drift/database.dart` (`schemaVersion => 24`) and
 `DatabaseService.schemaVersion` in `lib/services/database_service.dart`, which both
 `openDatabase` calls use.
 
-### Tables (12)
+### Tables (13)
 
 | Table | Role |
 |---|---|
 | `game_types` | Game types. uuid + sync columns, `rules` and `rules_slug` since v13 (re-derived from `builtin_key` by v18 and v19), `builtin_key` since v14 (given back by v19 to the rows that missed it), one live row per `builtin_key` since v15, `keypad_shortcut` since v21, `max_rounds` since v22. `isDefault` is historical only — see below. |
 | `games` | Games. uuid, `group_id`, sync columns, `finishedAt` since v12. |
 | `players` | **Global identity**: `(id, name, colorValue, uuid, group_id, …)`. UNIQUE on `name COLLATE NOCASE` where `group_id IS NULL`. |
-| `game_players` | **Per-game membership**: `(id, gameId, player_id FK→players, name, orderIndex, colorValue, uuid, …)`. UNIQUE `(gameId, player_id)`. |
+| `game_players` | **Per-game membership**: `(id, gameId, player_id FK→players, name, orderIndex, colorValue, uuid, …)`. UNIQUE `(gameId, player_id)` **among live rows** (`idx_game_players_live`, since v24): a player removed from a shared game and added back is a second row, under a new uuid, beside the tombstone of the first. |
 | `rounds` | `(gameId FK, roundNumber, comment, …)`. |
 | `scores` | `(playerId FK→game_players.id, roundId FK, value, …)`. |
 | `outbox` | Local sync queue `(entity_type, client_lamport, sent_at)`, plus `rejected_at`, `reject_reason` since v10, and `group_id` since v23 — the group the row is queued for; a player or game type linked into two groups is queued once for each. Written by the capture triggers ([[Sync]]). |
@@ -32,6 +32,7 @@ Schema version **23**, declared in two places that must stay in sync:
 | `game_analyses` | ZapZap analysis cache. `gameId` UNIQUE, `content`, `modelId`, sync columns. |
 | `group_links` | v10. `(group_id, entity_type, local_uuid) → remote_uuid`, UNIQUE on the remote side: how a local player or game type is known in a group, since those merge by name. |
 | `entity_versions` | v10. `(entity_type, entity_uuid) → (lamport, origin_device_id)`: the last writer of each synced entity, for client-side LWW. `group_id` since v23, the group it was learnt in; the key is unchanged (the uuid is the server's, held by one group only). |
+| `game_player_aliases` | v24. `alias_uuid → game_player_uuid`, with `group_id`: a membership another device added under its own uuid, merged into the row this device already had for that player in that game. A later delete or edit of the alias reaches that row only (`_applyGamePlayer`, [[Sync]]). Emptied for a group by `leave`. |
 | `sync_inbox` | v10. Pulled deltas waiting for a parent that has not arrived, with the reason. `group_id` since v23: replayed by that group's pull only. |
 
 Local key is `INTEGER AUTOINCREMENT`; the UUID is the logical key for sync. Every entity
@@ -259,7 +260,7 @@ Drift's `onUpgrade` is **not** a no-op any more. Native still never reaches it �
 migrated the file first — but a browser keeps its database across PWA releases, and the PWA
 has been in production at v9 since 2026-09-13. `onUpgrade` runs `applySyncV10` for
 `from < 10`, the v11 statements for `from < 11`, then each `applyVN` for `from < N`, from
-`applyV12` to `applyV23`: the same SQL sqflite runs, from `sync_schema.dart` (v10, v11) and
+`applyV12` to `applyV24`: the same SQL sqflite runs, from `sync_schema.dart` (v10, v11) and
 `schema_steps.dart` (v12 on). Covered by `test/drift/web_upgrade_test.dart` and the
 `test/migration_v*_test.dart` files, which run both engines' upgrade callbacks.
 
@@ -268,7 +269,8 @@ has been in production at v9 since 2026-09-13. `onUpgrade` runs `applySyncV10` f
 `deleted_at` is live. `lib/repositories/drift/drift_repositories.dart` deletes a row
 outright when its `group_id` is NULL, exactly as before, and **tombstones** it otherwise —
 a shared game with its rounds, scores, memberships and analysis; a shared round with its
-scores; a shared membership with its scores. `deleteByName` tombstones the global player
+scores; a shared membership with its scores. A membership is never revived: adding the player
+back inserts a new one (v24), so the tombstone keeps winning over a late edit of the old one. `deleteByName` tombstones the global player
 only when a shared membership still points at it. Every read of games, game types, rounds,
 scores and analyses filters `deleted_at IS NULL`, and the statistics join only live games
 and scores. Deleting a game type ignores tombstoned games; their `gameTypeId` is cleared only when
@@ -297,6 +299,7 @@ pointing at it ([[Sync]]).
 | **v21** | **`game_types.keypad_shortcut`** (TEXT, nullable): the score keypad's per-type key, a value or an operation, as compact JSON. `applyV21` in `lib/services/schema_steps.dart`, run by both engines on upgrade: adds the column, then fills the live rows keyed `zapzap`, `skyjo`, `belote`, `scrabble`, `rami` from `keypadShortcutSeeds()` where it is NULL, with capture suppressed so nothing is pushed. Additive; `UPDATE`s only, nothing inserted, deleted or renamed rows untouched. Pushed as `keypad_shortcut` by later edits; the server gained it in `0006_game_type_keypad_shortcut`. `test/migration_v20_to_v21_test.dart`. |
 | **v22** | **`game_types.max_rounds`** (INTEGER, nullable): the game is over after this many rounds, OR-ed with the total condition. `applyV22` in `lib/services/schema_steps.dart`, run by both engines on upgrade: adds the column, fills `maxRoundsSeeds()` (Chouineurs, 4) only in the run that adds it, and inserts the built-in **Chouineurs** when no row holds its key and no live row its name. Capture suppressed, `updated_at` untouched. No back-fill of the other built-ins. The server gained the column in `0007_game_type_max_rounds`. `test/migration_v21_to_v22_test.dart`. |
 | **v23** | **The sync queue tells groups apart.** `group_id` TEXT on `outbox`, `sync_inbox` and `entity_versions` (`syncTablesByGroup`). `applyV23` in `lib/services/schema_steps.dart`, run by both engines on upgrade and by both fresh-install paths: adds each column, and **only in the run that adds it** back-fills it from the one membership an upgraded install has (`sync_state` with a `device_id`, first by rowid), then deletes a row no membership claims; indexes `idx_outbox_group_unsent`, `idx_sync_inbox_group_seq`, `idx_entity_versions_group`; then drops and re-creates the `trg_sync_*` capture triggers (`syncV23CaptureStatements` in `sync_schema.dart`): a game and its children are queued for `NEW.group_id`, a player or game type once per `group_links` row. `test/migration_v22_to_v23_test.dart`. |
+| **v24** | **One live membership per `(game, player)`.** `applyV24` in `lib/services/schema_steps.dart`, run by both engines on upgrade: drops `idx_game_players_unique` (v9, over every row) and creates `idx_game_players_live` `WHERE deleted_at IS NULL` (`gamePlayersLiveIndex`), and creates `game_player_aliases`. Both fresh-install paths run it too, so a PWA that lost its `user_version` and reruns `onCreate` drops the v9 index as well. Until then a player removed from a shared game — a tombstone — could not be added back: the insert failed `UNIQUE constraint failed`. No data change. `test/migration_v23_to_v24_test.dart`, `test/drift/persistence_flush_test.dart`. |
 | v10 | **Sync bookkeeping**: `group_links`, `entity_versions`, `sync_inbox`; `outbox.rejected_at` / `reject_reason`; `sync_state.device_id` / `group_name`. Additive only — `_createSyncV10Tables` is the fresh-install and the upgrade path at once. |
 
 ### The v9 migration in detail
@@ -328,6 +331,23 @@ Added in `b340c98`. Some installs recorded version 8 while still carrying pre-v6
 repairs the shape before the rest of the chain runs.
 
 ## Decisions & History
+
+- **v24: a membership added back is a new row, not the tombstone revived (2026-11-25, `fix/pulled-membership-keeps-delete`).**
+  A pulled upsert of a tombstoned membership must leave it deleted — a delete wins, as on the
+  server ([[Sync]]) — so the uuid of a removed membership can never come back to life. Adding
+  the player back therefore needs a second uuid, and either a second row (this index) or the
+  tombstone revived under a new uuid. Reviving was rejected: the old uuid's row is gone, so its
+  delete still queued offline builds nothing and never leaves, and a late delete of the old
+  uuid can no longer tell "removed before the re-add" from "merged into this row" and removes
+  the player added back on some devices only. The server accepts the new uuid, but it keys a
+  membership by `(game, player)` and ignores the uuid, so its own `game_players` — which
+  `backend/app/routes/comments.py` reads for the group commentary — can diverge from the
+  devices': `wip/todo_nr/2026-11-25-the-server-applies-a-membership-upsert-over-its-delete.md`.
+  The alias table came with the review of #295: merging a second device's uuid into this
+  device's row, then falling back on `(game, player)` for that uuid, reached the membership
+  added back since. The players' equivalent problem
+  (`wip/todo_nr/2026-11-24-a-shared-player-deleted-cannot-be-created-again.md`) leans the
+  other way, reviving the row, because a player keeps its uuid across a revival.
 
 - **v23 back-fills from the membership, and only once (2026-11-25, `feat/multi-group-storage`).**
   Before v23 `join` emptied `sync_state` and `leave` emptied every sync table, so whatever an

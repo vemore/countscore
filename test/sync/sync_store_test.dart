@@ -156,6 +156,27 @@ void main() {
       expect((await outbox()).map((r) => r['entity_type']), containsAll(['round', 'score']));
     });
 
+    test('a player removed from a shared game and added back is a new membership; '
+        'the old one is pushed deleted, first', () async {
+      final m = await joined();
+      final g = await localGame();
+      await store.shareGame(g.game, m.groupId);
+      for (final d in await store.preparePush(m)) {
+        await store.markSent(d, m.deviceId);
+      }
+      expect(await store.preparePush(m), isEmpty);
+
+      await players.delete(g.alice);
+      final back = await players.create(Player(gameId: g.game, name: 'Alice', orderIndex: 2));
+
+      expect(back, isNot(g.alice));
+      expect([for (final p in await players.getByGame(g.game)) p.name], ['Bob', 'Alice']);
+      final memberships = (await store.preparePush(m)).where((d) => d.entityType == 'game_player');
+      expect([for (final d in memberships) d.op], ['delete', 'upsert']);
+      expect(memberships.first.entityUuid, isNot(memberships.last.entityUuid));
+      expect(memberships.first.payload['player_id'], memberships.last.payload['player_id']);
+    });
+
     test('deleting a shared round is captured as a delete', () async {
       final m = await joined();
       final g = await localGame();
@@ -973,6 +994,228 @@ void main() {
       await store.applyPulled(m, [_delta('game', uuid, 50, 3, {'name': 'Retour ?'})], 3);
 
       expect(await games.getAll(), isEmpty);
+    });
+
+    group('a membership', () {
+      // pullGameFromOther's Alice: her membership, her game, her player.
+      const membership = 'aaaaaaaa-0000-4000-8000-000000000003';
+      const game = 'aaaaaaaa-0000-4000-8000-000000000002';
+      const alice = 'aaaaaaaa-0000-4000-8000-000000000001';
+      const keys = {'game_id': game, 'player_id': alice};
+
+      Future<List<Map<String, Object?>>> rows() async => [
+            for (final r in await db
+                .customSelect('SELECT uuid, colorValue, deleted_at FROM game_players ORDER BY id')
+                .get())
+              r.data,
+          ];
+
+      Future<List<String>> names() async =>
+          [for (final p in await players.getByGame((await games.getAll()).single.id!)) p.name];
+
+      test('a pulled upsert of a tombstoned one, with a higher lamport than the delete, '
+          'leaves it deleted', () async {
+        final m = await joined();
+        await pullGameFromOther(m);
+        await store.applyPulled(m, [_delta('game_player', membership, 6, 6, keys, op: 'delete')], 6);
+        // The other device's clock was ahead: its colour edit outranks the delete.
+        await store.applyPulled(m, [
+          _delta('game_player', membership, 50, 7, {...keys, 'order_index': 0, 'color_value': 0xFF4CAF50}),
+        ], 7);
+
+        expect(await names(), isEmpty);
+        expect((await rows()).single['deleted_at'], isNotNull);
+        expect((await rows()).single['colorValue'], isNot(0xFF4CAF50));
+      });
+
+      test('added back on another device: a new membership, the old one stays deleted', () async {
+        final m = await joined();
+        await pullGameFromOther(m);
+        const back = 'aaaaaaaa-0000-4000-8000-000000000006';
+        await store.applyPulled(m, [
+          _delta('game_player', membership, 6, 6, keys, op: 'delete'),
+          _delta('game_player', back, 7, 7, {...keys, 'order_index': 1, 'color_value': 0xFF2196F3}),
+          _delta('score', 'aaaaaaaa-0000-4000-8000-000000000008', 8, 8, {
+            'round_id': 'aaaaaaaa-0000-4000-8000-000000000004',
+            'player_id': alice,
+            'value': 3,
+          }),
+        ], 8);
+
+        expect(await names(), ['Alice']);
+        expect([for (final r in await rows()) (r['uuid'], r['deleted_at'] == null)],
+            [(membership, false), (back, true)]);
+        final game = (await games.getAll()).single;
+        final gp = (await players.getByGame(game.id!)).single;
+        expect(gp.colorValue, 0xFF2196F3);
+        expect(
+            (await scores.getByPlayerAndRound(gp.id!, (await rounds.getByGame(game.id!)).single.id!))
+                ?.value,
+            3,
+            reason: 'her score in the new membership, not the 12 the old one had');
+
+        // A stale edit of the old membership, and a late delete of it, leave
+        // the new one as it is.
+        await store.applyPulled(m, [
+          _delta('game_player', membership, 60, 9, {...keys, 'order_index': 0, 'color_value': 0xFF000000}),
+          _delta('game_player', membership, 61, 10, keys, op: 'delete', origin: _me),
+        ], 10);
+        expect(await names(), ['Alice']);
+        expect((await players.getByGame(game.id!)).single.colorValue, 0xFF2196F3);
+      });
+
+      test('added back here, then the delete of a membership never seen (added and removed '
+          'elsewhere before a sync) leaves her', () async {
+        final m = await joined();
+        await pullGameFromOther(m);
+        const back = 'aaaaaaaa-0000-4000-8000-000000000006';
+        await store.applyPulled(m, [
+          _delta('game_player', membership, 6, 6, keys, op: 'delete'),
+          _delta('game_player', back, 7, 7, {...keys, 'order_index': 1}),
+        ], 7);
+
+        await store.applyPulled(m, [
+          _delta('game_player', 'aaaaaaaa-0000-4000-8000-00000000000a', 9, 8, keys, op: 'delete'),
+        ], 8);
+
+        expect(await names(), ['Alice']);
+      });
+
+      test('the delete of a membership never seen still removes her while nobody was '
+          'removed: the same player added on two devices', () async {
+        final m = await joined();
+        await pullGameFromOther(m);
+
+        await store.applyPulled(m, [
+          _delta('game_player', 'aaaaaaaa-0000-4000-8000-00000000000a', 9, 6, keys, op: 'delete'),
+        ], 6);
+
+        expect(await names(), isEmpty);
+      });
+
+      test('one merged into this device\'s, then removed, is not brought back by a stale edit',
+          () async {
+        final m = await joined();
+        await pullGameFromOther(m);
+        // A third device added Alice too, under its own uuid: merged into hers here.
+        const twin = 'aaaaaaaa-0000-4000-8000-000000000007';
+        await store.applyPulled(m, [
+          _delta('game_player', twin, 6, 6, {...keys, 'order_index': 0}),
+        ], 6);
+        expect((await rows()).map((r) => r['uuid']), [membership]);
+
+        await store.applyPulled(m, [_delta('game_player', membership, 7, 7, keys, op: 'delete')], 7);
+        await store.applyPulled(m, [
+          _delta('game_player', twin, 50, 8, {...keys, 'order_index': 0, 'color_value': 0xFF4CAF50}),
+        ], 8);
+
+        expect(await names(), isEmpty);
+      });
+
+      /// X's game with no membership yet, then Alice added here under this
+      /// device's own uuid, then X's membership of her (uuid [membership])
+      /// pulled: merged into hers. Returns the game's local id.
+      Future<int> aliceAddedOnBoth(SyncMembership m) async {
+        await store.applyPulled(m, [
+          _delta('player', alice, 1, 1, {'name': 'Alice', 'name_normalized': normalizeName('Alice')}),
+          _delta('game', game, 2, 2, {'name': 'Chez Bob', 'started_at': '2026-09-13T18:00:00Z'}),
+          _delta('round', 'aaaaaaaa-0000-4000-8000-000000000004', 3, 3,
+              {'game_id': game, 'round_number': 1}),
+        ], 3);
+        final id = (await games.getAll()).single.id!;
+        await players.create(Player(gameId: id, name: 'Alice', orderIndex: 0));
+        await store.applyPulled(m, [
+          _delta('game_player', membership, 4, 4, {...keys, 'order_index': 0}),
+        ], 4);
+        expect((await rows()).map((r) => r['uuid']), isNot(contains(membership)),
+            reason: 'merged, not inserted beside hers');
+        return id;
+      }
+
+      test('merged into this device\'s, then removed and added back here: its late delete '
+          'and its stale edit leave the new membership alone', () async {
+        final m = await joined();
+        final id = await aliceAddedOnBoth(m);
+        final mine = (await players.getByGame(id)).single;
+        await players.delete(mine.id!);
+        final back = await players.create(Player(gameId: id, name: 'Alice', orderIndex: 1));
+        final round = (await rounds.getByGame(id)).single.id!;
+        await scores.create(Score(playerId: back, roundId: round, value: 5));
+
+        // X, offline, removed the membership it knew — its own uuid — and
+        // later edited it under a clock well ahead.
+        await store.applyPulled(m, [
+          _delta('game_player', membership, 9, 5, keys, op: 'delete'),
+          _delta('game_player', membership, 60, 6,
+              {...keys, 'order_index': 0, 'color_value': 0xFF000000}),
+        ], 6);
+
+        final now = (await players.getByGame(id)).single;
+        expect(now.id, back);
+        expect(now.colorValue, isNot(0xFF000000));
+        expect((await scores.getByPlayerAndRound(back, round))?.value, 5);
+      });
+
+      test('merged into this device\'s: a delete of it still removes her', () async {
+        final m = await joined();
+        final id = await aliceAddedOnBoth(m);
+
+        await store.applyPulled(m, [_delta('game_player', membership, 9, 5, keys, op: 'delete')], 5);
+
+        expect(await players.getByGame(id), isEmpty);
+      });
+
+      test('merged before v24 kept aliases: its delete reaches the live row while '
+          'nobody was removed, and not the one added back', () async {
+        final m = await joined();
+        final id = await aliceAddedOnBoth(m);
+        await db.customStatement('DELETE FROM game_player_aliases');
+
+        // Removed and added back here: the pair holds a tombstone, so the
+        // old merged uuid can no longer tell which row it meant.
+        final mine = (await players.getByGame(id)).single;
+        await players.delete(mine.id!);
+        final back = await players.create(Player(gameId: id, name: 'Alice', orderIndex: 1));
+        await store.applyPulled(m, [_delta('game_player', membership, 9, 5, keys, op: 'delete')], 5);
+        expect([for (final p in await players.getByGame(id)) p.id], [back]);
+      });
+
+      test('merged before v24 kept aliases, nobody removed: its delete removes her', () async {
+        final m = await joined();
+        final id = await aliceAddedOnBoth(m);
+        await db.customStatement('DELETE FROM game_player_aliases');
+
+        await store.applyPulled(m, [_delta('game_player', membership, 9, 5, keys, op: 'delete')], 5);
+
+        expect(await players.getByGame(id), isEmpty);
+      });
+
+      test('a score pulled for a removed membership is dropped, not kept for one added back',
+          () async {
+        final m = await joined();
+        await pullGameFromOther(m);
+        await store.applyPulled(m, [_delta('game_player', membership, 6, 6, keys, op: 'delete')], 6);
+
+        final report = await store.applyPulled(m, [
+          _delta('score', 'aaaaaaaa-0000-4000-8000-000000000009', 7, 7, {
+            'round_id': 'aaaaaaaa-0000-4000-8000-000000000004',
+            'player_id': alice,
+            'value': 40,
+          }),
+        ], 7);
+        expect(report.quarantined, 0);
+        final inbox = await db.customSelect('SELECT COUNT(*) AS c FROM sync_inbox').getSingle();
+        expect(inbox.data['c'], 0);
+
+        const back = 'aaaaaaaa-0000-4000-8000-000000000006';
+        await store.applyPulled(m, [
+          _delta('game_player', back, 8, 8, {...keys, 'order_index': 0}),
+        ], 8);
+        final g = (await games.getAll()).single.id!;
+        final gp = (await players.getByGame(g)).single;
+        expect(await scores.getByPlayerAndRound(gp.id!, (await rounds.getByGame(g)).single.id!),
+            isNull);
+      });
     });
 
     group('this device\'s own deltas', () {

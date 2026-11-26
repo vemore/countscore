@@ -20,6 +20,7 @@ import 'package:sqlite3/sqlite3.dart' as sqlite3;
 
 import 'package:countscore/models/game.dart';
 import 'package:countscore/models/game_type.dart';
+import 'package:countscore/models/player.dart';
 import 'package:countscore/repositories/drift/drift_repositories.dart';
 import 'package:countscore/services/drift/connection/persistence_flush.dart';
 import 'package:countscore/services/drift/database.dart';
@@ -145,5 +146,42 @@ void main() {
 
     final version = await db.customSelect('PRAGMA user_version').getSingle();
     expect(version.data.values.single, db.schemaVersion);
+  });
+
+  test('onCreate rerun on a database that still has the v9 membership index replaces it',
+      () async {
+    final dir = await Directory.systemTemp.createTemp('countscore_reload_v24_');
+    addTearDown(() => dir.delete(recursive: true));
+    final file = File('${dir.path}/countscore.sqlite');
+
+    final first = AppDatabase.forTesting(NativeDatabase(file));
+    final game = await DriftGameRepository(first)
+        .create(Game(name: 'Partagée', isLowestScoreWins: false));
+    final alice = await DriftPlayerRepository(first)
+        .create(Player(gameId: game, name: 'Alice', orderIndex: 0));
+    await first.close();
+
+    // A browser that kept a v23 file — the v9 index, Alice removed from a
+    // shared game as a tombstone — and lost its version.
+    final raw = sqlite3.sqlite3.open(file.path);
+    raw.execute('DROP INDEX idx_game_players_live');
+    raw.execute('DROP TABLE game_player_aliases');
+    raw.execute(
+        'CREATE UNIQUE INDEX idx_game_players_unique ON game_players(gameId, player_id)');
+    raw.execute('UPDATE game_players SET deleted_at = 1 WHERE id = $alice');
+    raw.execute('PRAGMA user_version = 0');
+    raw.close();
+
+    final db = AppDatabase.forTesting(NativeDatabase(file));
+    addTearDown(db.close);
+
+    final players = DriftPlayerRepository(db);
+    await players.create(Player(gameId: game, name: 'Alice', orderIndex: 1));
+    expect([for (final p in await players.getByGame(game)) p.name], ['Alice']);
+    final old = await db
+        .customSelect("SELECT 1 FROM sqlite_master WHERE name = 'idx_game_players_unique'")
+        .get();
+    expect(old, isEmpty);
+    await db.customSelect('SELECT COUNT(*) FROM game_player_aliases').getSingle();
   });
 }

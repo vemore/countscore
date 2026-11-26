@@ -3,7 +3,7 @@
 // database. Drift's onUpgrade must then bring it to the current schema itself.
 //
 // Simulated on a native file: build the current schema, strip everything v10,
-// v11, v12, v13, v14, v15, v16, v21, v22 and v23 added, stamp user_version 9,
+// v11, v12, v13, v14, v15, v16, v21, v22, v23 and v24 added, stamp user_version 9,
 // and reopen through Drift.
 // v17, v18 and v19 add no column: v17 finds no keyless copy to dedupe, v18
 // replays the v16 back-fill, which has nothing left to fill, and v19 finds no
@@ -11,7 +11,8 @@
 // `keypad_shortcut`, and fills it on the five built-ins that have one. v22 adds
 // `max_rounds`, and gives 4 to the Chouineurs v14 inserted without it. v23 adds
 // `group_id` to `outbox`, `sync_inbox` and `entity_versions` (the last two are
-// dropped whole here, as v10 created them).
+// dropped whole here, as v10 created them). v24 makes the one-membership-per-
+// player index hold over live rows only; v9 created it over every row.
 
 import 'dart:io';
 
@@ -46,6 +47,9 @@ void main() {
       await raw.execute('DROP TABLE $table');
     }
     await raw.execute('DROP INDEX idx_outbox_group_unsent');
+    await raw.execute('DROP INDEX idx_game_players_live');
+    await raw.execute(
+        'CREATE UNIQUE INDEX idx_game_players_unique ON game_players(gameId, player_id)');
     for (final column in ['rejected_at', 'reject_reason', 'group_id']) {
       await raw.execute('ALTER TABLE outbox DROP COLUMN $column');
     }
@@ -127,6 +131,13 @@ void main() {
             variables: [const Variable(gameTypesBuiltinKeyIndex)])
         .get();
     expect(index, hasLength(1));
+    // v24: the membership index holds over live rows only, under its new name.
+    final memberships = await db
+        .customSelect("SELECT name, sql FROM sqlite_master WHERE type = 'index' "
+            "AND name IN ('idx_game_players_unique', 'idx_game_players_live')")
+        .get();
+    expect(memberships.single.data['name'], 'idx_game_players_live');
+    expect(memberships.single.data['sql'], contains('WHERE deleted_at IS NULL'));
     final captureTriggers = await db
         .customSelect("SELECT COUNT(*) AS c FROM sqlite_master WHERE type = 'trigger'")
         .getSingle();

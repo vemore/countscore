@@ -238,7 +238,10 @@ class SyncStore {
         'AND uuid NOT IN ($_linkedElsewhere)',
         ['game_type', groupId],
       );
-      for (final table in ['outbox', 'group_links', 'entity_versions', 'sync_inbox', 'sync_state']) {
+      for (final table in [
+        'outbox', 'group_links', 'entity_versions', 'game_player_aliases', 'sync_inbox', //
+        'sync_state',
+      ]) {
         await _db.customStatement('DELETE FROM $table WHERE group_id = ?', [groupId]);
       }
       await _setSuppress(false);
@@ -253,7 +256,7 @@ class SyncStore {
     final named = [
       for (final table in [
         'games', 'game_players', 'rounds', 'scores', 'game_analyses', //
-        'group_links', 'outbox', 'sync_inbox', 'entity_versions',
+        'group_links', 'outbox', 'sync_inbox', 'entity_versions', 'game_player_aliases',
       ])
         'SELECT group_id FROM $table WHERE group_id IS NOT NULL',
     ].join(' UNION ');
@@ -938,7 +941,7 @@ class SyncStore {
       'player' => await _applyPlayer(m.groupId, d),
       'game_type' => await _applyGameType(m.groupId, d),
       'game' => await _applyGame(m.groupId, d),
-      'game_player' => await _applyGamePlayer(m.groupId, d),
+      'game_player' => await _applyGamePlayer(m.groupId, d, seen: version != null),
       'round' => await _applyRound(m.groupId, d),
       'score' => await _applyScore(m.groupId, d),
       'game_analysis' => await _applyAnalysis(m.groupId, d),
@@ -1249,7 +1252,27 @@ class SyncStore {
     return null;
   }
 
-  Future<String?> _applyGamePlayer(String groupId, PulledDelta d) async {
+  /// A membership: one player in one game. The delta's uuid is one membership
+  /// — a player removed from a game and added back is a new membership under a
+  /// new uuid (schema v24, `applyV24`) — while the server keys it by
+  /// `(game, player)`, and two devices that added the same player each minted
+  /// their own uuid: the second to arrive is **merged** into the row already
+  /// here, and `game_player_aliases` remembers which.
+  ///
+  /// The delta's row is the one with its uuid, or the one it was merged into.
+  /// A delete tombstones that row; an upsert of it updates it, unless it is a
+  /// tombstone: a delete wins, whatever the upsert's lamport, as on the
+  /// server. Either leaves alone a membership added back since.
+  ///
+  /// A uuid with no row here is matched to the pair's live row — merged, and
+  /// remembered — when this device has never seen it ([seen]: no version
+  /// recorded). An upsert with no live row to merge into is a new membership.
+  /// A uuid seen before with no row nor alias was merged before v24 kept
+  /// aliases: it still reaches the live row while the pair holds no tombstone
+  /// — no player was removed and added back since —, and nothing otherwise.
+  /// So does the delete of a uuid never seen (added and removed on another
+  /// device before it synced): a membership added back here outlives it.
+  Future<String?> _applyGamePlayer(String groupId, PulledDelta d, {required bool seen}) async {
     final gameUuid = d.payload['game_id'] as String?;
     final playerRemote = d.payload['player_id'] as String?;
     if (gameUuid == null || playerRemote == null) return _skip;
@@ -1257,50 +1280,76 @@ class SyncStore {
     final playerLocal = await _localOf(groupId, 'player', playerRemote);
     final playerId = playerLocal == null ? null : await _idOf('players', playerLocal);
     final now = _nowMs();
-    if (d.op == 'delete') {
+    final row = await _db.customSelect(
+      'SELECT id, deleted_at FROM game_players WHERE uuid = ? OR uuid = '
+      '(SELECT game_player_uuid FROM game_player_aliases WHERE alias_uuid = ?) '
+      'ORDER BY uuid = ? DESC LIMIT 1',
+      variables: [Variable(d.entityUuid), Variable(d.entityUuid), Variable(d.entityUuid)],
+    ).getSingleOrNull();
+
+    /// The pair's live row when the delta may be merged into it, remembered.
+    Future<int?> merged() async {
       if (gameId == null || playerId == null) return null;
-      final gp = await _db.customSelect(
-        'SELECT id FROM game_players WHERE gameId = ? AND player_id = ? AND deleted_at IS NULL',
+      if (seen || d.op == 'delete') {
+        final removed = await _db.customSelect(
+          'SELECT 1 FROM game_players WHERE gameId = ? AND player_id = ? '
+          'AND deleted_at IS NOT NULL LIMIT 1',
+          variables: [Variable(gameId), Variable(playerId)],
+        ).getSingleOrNull();
+        if (removed != null) return null;
+      }
+      final live = await _db.customSelect(
+        'SELECT id, uuid FROM game_players WHERE gameId = ? AND player_id = ? '
+        'AND deleted_at IS NULL',
         variables: [Variable(gameId), Variable(playerId)],
       ).getSingleOrNull();
-      if (gp != null) {
-        final id = gp.data['id'] as int;
+      if (live == null) return null;
+      await _db.customStatement(
+        'INSERT OR REPLACE INTO game_player_aliases (alias_uuid, game_player_uuid, group_id) '
+        'VALUES (?, ?, ?)',
+        [d.entityUuid, live.data['uuid'], groupId],
+      );
+      return live.data['id'] as int;
+    }
+
+    final rowId = row?.data['id'] as int?;
+    final rowLive = row != null && row.data['deleted_at'] == null;
+    if (d.op == 'delete') {
+      final id = row != null ? (rowLive ? rowId : null) : await merged();
+      if (id != null) {
         await _tombstoneWhere('scores', 'playerId = ?', [id], now);
         await _tombstoneWhere('game_players', 'id = ?', [id], now);
       }
       return null;
     }
+    if (row != null && !rowLive) return null;
     if (gameId == null) return 'game';
     if (playerId == null) return 'player';
     if (await _isTombstoned('games', gameId)) return null;
 
     final player = await _db.customSelect('SELECT name, colorValue FROM players WHERE id = ?',
         variables: [Variable(playerId)]).getSingle();
-    final gp = await _db.customSelect(
-      'SELECT id FROM game_players WHERE gameId = ? AND player_id = ?',
-      variables: [Variable(gameId), Variable(playerId)],
-    ).getSingleOrNull();
     final order = d.payload['order_index'] as int? ?? 0;
     final color = d.payload.containsKey('color_value')
         ? d.payload['color_value']
         : player.data['colorValue'];
-    if (gp != null) {
-      await _update('game_players', gp.data['id'] as int, {
+    final target = rowLive ? rowId : await merged();
+    if (target != null) {
+      await _update('game_players', target, {
         'orderIndex': order,
         'colorValue': color,
-        'deleted_at': null,
         'updated_at': now,
       });
       return null;
     }
-    final uuidFree = await _idOf('game_players', d.entityUuid) == null;
+    if (seen) return null;
     await _insert('game_players', {
       'gameId': gameId,
       'player_id': playerId,
       'name': player.data['name'],
       'orderIndex': order,
       'colorValue': color,
-      'uuid': uuidFree ? d.entityUuid : newUuid(),
+      'uuid': d.entityUuid,
       'created_at': now,
       'updated_at': now,
       'group_id': groupId,
@@ -1371,7 +1420,17 @@ class SyncStore {
       'WHERE gp.gameId = ? AND p.uuid = ? AND gp.deleted_at IS NULL',
       variables: [Variable(round.data['gameId'] as int), Variable(playerLocal)],
     ).getSingleOrNull();
-    if (gp == null) return 'game_player';
+    if (gp == null) {
+      // The player's membership was removed: the score was hers, and goes
+      // with it. Waiting would attach it to a membership added back later —
+      // which pushes its own scores after itself, so never waits on this.
+      final removed = await _db.customSelect(
+        'SELECT 1 FROM game_players gp JOIN players p ON p.id = gp.player_id '
+        'WHERE gp.gameId = ? AND p.uuid = ? AND gp.deleted_at IS NOT NULL LIMIT 1',
+        variables: [Variable(round.data['gameId'] as int), Variable(playerLocal)],
+      ).getSingleOrNull();
+      return removed != null ? _skip : 'game_player';
+    }
     final roundId = round.data['id'] as int;
     final gpId = gp.data['id'] as int;
 

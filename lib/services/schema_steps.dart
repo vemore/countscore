@@ -705,3 +705,41 @@ Future<void> applyV23(
     await execute(statement);
   }
 }
+
+/// Schema v24, shared by both engines: a player can be **added back** to a
+/// shared game (`wip/done/2026-11-25-a-pulled-membership-upsert-undoes-a-delete.md`).
+///
+/// A membership removed from a shared game is a tombstone: the row stays, with
+/// its uuid, so its delete reaches the group and wins there. Until v24
+/// `idx_game_players_unique` held `(gameId, player_id)` unique over every row,
+/// tombstones included, so adding the same player back failed on the insert
+/// (`UNIQUE constraint failed`). The index now holds over live rows only — as
+/// the server's unique rules do — and adding a player back inserts a new
+/// membership, under a new uuid: the old one stays deleted on every device.
+///
+/// It also adds `game_player_aliases`: a membership another device added
+/// under its own uuid, for a player this device had already added to the
+/// game, is merged into this device's row, and the alias says which row.
+/// A later delete or edit of that uuid then reaches that row only — not the
+/// membership added back since, which a fallback on `(game, player)` would
+/// pick (`SyncStore._applyGamePlayer`).
+///
+/// Shared by both fresh-install paths too, so a PWA whose `user_version` was
+/// lost and that reruns `onCreate` drops the v9 index as well.
+///
+/// Idempotent: the old index is dropped if it is there, the new one and the
+/// table created if they are not.
+Future<void> applyV24(SqlExecutor execute) async {
+  await execute('DROP INDEX IF EXISTS idx_game_players_unique');
+  await execute(gamePlayersLiveIndex);
+  await execute('CREATE TABLE IF NOT EXISTS game_player_aliases ('
+      'alias_uuid TEXT NOT NULL PRIMARY KEY, '
+      'game_player_uuid TEXT NOT NULL, '
+      'group_id TEXT NOT NULL)');
+  await execute('CREATE INDEX IF NOT EXISTS idx_game_player_aliases_group '
+      'ON game_player_aliases(group_id)');
+}
+
+/// One live membership per `(game, player)`; tombstones do not count (v24).
+const gamePlayersLiveIndex = 'CREATE UNIQUE INDEX IF NOT EXISTS idx_game_players_live '
+    'ON game_players(gameId, player_id) WHERE deleted_at IS NULL';
